@@ -1,0 +1,671 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>IIS 7+ HTTP Co-Service Configuration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-web-server.html" title="Install Web Server">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_configure-http-apache.html" title="Apache HTTP Co-Service Configuration">
+      <link rel="next" href="tactic-sys-admin_install-database.html" title="Install Database">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-http-apache.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_install-database.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="IIS 7+ HTTP Co-Service Configuration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_configure-http-iis-7"></a>IIS 7+ HTTP Co-Service Configuration
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Installation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2845"></a>Installation
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Windows HTTP co-service installations are IIS based.</p>
+            <p>On IIS installations prior to version 7, appropriate 3rd party proxying software (the
+                           ISAPI_Rewrite module) is required to be installed with IIS to enable the proper
+                           functioning of TACTIC.
+            </p>
+            <p>TACTIC can be configured to work with the native IIS 7.5 services available on
+               applicable Windows OS's, such as Windows 7 and Windows Server 2008. Prior versions of
+                           IIS have required 3rd party software (the ISAPI_Rewrite module) to be installed
+                           alongside the IIS service to facilitate proxy and URL rewriting. With IIS 7.5, and the
+                           introduction of the ARR and URL rewrite module, the requirement of a 3rd party software
+                           is no longer needed.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/1.png"></span></p>
+            <p>On Windows 7, and Windows Server 2008, IIS is installed through means and directions
+                           published on Microsoft support websites. Please consult installation guides published by
+                           Microsoft for the installation procedure of IIS.
+            </p>
+            <p>Typically, IIS 7.5 does not come with the ARR module, and depending on the IIS
+                           installation, URL rewrite. These modules are requirements for a installation alongside
+                           TACTIC. Please refer to Microsoft published documentation regarding installation of
+                           these modules.
+            </p>
+         </div>
+         <div class="simplesect" title="Configuration">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2862"></a>Configuration
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="simplesect" title="Permissions">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2865"></a>Permissions
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>Permissions must be set for IIS to be able to serve assets that TACTIC
+                                  manages.
+               </p>
+               <p>TACTIC requires that the IIS user have access to TACTIC assets and all of the
+                                  virtual directories that contain TACTIC widgets.
+               </p>
+               <div class="simplesect" title="The &#34;TACTIC&#34; user">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e2872"></a>The "TACTIC" user
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>Whether the assets directory is stored on the host machine or on a network
+                                         mount, there should be a assigned user that runs TACTIC.
+                  </p>
+                  <p>For non-domain Windows machines, a local user created on the TACTIC host, such
+                                         as the IUSR_&lt;computer_name&gt; automatically created by an IIS installation will
+                                         suffice, provided that the network mounted directories are writable by the
+                                         system user.
+                  </p>
+                  <p>For ADS domains, a user can be created on the domain, and assigned via the
+                                         Services control panel. Assigning a domain user to the TACTIC service will allow
+                                         domain level security rules to apply.
+                  </p>
+                  <p><span class="bold"><strong>To assign a user to a service:</strong></span></p>
+                  <p>
+                                         
+                  </p>
+                  <div class="orderedlist">
+                     <ol class="orderedlist" type="1">
+                        <li class="listitem">
+                           <p>Open the Services control panel</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Right click on the "TACTIC application server"</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Click on the "Log On" tab</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Change the "log on as" option to reflect the user created, whether
+                                                              local or domain based.
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/Selection_002.png"></span></p>
+                        </li>
+                     </ol>
+                  </div>
+                  <p>
+                                     
+                  </p>
+               </div>
+               <div class="simplesect" title="Setting permissions on directories">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e2904"></a>Setting permissions on directories
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>For a locally hosted asset directory , the anonymous user (typically
+                                         IUSR_&lt;computer name&gt;) account needs to be granted access to the directories,
+                                         and all subdirectories under them. 
+                  </p>
+                  <p>Find the directories above in Windows Explorer, and right click on the
+                                         directory to bring up &#8220;Sharing and Security&#65533;? for that directory. 
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/3.png"></span></p>
+               </div>
+            </div>
+            <div class="simplesect" title="Virtual Directories">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2915"></a>Virtual Directories
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>IIS must be configured to serve static content, such as TACTIC assets, and TACTIC
+                                  UI skins. 
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/2.png"></span></p>
+               <div class="table"><a name="d0e2925"></a><p class="title"><b>Table&nbsp;6.&nbsp;Virtual directories required by TACTIC</b></p>
+                  <div class="table-contents">
+                     <table summary="Virtual directories required by TACTIC" border="0">
+                        <colgroup>
+                           <col>
+                           <col>
+                           <col>
+                        </colgroup>
+                        <thead>
+                           <tr>
+                              <th>Directory Description</th>
+                              <th>Directory Alias</th>
+                              <th>Location</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td>Assets storage</td>
+                              <td>assets</td>
+                              <td>User provided during installation</td>
+                           </tr>
+                           <tr>
+                              <td>TACTIC UI widgets</td>
+                              <td>context</td>
+                              <td>Inside TACTIC installation directory</td>
+                           </tr>
+                           <tr>
+                              <td>Documentation</td>
+                              <td>doc</td>
+                              <td>Inside TACTIC installation directory</td>
+                           </tr>
+                           <tr>
+                              <td>Project storage</td>
+                              <td>projects</td>
+                              <td>User provided during installation</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+               <p><br class="table-break">There are four &#8220;virtual directories&#65533;? that must be created to access the
+                                  static content provided by TACTIC.
+               </p>
+               <p><span class="bold"><strong>To create the directories;</strong></span>
+                              
+               </p>
+               <p>
+                                  
+               </p>
+               <div class="orderedlist">
+                  <ol class="orderedlist" type="1">
+                     <li class="listitem">
+                        <p>Right click on &#8220;Default web site&#65533;? and &#8220;Add Virtual Directory&#65533;?</p>
+                     </li>
+                     <li class="listitem">
+                        <p>Create the virtual directory, using the paths that were created by the
+                                                       installation of TACTIC. The default paths may not apply.
+                        </p>
+                        <p><span class="inlinemediaobject"><img src="media/Selection_003.png"></span></p>
+                     </li>
+                     <li class="listitem">
+                        <p>
+                                                       
+                        </p>
+                        <div class="important" title="Important" style="margin-left: 0.5in; margin-right: 0.5in;">
+                           <h3 class="title">Important</h3>
+                           <p>If the directory is located on a network mount, it may have to
+                                                                  be connected to as the user running the TACTIC service. To
+                                                                  connect as a different user than the IIS user, click on the
+                                                                  "Connect As"
+                           </p>
+                        </div>
+                        <p>
+                                                   
+                        </p>
+                        <p><span class="inlinemediaobject"><img src="media/Selection_005.png"></span></p>
+                        <p>Then click on the "Set..." button, and fill in the details of the user
+                                                       that will run the TACTIC service.
+                        </p>
+                        <p><span class="inlinemediaobject"><img src="media/Selection_004.png"></span></p>
+                     </li>
+                  </ol>
+               </div>
+               <p>
+                              
+               </p>
+               <p> There should now be 4 virtual entries on the IIS service.</p>
+            </div>
+            <div class="simplesect" title="Application request routing (ARR)">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e3007"></a>Application request routing (ARR) 
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p><span class="inlinemediaobject"><img src="media/4.png"></span></p>
+               <p>Application Request Routing (ARR) is the module snap-in that will proxy and load
+                                  balance requests. ARR is required by IIS to split incoming TACTIC service requests
+                                  between the dynamic content that drives the API and the TACTIC web UI, and static
+                                  content. In order to achieve this, IIS must be configured to send certain requests
+                                  to the TACTIC application server, while static data requests (usually assets) are
+                                  sent to IIS.
+               </p>
+               <div class="simplesect" title="Proxy and Load Balancing through ARR">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3016"></a>Proxy and Load Balancing through ARR
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>This guide currently supports two methods of attaching the TACTIC service to
+                                         an IIS co-service. 
+                  </p>
+                  <p>
+                                         
+                  </p>
+                  <h3><a name="d0e3023"></a>Proxy/Load balancing 
+                  </h3>
+                  <p>
+                                     
+                  </p>
+                  <p>The Load balancing configuration of IIS splits TACTIC service requests into
+                                         multiple streams, with each stream utilizing its own TACTIC service process. 
+                  </p>
+                  <h3><a name="d0e3028"></a>Proxy Only
+                  </h3>
+                  <p>The proxy-only configuration routes all TACTIC service requests to a single
+                                         TACTIC service. This method should only be used in light usage TACTIC
+                                         installations such as development servers.
+                  </p>
+               </div>
+               <div class="simplesect" title="Proxy/Load balancing configuration">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3032"></a>Proxy/Load balancing configuration
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>A TACTIC installation by default runs 3 seperate TACTIC service listeners,
+                                         arranged on default ports 8081, 8082 and 8083. To split TACTIC service requests
+                                         into multiple streams, IIS must be configured to consider TACTIC part of a
+                                         &#8220;server farm&#65533;?. Since all of the TACTIC services are running on one single host,
+                                         IIS currently must be tricked into routing requests to the 3 different TACTIC
+                                         streams on the localhost.
+                  </p>
+                  <p> By default, windows looks in the hosts file, then to DNS for named hosts. To
+                                         divide localhost into three &#8220;different&#65533;? machines, the
+                                             <code class="filename">&#8220;%SYSTEMROOT%/System32/drivers/etc/host&#65533;?</code> file must be
+                                         edited to be able to address localhost as more than one machine. 
+                  </p>
+                  <p>
+                                         
+                  </p>
+                  <div class="important" title="Important" style="margin-left: 0.5in; margin-right: 0.5in;">
+                     <h3 class="title">Important</h3>
+                     <p>If TACTIC is set to run a number of processes other than the default
+                                                    of three, then these instructions must reflect that number. Add or
+                                                    subtract from the list of localhost entries and web farm entries
+                                                    accordingly.
+                     </p>
+                  </div>
+                  <p>
+                                     
+                  </p>
+                  <p><span class="bold"><strong>To create a web farm</strong></span>;
+                  </p>
+                  <p>
+                                         
+                  </p>
+                  <div class="orderedlist">
+                     <ol class="orderedlist" type="1">
+                        <li class="listitem">
+                           <p>As an &#8220;Administrator&#65533;? user, edit the &#8220;127.0.0.1&#65533;? line in this
+                                                              file 
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/5.png"></span></p>
+                           <p>The addition of localhost-2 and localhost-3 that reference
+                                                              127.0.0.1 allow this host machine to access localhost as more than
+                                                              one machine. 
+                           </p>
+                        </li>
+                        <li class="listitem">
+                           <p>Now the Server Farm reference must be created. </p>
+                           <p>Start the IIS snap in, and select the Web server that will be used
+                                                              as a TACTIC co-service in the left side navigation bar. Right click
+                                                              on the &#8220;Server Farms&#65533;? folder and create a new server farm. 
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/6.png"></span></p>
+                           <p>3 seperate servers must be added to the server farm to correspond
+                                                              to the 3 default TACTIC service processes. Add each server according
+                                                              to the below table. 
+                           </p>
+                           <p>
+                                                              
+                           </p>
+                           <div class="table"><a name="d0e3077"></a><p class="title"><b>Table&nbsp;7.&nbsp;</b></p>
+                              <div class="table-contents">
+                                 <table summary="" border="0">
+                                    <colgroup>
+                                       <col>
+                                       <col>
+                                    </colgroup>
+                                    <thead>
+                                       <tr>
+                                          <th>Server Address</th>
+                                          <th>httpPort</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       <tr>
+                                          <td>localhost-1</td>
+                                          <td>8081</td>
+                                       </tr>
+                                       <tr>
+                                          <td>localhost-2</td>
+                                          <td>8082</td>
+                                       </tr>
+                                       <tr>
+                                          <td>localhost-3</td>
+                                          <td>8083</td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                           <p><br class="table-break">
+                                                          
+                           </p>
+                           <p>Click on &#8220;Add&#65533;? when done each entry in the above list. For
+                                                              additional servers, the &#8220;server address&#65533;? must correspond to the
+                                                              additional localhost entries in the &#8220;hosts&#65533;? file. The ports must
+                                                              correspond to 8082, 8083, etc. Add the required number of servers
+                                                              according to TACTIC deployment requirements.
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/7.png"></span></p>
+                        </li>
+                        <li class="listitem">
+                           <p>Click &#8220;Finish&#65533;? when done. </p>
+                        </li>
+                        <li class="listitem">
+                           <p>Create the rewrite rule when prompted.</p>
+                        </li>
+                     </ol>
+                  </div>
+                  <p>
+                                     
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/8.png"></span></p>
+               </div>
+               <div class="simplesect" title="URL rewrite configuration">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3122"></a>URL rewrite configuration
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>URL rewrite must now be configured to only send TACTIC API requests to the
+                                         server farm. 
+                  </p>
+                  <p>
+                                         
+                  </p>
+                  <div class="orderedlist">
+                     <ol class="orderedlist" type="1">
+                        <li class="listitem">
+                           <p>Click on the server farm icon on the left-hand side of IIS manager
+                                                              and click the &#8220;Routing Rules&#65533;? icon.
+                           </p>
+                           <p></p>
+                           <div class="figure"><a name="d0e3134"></a><p class="title"><b>Figure&nbsp;1.&nbsp;Selection_009.png</b></p>
+                              <div class="figure-contents">
+                                 <div class="mediaobject"><img src="media/Selection_009.png" alt="Selection_009.png"></div>
+                              </div>
+                           </div><br class="figure-break"></li>
+                        <li class="listitem">
+                           <p>In the right pane of the Routing rules section, click the "URL
+                                                              rewrite" link
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/Selection_010.png"></span></p>
+                        </li>
+                        <li class="listitem">
+                           <p>Select the automatically created URL rewrite rule created when the
+                                                              web farm was created, and click on the "Edit" link in the right
+                                                              pane.
+                           </p>
+                           <p><span class="inlinemediaobject"><img src="media/Selection_011.png"></span></p>
+                           <p> In the &#8220;Edit Inbound rule&#65533;? pane, edit the pattern to read
+                                                              &#8220;tactic*,projects*&#65533;? This will instruct IIS to route all TACTIC UI
+                                                              requests to the TACTIC service.
+                           </p>
+                           <p> </p>
+                           <p><span class="inlinemediaobject"><img src="media/Selection_012.png"></span></p>
+                        </li>
+                        <li class="listitem">
+                           <p>Apply the change.</p>
+                        </li>
+                     </ol>
+                  </div>
+                  <p>
+                                     
+                  </p>
+               </div>
+               <div class="simplesect" title="Load Balancing Algorithms">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3166"></a>Load Balancing Algorithms
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>ARR comes with several load balancing algorithms. Click on the newly created
+                                         server farm, and click on the &#8220;Load Balancing&#65533;? icon. Select &#8220;Weighted round
+                                         robin&#65533;? as the algorithm, and &#8220;Even distribution&#65533;? as the load
+                                         distribution.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/11.png"></span></p>
+               </div>
+               <div class="simplesect" title="Proxy Only">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3175"></a>Proxy Only
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>IIS can be configured to run a single rewrite rule to forward requests to a
+                                         single TACTIC service. 
+                  </p>
+                  <p>Start the IIS snap in, and select the Web server that will be used as a TACTIC
+                                         co-service in the left side navigation bar. Choose &#8220;Application request
+                                         routing&#65533;? And click on server proxy settings on the right-hand side.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/12.png"></span></p>
+                  <p>In the ARR options under the proxy settings check the &#8220;use URL rewrite to
+                                         inspect incoming requests&#65533;?, And in the &#8220;reverse proxy&#65533;? text area type
+                                         &#8220;localhost:8081&#65533;?. This instructs IIS to proxy everything to this address and
+                                         port. 
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/13.png"></span></p>
+                  <p>From here URL Rewrite can then be instructed to filter proxy requests. Click
+                                         on the &#8220;URL rewrite&#65533;? link on the right-hand side to modify rewrite rules.
+                                         Typically, if the proxy has been created in ARR, then a rule will be created in
+                                         URL rewrite.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/14.png"></span></p>
+               </div>
+               <div class="simplesect" title="Modifying the Rewrite rules">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3198"></a>Modifying the Rewrite rules
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>IIS must then be instructed to only proxy TACTIC UI and API requests. To do
+                                         this, an automatically created rule must be altered to allow TACTIC asset
+                                         requests to be handled by IIS. 
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/15.png"></span></p>
+                  <p>To modify the existing rule for TACTIC, the pattern under "Match URL" should
+                                         be "tactic*". The action &#8220;Rewrite URL&#65533;? should be
+                                         "http://localhost:8081/{R:0}"
+                  </p>
+               </div>
+            </div>
+            <div class="simplesect" title="Custom/Other Settings">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e3209"></a>Custom/Other Settings
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <div class="simplesect" title="MIME types">
+                  <div class="titlepage">
+                     <div>
+                        <div>
+                           <h2 class="title"><a name="d0e3212"></a>MIME types
+                           </h2>
+                        </div>
+                     </div>
+                  </div>
+                  <p>TACTIC currently has a requirement to insert custom MIME types into the list
+                                         of allowed types for the IIS service.
+                  </p>
+                  <p>
+                                         
+                  </p>
+                  <div class="table"><a name="d0e3219"></a><p class="title"><b>Table&nbsp;8.&nbsp;</b></p>
+                     <div class="table-contents">
+                        <table summary="" border="0">
+                           <colgroup>
+                              <col>
+                              <col>
+                              <col>
+                           </colgroup>
+                           <thead>
+                              <tr>
+                                 <th>MIME type</th>
+                                 <th>Function</th>
+                                 <th>Extension</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <tr>
+                                 <td>text/plain</td>
+                                 <td>Python Script mask</td>
+                                 <td>.xx</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+                  <p><br class="table-break">
+                                     
+                  </p>
+                  <p>To add a MIME type in IIS 7</p>
+                  <p>
+                                         
+                  </p>
+                  <div class="orderedlist">
+                     <ol class="orderedlist" type="1">
+                        <li class="listitem">
+                           <p>Click on the web server entry in the left-hand pane.</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Click on the MIME types<span class="inlinemediaobject"><img src="media/Selection_013.png"></span> icon in the centre pane.
+                           </p>
+                        </li>
+                        <li class="listitem">
+                           <p>Click on the "Add..." link on the right-hand pane.</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Add all entries required by the table above.</p>
+                           <p><span class="inlinemediaobject"><img src="media/Selection_014.png"></span></p>
+                        </li>
+                     </ol>
+                  </div>
+                  <p>
+                                     
+                  </p>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Conclusion">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3268"></a>Conclusion
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>At this point IIS should be configured to proxy TACTIC service requests to the TACTIC
+                           service, while leaving all other requests to IIS.
+            </p>
+         </div>
+         <div class="simplesect" title="Resources">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3273"></a>Resources
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p><a class="link" href="http://learn.iis.net/page.aspx/485/define-and-configure-an-application-request-routing-server-farm/" target="_top">http://learn.iis.net/page.aspx/485/define-and-configure-an-application-request-routing-server-farm/
+                              </a></p>
+            <p><a class="link" href="http://learn.iis.net/page.aspx/486/http-load-balancing-using-application-request-routing/" target="_top">http://learn.iis.net/page.aspx/486/http-load-balancing-using-application-request-routing/</a>
+                       
+            </p>
+            <p><a class="link" href="http://blogs.msdn.com/nickhodge/default.aspx?p=2" target="_top">http://blogs.msdn.com/nickhodge/default.aspx?p=2</a></p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-http-apache.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-web-server.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_install-database.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

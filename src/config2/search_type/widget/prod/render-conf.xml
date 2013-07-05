@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="images">
+        <display class="ThumbWdg">
+            <context>icon</context>
+        </display>
+    </element>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <element name="type"/>
+
+    <element name="dependency"/>
+    <element name="pipeline_code"/>
+
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="link"/>
+
+    <element name="update">
+        <display class="UpdateWdg">
+            <insert>false</insert>
+        </display>
+    </element>
+
+</definition>
+
+
+<table>
+    <element name="detail"/>
+    <element name="images"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <element name="type"/>
+    <element name="dependency"/>
+    <element name="pipeline_code"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+</table>
+
+<edit>
+    <element name="name">
+        <display class="TextWdg">
+            <hint>This is purely for labeling purpose</hint>
+        </display>
+    </element>
+    <element name="pipeline_code"/>
+</edit>
+
+<history default="table">
+    <element name="id"/>
+    <element name="images"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+</history>
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="name" width="100px"/>
+    <element name="search_type" width="150px"/>
+    <element name="type" width="100px"/>
+</add_item>
+
+
+</config>
+

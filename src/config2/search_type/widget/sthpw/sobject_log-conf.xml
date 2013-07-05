@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+
+<definition layout="TableLayoutWdg">
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <element name="data"/>
+    <element name="login"/>
+    <element name="timestamp" type="datetime"/>
+    <element name="transaction_log_id"/>
+    <element name='transaction_log_hidden' title='Transaction Details'>
+	  <display class='HiddenRowToggleWdg'>
+	    <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+	    <search_type>sthpw/transaction_log</search_type>
+	    <show_search_limit>false</show_search_limit>
+	    <show_insert>false</show_insert>
+	    <show_row_select>false</show_row_select>
+	    <show_gear>false</show_gear>
+	    <view>log</view>
+	  </display>
+    </element>
+</definition>
+
+
+<table layout="TableLayoutWdg">
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <element name="data"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="transaction_log_id"/>
+</table>
+
+
+<!-- This is shown when an individual item is display at its log -->
+
+<item layout="TableLayoutWdg">
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="description">
+      <display class='tactic.ui.table.ExpressionElementWdg'>
+        <expression>@GET(sthpw/transaction_log.description)</expression>
+      </display>
+    </element>
+    <element name="transaction_log_id" title='Transaction Id'/>
+    <element name='transaction_log_hidden'/>
+</item>
+
+
+
+
+</config>
+
+
+
+
+
+
+

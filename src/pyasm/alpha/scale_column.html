@@ -1,0 +1,325 @@
+
+<html>
+<head>
+<script type="text/javascript" src="mootools.v1.11.js"></script>
+</head>
+<body>
+
+<form name="form">
+
+<table id='table'>
+<tr>
+  <td>&nbsp;|&nbsp;</td>
+  <td><span id='table_oneone'>horse</span></td>
+  <td>&nbsp;|&nbsp;</td>
+  <td><span id='table_twotwo'>animal</span></td>
+  <td>&nbsp;|&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;|&nbsp;</td>
+  <td>pig</td>
+  <td>&nbsp;|&nbsp;</td>
+  <td>donkey</td>
+  <td>&nbsp;|&nbsp;</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+<br/>
+
+<table width='70%' border='0' cellpadding='0' cellspacing='0' id="table2" border=1>
+<tr>
+  <th>+</th>
+  <th> <span id='oneone'>one</span> </th>
+  <th>+</th>
+  <th><span id='twotwo'>header</span></th>
+  <th>+</th>
+  <th><span id='threethree'>#</span></th>
+  <th>+</th>
+  <th><span id='fourfour'>color</span></th>
+  <th>+</th>
+</tr>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>crazy bunch of people
+  doing whatever.  what is this world coming to?</td>
+  <td>&nbsp;</td>
+  <td>holy moly</td>
+  <td>&nbsp;</td>
+  <td>3</td>
+  <td>&nbsp;</td>
+  <td>black</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>crazy bunch of people
+  doing whatever.  what is this world coming to?</td>
+  <td>&nbsp;</td>
+  <td>holy moly</td>
+  <td>&nbsp;</td>
+  <td>3</td>
+  <td>&nbsp;</td>
+  <td>black</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>crazy bunch of people
+  doing whatever.  what is this world coming to?</td>
+  <td>&nbsp;</td>
+  <td>holy moly</td>
+  <td>&nbsp;</td>
+  <td>3</td>
+  <td>&nbsp;</td>
+  <td>black</td>
+  <td>&nbsp;</td>
+</tr>
+
+</table>
+
+<form>
+<input type='button' onclick='table.store_widths()'
+<input type='text'  id='info'/>
+</form>
+
+
+<script>
+
+
+
+var DynamicTable = new Class({
+
+initialize: function(table_id) {
+    this.table_id = table_id
+
+    // introspect table for all of the elements
+    var table = $(this.table_id)
+    var th = table.rows[0].cells
+
+    this.num_headers = (th.length-1) / 2
+    this.drops = new Array()
+    this.headers = new Array()
+
+    for (var i=0; i<th.length; i += 2 ) {
+        th[i].setStyle('position', 'relative')
+
+        // handle the drop
+        var drop = th[i]
+        drop.index = i
+        if (drop.id == ""){
+            drop.id = this.table_id + '_drop_' + i
+        }
+
+        this.drops.push(drop)
+
+        if (i != 0)
+            this.make_header_resizeable(drop)
+        else
+            drop.removeEvents()
+
+        // handle the headers
+        var header = th[i+1]
+
+        // skip ahead because the table ends with a separator
+        if (header == null)
+            continue
+
+        if (header.id == ""){
+            header.id = this.table_id + '_header' + i
+        }
+        header.index = i+1
+        this.headers.push(header)
+
+        this.make_header_draggable(header)
+    }
+
+
+},
+
+
+
+make_header_resizeable: function(resize) {
+    var self = this
+
+    resize.setStyle('cursor', 'e-resize')
+
+    // remove all current events
+    resize.removeEvents()
+
+    // make it draggable on mouseover
+    resize.addEvent('mouseout', function(e) {
+        this.setStyle('background', 'white')
+    })
+
+    // make it draggable on mouseover
+    resize.addEvent('mouseover', function(e) {
+        this.setStyle('background', 'red')
+
+        var resize_id = resize.id
+        var width = 0
+        var xpos_start = 0
+        var xpos = 0
+        var table_width = 0
+        var last_offset = 0
+
+        this.makeDraggable( {
+            'onStart': function() {
+                var resize_th = resize.getPrevious().id
+                xpos_start = $(resize_id).getStyle('left')
+                xpos_start = parseInt( xpos_start.replace('px', '') )
+                xpos = xpos_start
+                width = $(resize_th).getStyle('width')
+                width = parseInt( width.replace('px', '') )
+
+                table_width = $(self.table_id).getStyle('width')
+                table_width = parseInt( table_width.replace('px', '') )
+            },
+            'onDrag': function() {
+                var resize_th = resize.getPrevious().id
+                xpos = $(resize_id).getStyle('left')
+                xpos = parseInt( xpos.replace('px', '') )
+
+                var offset = xpos - xpos_start
+                $('info').value = offset
+                if ( Math.abs(offset-last_offset) < 5)
+                    return
+                $(resize_th).setStyle('width', width + offset )
+                $(self.table_id).setStyle('width', table_width + offset )
+                last_offset = offset
+            },
+            'onComplete': function() {
+                $(resize_id).removeEvents()
+                $(resize_id).setStyle('background', 'white')
+            },
+            'limit': {'x':[-1000, 1000], 'y':[0,0]}
+        } )
+    })
+},
+
+
+
+
+
+// make a header draggable
+make_header_draggable: function( header ) {
+
+    var self = this
+
+    title = header.getChildren()[0]
+    title.setStyle('cursor', 'move')
+    title.removeEvents()
+
+    // clone the title and make it draggable
+    title.addEvent('mousedown', function(e) {
+        e = new Event(e).stop();
+
+        // create a clone
+        var clone = this.clone()
+            .setStyles(this.getCoordinates())
+            .setStyles({'opacity': 0.7, 'position': 'absolute'})
+            .addEvent('emptydrop', function() {
+                this.remove()
+                for (var i=0; i<self.drops.length; i++) {
+                    self.drops[i].removeEvents()
+                }
+            }).injectBefore(document.body);
+        clone.id = "clone_" + this.id
+
+        // add the events for the drop zones
+        for (var i=0; i<self.drops.length;i++) {
+            var drop = self.drops[i]
+            drop.addEvents( {
+                'drop': function() {
+                    // reorder the columns
+                    self.reorder_columns(header, this)
+                    this.setStyle('background', 'white')
+                    clone.remove()
+                },
+                'over': function() {
+                    this.setStyle('background', 'red')
+                },
+                'leave': function() {
+                    this.setStyle('background', 'white')
+                }
+            })
+        }
+
+
+        // make the clone draggable
+        var drag = clone.makeDraggable({
+            droppables: self.drops,
+            'limit': {'x':[-1000, 1000]},
+            'onStart': function() {
+            },
+            'onComplete': function() {
+            },
+        });
+        drag.start(e)
+
+    })
+
+
+},
+
+
+reorder_columns: function(header, drop) {
+    //alert(header.index + ", " + drop.index)
+    var table = $(this.table_id)
+    for (var j=0; j<table.rows.length; j++) {
+        row = table.rows[j]
+
+        header_cell = row.cells[header.index]
+        drop_cell = row.cells[drop.index]
+
+        if (header.index < drop.index) {
+            prev_header_cell = header_cell.getPrevious()
+            header_cell.injectBefore(drop_cell)
+            prev_header_cell.injectBefore(header_cell)
+        }
+        else {
+            next_header_cell = header_cell.getNext()
+            header_cell.injectAfter(drop_cell)
+            next_header_cell.injectAfter(header_cell)
+        }
+
+    }
+
+    // we have to reinitialize
+    this.initialize(this.table_id)
+},
+
+
+
+store_widths: function() {
+    // introspect table for all of the elements
+    var table = $(this.table_id)
+    var th = table.rows[0].cells
+
+    for (var i=1; i<th.length; i += 2 ) {
+        header = th[i]
+        alert(header.id + ": " + header.getStyle('width'))
+    }
+},
+
+    
+
+})
+
+var table
+var table2
+Window.onDomReady(function() {
+    table = new DynamicTable('table')
+    table2 = new DynamicTable('table2')
+});
+
+
+</script>
+
+
+</form>
+</body>
+</html>
+

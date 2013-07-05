@@ -1,0 +1,153 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>checkout</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_build_search_type.html" title="build_search_type">
+      <link rel="next" href="python-client-api_general_clear_upload_dir.html" title="clear_upload_dir">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_build_search_type.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_clear_upload_dir.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="checkout">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_checkout"></a>
+                         checkout
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  checkout(search_key, context, version=-1, file_type='main', dir='', level_key=None, to_sandbox_dir=False, mode='copy')
+                      </strong></span>
+                
+         </p>
+         <p>
+                Check out files defined in a snapshot from the repository.  This
+                
+         </p>
+         <p>
+                will copy files to a particular directory so that a user can work
+                
+         </p>
+         <p>
+                on them.
+                
+         </p>
+         <h4><a name="d0e2530"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      search_key 
+                      </strong></span>
+                 -  a unique identifier key representing an sobject
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      context 
+                      </strong></span>
+                 -  context of the snapshot
+                
+         </p>
+         <h4><a name="d0e2542"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      version 
+                      </strong></span>
+                 -  version of the snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_type 
+                      </strong></span>
+                 -  file type defaults to 'main'. If set to '*', all paths are checked out
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      level_key 
+                      </strong></span>
+                 -  the unique identifier of the level in the form of a search key
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      to_dir 
+                      </strong></span>
+                 -  destination directory defaults to '.'
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      to_sandbox_dir 
+                      </strong></span>
+                 -  (True|False) destination directory defaults to
+                
+         </p>
+         <p>
+                sandbox_dir (overrides "to_dir" arg)
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      mode 
+                      </strong></span>
+                 -  (copy|download) 
+                
+         </p>
+         <p>
+                to copy the files to the destination location
+                
+         </p>
+         <h4><a name="d0e2578"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      list 
+                      </strong></span>
+                 -  a list of paths that were checked out
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_build_search_type.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_clear_upload_dir.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

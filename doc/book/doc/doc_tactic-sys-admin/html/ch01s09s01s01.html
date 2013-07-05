@@ -1,0 +1,90 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Service Troubleshooting</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_sys-admin_troubleshooting-tactic.html" title="TACTIC Service Troubleshooting">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_troubleshooting-tactic.html" title="TACTIC Service Troubleshooting">
+      <link rel="next" href="ch01s09s01s02.html" title="Diagnostic Tools">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_troubleshooting-tactic.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="ch01s09s01s02.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Service Troubleshooting">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="d0e4309"></a>TACTIC Service Troubleshooting
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">
+                  <p><span class="bold"><strong>I get a proxy error in my browser that looks like the
+                                                   following: </strong></span></p><pre class="screen">Proxy Error 
+
+The proxy server received an invalid response from an upstream server. 
+The proxy server could not handle the request /POST /tactic/admin/
+&lt;http://192.168.14.113/tactic/admin/&gt;/
+
+Reason: *Error reading from remote server
+</pre><p>This message tells you the TACTIC service has stopped. If you are running
+                                         other processes on port 80 (for example, Skype), this can cause a problem with
+                                         the TACTIC service. Stop the conflicting service. Then restart TACTIC in the TSI
+                                         by logging in as root and running the command: 
+                  </p>
+                  <p><span class="command"><strong>service tactic start </strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>What if the TACTIC host memory is
+                                               full?</strong></span></p>
+                  <p>If the memory is full, restarting the TACTIC service will remove this memory.
+                                         If the problem persists or occurs again, contact Southpaw. A memory leak can
+                                         occasionally occur when a user is repeatedly viewing a very large table with a
+                                         huge number of entries (&gt;5000). Restarting the service will clear this memory.
+                                     
+                  </p>
+               </li>
+               <li class="listitem"><span class="bold"><strong>What if the TACTIC host CPU is at 100%? </strong></span><p>Use the Windows Task Manager to kill the process that is taking 100% of the
+                                         CPU. The TACTIC service will automatically recreate the process. Normally, this
+                                         will clear the problem.
+                  </p>
+               </li>
+               <li class="listitem"><span class="bold"><strong> What if the user sees a Proxy Error? </strong></span><p>This means that the IIS service cannot contact the TACTIC application server.
+                                         Look in the Windows services and restart the TACTIC service. If the problem
+                                         persists, contact Southpaw. 
+                  </p>
+               </li>
+            </ol>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_troubleshooting-tactic.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_sys-admin_troubleshooting-tactic.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="ch01s09s01s02.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

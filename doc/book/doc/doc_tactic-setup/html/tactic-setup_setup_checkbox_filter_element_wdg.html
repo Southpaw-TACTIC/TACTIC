@@ -1,0 +1,270 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Checkbox Filter Element Widget</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-simple-search.html" title="Simple Search Widgets">
+      <link rel="prev" href="tactic-setup_setup_select-filter-element-widget.html" title="Select Filter Element Widget">
+      <link rel="next" href="tactic-setup_setup_keyword_search.html" title="Keyword Search">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_select-filter-element-widget.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_keyword_search.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Checkbox Filter Element Widget">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_checkbox_filter_element_wdg"></a>Checkbox Filter Element Widget
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>
+                        
+         </p>
+         <div class="mediaobject"><img src="media/1_button_filter_element_wdg_overview.png"></div>
+         <p>
+                    
+         </p>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12888"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Checkbox Filter Element Widget appears as a check box which activates
+               filteringm when checked. This widget provides a convenient way to perform more complex
+                           search operations.
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12893"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                       
+                        </td>
+                        <td>Checkbox Filter Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                       
+                        </td>
+                        <td>tactic.ui.filter.CheckboxFilterElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                       
+                        </td>
+                        <td>3.7+</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>Required database
+                                                                        columns</strong></span></p>
+                                                       
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12937"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>titles</strong></span></p>
+                                                   
+                        </td>
+                        <td>Titles for Checkbox Filter Element. For
+                                                       example:<pre class="screen">&lt;display class='tactic.ui.filter.CheckboxFilterElementWdg'&gt; 
+    &lt;titles&gt;Active|Pending|Closed&lt;/titles&gt;
+&lt;/display&gt; </pre></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>options</strong></span></p>
+                                                   
+                        </td>
+                        <td>A list of the names of search filters, separated by pipes: '|'. For
+                                                       example:<pre class="screen">&lt;options&gt;my_tickets|beth_tickets|ted_tickets&lt;/options&gt;
+    &lt;my_tickets&gt;@SOBJECT(scrum/ticket['assigned',$LOGIN])&lt;/my_tickets&gt; 
+    &lt;beth_tickets&gt;@SOBJECT(scrum/ticket['assigned','beth'])&lt;/beth_tickets&gt;
+    &lt;ted_tickets&gt;@SOBJECT(scrum/ticket['assigned','ted'])&lt;/ted_tickets&gt;</pre></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12967"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Specify (or look up) the name of the <span class="italic">Simple Search
+                                  View</span> under <span class="bold"><strong>Admin Views -&gt; Project -&gt; Manage Side
+                                     Bar -&gt; Simple Search View</strong></span>.
+            </p>
+            <p>In the example below, the <span class="italic">Simple Search View</span> is
+                           named: <span class="bold"><strong>simple_search_view</strong></span></p>
+            <div class="mediaobject"><img src="media/4_button_filter_element_wdg_setup_widget_config.png"></div>
+            <p>Look up and edit that simple search view in the Widget Config.  Use the
+                           following XML code as an example of what to add to the config:
+            </p>
+            <p>
+                               
+            </p><pre class="screen">&lt;config&gt;
+  &lt;simple_search_view&gt; 
+    &lt;element name='dynamic'&gt;
+      &lt;display class='tactic.ui.filter.CheckboxFilterElementWdg'&gt;
+        &lt;options&gt;asset_category_3d&lt;/options&gt;
+        &lt;asset_category_3d&gt;@SOBJECT(project/asset['asset_category_code','3d'])&lt;/asset_category_3d&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/simple_search_view&gt;
+&lt;/config&gt;</pre><p>
+                           
+            </p>
+            <p>For the above example, this filter returns results where the <span class="italic">asset_category_code</span> is: <span class="bold"><strong>3d</strong></span></p>
+            <p>
+                               
+            </p>
+            <div class="mediaobject"><img src="media/3_button_filter_element_wdg_example_asset_category_3d.png"></div>
+            <p>
+                           
+            </p>
+         </div>
+         <div class="simplesect" title="Examples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13008"></a>Examples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Below is an example of adding 3 check box filters: a filter to search for tickets
+                           that belong to the currently logged in user, the user <span class="bold"><strong>beth</strong></span> and the user <span class="bold"><strong>ted</strong></span>. Notice that the
+                           options are pipe '|' separated.
+            </p>
+            <p>
+                               
+            </p><pre class="screen">&lt;config&gt;
+  &lt;simple_search_view&gt; 
+     &lt;element name='mine'&gt; 
+        &lt;display class='tactic.ui.filter.CheckboxFilterElementWdg'&gt; 
+          &lt;options&gt;my_tickets|beth_tickets|ted_tickets&lt;/options&gt; 
+          &lt;my_tickets&gt;@SOBJECT(scrum/ticket['assigned',$LOGIN])&lt;/my_tickets&gt; 
+          &lt;beth_tickets&gt;@SOBJECT(scrum/ticket['assigned','beth'])&lt;/beth_tickets&gt; 
+          &lt;ted_tickets&gt;@SOBJECT(scrum/ticket['assigned','ted'])&lt;/ted_tickets&gt;
+        &lt;/display&gt; 
+     &lt;/element&gt;
+  &lt;/simple_search_view&gt;
+&lt;/config&gt;</pre><p>
+                               
+            </p>
+            <div class="mediaobject"><img src="media/2_button_filter_element_wdg_example_mine.png"></div>
+            <p>
+                           
+            </p>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13028"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Below is an example of filtering for the condition of having one or more icons
+                               snapshots related to shots: 
+            </p>
+            <p>
+                               
+            </p><pre class="screen">&lt;config&gt;
+  &lt;simple_search_view&gt; 
+    &lt;element name='dynamic'&gt;
+      &lt;display class='tactic.ui.filter.CheckboxFilterElementWdg'&gt;
+        &lt;options&gt;some_icon&lt;/options&gt;
+        &lt;some_icon&gt;@SOBJECT(prod/shot.sthpw/snapshot['context','icon']['project_code','sample3d'].prod/shot)&lt;/some_icon&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/simple_search_view&gt;
+&lt;/config&gt;</pre><p>
+                           
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_select-filter-element-widget.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-simple-search.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_keyword_search.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

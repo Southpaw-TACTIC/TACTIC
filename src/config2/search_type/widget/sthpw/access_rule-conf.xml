@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+    <element name="project_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="rule">
+         <display class="XmlWdg"/>
+    </element>
+</definition>
+
+
+<table>
+    <element name="project_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="rule"/>
+</table>
+
+
+<edit>
+    <element name="project_code">
+      <display class="pyasm.prod.web.ProjectSelectWdg"/>
+    </element>
+    <element name="code"/>
+    <element name="description"/>
+      
+    <element name="rule">
+        <display class="TextAreaWdg">
+            <rows>10</rows>
+            <cols>40</cols>
+        </display>
+    </element>
+</edit>
+
+
+</config>
+
+

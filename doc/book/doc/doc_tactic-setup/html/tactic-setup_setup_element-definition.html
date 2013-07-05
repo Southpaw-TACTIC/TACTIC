@@ -1,0 +1,395 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Element Definition Widget</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_sidebar.html" title="Sidebar">
+      <link rel="prev" href="tactic-setup_setup_managing-sidebar.html" title="Managing the Sidebar">
+      <link rel="next" href="tactic-setup_views.html" title="Views Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_managing-sidebar.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_views.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Element Definition Widget">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_element-definition"></a>Element Definition Widget 
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>Editing the configuration of widgets is an important part of configuring TACTIC. Widgets
+            are drawing elements that display information on the TACTIC interface. Widgets can be
+            configured for a wide variety of applications. The Element Definition Widget allows for the
+            generic configuration of any widget using an easy to use interface directly in
+                    TACTIC.
+         </p>
+         <div class="mediaobject"><img src="media/1_element_definition_overview.png"></div>
+         <h5><a name="d0e3532"></a>Accessing the Element Definition Widget
+         </h5>
+         <p>The Element Definition Widget can be used to edit existing widgets or to create entirely
+                    new ones.  It can be accessed from a few locations. The common way to access the widget is
+                    by right clicking on the column header in the table. This will bring up the context
+                    menu:
+         </p>
+         <div class="mediaobject"><img src="media/2_element_definition_accessing_context_menu.png"></div>
+         <p>Selecting <span class="bold"><strong>Edit Column Definition</strong></span> opens a pop-up with the
+                    appropriate data filled in for the selected element. 
+         </p>
+         <div class="mediaobject"><img src="media/3_element_definition_edit_column_definition.png"></div>
+         <p>The "Create New Column" selection opens up an empty Element Definition pop-up so that new
+                    elements can be created.
+         </p>
+         <p>
+                    
+         </p>
+         <div class="mediaobject"><img src="media/4_element_definition_create_new_column.png"></div>
+         <p>
+                
+         </p>
+         <h5><a name="d0e3555"></a>Tool Bar
+         </h5>
+         <p>The tool bar can be found in the top right hand corner of this widget.</p>
+         <div class="mediaobject"><img src="media/5_element_definition_tool_bar.png"></div>
+         <p><span class="bold"><strong>Mode</strong></span>: This can be set to either <span class="bold"><strong>Form</strong></span> or <span class="bold"><strong>XML</strong></span>. The <span class="bold"><strong>Form</strong></span> selection is the default which displays the user interface for entering
+                    in attributes for this widget. The <span class="bold"><strong>XML</strong></span> section is for
+                    advanced usage which allows direct control of the XML definition of the widget.
+         </p>
+         <p><span class="bold"><strong>Save</strong></span>: This button will save the settings in the widget to
+                    the definition view.
+         </p>
+         <p><span class="bold"><strong>Gear</strong></span>: Clicking on the gear menu will display a number of
+                    other options available as described in the next section.
+         </p>
+         <h5><a name="d0e3586"></a>Gear Menu
+         </h5>
+         <p>The gear menu contains a number of operations.</p>
+         <div class="mediaobject"><img src="media/6_element_definition_gear_menu.png"></div>
+         <p><span class="bold"><strong>Save to Definition</strong></span>: This will save the current contents
+                    to the "definition" view. The definition view is a view where all widgets for a particular
+                    sType are defined.
+         </p>
+         <p><span class="bold"><strong>Save to Current View</strong></span>: Occasionally, it is desirable to
+                    save a view definition in the current view. This means it will not be available to other
+                    views, so this option should only be used if it is completely specific to this view.
+         </p>
+         <p>The next 3 are the standard Undo/Redo/Show Server Transaction Log menu options for
+                    convenience.
+         </p>
+         <h5><a name="d0e3603"></a>Widget Sections
+         </h5>
+         <p>The Element Definition Widget is broken into sections:</p>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">
+                  <p><span class="bold"><strong>Attributes</strong></span>: These are generic attributes to
+                                         describe the overall drawing of this element. All elements possess these same attributes:
+                  </p>
+                  <div class="itemizedlist">
+                     <ul class="itemizedlist">
+                        <li class="listitem">
+                           <p><span class="bold"><strong>Title</strong></span>: The title to be displayed
+                                                              in the column header for this widget. If it is empty, then TACTIC
+                                                              will use the element <span class="bold"><strong>Name</strong></span> for the
+                                                              title
+                           </p>
+                        </li>
+                        <li class="listitem">
+                           <p><span class="bold"><strong>Name</strong></span>: The name of the column in
+                                                              the database (autogenerated based on the title when creating a new
+                                                              column)
+                           </p>
+                        </li>
+                        <li class="listitem">
+                           <p><span class="bold"><strong>Width</strong></span>: The default width of the
+                                                              column
+                           </p>
+                        </li>
+                        <li class="listitem">
+                           <p><span class="bold"><strong>Enable Colors</strong></span>: Enables the cell
+                                                              colors as set under the Colors section.
+                           </p>
+                        </li>
+                     </ul>
+                  </div>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>Display</strong></span>: The display section defines the
+                                         configuration of the widget that will be used to display data.
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>Colors</strong></span>: Set the color for the cell for
+                                         specific cell values.
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>Definitions in Config (Advanced)</strong></span>: This is an
+                                         advanced display and typically used to find out where in the config hierarchy a
+                                         particular element definition is located.
+                  </p>
+               </li>
+            </ol>
+         </div>
+         <div class="mediaobject"><img src="media/7b_element_definition_widget_advanced.png"></div>
+         <p>For those familiar with the widget config table, the underlying drawing mechanism does not
+                    change. XML defined widgets still drive the drawing engine, however, the Element Definition
+                    widget makes it much easier to create new elements and edit existing ones. 
+         </p>
+         <h5><a name="d0e3657"></a>Display Section
+         </h5>
+         <p>Each element has uses a drawing widget which will determine how an element will draw
+                    itself. Each drawing widget contains a number of configuration attributes which alter the
+                    functionality of the widget. The attributes displayed depend on which widget is
+                    selected.
+         </p>
+         <p>The following widgets are predefined in TACTIC and can be selected in the drop
+                    down.
+         </p>
+         <div class="mediaobject"><img src="media/7_element_definition_widget_drop_down_selection_box.png"></div>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Empty</strong></span></p>
+                                            
+                     </td>
+                     <td>Specifies that no widget is to be used.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Raw Data</strong></span></p>
+                                            
+                     </td>
+                     <td>Displays the data "as is" from the database.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Formatted</strong></span></p>
+                                            
+                     </td>
+                     <td>Formats the display of the data. eg. -($1,234.00)</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Expression</strong></span></p>
+                                            
+                     </td>
+                     <td>Use a relative TACTIC Expression to calculate what to display for each
+                                                item. One expression defines what to display for the entire column.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Expression Value</strong></span></p>
+                                            
+                     </td>
+                     <td>Allow each item to be able to have an absolute TACTIC Expression to
+                                                calculate what to display. If there is an expression specified, the
+                                                resulting value will be displayed in the cell.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Button</strong></span></p>
+                                            
+                     </td>
+                     <td>Display an icon button that runs a JavaScript action when
+                                                clicked.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Link</strong></span></p>
+                                            
+                     </td>
+                     <td>Create a hyperlink button.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Gantt</strong></span></p>
+                                            
+                     </td>
+                     <td>Horizontal bar graph for dates.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Hidden Row</strong></span></p>
+                                            
+                     </td>
+                     <td>Toggle button to open a hidden row where another widget (element) is
+                                                displayed. For example a Table, Custom Layout, Edit Panel etc.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Drop Item</strong></span></p>
+                                            
+                     </td>
+                     <td>Column where items from another view can be dropped.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>Custom Layout</strong></span></p>
+                                            
+                     </td>
+                     <td>Use HTML to specify what to display.  Supports TACTIC Expressions and
+                                                MAKO.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>-- Class Path --</strong></span></p>
+                                            
+                     </td>
+                     <td>The path to a fully qualified Python class for a custom widget.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>Full descriptions of each widget can be found in the widget documentation.</p>
+         <p>When "-- Class Path --" is selected, the input field to specify the path to a fully
+                    qualified python class appears. Arbitrary python classes can be specified to create complete
+                    custom widgets that are seamlessly integrated into TACTIC. Refer to the developer section
+                    below for details on how TACTIC creates the widget element interface.
+         </p>
+         <p>When a widget or class path is selected, the available configuration attributes will be
+                    dynamically loaded.
+         </p>
+         <p>Each widget will define its own attributes that will configure what gets displayed.</p>
+         <h5><a name="d0e3787"></a>Edit Mode Tab
+         </h5>
+         <div class="mediaobject"><img src="media/8_element_definition_widget_edit_tab.png"></div>
+         <p>The edit section configures the edit-ability of this widget. It works very similarly to
+                    the display section except that the options are specific to edit inputs.
+         </p>
+         <h5><a name="d0e3795"></a>Edit Section
+         </h5>
+         <p>The widgets available here are:</p>
+         <div class="figure"><a name="d0e3798"></a><p class="title"><b>Figure&nbsp;1.&nbsp;Edit Mode Tab for the Element Definition Widget</b></p>
+            <div class="figure-contents">
+               <div class="mediaobject"><img src="media/9_element_definition_widget_edit_mode_widget_list.png" alt="Edit Mode Tab for the Element Definition Widget"></div>
+            </div>
+         </div>
+         <p><br class="figure-break"></p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>---</strong></span></p>
+                                                
+                     </td>
+                     <td>Specifies that no widget is to be used.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>Default</strong></span></p>
+                                                
+                     </td>
+                     <td>Use the default input widget.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>Text</strong></span></p>
+                                                
+                     </td>
+                     <td>Use the Text Widget as the input widget.</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>Select</strong></span></p>
+                                                
+                     </td>
+                     <td>Create a drop down selection menu and specify the selection options
+                                                    as the input widget.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>Calendar</strong></span></p>
+                                                
+                     </td>
+                     <td>Use the Calendar Input Widget</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>Calendar Time</strong></span></p>
+                                                
+                     </td>
+                     <td>Use the Calendar and Time Input Widget</td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                    
+                        <p><span class="bold"><strong>-- Class Path --</strong></span></p>
+                                                
+                     </td>
+                     <td>The path to a fully qualified Python class to a custom input
+                                                    widget.
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3872"></a>Advanced
+         </h5>
+         <p>This section displays the various definitions of this widget.</p>
+         <div class="mediaobject"><img src="media/10_element_definition_widget_edit_mode_advanced.png"></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_managing-sidebar.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_sidebar.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_views.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

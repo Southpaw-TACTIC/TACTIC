@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="category"/>
+    <element name="search_type"/>
+    <element name="view"/>
+    <element name="config">
+        <display class="XmlWdg"/>
+    </element>
+    <element name="login"/>
+</definition>
+
+<edit_definition>
+    <element name="category"/>
+    <element name="search_type"/>
+    <element name="view">
+        <display class="TextWdg"/>
+       <action class="pyasm.command.DatabaseAction">
+             <regexs>\s</regexs>
+       </action>
+    </element>
+    <element name="config" type='xml'>
+        <display class="TextAreaWdg">
+            <rows>20</rows>
+            <cols>90</cols>
+        </display>
+    </element>
+    
+    <element name="login"/>
+</edit_definition>
+
+
+<edit>
+    <element name="category"/>
+    <element name="search_type"/>
+    <element name="view"/>
+    <element name="config" type='xml'/>
+</edit>
+
+<table>
+    <element name="category"/>
+    <element name="search_type"/>
+    <element name="view"/>
+    <element name="config"/>
+    <element name="login"/>
+</table>
+
+<add_item>
+    <element name="search_type" width="150px"/>
+    <element name="view" width="100px"/>
+    <element name="config" width="400px"/>
+</add_item>
+
+
+<insert_one>
+    <element name="element_name"/>
+    <element name="type">
+        <display class="SelectWdg">
+            <values>text|description|number|date</values>
+        </display>
+    </element>
+    <element name="display_handler"/>
+    <element name="options"/>
+    <element name="action_handler"/>
+</insert_one>
+
+
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>view|search_type</column>
+        </display>
+    </element>
+</simple_filter>
+</config>

@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+    <element name="parent">
+        <display class="tactic.ui.table.ParentGroupTableElementWdg"/>
+    </element>
+
+
+
+    <element name="login"/>
+
+    <element name="context"/>
+    <element name="search_type">
+        <display class="pyasm.widget.SearchTypeElementWdg">
+            <filename>true</filename>
+        </display>
+    </element>
+    <element name="timestamp" type="datetime"/>
+    <element name="note">
+        <display class="WikiElementWdg"/>
+    </element>
+    <element name="status">
+        <display class="SimpleTableElementWdg"/>
+    </element>
+    <element name="access">
+        <display class="SimpleTableElementWdg"/>
+    </element>
+    <element name="project_code" title="project"/> 
+</definition>
+
+
+<summary layout='TableLayoutWdg'>
+    <element name="parent"/>
+    <element name="login"/>
+    <element name="context"/>
+    <element name="search_type" edit="false"/>
+    <element name="timestamp"/>
+    <element name="note"/>
+    <element name="status"/>
+    <element name="access"/>
+    <element name="project_code"/> 
+</summary>
+
+<my_notes layout='TableLayoutWdg'>
+    <element name="parent"/>
+    <element name="note"/>
+    <element name="login"/>
+    <element name="context"/>
+    <element name="timestamp"/>
+    <element name="project_code"/> 
+</my_notes>
+
+<edit>
+    
+    <element name="context"/>
+    <element name="note">
+        <display class="TextAreaWdg">
+            <rows>10</rows>
+            <cols>40</cols>
+        </display>
+    </element>
+    <element name="status">
+        <display class="SelectWdg">
+            <setting>note_status</setting>
+        </display>
+    </element>
+     <element name="access">
+        <display class="SelectWdg">
+            <values>private|public</values>
+            <empty>true</empty>
+        </display>
+    </element>
+</edit>
+
+
+<publish>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+ 
+    <element name="Attachment">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="UploadAction"/>
+    </element>
+
+</publish>
+
+<add_item>
+    <element name="login" width="100px"/>
+    
+    <element name="context" width="100px"/>
+    <element name="search_type" width="100px"/>
+    <element name="note" width="300px"/>
+    <element name="status" width="100px"/>
+    <element name="project_code" width="100px"/>
+</add_item>
+
+
+
+</config>
+
+

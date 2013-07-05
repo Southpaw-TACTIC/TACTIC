@@ -1,0 +1,731 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+
+    <element name="code"/>
+    <element name="description"/>
+    <element name='sequence_code'/>
+
+
+    <element name="detail" edit="false">
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="shot">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+
+    <element name="frames">
+        <display class="pyasm.prod.web.FrameRangeWdg"/>
+    </element>
+
+
+    <element name='tc_frame_start' title='Start Frame'/>
+    <element name='tc_frame_end' title='End Frame'/>
+
+
+    <element name="status">
+        <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+
+    <element name="scan_status">
+        <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+
+    <element name="complexity"/>
+    <element name="priority"/>
+
+
+
+    <element name="submit" edit="false">
+        <display class="SubmissionLinkTableElement"/>
+    </element>
+
+    <!-- test edit functionality -->
+    <element name="preview" edit="true"/>
+    <element name="notes" edit="false"/>
+
+ 
+    <element name="task_edit"/>
+    <element name="task_status"/>
+    <element name='task_list' edit="false"/>
+    <element name='timestamp'/>
+
+    <element name="pipeline_code" title="Pipeline"/>
+
+
+<!--
+    <element name="asset_instance">
+        <display class="tactic.ui.table.DropElementWdg"/>
+        <action class="tactic.ui.table.DropAssetOnShotCbk"/>
+    </element>
+-->
+    <element name="asset_instance">
+        <display class="tactic.ui.table.DropElementWdg">
+            <css_background-color>#425952</css_background-color>
+            <instance_type>prod/shot_instance</instance_type>
+            <accepted_drop_type>prod/asset</accepted_drop_type>
+        </display>
+        <!--
+      <action class="tactic.ui.table.DropElementAction">
+        <instance_type>prod/shot_instance</instance_type>
+      </action>-->
+    </element>
+
+    <element name="input" edit="false" sortable="false">
+        <display class="tactic.ui.cgapp.LoaderElementWdg">
+            <search_type>prod/shot</search_type>
+            <mode>input</mode>
+        </display>
+    </element>
+
+    <element name="output" edit="false" sortable="false">
+        <display class="tactic.ui.cgapp.LoaderElementWdg">
+            <search_type>prod/shot</search_type>
+            <mode>output</mode>
+        </display>
+    </element>
+
+    <element name="discussion" edit="false">
+       <display class="pyasm.widget.DiscussionWdg">
+           <sticky>new</sticky>
+       </display>
+   </element> 
+    
+
+
+
+</definition>
+
+
+
+<table layout="TableLayoutWdg">
+    <element name="preview"/>
+    <element name="sequence_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="frames"/>
+    <element name="pipeline_code" title="Pipeline"/>
+</table>
+
+
+
+
+<artist>
+    <element name="general_checkin"/>
+    <element name="shot" edit="false">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+
+  <element name="task" edit="false">
+      <display class="pyasm.widget.SObjectTaskTableElement">
+          <width>280</width>
+          <bid_edit>false</bid_edit>
+          <process_filter>shot_process_filter</process_filter>
+          <simple_date>true</simple_date>
+      </display>
+  </element>
+
+
+  <element name="discussion">
+      <display class="pyasm.widget.DiscussionWdg">
+          <sticky>new</sticky>
+          <append_setting>notes_prod_context</append_setting>
+      </display>
+  </element>
+
+
+</artist>
+
+
+
+<!-- to display this sobject in a simple list -->
+<list>
+
+    <element name="select_key">
+        <display class="pyasm.widget.CheckboxColWdg">
+        </display>
+    </element> 
+
+  <element name="preview">
+    <display class="ThumbWdg">
+      <icon_size>60</icon_size>
+    </display>
+  </element>
+
+  <element name="code"/>
+</list>
+
+
+
+
+<supe layout="TableWdg">
+    <element name="detail">
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="shot">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+
+    <element name="task" edit="false">
+        <display class="pyasm.widget.SObjectTaskTableElement">
+            <width>280</width>
+            <supe>true</supe>
+            <bid_edit>true</bid_edit>
+            <process_filter>shot_process_filter</process_filter>
+        </display>
+    </element>
+
+    <element name="discussion">
+        <display class="pyasm.widget.DiscussionWdg">
+            <sticky>new</sticky>
+            <append_setting>notes_prod_context</append_setting>
+        </display>
+    </element>
+
+</supe>
+
+
+<!-- notes for preproduction -->
+<preprod_notes layout="TableWdg">
+
+  <element name="shot">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+  </element>
+
+  <element name="notes">
+    <display class="DiscussionWdg">
+        <setting>notes_preprod_context</setting>
+        <scroll>false</scroll>
+        <include_submission>true</include_submission>
+    </display>
+  </element>
+
+</preprod_notes>
+
+
+
+<!-- notes for production -->
+<prod_notes layout="TableWdg">
+
+  <element name="shot">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+  </element>
+
+  <element name="notes">
+    <display class="DiscussionWdg">
+        <append_setting>notes_prod_context</append_setting>
+        <scroll>false</scroll>
+        <include_submission>true</include_submission>
+    </display>
+  </element>
+
+</prod_notes>
+
+
+
+<!-- Interface to manage the Shot List -->
+<manage layout="TableLayoutWdg">
+    <element name="preview"/>
+    <element name="sequence_code" title="Seq"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="pipeline_code" title="Pipeline"/>
+    <element name="frames"/>
+    <element name="complexity"/>
+    <element name="sort_order"/>
+    <element name="status"/>
+    <element name="submit"/>
+    <element name="task_edit"/>
+</manage>
+
+
+
+<summary layout="TableWdg">
+
+    <element name="detail"/>
+
+    <element name="preview">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description">
+        <display class="WikiElementWdg"/>
+    </element>
+    <element name="pipeline_code" title="Pipeline"/>
+
+
+    <element name="frames">
+        <display class="pyasm.prod.web.FrameRangeWdg"/>
+    </element>
+
+
+    <element name="status">
+        <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+
+    <element name="scan_status">
+        <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+
+    <element name="complexity"/>
+
+
+
+    <element name="task_status"/>
+
+    <element name="completion" edit="false"/>
+
+</summary>
+
+
+<!-- used in asset detail -->
+<!-- used in shot detail to display status summary of asset -->
+<summary_small>
+    
+    <element name="detail"/>
+   
+    <element name="preview">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+
+    <element name="shot">
+        <display class="pyasm.prod.web.CondensedShotInfoWdg"/>
+    </element>
+
+ 
+    <element name="task_status" edit="false">
+        <display class="ParallelStatusWdg">
+            <label_format>small</label_format>
+            <bar_height>1</bar_height>
+            <report>false</report>
+        </display>
+    </element>
+
+</summary_small>
+
+
+
+<!-- used in the project management tab to display completion -->
+<completion layout="TableWdg">
+    <element name="preview">
+        <display class="ThumbWdg">
+            <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+
+    <element name="description"/>
+
+    <element name="completion"/>
+
+</completion>
+
+
+
+<!-- for the layout page, to add asset instances to shots -->
+<layout>
+    <element name="prod_shot">
+        <display class="pyasm.prod.web.ShotCheckboxWdg">
+            <persist_on_submit>true</persist_on_submit>
+        </display> 
+    </element>
+
+    <element name="instances">
+        <display class="HiddenRowToggleWdg">
+            <title_icon>Contents</title_icon>
+            <dynamic>pyasm.prod.web.ShotInstanceListWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="detail">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.ShotDetailWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="images">
+        <display class="ThumbWdg">
+        <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+    <element name="parent_code"/>
+
+<!--
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumShotInstancesWdg"/>
+    </element>
+-->
+</layout>
+
+<!-- for the layout page when selecting a parent -->
+<layout_left>
+    <element name="select_shot">
+        <display class="pyasm.prod.web.SObjectCheckboxWdg"/>
+    </element>
+
+    <element name="images">
+        <display class="ThumbWdg">
+        <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+</layout_left>
+
+<layout_right>
+    <element name="select_parent">
+        <display class="pyasm.prod.web.SObjectCheckboxWdg"/>
+    </element>
+
+    <element name="instances">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.ShotParentDependencyWdg</dynamic>
+        </display>
+    </element>
+
+   <element name="images">
+        <display class="ThumbWdg">
+        <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+    <element name="parent_code"/>
+</layout_right>
+
+<task_planner>
+    <element name="prod_shot">
+        <display class="pyasm.prod.web.ShotCheckboxWdg">
+            <persist_on_submit>true</persist_on_submit>
+        </display> 
+    </element>
+
+    <element name="tasks">
+        <display class="HiddenRowToggleWdg">
+            <title_icon>Contents</title_icon>
+            <dynamic>pyasm.prod.web.TaskListWdg</dynamic>
+        </display>
+    </element>
+
+<!--
+    <element name="detail">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.ShotDetailWdg</dynamic>
+        </display>
+    </element>
+-->
+
+    <element name="images">
+        <display class="ThumbWdg">
+        <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+
+    <element name="number_of_tasks">
+        <display class="pyasm.prod.web.NumTasksWdg"/>
+    </element>
+
+</task_planner>
+
+
+
+
+
+<!-- used in Layout Summary Tab -->
+<layout_summary>
+
+    <element name="detail">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+    <element name="task breakdown">
+        <display class="pyasm.prod.web.TasksInSObjectWdg"/>
+    </element>
+    <element name="assigned assets">
+        <display class="pyasm.prod.web.AssetsInShotWdg"/>
+    </element>
+
+</layout_summary>
+
+<!-- used in Layers Tab -->
+<animation default="table">
+
+  <element name="detail">
+      <display class="pyasm.prod.web.ShotInfoWdg"/>
+  </element>
+  <!--
+  <element name="render">
+      <display class="pyasm.prod.web.ShotRenderTableElementWdg"/>
+  </element>
+  -->
+  <element name="task">
+    <display class="pyasm.widget.SObjectTaskTableElement"/>
+  </element>
+
+  <element name="discussion">
+    <display class="DiscussionWdg"/>
+  </element>
+</animation>
+
+<!-- shows the shot as needed to be seen by the compositing tab -->
+<composite layout='TableLayoutWdg'>
+    <element name="detail"/>
+
+
+    <element name="shot">
+        <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+
+  <element name="input_layers">
+      <display class="pyasm.prod.web.LayerTableElementWdg"/>
+  </element>
+
+
+  <element name="discussion">
+      <display class="pyasm.widget.DiscussionWdg">
+          <sticky>new</sticky>
+      </display>
+  </element>
+
+</composite>
+
+
+<!-- display in the loader with Maya -->
+<load default="table" layout='TableWdg'>
+
+    <element name="preview"/>
+
+    <element name="checkin">
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>pyasm.prod.web.ShotHistoryWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="frames"/>
+    <element name="description"/>
+
+    <element name="input"/>
+    <element name="output"/>
+</load>
+
+<!-- display to load instances -->
+<instance_load default="table" layout='TableWdg'>
+
+    <element name="preview"/>
+
+    <element name="instances" width='1%'>
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+            <search_type>prod/shot_instance</search_type>
+            <view>load</view>
+            <mode>simple</mode>
+            <do_search>true</do_search>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+    <element name="frames"/>
+<!--
+    <element name="input"/>
+    <element name="output"/>
+-->
+</instance_load>
+
+
+
+
+<insert>
+    
+   <element name="preview_insert"/>
+   <element name="sequence_code"/>
+
+   <element name="code">
+       <action class="pyasm.command.DatabaseAction">
+             <regexs>^\d|\W</regexs>
+       </action>
+   </element>
+
+   <element name="description"/>
+
+   <element name="frames">
+     <display class="pyasm.prod.web.FrameInputWdg"/>
+     <action class="pyasm.prod.web.FrameAction"/>
+   </element>
+
+   <element name="sort_order"/>
+
+   <element name="status">
+     <display class="SelectWdg">
+         <setting>shot_status</setting>
+         <empty>True</empty>
+     </display>
+   </element>
+
+   <element name="complexity">
+       <display class="SelectWdg">
+           <values>5|4|3|2|1</values>
+           <empty>true</empty>
+       </display>
+   </element>
+
+   <element name="pipeline_code" title="Pipeline">
+       <!--
+     <display class="SelectWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <query_filter>"search_type" like '%/shot'</query_filter>
+        <empty>true</empty>
+    </display>-->
+  </element>
+
+</insert>
+
+
+<edit>
+ 
+  <element name="sequence_code"/>
+  <element name="code"/>
+  <element name="description"/>
+
+  <element name="status">
+    <display class="SelectWdg">
+        <empty>true</empty>
+        <setting>shot_status</setting>
+    </display>
+  </element>
+
+    <element name="scan_status">
+        <display class="SelectWdg">
+            <empty>true</empty>
+            <setting>shot_scan_status</setting>
+        </display>
+    </element>
+
+
+  <element name="frames">
+    <display class="pyasm.prod.web.FrameInputWdg"/>
+    <action class="pyasm.prod.web.FrameAction"/>
+  </element>
+
+    <element name="complexity">
+        <display class="SelectWdg">
+            <values>5|4|3|2|1</values>
+            <empty>true</empty>
+        </display>
+    </element>
+
+
+  <element name="sort_order"/>
+
+  <element name="pipeline_code" title="Pipeline">
+      <!--
+    <display class="SelectWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <query_filter>"search_type" like '%/shot'</query_filter>
+        <empty>true</empty>
+    </display>-->
+  </element>
+
+</edit>
+
+<edit_definition>
+   <element name="asset_instance">
+      <action class="tactic.ui.table.DropElementAction">
+        <instance_type>prod/shot_instance</instance_type>
+      </action>
+   </element>
+</edit_definition>
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='image'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context_expr>@GET(sthpw/task.process)</context_expr>
+        </display>
+        <action class="NullAction"/>
+    </element>
+</publish>
+
+<add_item>
+   <element name="sequence_code" title="Sequence" width="100px"/>
+   <element name="code" width="100px"/>
+   <element name="description" width="300px"/>
+   <element name='tc_frame_start' title='Start Frame' width="50px"/>
+   <element name='tc_frame_end' title='End Frame' width="50px"/>
+   <element name="status" width="100px"/>
+   <element name="complexity" width="50px"/>
+   <element name="pipeline_code" title="Pipeline" width="100px"/>
+</add_item>
+
+
+
+
+<planner_asset>
+    <element name="preview" width='80'/>
+    <element name="code" width='150'/>
+    <element name="asset_instance" width='300'/>
+</planner_asset>
+
+<search_shot_loader>
+  <element name='Main Filter'>
+    <display class='tactic.ui.filter.ShotFilterWdg'>
+      <prefix>shot_filter</prefix>
+      <search_type>prod/shot</search_type>
+      <sequence_search_type>prod/sequence</sequence_search_type>
+      
+    </display>
+</element>
+    <element name='Custom'>
+          <display class='tactic.ui.filter.GeneralFilterWdg'>
+            <prefix>custom</prefix>
+            <search_type>prod/shot</search_type>
+            <mode>custom</mode>
+            <custom_filter_view></custom_filter_view>
+          </display>
+        </element>
+</search_shot_loader>
+
+</config>
+
+
+
+
+

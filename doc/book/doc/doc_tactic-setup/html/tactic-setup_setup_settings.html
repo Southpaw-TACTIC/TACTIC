@@ -1,0 +1,243 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Settings</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_setup_advanced-project-setup.html" title="Advanced Project Setup">
+      <link rel="prev" href="tactic-setup_setup_script-editor.html" title="Script Editor">
+      <link rel="next" href="tactic-setup_setup_advanced-configuration.html" title="Advanced Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_script-editor.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_advanced-configuration.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Settings">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_settings"></a>Settings
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="section" title="Modify Project Settings">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_modify-project-settings"></a>Modify Project Settings 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Use the Project Settings tab to control the various options that exist within TACTIC. Most
+               project settings are defined to work with the widgets that use them and when defined, the
+               "Type" property specifies how the "Value" property is delivered to the widget. The different
+                       types of settings are outlined below.
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>String - A single string argument, this may be a true/false to define how a widget
+                                        is displayed (i.e. hide a specific aspect)
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Sequence - A sequence of items to choose from for entry (i.e.
+                                        review|revise|complete)
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Map - A map is a sequence in which each item has a label and name assignment. This
+                                        accommodates a separation between what is shown in a drop-down [name] vs what is
+                                        entered into the database [label] (i.e. rvw:Review|rev:Revise|com:Complete)
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>The overall items in the sequence or map are separated with a pipe '|' character and
+                              the value:label are separated with a Colin ':' character
+               </p>
+            </div>
+            <p>Most settings are types of "sequences" that appear in TACTIC as a drop-down. For example,
+                       the notes_dailies_context setting defines the different kinds of context you can use in
+                       entering notes for dailies. 
+            </p>
+            <p>To insert a project setting, click the insert button in the view.</p>
+            <p><span class="inlinemediaobject"><img src="media/project-settings-view.png"></span></p>
+            <p>The properties for the project setting search type are listed below:</p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="100px">
+                     <col width="350px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                   
+                           <p><span class="bold"><strong>Description</strong></span></p>
+                                               
+                        </td>
+                        <td>A description of the purpose of the project settings</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                   
+                           <p><span class="bold"><strong>Key</strong></span></p>
+                                               
+                        </td>
+                        <td>This property serves as the 'code' identifier of the setting</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                   
+                           <p><span class="bold"><strong>Value</strong></span></p>
+                                               
+                        </td>
+                        <td>The Values for the setting. </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                   
+                           <p><span class="bold"><strong>Type</strong></span></p>
+                                               
+                        </td>
+                        <td>The 'type' of data definition of the value data. This tells the widget
+                                                   begin delivered the value how the data should be displayed. 
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                   
+                           <p><span class="bold"><strong>Search Type</strong></span></p>
+                                               
+                        </td>
+                        <td>A search type to associate the project setting to, this help further
+                                                   filter the settings.
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>Any widgets that make use of a new project setting not yet defined in TACTIC will prompt
+                       the user to insert data for a new project setting.
+            </p>
+            <p><span class="bold"><strong>Commonly Project Setting Examples</strong></span></p>
+            <p>This table lists the some commonly used project settings in TACTIC.</p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="150px">
+                     <col width="150px">
+                     <col width="80px">
+                     <col width="80px">
+                  </colgroup>
+                  <thead>
+                     <tr>
+                        <th><span class="bold"><strong>key</strong></span></th>
+                        <th>Description</th>
+                        <th>Default Value</th>
+                        <th>Type</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>flash_output_format</strong></span></td>
+                        <td>Output format for a Flash project, swf OR mov</td>
+                        <td>swf</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>fps</strong></span></td>
+                        <td>Frames per second</td>
+                        <td>24</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>handle_texture_dependency</strong></span></td>
+                        <td> Handle texture dependencies when performing a checkin in a 3D
+                                                   application. Accepted values are 'true', 'false', 'optional'. 
+                        </td>
+                        <td>true</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>notes_dailies_context</strong></span></td>
+                        <td>Notes context used in the Dailies tab</td>
+                        <td>anim|effects|model</td>
+                        <td>sequence</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>shot_hierarchy</strong></span></td>
+                        <td>Shot hierarchy structure. Accepted values are 'episode_sequence' or
+                                                   'sequence'.
+                        </td>
+                        <td>sequence</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>bin_label</strong></span></td>
+                        <td>Label for a Bin</td>
+                        <td>n/a</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>bin_type</strong></span></td>
+                        <td>Type of Bin</td>
+                        <td>n/a</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>web_file_size</strong></span></td>
+                        <td>dimension of the web type file size, e.g. 640x480</td>
+                        <td>640x480</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>thumbnail_protocol</strong></span></td>
+                        <td>The protocol through which the link of a thumbnail is opened. Accepted
+                                                   values are 'file', 'http'.
+                        </td>
+                        <td>http</td>
+                        <td>string</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>versionless_mode</strong></span></td>
+                        <td>The global setting for copy or symlink for versionless check-ins</td>
+                        <td>copy</td>
+                        <td>string</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_script-editor.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_setup_advanced-project-setup.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_advanced-configuration.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

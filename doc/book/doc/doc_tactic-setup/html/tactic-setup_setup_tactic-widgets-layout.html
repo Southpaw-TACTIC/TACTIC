@@ -1,0 +1,1088 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Layout Widgets</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_setup_tactic-widgets.html" title="TACTIC Widgets">
+      <link rel="prev" href="tactic-setup_setup_tactic-widgets-common.html" title="Common Widgets">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_tactic-widgets-common.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Layout Widgets">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_tactic-widgets-layout"></a>Layout Widgets
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="section" title="View Panel">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_view-panel-wdg"></a>View Panel
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="mediaobject"><img src="media/1_view_panel_overview.png"></div>
+            <div class="simplesect" title="Description">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11010"></a>Description
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The View Panel is a composite widget which binds together a Table Layout Widget and a
+                  Search Widget. The Search Widget is a searching mechanism that retrieves items and
+                  transfers them to a Table Layout Widget to draw. The View Panel Widget is used in most
+                              of TACTIC's predefined views.
+               </p>
+            </div>
+            <div class="simplesect" title="Info">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11015"></a>Info
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Name</strong></span></p>
+                                                      
+                           </td>
+                           <td>View Panel</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Class</strong></span></p>
+                                                      
+                           </td>
+                           <td>ViewPanelWdg</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                      
+                           </td>
+                           <td>2.5.0 +</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                      
+                           </td>
+                           <td>none</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Implementation">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11059"></a>Implementation
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The View Panel widget makes use of the TableLayoutWdg capabilities. The views
+                              available to the View Panel are identical to that of the Table Layout Widget.
+               </p>
+            </div>
+            <div class="simplesect" title="Options">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11064"></a>Options
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_gear</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show the gear menu.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_search</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show the search box.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_search_limit</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show the search limit.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_insert</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show the insert button.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>insert_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>Specify the path to a custom insert view.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>edit_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>Specify the path to a custom edit view.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_commit_all</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show the commit all button.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_refresh</strong></span></p>
+                                                      
+                           </td>
+                           <td>Display the refresh button on the shelf.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_row_select</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to show row_selection.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>popup</strong></span></p>
+                                                      
+                           </td>
+                           <td>Pop the view up in a pop-up window.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>layout</strong></span></p>
+                                                      
+                           </td>
+                           <td><span class="bold"><strong>default</strong></span>, <span class="bold"><strong>tile</strong></span>, <span class="bold"><strong>static</strong></span>, <span class="bold"><strong>raw</strong></span>, <span class="bold"><strong>fast_table</strong></span>, <span class="bold"><strong>old_table</strong></span></td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>search_type</strong></span></p>
+                                                      
+                           </td>
+                           <td>The type that this widget works with</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>view</strong></span></p>
+                                                      
+                           </td>
+                           <td>The TACTIC name for the view. e.g. admin.test_asset_tracking</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>do_initial_search</strong></span></p>
+                                                      
+                           </td>
+                           <td>Run the search on loading of the view.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>simple_search_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>Specify the simple search view.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>custom_filter_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>View for custom filters. Defaults to "custom_filter".</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>process</strong></span></p>
+                                                      
+                           </td>
+                           <td>The process which is applicable in the UI when load view is
+                                                          used.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>mode</strong></span></p>
+                                                      
+                           </td>
+                           <td><span class="bold"><strong>simple</strong></span>, <span class="bold"><strong>insert</strong></span></td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>parent_key</strong></span></p>
+                                                      
+                           </td>
+                           <td>Provides a parent item to filter in the search.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>search_key</strong></span></p>
+                                                      
+                           </td>
+                           <td>Provides the starting search key.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>element_names</strong></span></p>
+                                                      
+                           </td>
+                           <td>Provides a list of column names (ie. "preview,name,description") for
+                                                          the view.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>schema_default_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>(INTERNAL) flag to show whether this is generated straight from the
+                                                          schema.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>order_by</strong></span></p>
+                                                      
+                           </td>
+                           <td>The column name to order ascending by.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>search_view</strong></span></p>
+                                                      
+                           </td>
+                           <td>(INTERNAL) View for custom searches.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>width</strong></span></p>
+                                                      
+                           </td>
+                           <td>Set the default width of the table</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>expression</strong></span></p>
+                                                      
+                           </td>
+                           <td>Use an expression for the search. The expression must return
+                                                          items.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>filter</strong></span></p>
+                                                      
+                           </td>
+                           <td>JSON data structure representing the settings for SearchWdg</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Advanced">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11335"></a>Advanced
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>Often, the ViewPanelWdg is defined from a side bar link. It can be defined by XML as
+                              follows
+               </p><pre class="screen">&lt;element name='summary'&gt;
+  &lt;display class='tactic.ui.panel.ViewPanelWdg'&gt;
+    &lt;search_type&gt;sthpw/task&lt;/search_type&gt;
+    &lt;view&gt;task_summary&lt;/view&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+         </div>
+         <div class="section" title="Custom Layout">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_custom-layout-wdg"></a>Custom Layout
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="mediaobject"><img src="media/1_custom-layout_tickets-welcome.png"></div>
+            <div class="simplesect" title="Description">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11350"></a>Description
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The Custom Layout Widget is a simple tool which opens up an incredible amount of
+                              customizable interface flexibility and integration from within the TACTIC UI. This
+                              widget provides a container in the web page which supports embedding of HTML code
+                              including TACTIC Widgets, Expressions and Behaviours. This allows development of complex
+                              widgets similar to the standard widgets delivered with TACTIC.
+               </p>
+               <p>With this, the following examples can be achieved:</p>
+               <div class="itemizedlist">
+                  <ul class="itemizedlist">
+                     <li class="listitem">
+                        <p>Custom reports can be made which include dynamic TACTIC Expressions presented
+                                               in a customized web page design.
+                        </p>
+                     </li>
+                     <li class="listitem">
+                        <p>Views can be assembled using a combination of TACTIC widgets along with
+                                               regular HTML elements.
+                        </p>
+                     </li>
+                     <li class="listitem">
+                        <p>Embeddable web code such as Google maps, timezone clocks, web mail clients
+                                               etc. can be embedded in the TACTIC interface.
+                        </p>
+                     </li>
+                  </ul>
+               </div>
+            </div>
+            <div class="simplesect" title="Info">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11367"></a>Info
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Name</strong></span></p>
+                                                      
+                           </td>
+                           <td>CustomLayoutWdg</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Class</strong></span></p>
+                                                      
+                           </td>
+                           <td>tactic.ui.panel.CustomLayoutWdg</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                      
+                           </td>
+                           <td>2.5.0 +</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                      
+                           </td>
+                           <td>none</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Implementation">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11411"></a>Implementation
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The Custom Layout Widget in its simplest form is a delivery mechanism for HTML code.
+                              The following "Hello World" example below demonstrates this.
+               </p>
+               <div class="mediaobject"><img src="media/2_custom_layout_hello_world_view.png"></div><pre class="screen">&lt;element name="hello_world"&gt;
+  &lt;display class="tactic.ui.panel.CustomLayoutWdg"&gt;
+    &lt;html&gt;
+       &lt;h2&gt;Hello World&lt;/h2&gt;
+    &lt;/html&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><p>Where a large part of the considerations for usage of a Custom Layout is where it will
+                              be embedded and how it will get retrieved. There are a few ways to implement this
+                              widget:
+               </p>
+               <div class="itemizedlist">
+                  <ul class="itemizedlist">
+                     <li class="listitem">
+                        <p>In a cell (element) in a TableLayoutWdg (Example 1a). </p>
+                     </li>
+                     <li class="listitem">
+                        <p>In the widget config, then called from a link in the sidebar (Example
+                                               1b).
+                        </p>
+                     </li>
+                     <li class="listitem">
+                        <p>In the widget config, than called from a Custom Script (Javascript) (Example
+                                               1c).
+                        </p>
+                     </li>
+                  </ul>
+               </div>
+               <p>Once a delivery method has been decided, it also needs to be decided if the custom
+                              Layout will need to evaluate based on an item being passed in as the parent or 'starting
+                              point' (technically speaking a 'relative' expression). For example, to use a
+                              CustomLayout to display a report for a item, the dynamic data in the CustomLayout needs
+                              to be derived starting from the specified item.
+               </p>
+               <p>Taking advantage of relative expressions is usually accessed/assumed through the
+                              search_key value for the widget. This is most often done through TACTIC Expressions
+                              embedded in the HTML code or, through JavaScript code interacting with the CustomLayout.
+                              Either way, the search_key value must me passed into the widget for relative behavior.
+                              A simple example is that a button in a table can pass in the search key based on the
+                              item (row) it was clicked for.   This would allow for loading of a custom dashboard
+                              which shows all information pertaining to that item.
+               </p>
+               <p><span class="bold"><strong>Embedded Expressions</strong></span>
+                          
+               </p>
+               <p>Expressions can be embedded in the Custom Layout through usage of a [expr] style tag.
+                              This Tag allows for embedding of expressions that are evaluated before the HTML which
+                              provide the resulting values into the HTML code. 
+               </p>
+               <p>The following example displays the task status of the modelling process.</p><pre class="screen">&lt;element name="hello_world"&gt;
+ &lt;display class="tactic.ui.panel.CustomLayoutWdg"&gt;
+  &lt;html&gt;
+   &lt;div&gt;
+     Model Status: [expr]@GET(sthpw/task['process', 'model'].status)[/expr]
+   &lt;/div&gt;
+  &lt;/html&gt;
+ &lt;/display&gt;
+&lt;/element&gt;</pre><p><span class="bold"><strong>Embedded Widgets</strong></span></p>
+               <p>The CustomLayoutWdg provides full support for embedding of TACTIC Widgets. For example
+                              TableLayoutWdg and EditWdg can placed in a CustomLayout. This for allows, for example,
+                              the ability to create a 'dashboard' which can show multiple Tables, CustomLayouts HTML,
+                              etc.
+               </p><pre class="screen">&lt;element name="hello_widget"&gt;
+  &lt;display class="tactic.ui.table.CustomLayoutwdg"&gt;
+    &lt;html&gt;
+      &lt;element name="tasks"&gt;
+        &lt;display class="TableLayoutWdg"&gt;
+          &lt;search_type&gt;sthpw/task&lt;/search_type&gt;
+          &lt;view&gt;task_list&lt;/view&gt;
+          &lt;mode&gt;simple&lt;/mode&gt;
+          &lt;do_search&gt;true&lt;/do_search&gt;
+<span class="bold"><strong>          &lt;search_key&gt;{@GET(state.search_key)}&lt;/search_key&gt;</strong></span>
+        &lt;/display&gt;
+      &lt;/element&gt;
+    &lt;/html&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+                  <h3 class="title">Note</h3>
+                  <p>In the example above, the &lt;search_key&gt; option is automatically being passed the
+                                     search_key from the state of the overall Custom Layout.  What this will do is pass
+                                     in the searhc key to the table which will automatically filter it to only show items
+                                     related to the search_key (parent).  For example in a dashboard for a shot, the
+                                     tasks table will only display tasks related to the shot as opposed to all tasks in
+                                     the system.
+                  </p>
+               </div>
+               <p><span class="bold"><strong>Embedded Behaviours</strong></span></p>
+               <p>The Custom Layout also supports usage of the TACTIC JavaScript Behaviour system. With
+                              this, elements in the Custom Layout can contain embedded behaviours which allow for
+                              creation of custom interfaces and utilities. This opens up full a connection with the
+                              interface, clientAPI and Java Applet.
+               </p><pre class="screen">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;config&gt;
+  &lt;hello_world&gt;
+    &lt;html&gt;
+      &lt;span&gt;This is a button:&lt;/span&gt;
+      &lt;input type='button' class='spt_button1' value='Press Me'/&gt;
+    &lt;/html&gt;
+    &lt;behavior class='spt_button1'&gt;{
+     "type": "click_up",
+     "cbjs_action": '''
+         alert('Hello World');
+     '''
+    }&lt;/behavior&gt;
+  &lt;/hello_world&gt;
+&lt;/config&gt;</pre></div>
+            <div class="simplesect">
+               <div class="titlepage"></div>
+               <h4><a name="d0e11468"></a>Options
+               </h4>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>view</strong></span></p>
+                                                      
+                           </td>
+                           <td>The view to retrieve from the Widget Config. This is not required if
+                                                          the HTML option is supplied.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>html</strong></span></p>
+                                                      
+                           </td>
+                           <td>This option is where the HTML code is embedded.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>search_type</strong></span></p>
+                                                      
+                           </td>
+                           <td>The Search Type the CustomLayoutWdg applies to (if
+                                                          applicable)
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Examples">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11502"></a>Examples
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <h5><a name="d0e11505"></a>Example 1a
+               </h5>
+               <p>This can be stored in the definition view and called as an element by name
+                              (&lt;element name="hello_world"/&gt;) or, directly in the view config. 
+               </p>
+               <div class="mediaobject"><img src="media/3_custom_layout_hello_world_config.png"></div>
+               <p>If added to the definition, it will be available as a Widget Column in the <span class="bold"><strong>Column Manager</strong></span>. 
+               </p>
+               <div class="mediaobject"><img src="media/4_custom_layout_hello_world_column_manager.png"></div><pre class="screen">&lt;config&gt;
+  &lt;definition&gt;
+    &lt;element name="preview"/&gt;
+    &lt;element name="code"/&gt;
+
+    &lt;element name="hello_world"&gt;
+      &lt;display class="tactic.ui.panel.CustomLayoutWdg"&gt;
+        &lt;html&gt;
+           &lt;h2&gt;Hello World&lt;/h2&gt;
+        &lt;/html&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+
+  &lt;/definition&gt;
+&lt;/config&gt;</pre><h5><a name="d0e11522"></a>Example 1b
+               </h5>
+               <p>The following example shows how to create a sidebar link which loads a Custom Layout
+                              view defined in the Widget Config.
+               </p>
+               <div class="orderedlist">
+                  <ol class="orderedlist" type="1">
+                     <li class="listitem">
+                        <p>In the Widget Config enter the following hello_world view. This can be called
+                                               from The Javascript code and sent to a popup.
+                        </p>
+                        <div class="mediaobject"><img src="media/5_custom_layout_hello_world.png"></div>
+                     </li>
+                     <li class="listitem">
+                        <p>The link can be configured in the Project Views Manager. Under the action
+                                               menu, select "New Link". In the pop-up, Fill the options as shown in the
+                                               following image.
+                        </p>
+                        <div class="mediaobject"><img src="media/6_custom_layout_example1_manage_my_views.png"></div>
+                     </li>
+                     <li class="listitem">
+                        <p>Once the link is saved, select it in the Preview of Side Bar to load its
+                                               options into the Element Detail panel on the right. Once loaded switch the mode
+                                               to 'Advanced' and double check that the XML config contains the
+                                               following:
+                        </p><pre class="screen">&lt;element name="hello_world" title="Hello World" icon="APPROVED" state="" is_visible="on"&gt;
+  &lt;display class="LinkWdg"&gt;
+    &lt;class_name&gt;tactic.ui.panel.CustomLayoutWdg&lt;/class_name&gt;
+    &lt;view&gt;example01&lt;/view&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><div class="mediaobject"><img src="media/9_custom_layout_example_1b_xml.png"></div>
+                     </li>
+                  </ol>
+               </div>
+               <h5><a name="d0e11547"></a>Example 1c
+               </h5>
+               <p>The following example shows how to create a CustomLayoutWdg View in the widget config
+                              then, call it from the Javascript Editor
+               </p>
+               <div class="orderedlist">
+                  <ol class="orderedlist" type="1">
+                     <li class="listitem">
+                        <p>In the Widget Config enter the following hello_world view. This can be called
+                                               from The Javascript code and sent to a pop-up.
+                        </p>
+                        <div class="mediaobject"><img src="media/10_custom_layout_example_1c_config.png"></div>
+                     </li>
+                     <li class="listitem">
+                        <p>In the Javascript Editor create the following custom script example to load
+                                               the view into a pop-up. 
+                        </p><pre class="screen">kwargs = {
+ view: 'hello_world',
+};
+
+spt.panel.load_popup('Custom Layout Popup', \
+    'tactic.ui.panel.CustomLayoutWdg', kwargs); </pre><div class="mediaobject"><img src="media/11_custom_layout_example_1c_Script_Editor.png"></div>
+                     </li>
+                  </ol>
+               </div>
+            </div>
+         </div>
+         <div class="section" title="Table Layout">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_table-layout-wdg"></a>Table Layout
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="mediaobject"><img src="media/1_table_layout_overview.png"></div>
+            <div class="simplesect" title="Description">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11574"></a>Description
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The TableLayoutWdg is the primary widget used to layout tabular data. It is primarily
+                              driven by the widget configuration. The TableLayoutWdg has the ability to display
+                              complex widgets inside each cell, to inline edit the data and to color code cells. It is
+                              the widget that is most often used to display information within the TACTIC.
+               </p>
+            </div>
+            <div class="simplesect" title="Info">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11579"></a>Info
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Name</strong></span></p>
+                                                      
+                           </td>
+                           <td>Table Layout</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Class</strong></span></p>
+                                                      
+                           </td>
+                           <td>tactic.ui.panel.TableLayoutWdg</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                      
+                           </td>
+                           <td>2.5.0 +</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                      
+                           </td>
+                           <td>none</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Implementation">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11623"></a>Implementation
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>The TableLayoutWdg makes use of "views" which are defined in the widget config for
+                              each project.  When the Table is loaded as part of an interface, a view configuration is
+                              passed into it which defines which columns and widgets should be displayed in the view.
+                              Typically, these view configurations are automatically saved in the background when a
+                              user saves a view from within the TACTIC interface.  The table itself provides the
+                              ability to add, remove, rearrange, resize and group columns which can then be saved out
+                              often as links in the sidebar.
+               </p>
+               <p>The following shows a simplified version for an "asset tracking" view as saved in the
+                              background widget config.
+               </p><pre class="screen">&lt;config&gt;
+  &lt;asset_tracking layout="TableLayoutWdg" &gt;
+    &lt;element name="preview" width="74px"/&gt;
+    &lt;element name="asset_category_code" width="64px"/&gt;
+    &lt;element name="code" width="61px"/&gt;
+    &lt;element name="title" width="121.883px"/&gt;
+    &lt;element name="description" width="276.75px"/&gt;
+    &lt;element name="keywords" width="253.367px"/&gt;
+    &lt;element name="general_checkin" width="27px"/&gt;
+    &lt;element name="history" width="42px"/&gt;
+    &lt;element name="task_edit" width="29px"/&gt;
+    &lt;element name="task_status_edit" width="223.167px"/&gt;
+  &lt;/asset_tracking&gt;
+&lt;/config&gt;</pre><p>The widget configuration is an XML document. In this example, it defines an
+                              "asset_tracking" view with  elements (preview, asset_category, code, title, description,
+                              keywords, etc...).
+               </p>
+               <p>To draw what to display, TableLayoutWdg looks at the list of elements defined in the
+                              widget config and draws a column for each element. TACTIC then draws a row for each item
+                              that was either retrieved from a search, an expression or by supplied items. Each cell
+                              in the table represents an item being drawn by the defined element for a given
+                              column.
+               </p>
+               <p>While the top widget configuration defines the list of elements to draw the columns,
+                              the exact definition of each element do not necessarily appear here. There are a number
+                              of views which define an element. Some of these elements may be defined inline or they
+                              may be defined elsewhere. There is a set hierarchy which the TableLayoutWdg looks for to
+                              find the definition of a particular element.
+               </p>
+               <p>The hierarchy which TableLayoutWdg looks to find the definition for an element is as follows:</p>
+               <div class="orderedlist">
+                  <ol class="orderedlist" type="1">
+                     <li class="listitem">
+                        <p>the given type, view combination in the widget_config table</p>
+                     </li>
+                     <li class="listitem">
+                        <p>the "definition" view for the given type in the widget_config table</p>
+                     </li>
+                     <li class="listitem">
+                        <p>the predefined views for a given type (modules shipped with TACTIC will
+                                                   have predefined views for may of the items to ensure proper functioning of
+                                                   TACTIC even if there are no entries in the widget_config database)
+                        </p>
+                     </li>
+                     <li class="listitem">
+                        <p>the "default_definition" for a given type as defined in the predefined
+                                                   views.
+                        </p>
+                     </li>
+                  </ol>
+               </div>
+               <p>The third and fourth locations only apply to predefined types that are shipped with
+                              TACTIC. All custom types will only use the first two.
+               </p>
+            </div>
+            <div class="simplesect" title="Options">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11655"></a>Options
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <div class="informaltable">
+                  <table border="1">
+                     <colgroup>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <tbody>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>search_type</strong></span></p>
+                                                      
+                           </td>
+                           <td>Defines the type that this table will be displaying. It is used both
+                                                          for finding the appropriate widget config and for handling search (if
+                                                          necessary). Defaults to "table".
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>view</strong></span></p>
+                                                      
+                           </td>
+                           <td>Defines the view that this table will displaying. It used to find the
+                                                          appropriate widget config to display the table.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>do_search</strong></span></p>
+                                                      
+                           </td>
+                           <td>By default, the TableLayoutWdg will handle the search itself.
+                                                          However, certain widgets may wish to turn this functionality off because
+                                                          they are supplying the search (internally used by ViewPanelWdg)
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>order_by</strong></span></p>
+                                                      
+                           </td>
+                           <td>Add an explicit order by in the search</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>expression</strong></span></p>
+                                                      
+                           </td>
+                           <td>Use an expression to drive the search. The expression must return
+                                                          items.
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>parent_key</strong></span></p>
+                                                      
+                           </td>
+                           <td>Set a specific parent for the search</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>width</strong></span></p>
+                                                      
+                           </td>
+                           <td>Define an initial overall width for the table</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_row_select</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to determine whether or not to show row_selection</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_gear</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to determine whether or not to show the gear menu.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>show_insert</strong></span></p>
+                                                      
+                           </td>
+                           <td>Flag to determine whether or not to show the insert button.</td>
+                        </tr>
+                        <tr>
+                           <td>
+                                                          
+                              <p><span class="bold"><strong>insert_mode</strong></span></p>
+                                                      
+                           </td>
+                           <td>aux|inline|pop-up|none - set the insert mode of the table</td>
+                        </tr>
+                        <tr>
+                           <td><span class="bold"><strong>search_limit</strong></span></td>
+                           <td>An overriding search limit. A value &lt; 0 means no limit affecting
+                                                          the search
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><span class="bold"><strong>config_xml</strong></span></td>
+                           <td>Explicitly define the widget config</td>
+                        </tr>
+                        <tr>
+                           <td><span class="bold"><strong>element_names</strong></span></td>
+                           <td>Explicitly set the element names to be drawn</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <div class="simplesect" title="Advanced">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e11780"></a>Advanced
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>Very often, the TableLayoutWdg is not used directly, but is used through the
+                              ViewPanelWdg, which combines the TableLayoutWdg with the SearchWdg. Using ViewPanelWdg
+                              will provide all the functionality in a table view
+               </p>
+               <p>Using the TableLayoutWdg does provide a simpler view if the search is already
+                              known,
+               </p>
+               <p>This simple example shows the login table and the objects are explicitly given.</p><pre class="screen">from tactic.ui.panel import TableLayoutWdg
+div = DivWdg()
+table = TableLayoutWdg(search_type='sthpw/login', view='table')
+sObjects = Search("sthpw/login").get_sObject()
+table.set_sObjects(sObjects)
+div.add(table)</pre><p>An expression can be set for the search as well.</p><pre class="screen">from tactic.ui.panel import TableLayoutWdg
+div = DivWdg()
+expression = "@SOBJECT(sthpw/login)"
+table = TableLayoutWdg(search_type='sthpw/login', view='table',expression=expression)
+div.add(table)</pre><p>This example embeds the login table with a "table" view in a CustomLayoutWdg.</p><pre class="screen">&lt;config&gt;
+&lt;login&gt;
+  &lt;html&gt;
+    &lt;h1&gt;This is the login table&lt;/h1&gt;
+    &lt;element name='login_table'/&gt;
+  &lt;/html&gt;
+  &lt;element name='login_table'&gt;
+    &lt;display class='tactic.ui.panel.TableLayoutWdg'&gt;
+      &lt;search_type&gt;sthpw/login&lt;/search_type&gt;
+      &lt;view&gt;table&lt;/view&gt;
+      &lt;expression&gt;@SOBJECT(sthpw/login)&lt;/expression&gt;
+    &lt;/display&gt;
+  &lt;/element&gt;
+&lt;/login&gt;
+&lt;/config&gt;</pre><p>The widget config views determine how the TableLayoutWdg draws itself. There are a few
+                              custom attributes that a view can define. The view can define many parts of how the
+                              TableLayoutWdg is displayed. The following hides the "insert" button and makes each of
+                              the cells non-editable. These attributes are useful for reports which are generally not
+                              editable.
+               </p><pre class="screen">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;config&gt;
+  &lt;simple insert='false' edit='false'&gt;
+    &lt;element name="preview"/&gt;
+    &lt;element name="code"/&gt;
+    &lt;element name="name"/&gt;
+    &lt;element name="description"/&gt;
+  &lt;/simple&gt;
+&lt;/config&gt;</pre></div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_tactic-widgets-common.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_setup_tactic-widgets.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;</td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

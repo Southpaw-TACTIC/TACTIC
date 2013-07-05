@@ -1,0 +1,43 @@
+
+
+
+<project name="Perforce" default="dist" basedir=".">
+        <!-- set global properties for this build -->
+        <property name="src" value="src"/>
+        <property name="build" value="build"/>
+        <property name="dist" value="dist"/>
+        <property name="release" value="../../context/java"/>
+
+        <target name="init">
+                <!-- Create the time stamp -->
+                <tstamp/>
+                <!-- Create the build directory structure use by compile -->
+                <mkdir dir="${build}"/>
+        </target>
+
+        <target name="compile" depends="init">
+                <!-- Compile the java code from $(src) into $(build) -->
+                <javac srcdir="${src}" destdir="${build}" deprecation="on" source="1.5" target="1.5" debug="on"/>
+        </target>
+
+        <target name="dist" depends="compile">
+                <!-- Create the distribution directory -->
+                <mkdir dir="${dist}/lib"/>
+
+                <!-- Put everything in $(build) into the Perforce-$(DSTAMP).jar fi
+le -->
+                <jar jarfile="${dist}/lib/Perforce-${DSTAMP}.jar" basedir="${build}"/>
+                <signjar jar="${dist}/lib/Perforce-${DSTAMP}.jar" alias="sthpw" keystore="jarsign/sthpw.store" storepass="tactic"/>
+                <copy file="${dist}/lib/Perforce-${DSTAMP}.jar" tofile="${dist}/lib/Perforce-latest.jar"/>
+                <copy file="${dist}/lib/Perforce-latest.jar" tofile="${release}/Perforce-latest.jar"/>
+
+        </target>
+
+        <target name="clean">
+                <!-- Delete the $(build) and $(dist) directory trees -->
+                <delete dir="${build}"/>
+                <delete dir="${dist}"/>
+        </target>
+</project>
+
+

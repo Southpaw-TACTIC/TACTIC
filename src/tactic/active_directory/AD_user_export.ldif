@@ -1,0 +1,70 @@
+dn: CN=Smith\, Joe,OU=Users,OU=CSV,DC=xxxx,DC=us,DC=xxxx,DC=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+c: CA
+cn: Smith, Joe
+co: Canada
+description: 016436
+displayName: Smith, Joe
+distinguishedName: CN=Smith\, Joe,OU=Users,OU=CSV,DC=domain,DC=us,DC=xxxx,DC=com
+employeeType: E
+givenName: Joe
+homeDirectory: \\users\data\j\joe
+l: Toronto
+mail: joe.smith@xxxx.com
+manager: CN=Johnson\, Jane,OU=Users,OU=CSV,DC=domain2,DC=us,DC=xxxx,DC=com
+name: Smith, Joe
+physicalDeliveryOfficeName: 1111 Arlington Ave
+postalCode: 76107
+sn: Smith
+st: ON
+telephoneNumber: 817/378-2506
+textEncodedORAddress: c=ca;a=attmail;p=xxxx;s=Smith;g=Joe;
+title: Supervisor
+accountExpires: 0
+badPasswordTime: 128902389564349555
+badPwdCount: 0
+codePage: 0
+company: Southpaw
+countryCode: 840
+department: 12345
+dSCorePropagationData: 20090727163837.0Z
+dSCorePropagationData: 20090723011409.0Z
+dSCorePropagationData: 20090707163158.0Z
+dSCorePropagationData: 20090707163158.0Z
+dSCorePropagationData: 16100115200105.0Z
+employeeID: 12345
+homeDrive: U:
+instanceType: 4
+lastLogoff: 0
+lastLogon: 128964644797545577
+lastLogonTimestamp: 128964596065090607
+lockoutTime: 0
+logonCount: 4114
+mailNickname: joe
+mDBUseDefaults: TRUE
+
+memberOf: CN=dlAeroFW\, Coops/Interns,OU=Site07,OU=DistributionLists,OU=LMXpress,OU=EntOpr,DC=us,DC=lmco,DC=com
+memberOf: CN=ftw.app.savi.admin,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com
+memberOf: CN=ftw.grp.mms-tactic.change,CN=Users,DC=domain,DC=us,DC=xxxx,DC=com
+memberOf: CN=ftw.servers.nt.ftwtactic.admins,CN=Users,DC=domain,DC=us,DC=xxxx,
+ DC=com
+memberOf: CN=dlAeroFW\, 501-1-M3,OU=DistributionLists,OU=LMXpress,OU=EntOpr,
+ DC=us,DC=xxxx,DC=com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=adroot,DC=xxxx,DC=co
+ m
+objectGUID:: 77+977+9Qu+/vVRl77+9R++/vT3vv71wFX15Dg==
+objectSid:: AQUAAAAAAAUVAAAAPSITAEhRAAx9Pe+/vW0zWgEA
+primaryGroupID: 513
+sAMAccountName: joe
+sAMAccountType: 805306368
+scriptPath: wshlogon.bat
+userAccountControl: 512
+userPrincipalName: joe@xxxx.com
+uSNChanged: 310911347
+uSNCreated: 123659603
+whenChanged: 20090903162256.0Z
+whenCreated: 20060216202809.0Z
+xxtacticLicenseType: user

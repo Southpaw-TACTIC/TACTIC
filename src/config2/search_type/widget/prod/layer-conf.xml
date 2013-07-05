@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+   
+    <element name="render_link">
+        <display class="pyasm.prod.web.RenderLinkTableElement"/>
+    </element>
+    <element name="render_element">
+        <display class="pyasm.prod.web.LayerRenderTableElementWdg"/>
+    </element>
+    <element name="update">
+        <display class="UpdateWdg">
+            <delete>true</delete>
+        </display>
+    </element>
+    <element name="images">
+        <display class="SimpleUploadWdg">
+            <context>icon</context>
+        </display>
+    </element>
+     <element name="checkin_history">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.LayerHistoryWdg</dynamic>
+        </display>
+    </element>
+    <element name="explore">
+        <display class="pyasm.prod.web.ExploreTableElementWdg"/>
+    </element>
+
+</definition>
+
+<table>
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="explore"/>
+    <element name="sort_order"/>
+</table>
+
+
+<edit>
+    <element name="images"/>
+    
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+</edit>
+
+<render layout="TableWdg">
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="render_element"/>
+  
+</render>
+
+
+
+<load default="table" layout="TableWdg">
+    <display class="TableWdg"/>
+
+    <!-- display the filter -->
+    <element type="filter" name="Filter">
+        <display class="HierarchicalFilterWdg"/>
+    </element>
+
+    <element name="checkin_history"/>
+    <element name="name"/>
+    <element name="description"/>
+</load>
+
+<add_item>
+    <element name="shot_code" width="100px"/>
+    <element name="name" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+
+
+
+</config>
+

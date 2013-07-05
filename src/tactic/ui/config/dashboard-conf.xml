@@ -1,0 +1,1062 @@
+<config>
+
+
+<definition>
+
+  <element name="my_dashboard" title="My Dashboard" icon="" state="" is_visible="on" image="DASHBOARD_02" description="A Dashboard for Day-to-Day User Work">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <include>dashboard-conf.xml</include>
+      <include_mako>true</include_mako>
+      <view>my_dashboard_wdg</view>
+    </display>
+  </element>
+
+  <element name="overview_dashboard" title="Overview Dashboard" icon="" image="REPORT_02" state="" is_visible="on" description="A Dashboard for Daily Supervisor Work">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <include>dashboard-conf.xml</include>
+      <include_mako>true</include_mako>
+      <view>overview_dashboard_wdg</view>
+    </display>
+  </element>
+
+
+  <!-- Disabling for now
+  <element name="finance_dashboard" title="Finance Dashboard" icon="" state="" image="REPORT_03" is_visible="on" description="A Dashboard for Daily Finance Work">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <include>dashboard-conf.xml</include>
+      <include_mako>true</include_mako>
+      <view>finance_dashboard_wdg</view>
+    </display>
+</element>
+   
+
+
+  <element name="client_dashboard" title="Client Dashboard" icon="" state="" image="REPORT_03" is_visible="on" description="A Dashboard for summarizing approvals">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <include>dashboard-conf.xml</include>
+      <include_mako>true</include_mako>
+      <view>client_dashboard_wdg</view>
+    </display>
+  </element>
+
+ -->
+
+  <element name="user_schedules" title="Schedule Dashboard" icon="date" image="CALENDAR_02" description="A User Based Calendar Dashboard">
+    <display class="LinkWdg" >
+      <class_name>tactic.ui.tools.ScheduleToolWdg</class_name>
+    </display>
+  </element>
+
+</definition>
+
+
+
+
+<!-- MY DASHBOARD - START -->
+
+<my_dashboard_wdg>
+<html>
+    <style type="text/css">
+    div.spt_top { margin-left: auto; margin-right: auto }
+    table {color:[expr]@GET(palette.color)[/expr]}
+    td.panel {
+      background-color:[expr]@GET(palette.background)[/expr];
+    }
+    div.container {
+      height:180px;
+      //overflow:hidden;
+    }    
+    div.panel_title {
+        background:[expr]@GRADIENT('background',-10)[/expr];
+        color:[expr]@COLOR('color')[/expr];
+        padding: 3px 5px;
+        margin: 0px 0px 5px 0px;
+        font-size:14px;
+        font-weight:bold;
+    }
+  </style>
+
+  <div class="spt_top">
+  <![CDATA[
+  <%
+    login_so = server.eval("@SOBJECT(sthpw/login['login', $LOGIN])")
+    if not login_so:
+        return "No Users in database with current login"
+
+    login_so = login_so[0]
+    login = login_so.get("login")
+    #login_id = login_so.get("id")
+    login_sk = "sthpw/login?project=admin&code=%s" %login
+    title = "%s %s" %(login_so.get("first_name"), login_so.get("last_name"))
+    snapshot = server.get_snapshot(login_so, context='icon')
+    snapshot_code = snapshot.get("code")
+    path = '/context/icons/common/no_image.png'
+    if snapshot_code:
+        path = server.get_path_from_snapshot(snapshot_code, mode="web")     
+    kwargs['search_key'] = login_sk
+    kwargs['login'] = login    
+
+  %>
+
+  <table width="100%" cellspacing="0px">
+    <tr>
+      <td style="min-width:150px" class="panel" valign="top">
+        <div class="container">
+          <img height="173px" class="spt_thumb" src="${path}"/>     
+        </div>
+      </td>
+
+
+      <td style="min-width:300px" class="panel" valign="top">
+        <div class="container">
+        <div class="panel_title" style="min-width:200px">${title}</div>
+       
+        <element name="user_info" title="Tasks">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>my_dashboard_user_info_wdg</view>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <login>{@GET(state.login)}</login>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+        </div>
+      </td>
+    
+      <td style="width:100%" class="panel" valign="top">
+        <div class="container">
+        <div class="panel_title">My Tasks ([abs_expr]@COUNT(sthpw/task['assigned', $LOGIN]['project_code', $PROJECT])[/abs_expr] Total)</div>
+        <element name="tasks_chart">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>task_status_chart_wdg</view>
+            <my_tasks>true</my_tasks>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+       <div>
+      </td>
+
+      
+    </tr>
+
+    <tr height="500px">
+        <td colspan="3" class="panel" width="100%" valign="top">
+        <!--
+        <div class="panel_title">My Tools</div>
+        -->
+        <br/>
+        <br/>
+        <element name="tabs">
+          <display class="tactic.ui.container.TabWdg">
+            <search_key>{@GET(state.search_key)}</search_key>
+            <view>my_dashboard_tabs</view>
+            <show_add>false</show_add>
+            <!-- This causes problems affecting the main body tab
+            <show_remove>false</show_remove>
+            -->
+          </display>
+        </element>
+      </td>
+    </tr>
+  </table>
+
+
+  ]]>
+  </div>
+</html>
+</my_dashboard_wdg>
+
+
+
+<my_dashboard_user_info_wdg>
+<html>
+  <style type="text/css">
+          div.stp_top table {
+              color: [expr]@GET(palette.color)[/expr];
+          }
+	  div.spt_top tr.even {
+	      background: [expr]@GET(palette.background3)[/expr];
+	  }
+     	  div.spt_top tr.odd {
+	      background: [expr]@COLOR('background', -3)[/expr];
+          }
+
+     	  div.spt_top {
+              min-width: 400px
+	  }
+
+     	  div.spt_top tr td {
+              padding: 3px;
+	  }
+
+
+
+  </style>
+
+  <div class="spt_top">
+  <![CDATA[
+
+  <table width="100%">
+
+    <tr class="even">
+      <td><b>My eMail</b></td>
+      <td>[expr]@GET(sthpw/login['login', $LOGIN].email)[/expr]</td>
+    </tr>
+
+    <tr class="odd">
+      <td><b>In Group(s)</b></td>
+      <td>[expr]@GET(sthpw/login_in_group['login', $LOGIN].login_group)[/expr]</td>
+    </tr>
+
+    <tr class="even">
+      <td><b>Checkins - This Week</b></td>
+      <td>[expr]@COUNT(sthpw/snapshot['login', $LOGIN]['timestamp', '>', $PREV_MONDAY])[/expr]</td>
+    </tr>
+
+    <tr class="odd">
+      <td><b>Checkins - This Month</b></td>
+      <td>[expr]@COUNT(sthpw/snapshot['login', $LOGIN]['timestamp', '>', $THIS_MONTH])[/expr]</td>
+    </tr>
+
+    <tr class="even">
+      <td><b>Checkins - Total</b></td>
+      <td>[expr]@COUNT(sthpw/snapshot['login', $LOGIN]['timestamp', '>', $PREV_MONDAY])[/expr]</td>
+    </tr>
+
+    <tr class="odd">
+      <td><b>Hours - This Week</b></td> 
+      <td>[expr]@SUM(sthpw/work_hour['login', $LOGIN]['day', '>=', $PREV_MONDAY]['day', '<', $NEXT_MONDAY]['project_code', $PROJECT].straight_time))[/expr]</b></td>
+    </tr>
+
+    <tr class="even">
+      <td><b>Hours - This Month</b></td> 
+      <td>[expr]@SUM(sthpw/work_hour['login', $LOGIN]['day', '>=', $THIS_MONTH]['project_code', $PROJECT].straight_time))[/expr]</td>
+    </tr>
+
+
+  </table>
+
+  ]]>
+  </div>
+</html>
+</my_dashboard_user_info_wdg>
+
+
+
+
+
+
+
+
+
+<my_dashboard_tabs>
+
+    <element name="tasks" title="My Tasks">
+      <display class="tactic.ui.panel.ViewPanelWdg">
+        <search_type>sthpw/task</search_type>
+	<view>my_dashboard_tasks</view>
+	<element_names>detail,general_checkin,parent_name,process,description,status,priority,bid_start_date,bid_end_date,work_hours</element_names>
+	<show_insert>false</show_insert>
+	<show_gear>false</show_gear>
+	<width>100%</width>
+        <search_key>{@GET(state.search_key)}</search_key>
+        <expression>@SOBJECT(sthpw/task['assigned', $LOGIN]['project_code', $PROJECT])</expression>
+      </display>
+    </element>
+
+    <!--
+    <element name="my_activity_calendar" title="My Activity">
+      <display class="tactic.ui.tools.ScheduleUserToolWdg">
+        <login>beth</login>
+      </display>
+    </element>
+    -->
+
+    <element name='activity' title='My Activity'>
+      <display class='tactic.ui.widget.ActivityCalendarWdg'>
+        <login>{login.login}</login>
+        <cell_width>100px</cell_width>
+        <cell_height>50px</cell_height>
+        <show_header>true</show_header>
+        <show_border>false</show_border>
+      </display>
+    </element>
+
+    <element name="my_tasks_calendar" title="My Tasks Calendar">
+      <display class="tactic.ui.widget.SObjectCalendarWdg"/>
+    </element>
+
+    <element name="my_work_hours" title="My Work Hours">
+      <display class="tactic.ui.panel.ViewPanelWdg">
+        <search_type>sthpw/work_hour</search_type>
+	<view>table</view>
+	<element_names>parent,process,description,day,straight_time</element_names>
+	<mode>simple</mode>
+	<show_shelf>false</show_shelf>
+        <width>100%</width>
+        <search_key>{@GET(state.search_key)}</search_key>
+        <filter>[{"show_retired": "", "prefix": "group", "group": "day", "order": ""}]</filter>
+        <expression>@SOBJECT(sthpw/work_hour['login', $LOGIN]['project_code', $PROJECT])</expression>
+      </display>
+    </element>
+
+</my_dashboard_tabs>
+<!-- MY DASHBOARD - END -->
+
+
+
+
+
+<!-- SUPERVISOR DASHBOARD - START -->
+
+<overview_dashboard_wdg>
+<html>
+  <style type="text/css">
+    table {color:#000;}
+    td.panel {
+    background-color:[expr]@GET(palette.background)[/expr];
+      margin: 0;
+      padding: 1px;
+    }
+    div.container {
+      height:170px;
+      overflow:hidden;
+    }     
+
+    div.panel_title {
+        background:[expr]@GET(palette.side_bar_title)[/expr];
+        color:[expr]@GET(palette.side_bar_title_color)[/expr];
+        padding: 2px 5px;
+        margin: 0px 0px 5px 0px;
+        font-size:14px;
+        font-weight:bold;
+        height:20px;
+    }
+    div.project_schedule tr.spt_table_row div.spt_gantt_top {
+        height:110px;
+    }
+
+  </style>
+
+<div class="spt_top">
+
+<![CDATA[
+
+
+  <%
+    project_so = server.eval("@SOBJECT(sthpw/project['code', $PROJECT])")[0]   
+    project_code = project_so.get("code")
+    project_title = project_so.get("title")
+    project_id = project_so.get("id")
+    project_sk = "sthpw/project?project=admin&id=%s" %project_id
+    title = project_title
+    snapshot = server.get_snapshot(project_so, context='icon')
+    if snapshot:
+        snapshot_code = snapshot.get("code")
+	path = server.get_path_from_snapshot(snapshot_code, mode="web")
+    if not snapshot:
+        snapshot = server.get_snapshot(project_so, context='publish')	
+    if snapshot:
+        snapshot_code = snapshot.get("code")
+	path = server.get_path_from_snapshot(snapshot_code, mode="web")
+    else:
+        path = '/context/icons/common/no_image.png'
+
+    kwargs['search_key'] = project_sk
+    kwargs['project'] = project_code    
+
+  %>
+
+  <table width="100%" cellspacing="0">
+      
+    <tr>
+      <td class="panel" valign="top">
+        <div class="container">
+            <img height="150px" class="spt_thumb" src="${path}"/>     
+        </div>
+      </td>
+
+      <td style="min-width:300px" class="panel" valign="top">
+        <div class="container">
+        <div class="panel_title">Items</div>
+        <element name="project_stypes">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>project_stypes_wdg</view>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+       <div>
+      </td>
+
+
+      <td style="width:100%" class="panel" valign="top">
+        <div class="container">
+        <div class="panel_title">Tasks ([abs_expr]@COUNT(sthpw/task['project_code', $PROJECT])[/abs_expr] Total)</div>
+        <element name="tasks_chart">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>task_status_chart_wdg</view>
+            <my_tasks>false</my_tasks>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+       <div>
+      </td>
+            
+
+
+    </tr>
+
+    <tr height="500px">
+      <td class="panel" colspan="3" width="100%" valign="top" style="padding-top: 0px;">
+        <div class="panel_title">Project Tools</div>
+        <element name="tabs">
+          <display class="tactic.ui.container.TabWdg">
+            <search_key>{@GET(state.search_key)}</search_key>
+            <view>overview_dashboard_tabs</view>
+          </display>
+        </element>
+
+      </td>
+    </tr>
+  </table>
+
+
+]]>
+
+</div>
+</html>
+</overview_dashboard_wdg>
+
+
+<overview_dashboard_stats_wdg>
+<html>
+  <style type="text/css">
+    table {color:#000;}
+  </style>
+
+<div class="spt_top">
+<![CDATA[
+
+  <table width="100%" cellpadding="5px">
+
+    <tr style="background:#EEE">
+      <td>Total Tasks</td>
+      <td style='text-align:right'><b>[abs_expr]@COUNT(sthpw/task['project_code', $PROJECT])[/abs_expr]</b></td>
+    </tr>
+
+    <tr style="background:#FFF">
+      <td>Total Completed</td>
+      <td style='text-align:right'><b>[abs_expr]@COUNT(sthpw/task['project_code', $PROJECT]['begin']['status', 'Approved']['status', 'Complete']['or'])[/abs_expr]</b></td>
+    </tr>
+
+
+    <tr style="background:#EEE">
+      <td>Bid Work Hours</td>
+      <td style='text-align:right'><b>[abs_expr]@SUM(sthpw/task['project_code', $PROJECT].bid_duration)[/abs_expr]</b></td>
+    </tr>
+
+    <tr style="background:#FFF">
+      <td>Total Work Hours</td>
+      <td style='text-align:right'><b>[abs_expr]@SUM(sthpw/work_hour['project_code', $PROJECT].straight_time)[/abs_expr]</b></td>
+    </tr>
+
+
+  </table>
+ 
+  ]]>
+</div>
+</html>
+
+ </overview_dashboard_stats_wdg>
+
+
+
+<overview_dashboard_tabs>
+
+	
+   <element name="task_review" title="Tasks in Review">
+    <display class="tactic.ui.panel.FastTableLayoutWdg">
+      <search_type>sthpw/task</search_type>
+      <view>overview_dashboard_tasks</view>
+      <expression>@SOBJECT(sthpw/task['project_code', $PROJECT]['status', 'Review'])</expression>
+      <filter></filter>
+      <width>100%</width>
+    </display>
+  </element>
+
+
+
+  <element name="milestones" title="Project Milestones">
+    <display class="tactic.ui.panel.FastTableLayoutWdg">
+      <view>table</view>
+      <element_names>code,description,due_date,tasks,total_tasks</element_names>
+      <search_type>sthpw/milestone</search_type>
+      <expression>@SOBJECT(sthpw/milestone['project_code', $PROJECT])</expression>
+      
+      <width>100%</width>
+    </display>
+  </element> 
+
+
+  <element name="project_level_tasks" title="Project Level Tasks">
+    <display class="tactic.ui.panel.FastTableLayoutWdg">
+      <search_type>sthpw/task</search_type>
+      <view>overview_dashboard_tasks</view>
+      <element_names>process,description,assigned,status,priority,notes</element_names>
+      <search_key>{@GET(state.search_key)}</search_key>
+      <expression>@SOBJECT(sthpw/task['search_type', '~', 'sthpw/project'])</expression>
+      <width>100%</width>
+    </display>
+  </element>
+
+   <element name="project_tasks" title="Project Tasks">
+    <display class="tactic.ui.panel.FastTableLayoutWdg">
+      <search_type>sthpw/task</search_type>
+      <view>overview_dashboard_tasks</view>
+      <element_names>parent,process,description,assigned,status,priority,notes</element_names>
+      <expression>@SOBJECT(sthpw/task['project_code', $PROJECT]['search_type', '!~', 'sthpw/project'])</expression>
+      <width>100%</width>
+    </display>
+  </element>
+
+
+   <element name="user_schedule" title="User Schedule">
+    <display class="tactic.ui.tools.schedule_wdg.ScheduleToolWdg">
+
+    </display>
+  </element>
+
+  
+  <!--
+  <element name="user_efficiency" title="User Efficiency">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>sthpw/login</search_type>
+      <view>user_efficiency</view>
+      <mode>simple</mode>
+      <expression>@SOBJECT(sthpw/login)</expression>
+      <width>100%</width>
+    </display>
+  </element>
+  -->
+
+</overview_dashboard_tabs>
+
+<overview_dashboard_tasks>
+	<element name='parent'/>
+	<element name='process'/>
+        <element name='description'/>
+        <element name='status'/>
+        <element name='priority'/>
+	<element name='bid_duration'/>
+	<element name='notes'/>
+</overview_dashboard_tasks>
+
+
+<!-- SUPERVISOR DASHBOARD - END -->
+
+
+
+<!-- FINANCE DASHBOARD - START -->
+
+
+
+<finance_dashboard_wdg>
+<html>
+  <style type="text/css">
+    table {color:#000;}
+    td.panel {
+      background-color:[expr]@GET(palette.background)[/expr];
+    }
+    div.panel_title {
+        background:[expr]@GET(palette.side_bar_title)[/expr];
+        color:[expr]@GET(palette.side_bar_title_color)[/expr];
+        padding: 2px 5px;
+        margin: 0px 0px 5px 0px;
+        font-size:14px;
+        font-weight:bold;
+    }
+
+
+
+  </style>
+
+<div class="spt_top">
+<![CDATA[
+  <%
+    project_so = server.eval("@SOBJECT(sthpw/project['code', $PROJECT])")[0]   
+    project_code = project_so.get("code")
+    project_title = project_so.get("title")
+    project_id = project_so.get("id")
+    project_sk = "sthpw/project?project=admin&id=%s" %project_id
+    title = project_title
+    snapshot = server.get_snapshot(project_so, context='publish')
+    if snapshot:
+        snapshot_code = snapshot.get("code")
+        path = server.get_path_from_snapshot(snapshot_code, mode="web")
+    else:
+        path = '/context/icons/common/no_image.png'
+
+    kwargs['search_key'] = project_sk
+    kwargs['project'] = project_code    
+  %>
+
+  <table width="100%" cellspacing="0px">
+
+    <tr>
+      <td class="panel" style="min-width:200px" valign="top">
+        <img width="200px" class="spt_thumb" src="${path}"/>
+      </td>
+
+      <td class="panel" valign="top" style="min-width:300px">
+      <div class="panel_title">${title} - Budget</div>
+      <!--	      
+        <element name="project_stats">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>finance_dashboard_project_stats_wdg</view>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+      -->
+      </td>
+
+      <td class="panel" valign="top" width="100%">
+        <div class="panel_title">Expenses</div>
+	    
+	<element name="tasks" title="Tasks">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>finance_dashboard_expenses_wdg</view>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+      
+      </td>
+      
+
+      <td class="panel" valign="top" style="min-width:300px">
+        <div class="panel_title">Labour</div>
+        <element name="work_hours" title="Work Hours">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>finance_dashboard_resources_wdg</view>
+            <search_key>{@GET(state.search_key)}</search_key>
+            <include_mako>true</include_mako>
+          </display>
+        </element>     
+
+      </td>
+    </tr>
+
+    <tr height="500px">
+      <td colspan="4" class="panel" width="100%" valign="top" style="padding-top: 0px;">
+        <div class="panel_title">Budget Tools</div>
+        <element name="tabs">
+          <display class="tactic.ui.container.TabWdg">
+            <search_key>{@GET(state.search_key)}</search_key>
+            <view>finance_dashboard_tabs</view>
+            <show_add>false</show_add>
+          </display>
+        </element>
+      </td>
+    </tr>
+
+  </table>
+
+
+]]>
+      </div>
+    </html>
+
+
+  </finance_dashboard_wdg>
+
+
+
+
+<finance_dashboard_resources_wdg>
+<html>
+  <style type="text/css">
+	  table {color:#000;}
+	  div.spt_top tr.even {
+	      background: [expr]@GET(palette.background)[/expr]
+	  }
+     	  div.spt_top tr.odd {
+	      background: [expr]@GET(palette.background3)[/expr]
+	  }
+  </style>
+
+<div class="finance_dashboard_resources_wdg">
+<![CDATA[
+
+  <table width="100%" cellpadding="5px">
+
+      <tr style='background: [expr]@GET(palette.background)[/expr]'>
+        <th align='left'> </th>
+        <th align='right'>Totals</th>
+      </tr>
+
+      <tr style='background: [expr]@GET(palette.background3)[/expr]'>
+      <td>Bid Work Hours</td>
+      <td style='text-align:right'><b>[abs_expr]@SUM(sthpw/task['project_code', $PROJECT].bid_duration)[/abs_expr]</b></td>
+    </tr>
+
+    <tr style='background: [expr]@GET(palette.background)[/expr]'>
+      <td>Total Work Hours</td>
+      <td style='text-align:right'><b>[abs_expr]@SUM(sthpw/work_hour['project_code', $PROJECT].straight_time)[/abs_expr]</b></td>
+    </tr>
+
+    <tr style='background: [expr]@GET(palette.background3)[/expr]'>
+      <td>Total Tasks</td>
+      <td style='text-align:right'><b>[expr]@COUNT(sthpw/task)[/expr]</b></td>
+    </tr>
+
+    <tr style='background: [expr]@GET(palette.background)[/expr]'>
+      <td>Total Completed</td>
+      <td style='text-align:right'><b>[expr]@COUNT(sthpw/task['begin']['status', 'Approved']['status', 'Complete']['or'])[/expr]</b></td>
+    </tr>
+
+
+  </table>
+]]>
+</div>
+</html>
+
+</finance_dashboard_resources_wdg>
+ 
+
+<finance_dashboard_tabs>
+
+
+
+
+
+</finance_dashboard_tabs>
+
+
+
+<!-- FINANCE DASHBOARD - END -->
+
+
+<!-- MISC DASHBOARD -->
+
+
+
+
+
+
+<project_stypes_wdg>
+<html>
+  <style type="text/css">
+	  table {color:[expr]@GET(palette.color)[/expr];}
+	  div.spt_top .spt_load_view:hover {
+              cursor:pointer;
+	      background: [expr]@GET(palette.background2)[/expr]
+
+	      }
+     	  div.spt_top tr.even {
+	      background: [expr]@GET(palette.background)[/expr]
+	  }
+     	  div.spt_top tr.odd {
+	      background: [expr]@GET(palette.background3)[/expr]
+	  }
+
+  </style>
+
+  <div class="spt_top" style="overflow-y:auto;max-height:120px;max-width:300px">
+  <![CDATA[
+
+  <%
+    stype_expr = "@SOBJECT(sthpw/search_object['namespace', @GET(sthpw/project['code', $PROJECT].type)])"
+    stypes = server.eval(stype_expr)
+
+    context.write("<table width='100%%'>")
+
+    for index,stype in enumerate(stypes):
+        type = stype.get("search_type")
+	title = stype.get("title")
+	if not title:
+	    title = type
+
+        try:
+            count_expr = "@COUNT(%s)" %type
+            count = server.eval(count_expr)
+        except:
+            count = 0
+
+	if index % 2:
+            context.write("<tr class='spt_load_view even' stype='%s' stype_title='%s'>" %(type, title))
+        else:
+            context.write("<tr class='spt_load_view odd' stype='%s' stype_title='%s'>" %(type, title))        
+	
+        context.write("<td width='20px'><img src='/context/icons/silk/zoom.png'/></td>")
+        context.write("<td>%s</td>" %title)
+        context.write("<td min-width='70px'>%s / items</td>" %count)
+        context.write("</tr>")
+
+    context.write("</table>")
+    %>
+  ]]>
+  </div>
+</html>
+
+   <behavior class='spt_load_view'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+      try {
+          var server = TacticServerStub.get()
+          // Get the top elements
+	  var tab_el = bvr.src_el.getParent(".spt_tab_top")
+          var title = bvr.src_el.getAttribute("stype_title")
+          var stype = bvr.src_el.getAttribute("stype")
+	  var view = "table"
+
+	  var pipeline_expr = "@COUNT(sthpw/pipeline['project_code', $PROJECT]['search_type', '"+stype+"'])"
+	  var count = server.eval(pipeline_expr)
+
+	  if (count == 0 ) {
+              var element_names = "preview,name,description,notes"
+	  }
+	  else {
+              var element_names = "preview,name,description,task_status_edit,notes" 
+	  }
+
+	  var class_name = "tactic.ui.panel.ViewPanelWdg"
+          var kwargs = {
+              'view': view, 
+	      'search_type':stype,
+	      'element_names': element_names,
+              'width': '100%'
+          }
+
+          // Reload the panel
+          spt.app_busy.show("Loading...", title);
+          spt.tab.set_main_body_top();
+	  spt.tab.add_new(tab_el, title, class_name, kwargs);
+          spt.app_busy.hide();
+
+        }
+        catch(err) {
+          alert(err)
+          spt.app_busy.hide();
+        }
+        
+      ''']]>
+    }</behavior>
+
+</project_stypes_wdg>
+
+
+
+
+<task_status_chart_wdg>
+<html>
+  <style type="text/css">
+    table {color:[expr]@GET(palette.color)[/expr];}
+    .chart_bar {
+      //border: 2px solid [expr]@GET(palette.background)[/expr];
+      width:90%;
+      margin:auto;
+      -webkit-border-top-left-radius: 3px;
+      -webkit-border-top-right-radius: 3px;
+      -moz-border-radius-topleft: 3px;
+      -moz-border-radius-topright: 3px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+    .chart_bar:hover {
+      //border: 2px solid [expr]@GET(palette.background3)[/expr];
+      //cursor:pointer;
+    }
+    .spt_status:hover {
+      background: [expr]@GET(palette.background)[/expr];
+      cursor:pointer;
+    }
+    .chart_inner {
+      background: [expr]@GET(palette.background3)[/expr];
+      height:130px;
+    }
+  </style>
+
+  <div class="spt_top">
+  <![CDATA[
+
+    <%
+    
+    # If there are no task, processes in the config/process table
+    default_processes = [
+        {'process': 'Assignment'},
+	{'process': 'Pending'},
+	{'process': 'In Progress'},
+	{'process': 'Waiting'},	
+        {'process': 'Need Assistance'},
+	{'process': 'Review'},
+        {'process': 'Approved'}
+	]
+
+    default_colors = {
+        "Assignment":   "#ffc500",
+        "Pending":      "#34def2",
+        "In Progress":  "#01949b",
+        "Waiting":      "#4212ae",
+        "Need Assistance": "#4212ae",
+        "Review":       "#ff0800",
+        "Approved":     "#00c611"
+    }
+    
+    HEIGHT = 120
+    THICKNESS = 40
+    
+    my_tasks = kwargs.get("my_tasks")
+    if my_tasks == 'true':
+        total_expr = "@COUNT(sthpw/task['project_code', $PROJECT]['assigned', $LOGIN])"
+    else:        
+        total_expr = "@COUNT(sthpw/task['project_code', $PROJECT])"
+
+
+    total_tasks = server.eval(total_expr)
+
+    process_expr = "@SOBJECT(sthpw/pipeline['search_type', 'sthpw/task'].config/process)"
+    process_list = server.eval(process_expr)
+
+    if (len(process_list) == 0):
+        process_list = default_processes
+        
+    bar_width = 100.0 / len(process_list)
+ 
+    context.write("<table width='100%%' height='%dpx' cellspacing='0px'>" %(HEIGHT) )
+    context.write("<tr class='chart_inner'>")    
+
+    for process in process_list:
+        status = process.get("process")
+        color = process.get("color")
+        if not color:
+            color = default_colors.get(status);
+        if not color:
+            color = "#7abc14"
+
+	if my_tasks == 'true':
+            count_expr = "@COUNT(sthpw/task['project_code', $PROJECT]['status', '%s']['assigned', $LOGIN])" %(status)
+        else: 
+            count_expr = "@COUNT(sthpw/task['project_code', $PROJECT]['status', '%s'])" %(status)
+
+        count = server.eval(count_expr)
+        if count == 0:
+            bar_height = 1
+        else:
+            bar_height = (HEIGHT - 20) * ((count*1.0) / total_tasks)
+        bar_div = "<div>%s</div>" %count
+        bar_div += "<div class='chart_bar spt_status' spt_status='%s' style='height:%spx; background:%s;'> </div>" %(status, bar_height, color)
+      
+        td = "<td class='spt_status' valign='bottom' spt_status='%s' style='text-align:center;' width='%s%%'>%s</td>" %(status, bar_width, bar_div)
+        context.write(td)
+
+    context.write("</tr>")
+    context.write("<tr>")
+
+    for process in process_list:
+        status = process.get("process")
+        title = "Show all tasks [%s]" %status
+        status_link = "<a style='cursor:pointer;' title='%s'>%s</a>" %(title, status)
+        label_div = "<div class='spt_status' spt_status='%s' style='text-align:center; font-weight:bold'>%s</div>" %(status, status_link)
+        td = "<td valign='top'>%s</td>" %label_div
+        context.write(td)
+ 
+    context.write("</tr>")
+    context.write("</table>")
+    %>
+
+ 
+  ]]>
+  </div>
+</html>
+
+
+
+   <behavior class='spt_status'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+        try {
+          // Get the top elements
+          var top_el = bvr.src_el.getParent(".spt_top")
+          var tab_el = top_el.getParent(".spt_tab_top")
+          var status_el = bvr.src_el;
+          var status = status_el.getAttribute("spt_status")            
+
+          // Set up the new KWARGS
+          
+          var my_tasks = bvr.kwargs.my_tasks;
+          if (my_tasks == 'true') {
+              var expr = "@SOBJECT(sthpw/task['project_code', $PROJECT]['status', '"+status+"']['assigned', $LOGIN])"
+          }
+          else {
+              var expr = "@SOBJECT(sthpw/task['project_code', $PROJECT]['status', '"+status+"'])"
+          }
+
+          var view = "table"
+          var class_name = "tactic.ui.panel.ViewPanelWdg"
+          var title = "Tasks - ["+status+"]";
+          var kwargs = {
+              'view': view, 
+	      'search_type':'sthpw/task', 
+	      'element_names': 'parent,process,descripion,assigned,status,priority,general_checkin,work_hours_list,notes',
+              'expression': expr,
+              'width': '100%'
+          }
+
+          // Reload the panel
+          spt.app_busy.show("Loading...", title);
+          spt.tab.set_main_body_top();
+          spt.tab.add_new(tab_el, title, class_name, kwargs);
+          spt.app_busy.hide();
+
+
+        }
+        catch(err) {
+          alert(err)
+          spt.app_busy.hide();
+        }
+        
+      ''']]>
+    }</behavior>
+
+
+
+ </task_status_chart_wdg>
+
+
+ <!-- Extra code -->
+ 
+
+ <!-- Project schedule block
+ <td style="min-width:430px" class="panel" valign="top">
+        <div class="container project_schedule" style="overflow-y:auto">
+        <div class="panel_title">Project Schedule</div>
+          <element name="task_schedule">
+            <display class="tactic.ui.panel.ViewPanelWdg">
+              <view>table</view>
+              <search_type>sthpw/project</search_type>	    
+              <element_names>task_schedule</element_names>
+	      <mode>simple</mode>
+	      <show_row_select>false</show_row_select>
+	      <show_milestones>true</show_milestones>
+	      <show_select>false</show_select>
+	      <show_shelf>false</show_shelf>
+	      <search_key>{@GET(state.search_key)}</search_key>
+            </display>
+          </element>
+        </div>
+      </td>
+  -->
+
+<client_dashboard_wdg>
+    <html><h2>Client Dashboard (under construction)</h2></html>
+</client_dashboard_wdg>
+
+
+</config>

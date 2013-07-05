@@ -1,0 +1,464 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Checkin / Checkout Operations</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="tactic-developer_client-api.html" title="Client API">
+      <link rel="prev" href="tactic-developer_developer_client-api-basic.html" title="Basic Operations in Python and Javascript">
+      <link rel="next" href="tactic-developer_developer_client-api-dependency.html" title="Snapshot Dependency">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-developer_developer_client-api-basic.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_client-api-dependency.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Checkin / Checkout Operations">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-developer_developer_client-api-checkin"></a>Checkin / Checkout Operations 
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Checking files in">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e629"></a>Checking files in
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The Client API has access to the full range of TACTIC's asset management system.</p>
+            <p>Any sObject can become a "container" for check-ins. This has the advantage that you can
+               use this one SObject (container) to check in files using the deep set of check-in tools
+                           provided by TACTIC. The rest of this section describes the different types of check-ins
+                           available.
+            </p>
+         </div>
+         <div class="simplesect" title="Simple Checkin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e636"></a>Simple Checkin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The simple_checkin() function allows you to check in a single
+                           file.
+            </p><pre class="screen">    file_path = "./test/miso_ramen.jpg"
+
+    # now check in the file
+    search_type = "unittest/person"
+    code = "joe" 
+    context = "test_checkin"
+    search_key = my.server.build_search_key(search_type, code)
+
+    # simple check-in of a file.  No dependencies
+    desc = 'A Simple Checkin'
+    snapshot = my.server.simple_checkin(search_key, context, file_path, description=desc, mode="upload")
+    print snapshot.get('snapshot')</pre><p> The simple_checkin is the most basic type of check-in. It creates a snapshot and then
+                           checks a file into that snapshot. The newly created snapshot is
+                           returned.
+            </p><pre class="screen">&lt;snapshot&gt;
+  &lt;file name="miso_ramen_v001.jpg" type='main' code='123BAR'/&gt;
+&lt;/snapshot&gt;</pre><p>The exact file name that is checked in will vary depending on the specific implemented
+                           naming conventions
+            </p>
+         </div>
+         <div class="simplesect" title="Group (or Sequence) Checkin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e649"></a>Group (or Sequence) Checkin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The group_checkin() function allows you to check in a sequence of files, defined by a
+                           frame range:
+            </p><pre class="screen">&lt;start&gt;-&lt;end&gt;/&lt;by&gt;</pre><p>For example, a frame range of 1 to 10 is descibed as "1-10". Or every second frame
+                           from frame 20 to frame 50 can be described as "20-50/2".
+            </p>
+            <p>TACTIC provides two notations to describe the file names of a range of frames. This
+                           special notation, in conjunction with the frame range, can generate a sequence of files.
+                           The two notations are as follows: 
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>&lt;base&gt;.####.&lt;ext&gt;</p>
+                  </li>
+                  <li class="listitem">
+                     <p>&lt;base&gt;.%0.4d.&lt;ext&gt; </p>
+                  </li>
+               </ul>
+            </div>
+            <p>Here is a code example of checking in a sequence of
+                           files:
+            </p><pre class="screen">    pattern = "./test/miso_ramen.%0.4d.tif"
+    file_range = '1-24'
+    context = 'beauty '
+
+    # build the search key
+    search_type = "unittest/person"
+    code = "joe"
+    search_key = my.server.build_search_key(search_type, code)
+
+    # simple checkin of a file
+    desc = 'A Checkin of a group of files'
+    context = "test_checkin"
+    snapshot = server.group_checkin(search_key, context, file_pattern, file_range)
+    print snapshot.get('snapshot')</pre><p>When executed, this example will check in a sequence of 24 files starting from 1 to
+                           24. It should be noted that this method will by default expect that the files have been
+                           uploaded to the server. For this reason, it is often recommended to use preallocated
+                           check-ins for both sequence and directory check-ins.
+            </p>
+         </div>
+         <div class="simplesect" title="Directory Checkin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e673"></a>Directory Checkin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>As the name suggests, a directory check-in enables an entire directory and all of its
+                           subdirectories to be checked in. TACTIC does not keep track of the contents of the
+                           checked-in directory. This allows you to check in complex directory structures without
+                           having to inform TACTIC of all of the details of the contents. This might be the best
+                           approach when all the details of the directory are already handled by some other system
+                           so it is not necessary for TACTIC to track things.
+            </p>
+            <p>Here is a code example of checking in a
+                           directory:
+            </p><pre class="screen">    file_path = "./test/XG002/beauty"
+
+    # build the search key
+    search_type = "unittest/person"
+    code = "joe" 
+    search_key = my.server.build_search_key(search_type, code)
+    context = "test_checkin"
+
+    # simple check-in of a file.
+    desc = 'A Simple Checkin'
+    snapshot = my.server.directory_checkin(search_key, context, file_path, description=desc)
+    print snapshot.get('snapshot')</pre><p>Note that this code is very similar to single file check-ins ( simple_checkin() ),
+                           because TACTIC treats a directory check-in in a similar manner to a file check-in. It uses
+                           the leaf directory as the file name. It is important to consider naming conventions,
+                           because this leaf directory will be handled using file naming conventions even though it
+                           is a directory.
+            </p>
+            <p>As with group_checkin(), this method already expects the files to have been uploaded
+                           to the server in the appropriate place. There are various modes that can be used to
+                           alter the manner in which the files get to the server repository. For details, see the
+                           "modes" section below.
+            </p>
+         </div>
+         <div class="simplesect" title="Piecewise check-ins">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e686"></a>Piecewise check-ins
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC allows you to build up a check-in piecewise or stages. This is a powerful
+                           feature because you can build a check-in over the course of many operations (and many
+                           transactions if desired) and the whole set of operations will be treated as a single
+                           versioned entity. The TACTIC snapshot definition allows for the entry of multiple files
+                           into a single check-in. Typically, the process begins by creating a new "empty" snapshot.
+                           This snapshot is a placeholder which reserves a version and context for a particular set
+                           of future operations. Once this empty snapshot is created, you can start adding files
+                           and dependencies to it. 
+            </p>
+            <p>The following example checks in a Maya file and a corresponding OBJ
+                           file.
+            </p><pre class="screen">    maya_path = "./test/chr001/chr001_model.ma"
+    obj_path = "./test/chr001/chr001_mode.obj"
+
+    # build the search key
+    search_type = "unittest/person"
+    code = "joe" 
+    context = "test_checkin"
+    search_key = my.server.build_search_key(search_type, code)
+
+    # create an empty snapshot
+    desc = 'A Piecewise Checkin'
+    snapshot = my.server.create_snapshot(search_key, context, description=desc)
+    print "empty"
+    print snapshot.get('snapshot')
+
+    snapshot_code = snapshot.get('code')
+    snapshot = my.server.add_file(snapshot_code, maya_path, file_type='maya')
+    snapshot = my.server.add_file(snapshot_code, obj_path, file_type='obj')
+    print
+    print "two files"
+    print snapshot.get('snapshot')</pre><p>Executing this code will result in the
+                           following:
+            </p><pre class="screen">empty
+&lt;snapshot/&gt;
+
+two files
+&lt;snapshot&gt;
+  &lt;file name='chr001_model_v001.ma' file_code='1044BAR' type='maya'/&gt;
+  &lt;file name='chr001_model_v001.obj' file_code='1045BAR' type='obj'/&gt;
+&lt;/snapshot&gt;</pre><p>First, an empty snapshot is created using create_snapshot(), then files are added to
+                           this snapshot one by one. Note that the type here is explicitly specified. This type
+                           differentiates one file in a snapshot from another.
+            </p>
+            <p>It is also possible to add a sequence of files or even a directory to a snapshot:</p><pre class="screen">    pattern = "./test/miso_ramen.%0.4d.tif"
+    file_range = '1-24'
+    snapshot = server.add_group(snapshot_code, file_pattern, file_range, file_type='sequence')
+    print snapshot.get('snapshot')
+
+    directory = "./test/test_directory"
+    snapshot = server.add_directory(snapshot_code, directory, file_type='directory')
+    print snapshot.get('code')</pre><p>Executing the last code snippet will give the following
+                           results:
+            </p><pre class="screen">&lt;snapshot&gt;
+  &lt;file name="mise_ramen.%0.4d.tif" file_code='1047BAR' type='sequence'/&gt;
+&lt;/snapshot&gt;
+
+&lt;snapshot&gt;
+  &lt;file name="mise_ramen.%0.4d.tif" file_code='1047BAR' type='sequence'/&gt; 
+  &lt;file name="test_directory" file_code='1047BAR' type='directory'/&gt; 
+&lt;/snapshot&gt;</pre></div>
+         <div class="simplesect" title="Checkin Modes">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e709"></a>Checkin Modes
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>There are various modes that you can use to check in files. These modes determine how
+                           a file will be transferred to the repository. 
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>upload: Uploads the files to a temporary directory</p>
+                  </li>
+                  <li class="listitem">
+                     <p>copy: Copies the files to the handoff directory</p>
+                  </li>
+                  <li class="listitem">
+                     <p>move: Moves the files to the handoff directory.</p>
+                  </li>
+               </ul>
+            </div>
+            <p>The previous simple_checkin() example uses the "upload" mode. This means that the
+                           client will connect to the server and use an HTTP connection to upload the file to the
+                           server where it will be subsequently checked in. HTTP does not require any additional
+                           setup and it may be the only choice available for facilities having only WAN access to
+                           the TACTIC server. However, HTTP is a very slow transport protocol so, if possible, it
+                           is better and faster to use other available modes.
+            </p>
+            <p>The copy and move modes use a "handoff" directory, which is an intermediate directory
+                           that is visible on the network to both the client machine and the TACTIC server. When
+                           the check-in is executed, the files are first copied or moved to this handoff directory.
+                           The TACTIC server is then notified and grabs the files and puts them into the
+                           repository, renaming as the naming conventions stipulate. The files are always "moved"
+                           from the handoff directory to the repository. The advantage of using these modes over
+                           the "upload" mode is that they go through NFS or CIFS. These modes make use of the
+                           fast networks and huge file servers that are available in typical media and production
+                           facilities.
+            </p>
+            <p>The copy and modes require a bit of setup because the server and the client must be
+                           able to see the handoff directory. You need to configure the TACTIC server configuration
+                           file, located in &lt;site_dir&gt;/config/tactic_&lt;os&gt;-conf.xml. This file contains the
+                           following relevant settings:
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>win32_client_handoff_dir: the handoff directory as seen from a Windows
+                                                client
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>linux_client_handoff_dir: the handoff directory as seen from a Linux
+                                                client 
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>win32_server_handoff_dir: the handoff directory as seen from a Windows
+                                                TACTIC server
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>linux_server_handoff_dir: the handoff directory as seen from a Linux
+                                                server
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <p>Note that the win32 settings apply to all flavors of Windows, including Windows 64-bit
+                           machines. The Linux settings apply to all POSIX machines including Debian base operating
+                           systems and Mac OS X.
+            </p>
+            <p>After you set the configuration, you can then use the copy or move modes to take
+                           advantage of the handoff directory:
+            </p><pre class="screen">    # simple check-in of a file using move mode
+    desc = 'A Simple Checkin'
+    snapshot = my.server.simple_checkin(search_key, context, file_path, description=desc, mode="move")
+    print snapshot.get('snapshot')</pre><p>Note that the only difference in this example from earlier check-in examples is that
+                           the mode parameter is set to "move".
+            </p>
+         </div>
+         <div class="simplesect" title="Preallocated check-in (mode=&#34;preallocate&#34;)">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e751"></a>Preallocated check-in (mode="preallocate")
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Preallocated check-ins are the most efficient check-ins. Bandwidth and storage space are
+                           expensive commodities in a typical media or production facility, so there is a definite
+                           cost and time benefit to reducing their use as much as possible.
+            </p>
+            <p>Preallocated check-ins enable a client process to be checked directly into the
+                           repository. They are recommended for check-ins that are very heavy in either bandwidth or
+                           disk usage and are designed to minimize both. Some production processes that would
+                           benefit from using this check-in mode include rendering frames, ingesting plates,
+                           simulating data, and so on.
+            </p>
+            <p>The following steps describe the process for preallocating check-ins:</p>
+            <div class="orderedlist">
+               <ol class="orderedlist" type="1">
+                  <li class="listitem">
+                     <p>Create an empty snapshot to reserve a check-in version and context. </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Ask for a path in the repository from the TACTIC server.</p>
+                  </li>
+                  <li class="listitem">
+                     <p>Create the files directly in the path given by the TACTIC server.</p>
+                  </li>
+                  <li class="listitem">
+                     <p>Inform TACTIC that the files have been placed in the appropriate
+                                            location.
+                     </p>
+                  </li>
+               </ol>
+            </div>
+            <p>The path supplied by TACTIC in the preallocation is located directly in the
+                           repository. The process generating the files can thus save the files directly to the
+                           correct location in the repository (following all the predefined naming conventions).
+                           Files are created directly in the repository with the correct directory and file name as
+                           TACTIC would have checked them in using the other methods. This eliminates later having
+                           to copy or move files around the network unnecessarily, as is typically required by
+                           other check-in modes.
+            </p>
+            <p>Because the simple_checkin(), group_checkin() and directory_checkin() functions
+                           perform the entire check-in process in one step, you cannot use them for preallocated
+                           check-ins. Instead, you would use a piecewise check-in to build up the checked in parts.
+                           The following is an example of a preallocated check-in using a piecewise
+                           approach:
+            </p><pre class="screen">    search_type = "prod/render"
+    code = "XG002_beauty" 
+    search_key = my.server.build_search_key(search_type, code)
+
+    # create an empty snapshot
+    desc = 'A Preallocated Checkin'
+    context = "render"
+    snapshot = my.server.create_snapshot(search_key, context, description=desc)
+
+    # get the preallocated path
+    snapshot_code = snapshot.get('code')
+    file_pattern = snapshot.get_preallocated_path(snapshot_code, file_type="main")
+    print "file_pattern: ", file_path
+
+    # generate the files
+    for i in range(1, 20):
+        file_path = file_pattern % i
+        render_file(file_path)
+
+    # add the files to the snapshot
+    snapshot = server.add_group(snapshot_code, file_type="main", file_range="1-20", mode="preallocate")
+    print snapshot.get("snapshot")</pre><p>Executing the above code would result in output something
+                           like:
+            </p><pre class="screen">file_pattern: XG002_beauty_v012.%0.4d.tif
+&lt;snapshot&gt;
+  &lt;file name="XG002_beauty_v012.%0.4d.tif" file_code="123BAR" type="main"/&gt;
+&lt;/snapshot&gt;</pre><p>The file pattern returned is completely dependent on naming conventions. In this case,
+                           the search_type would have had to define a naming convention whereby the context of
+                           "render" produces the above file pattern. For example, the file naming convention code
+                           could
+                           include:
+            </p><pre class="screen">def prod_render(my):
+    render = my.sobject
+    ext = my.get_file_ext()
+
+    parts = []
+    parts.append( render.get_value('code') )
+    parts.append( "v%0.3d" % my.snapshot.get_value("version")  )
+
+    file_name = "_".join(parts) + ".%0.4d" + ext
+    return file_name</pre><p>(See the naming convention documentation for more information on how to set up naming
+                           conventions.)
+            </p>
+            <p>It should be noted that the function get_preallocated_path() returns a full path,
+                           including the filename as specified by the naming conventions. Ideally, TACTIC must be
+                           able to generate the correct path that can be used to save the files (as in the example
+                           above).
+            </p>
+            <p>There is enormous advantage to using preallocated check-ins. Files are created directly
+                           to the repository, eliminating all of the unnecessary copying of files around the
+                           servers. When groups of files reach the muti-gigabyte or even terabyte range, it becomes
+                           prohibitively expensive to check in files in the traditional manner. Preallocated
+                           check-ins maximize the use of your internal system architecture.
+            </p>
+         </div>
+         <div class="simplesect" title="In-Place Checkins">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e793"></a>In-Place Checkins
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>In general, the in-place check-in should be considered as the last resort. In-place
+                           check-ins do not make use of the TACTIC naming conventions, and may be the only option
+                           when you are confronted by a legacy directory structure. Using this check-in method makes
+                           the assumption that you will be able to later define logic that will map to a desired
+                           naming convention. As a guideline, naming conventions should be procedural and as simple
+                           as possible, so you must plan carefully before considering in-place check-ins.
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-developer_developer_client-api-basic.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-developer_client-api.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_client-api-dependency.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

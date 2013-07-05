@@ -1,0 +1,177 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Project Automation - Triggers</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_advanced-automation.html" title="Advanced Automation">
+      <link rel="prev" href="tactic-setup_setup_tactic-event-system.html" title="TACTIC Event System Introduction">
+      <link rel="next" href="tactic-setup_setup_project-automation-notifications.html" title="Project Automation - Notifications">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_tactic-event-system.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-automation-notifications.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Project Automation - Triggers">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_project-automation-triggers"></a>Project Automation - Triggers
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>Triggers are events that are called upon a transaction to automate workflow.  These
+                    triggers can be accessed within the Project Workflow view.
+         </p>
+         <p><span class="bold"><strong>Admin Viwes -&gt; Project Admin -&gt; Project Workflow</strong></span></p>
+         <p><span class="inlinemediaobject"><img src="media/pipeline.png"></span></p>
+         <p>Each process in the pipeline can have their own triggers.  Right clicking on a process and
+                    choosing <span class="bold"><strong>show notification/trigger</strong></span> option will open a tab
+                    to define a trigger for that specific process.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/OpenTriggers.png"></span></p>
+         <p><span class="inlinemediaobject"><img src="media/TriggersTab.png"></span></p>
+         <p>The trigger tab will also display the assigned process. Clicking the insert button will
+                    open the trigger UI.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/AddNewTrigger.png"></span></p>
+         <p>
+                    
+         </p>
+         <div class="informaltable">
+            <table border="0">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="bold"><strong>Title</strong></span></td>
+                     <td>Title of the trigger.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Description</strong></span></td>
+                     <td>Description of the trigger.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Unique Code</strong></span></td>
+                     <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Event</strong></span></td>
+                     <td>Drop down list of trigger events. This event is where the trigger is
+                                                    called.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Action</strong></span></td>
+                     <td>The action is what the event will </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>
+                
+         </p>
+         <p></p>
+         <p></p>
+         <h6><a name="d0e5545"></a>EVENT
+         </h6>
+         <p>The Events drop down list provides a wide range of different triggers.</p>
+         <p><span class="inlinemediaobject"><img src="media/Event.png"></span></p>
+         <p>Depending on the trigger the Event box may show additional options.</p>
+         <p><span class="bold"><strong>A new note is added</strong></span> - This Event will be called when a
+                    new note is inserted into the process.
+         </p>
+         <p><span class="bold"><strong>A task status is changed</strong></span> - This event will be called when
+                    a status is changed. The event box also gives a additional option to choose specific
+                    status.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Event_TaskStatusIsChanged.png"></span></p>
+         <p><span class="bold"><strong>A task is assigned</strong></span> - This event will be called when any
+                    task in the specified process is assigned.
+         </p>
+         <p><span class="bold"><strong>Files are checked in</strong></span> - This event will be called when
+                    there is a checkin to the specified trigger. This event also gives a additional option to
+                    choose what process the action will effect.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Event_FilesAreCheckedIn.png"></span></p>
+         <p><span class="bold"><strong>Files are checked out </strong></span>- This event will be called when
+                    there is a checkout to the specified trigger.
+         </p>
+         <p><span class="bold"><strong>Cusom Event</strong></span> - 
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Event_CustomEvent.png"></span></p>
+         <p></p>
+         <p></p>
+         <p>
+                    
+         </p>
+         <h6><a name="d0e5595"></a>ACTION
+         </h6>
+         <p>
+                
+         </p>
+         <p>The Action drop down list provides a series of predifined actions that work with the above
+                    events.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Action.png"></span></p>
+         <p><span class="bold"><strong>Send a notification</strong></span> - See project automation notification
+                    docs.
+         </p>
+         <p><span class="bold"><strong>Update another task status</strong></span> - This action will update a
+                    task status. This action also opens additional options to update status of current and other
+                    process of the pipeline as well as the option of status.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Action_UpdateAnotherTaskStatus.png"></span></p>
+         <p><span class="bold"><strong>Create another task</strong></span> - This Action will create a task upon
+                    event. This action also opens additional options to choose from creating a task in current
+                    or next process.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Action_CreateAnotherTask.png"></span></p>
+         <p><span class="bold"><strong>Run python code</strong></span> - This Action will run python code upon
+                    event. The action box opens additional options to name and insert a python code.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Action_RunPythonCode.png"></span></p>
+         <p><span class="bold"><strong>Run python trigger</strong></span> - This Action will run python trigger
+                    upon event. The action box opens additional option to insert the name of the trigger. These
+                    can be custom written scripts that can be called from Tactic's API.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/Action_RunPythonTrigger.png"></span></p>
+         <p>When satisfied with the options set to run a trigger, the trigger must be saved in order
+                    to be applied.  When the trigger is saved the title of the trigger will appear benieth the
+                    triggers panel.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/save_trigger.png"></span></p>
+         <p>There are no limitations of how many triggers you can have. Each process can have multiple
+                    triggers applied.
+         </p>
+         <p></p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_tactic-event-system.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_advanced-automation.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-automation-notifications.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

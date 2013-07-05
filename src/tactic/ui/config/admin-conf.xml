@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<admin_views>
+  <element name="create_project"/>
+  <element name="global_admin"/>
+  <element name="project_admin"/>
+
+  <element name="separator"/>
+
+  <element name="project_essentials"/>
+</admin_views>
+
+
+</config>
+
+

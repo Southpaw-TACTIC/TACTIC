@@ -1,0 +1,39 @@
+<html>
+    <body>
+        <p>XSI Python Installation Test - <input type='button' onclick='open_cmd()' name='Click' value='Click to open cmd.exe'></input></p></p>
+    </body>
+<script>
+function PyXSI()
+{
+    this.xsi = new ActiveXObject( "XSI.Application" )
+    // Verify a connection was made
+    if ( this.xsi == undefined ) {
+        alert( "Connection to XSI failed" )
+        return
+    }
+
+    this.app = this.xsi.Application
+
+    // Call XSI's LogMessage Command
+    // (Must prefix command with the XSI application object)
+    this.xsi.LogMessage( "Connection to XSI established" )
+    this.xsi.LogMessage( "XSI Test finished" )
+
+}
+
+PyXSI.prototype.py = function(cmd)
+{
+    this.app.ExecuteScriptCode( cmd, "Python" )
+}
+
+xsi = new PyXSI()
+
+function open_cmd()
+{
+    alert('Close the cmd.exe window.')
+    xsi.py("import os; os.system('cmd.exe')")
+    alert('Test is finished.')
+}   
+</script>
+</html>
+

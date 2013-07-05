@@ -1,0 +1,201 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Upgrade TACTIC</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-tactic-application.html" title="Install TACTIC Application">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_install-tactic-license.html" title="Install a TACTIC License">
+      <link rel="next" href="tactic-sys-admin_sys-admin_multiple-tactic-services.html" title="Multiple TACTIC Services">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-license.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_multiple-tactic-services.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Upgrade TACTIC">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_upgrade-tactic"></a>Upgrade TACTIC 
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>Upgrading TACTIC is usually a relatively simple procedure:</p>
+         <div class="simplesect" title="Linux">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2371"></a>Linux
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="orderedlist">
+               <ol class="orderedlist" type="1">
+                  <li class="listitem">
+                     <p>Download the new release of TACTIC from the Download section of
+                                            support.southpawtech.com . TACTIC is delivered as a zipped (.zip) file.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Copy the new version to the installed directory of TACTIC and unpack it. e.g. </p>
+                     <p><span class="command"><strong>cd /home/apache/</strong></span></p>
+                     <p><span class="command"><strong>unzip tactic-2.6.0.v01.zip</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Stop the TACTIC service</p>
+                     <p><span class="command"><strong>/etc/init.d/tactic stop</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Switch the symbolic link. See explanation on symbolic link below.</p>
+                  </li>
+                  <li class="listitem">
+                     <p>In a cmd shell, cd to the bin directory of the new installation:</p>
+                     <p><span class="command"><strong>cd /home/apache/tactic/src/bin</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Back up the current database:</p>
+                     <p><span class="command"><strong>pg_dumpall -U postgres -c &gt; database_&lt;date&gt;.sql</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Run the upgrade script. The version number argument (for example, 2.6.0.v01)
+                                            is optional. 
+                     </p>
+                     <p><span class="command"><strong>python upgrade_db.py</strong></span></p>
+                     <p>First, you will be prompted to confirm whether the displayed version is the
+                                            right one to upgrade to. 
+                     </p>
+                     <p>On proceeding, it will check the upgrade script's version tree against the
+                                            currently installed TACTIC version (the new one). 
+                     </p>
+                     <p>Normally, they should be the same. In case they are not, you will be prompted
+                                            again to confirm if this is actually intended. Warning: if the versions do not
+                                            match, it is very likely you have not stopped the old version from running or
+                                            have not symlinked "tactic" to the new version yet. 
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Restart the TACTIC service:</p>
+                     <p><span class="command"><strong>/etc/init.d/tactic start</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Go to the "Projects" view in the Admin site.</p>
+                  </li>
+                  <li class="listitem">
+                     <p>Optional: Compare each project's schema with the one used by TACTIC.</p>
+                  </li>
+               </ol>
+            </div>
+         </div>
+         <p><span class="bold"><strong>Explanation of switching symbolic links</strong></span></p>
+         <p> By default, in your python installation, like
+                    /usr/lib/python2.5/site-packages/tacticenv/tactic_paths.py it defines the TACTIC_INSTALL_DIR
+                    = '/home/apache/tactic' and so a convenient way to upgrade is to untar the new release in
+                    /home/apache/ as e.g , /home/apache/tactic-2.5.0.rc04 cd /home/apache then delete any
+                    existing symbolic link named "tactic" by running <span class="command"><strong>rm tactic</strong></span>. Afterwards,
+                    you can create a new symlink using <span class="command"><strong>ln -s tactic-2.5.0.rc04 tactic</strong></span> With
+                    the tactic service stopped, and the TACTIC_INSTALL_DIR practically pointing to the new
+                    release because of the symlink, now you can safely run src/bin/upgrade_db.py in the new
+                    release. 
+         </p>
+         <div class="simplesect" title="Windows">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2443"></a>Windows
+                     </h4>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <p>
+                    
+         </p>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">
+                  <p>Download the new release of TACTIC from the Download section of
+                                         support.southpawtech.com . TACTIC is delivered as a zipped (.zip) file.
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>Copy the new version to the installed directory of TACTIC and unzip it.</p>
+               </li>
+               <li class="listitem">
+                  <p>Stop the TACTIC service</p>
+                  <p><span class="command"><strong>Run services.msc</strong></span></p>
+                  <p><span class="command"><strong>Select the service Tactic Server, click on the Stop
+                                               button</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Rename the top directory of the new version to TACTIC.</p>
+               </li>
+               <li class="listitem">
+                  <p>In a cmd shell, cd to the bin directory of the new installation:</p>
+                  <p><span class="command"><strong>cd C:\Program Files\Southpaw\Tactic\src\bin</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Back up the current database:</p>
+                  <p><span class="command"><strong>pg_dumpall -U postgres -c &gt; database_&lt;date&gt;.sql</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Run the upgrade script. The version number argument (for example, 2.6.0.v01)
+                                         is optional. 
+                  </p>
+                  <p><span class="command"><strong>python upgrade_db.py</strong></span></p>
+                  <p>First, you will be prompted to confirm whether the displayed version is the
+                                         right one to upgrade to. 
+                  </p>
+                  <p>On proceeding, it will check the upgrade script's version tree against the
+                                         currently installed TACTIC version (the new one). 
+                  </p>
+                  <p>Normally, they should be the same. In case they are not, you will be prompted
+                                         again to confirm if this is actually intended. Warning: if the versions do not
+                                         match, it is very likely you have not stopped the old version from running or
+                                         have not symlinked "tactic" to the new version yet. 
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>Restart the TACTIC service:</p>
+                  <p><span class="command"><strong>Select the service Tactic Server, click on the Start
+                                               button</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Go to the "Projects" view in the Admin site.</p>
+               </li>
+               <li class="listitem">
+                  <p>Optional: Compare each project's schema with the one used by TACTIC.</p>
+               </li>
+            </ol>
+         </div>
+         <p>
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-license.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-tactic-application.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_multiple-tactic-services.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+  <nuke_wdg>
+
+    <html>
+
+      <head>
+        <style type="text/css">
+          .frame_container {
+            border: 1px solid #000000;
+            margin: 10px; 
+            padding: 10px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="spt_top">
+
+          <div style="width:400; height:85" class="frame_container">        
+            <div style="float:left" ><img src="/assets/sthpw/widget/nuke_wdg/nuke_logo.jpg"/></div>
+            <input type="button" style="width:120px; float:right" class="spt_application_button" value="Launch Nuke"/>
+          </div>
+
+          <div style="width:400; height: 60;" class="frame_container">        
+            <textarea class="spt_description" rows="3" cols="40">Enter a Description</textarea>
+            <div class="spt_context" style="float:right">
+              <div style="float:left"><b>Context</b></div>
+              <div style="float:right; padding-left:5px"><element name="context"/></div>
+             <br/>
+              <input type="button" class="spt_checkin_button" value="Checkin" style="float:right; width:120px"/>
+            </div>
+
+          </div>
+
+          <div class="spt_checkin_history frame_container" style="width:400; height: 320">
+            <b>History</b>
+            <input type="button" style="width:120px; float:right" class="spt_load_button" value="Load Selected"/>
+            <br/><br/>
+            <div id="spt_history_panel" style="overflow:auto;width:400; height: 300"> </div>
+          </div>
+
+        </div>
+      </body>
+
+    </html>
+
+    <element name="context">
+      <display class="SelectWdg">
+        <values>match_move|roto|comp</values>
+      </display>
+    </element>
+
+
+
+
+   <behavior class='spt_top'>{
+      "type": "load",
+      "cbjs_action": '''
+        var server = TacticServerStub.get();
+        var applet = spt.Applet.get();
+        var top_el = bvr.src_el;
+
+        var search_key = bvr.kwargs.search_key;
+        top_el.search_key = search_key;
+
+        top_el.application = bvr.kwargs.application;
+
+        var context_el = top_el.getElement(".spt_context")
+        var select_el = context_el.getElement(".spt_input");
+        top_el.context = select_el.value;
+      
+
+        var kwargs = {
+          "view":"table",
+          "search_type": "sthpw/snapshot",
+          "expression": "@SOBJECT(sthpw/snapshot['context', '"+ top_el.context +"'])",
+          "mode_exp":"relative",
+          "element_names": "preview,context,version,description,timestamp,is_current,dependency",
+          "mode":"simple",
+          "parent_key": search_key
+        }
+        spt.panel.load("spt_history_panel", "tactic.ui.panel.TableLayoutWdg", kwargs)
+       
+      '''
+    }</behavior>
+
+
+
+    <behavior class='spt_application_button'>{
+      "type": "click_up",
+      "cbjs_action": '''
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var exec = top_el.application;
+          applet.exec_shell(exec, false);
+      '''
+    }</behavior>
+
+
+
+    <behavior class='spt_load_button'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+        try {
+
+            //-------Get the Necessary Classes----------------------------------------------
+            var server = TacticServerStub.get()
+            var applet = spt.Applet.get()
+            var port = "50007"
+            var host = "localhost"
+
+            application_load = function(search_key) {
+
+            //-------Get the Path information
+            var snapshot = server.get_by_search_key(search_key);
+            var version = snapshot.version;
+            var snapshot_code = snapshot.code;
+
+            var path = server.get_path_from_snapshot(snapshot_code);
+
+            var repo_path = path;
+            
+            var path_split = path.split("assets")
+            var base_dirs = server.get_base_dirs();
+            var sandbox_base = base_dirs.win32_sandbox_dir;
+            var sandbox_path = sandbox_base + path_split[1]
+alert(sandbox_path);
+            //-------Download the files to the client machine------------------------------
+            spt.app_busy.show("Downloading to sandbox...", "Version: " + version)
+            var files = server.checkout_snapshot(snapshot_code);
+            //var sandbox_path = files[0];            
+ 
+            // Generate the Command
+            cmd = "nuke.scriptOpen('"+sandbox_path+"')";
+
+            // Execute the Command in NUKE
+            applet.command_port(host, port, cmd);
+          }
+      
+          //-------Execute----------------------------------------------------------
+
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var context = top_el.context;
+
+          var table = top_el.getElement(".spt_table");
+          search_keys = spt.dg_table.get_selected_search_keys(table);
+
+          if (search_keys.length == 1) {
+            application_load(search_keys[0])
+          }
+          else {
+            alert("Please select only one snapshot");
+          }
+
+          spt.app_busy.hide();
+
+        }
+        catch(err) {
+          alert(err);
+          spt.app_busy.hide();
+        }
+
+
+      ''']]>
+    }</behavior>
+
+
+
+    <behavior class='spt_checkin_button'>{
+      "type": "click_up",
+      "cbjs_action": '''
+        try {
+          spt.app_busy.show("Nuke Checkin", " ")
+
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var checkin_history_el = top_el.getElement(".spt_checkin_history")
+          var description_el = top_el.getElement(".spt_description");
+          var description = description_el.value;
+          var context = top_el.context;
+
+          var applet = spt.Applet.get();
+          var server = TacticServerStub.get();
+          var temp_path = "c:/sthpw/nuke/temp/tactic_temp.txt";
+          var temp_dir = "c:/sthpw/nuke/temp";
+          var temp_file = "c:/sthpw/nuke/temp/checkin_temp.nk";
+
+          applet.rmtree(temp_dir)
+          applet.makedirs(temp_dir)
+
+          var port = "50007"
+          var host = "localhost"
+          var cmd = "nuke.scriptSave('"+temp_file+"')"
+          applet.command_port(host, port, cmd)
+        
+          var snapshot = server.simple_checkin(bvr.kwargs.search_key, context, temp_file, {'mode': 'upload', 'description': description})
+          alert("NUKE Checkin Complete - Version " + snapshot.version)
+          spt.app_busy.hide();
+          spt.panel.refresh(checkin_history_el);
+ 
+        }
+        catch(err) {
+          spt.app_busy.hide();
+          alert(err)
+        }
+        
+      '''
+    }</behavior>
+
+
+
+
+    <behavior class='spt_context'>{
+      "type": "change",
+      "cbjs_action": '''
+
+        var top_el = bvr.src_el.getParent(".spt_top");
+        var context_el = bvr.src_el
+        var select_el = context_el.getElement(".spt_input");
+        top_el.context = select_el.value;
+        var search_key = top_el.search_key;
+
+        var kwargs = {
+          "view":"table",
+          "search_type": "sthpw/snapshot",
+          "expression": "@SOBJECT(sthpw/snapshot['context', '"+ top_el.context +"'])",
+          "mode_exp":"relative",
+          "element_names": "preview,context,version,description,timestamp,is_current,dependency",
+          "mode":"simple",
+          "parent_key":search_key
+        }
+        spt.panel.load("spt_history_panel", "tactic.ui.panel.TableLayoutWdg", kwargs)
+
+
+
+      '''
+    }</behavior>
+
+ 
+  </nuke_wdg>
+</config> 

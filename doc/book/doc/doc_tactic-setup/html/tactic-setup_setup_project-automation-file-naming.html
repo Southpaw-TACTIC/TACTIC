@@ -1,0 +1,745 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Project Automation - File Naming</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_naming-conventions.html" title="Naming Conventions">
+      <link rel="prev" href="tactic-setup_naming-conventions.html" title="Naming Conventions">
+      <link rel="next" href="tactic-setup_setup_project-workflow-introduction.html" title="Project Workflow Introduction">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_naming-conventions.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-workflow-introduction.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Project Automation - File Naming">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_project-automation-file-naming"></a>Project Automation - File Naming
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Introduction">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e3996"></a>Introduction
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p><span class="inlinemediaobject"><img src="media/project-automation_naming.png"></span></p>
+            <p>The naming page provides a way of controlling directory and file naming conventions
+               through a simple expression language . Each naming entry can contain a directory naming
+               and/or file naming. It is designed that so that a relatively non-technical user can
+                           create custom naming conventions for various sTypes.
+            </p>
+            <p>The relative path expression language is a simple language, but in order to understand
+                           it you must know the basic components that generally make up a naming convention. The
+                           expression language allows access to almost any data in TACTIC. The keywords which are
+                           the most relevant in naming conventions are as follows:
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="100px">
+                     <col width="350px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>parent:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The parent sObject to the current sObject defined by the search
+                                                              type attribute
+                           </p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>sObject:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The actual sObject which is being referenced</p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>snapshot:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The child snapshot generated or being referenced for the naming
+                                                              convention. This contains the context and version
+                                                              information.
+                           </p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>file:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The file object pertinent to the check-in. This allows for
+                                                              reference to the original file name or extension.
+                           </p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>login:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The user who is carrying out the check-in or check-out.</p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>user:</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The user who is carrying out the check-in or check-out.</p>
+                                                   
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>The properties of these Search Objects are used to build up the naming
+                           convention.
+            </p>
+            <p>A simple example of a relative path is as follows:</p><pre class="screen">{project.code}/sequence/{parent.code}/{sobject.code}/{snapshot.context}/maya</pre><p>which after translation could be translated into:</p><pre class="screen">sample3d/sequence/XG/XG001/model/maya</pre><p>This expression is explicit in that every variable scopes the object that the
+                           attribute comes from. 
+            </p>
+            <p>Another example is for a file
+                           name:
+            </p><pre class="screen">{sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>This can be translated into: <code class="code">chr001_model_v001.ma</code> upon expansion.
+            </p>
+            <p>The @GET(sobejct.code) or @GET(sobject.sthpw/snapshot.version) TACTIC expression
+                           language syntax can be used instead; however, the original keyword approach is more
+                           readable. In case you do decide to use the TEL syntax, here are the equivalents:
+            </p>
+            <p>{basefile} = {$BASEFILE}</p>
+            <p>{ext} = {$EXT}</p>
+            <p>{project.code} = {$PROJECT}</p>
+            <p>{login} = {$LOGIN}</p>
+            <p>It is important to note that you can't fix TEL syntax with the keyword syntax in the
+                           same field of a naming entry.
+            </p>
+            <p></p>
+            <h6><a name="d0e4118"></a>3.0 Defaults
+            </h6>
+            <p>TACTIC will fall back on the default convention which would be represented by the
+                           following expression. These defaults are slightly different from previous
+                           versions:
+            </p>
+            <p>
+                           
+            </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/{search_type}/{sobject.code}/{context}</pre><p>
+                       
+            </p>
+            <p>
+                           
+            </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {file.name}_{context}_v{version}.{ext}</pre><p>
+                       
+            </p>
+            <p>Checking in the file <span class="bold"><strong><span class="italic">characterFile.ma</span></strong></span> would create the following file and
+                           directory structure:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">assets/sample3d/characters/chr001/publish/characterFile_v001.ma</pre><p>
+                       
+            </p>
+            <h6><a name="d0e4147"></a>Assumptions
+            </h6>
+            <p>Various assumptions have been made about which attributes are attached to which
+                           SObjects. It is often the case that the context is composed of a number of parts that
+                           are of interest to a naming convention.
+            </p>
+            <p>For example, it is conceivable to have a context named: "model/hi". However, you may
+                           wish to break this up in a specific way in your naming convention. This is accomplished
+                           using [] notation common to many programming languages.
+            </p>
+            <p>The following notation could be used for a directory using this: which could be
+                           translated into 
+            </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {code}/{context[0]}/maya/{context[1]}</pre><pre class="screen"><span class="bold"><strong>Result:</strong></span> chr001/model/maya/hi</pre></div>
+         <div class="simplesect" title="Inserting Naming Conventions">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e4163"></a>Inserting Naming Conventions
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>To insert a naming convention expression, load a <span class="bold"><strong>Naming</strong></span> view and click the Insert button to insert a new set of
+                           expressions. 
+            </p>
+            <p>A Naming Convention sObject has specific properties which are used to either define
+                           the convention or act as conditions to define if the convention should be used for the
+                           given checkin. When Inserting, fill in the following options:
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="117.0pt">
+                     <col width="350.0px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Search Type</strong></span></p>
+                                                   
+                        </td>
+                        <td>The search_type to associate the naming convention to.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Snapshot Type</strong></span></p>
+                                                   
+                        </td>
+                        <td>The snapshot type of the checkin to use as a condition (default for
+                                                       most TACTIC check-ins is 'file'. Default for directory checkin using the
+                                                       General Checkin Widget is 'dir'. Since this is a more advanced
+                                                       attribute, it is hidden by default)
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Context</strong></span></p>
+                                                   
+                        </td>
+                        <td>The snapshot context of the checkin to use as a condition (default
+                                                       checkin when there is no pipeline is 'publish')
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Dir Naming</strong></span></p>
+                                                   
+                        </td>
+                        <td>The expression entry for the directory naming convention</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>File Naming</strong></span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The expression entry for the file naming convention</p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Sandbox Dir Naming</strong></span></p>
+                                                   
+                        </td>
+                        <td>The expression entry for the user sandbox directory naming
+                                                       convention
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Latest versionless</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true(checked), every time a check-in is created, a latest
+                                                       version of the main file will be created as well. If you want to always
+                                                       have a file that refers to the latest version of a model you can use
+                                                       this feature by calling it {sobject.code}_{context}_latest.{ext}. The
+                                                       latest version exists as copy by default. To make it a symlink, set the
+                                                       project setting versionless_mode to 'symlink'. Note: If this is checked,
+                                                       you need to have an entry in the naming table just for this versionless
+                                                       case in addition to the usual one for regular check-ins.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Current versionless</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true(checked), every time a check-in is created, a current
+                                                       version of the main file will be created as well. If you want to always
+                                                       have a file that refers to the latest version of a model you can use
+                                                       this feature by calling it {sobject.code}_{context}_latest.{ext}. The
+                                                       latest version exists as copy by default. To make it a symlink, set the
+                                                       project setting versionless_mode to 'symlink'. Note: If this is checked,
+                                                       you need to have an entry in the naming table just for this versionless
+                                                       case in addition to the usual one for regular check-ins.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Manual version</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true(checked), the incoming file name can dictate what the
+                                                       version of the checked-in snapshot appears as. For intance, if the
+                                                       incoming file name is dessert_v005.jpg, the version will appear as
+                                                       version 5. Another example is sun_V0030.0010.jpg. The version will
+                                                       appear as version 30. It tries to recognize the number immediately after
+                                                       the v or V in the file name. Zero or negative numbers are ignored. If
+                                                       such a version already exists, the check-in will throw an error
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Condition</strong></span></p>
+                                                   
+                        </td>
+                        <td>It can be set up so that differnet naming is adopted based on a
+                                                       particular attribute of the sObject. For instance, for the sType
+                                                       prod/asset, one can assign 2 naming entries. The default naming where
+                                                       the condition is left blank is adopted in most circumstance. The second
+                                                       special naming is adopted when the category attribute equals 'vehicle'
+                                                       by using this expression @GET(.category) =='vehicle'.
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Examples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e4271"></a>Examples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4275"></a>Example A
+               </h6>
+               <p>In the following example, the file is being checked in withe general 'publish'
+                                  context
+               </p>
+               <p><span class="bold"><strong>File:</strong></span>
+                                  <span class="italic">characterFile.ma</span>
+                              
+               </p>
+               <p><span class="bold"><strong>Checkin Context:</strong></span> publish
+               </p>
+               <p><span class="bold"><strong>Desired output:</strong></span>
+                                  sample3d/characters/character001/character001_publish_v001.ma:
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span>  {project.code}/{parent.title}/{sobject.code} </pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4309"></a>Example B
+               </h6>
+               <p>In the following example, the shot RC_001_001 is part of the parent sequence
+                                  RC_001 and is checked in with an 'animation' context. This will also use the short
+                                  hand expressions
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> animation
+               </p>
+               <p><span class="bold"><strong>Desired output:
+                                        </strong></span>sample3d/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_v001.ma
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span>  {project.code}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4340"></a>Example C
+               </h6>
+               <p>In the following example, the desired file location is at the project folder level
+                                  to accommodate a cross-project library of files. 
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> artFile.png
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> publish
+               </p>
+               <p><span class="bold"><strong>Desired output:</strong></span>
+                                  general/art001/art001_publish_v001.png
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> general/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v(snapshot.version}.{ext} </pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4371"></a>Example D
+               </h6>
+               <p>In the following example, a context and subcontext are used for checking in to a
+                                  final process for an art asset
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> artFileFinal.psd
+               </p>
+               <p><span class="bold"><strong>Checkin context/subcontext:</strong></span> final/colourA
+               </p>
+               <p><span class="bold"><strong>Desired Output:</strong></span>
+                                  finals/art001/final/photoshop/colourA/art001_final_colourA_v001.psd
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> finals/{sobject.code}/{snapshot.context[0]}/photoshop/{snapshot.context[1]}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context[0]}_{snapshot.context[1]}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4402"></a>Example E
+               </h6>
+               <p>In the following example, the shot RC_001_001 is part of the parent sequence
+                                  RC_001 and is checked in with an 'animation' context. Also when a user checks out
+                                  the sandbox, files should be organized into a user folder.
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> animation
+               </p>
+               <p><span class="bold"><strong>Desired Repo output:</strong></span>
+                                  sample3d/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_v001.ma
+               </p>
+               <p><span class="bold"><strong>Desired Sandbox output:</strong></span>
+                                  sample3d/albert/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_v001.ma
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4444"></a>Example F
+               </h6>
+               <p>In the following example, the shot RC_001_001 is part of the parent sequence
+                                  RC_001 and is checked in with an 'animation' context. Also when a user checks out
+                                  the sandbox, files should be organized into a user folder. Since we also want to
+                                  define a latest versionless, we need a second entry with the same information, and
+                                  with the latest_versionless check-box checked. In this example we are putting the
+                                  versionless file in the same directory, but you can put it in a different one if
+                                  desired. 
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> animation
+               </p>
+               <p><span class="bold"><strong>Desired Repo output:</strong></span>
+                                  sample3d/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_v001.ma
+               </p>
+               <p><span class="bold"><strong>Desired Repo latest versionless output:</strong></span>
+                                  sample3d/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_latest.ma
+               </p>
+               <p><span class="bold"><strong>Desired Sandbox output:</strong></span>
+                                  sample3d/albert/shot/RC_001/RC_001_001/scenes/RC_001_001_animation_v001.ma
+               </p>
+               <p>Entry 1</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+               <p>Entry 2</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/shot/{parent.code}/{sobject.code}/scenes</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_latest.{ext}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Latest Versionless:</strong></span> true</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4522"></a>Example G
+               </h6>
+               <p>In the following example, a texture file is checked in under shot RC_001_001. Also
+                                  when a user checks out the sandbox, files should be organized into a user folder.
+                                  Since we also want to define a current versionless, we need a second entry with the
+                                  same information, and with the current_versionless check-box checked. In this
+                                  example, we are retaining the original file name
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> animation
+               </p>
+               <p><span class="bold"><strong>Desired Repo output:</strong></span>
+                                  sample3d/shot/RC_001/RC_001_001/texture/my_tree_texture.jpg
+               </p>
+               <p><span class="bold"><strong>Desired Repo latest versionless output:</strong></span>
+                                  sample3d/shot/RC_001/RC_001_001/texture/my_tree_texture_CURRENT.jpg
+               </p>
+               <p><span class="bold"><strong>Desired Sandbox output:</strong></span>
+                                  sample3d/albert/shot/RC_001/RC_001_001/scenes/my_tree_texture.jpg
+               </p>
+               <p>Entry 1</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/shot/{parent.code}/{sobject.code}/textures</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/shot/{parent.code}/{sobject.code}/textures</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {basefile}.{ext}</pre><p>
+                              
+               </p>
+               <p>Entry 2</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/shot/{parent.code}/{sobject.code}/textures</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/shot/{parent.code}/{sobject.code}/textures</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {basefile}_CURRENT.{ext}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Current Versionless:</strong></span> true</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4600"></a>Example H
+               </h6>
+               <p>In the following example, asset file name is made up of asset_code, context, and
+                                  version by default. If the asset's category is '2D' , we will add this category as a
+                                  suffix to the name 
+               </p>
+               <p><span class="bold"><strong>File:</strong></span> my_chr001.jpg
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> model
+               </p>
+               <p><span class="bold"><strong>Desired Repo output:</strong></span>
+                                  sample3d/asset/chr001/chr001_model_v001.jpg
+               </p>
+               <p><span class="bold"><strong>Second Desired Repo output:</strong></span>
+                                  sample3d/asset/chr003/chr003_model_v001_2D.jpg
+               </p>
+               <p><span class="bold"><strong>Desired Sandbox output:</strong></span>
+                                  sample3d/dan/asset/chr001/my_chr001.jpg
+               </p>
+               <p>Entry 1</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/asset/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/asset/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{context}_{version}.{ext}</pre><p>
+                              
+               </p>
+               <p>Entry 2</p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span> {project.code}/asset/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Dir Naming:</strong></span> {project.code}/{login.login}/asset/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{context}_{version}_{sobject.category}.{ext}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Condition:</strong></span> @GET(.category)=='2D'</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e4678"></a>Example I - keywords: snapshot and file
+               </h6>
+               <p>The following is an example of the proper way to use the special keywords
+                                      <span class="bold"><strong>snapshot</strong></span> and <span class="bold"><strong>file</strong></span> in an expression to retrieve the snapshot and file object for a
+                                  check-in:
+               </p>
+               <p>
+                                  
+               </p><pre class="screen">{@GET(snapshot.context)}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen">{@GET(file.type)}</pre><p>
+                              
+               </p>
+               <p>Notice that the syntax for these particular expressions deviates from the syntax
+                                  of typical TACTIC expressions.
+               </p>
+               <p>In the example below, {$PROJECT} is used to replace {project.code}.</p>
+               <p>Keep in mind that it not possible to filter down to the exact snapshot through the
+                                  @GET(sthpw/snapshot['context','anim']) approach.
+               </p>
+               <p></p>
+               <p>Below is an example using these expressions of a file being checked in with the
+                                  general 'publish' context:
+               </p>
+               <p><span class="bold"><strong>File:</strong></span>
+                                  <span class="italic">source_art_v0001.jpg</span>
+                              
+               </p>
+               <p><span class="bold"><strong>Checkin Context:</strong></span> publish
+               </p>
+               <p><span class="bold"><strong>Desired output:</strong></span>
+                                  sample3d/chr/chr001/publish
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span>  {$PROJECT}/chr/{@GET(.code)}/{@GET(snapshot.context)}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> source_art_v{@GET(snapshot.context).version,%04.d}.{@GET(file.type)}</pre><p>
+                              
+               </p>
+            </div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_naming-conventions.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_naming-conventions.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-workflow-introduction.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

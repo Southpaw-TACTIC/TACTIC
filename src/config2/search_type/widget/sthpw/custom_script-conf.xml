@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="folder"/>
+    <element name="title"/>
+    <element name="description"/>
+    <element name="script">
+      <display class="WikiElementWdg"/>
+    </element>
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="folder"/>
+    <element name="title"/>
+    <element name="description"/>
+    <element name="script"/>
+</table>
+
+<simple>
+    <element name="title"/>
+</simple>
+
+
+
+<edit>
+    <element name="code"/>
+    <element name="folder"/>
+    <element name="title"/>
+    <element name="description"/>
+    <element name="script">
+      <display class="TextAreaWdg">
+        <cols>80</cols>
+        <rows>15</rows>
+      </display>
+    </element>
+</edit>
+
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="folder" width="100px"/>
+    <element name="title" width="100px"/>
+    <element name="description" width="200px"/>
+    <element name="script" width="400px"/>
+</add_item>
+
+
+</config>

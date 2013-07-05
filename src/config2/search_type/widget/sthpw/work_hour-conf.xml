@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2010, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+ 
+-->
+
+
+<config>
+
+<definition>
+    <element name="parent" title="Added For">
+        <display class="tactic.ui.table.ParentGroupTableElementWdg"/>
+        <!-- This might be a solution to defining inline editing??? -->
+        <action class="tactic.ui.table.ParentGroupAction"/>
+    </element>
+
+    <element name="project_code" title="Project"/>
+    <element name="category"/>
+    <element name="description" width="300px"/>
+    <element name="login"/>
+    <element name="day" type="timestamp"/>
+    <element name="start_time" type="datetime"/>
+    <element name="end_time" type="datetime"/>
+    <element name="straight_time">
+      <display widget="format">
+        <type>float</type>
+        <total_summary>total</total_summary>
+        <format>-1234.12</format>
+      </display>
+    </element>
+    <element name="over_time">
+      <display widget="format">
+        <type>float</type>
+        <total_summary>total</total_summary>
+        <format>-1234.12</format>
+      </display>
+  </element>
+  <element name="status"/>
+
+</definition>
+
+<edit>
+    <element name="straight_time"/>
+    <element name="start_time" type="datetime"/>
+    <element name="end_time" type="datetime"/>
+</edit>
+
+<edit_definition>
+     <element name="start_time" type="datetime">
+    </element>
+    <element name="end_time" type="datetime">
+    </element>
+     <element name="status">
+         <display class="SelectWdg">
+            <values>approved|unapproved</values>
+            <empty>true</empty>
+        </display>
+    </element>
+
+</edit_definition>
+
+<table>
+    <element name="category"/>
+    <element name="parent"/>
+    <element name="day"/>
+    <element name="status"/>
+    <!--
+    <element name="start_time"/>
+    <element name="end_time"/>
+    -->
+    <element name="description" width="300px"/>
+    <element name="login"/>
+    <element name="straight_time"/>
+    <!--<element name="over_time"/>-->
+</table>
+
+
+<add>
+    <element name="day"/>
+    <element name="start_time"/>
+    <element name="end_time"/>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="login"/>
+    <element name="straight_time"/>
+    <element name="over_time"/>
+</add>
+
+
+<week>
+    <element name="week"/>
+    <element name="parent"/>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="mon"/>
+    <element name="tue"/>
+    <element name="wed"/>
+    <element name="thu"/>
+    <element name="fri"/>
+    <element name="total"/>
+</week>
+
+
+  <color>
+    <element name="status">
+      <colors>
+        <value name="approved">#1ad646</value>
+        <value name="unapproved">#d61a1a</value>
+        <value name="">#d61a1a</value>
+      </colors>
+    </element>
+  </color>
+
+
+
+</config>
+

@@ -1,0 +1,97 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>finish</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_execute_python_script.html" title="execute_python_script">
+      <link rel="next" href="python-client-api_general_generate_ticket.html" title="generate_ticket">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_execute_python_script.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_generate_ticket.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="finish">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_finish"></a>
+                         finish
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                       finish()
+                      </strong></span>
+                
+         </p>
+         <p>
+                End the current transaction and cleans it up
+                
+         </p>
+         <h4><a name="d0e3156"></a>
+                params:
+                
+         </h4>
+         <p>
+                description: this will be recorded in the transaction log as the
+                
+         </p>
+         <p>
+                description of the transction
+                
+         </p>
+         <h4><a name="d0e3162"></a>
+                example:
+                
+         </h4>
+         <p>
+                A full transaction inserting 10 shots.  If an error occurs, all 10
+                
+         </p>
+         <p>
+                inserts will be aborted.
+                
+         </p><pre class="screen">
+    
+server.start('Start adding shots')
+try:
+    for i in range(0,10):
+        server.insert("prod/shot", { 'code': 'XG%0.3d'%i } )
+except:
+    server.abort()
+else:
+    server.finish("10 shots added")
+
+
+    </pre></div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_execute_python_script.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_generate_ticket.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

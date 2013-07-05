@@ -1,0 +1,149 @@
+// This script is used on selected snapshots or parent sobjects 
+// and get the path to the quicktime files.  This is then parsed 
+// into a .smil (xml) quicktime playlist file which is loaded into 
+// Quicktime Player on the local_machine
+
+// The following option only applies if the button is setup to execute 
+// from a parennt of a snapshot.  If the button is applied to a snapshot,
+// it will get whatever context it is.
+
+var CONTEXT = "compositing/preview";
+
+var QUICKTIME = "QuickTimePlayer.exe"; 
+var WIDTH = 720;
+var HEIGHT = 540;
+
+
+
+//-------Setup------------------------------------
+
+var applet = spt.Applet.get();
+var server = TacticServerStub.get();
+
+
+
+//-------Functions----------------------------------
+
+// Get the search_keys from the selected SObjects in the table
+
+get_keys = function() 
+{
+    var table = bvr.src_el.getParent(".spt_table");
+    var search_keys = spt.dg_table.get_selected_search_keys(table);
+
+    return search_keys;
+}
+
+
+
+
+// Return the correct path based on either a direct snapshot
+// or the latest from a parent sobject.
+
+get_correct_path = function(search_key) 
+{
+    var type = search_key.split("?")[0];
+
+    if (type == "sthpw/snapshot") {
+        snapshot = server.get_by_search_key(search_key);
+    }
+    else {
+        var snapshot = server.get_snapshot(search_key, {'version':-1, 'context':CONTEXT, });
+        if (snapshot.code == undefined) {
+          return "NO_"+CONTEXT+"_CHECKIN_AVAILABLE";
+        }
+    }
+
+    //  Get the snapshot variables
+    var version = snapshot.version;
+    var snapshot_code = snapshot.code;
+
+    // Get the repo path
+    var path = server.get_path_from_snapshot(snapshot_code);
+
+    return path;
+
+}
+
+
+// Generate the smil XML string to be dumped into a file 
+// and executed in QuickTimePlayer
+
+generateSmilXml = function(videos, WIDTH, HEIGHT) 
+{
+
+    var smil = [];
+    smil.push( "<?xml version='1.0' encoding='utf-8'?>" );
+    smil.push( "<smil>" );
+    smil.push( " <head>" );
+    smil.push( "  <layout>" );
+    smil.push( "   <root-layout id=\"main\" width=\""+ WIDTH +"\" height=\""+ HEIGHT +"\"/>" );
+    smil.push( "    <region id=\"video\" width=\""+ WIDTH +"\" height=\""+ HEIGHT +"\" fit=\"meet\"/>" );
+    smil.push( "     </layout>" );
+    smil.push( " </head>" );
+    smil.push( " <body>" );
+    smil.push( "  <seq>" );
+        
+    for (var i=0; i<videos.length; i++) {
+        smil.push( "   <video region=\"video\" src=\"" + videos[i] + "\"/>" );
+    }
+    smil.push( "  </seq>" );
+    smil.push( " </body>" );
+    smil.push( "</smil>" );
+
+    smil = smil.join('\n');
+
+    return smil;
+}
+
+
+// Create and Execute the playlist
+create_playlist = function(width, height)
+{
+    var videos = [];
+    var search_keys = get_keys();
+
+    if (search_keys.length == 0) {
+        alert("Please select one ore more Search Objects");
+        return;
+    }
+
+    spt.app_busy.show("Generating Playlist...", search_keys.length + " Video(s)");
+    
+    // Get the path to each video
+    for (i=0; i<search_keys.length; i++) {
+        var path = get_correct_path(search_keys[i]);
+        videos[i] = path;
+    }
+
+    // Generate the smil file
+    var smil = generateSmilXml(videos, width, height);
+
+    // Setup the sandbox dirs
+    var base_dirs = server.get_base_dirs();
+    var sandbox = base_dirs.win32_sandbox_dir;
+    var temp_dir = sandbox + "/quicktime";
+
+    // Create the smil file
+    var smil_path = temp_dir + "/quicktime_playlist.smil";
+    smil_path = smil_path.replace(/\//g, "\\");
+    applet.create_file(smil_path, smil);
+    
+    // Open the smil file in Quicktime
+    var exec = QUICKTIME +  ' "' + smil_path + '"';
+    applet.exec_shell(exec, false);
+
+    spt.app_busy.hide();
+}
+
+
+//-------Execute-----------------------------
+
+try {
+  create_playlist(WIDTH, HEIGHT);
+}
+catch(err) {
+  alert(err);
+  spt.app_busy.hide();
+}
+

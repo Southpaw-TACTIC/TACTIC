@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+  <element name='category'/>
+  <element name='search_type'/>
+  <element name='description'/>
+  <element name='pipeline_code'/>
+  <element name='items'/>
+  <element name='unit_cost'/>
+  <element name='man_weeks'/>
+  <element name='complexity'/>
+</definition>
+
+
+<table>
+  <element name='category'/>
+  <element name='search_type'/>
+  <element name='description'/>
+  <element name='pipeline_code'/>
+  <element name='items'/>
+  <element name='unit_cost'/>
+  <element name='man_weeks'/>
+  <element name='complexity'/>
+  <element name='total_cost'/>
+  <element name='create'/>
+
+</table>
+
+
+</config>

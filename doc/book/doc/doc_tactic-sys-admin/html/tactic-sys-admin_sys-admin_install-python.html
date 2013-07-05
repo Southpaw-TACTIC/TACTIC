@@ -1,0 +1,237 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Python Installation</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_python.html" title="Install Python">
+      <link rel="prev" href="tactic-sys-admin_python.html" title="Install Python">
+      <link rel="next" href="tactic-sys-admin_install-web-server.html" title="Install Web Server">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_python.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_install-web-server.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Python Installation">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_install-python"></a>Python Installation
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Overview">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2559"></a>Overview
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Python is a core element of the TACTIC application. The TACTIC application has been
+                   developed around the the python programming language.
+            </p>
+            <p>The installations of both python and supporting modules is a reqirement in a
+                           successful installation of TACTIC. Although the TACTIC core files can exist on the host
+                           machine, it is the existance of both Python and the supporting modules.
+            </p>
+         </div>
+         <div class="simplesect" title="Python Version">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2566"></a>Python Version
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Python 2.5 is the defacto standard for deployments of the TACTIC application. 2.6 and
+                           2.7 are supported as well. Currently, Python 3.0 is unsupported.
+            </p>
+         </div>
+         <div class="simplesect" title="TACTIC Python Supporting Modules">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2571"></a>TACTIC Python Supporting Modules
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The installation of core Python is not enough for the successful installation of
+                           TACTIC. Several modules must be installed. These modules provide the following
+                           functions:
+            </p>
+            <p>
+                           
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>Extensive <span class="bold"><strong>XML support</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>Connectivity to <span class="bold"><strong>DB co-service</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Win32 </strong></span>support on windows
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Cryptography</strong></span> support
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>JSON</strong></span> support
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Imaging support</p>
+                  </li>
+               </ul>
+            </div>
+            <p>
+                       
+            </p>
+            <p>The TACTIC application can support different different Python Supporting Modules,
+                           depending on the version of TACTIC.
+            </p>
+            <p>There are a number of variables that will affect which modules will be required to
+                           install on a host machine. These considerations are; 
+            </p>
+            <p>
+                           
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>DB Co-service deployed</p>
+                  </li>
+                  <li class="listitem">
+                     <p>Desired support module deployed when multiple support module types
+                                                exist.
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <p>
+                       
+            </p>
+            <p>
+                           
+            </p>
+            <div class="table"><a name="d0e2624"></a><p class="title"><b>Table&nbsp;5.&nbsp;</b></p>
+               <div class="table-contents">
+                  <table summary="" border="0">
+                     <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                     </colgroup>
+                     <thead>
+                        <tr>
+                           <th>Support Module Type</th>
+                           <th>Module name</th>
+                           <th>TACTIC supported version</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr>
+                           <td>XML support</td>
+                           <td>lxml</td>
+                           <td>All</td>
+                        </tr>
+                        <tr>
+                           <td>DB Co-Service Support</td>
+                           <td>Psycopg2 or CX-Oracle (psycopg2 is preferred for postgres
+                                                              database set-up)
+                           </td>
+                           <td>All</td>
+                        </tr>
+                        <tr>
+                           <td>Win32 (used in client computers interacting with the
+                                                              server)
+                           </td>
+                           <td>PyWin32</td>
+                           <td>All</td>
+                        </tr>
+                        <tr>
+                           <td>Cryptography</td>
+                           <td>PyCrypto</td>
+                           <td>All</td>
+                        </tr>
+                        <tr>
+                           <td>JSON (not needed since Python 2.6)</td>
+                           <td>SimpleJSON</td>
+                           <td>All</td>
+                        </tr>
+                        <tr>
+                           <td>Imaging</td>
+                           <td>PIL and ImageMagick (optional)</td>
+                           <td>All</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <p><br class="table-break">
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Installation on Windows">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2682"></a>Installation on Windows
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>On Windows systems, TACTIC Python and supporting module availability is through the
+                           websites of the supporting module projects. Additionally, Southpaw Technology supports
+                           redistribution of installers for these modules on the support web site.
+            </p>
+         </div>
+         <div class="simplesect" title="Installation on UNIX/Linux">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2687"></a>Installation on UNIX/Linux
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>On UNIX/Linux systems, the system package manager typically has options for installing
+                           all the required Python packages onto the UNIX host machine. To find the official
+                           distribution of a supporting package, the search functionality of a package manager is
+                           useful. 
+            </p><pre class="screen">#/ yum search lxml</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_python.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_python.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_install-web-server.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

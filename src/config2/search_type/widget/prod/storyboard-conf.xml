@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="shot_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="update">
+        <display class="UpdateWdg">
+            <delete>true</delete>
+        </display>
+    </element>
+</definition>
+
+
+<table>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="shot_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="general_publish" edit="false"/>
+</table>
+
+
+<summary>
+  <element name="files"/>
+  <element name="code"/>
+  <element name="description"/>
+</summary>
+
+
+<edit>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="snapshot">
+        <display class='SimpleUploadWdg'>
+            <context>publish</context>
+        </display>
+    </element>
+
+    <element name="shot_code">
+        <display class="pyasm.prod.web.SObjectSelectionWdg">
+            <search_type>prod/shot</search_type>
+        </display>
+        <action class="NonEmptyAction"/>
+    </element>
+    <element name="code"/>
+    <element name="description"/>
+</edit>
+
+<add_item>
+    <element name="shot_code" width="100px"/>
+    <element name="code" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+</config>
+
+
+

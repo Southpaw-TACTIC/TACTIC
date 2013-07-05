@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+    <element name="project_code"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+    <!--
+    <element name="preview" title="Preview" edit="true">
+      <display class="pyasm.widget.ThumbWdg">
+        <icon_size>100%</icon_size>
+        <redirect_expr>@SOBJECT(parent)</redirect_expr>
+      </display>
+    </element>
+    -->
+
+    <!--
+    <element name="title">
+        <display widget="expression">
+            <expression>@GET(parent.title)</expression>
+        </display>
+    </element>
+
+    <element name="description">
+        <display widget="expression">
+            <expression>@GET(parent.description)</expression>
+        </display>
+    </element>
+    -->
+    <element name="project">
+        <display widget="expression">
+            <expression>@GET(project.title)</expression>
+        </display>
+    </element>
+
+    <element name="search_type" title='Type'>
+        <display widget="expression">
+            <expression>@GET(search_type.title)</expression>
+        </display>
+    </element>
+
+    <element name="keywords"/>
+    <element name="timestamp"/>
+</definition>
+
+<result_list>
+    <element name="preview"/>
+    <element name="project"/>
+    <element name="search_type" title='Type'/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+</result_list>
+
+
+<table>
+    <element name="preview"/>
+    <element name="project"/>
+    <element name="search_type" title='Type'/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+</table>
+
+<simple_filter>
+    <element name='global keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>global</mode>
+        </display>
+    </element>
+</simple_filter>
+
+</config>
+

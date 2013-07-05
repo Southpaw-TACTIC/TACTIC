@@ -1,0 +1,1938 @@
+###########################################################
+#
+# Copyright (c) 2005, Southpaw Technology
+#                     All Rights Reserved
+#
+# PROPRIETARY INFORMATION.  This software is proprietary to
+# Southpaw Technology, and is not to be reproduced, transmitted,
+# or disclosed in any way without written permission.
+#
+#
+#
+
+__all__ = ["Snapshot","SnapshotType","SObjectNotFoundException"]
+
+
+import os, string, types
+
+from pyasm.common import Container, Xml, Environment, Common, Config
+from pyasm.search import *
+from project import Project
+from file import File, FileRange, FileGroup
+
+class SObjectNotFoundException(Exception):
+    pass
+
+class SnapshotType(SObject):
+    SEARCH_TYPE = "sthpw/snapshot_type"
+
+    '''
+    def get_by_code(cls, code):
+        sobject = super(SnapshotType, cls).get_by_code(code)
+        if not sobject:
+            search_type = "sthpw/snapshot_type"
+            search = Search(search_type)
+            search.add_filter("code", code)
+            sobject = search.get_sobject()
+
+        return sobject
+    get_by_code = classmethod(get_by_code)
+    '''
+
+class Snapshot(SObject):
+
+    SEARCH_TYPE = "sthpw/snapshot"
+
+    def __init__(my, search_type=None, columns=None, results=None, fast_data=None):
+        super(Snapshot, my).__init__(search_type, columns, results, fast_data=fast_data)
+
+        my.files_dict = None
+
+
+    def get_defaults(cls):
+        '''specifies the defaults for this sobject'''
+        defaults = {
+            "version": 1,
+            "revision": 0
+        }
+
+        return defaults
+    get_defaults = classmethod(get_defaults)
+
+
+    def get_sobject(my, prefix="search"):
+        '''get the sobject it is pointing to'''
+
+        # TODO: this is caching of sobjects. Should probably be held
+        # centrally
+        search_type = my.get_value("%s_type" % prefix)
+        search_id = my.get_value("%s_id" % prefix)
+        if not search_type:
+            return None
+
+        #key = "Snapshot_get_sobj:%s:%s" % ( search_type, search_id )
+        #sobject = Container.get(key)
+        sobject = Search.get_by_id(search_type, search_id)
+        if sobject == None:
+            #search = Search( search_type )
+            #search.add_id_filter( search_id )
+            #sobject = search.get_sobject()
+            if not sobject:
+                raise SObjectNotFoundException('SObject not found [%s,%s] for snapshot [%s]' \
+                    %(search_type, search_id, my.get_code()))
+            
+            #Container.put(key, sobject)
+
+        return sobject
+
+
+
+    def set_sobject(my, sobject):
+        my.set_value("search_type", sobject.get_search_type() )
+        my.set_value("search_id", sobject.get_id() )
+
+
+    def get_level(my):
+        return my.get_sobject(prefix="level")
+ 
+    def set_level(my, sobject):
+        my.set_value("level_type", sobject.get_search_type() )
+        my.set_value("level_id", sobject.get_id() )
+
+       
+
+
+    def get_code(my):
+        return my.get_value("code")
+
+
+    def get_snapshot_type(my):
+        return my.get_value("snapshot_type")
+
+
+    def get_snapshot_xml(my):
+        return my.get_xml_value("snapshot")
+
+    def get_label(my):
+        return my.get_value('label')
+
+    def get_repo(my,snapshot=None):
+        repo =  my.get_sobject().get_repo(my)
+        return repo
+
+
+    def get_ref_snapshot(my, name, value, mode='explicit', show_retired=False):
+        '''get the referred reference snapshot'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot//ref[@%s='%s']" % (name, value) )
+        return my.get_ref_snapshot_by_node(node, show_retired=show_retired )
+
+
+    def get_ref_snapshots(my, name, value, mode='explicit', show_retired=False):
+        '''get the referred reference snapshot'''
+        xml = my.get_snapshot_xml()
+        nodes = xml.get_nodes("snapshot//ref[@%s='%s']" % (name, value) )
+
+        snapshots = []
+        for node in nodes:
+            snapshot = my.get_ref_snapshot_by_node(node, show_retired=show_retired )
+            if snapshot:
+                snapshots.append(snapshot)
+        return snapshots
+
+
+
+    def get_ref_snapshot_by_node(cls, node, mode='explicit', show_retired=False):
+        '''get the ref snapshot represented by this node'''
+        search_type = Xml.get_attribute(node, "search_type")
+        search_id = Xml.get_attribute(node, "search_id")
+        context = Xml.get_attribute(node, "context")
+        snapshot_code = Xml.get_attribute(node, "snapshot_code")
+
+        #add level_support
+        level_type = Xml.get_attribute(node, "level_type")
+        level_id = Xml.get_attribute(node, "level_id")
+
+        if mode == 'latest':
+            version = -1
+        elif mode == 'current':
+            version = 0
+        elif mode == 'explicit':
+            if snapshot_code and not level_type:
+                snapshot = cls.get_by_code(snapshot_code, show_retired=show_retired)
+                return snapshot
+            version = Xml.get_attribute(node, "version")
+        else:
+            version = Xml.get_attribute(node, "version")
+
+        snapshot = cls.get_by_version(search_type, search_id, context, version, level_type=level_type, level_id=level_id, show_retired=show_retired )
+
+        return snapshot
+
+    get_ref_snapshot_by_node = classmethod(get_ref_snapshot_by_node)
+
+
+    def get_all_ref_snapshots(my, mode='explicit', type='ref', show_retired=False):
+        '''look at the snapshot a get the referred snapshot'''
+        xml = my.get_snapshot_xml()
+        nodes = xml.get_nodes("snapshot//%s" % type)
+        snapshots = []
+        for node in nodes:
+            snapshot = my.get_ref_snapshot_by_node(node, mode=mode,  show_retired=show_retired)
+            if snapshot:
+                snapshots.append(snapshot)
+        return snapshots
+
+
+
+    def get_version(my):
+        return my.get_value("version")
+    
+    def get_context(my):
+        return my.get_value("context")
+
+    def get_type(my):
+        return my.get_value("snapshot_type")
+
+    def get_previous(my):
+        version = my.get_value("version")
+        if version == 1:
+            return None
+
+        search_type = my.get_value("search_type")
+        search_id = my.get_value("search_id")
+        context = my.get_value("context")
+
+        prev_version = version - 1
+
+        return my.get_by_version(search_type, search_id, context, prev_version)
+
+    def get_file_type(my):
+        '''this will just get the first one if there are more than 1'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file")
+        if node is not None:
+            return Xml.get_attribute(node, "type")
+        else:
+            return ''
+
+    def get_all_file_types(my):
+        '''get all file types'''
+        xml = my.get_snapshot_xml()
+        types = xml.get_nodes_attr('snapshot/file', 'type')
+        return types
+
+    def get_all_file_objects(my, exclude_file_types=[]):
+        '''get all of the file objects in a snsapshot'''
+        file_objects = []
+        xml = my.get_snapshot_xml()
+        file_codes = xml.get_values("snapshot//file/@file_code")
+        file_types = xml.get_values("snapshot//file/@type")
+        if not file_codes:
+            return []
+
+
+        filtered_codes = []
+        for file_code, file_type in zip(file_codes, file_types):
+            if file_type in exclude_file_types:
+                continue
+            filtered_codes.append(file_code)
+    
+        search = Search("sthpw/file")
+        search.add_filters("code", filtered_codes)
+        file_objects = search.get_sobjects()
+
+        return file_objects
+
+
+
+    def get_files_by_snapshots(cls, snapshots):
+        '''get all of the file objects in a snsapshot'''
+        if not snapshots:
+            return []
+
+        all_file_codes = []
+        for snapshot in snapshots:
+            file_codes = snapshot.get_all_file_codes()
+            all_file_codes.extend(file_codes)
+
+        if not all_file_codes:
+            return []
+
+        search = Search("sthpw/file")
+        search.add_filters("code", all_file_codes)
+        search.add_order_by("code")
+        file_objects = search.get_sobjects()
+        return file_objects
+    get_files_by_snapshots = classmethod(get_files_by_snapshots)
+
+
+
+    def get_files_dict_by_snapshots(cls, snapshots, attr="snapshot_code"):
+        '''gets all of the file objects in a dict of lists.  The keys are
+        sorted by the attr argument'''
+        # preprocess and get all file objects
+        all_files = {}
+        files = Snapshot.get_files_by_snapshots(snapshots)
+        for file in files:
+            snapshot_code = file.get_value(attr)
+
+            file_list = all_files.get(snapshot_code)
+            if not file_list:
+                file_list = []
+                all_files[snapshot_code] = file_list
+
+            file_list.append(file)
+        return all_files 
+    get_files_dict_by_snapshots = classmethod(get_files_dict_by_snapshots)
+
+
+
+
+    def get_type_by_file_name(my, file_name):
+        '''gets the name of the file reference'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@name='%s']"%file_name)
+        if node is not None:
+            return Xml.get_attribute(node, "type")
+        else:
+            return ''
+
+
+    def get_type_by_file_code(my, file_code):
+        '''gets the name of the file reference'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@file_code='%s']"%file_code)
+        if node is not None:
+            return Xml.get_attribute(node, "type")
+        else:
+            return ''
+
+
+
+
+
+    def get_name_by_type(my, type):
+        '''gets the name of the file reference'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is not None:
+            return Xml.get_attribute(node, "name")
+        else:
+            return ''
+
+
+    def get_names_by_type(my, type):
+        '''gets the name of the file reference'''
+        xml = my.get_snapshot_xml()
+        nodes = xml.get_nodes("snapshot/file[@type='%s']"%type)
+
+        names = []
+        for node in nodes:
+            name = Xml.get_attribute(node, "name")
+            names.append(name)
+        return names
+
+
+
+    def get_file_name_by_type(my, type):
+        '''gets the full filename of the file reference as it is on disk'''
+        '''Note that this is now the same as "get_name_by_type" because the
+        snapshot now contains the full file name'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        return file_name
+
+    def get_all_file_names(my):
+        file_names = []
+
+        xml = my.get_snapshot_xml()
+        nodes = xml.get_nodes("snapshot/file")
+        if not nodes:
+            return file_names
+
+        for node in nodes:
+            file_name = my._get_file_name(node)
+            file_names.append(file_name)
+
+        return file_names
+
+
+    def get_all_file_codes(my):
+        xml = my.get_snapshot_xml()
+        file_codes = xml.get_values("snapshot//file/@file_code")
+        return file_codes
+
+
+    def get_files_by_type(my, type):
+        '''gets the name of the file reference'''
+        xml = my.get_snapshot_xml()
+        nodes = xml.get_nodes("snapshot/file[@type='%s']"%type)
+
+        codes = []
+        for node in nodes:
+            code = Xml.get_attribute(node, "file_code")
+            codes.append(code)
+
+        search = Search("sthpw/file")
+        search.add_filters("code", codes)
+        search.add_order_by("code")
+        file_objects = search.get_sobjects()
+        return file_objects
+
+
+    def get_file_by_type(my, type):
+        '''gets the name of the file reference'''
+        file_objects = my.get_files_by_type(type)
+        if file_objects:
+            return file_objects[0]
+        else:
+            return None
+
+
+
+
+    def get_file_code_by_type(my, type):
+        '''gets the file_code'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is not None:
+            return Xml.get_attribute(node, "file_code")
+        else:
+            return ''
+
+
+    def get_file_range(my, type='main'):
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        file_name = my._get_file_name(node)
+
+        file_range_str = Xml.get_attribute(node, "file_range")
+
+        file_range = FileRange.get(file_range_str)
+        return file_range
+
+
+
+    def get_expanded_file_names(my, type='main'):
+        '''get all of the file names in the range'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        file_name = my._get_file_name(node)
+
+        file_range_str = Xml.get_attribute(node, "file_range")
+
+        file_range = FileRange.get(file_range_str)
+
+        expanded_names = FileGroup.expand_paths(file_name, file_range)
+
+        return expanded_names
+
+
+    def get_remote_web_path_by_type(my, type):
+        ''' get the lib path by specifying a file type '''
+        xml = my.get_snapshot_xml()
+
+        web_dir = my.get_remote_web_dir()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        web_path = "%s/%s" % (web_dir,file_name)
+        
+        return web_path
+
+
+
+    def get_lib_path_by_type(my, type):
+        ''' get the lib path by specifying a file type '''
+        xml = my.get_snapshot_xml()
+
+        lib_dir = my.get_lib_dir(file_type=type)
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        file_path = "%s/%s" % (lib_dir,file_name)
+        
+        return file_path
+
+
+    def get_client_lib_path_by_type(my, type):
+        ''' get the lib path by specifying a file type '''
+        xml = my.get_snapshot_xml()
+
+        client_lib_dir = my.get_client_lib_dir(file_type=type)
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        file_path = "%s/%s" % (client_lib_dir,file_name)
+        
+        return file_path
+
+
+
+    def get_sandbox_path_by_type(my, type):
+        ''' get the lib path by specifying a file type '''
+        xml = my.get_snapshot_xml()
+
+        sandbox_dir = my.get_sandbox_dir(file_type=type)
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        file_path = "%s/%s" % (sandbox_dir,file_name)
+        
+        return file_path
+
+
+    def get_env_path_by_type(my, type):
+        ''' get the env path by specifying a file type '''
+        xml = my.get_snapshot_xml()
+
+        env_dir = my.get_env_dir()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+        file_path = "%s/%s" % (env_dir,file_name)
+        
+        return file_path
+
+
+
+
+    def get_path_by_type(my, type, mode):
+        dir = my.get_dir(mode, file_type=type, file_object=None)
+
+        xml = my.get_snapshot_xml()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+        file_name = my._get_file_name(node)
+
+        # FIXME: need file object here
+        # get the source file name
+        #if filename_mode == 'source':
+        #    file_name = os.path.basename(file_object.get_value("source_path"))
+        #else:
+        #    file_name = my._get_file_name(node)
+
+        file_path = "%s/%s" % (dir,file_name)
+        
+        return file_path
+
+
+
+
+ 
+    def get_all_web_paths(my):
+        xml = my.get_snapshot_xml()
+
+        web_dir = my.get_web_dir()
+
+        nodes = xml.get_nodes("snapshot/file")
+        paths = []
+        for node in nodes:
+            file_name = my._get_file_name(node)
+            file_path = "%s/%s" % (web_dir,file_name)
+
+            paths.append(file_path)
+
+        return paths
+
+
+    def get_all_remote_web_paths(my):
+        xml = my.get_snapshot_xml()
+
+        web_dir = my.get_remote_web_dir()
+
+        nodes = xml.get_nodes("snapshot/file")
+        paths = []
+        for node in nodes:
+            file_name = my._get_file_name(node)
+            file_path = "%s/%s" % (web_dir,file_name)
+
+            paths.append(file_path)
+
+        return paths
+
+
+    
+    def _get_files_dict(my, xml):
+        if my.files_dict != None:
+            return my.files_dict
+            
+        nodes = xml.get_nodes("snapshot//file")
+        # get all of the codes
+        file_codes = [Xml.get_attribute(x, "file_code") for x in nodes]
+        search = Search("sthpw/file")
+        search.add_filters("code", file_codes)
+        files = search.get_sobjects()
+        my.files_dict = {}
+        for file in files:
+            my.files_dict[file.get_value("code")] = file
+
+        return my.files_dict
+
+
+    def get_dir(my, mode, file_type='main',file_object=None):
+        '''get the repo dir given a mode'''
+        dir = ''
+        if mode in ['lib', 'repo']:
+            dir = my.get_lib_dir(file_type=file_type,file_object=file_object)
+        elif mode == 'client_repo':
+            dir = my.get_client_lib_dir(file_type=file_type,file_object=file_object)
+        elif mode == 'sandbox':
+            # sandbox always uses naming, so no file object needs to be
+            # included
+            dir = my.get_sandbox_dir(file_type=file_type)
+        elif mode == 'local_repo':
+            dir = my.get_local_repo_dir(file_type=file_type,file_object=file_object)
+        elif mode == 'web':
+            dir = my.get_web_dir(file_type=file_type,file_object=file_object)
+        elif mode == 'relative':
+            dir = my.get_relative_dir(file_type=file_type,file_object=file_object)
+        return dir
+
+
+
+    def get_all_lib_paths(my, mode='lib', expand_paths=False, filename_mode=None, exclude_file_types=[]):
+        '''Get paths for different modes, default to lib mode which is the repo
+        server path
+        '''
+        xml = my.get_snapshot_xml()
+        files_dict = my._get_files_dict(xml)
+        assert mode in ['lib', 'client_repo', 'sandbox', 'local_repo', 'web', 'relative']
+        paths = []
+        nodes = xml.get_nodes("snapshot/file")
+
+        # have to get all of the file objects here
+        #file_objects = my.get_all_file_objects()
+        for i, node in enumerate(nodes):
+            file_type = Xml.get_attribute(node, "type")
+            file_code = Xml.get_attribute(node, "file_code")
+            if not file_type:
+                file_type = 'main'
+
+            if file_type in exclude_file_types:
+                continue
+
+            file_object = files_dict.get(file_code)
+            # may have been deleted
+            if not file_object:
+                continue
+
+            dir = my.get_dir(mode, file_type=file_type, file_object=file_object)
+
+            # check to see if it is a sequence
+            base_type = file_object.get_value("base_type")
+            if expand_paths and base_type == "sequence":
+                file_names = my.get_expanded_file_names(file_type)
+
+            elif expand_paths and base_type == 'directory':
+                # find the server repo path
+                repo_dir = my.get_dir("repo", file_type=file_type, file_object=file_object)
+                file_name = my._get_file_name(node)
+                repo_dir = "%s/%s" % (repo_dir, file_name)
+                if os.path.isdir(repo_dir):
+                    file_names = [file_name]
+                    new_names = os.listdir(repo_dir)
+                    for new_name in new_names:
+                        file_names.append("%s/%s" % (file_name, new_name))
+                else:
+                    file_names = [file_name]
+
+            else:
+
+                # get the source file name
+                if filename_mode == 'source':
+                    file_name = os.path.basename(file_object.get_value("source_path"))
+                else:
+                    file_name = my._get_file_name(node)
+
+                file_names = [file_name]
+
+
+
+            for file_name in file_names:
+                file_path = "%s/%s" % (dir,file_name)
+                paths.append(file_path)
+
+        return paths
+
+
+
+
+
+    # DEPRECATED: use client_repo methods below
+    def get_all_client_lib_paths(my, expand_paths=False):
+        return my.get_all_lib_paths("client_repo", expand_paths=expand_paths)
+    def get_all_client_lib_paths_dict(my):
+        paths = my.get_all_paths_dict('client_repo') 
+        return paths
+
+    def get_all_client_repo_paths(my, expand_paths=False):
+        return my.get_all_lib_paths("client_repo", expand_paths=expand_paths)
+    def get_all_client_repo_paths_dict(my):
+        paths = my.get_all_paths_dict('client_repo') 
+        return paths
+
+
+
+    def get_all_local_repo_paths(my, expand_paths=False):
+        return my.get_all_lib_paths("local_repo", expand_paths=expand_paths)
+    def get_all_local_repo_paths_dict(my):
+        paths = my.get_all_paths_dict('local_repo') 
+        return paths
+
+
+
+
+
+    def get_all_web_paths_dict(my):
+        paths = my.get_all_paths_dict('web') 
+
+        return paths
+
+    def get_all_paths_dict(my, mode='lib'):
+        '''this is the general one and  should be called instead of 
+            the specific get_all_web_paths_dict'''
+        xml = my.get_snapshot_xml()
+
+        nodes = xml.get_nodes("snapshot/file")
+
+        # have to get all of the file objects here
+        file_objects = my.get_all_file_objects()
+
+        # ensure that the number of file objects is the same as the number
+        # of nodes
+        if len(nodes) != len(file_objects):
+            print "ERROR: number of nodes does not match number of file objects for snapshot[%s]" % my.get_code()
+            return {}
+
+
+        paths = {}
+        for i, node in enumerate(nodes):
+            type = Xml.get_attribute(node, "type")
+            if not type:
+                type = 'main'
+            repo_dir = my.get_dir(mode, file_type=type, file_object=file_objects[i])
+            file_name = my._get_file_name(node)
+            file_path = "%s/%s" % (repo_dir, file_name)
+
+            paths_list = paths.get(type)
+            if not paths_list:
+                paths_list = []
+                paths[type] = paths_list
+                
+            paths_list.append(file_path)
+
+
+        return paths
+
+
+
+    def get_all_sandbox_paths(my, expand_paths=False):
+        return my.get_all_lib_paths("sandbox", expand_paths=expand_paths)
+
+
+
+
+    def get_node_name(my):
+        ''' gets the node name of the asset that is published'''
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot/file")
+        if node is not None:
+            return Xml.get_attribute(node, 'node_name')
+        else:
+            return ''
+
+    def get_process(my):
+        xml = my.get_snapshot_xml()
+        node = xml.get_node("snapshot")
+        return Xml.get_attribute(node, 'process')
+            
+    def _get_file_name(cls, node):
+        '''Get the file name from the snapshot node.'''
+        # get the file name
+        name = Xml.get_attribute(node, "name")
+        return name
+    _get_file_name = classmethod(_get_file_name)
+
+    def _get_file_code(cls, node):
+        '''Get the file code from the snapshot node.'''
+        # get the file name
+        name = Xml.get_attribute(node, "file_code")
+        return name
+    _get_file_code = classmethod(_get_file_code)
+
+    def _get_file_type(cls, node):
+        '''Get the file code from the snapshot node.'''
+        # get the file name
+        name = Xml.get_attribute(node, "type")
+        return name
+    _get_file_type = classmethod(_get_file_type)
+
+    def _get_node_name(cls, node):
+        '''Get the file code from the snapshot node.'''
+        # get the file name
+        name = Xml.get_attribute(node, "node_name")
+        return name
+    _get_node_name = classmethod(_get_node_name)
+
+    def get_use_naming_by_type(my, file_type):
+        '''determines whether a given file uses naming convention to find
+        it's path'''
+        xml = my.get_snapshot_xml()
+        use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
+        if use_naming == "false":
+            return False
+        else:
+            return True
+
+
+
+
+
+    def is_latest(my):
+        '''determines if this snapshot is the latest or not'''
+        is_latest = my.get_value("is_latest")
+        if is_latest:
+            return True
+        else:
+            return False
+
+
+    def set_latest(my, commit=True):
+        # Set the snapshot to be the latest and find the last latest and
+        # remove it as the latest
+        search_type = my.get_value("search_type")
+        search_id = my.get_value("search_id")
+        context = my.get_value("context")
+
+        level_type = my.get_value("level_type")
+        level_id = my.get_value("level_id")
+
+        last_latest = Snapshot.get_latest(search_type, search_id, context, level_type=level_type, level_id=level_id)
+        if last_latest:
+            # All these comaparison can be removed if Snapshot.get_latest() 
+            # returns the proper snapshot in the corresponding version tree
+            # which it should.
+            # this version must be greater than the last latest
+            last_version = last_latest.get_value("version")
+            last_revision = last_latest.get_value("revision")
+            this_version = my.get_value("version")
+            this_revision = my.get_value("revision")
+            if this_version < last_version:
+                return
+            elif this_version == last_version and this_revision <= last_revision:
+                return
+            last_latest.set_value("is_latest", False)
+            last_latest.commit()
+            
+        my.set_value("is_latest", True)
+        if commit:
+            my.commit()
+
+
+
+
+
+
+    def is_current(my):
+        '''determines if this snapshot is current or not'''
+        is_current = my.get_value("is_current")
+        if is_current:
+            return True
+        else:
+            return False
+
+
+
+
+    def set_current(my, commit=True):
+        # Set the snapshot to be the current and find the last current and
+        # remove it as the current
+        search_type = my.get_value("search_type")
+        search_id = my.get_value("search_id")
+        context = my.get_value("context")
+
+        level_type = my.get_value("level_type")
+        level_id = my.get_value("level_id")
+
+        last_current = Snapshot.get_current(search_type, search_id, context, level_type=level_type, level_id=level_id)
+        if last_current:
+            last_current.set_value("is_current", False)
+            last_current.commit()
+
+        # if there is a versionless, point it to this snapshot
+        my.update_versionless()
+
+
+
+        my.set_value("is_current", True)
+        if commit:
+            my.commit()
+
+
+
+    def get_full_snapshot_xml(my):
+        '''builds a full xml snapshot xml including all metadata'''
+        snapshot_xml = my.get_xml_value("snapshot")
+
+        from pyasm.checkin import SnapshotBuilder
+        builder = SnapshotBuilder(snapshot_xml)
+        root = builder.get_root_node()
+
+        version = my.get_value("version")
+        Xml.set_attribute(root, "version", version )
+
+        description = my.get_value("description")
+        Xml.set_attribute(root, "description", description )
+
+
+        # find the path for each file
+        file_nodes = snapshot_xml.get_nodes("snapshot/file")
+        for file_node in file_nodes:
+            file_code = Xml.get_attribute(file_node, "file_code")
+            file_object = File.get_by_code(file_code)
+
+            checkin_dir = file_object.get_value("checkin_dir")
+            source_path = file_object.get_value("source_path")
+
+            to_name = file_object.get_full_file_name()
+
+            file_type = Xml.get_attribute(file_node, "type")
+            client_dir = my.get_client_lib_dir(file_type=file_type)
+            web_dir = my.get_remote_web_dir(file_type=file_type)
+
+            file_node = snapshot_xml.get_node("snapshot/file[@name='%s']" % to_name)
+            assert file_node is not None
+            Xml.set_attribute(file_node, "checkin_dir", checkin_dir )
+            Xml.set_attribute(file_node, "client_dir", client_dir )
+            Xml.set_attribute(file_node, "web_dir", web_dir )
+            Xml.set_attribute(file_node, "source_path", source_path )
+
+        return builder.to_string()
+
+
+        
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext=''):
+        from pyasm.checkin import FileCheckin
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext)
+
+
+
+
+    def remove_file(my, file_type):
+
+        xml = my.get_xml_value('snapshot')
+
+        # remove the file
+        files = my.get_files_by_type(file_type)
+        for file in files:
+            file_code = file.get_code()
+            root = xml.get_node("snapshot")
+            node = xml.get_node("snapshot/file[@file_code='%s']" % file_code)
+            xml.remove_child(root, node)
+
+            # remove the file on disk
+            file_name = file.get_value("file_name")
+            dir = my.get_lib_dir(file_type=file_type)
+            path = "%s/%s" % (dir, file_name)
+            FileUndo.remove(path)
+
+            file.delete()
+
+        # change the snapshot
+        my.set_value('snapshot', xml.to_string())
+        my.commit()
+
+
+
+    def add_file(my, file_path, file_type='main', mode=None, create_icon=False):
+
+        # FIXME: not sure what this mode does??? This code is taken from the
+        # client api and it doesn't seem to make sense here on server code
+        if mode:
+            assert mode in ['move', 'copy', 'preallocate', 'upload', 'manual','inplace']
+
+        # file_path can be an array of files:
+        if type(file_path) != types.ListType:
+            is_array = False
+            file_paths = [file_path]
+        else:
+            is_array = True
+            file_paths = file_path
+        if type(file_type) != types.ListType:
+            file_types = [file_type]
+        else:
+            file_types = file_type
+
+        assert len(file_paths) == len(file_types)
+        snapshot_code = my.get_code()
+
+        if mode in ['preallocate','inplace']:
+            keep_file_name = True
+        else:
+            keep_file_name = False
+
+
+        from pyasm.checkin import FileAppendCheckin
+
+        for i, file_path in enumerate(file_paths):
+            # store the passed in path as a source path
+            source_paths = []
+            source_paths.append(file_path)
+
+            file_type = file_types[i]
+
+            file_path = file_path.replace("\\", "/")
+            old_filename = os.path.basename(file_path)
+            filename = File.get_filesystem_name(old_filename)
+
+            sub_file_paths = [file_path]
+            sub_file_types = [file_type]
+
+            # if this is a file, then try to create an icon
+            if create_icon and os.path.isfile(file_path):
+                icon_creator = IconCreator(file_path)
+                icon_creator.execute()
+
+                web_path = icon_creator.get_web_path()
+                icon_path = icon_creator.get_icon_path()
+                if web_path:
+                    sub_file_paths = [file_path, web_path, icon_path]
+                    sub_file_types = [file_type, 'web', 'icon']
+                    source_paths.append('')
+                    source_paths.append('')
+
+
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths)
+            checkin.execute()
+            snapshot = checkin.get_snapshot()
+
+
+
+    def add_ref_by_snapshot(my, snapshot, type='ref', tag='main', commit=True):
+        from pyasm.checkin import SnapshotBuilder
+        xml = my.get_xml_value("snapshot")
+        builder = SnapshotBuilder(xml)
+        builder.add_ref_by_snapshot(snapshot, type=type, tag=tag)
+        my.set_value("snapshot", builder.to_string() )
+        if commit:
+            my.commit()
+
+
+
+
+    ##################
+    # Static Methods
+    ##################
+    def get_default_context():
+        return "publish"
+    get_default_context = staticmethod(get_default_context)
+
+
+    def get_by_sobject(sobject, context=None):
+        return Snapshot.get_by_search_type( sobject.get_search_type(), sobject.get_id(), context )
+
+    get_by_sobject = staticmethod(get_by_sobject)
+
+
+    def get_by_search_type(search_type,search_id=None,context=None):
+
+        search = Search(Snapshot.SEARCH_TYPE)
+        search.add_filter("search_type", search_type)
+        if search_id != None:
+            search.add_filter("search_id", search_id)
+        if context != None:
+            search.add_filter("context", context)
+        search.add_order_by("timestamp desc")
+
+        return search.do_search()
+    get_by_search_type = staticmethod(get_by_search_type)
+
+
+
+
+
+    def get_snapshot(search_type, search_id, context=None, version=None, \
+            revision=None, show_retired=False, use_cache=True, \
+            level_type=None, level_id=None, level_parent_search=True):
+        '''General snapshot function
+
+        @params
+        search_type: the type of sobject ie: prod/asset
+        search_id: the id of the this sobject
+        context: the context of view of the checkin
+        version: the version of the checkin to look for
+        revision: the revision of the checkin to look for
+        show_retired: flag (True or False) for determining whether to include
+            retired snapshots
+        use_cache: determents whether to attempt to get the sobject from cache
+            Set this to False is you have just checked in a file
+        level_type: the sobject level at which this is checked into
+        level_id: the sobject id of the level at which this is checked into
+        level_parent_search: if set to True, it would try to search the snapshot of the level's parent is a level search_type, search_id are given
+        @return
+        snapshot sobject
+        '''
+
+        # get from the database
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=version,\
+                revision=revision, show_retired=show_retired, use_cache=False,\
+                level_type=level_type, level_id=level_id)
+        
+
+        if snapshot or not level_parent_search:
+            return snapshot
+        # if no level_type is specified, then this was all that need to be
+        # checked
+        if not level_type:
+            return None
+
+        from schema import Schema
+        schema = Schema.get()
+        if not schema:
+            return None
+
+        # get the parent of the level_type
+        level_types = []
+        tmp_type = level_type
+        while 1:
+            parent_type = schema.get_parent_type(tmp_type)
+            if not parent_type:
+                break
+            level_types.append(parent_type)
+            tmp_type = parent_type
+
+
+        # go up the hierarchy one by one and get the sobjects
+        level_sobjs = []
+        cur_level_id = level_id
+        for cur_level_type in level_types:
+
+            parent_type = schema.get_parent_type(cur_level_type)
+            if not parent_type:
+                break
+
+            search_type_obj = SearchType.get(parent_type)
+            foreign_key = search_type_obj.get_foreign_key()
+
+            search = Search(cur_level_type)
+            search.add_id_filter(level_id)
+            current = search.get_sobject()
+
+            parent_code = current.get_value(foreign_key)
+            parent = Search.get_by_code(parent_type, parent_code)
+
+            parent_id = parent.get_id()
+
+            snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=parent_type, level_id=parent_id)
+            if snapshot:
+                return snapshot
+
+    
+        # try at the top level
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None)
+        return snapshot
+
+    get_snapshot = staticmethod(get_snapshot)
+
+
+
+    # DEPRECATED: use get_snapshot()
+    def get_by_version(search_type, search_id, context=None, version=None, \
+            revision=None, show_retired=False, use_cache=True, \
+            level_type=None, level_id=None):
+        return Snapshot.get_snapshot(search_type, search_id, context=context,version=version, \
+            revision=revision, show_retired=show_retired, use_cache=use_cache, \
+            level_type=level_type, level_id=level_id)
+    get_by_version = staticmethod(get_by_version)
+
+
+    def _get_by_version(search_type, search_id, context=None, version=None, \
+            revision=None, show_retired=False, use_cache=True, \
+            level_type=None, level_id=None):
+        '''General snapshot function
+
+        @params
+        search_type: the type of sobject ie: prod/asset
+        search_id: the id of the this sobject
+        context: the context of view of the checkin
+        version: the version of the checkin to look for: 0, -1, max, None
+        revision: the revision of the checkin to look for: 0, -1, None
+        show_retired: flag (True or False) for determining whether to include
+            retired snapshots
+        use_cache: determents whether to attempt to get the sobject from cache
+            Set this to False is you have just checked in a file
+        level_type: the sobject level at which this is checked into
+        level_id: the sobject id of the level at which this is checked into
+
+        @return
+        snapshot sobject
+        '''
+        search = Search(Snapshot.SEARCH_TYPE)
+        search.add_filter("search_type", search_type)
+        if not isinstance(search_id, list):
+            search.add_filter("search_id", search_id)
+        else:
+            search.add_filters("search_id", search_id)
+
+
+        # if a level_type and level_id is specified, then the search
+        # is considerably more complicated
+        if level_type and level_id:
+            # first look for a checkin with the parent
+            search.add_filter("level_type", level_type)
+            search.add_filter("level_id", level_id)
+        else:
+            search.add_where('"level_type" is NULL')
+            search.add_where('"level_id" is NULL')
+
+        # version of zero is current
+        if version in [0, '0']:
+            search.add_filter("is_current", True)
+
+        # use caching to speed up redundant searches
+        key = "%s:%s" % ( search_type, search_id )
+        
+        if level_type and level_id:
+            key = "%s:%s:%s" % (key, level_type, level_id )
+        if context != None:
+            search.add_filter("context", context)
+            key = '%s:%s' %(key, context)
+        if version not in [None, '', -1, "-1", 0, "0", "max"]:
+            search.add_filter("version", version)
+            key = '%s:%s' %(key, version)
+        elif version in [-1, '-1']:
+            search.add_filter('is_latest', True)
+            key = '%s:is_latest' %(key)
+
+
+        if revision in [ None, 0 ]:
+            search.add_filter('revision', 0)
+        elif revision not in [-1, "-1"]:
+            search.add_filter("revision", revision)
+            key = '%s:%s' %(key, revision)
+        elif revision in [-1, '-1']: 
+            # Avoid filtering is_current or is_latest for revision as they 
+            # are sort of meant for version, but shared by revision.
+            # Latest revision of a version does not necessarily have is_latest set to True
+            pass    
+            #search.add_filter('is_latest', True)
+       
+
+        search.set_show_retired(show_retired)
+        # order backwards
+        search.add_order_by("version desc")
+        search.add_order_by("revision desc")
+        #search.add_order_by("timestamp desc")
+        if not isinstance(search_id, list):
+            # only cache if search_id is not a list
+            if use_cache:
+                sobject = Snapshot.get_cached_obj(key)
+            else:
+                sobject = None
+
+            dict = {}
+            if not sobject:
+                sobject = search.get_sobject()
+                dict = Snapshot.get_cache_dict()
+                if sobject:
+                    dict[key] = sobject
+                else:
+                    # to record that this key does not return anything
+                    dict[key] = '__NONE__'
+            elif sobject == '__NONE__':
+                return None
+
+            return sobject
+        else:
+            return search.get_sobjects()
+        
+    _get_by_version = staticmethod(_get_by_version)
+
+
+
+    def get_latest(search_type, search_id, context=None, use_cache=True, \
+            level_type=None, level_id=None, show_retired=False):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
+        return snapshot
+    get_latest = staticmethod(get_latest)
+
+
+
+    def get_latest_by_sobject(sobject, context=None, show_retired=False):
+        search_type = sobject.get_search_type()
+        search_id = sobject.get_id()
+        snapshot = Snapshot.get_latest(search_type, search_id, \
+                context=context, show_retired=show_retired)
+        return snapshot
+    get_latest_by_sobject = staticmethod(get_latest_by_sobject)
+
+
+
+    def get_versionless(cls, search_type, search_id, context, mode='current', create=True, snapshot_type='versionless'):
+        '''the versionless is assumed to exist if asked for, unless create = False. it is then just querying'''
+        # FIXME: get it manually because version "0" is "is_current"
+        # (historical)
+        #snapshot = Snapshot.get_by_version(search_type, search_id, \
+        #        context=context, version=0, show_retired=True)
+        assert mode in ['current','latest']
+
+        from pyasm.biz import Project
+        search_type = Project.get_full_search_type(search_type)
+        if mode == 'latest':
+            version = -1
+        else:
+            version = 0
+
+        # just a simple query
+        if not create:
+            search = Search("sthpw/snapshot")
+            search.add_filter("search_type", search_type)
+            search.add_filter("search_id", search_id)
+            search.add_filter("context", context)
+            # we can't search by this since the versionless snapshot 
+            # inherits the snapshot_type of the originating snapshot
+            #search.add_filter("snapshot_type", 'versionless')
+            search.add_filter("version", version)
+            snapshot = search.get_sobject()
+            return snapshot
+
+        search = Search("sthpw/snapshot")
+        search.add_filter("search_type", search_type)
+        search.add_filter("search_id", search_id)
+        search.add_filter("context", context)
+
+       
+
+        search.add_filter("version", version)
+        snapshot = search.get_sobject()
+
+        if not snapshot:
+            sobject = Search.get_by_id(search_type, search_id)
+            # should be passed in
+            #snapshot_type = 'versionless'
+            snapshot = Snapshot.create(sobject, snapshot_type, context, column="snapshot", description="Versionless", is_current=False, is_latest=False)
+            # FIXME: do this in one SQL statement, if possible
+            snapshot.set_value("version", version)
+            
+            snapshot.commit()
+        return snapshot
+    get_versionless = classmethod(get_versionless)
+
+
+
+
+
+    def get_by_sobjects(cls, sobjects, context=None, is_latest=False, is_current=False, show_retired=False, return_dict=False, version=None ):
+        '''NOTE: if context=None, is_latest=True, the result could be more than 1 since there can be multiple 
+        is_latest per parent given several contexts. use return_dict=True in that case to get the latest for each subgroup
+        of snapshots.
+        @param:
+            sobjects - list of sobjects
+        @keyparam:
+            context - snapshot context
+            is_latest - is latest for this context
+            is_current - is current for this context
+            show_retired - deprecated
+            return_dict - return a dictonary of latest per search key. useful when context = None '''
+        if not sobjects:
+            return []
+
+        search_type = sobjects[0].get_search_type()
+
+        # quickly go through the sobjects to determine if their search types
+        # are the same
+        multi_stypes = False
+        for sobject in sobjects:
+            if sobject.get_search_type() != search_type:
+                multi_stypes = True
+                break
+
+
+
+        search = Search("sthpw/snapshot")
+
+        # assume they are of the same type
+        if not multi_stypes:
+            search_ids = [str(x.get_id()) for x in sobjects if x]
+            search.add_filter('search_type', search_type)
+            search.add_filters('search_id', search_ids)
+        else:
+            # FIXME: why doesn't the ops work here?
+            filters = []
+            for sobject in sobjects:
+                search_type = sobject.get_search_type()
+                search_id = sobject.get_id()
+                #search.add_filter('search_type', search_type)
+                #search.add_filter('search_id', search_id, quoted=False)
+                #search.add_op("and")
+                filters.append("search_type = '%s' and search_id = %s" % (search_type, search_id))
+            search.add_where(" or ".join(filters))
+
+        if context:
+            if type(context) == types.ListType:
+                search.add_filters("context", context)
+            else:
+                search.add_filter("context", context)
+        if is_latest:
+            search.add_filter("is_latest", True)
+        if is_current:
+            search.add_filter("is_current", True)
+        elif version:
+            search.add_filter("version", version)
+
+        if show_retired:
+            raise Exception("ERROR: Unsupported show retired flag")
+
+        snapshots = search.get_sobjects()
+
+        # sort them like timestamp desc if returning dict
+        if return_dict:
+            # dictioary to be returned
+            data = {}
+            # account for possible multiple is_latest     
+            for snapshot in snapshots:
+                search_key = snapshot.get_parent_search_key()
+                snapshot_dict = data.get(search_key)
+                if not snapshot_dict:
+                    data[search_key] = {snapshot.get_value('timestamp'): snapshot}
+                else:
+                    snapshot_dict[snapshot.get_value('timestamp')] = snapshot
+
+            # sort reversely to get the latest for each search key
+            for key, value in data.items():
+                latest_snap_list = Common.sort_dict(value, reverse=True)
+                data[key] = latest_snap_list[0]
+            
+            return data
+
+
+        return snapshots
+ 
+    get_by_sobjects = classmethod(get_by_sobjects)
+
+
+
+
+
+    def get_current(search_type, search_id, context=None, level_type=None, level_id=None, return_search=False):
+        '''There should only be one current for each context'''
+        search = Search(Snapshot.SEARCH_TYPE)
+        search.add_filter("search_type", search_type)
+        search.add_filter("search_id", search_id)
+        if context:
+            search.add_filter("context", context)
+
+        search.add_order_by("version desc")
+
+        if level_type:
+            search.add_filter("level_type", level_type)
+            search.add_filter("level_id", level_id)
+
+        search.add_filter("is_current", True)
+        if return_search:
+            return search
+
+        current = search.get_sobject()
+        return current
+
+    get_current = staticmethod(get_current)
+
+
+    def get_current_by_sobject(sobject, context=None):
+        search_type = sobject.get_search_type()
+        search_id = sobject.get_id()
+        snapshot = Snapshot.get_current(search_type, search_id, context)
+        return snapshot
+    get_current_by_sobject = staticmethod(get_current_by_sobject)
+
+    def get_all_current_by_sobject(sobject):
+        '''get all the current snapshots without specifying context'''
+        search_type = sobject.get_search_type()
+        search_id = sobject.get_id()
+
+        snapshot_search = Snapshot.get_current(search_type, search_id, return_search=True)
+        snapshot_search.add_group_aggregate_filter(['search_type','search_id','context'], "version")
+        snapshots = snapshot_search.get_sobjects()
+        return snapshots
+
+    get_all_current_by_sobject = staticmethod(get_all_current_by_sobject)
+
+
+
+
+    def get_contexts(search_type, search_id):
+        search = Search(Snapshot.SEARCH_TYPE)
+        search.add_filter("search_type", search_type)
+        search.add_filter("search_id", search_id)
+
+        search.add_where("(\"is_latest\" = '1' or \"is_current\" = '1')")
+        snapshots = search.get_sobjects()
+
+        contexts = []
+        for snapshot in snapshots:
+            context = snapshot.get_value("context")
+
+
+            # FIXME: make this a flag
+            # only show contexts without subcontexts
+            if context.find("/") != '-1':
+                parts = context.split("/")
+                context = parts[0]
+
+
+
+            if context not in contexts:
+                contexts.append(context)
+
+
+        return contexts
+
+    get_contexts = staticmethod(get_contexts)
+
+
+
+    def is_locked(sobject, context):
+        '''determines if a context is locked'''
+
+        # get all of the snapshots for this sobject
+        search = Search("sthpw/snapshot")
+        search.add_parent_filter(sobject)
+        search.add_filter("context", context)
+        # lock information is always on the version 1!!!!
+        search.add_filter("version", 1)
+        snapshot = search.get_sobject()
+
+        if snapshot:
+            lock_login = snapshot.get_value("lock_login")
+            lock_date = snapshot.get_value("lock_date")
+        
+            if lock_login:
+                return True
+
+        return False
+
+    is_locked = staticmethod(is_locked)
+
+
+    def lock(cls, sobject, context):
+        # get all of the snapshots for this sobject
+        search = Search("sthpw/snapshot")
+        search.add_parent_filter(sobject)
+        search.add_filter("context", context)
+        # lock information is always on the version 1!!!!
+        search.add_filter("version", 1)
+        snapshot = search.get_sobject()
+
+        # if there are no snapshots then it means nothing to lock ??
+        # Besides, presently, there is nothing to store lock information in
+        if not snapshot:
+            return
+
+        login = Environment.get_user_name()
+        snapshot.set_value("lock_login", login)
+        snapshot.set_now("lock_date")
+        snapshot.commit()
+    lock = classmethod(lock)
+
+
+    def unlock(cls, sobject, context):
+        # get all of the snapshots for this sobject
+        search = Search("sthpw/snapshot")
+        search.add_parent_filter(sobject)
+        search.add_filter("context", context)
+        # lock information is always on the version 1!!!!
+        search.add_filter("version", 1)
+        snapshot = search.get_sobject()
+
+        # if there are no snapshots then it means nothing to lock ??
+        # Besides, presently, there is nothing to store lock information in
+        if not snapshot:
+            return
+
+        login = Environment.get_user_name()
+        snapshot.set_value("lock_login", "NULL", quoted=False)
+        snapshot.set_value("lock_date", "NULL", quoted=False)
+        snapshot.commit()
+    unlock = classmethod(unlock)
+
+
+
+
+
+    def create(sobject, snapshot_type, context, column="snapshot", \
+            description="No description", \
+            snapshot_data=None, is_current=None, is_revision=False, \
+            level_type=None, level_id=None, commit=True, is_latest=True,
+            is_synced=True, process=None, version=None):
+
+
+        # Provide a default empty snapshot definition
+        if snapshot_data == None:
+            if sobject.has_value(column):
+                snapshot_data = sobject.get_value(column)
+            if not snapshot_data:
+                snapshot_data = "<snapshot/>"
+
+
+        if not process:
+            # if not specified ...
+            # by default process is the first element of the context
+            context_parts = context.split("/")
+            process = context_parts[0]
+
+        search_type = sobject.get_search_type()
+        search_id = sobject.get_id()
+
+        """
+        rev = None
+        if is_revision:
+            rev = -1
+        """
+        # we are always interested in revision = -1 when finding the last one
+        rev = -1
+        # to find the version number, we have to find the highest number
+        # of a particular snapshot
+        old_snapshot = Snapshot._get_by_version(search_type, search_id, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
+        
+        # have to clear the cache here, because after it is created
+        # it shouldn't be None anymore
+        if not old_snapshot:
+            Snapshot.clear_cache()
+
+        # handle revisions, with no previous version, revision starts at 1
+        revision = 1
+        if old_snapshot and is_revision:
+            revision = old_snapshot.get_value("revision", no_exception=True)
+            if revision:
+                revision = int(revision) + 1
+            else:
+                revision = 1
+
+            # keep the same version
+            version = old_snapshot.get_value("version")
+            if version:
+                version = int(version)
+            else:
+                version = 1
+        else:
+            if version != None:
+                # force the version
+                pass
+            elif old_snapshot:
+                old_version = old_snapshot.get_value("version")
+                version = int(old_version) + 1
+            else:
+                version = 1
+
+        snapshot = Snapshot(Snapshot.SEARCH_TYPE)
+        snapshot.set_value("search_type", search_type )
+        snapshot.set_value("search_id", search_id )
+        snapshot.set_value("column_name", column )
+        snapshot.set_value("snapshot", snapshot_data )
+        snapshot.set_value("snapshot_type", snapshot_type )
+
+        snapshot.set_value("version", version)
+
+        
+        if is_revision:
+            snapshot.set_value("revision", revision)
+
+        # add level type and level_id
+        if level_type:
+            assert level_id
+            snapshot.set_value("level_type", level_type)
+            snapshot.set_value("level_id", level_id)
+
+
+        # add the description
+        if description == None or description == "":
+            if version == 1:
+                description = "Initial insert"
+            else:
+                description = "No comment"
+        snapshot.set_value("description", description )
+
+        # get the login
+        security = Environment.get_security()
+        login_name = security.get_login().get_login()
+        snapshot.set_value("login", login_name)
+
+        # extract the timestamp from the snapshot
+        snapshot_xml = Xml()
+        snapshot_xml.read_string(snapshot_data)
+        #snapshot.set_value("timestamp", timestamp )
+
+        snapshot.set_value("context", context )
+        snapshot.set_value("process", process )
+        snapshot.set_value("project_code", sobject.get_project_code())
+
+        snapshot.set_value("is_synced", is_synced)
+
+        # if commit is false, then just return the snapshot.  Do not run
+        # any of the latest or current code.
+        if not commit:
+            return snapshot
+
+        # set the new snapshot as the current (must be done after setting
+        # context)
+        if is_latest:
+            if is_current != None:
+                if is_current:
+                    snapshot.set_current(commit=False)
+                else:
+                    pass
+            elif sobject.has_auto_current():
+                snapshot.set_current(commit=False)
+            else:
+                # otherwise only set current if there is no current
+                current = Snapshot.get_current(search_type, search_id, context)
+                if not current:
+                    snapshot.set_current(commit=False)
+
+        # always set as latest
+        if is_latest:
+            snapshot.set_latest(commit=False)
+        else:
+            snapshot.set_value("is_latest", False)
+            snapshot.set_value("is_current", False)
+
+
+        snapshot.commit()
+        return snapshot
+    create = staticmethod(create)
+
+
+
+    def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type='strict'):
+        # by default, use strict
+        if not sobject:
+            sobject = my.get_parent()
+        #print "???: ", my.get_value("search_type"), my.get_value("search_id")
+        assert sobject
+
+        # check to see if there is a versionless defined
+        from pyasm.biz import Naming
+        has_versionless = Naming.has_versionless(sobject, my, versionless=snapshot_mode)
+
+        if checkin_type == 'strict' and not has_versionless:
+            return
+
+        # with auto mode, don't use current latest by default ...
+        # unless there is a naming defined for it.
+        if snapshot_mode == 'current' and not has_versionless:
+            return
+
+
+        # if the mode is current then return if this isn't a current snapshot
+        if snapshot_mode == 'current':
+            is_current = my.get_value("is_current")
+            if not is_current:
+                return
+        # if the mode is latest then return if this isn't a latest snapshot
+        elif snapshot_mode == 'latest':
+            is_latest = my.get_value("is_latest")
+            if not is_latest:
+                return
+
+
+
+        # if os is linux, it should be symbolic link as a default
+        if os.name == 'posix':
+            versionless_mode = 'symlink'
+        else:
+            versionless_mode = 'copy'
+        # overrides
+        from pyasm.prod.biz import ProdSetting
+        proj_setting = ProdSetting.get_value_by_key('versionless_mode')
+        if proj_setting:
+            versionless_mode = proj_setting
+        else:
+            config_setting = Config.get_value('checkin', 'versionless_mode')
+            if config_setting:
+                versionless_mode = config_setting
+
+
+
+
+
+        snapshot_xml = my.get_xml_value("snapshot")
+        context = my.get_value("context")
+
+        # get the versionless snapshot
+        search_type = sobject.get_search_type()
+        search_id = sobject.get_id()
+
+        # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
+        snapshot_type = my.get_value('snapshot_type')
+
+        # Get the versionless snapshot.  This is used as a template to build
+        # the next snapshot definition. 
+        versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type)
+        v_snapshot_xml = versionless.get_xml_value("snapshot")
+
+
+        # compare the two snapshots to see if anything has changed
+        # FIXME: this is a rather weak comparison, but will suffice for most
+        # applications for now
+        nodes = snapshot_xml.get_nodes("snapshot/*")
+        v_nodes = v_snapshot_xml.get_nodes("snapshot/*")
+
+        # delete the old file objects
+        file_objects = versionless.get_all_file_objects()
+        for file_object in file_objects:
+            file_object.delete()
+
+
+        # create a new xml for the versionless
+        from pyasm.checkin import SnapshotBuilder
+        old_builder = SnapshotBuilder(snapshot_xml)
+        old_root = old_builder.get_root_node()
+        process = Xml.get_attribute(old_root, 'process')
+        builder = SnapshotBuilder()
+        if process:
+            builder.add_root_attr('process', process)
+
+
+        builder.add_root_attr('ref_snapshot_code', my.get_code() )
+        
+        # get all of the files from this snapshot
+        lib_dir = my.get_lib_dir()
+
+        paths = {}
+        for node in nodes:
+            node_name = Xml.get_node_name(node)
+            if node_name in  ["ref", "input_ref"]:
+                builder.copy_node(node, None)
+                continue
+
+
+
+            file_name = my._get_file_name(node)
+            file_path = "%s/%s" % (lib_dir,file_name)
+            file_code = my._get_file_code(node)
+            file_type = my._get_file_type(node)
+            node_name = my._get_node_name(node)
+
+            orig_file_object = File.get_by_code(file_code)
+            src_path = orig_file_object.get_value('source_path')
+            src_file_name = os.path.basename(src_path)
+
+            base_type = orig_file_object.get_value('base_type')
+            st_size = orig_file_object.get_value('st_size')
+
+            # create a new file object
+            file_object = SearchType.create("sthpw/file")
+            file_object.set_value("search_type", sobject.get_search_type() )
+            file_object.set_value("search_id", sobject.get_id() )
+            file_object.set_value("snapshot_code", versionless.get_code() )
+            file_object.set_value("type", file_type)
+            file_object.set_value("base_type", base_type)
+            if st_size:
+                file_object.set_value("st_size", st_size)
+
+            if base_type == 'directory':
+                ext = None
+            else:
+                base, ext = os.path.splitext(src_file_name)
+
+            # use src file name
+            if src_file_name:
+                file_object.set_value("file_name", src_file_name)
+            else: # otherwise make use of the updated file name from the original file object
+                file_object.set_value("file_name", file_name)
+
+        
+            # build the file name
+            # ... if there is a versionless naming, use it
+            if checkin_type == 'strict' or has_versionless:
+                file_naming = Project.get_file_naming()
+                file_naming.set_sobject(sobject)
+                file_naming.set_snapshot(versionless)
+                file_naming.set_file_object(file_object)
+                file_naming.set_ext(ext)
+                file_name = file_naming.get_file_name()
+
+                dir_naming = None
+            else:
+                # These naming conventions are for the versionless file, not the checked in file
+
+                # with checkin_type = auto ..
+                from pyasm.biz import FileNaming
+                file_naming = FileNaming(naming_expr="{basefile}_{snapshot.process}.{ext}")
+                file_naming.set_sobject(sobject)
+                file_naming.set_snapshot(versionless)
+                file_naming.set_file_object(file_object)
+                file_naming.set_ext(ext)
+                file_name = file_naming.get_file_name()
+
+                # this expects the naming expr
+                has_code = sobject.get_value("code", no_exception=True)
+                if has_code:
+                    dir_naming = "{project.code}/{search_type.table_name}/{code}/{snapshot.process}"
+                else:
+                    dir_naming = "{project.code}/{search_type.table_name}/{id}/{snapshot.process}"
+
+            
+            # reset the versionless file sobject to the new name
+            file_object.set_value("file_name", file_name)
+
+            # commit first to get the file_code for builder
+            file_object.commit()
+
+            info = {'type': file_type }
+              
+            if node_name:
+                info['node_name'] = node_name
+            builder.add_file(file_object, info=info)
+
+
+            # build the directory
+            new_lib_dir = Project.get_project_lib_dir(sobject, versionless, file_object=file_object, file_type=file_type, dir_naming=dir_naming)
+
+            new_path = "%s/%s" % (new_lib_dir, file_name)
+
+            new_relative_dir = Project.get_project_relative_dir(sobject, versionless, file_object=file_object, file_type=file_type, dir_naming=dir_naming)
+
+            file_object.set_value("checkin_dir", new_lib_dir)
+            file_object.set_value("relative_dir", new_relative_dir)
+            # commit again
+            file_object.commit()
+            
+            #print "symlink: ", file_path, new_path, versionless_mode
+
+            
+            FileUndo.symlink(file_path, new_path, mode=versionless_mode)
+
+
+        versionless.set_value("snapshot", builder.to_string())
+        
+		# already set during creation
+        #versionless.set_value('snapshot_type', snapshot_type)
+        versionless.commit()
+
+
+       
+

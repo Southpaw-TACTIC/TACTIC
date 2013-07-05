@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology Inc
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Software Inc, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<template>
+    <element name="new_column" data_type="varchar(256)" nullable="True" new="True"/>
+</template>
+
+<default_definition>
+    <element name="code" data_type="varchar(256)" nullable="False" new="True"/>
+    <element name="short_code" data_type="varchar(256)" nullable="True" new="True"/>
+    <element name="name" data_type="varchar(256)" nullable="True" new="True"/>
+    <element name="type" data_type="varchar(256)" nullable="True" new="True" />
+    <element name="description" data_type="text" nullable="True" new="True"/>
+    <element name="timestamp" data_type="timestamp" nullable="True" new="True"/>
+    <element name="start_date" data_type="timestamp" nullable="True" new="True"/>
+    <element name="end_date" data_type="timestamp" nullable="True" new="True"/>
+</default_definition>
+
+</config>
+
+
+
+

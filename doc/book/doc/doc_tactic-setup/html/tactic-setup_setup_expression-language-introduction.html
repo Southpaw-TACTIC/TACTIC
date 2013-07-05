@@ -1,0 +1,245 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Expression Language Introduction</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_expression-language.html" title="Expression Language">
+      <link rel="prev" href="tactic-setup_expression-language.html" title="Expression Language">
+      <link rel="next" href="tactic-setup_setup_expression-method-reference.html" title="Expression Method Reference">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_expression-language.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-method-reference.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Expression Language Introduction">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_expression-language-introduction"></a> TACTIC Expression Language Introduction
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <h5><a name="d0e6310"></a>Introduction
+         </h5>
+         <p>This document describes the construct of the <span class="bold"><strong>TEL</strong></span> TACTIC
+            Expression Language. This language is a shorthand form to quickly retrieve information about
+            related Search Objects. The expression either starts with a list of Search Objects and the
+            operations of the expression language operate on these lists (this is quite similar to LISP
+                    in concept) or it can be used as an absolute search.
+         </p>
+         <p>The expression language also borrows from spreadsheet syntax which is familiar to many
+                    people. The reason behind using an expression language is that it is much simpler and
+                    compact that using code or direct SQL. The TACTIC expression language is designed to be able
+                    to easily retrieve data in a single command that would otherwise take many lines of
+                    code.
+         </p>
+         <h5><a name="d0e6319"></a>Simple Example
+         </h5>
+         <p>The expression often starts with a list of Search Objects and then operates on these
+                    Search Objects. 
+         </p>
+         <p>If you have a list of "prod/sequence" Search Objects, then the following: </p><pre class="screen">@GET(prod/shot.code)</pre><p>will return a list of codes of these prod/shot Search Objects related to the starting
+                    "prod/sequence". The notation for the method GET is of the form
+                    &lt;search_type&gt;.&lt;column&gt;. As will be shown below, multiple search_types can be strung
+                    together to navigate across related search_types. The @GET function operate on a list and
+                    returned a list.
+         </p>
+         <p>If no starting sObject is given, this expression will return a list of codes for every
+                    shot in the project. In the python or javascript API, you can control whether there is a
+                    starting sobject with the kwarg search_keys
+         </p>
+         <p>With the above example, here is how to get the shot codes for the given sequence with the
+                    code "seq001":
+         </p>
+         <p><span class="bold"><strong>Python API</strong></span></p>
+         <p>server = TacticServerStub.get()</p>
+         <p>expr = "@GET(prod/shot.code)"</p>
+         <p>result = server.eval(expr,
+                    search_keys=['prod/sequence?project=vfx&amp;code=seq001'])
+         </p>
+         <p>By default, the result returned is a list unless you specify the kwarg single=True in
+                    server.eval() 
+         </p>
+         <p>result = server.eval(expr, search_keys=['prod/sequence?project=vfx&amp;code=seq001'],
+                    single=True)
+         </p>
+         <p></p>
+         <p>In Javascript, via the Script Edtor, you can achieve the same result with these
+                    scripts:
+         </p>
+         <p><span class="bold"><strong>Javascript API</strong></span></p>
+         <p>var server =  TacticServerStub.get();</p>
+         <p>var expr = "@GET(prod/shot.code)"</p>
+         <p>var result = server.eval(expr, {search_keys:
+                    ['prod/sequence?project=vfx&amp;code=seq001'], single: true});
+         </p>
+         <p></p>
+         <p>In certain places, like in a Custom Layout Element, Expression Element in a Table, or
+                    notification set-up, there is an assumed starting sObject, which is the one you are viewing
+                    or the notification event refers to during an update or insert action.
+         </p>
+         <h5><a name="d0e6361"></a>Searching
+         </h5>
+         <p>The expression language can be used as a shorthand for search for Search Objects. This is
+                    often convenient because the expression language is a pure string and can be stored a number
+                    of formats, including XML. 
+         </p>
+         <p>The @SOBJECT method will retrieve entire Search Objects. </p>
+         <p>Search for all assets </p><pre class="screen">@SOBJECT(prod/asset)</pre><p>Search only for characters by applying a filter </p><pre class="screen">@SOBJECT(prod/asset['asset_library','chr']</pre><p>You can also apply multiple filters. And operation is implied </p><pre class="screen">@SOBJECT(prod/asset['asset_library','chr']['timestamp','&gt;','2009-01-01'])</pre><p>You can also apply multiple filters. To use OR operation with more than 2 filters. For
+                    example, with code containing the word prop1, OR asset_library is chr, OR timestamp after
+                    2009-01-01. Note: EQ stands for case-sensitive match.
+         </p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['code','EQ','prop1']['or'])</pre><p>To use OR operation  with 2 filters followed by an AND operation. For example, with
+                    asset_library is chr OR timestamp after 2009-01-01 AND  code containing the word prop1. If
+                    there are only 2 filters, there is no need to sandwich it with begin. 
+         </p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>To </p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>Note that full filter operations from the Client API are supported. </p>
+         <h5><a name="d0e6393"></a>Navigating Search Types
+         </h5>
+         <p>One of the true powers of the expression language is the simplicity in which it can
+                    navigate between various related Search Types using a navigational syntax. The expression
+                    language makes use of the project schema to navigate dependencies between the search_types.
+                    For example a sequence is related to a shot.
+         </p>
+         <p>The navigational syntax is used as arguments for many aggregate methods. When detected,
+                    the expression language will perform a search through the hierarchy to retrieve the desired
+                    search results.
+         </p>
+         <p>A simple example of the navigation syntax in the expression language is as follows: </p><pre class="screen">@GET(prod/sequence.code)</pre><p>This expression will get all of the codes of the sequences of related to each Search
+                    Object. 
+         </p>
+         <p>The expression can also navigate multiple levels of search types to dig deeply into the
+                    hierarchy. For example, this will get all of the descriptions of all of the episodes that
+                    belong to the sequences of the original shots.
+         </p><pre class="screen">@GET(prod/sequence.prod/episode.description)</pre><p> Another useful illustration is to get all of the tasks of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task)</pre><p> Get the last 50 tasks ordered by process of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task['@ORDER_BY','process']['@LIMIT','50'])</pre><h5><a name="d0e6417"></a>Aggregate functions
+         </h5>
+         <p>The expression language defines a number of aggregate functions which will operate on the
+                    list. 
+         </p>
+         <p>This will give the addition of all the duration attributes of the provided shots. </p><pre class="screen">@SUM(prod/shot.duration)</pre><p>This will give the average duration attribute of all of the shots. </p><pre class="screen">@AVG(prod/shot.duration)</pre><p>This will give a count of all of the Search Objects </p><pre class="screen">@COUNT(prod/shot)</pre><p>All of these aggregates return a single value which can be used to operate on other lists. </p>
+         <h5><a name="d0e6435"></a>Operations
+         </h5>
+         <p>The expression language operates on lists. The operator will operate on each element of
+                    the list independently and return a list For example when doing a subtraction operation on
+                    items:
+         </p><pre class="screen">@GET(prod/shot.end_frame) - @GET(prod/shot.start_frame)</pre><p>The first @GET will return a list of start frames and the second @GET will return a list
+                    end frames. When two lists are operated on the results are calculated based on items at the
+                    same position in each list. So if we had two lists: 
+         </p><pre class="screen">[300, 155, 100] - [100, 100, 100] = [200, 55, 0]</pre><p>Similarly, lists will be multiplied as follows</p><pre class="screen">[5, 4, 3] * [5, 4, 3] = [25, 16, 9]</pre><p>The expression language supports most operation support by the python language
+                    itself.
+         </p><pre class="screen">&gt;&gt;&gt; Search.eval("5 * 25")
+125.0
+
+&gt;&gt;&gt; Search.eval("5 + 25")
+30.0
+
+&gt;&gt;&gt; Search.eval("(25 - 5) * 5")
+100.0
+
+&gt;&gt;&gt; Search.eval("5 / 25") 0.20000000000000001
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) * 5")
+2310.0
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) &gt; 0")
+True
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) == 462")
+True
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) != 462")
+False </pre><p>The expression language also supports the regular expression syntax</p>
+         <p>The following tests whether the name_first column starts with "John"</p><pre class="screen">@GET(.name_first) ~ '^John'</pre><h5><a name="d0e6459"></a>More complex operations
+         </h5>
+         <p>You can do more complex operations by combining the above. The following will return a
+                    cost list of all of the shots (assigned user wage * number of hours worked).
+         </p><pre class="screen">@GET(prod/shot.sthpw/task.sthpw/login.wage) * @GET(prod/shot.num_hours)
+</pre><p> You could add them all together using @SUM this to get the total</p><pre class="screen">@SUM(
+  @GET(prod/shot.sthpw/task.sthpw/login.wage) * @GET(prod/shot.num_hours)
+)</pre><p>There are times the sObjects returned are not unique. The @UNIQUE operator can be used to
+                    return a unique list of result. The following returns the unique list of login sObjects
+                    related to the task list provided. The @COUNT operator computes the total number of login
+                    sObjects.
+         </p><pre class="screen">
+ # my.tasks is a list of tasks        
+ expression = "@COUNT(@UNIQUE(@SOBJECT(sthpw/login)))"
+ result = my.parser.eval(expression, my.tasks)
+    </pre><h5><a name="d0e6473"></a>Manipulating Strings 
+         </h5>
+         <p>Most of the operations in the expression language operate on lists and either return lists
+                    or return single values. However, it is often required that expressions be used in string
+                    concatenation. A simplified notation is to use curly brackets {} to represent an operation
+                    that converts the result of an expression into a string. 
+         </p>
+         <p>For a file to be named chr001_model.png, we could use: </p><pre class="screen">{@GET(prod/asset.code)}_{@GET(sthpw/snapshot.context)}.png</pre><p>** The file naming conventions do not current use the expression language. The presently
+                    use a simplified expression language. The plan is to merge the two at some point. 
+         </p>
+         <h5><a name="d0e6483"></a>String Formatting
+         </h5>
+         <p>For string values, the string operator them can use standard print formatting: </p><pre class="screen">v{@GET(sthpw/snapshot.version),%0.3d}
+</pre><p>will return "v012", for example. </p>
+         <p>The expression language also supports formatting through regular expressions </p><pre class="screen">{ @GET(prod/asset.description),|^(\w{5})| }
+</pre><p>This will get the first 5 word characters for the description. Since the full expression
+                    language is supported, it is possible to extract a wide variety of parts. Anything matched
+                    with () will be returned as the value. 
+         </p>
+         <p>**If there are multiple groupings, the expression language will concatenate the values
+                    together. 
+         </p>
+         <p>The following will return the first 3 and last 3 characters of the description. </p><pre class="screen">{ @GET(prod/asset.description),|^(\w{3}).*(\w{3})$| }
+</pre><p>The following will return the last 5 characters of the description of the current SObject even if it is written in French
+            or Chinese. 
+         </p><pre class="screen">{ @GET(.description),|^(.{5})$| }
+</pre><p><span class="bold"><strong>Time related formatting</strong></span></p>
+         <p>The following formats a timestamp by extracting just the month and date (old way):</p><pre class="screen">{ @GET(.timestamp), %b-%m}
+</pre><p>The following formats a timestamp by extracting just the year </p><pre class="screen">{ @GET(.timestamp), %Y}
+     </pre><p>The following removes the hours, minutes and seconds from the built-in $TODAY variable so
+                    only 2011-11-11 is displayed 
+         </p><pre class="screen">{ $TODAY,|([^\s]+)| }
+</pre><p>The following formats a timestamp by using the new @FORMAT function </p><pre class="screen">@FORMAT( @GET(.timestamp), '31/12/1999')
+        </pre><pre class="screen">@FORMAT( @GET(.timestamp), 'Dec 31, 1999')
+    </pre><p>The following formats it according to a project wide date-time setting or date-only
+                    setting. You can define what DATETIME and DATE is in the Project Settings page.
+         </p><pre class="screen">@FORMAT( @GET(.timestamp), 'DATETIME')
+@FORMAT( @GET(.timestamp), 'DATE')
+</pre><p>Either of the following formats a frame count into timecode </p><pre class="screen">@FORMAT( @GET(.frame_count), 'MM:SS.FF')
+         </pre><p>The following formats a frame count into hours, minutes and seconds in 30fps, leaving out
+                    the frames.
+         </p><pre class="screen">@FORMAT( @GET(.frame_count), 'HH:MM:SS', '30')
+        </pre><p>The following formats a cost column in currency format </p><pre class="screen">@FORMAT(@GET(.cost), '-$1,234.00')
+        </pre><p>'31/12/99 13:37' can be used to show both date and time</p>
+         <h5><a name="d0e6546"></a>Shorthand (mostly for backwards compatibility)
+         </h5><pre class="screen">@GET(sobject.end_frame) - @GET(sobject.start_frame)
+
+or
+
+@GET(.end_frame) - @GET(.start_frame)</pre><p>Or replicate file naming conventions </p><pre class="screen">{sobject.code}_{snapshot.context}_v{version}.{ext}</pre><p>In the file naming convention language, the are a number of short hand keywords: </p>
+         <p>sObject Keywords: sobject, snapshot, file, parent , search_type</p>
+         <p>Attribute Keywords: context, version, ext, basefile </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_expression-language.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_expression-language.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-method-reference.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

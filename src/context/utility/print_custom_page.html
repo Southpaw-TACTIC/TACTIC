@@ -1,0 +1,372 @@
+<html>
+<head>
+
+<title></title>
+
+<style TYPE="text/css">
+    body {
+        background-color: white;
+        color: black;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    td.container{
+        border: none;
+        padding: 0px;
+    }
+
+    td.empty {
+        border: none;
+        width: 1%;
+    }
+
+    td.filled {
+        border: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_light_bottom {
+        border-top: 2px solid black;
+        border-bottom: 2px solid #BBBBBB;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_top_bottom_only {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_left_right_only {
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-top: none;
+        border-bottom: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_left_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: 2px solid black;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_right_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_no_top {
+        border-top: none;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-bottom: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_no_bottom {
+        border-top: 2px solid black;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-bottom: none;
+        padding: 2px;
+    }
+
+    td.filled_no_right {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-left: 2px solid black;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_no_left {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-right: 2px solid black;
+        border-left: none;
+        padding: 2px;
+    }
+
+    td.filled_thin_top_right_only {
+        border-left: none;
+        border-right: 1px solid #888888;
+        border-top: 1px solid #888888;
+        border-bottom: none;
+        padding: 0px;
+    }
+
+    td.filled_thin_top_only {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #888888;
+        border-bottom: none;
+        padding: 0px;
+    }
+
+    .bkg_fill_color {
+        background-color: black;
+        color: white;
+    }
+
+    .center { text-align: center; }
+    .left { text-align: left; }
+    .right { text-align: right; }
+
+    .middle { vertical-align: middle; }
+    .top { vertical-align: top; }
+    .bottom { vertical-align: bottom; }
+
+    .fs5 { font-size: 5pt; }
+    .fs6 { font-size: 6pt; }
+    .fs7 { font-size: 7pt; }
+    .fs8 { font-size: 8pt; }
+    .fs9 { font-size: 9pt; }
+    .fs10 { font-size: 10pt; }
+    .fs11 { font-size: 11pt; }
+    .fs12 { font-size: 12pt; }
+    .fs14 { font-size: 14pt; }
+    .fs16 { font-size: 16pt; }
+    .fs18 { font-size: 18pt; }
+    .fs20 { font-size: 20pt; }
+    .fs22 { font-size: 22pt; }
+    .fs24 { font-size: 24pt; }
+    .fs26 { font-size: 26pt; }
+    .fs28 { font-size: 28pt; }
+
+    .bold { font-weight: bold; }
+
+    div.web_layout { width: 612pt; height: 792pt; }
+    div.hide_for_printing { display: block }
+
+    div.print_instructions {
+        border: dashed 1px black;
+        background-color: orange;
+        color: black;
+        padding: 10px;
+        font-style: italic;
+        font-size: 9pt;
+    }
+
+</style>
+
+<style TYPE="text/css" MEDIA="print">
+    body {
+        background-color: white;
+        color: black;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    td.container{
+        border: none;
+        padding: 0px;
+    }
+
+    td.empty {
+        border: none;
+        width: 1%;
+    }
+    td.filled {
+        border: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_light_bottom {
+        border-top: 2px solid black;
+        border-bottom: 2px solid #AAAAAA;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_top_bottom_only {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_left_right_only {
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-top: none;
+        border-bottom: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_left_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: 2px solid black;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_bottom_right_only {
+        border-top: none;
+        border-bottom: 2px solid black;
+        border-left: none;
+        border-right: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_no_top {
+        border-top: none;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-bottom: 2px solid black;
+        padding: 2px;
+    }
+
+    td.filled_no_bottom {
+        border-top: 2px solid black;
+        border-left: 2px solid black;
+        border-right: 2px solid black;
+        border-bottom: none;
+        padding: 2px;
+    }
+
+    td.filled_no_right {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-left: 2px solid black;
+        border-right: none;
+        padding: 2px;
+    }
+
+    td.filled_no_left {
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        border-right: 2px solid black;
+        border-left: none;
+        padding: 2px;
+    }
+
+    div.web_layout {}
+    div.hide_for_printing { display: none; }
+
+    td.filled_thin_top_right_only {
+        border-left: none;
+        border-right: 1px solid #888888;
+        border-top: 1px solid #888888;
+        border-bottom: none;
+        padding: 0px;
+    }
+
+    td.filled_thin_top_only {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #888888;
+        border-bottom: none;
+        padding: 0px;
+    }
+
+    .bkg_fill_color {
+        background-color: black;
+        color: white;
+    }
+
+    .center { text-align: center; }
+    .left { text-align: left; }
+    .right { text-align: right; }
+
+    .middle { vertical-align: middle; }
+    .top { vertical-align: top; }
+    .bottom { vertical-align: bottom; }
+
+    .fs5 { font-size: 5pt; }
+    .fs6 { font-size: 6pt; }
+    .fs7 { font-size: 7pt; }
+    .fs8 { font-size: 8pt; }
+    .fs9 { font-size: 9pt; }
+    .fs10 { font-size: 10pt; }
+    .fs11 { font-size: 11pt; }
+    .fs12 { font-size: 12pt; }
+    .fs14 { font-size: 14pt; }
+    .fs16 { font-size: 16pt; }
+    .fs18 { font-size: 18pt; }
+    .fs20 { font-size: 20pt; }
+    .fs22 { font-size: 22pt; }
+    .fs24 { font-size: 24pt; }
+    .fs26 { font-size: 26pt; }
+    .fs28 { font-size: 28pt; }
+
+    .bold { font-weight: bold; }
+
+</style>
+
+<script language="javascript">
+
+    function load_custom_html()
+    {
+        var loaded = false;
+        var counter = 0;
+
+        while( counter < 2000 ) {
+            if( '_SptCustomPrintLoaded_' in document ) {
+                loaded = true;
+                break;
+            }
+            if( '_SptCustomPrintLoaded_' in window ) {
+                loaded = true;
+                break;
+            }
+            counter ++;
+        }
+
+        if( loaded ) {
+            if( '_SptCustomPrintHtml_' in document ) {
+                document.body.innerHTML = document._SptCustomPrintHtml_;
+                document._SptCustomPrintHtml_ = null;
+            } else {
+                document.body.innerHTML = window._SptCustomPrintHtml_;
+                window._SptCustomPrintHtml_ = null;
+            }
+        } else {
+            setTimeout( load_custom_html, 50 );
+        }
+    }
+
+</script>
+
+</head>
+
+<body onload="javascript:load_custom_html();">
+    <div>Loading Custom Print Layout ...</div>
+</body>
+
+</html>

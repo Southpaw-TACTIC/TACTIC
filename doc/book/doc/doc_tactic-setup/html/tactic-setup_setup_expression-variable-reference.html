@@ -1,0 +1,232 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Expression Variable Reference</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_expression-language.html" title="Expression Language">
+      <link rel="prev" href="tactic-setup_setup_expression-method-reference.html" title="Expression Method Reference">
+      <link rel="next" href="tactic-setup_debugging.html" title="Debugging TACTIC">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_expression-method-reference.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_debugging.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Expression Variable Reference">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_expression-variable-reference"></a> Expression Variable Reference
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>There are a number of predefined variables in the expression language. The following list
+                    all of the available variables:
+         </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>LOGIN - the login of the current user</p>
+               </li>
+               <li class="listitem">
+                  <p>LOGIN_ID - the login id of the current user</p>
+               </li>
+               <li class="listitem">
+                  <p>LOGINS_IN_GROUP - the group of logins belonging to the group the current user is
+                                     in
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>PROJECT - code of the current project</p>
+               </li>
+            </ul>
+         </div>
+         <p>(v2.6.0+)</p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>TODAY - the current day at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>NOW - the current day and time</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_DAY - the next day from today (tomorrow)</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_MONDAY - the next Monday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_TUEDAY - the next Tuesday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_WEDNESDAY - the next Wednesday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_THURSDAY - the next Thursday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_FRIDAY - the next Friday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_SATURDAY - the next Saturday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_SUNDAY - the next Sunday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_DAY - the previous day from today (yesterday)</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_MONDAY - the previous Monday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_TUESDAY - the previous Tuesday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_WEDNESDAY - the previous Wednesday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_THURSDAY - the previous Thursday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_FRIDAY - the previous Friday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_SATURDAY - the previous Saturday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_SUNDAY - the previous Sunday from today</p>
+               </li>
+               <li class="listitem">
+                  <p>THIS_YEAR - the first day of this year at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_YEAR - the first day of next year at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_YEAR - the first day of the previous year at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>THIS_MONTH - the first day of this month at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_MONTH - the first day of next month at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_MONTH - the first day of the previous month at midnight (12:00am)</p>
+               </li>
+               <li class="listitem">
+                  <p>THIS_HOUR - this hour at 0 minutes</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_HOUR - the next hour at 0 minutes</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_HOUR - the previous hour at 0 minutes</p>
+               </li>
+               <li class="listitem">
+                  <p>NEXT_HOUR - the next hour at 0 seconds</p>
+               </li>
+               <li class="listitem">
+                  <p>PREV_HOUR - the previous hour at 0 seconds</p>
+               </li>
+            </ul>
+         </div>
+         <p>These variables can be used for to refer to state information in searches. This expression
+                    will retrieve all the login information for the current user.
+         </p>
+         <div class="sidebar">
+            <p class="title"><b></b></p><pre class="screen">@GET(sthpw/login['login',$LOGIN])</pre></div>
+         <p>They can also be used to find items between certain dates. This expression will retrieve
+                    all snapshots for this week starting at Sunday.
+         </p>
+         <div class="sidebar">
+            <p class="title"><b></b></p><pre class="screen">@GET(sthpw/snapshot['timestamp','&gt;',$LAST_SUNDAY]['timestamp','&lt;',$NEXT_SUNDAY])</pre></div>
+         <p>The following are shorthands that do not require a starting point or environment sobject.
+                    They can be used in an absolute expression:
+         </p>
+         <p> </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>login - the currently logged in user login attribute</p>
+               </li>
+               <li class="listitem">
+                  <p>project - the current project</p>
+               </li>
+               <li class="listitem">
+                  <p>date - a date object with today's date</p>
+               </li>
+               <li class="listitem">
+                  <p>palette - a palette object used for accessing different attributes of the palette
+                                     for the current project. e.g. @GET(palette.background)  can be used in the css for a
+                                     Custom Layout Widget
+                  </p>
+               </li>
+            </ul>
+         </div>
+         <p>The following are shorthands that require a starting point or environment
+                    sobject:
+         </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>parent - the parent of the current related sobject @GET(parent.code)</p>
+               </li>
+               <li class="listitem">
+                  <p>search_type - the sType sobject. e.g. @GET(.search_type.title)</p>
+               </li>
+               <li class="listitem">
+                  <p>connect - the connected sobject registered in the connection sType. Refer to the
+                                 API methods like connect_sobjects() and get_connected_sobjects()
+                  </p>
+                  <p>To filter down to a particular connected sobject based on the context attribute,
+                                     which defaults to 'task', use @CONTEXT. 
+                  </p>
+                  <p>e.g. @GET(prod/asset.connect['@CONTEXT','some_task'].description)</p>
+               </li>
+            </ul>
+         </div>
+         <p>The following variables are only used in Naming. Refer to the file naming section for
+                    details.
+         </p>
+         <p> </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>EXT - file extension</p>
+               </li>
+               <li class="listitem">
+                  <p>BASEFILE - the filename portion of the file without the extension</p>
+               </li>
+            </ul>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_expression-method-reference.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_expression-language.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_debugging.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

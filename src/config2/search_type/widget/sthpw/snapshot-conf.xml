@@ -1,0 +1,394 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+  <element name="preview" width="50px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <detail>false</detail>
+      </display>
+  </element>
+  <element name="snapshot" edit="false"> 
+      <display class="XmlWdg"/>
+  </element>
+  <element name="code"/>
+  <element name="context"/>
+  <element name="version" title="Ver#">
+      <!--
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>v{@GET(.version),%0.3d}</expression>
+    </display>
+    -->
+    <display class='tactic.ui.table.SnapshotVersionElementWdg'/>
+
+  </element>
+  <element name="revision" title="Rev#">
+  <!--
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>v0{@GET(.version),%0.3d}</expression>
+    </display>
+  -->
+  </element>
+  <element name="level_type" title="Level" edit="false"/>
+  <element name="login"/>
+
+  <element name="timestamp" type="datetime"/>
+
+  <element name="description"/>
+
+  <element name="append" edit="false">
+      <display class="FileAppendLinkTableElement"/>
+  </element>
+
+  <element name="submit" edit="false">
+      <display class="SubmissionLinkTableElement"/>
+  </element>
+
+  <element name="render" edit="false">
+      <display class="RenderLinkTableElement"/>
+  </element>
+  <element name="dependency" title=' '/>
+ <!--
+  <element name="is_synced" title='Synced' edit='false'>
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>@GET(.is_synced) == True</expression>
+      <mode>icon</mode>
+      <icon_expr>@IF( $VALUE == True, 'CHECK', 'CROSS' )</icon_expr>
+      <css_background-color>@CASE(
+        $VALUE == True, 'Green',
+        $VALUE == False, 'Red'
+      )</css_background-color>
+    </display>
+  </element>
+ -->
+  <element name="is_latest" title='Latest' edit='false'>
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>@GET(.is_latest) == True</expression>
+      <mode>check</mode>
+    </display>
+  </element>
+
+  <element name="is_current" title='Current' edit='true'>
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>@GET(.is_current) == True</expression>
+      <mode>check</mode>
+    </display>
+  </element>
+
+
+  <element name="is_locked" title='Locked' edit='false'>
+    <display class='tactic.ui.table.snapshot_element_wdg.SnapshotLockedElementWdg'>
+    </display>
+  </element>
+
+
+
+
+   <element name="general_checkin">
+      <display class='tactic.ui.table.CheckinButtonElementWdg'>
+          <mode>add</mode>
+          <width>600</width>
+      </display>
+   </element>
+   <element name="checkout">
+      <display class='tactic.ui.table.CheckoutButtonElementWdg'/>
+   </element>
+
+
+
+
+    <element edit='false' name='web_path'>
+      <display widget='expression'>
+          <expression>/assets/{@GET(sthpw/file.relative_dir)}/{@GET(sthpw/file.file_name)}</expression>
+      </display>
+      <edit class='TextWdg'/>
+  </element>
+
+
+    <element edit='false' name='file_size' width="100px">
+      <display widget='expression'>
+          <expression>@GET(sthpw/file.st_size)</expression>
+          <display_format>KB</display_format>
+      </display>
+      <edit class='TextWdg'/>
+  </element>
+
+
+
+  <element edit='false' name='files'>
+       <display class="tactic.ui.table.HiddenRowElementWdg">
+           <dynamic_class>tactic.ui.checkin.SnapshotFilesWdg</dynamic_class>
+           <icon>DETAILS</icon>
+       </display>
+  </element>
+
+
+
+
+</definition>
+
+
+<table insert="false">
+  <element name="small_preview"/>
+  <element name="is_locked" />
+  <element name="files" />
+  <!--<element name="dependency"/>-->
+  <element name="context"/>
+  <element name="version" title="Ver#"/>
+  <element name="revision" title="Rev#"/>
+  <element name="login"/>
+  <element name="timestamp" width="120px" edit="false"/>
+  <element name="description" width="150px"/>
+  <!--<element name="is_synced"/>-->
+  <element name="is_current" />
+  <element name="is_latest" />
+</table>
+
+<loadx edit='false' layout='TableLayoutWdg'>
+  <element name="context"/>
+  <element name="version" title="Ver#"/>
+  <element name="revision" title="Rev#"/>
+  <element name="type"/>
+  <element name="preview" width='1%'/>
+  <element name="dependency" title='Dep' width='1%'/>
+  <element name="login"/>
+  <element name="timestamp"/>
+  <element name="description"/>
+
+</loadx>
+
+
+<!-- used in the asset history of loader -->
+<condensed>
+  <element name="timestamp"/>
+  <element name="context"/>
+  <element name="version"/>
+  <element name="login"/>
+  <element name="description"/>
+</condensed>
+
+<!-- used in the Publish Log Tab -->
+<log insert='false' edit='false'>
+  <element name="code">
+      <display class="pyasm.prod.web.SnapshotInfoWdg"/>
+  </element>
+
+  <element name="preview"/>
+  <element name="dependency"/>
+  <element name="files"/>
+  <element name="timestamp"/>
+  <element name="context"/>
+  <element name="version" title="Ver#"/>
+  <element name="revision" title="Rev#"/>
+  <element name="login"/>
+  <element name="description"/>
+
+  <element name="append"/>
+  <!--
+  <element name="submit"/>
+  -->
+  <element name="render"/>
+  <element name="is_current"/>
+  <element name="is_latest"/>
+</log>
+
+<edit>
+    <element name="description"/>
+    <element name="is_current">
+        <display class="pyasm.prod.web.CurrentCheckboxWdg"/>
+      <action class="IsCurrentAction"/>
+    </element>
+</edit>
+
+<!-- Used to append files to a snapshot -->
+<append>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <type>append</type>
+        </display>
+        <action class="NullAction"/>
+    </element>
+    <element name="file_type">
+        <display class="TextWdg"/>
+        <action class="NullAction"/>
+    </element>
+    <element name="keep_file_name">
+        <display class="CheckboxWdg"/>
+        <action class="NullAction"/>
+    </element>
+</append>
+
+
+<!-- Used in TacticWdg (Browser for checking in)-->
+<browser>
+    <element name="snapshot"/>
+    <element name="context"/>
+    <element name="version"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="description"/>
+    <element name="repo_files">
+        <display class="pyasm.browser.SnapshotCheckoutFilesWdg">
+            <repo_impl>TacticRepoImpl</repo_impl>
+        </display>
+    </element>   
+
+</browser>
+
+
+
+<checkin_history edit='true' layout='TableLayoutWdg'>
+  <element name="preview" edit="false"/>
+  <element name="is_locked" edit="false"/>
+  <element name="files" />
+  <element name="checkout" title='Checkout'/>
+  <!--
+  <element name="dependency"/>
+  -->
+  <element name="context" />
+  <element name="version" title="Ver#"/>
+  <element name="revision" title="Rev#"/>
+  <element name="login" edit="false"/>
+  <element name="timestamp" edit="false"/>
+  <element name="description"/>
+  <element name="is_current" />
+  <element name="notes_sheet"/>
+</checkin_history>
+
+
+
+<checkout>
+    <element name="preview" edit='false'/>
+    <element name="files" title='Files'/>
+    <element name="checkout" title='Checkout'/>
+    <!--
+    <element name="dependency" title='Dep'/>
+    -->
+    <element name="context" edit='false'/>
+    <element name="version" edit='false'/>
+    <element name="login" edit='false'/>
+    <element name="timestamp" edit='false'/>
+    <element name="description"/>
+    <element name="general_checkin" title='Append'/>
+    <element name="is_current"/>
+    <element name="is_latest" edit='false'/>
+</checkout>
+
+
+<checkout_tool edit='true'>
+    <element name="preview" width='1%'>
+        <display class='ThumbWdg'>
+          <icon_size>100%</icon_size>
+        </display>
+    </element>
+    <element name="dependency" title='Dep.'/>
+    <element name="context" edit='false'/>
+    <element name="version" edit='false'/>
+    <element name="login" edit='false'/>
+    <element name="timestamp" edit='false'/>
+    <element name="description"/>
+    <!--
+    <element name="general_checkin" title='Append'/>
+    -->
+    <element name="is_current">
+       <display class='tactic.ui.table.ExpressionElementWdg'>
+	<expression>@GET(.is_current)== True</expression>
+        <mode>check</mode>
+        <rowcss_background-color>@CASE(
+		$VALUE == True, '#4F7340'
+	      )</rowcss_background-color>
+        </display>
+    </element>
+    <element name="is_latest" edit='false'/>
+    <element name="checkout"/>
+</checkout_tool>
+
+
+<!-- To browse snapshots -->
+<publish_browser>
+    <element name="is_current"/>
+    <element name="preview"/>
+    <element name="dependency"/>
+    <element name="context"/>
+    <element name="version"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="description"/>
+    <!--
+    <element name="repo_files">
+        <display class="pyasm.browser.SnapshotCheckoutFilesWdg">
+            <repo_impl>TacticRepoImpl</repo_impl>
+        </display>
+    </element>   
+    -->
+       
+</publish_browser>
+
+
+<!-- used in the Uassigned Instances table in Anim Loader -->
+<session_items>
+    <!--
+    <element name="icon">
+        <display class="pyasm.widget.ThumbWdg">
+            <icon_size>45</icon_size>
+        </display>
+    </element>
+    -->
+    <element name="instance">
+        <display class="AuxDataWdg"/>
+    </element>
+    <element name="session ver">
+        <display class="pyasm.prod.web.SessionVersionWdg"/>
+    </element>
+</session_items>
+
+
+<add_item>
+  <element name="code" width="100px"/>
+  <element name="context" width="100px"/>
+  <element name="version" title="Ver#" width="50px"/>
+  <element name="revision" title="Rev#" width="50px"/>
+  <element name="login" width="100px"/>
+  <element name="description" width="300px"/>
+</add_item>
+
+<search>
+  <element name='Main Filter'>
+    <display class='tactic.ui.filter.SnapshotFilterWdg'>
+      <prefix>snapshot_filter</prefix>
+      <search_type>sthpw/snapshot</search_type>
+      
+    </display>
+  </element>
+
+  <element name='Quick Search'>
+    <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+      <search_type>sthpw/snapshot</search_type>
+      <prefix>simple</prefix>
+    </display>
+  </element>
+
+  <element name='General'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>main_body</prefix>
+      <search_type>sthpw/snapshot</search_type>
+      <mode>sobject</mode>
+    </display>
+  </element>
+</search>
+
+</config>
+

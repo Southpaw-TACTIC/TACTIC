@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+
+<definition>
+<element name="event"/>
+<element name="description"/>
+<element name="subject"/>
+<element name="message"/>
+<element name="groups">
+    <display class="tactic.ui.table.DropElementWdg">
+        <css_background-color>#425952</css_background-color>
+        <instance_type>sthpw/group_notification</instance_type>
+        <accepted_drop_type>sthpw/login_group</accepted_drop_type>
+    </display>
+</element>
+
+<element name="rules">
+    <display class="XmlWdg"/>
+</element>
+<element name="email_handler_cls"/>
+<element name="project_code"/>
+<element name="email_test">
+    <display class="tactic.ui.table.NotificationTriggerElementWdg"/>
+</element>
+
+</definition>
+
+
+
+<table>
+  <element name="email_test"/>
+  <element name="event"/>
+  <element name="description"/>
+  <element name="subject"/>
+  <element name="message"/>
+  <!--<element name="groups"/>-->
+  <element name="rules"/>
+
+  <element name="search_type"/>
+  <element name="process"/>
+  <element name="mail_to"/>
+  <element name="mail_cc"/>
+</table>
+
+<add_item>
+  <element name="event"/>
+  <element name="description"/>
+  <element name="subject"/>
+  <element name="message"/>
+  <element name="groups"/>
+  <element name="rules"/>
+  <element name="email_handler_cls"/>
+  <element name="project_code"/>
+  <element name="type"/>
+</add_item>
+
+
+<edit>
+  <element name="event"/>
+  <element name="description"/>
+  <element name="project_code"/>
+  <element name="rules"/>
+  <element name="subject"/>
+  <element name="message"/>
+  <element name="email_handler_cls"/>
+  <element name="type"/>
+  <element name="mail_to"/>
+  <element name="mail_cc"/>
+  <element name="mail_bcc"/>
+</edit>
+
+<insert>
+  <element name="event"/>
+  <element name="description"/>
+  <element name="project_code"/>
+  <element name="rules"/>
+  <element name="subject"/>
+  <element name="message"/>
+  <element name="email_handler_cls"/>
+  <element name="type"/>
+  <element name="mail_to"/>
+</insert>
+
+
+<edit_definition>
+   <element name="project_code">
+        <display class="pyasm.prod.web.ProjectSelectWdg"/>
+   </element>
+    <element name="groups">
+        <action class="tactic.ui.table.DropElementAction">
+            <instance_type>sthpw/group_notification</instance_type>
+        </action>
+    </element>
+     <element name="email_handler_cls">
+    <display class="TextWdg">
+      <size>50</size>
+    </display>
+  </element>
+
+  <element name="type">
+    <display class="SelectWdg">
+      <values>email</values>
+      <persist>true</persist>
+      <empty>true</empty>
+    </display>
+  </element>
+  <element name="search_type">
+     <display class="tactic.ui.widget.SearchTypeSelectWdg"/>
+  </element>
+</edit_definition>
+
+</config>
+
+

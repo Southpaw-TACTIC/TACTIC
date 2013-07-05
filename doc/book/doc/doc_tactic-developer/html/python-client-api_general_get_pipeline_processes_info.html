@@ -1,0 +1,103 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>get_pipeline_processes_info</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_get_pipeline_processes.html" title="get_pipeline_processes">
+      <link rel="next" href="python-client-api_general_get_pipeline_xml.html" title="get_pipeline_xml">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_get_pipeline_processes.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_get_pipeline_xml.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="get_pipeline_processes_info">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_get_pipeline_processes_info"></a>
+                         get_pipeline_processes_info
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  get_pipeline_processes_info(search_key, recurse=False, related_process=None)
+                      </strong></span>
+                
+         </p>
+         <p>
+            Retrieve the pipeline processes information of a specific sobject. It provides information from the perspective of a particular
+            process if related_process is specified.
+                
+         </p>
+         <h4><a name="d0e4242"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      search_key 
+                      </strong></span>
+                 -  a unique identifier key representing an sobject
+                
+         </p>
+         <h4><a name="d0e4249"></a>
+                keyparams:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      recurse 
+                      </strong></span>
+                 -  boolean to control whether to display sub pipeline processes
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      related_process 
+                      </strong></span>
+                 -  given a process, it shows the input and output processes and contexts
+                
+         </p>
+         <h4><a name="d0e4261"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  process names of the pipeline or a dictionary if related_process is specified
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_get_pipeline_processes.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_get_pipeline_xml.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

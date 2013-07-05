@@ -1,0 +1,261 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Drop Item</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-view.html" title="View Widgets">
+      <link rel="prev" href="tactic-setup_setup_hidden-row-toggle-wdg.html" title="Hidden Row">
+      <link rel="next" href="tactic-setup_tactic-widgets-edit.html" title="Edit Widgets">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_hidden-row-toggle-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_tactic-widgets-edit.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Drop Item">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_drop-element-wdg"></a>Drop Item
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/2_drop_element_usage.png"></div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8115"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Facilitates drag-and-drop of an item between 2 views. For example, drag a user from
+                one view and drop it into a user group.
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8120"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Drop Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Common Title</strong></span></p>
+                                                   
+                        </td>
+                        <td>Drop Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.table.DropElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.0.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8173"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>For example, in the Shot Planner view, individual assets can be added to a shot by
+                           simply dragging the asset from one view and dropping it onto the shot in another view.
+                           Once the asset is dropped onto the shot, the asset will appear in the column with a
+                           "NEW" flag.  Hit the save button in the shot view to preserve the changes.
+            </p>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <h5><a name="d0e8179"></a>Options
+            </h5>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Accepted Drop Type</strong></span></p>
+                                                   
+                        </td>
+                        <td>The acceptable sType that can be clicked on to be dragged and dropped
+                                                       onto another type. For example, sType is vfx/asset.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Instance Type</strong></span></p>
+                                                   
+                        </td>
+                        <td>For the item that is being dragged, it is the sType that the item can
+                                                       be dropped onto. For example, sType is vfx/asset_in_shot"
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Cbjs Drop Action</strong></span></p>
+                                                   
+                        </td>
+                        <td>The call back JavaScript to run each time an item is dropped into the
+                                                       column.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Display Expr</strong></span></p>
+                                                   
+                        </td>
+                        <td>The expression to run to display in view mode.  For example
+                                                       "@"
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8222"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>A many-to-many relationship between the 2 types needs to be created in the Schema
+                           Editor. By convention, the "join" node that need to be created to connect the 2 types
+                           should be named: "&lt;sType1&gt;_in_&lt;sType2&gt; ". For example, for the join node named:
+                           "asset_in_shot". The "asset_in_shot" node stores the data representing the relationship
+                           between the asset and which shot it appears in.
+            </p>
+            <p>The view where the item to be dropped onto the Drop Element column of, can exist in a
+                           custom layout table or a view opened in a new window within the TACTIC session.
+            </p>
+            <div class="mediaobject"><img src="media/3_drop_element_usage_asset_in_shot.png"></div>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name="asset_drop" width="333px" edit="false"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;vfx/asset&lt;/accepted_drop_type&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+  &lt;/display&gt;
+  &lt;action class="tactic.ui.table.DropElementAction"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre></div>
+         </div>
+         <div class="simplesect" title="Examples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8235"></a>Examples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Example 1: implementation of "asset_in_shot', where an asset can be drag and dropped
+                           onto a shot:
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name="asset_drop" width="333px" edit="false"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;vfx/asset&lt;/accepted_drop_type&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+  &lt;/display&gt;
+  &lt;action class="tactic.ui.table.DropElementAction"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre></div>
+            <p>Example 2: implementation of "user_in_group', where a user can be drag and dropped
+                           onto a group:
+            </p>
+            <div class="mediaobject"><img src="media/1_drop_element_overview.png"></div>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name="users"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+    &lt;instance_type&gt;sthpw/login_in_group&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;sthpw/login&lt;/accepted_drop_type&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_hidden-row-toggle-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-view.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_tactic-widgets-edit.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

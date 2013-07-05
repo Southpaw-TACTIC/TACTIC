@@ -1,0 +1,914 @@
+/* *********************************************************
+ *
+ * Copyright (c) 2005, Southpaw Technology
+ *                     All Rights Reserved
+ * 
+ * PROPRIETARY INFORMATION.  This software is proprietary to
+ * Southpaw Technology, and is not to be reproduced, transmitted,
+ * or disclosed in any way without written permission.
+ * 
+ * 
+ */ 
+
+
+/*
+ * This css file is meant for styles that define the layout of TACTIC and how
+ * it functions and not it's skin.  Skins are all elements that are defined in
+ * main.css.
+
+ * If you change the contents of this file, it is not guaranteed that TACTIC
+ * will work properly.
+ */
+
+body {
+    font-family: sans-serif, times;
+    font-size: 12px;
+    /*text-align: center;*/
+}
+
+
+/*
+ * We have to define a font size for tables because the body setting does not
+ * pass through
+ */
+table {
+    font-size: 12px;
+}
+
+
+/* Set some standard properties for various elements. */
+
+
+/* style for all "select" and "text" and "password" input fields */
+.inputfield {
+    font-family: sans-serif, times;
+    font-size: 11px;
+    margin: 0px;
+}
+
+
+input {
+    font-size: 1.1em;
+    vertical-align: middle;
+}
+
+
+textarea {
+    font-family: sans-serif, times;
+    font-size: 11px;
+    border-width: 1px;
+}
+
+
+
+select {
+    font-size: 1.0em;
+}
+
+div {
+    margin: 0px 0px 0px 0px;
+    border-width: 1px
+}
+
+img {
+    vertical-align: middle;
+}
+
+h2 {
+    font-size: 18px;  
+    font-weight: bold;
+}
+h3 
+{
+    font-size: 16px;  
+    font-weight: bold;
+}
+h4 
+{
+    font-size: 14px;  
+    font-weight: bold;
+}
+h5
+{
+    font-size: 12px;
+    font-weight: bold;
+}
+
+hr
+{
+    height: 1px;
+}
+
+
+/* various styles used to do simple specific things.  Mostly alignment */
+
+
+.warning
+{
+    font-size: 1.1em;
+    font-weight: 600;    
+    color: #720f0f;
+}
+
+
+.hidden {
+    display: none;
+}
+
+.smaller {
+    font-size: smaller;
+}
+
+.larger {
+    font-size: larger;
+}
+
+.center
+{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.vcenter
+{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.left_content 
+{
+    text-align: left;
+}
+
+.right_content 
+{
+    text-align: right;
+}
+
+.center_content
+{
+    text-align: center;
+}
+
+.hand
+{
+    cursor: pointer;
+}
+
+.move
+{
+    cursor: move;
+}
+
+
+/* a bunch of common div and span settings */
+
+div.sm_cell
+{
+    width: 4em;
+    float: left;
+}   
+
+div.med_cell
+{
+    width: 14em;
+    float: left;
+} 
+
+div.lg_cell
+{
+    width: 24em;
+    float: left;
+}  
+
+div.right
+{
+    text-align: right;
+}
+
+div.centered 
+{
+    text-align: center;
+}
+
+div.header {
+    
+    font-size: 1.5em;
+    font-weight: bold;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 14px;
+    padding-left: 10px;
+}
+
+
+/* overlay styles */
+div.overlay_top {
+    position: absolute;
+    z-index: 4;
+    top: 140px;
+    left: 10%;
+    width: 70%;
+    padding: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #000000;
+    background: #f0f0f0;
+    display: none;
+}
+
+
+div.overlay_dimmer {
+    position: fixed;
+    z-index: 3;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: #999999;
+    filter: alpha(opacity=60); /* for IE compatibility, must occur before opacity */
+    opacity: 0.6;
+    display: none;
+}
+
+div.monitor {
+    padding: 2px;
+    margin: 4px 0 4px 0;
+}
+
+span.small
+{
+    padding: 0 5px 0 5px;
+}
+
+span.small_left
+{
+    padding-left: 5px;
+}
+
+span.med
+{
+    padding: 0 10px 0 10px;
+}
+
+span.large
+{
+    padding: 0 25px 0 25px;
+}
+
+.clip_add
+{
+    position: relative;
+}
+
+.clip_add span
+{
+    position: absolute; 
+    right: 2px; 
+    bottom: 0px;
+}
+
+
+
+
+
+
+
+/* TODO: not sure what this is for */
+.swap_link {
+    color: #E8C792;
+    cursor: pointer;
+}
+
+
+
+/* Used for ActionSelectWdg .. primarily used for SimpleStatusWdg */
+select.action
+{
+    background-color: #dfe5bc;
+}   
+
+select.action_warning
+{
+    background-color: #f0d4af;
+}    
+
+
+
+
+/*
+ * Styles for specific components
+ */
+
+
+
+/* defines a standard filter box on top of most TableWdg */
+div.filter_box
+{
+    border: 1px solid #aaa;
+    background-color: #eee;
+    margin: 5px 2px 5px 2px;
+    padding: 5px 2px 5px 2px;
+    /*text-align: center;*/
+}
+
+div.background_box
+{
+    border: 1px solid #aaa;
+    background-color: #eee;
+    -moz-border-radius: 7px;
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+
+}
+
+
+/* TODO: not sure what this is for */
+div.cell_header
+{
+    height: 1.5em;   
+    -moz-border-radius: 6px;
+    border: 1px dotted #ccc; 
+    background-color: #dce0de;
+    padding: 6px 8px 6px 8px;
+    margin-bottom: -10px;
+    text-align: left;
+    font-weight: bolder;
+}
+
+
+
+/* Customized icon buttons */
+
+span.button {
+    font-weight: bold;
+    padding: 2px 3px 2px 3px;
+    margin: 3px 3px;
+    border-style: solid;
+    border-width: 0px 1px 1px 0px;
+    border-color: #a0a0a0;
+    vertical-align: middle;
+    -moz-border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+   
+}
+
+/*
+span.button:active {
+    
+  
+    border-top: 1px solid #b0b0b0;
+    border-left: 1px solid #b0b0b0;
+    border-bottom: 0px solid #ccc;
+    border-right: 0px solid #ccc;
+  
+}
+*/
+
+
+img.icon_over {
+    filter: alpha(opacity=100); /* for IE compat. */
+    opacity: 1;
+}   
+
+img.icon_out {
+    filter: alpha(opacity=70); /* for IE compat. */
+    opacity: 0.7;
+}
+
+img.simple_button {
+    filter: alpha(opacity=70); /* for IE compat. */
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+img.simple_button_hover, img.simple_button:hover {
+    filter: alpha(opacity=100); /* for IE compat. */
+    opacity: 1;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+/* discussion/note */
+div.discussion {
+    background-color: #f0f0f0;
+    font-size: 1.0em;
+    width: 350px;
+    -moz-border-radius: 9px;
+    padding: 6px 6px 6px 6px;
+    background-color: #f0f0f0;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+div.discussion_parent {
+    background-color: #d9d9d9;
+    margin: 3px 0px 3px 0px;
+}
+
+div.discussion_sticky {
+    background-color: #E4F5C4;
+    margin: 3px 0px 3px 0px;
+}
+
+div.discussion_child {
+    background-color: #c0c0c0;
+    margin: 3px 0px 3px 0px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Trailing divs on the header */
+div.trail_on
+{
+    background-color: #e4e7eb;
+    width: 0.5em;
+    height: 0.5em;
+}
+
+div.trail_off
+{
+    background-color: transparent;
+    width: 0.5em;
+    height: 0.5em;
+}
+
+
+
+
+/* Completion widget with colors gradients */
+.completion {
+    background-repeat: repeat-x;
+    border-style: solid;
+    border-color: #ccc;
+}
+
+.grey { background: url("/context/icons/gradient/grey_gradient.png");  }
+.red { background: url("/context/icons/gradient/red_gradient.png");  }
+.blue { background: url("/context/icons/gradient/blue_gradient.png");  }
+.yellow { background: url("/context/icons/gradient/yellow_gradient.png");  }
+.green { background: url("/context/icons/gradient/green_gradient.png");  }
+
+
+
+
+
+
+
+/* Styles for the login page */
+div.login
+{
+    background-image: url(/context/icons/logo/tactic_silver.png); 
+    background-repeat: no-repeat;  
+    width: 395px;
+    height: 245px;
+    text-align: center;
+    margin:0 auto;
+    color: black;
+}
+
+table.login {
+    color: white;
+}
+ 
+table.login td {
+    background-color: transparent;
+}
+
+.login_sthpw {
+    font-family: Verdana;
+    font-size: 9px;
+}
+
+.body_login {
+    background:#434343;
+    /* background-image: url(/context/icons/logo/background.png); */
+    background-repeat: repeat-x;  
+    background-position: top;
+    position: relative;
+}
+
+.div_login {
+    background-image: url(/context/icons/logo/header_4.jpg); 
+    background-position: top;
+    position: relative;
+}
+
+
+/* annotation styles */
+div.annotate_new {
+    position: absolute;
+    background-color: white;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    z-index: 6;
+    padding: 3px;
+    width: 230;
+}
+
+div.annotate_mark {
+    position: absolute;
+    background-color: white;
+    border-style: solid;
+    border-width: 2px;
+    height: 5px;
+    width: 5px;
+    z-index: 4;
+}
+
+
+
+div.annotate_back {
+    position: absolute;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    filter: alpha(opacity=70); /* for IE compat. */
+    opacity: 0.7;
+    width: 150px;
+    z-index: 4;
+    padding: 2px;
+}
+
+
+div.annotate_msg {
+    position: absolute;
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    width: 150px;
+    z-index: 5;
+    padding: 2px;
+}
+
+
+
+
+/* tab styles */
+.tab_selected {
+    background-color: #b9cac8;
+    border-color: #8cacbb;
+    display: inline;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-style: outset;
+    border-width: 1px 1px 0px 1px;
+    padding: 3px 8px 3px 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    text-align: center;
+}
+
+.tab_sm_selected
+{
+    background-color: #b9cac8;
+    border-color: #8cacbb;
+    font-size: 1.0em;
+    font-weight: bold;
+    border-style: outset;
+    border-width: 1px 1px 0px 1px;
+    padding: 1px 5px 2px 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    /*text-align: center;*/
+
+}
+
+.tab_unselected {
+    background-color: #eee;
+    display: inline;
+    font-size: 1.1em;
+    border-style: outset;
+    border-color: #8cacbb;
+    border-width: 1px 1px 0px 1px;
+    padding: 3px 8px 1px 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    text-align: center;
+}
+
+.tab_sm_unselected {
+    background-color: #eee;
+    font-size: 1.0em;
+    border-style: outset;
+    border-color: #8cacbb;
+    border-width: 1px 1px 0px 1px;
+    padding: 1px 5px 0px 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+
+}
+
+.tab_content {
+    background-color: #b9cac8;
+    border: #8cacbb outset 2px;
+    margin-top: 0.5px;
+    padding: 10px 10px 10px 10px;
+}
+
+.tab_sm_content {
+    background-color: #b9cac8;
+    border: #8cacbb groove 2px;
+    margin-top: -0.5px;
+    padding: 10px 10px 10px 10px;
+}
+
+
+span.tab_front
+{
+    padding: 0 3px 0 3px;
+}
+
+
+
+/*
+ *  Table definitions
+ */
+
+
+table
+{
+    border-spacing: 0px;
+    border-collapse: collapse;
+    color: black;
+}
+
+
+/* table column width */
+
+col.small
+{
+    width: 2em;
+}   
+
+col.med
+{
+    width: 5em;
+}  
+
+col.large
+{
+    width: 8em;
+} 
+
+
+
+/* minimal table in a table */
+table.table table.minimal {
+    /*width: 0px;*/
+    margin: 0px 0px;
+    padding: 0px 0px;
+    border-spacing: 0px;
+}
+
+table.table table.minimal th {
+    /*width: 0px;*/
+    margin: 0px 0px;
+    padding: 2px 0 0 0;
+    border-spacing: 0px;
+    border-width: 0;
+}
+
+
+table.table table.minimal td {
+    border-style: none;
+    vertical-align: middle;
+    margin: 0px 0px;
+    padding: 0px 3px;
+    border-spacing: 0px;
+}
+
+.minimal_header td, .minimal_header th {
+    font-size: 0.7em;
+    font-weight: 400;
+    background-color: #fff;
+    height: 1.0em;
+}
+
+tr.plain_bg td
+{
+    background-color: #e3e8e6;
+}
+
+tr.heading td
+{
+    background-color: #6f707e;
+    padding: 3px 0 3px 0;
+    color: #eee;
+    font-weight: 600;
+    font-size: 1.1em;
+}   
+
+tr.group td
+{
+    background-color: #f0f0f0;
+}
+
+tr.prefs_row td
+{
+    background-color: #dfe6da;
+}
+
+
+
+/* cell styles */
+td.valign_top
+{
+    vertical-align: top;
+}
+
+td.no_wrap
+{
+    white-space: nowrap;
+}
+    
+
+/* simple table */
+table.simple {
+    margin: 15px 10px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+table.simple th {
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    text-align: left;
+}
+
+table.collapse 
+{
+    border-collapse: collapse;
+}
+    
+table.max_width
+{
+    width: 100%;
+}    
+
+/* standard table */
+table.table {
+    margin: 5px 0px;
+    border: 1px solid #999;
+}
+
+
+table.table th {
+    /*font-size: 1.1em;*/
+    text-align: left;
+    vertical-align: middle;
+    padding: 3px 3px 0 3px;
+    /*background-color: #b9cac8;*/
+}
+
+
+
+table.table td {
+    vertical-align: top;
+    border-style: solid;
+    border-width: 1px 0px 0px 0px;
+    padding: 3px 5px;
+    border-color: #8cacbb;
+    text-align: left;
+}
+
+/* embedded table */
+table.embed {
+    /*margin: 0px 0px;*/
+    width: 100%;
+}
+
+table.embed th {
+    font-size: 1.0em;
+    padding: 1px 1px;
+    border-width: 1px;
+}
+
+table.embed td {
+    font-size: 1.0em;
+    padding: 1px 1px;
+    border-width: 0px 0px 1px 0px;
+    border-color: #8cacbb;
+}
+
+
+
+/* standard edit table */
+table.edit {
+    width: 40em;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #999;
+}
+
+table.edit th {
+    font-size: 1.2em;
+    padding: 3px 5px;
+    vertical-align: top;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    background-color: #b9cac8;
+}
+
+
+table.edit td {
+    vertical-align: top;
+    border-bottom: solid;
+    border-width: 1px;
+    padding: 5px 5px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+
+
+
+/* overlay styles */
+div.overlay_top {
+    position: absolute;
+    z-index: 4;
+    top: 140px;
+    left: 10%;
+    width: 70%;
+    padding: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #000000;
+    background: #f0f0f0;
+    display: none;
+}
+
+
+div.overlay_dimmer {
+    position: fixed;
+    z-index: 3;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: #999999;
+    filter: alpha(opacity=60); /* for IE compat. */
+    opacity: 0.6;
+    display: none;
+}
+
+
+
+/* task widget */
+.task_header_row {
+    background-color: #f2f4f7;
+}
+.task_spacer_column {
+    background-color: #ddd;
+}
+
+
+/* shows the background color of the task status.  This is should be the same
+color as the background of the table.  The color is determined in code */
+.task_status_bar {
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+}
+
+/* color scheme for the gantt chart calendar */
+.calendar_nav {
+    color: #e0e0e0;
+    font-size: 0.8em;
+    background: #95aba9;
+    padding: 0 2px 2px 2px;
+    width: 50px;
+    -moz-border-radius: 4px;
+}
+
+div.slide_panel_cont {
+    position: absolute;
+    left: 0px;
+    top: 10px;
+    z-index: 500;
+}
+
+*.unselectable {
+   -moz-user-select: none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   user-select: none;
+}
+
+
+

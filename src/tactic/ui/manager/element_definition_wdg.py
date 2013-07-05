@@ -1,0 +1,3218 @@
+###########################################################
+#
+# Copyright (c) 2005, Southpaw Technology
+#                     All Rights Reserved
+#
+# PROPRIETARY INFORMATION.  This software is proprietary to
+# Southpaw Technology, and is not to be reproduced, transmitted,
+# or disclosed in any way without written permission.
+#
+#
+
+__all__ = ['ElementDefinitionWdg', 'ViewElementDefinitionWdg', 'EditElementDefinitionWdg', 'SimpleElementDefinitionCbk']
+
+import os
+
+import tacticenv
+
+from pyasm.common import Date, Environment, Xml, TacticException, SetupException, Common
+from pyasm.command import Command
+from pyasm.biz import Project
+from pyasm.search import Search, SearchType, WidgetDbConfig
+from pyasm.web import DivWdg, SpanWdg, Table, WebContainer, HtmlElement, Widget
+from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, TextAreaWdg, TextWdg, ProdIconButtonWdg, CheckboxWdg, IconWdg, SwapDisplayWdg
+from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
+from tactic.ui.filter import FilterData
+from tactic.ui.container import RoundedCornerDivWdg, TabWdg
+from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWdg, ActionButtonWdg
+
+from dateutil import parser
+
+import types
+
+
+class ElementDefinitionWdg(BaseRefreshWdg):
+
+    def get_args_keys(my):
+        return {
+        'search_type': 'search type for this search widget',
+        'view': 'the top level view we are looking at',
+        'element_name': 'the element name to look at',
+        'is_insert':    'true|false',
+
+        'display_handler': 'The display handler class'
+        }
+
+   
+
+    def get_display(my):
+        top = DivWdg()
+        top.add_class("spt_element_top")
+        top.add_color("color", "color")
+        top.add_color("background", "background")
+        top.add_border()
+
+       
+
+        is_insert = my.kwargs.get("is_insert")
+        if is_insert in ['true', True]:
+            my.is_insert = 'true'
+        else:
+            my.is_insert = 'false'
+
+
+
+
+        search_type = my.kwargs.get("search_type")
+        my.search_type = search_type
+        view = my.kwargs.get("view")
+        element_name = my.kwargs.get("element_name")
+
+
+        # add hidden elements for the search_type and view
+
+        hidden = HiddenWdg("search_type", search_type)
+        top.add(hidden)
+        hidden = HiddenWdg("view", view)
+        top.add(hidden)
+
+
+
+
+        config_view = WidgetConfigView.get_by_search_type(search_type, view)
+        edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
+
+        # This variable may be obsolete now
+        # find out this so we don't draw Display if it is a edit layout
+        view_attributes = config_view.get_view_attributes()
+        my.is_edit_layout = 'false'
+        if view in ['edit','edit_definition', 'insert'] or view_attributes.get('layout') == 'EditWdg':
+            my.is_edit_layout = 'true'
+
+       
+
+        inner_div = DivWdg()
+        inner_div.add_style("padding: 5px")
+        inner_div.add_style("width: 580px")
+        inner_div.add_style("min-height: 600px")
+        top.add(inner_div)
+
+        #view = config_view.get_view()
+        if my.is_edit_layout == 'true':
+            config_xml = '''
+             <config>
+              <tab>
+              <element name='Edit Mode' load='true'>
+                 <display class='tactic.ui.manager.EditElementDefinitionWdg'>
+                <search_type>%(search_type)s</search_type>
+                <view>%(view)s</view>
+                <element_name>%(element_name)s</element_name>
+                <is_insert>%(is_insert)s</is_insert>
+                <is_edit_layout>true</is_edit_layout>
+            </display>
+          </element>
+        </tab>
+        </config>'''%{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': my.is_insert}
+        else:
+            config_xml = '''
+            <config>
+            <tab>
+              <element name='View Mode' load='true'>
+                <display class='tactic.ui.manager.ViewElementDefinitionWdg'>
+                    <search_type>%(search_type)s</search_type>
+                    <view>%(view)s</view>
+                    <element_name>%(element_name)s</element_name>
+                    <is_insert>%(is_insert)s</is_insert>
+                    <is_edit_layout>false</is_edit_layout>
+                </display>
+              </element>
+              <element name='Edit Mode' load='true'>
+                <display class='tactic.ui.manager.EditElementDefinitionWdg'>
+                    <search_type>%(search_type)s</search_type>
+                    <view>%(view)s</view>
+                    <element_name>%(element_name)s</element_name>
+                    <is_insert>%(is_insert)s</is_insert>
+                    <is_edit_layout>true</is_edit_layout>
+                </display>
+              </element>
+            </tab>
+            </config>
+            ''' %{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': my.is_insert}
+       
+
+        if my.is_insert =='true':
+            from tactic.ui.container import WizardWdg
+            wizard = WizardWdg(title='Create New Column')
+            config = WidgetConfig.get(view='tab', xml=config_xml)
+            table_display = config.get_display_widget('View Mode')
+            wizard.add(table_display, "View Mode")
+
+            edit_display = config.get_display_widget('Edit Mode')
+            wizard.add(edit_display, "Edit Mode")
+
+            submit_input = my.get_submit_input()
+            wizard.add_submit_button(submit_input)
+
+            inner_div.add(wizard)
+        else:
+            tab = TabWdg(config_xml=config_xml, show_add=False )
+            inner_div.add(tab) 
+
+
+        return top
+
+    def get_submit_input(my):
+        submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column", icon=IconWdg.CREATE)
+
+        behavior = {
+            'type':         'click_up',
+            'cbjs_action': my._get_save_cbjs_action()
+        }
+        submit_input.add_behavior(behavior)
+        submit_input.add_style("float: right")
+
+        return submit_input
+
+
+    def get_definitions(my, element_name):
+        '''get all the definitions for this element'''
+        search_type = my.kwargs.get("search_type")
+        view = my.kwargs.get("view")
+        config_view = WidgetConfigView.get_by_search_type(search_type, view)
+
+        display_class = config_view.get_display_handler(element_name)
+        element_attr = config_view.get_element_attributes(element_name)
+
+        for config in config_view.get_configs():
+            view = config.get_view()
+            file_path = config.get_file_path()
+            if not file_path:
+                file_path = "from Database"
+
+            xml = config.get_element_xml(element_name)
+
+    def _get_save_cbjs_action(my):
+        ''' this takes input from both table and edit display and save a new column'''
+        return  '''
+            var server = TacticServerStub.get();
+            var top = bvr.src_el.getParent(".spt_element_top");
+            //var mode = top.getElement(".spt_element_def_mode");
+            var inputs = spt.api.Utility.get_input_values(top);
+
+            if (inputs.name == '') {
+                alert('Please provide a name for this element');
+                return;
+            }
+           
+            spt.app_busy.show("Creating New Column", "");
+            
+            var widget_key = inputs['xxx_option|widget_key'];
+            var is_continue = true;
+            var is_insert = %s;
+            var is_edit_layout = '%s';
+
+            if (widget_key && !widget_key[0]  && is_insert==true) {
+                if (!confirm('You are about to create a Widget Column without a database column. Continue?')){
+                    is_continue = false;
+                    spt.app_busy.hide();
+                    return;
+                }
+            }
+            if (is_continue){
+                var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
+                var args = {
+                    search_type: '%s',
+                    view: 'definition',
+                    is_insert: is_insert,
+                    is_edit_layout: is_edit_layout
+                };
+                try {
+                     server.execute_cmd(class_name, args, inputs);
+                }
+                catch(e) {
+                     spt.alert(spt.exception.handler(e));
+                     spt.app_busy.hide();
+                     return;
+                }
+            }
+            spt.app_busy.hide();
+            var pop = bvr.src_el.getParent('.spt_popup');
+            // pop could be null in Manage Views page
+            var activator = (pop && pop.activator) ? pop.activator: bvr.src_el;
+            try {
+                var table_top = spt.get_parent(activator, '.spt_table_top')
+                // may not have table_top in Manage Views
+                if (table_top) {
+                    // FIXME: the fast table has the layout inside the spt_table_top
+                    var layout = table_top.getElement(".spt_layout");
+                    if (!layout)
+                        layout = table_top.getParent(".spt_layout");
+                    var elem_name = inputs.name[0];
+                    if (is_insert) {
+
+                        if (layout.getAttribute("spt_version") == "2") {
+                            spt.table.set_layout(layout);
+                            spt.table.add_column(elem_name);
+                        }
+                        else {
+                            var table = table_top.getElement(".spt_table");
+                            spt.dg_table.toggle_column_cbk(table, elem_name,'-1');
+                        }
+
+                    }
+                    else {
+                        spt.dg_table.search_cbk( {}, {'src_el': table_top} );
+                    }
+                }
+                if (pop)
+                    spt.popup.close(pop);
+            }
+            catch (e) {
+                // it happens when the user refreshes the table while changing
+                // definition
+                throw(e)
+                spt.alert('Definition modified. Please refresh this table manually');
+            }
+            '''%(my.is_insert, my.is_edit_layout, my.search_type)
+
+    
+
+
+
+
+
+class ViewElementDefinitionWdg(BaseRefreshWdg):
+
+    def init(my):
+        my.main_xml_text = None
+        my.main_xml = None
+
+
+    def get_args_keys(my):
+        return {
+        'search_type': 'search type for this search widget',
+        'view': 'the top level view we are looking at',
+        'element_name': 'the element name to look at',
+        'config_view': 'config_view',
+        'edit_config_view': 'edit_config_view',
+        'is_edit_layout': 'True if it is edit layout',
+        'is_insert': 'True if it is insert'
+        }
+
+
+    def _get_save_cbjs_action(my):
+        return  '''
+            var server = TacticServerStub.get();
+            var top = bvr.src_el.getParent(".spt_element_definition");
+            var mode = top.getElement(".spt_element_def_mode");
+            var inputs = spt.api.Utility.get_input_values(top);
+
+            var tab_top = bvr.src_el.getParent(".spt_element_top");
+            spt.tab.set_tab_top(tab_top);
+            var header = spt.tab.get_selected_header();
+            var tab_name = header.getAttribute('spt_element_name');
+
+            if (inputs.name == '') {
+                alert('Please provide a name for this element');
+                return;
+            }
+
+            spt.app_busy.show("Saving " + tab_name + " Element Definition", "");
+            
+            var widget_key = inputs['xxx_option|widget_key'];
+            var is_continue = true;
+            var is_insert = %s;
+            var is_edit_layout = '%s';
+            if (widget_key && !widget_key[0] && mode.value=='form' && is_insert==true) {
+                if (!confirm('You are about to create a Widget Column without a database column. Continue?')){
+                    is_continue = false;
+                    spt.app_busy.hide();
+                    return;
+                }
+            }
+            if (is_continue){
+                var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
+                var args = {
+                    search_type: '%s',
+                    view: 'definition',
+                    is_insert: is_insert,
+                    is_edit_layout: is_edit_layout
+                };
+                try {
+                     server.execute_cmd(class_name, args, inputs);
+                }
+                catch(e) {
+                     spt.alert(spt.exception.handler(e));
+                     spt.app_busy.hide();
+                     return;
+                }
+            }
+            spt.app_busy.hide();
+            var pop = bvr.src_el.getParent('.spt_popup');
+            var activator = (pop && pop.activator) ? pop.activator: bvr.src_el;
+            try {
+                // may not have table_top in Manage Views
+                var table_top = spt.get_parent(activator, '.spt_table_top')
+                // the fast table has the layout inside the spt_table_top
+                if (table_top) {
+                    var layout = table_top.getElement(".spt_layout");
+                    if (!layout)
+                        table_top.getParent(".spt_layout");
+                    if (is_insert) {
+                        var elem_name = inputs.name[0];
+                        if (layout.getAttribute("spt_version") == "2") {
+                            spt.table.set_layout(table_top);
+                            spt.table.add_column(elem_name);
+                        }
+                        else {
+                            var table = table_top.getElement(".spt_table");
+                            spt.dg_table.toggle_column_cbk(table, elem_name,'-1');
+                        }
+                    }
+                    else {
+                        spt.dg_table.search_cbk( {}, {'src_el': table_top} );
+                    }
+                }
+                if (pop)
+                    spt.popup.close(pop);
+                
+            }
+            catch (e) {
+                alert(e);
+                // it happens when the user refreshes the table while changing
+                // definition
+                spt.alert('Definition modified. Please refresh this table manually');
+            }
+            '''%(str(my.is_insert).lower(), my.is_edit_layout, my.search_type)
+
+    def get_display(my):
+        top = DivWdg()
+        top.add_class("spt_element_definition")
+        top.add_style("width: 530px")
+
+        my.is_edit_layout = my.kwargs.get("is_edit_layout")
+        my.is_insert = my.kwargs.get("is_insert")
+        
+        if my.is_insert in ['true', True]:
+            my.is_insert = True
+        else:
+            my.is_insert = False
+
+        element_name = my.kwargs.get('element_name')
+        search_type = my.kwargs.get('search_type')
+        my.search_type = search_type
+        view = my.kwargs.get('view')
+
+        config_view = WidgetConfigView.get_by_search_type(search_type, view)
+        edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
+
+        if not my.is_insert:
+
+            #config_view = my.kwargs.get("config_view")
+          
+
+            display_class = config_view.get_display_handler(element_name)
+            widget_key = config_view.get_widget_key(element_name,'display')
+            display_options = config_view.get_display_options(element_name)
+            element_attr = config_view.get_element_attributes(element_name)
+
+            # test build the class
+            try:
+                widget = config_view.get_display_widget(element_name)
+            except Exception, e:
+                print "ERROR: ", e
+                widget = None
+            is_editable = False
+            if hasattr(widget, 'is_editable'):
+                is_editable = widget.is_editable()
+
+            
+            if is_editable:
+                #edit_config_view = my.kwargs.get("edit_config_view")
+                edit_class = edit_config_view.get_edit_handler(element_name)
+                edit_widget_key = edit_config_view.get_widget_key(element_name)
+                edit_options = edit_config_view.get_options(element_name, "edit")
+                action_class = edit_config_view.get_action_handler(element_name)
+                
+            else:
+                edit_class = ''
+                edit_widget_key = ''
+                edit_options = {}
+                action_class = ''
+            
+            # build the xml string
+            configs = config_view.get_configs()
+            for x in configs:
+                xml_str = x.get_element_xml(element_name)
+                xml_str = xml_str.strip()
+                if xml_str and xml_str != "<element name='%s'/>" % element_name:
+                    break
+            if not xml_str:
+                xml_str = "<element name='%s'/>" % element_name
+
+
+            edit = element_attr.get('edit')
+            show_color  = element_attr.get('color')
+            title = element_attr.get('title')
+            width = element_attr.get('width')
+            access = element_attr.get('access')
+            if is_editable:
+                if is_editable=='optional':
+                    # it needs to be explicit in this case to turn on the editability for Edit Panel mainly
+                    editable = element_attr.get('edit') == 'true'
+                else:
+                    editable = element_attr.get('edit') != 'false'
+            else:
+               
+
+                editable = False
+
+
+        else:
+            widget_key = ''
+            edit_widget_key = ''
+            display_class = ''
+            display_options = {}
+
+            edit_class = ''
+            edit_options = {}
+            action_class = ''
+
+            element_name = ''
+            edit = ''
+            title = ''
+            width = ''
+            xml_str = ''
+            editable = True
+
+
+
+
+        # add in the mode selected
+        mode_wdg = DivWdg()
+        mode_wdg.add("Mode: ")
+        mode_select = SelectWdg("mode")
+        mode_select.add_class('spt_element_def_mode')
+        mode_select.set_option("labels", "Form|XML")
+        mode_select.set_option("values", "form|xml")
+        # we want to start in Form all the time
+        #mode_select.set_persistence()
+        mode_select.add_behavior({
+            'type': 'change',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_element_definition");
+            var form_el = top.getElement(".spt_form_top");
+            var xml_el = top.getElement(".spt_xml_top");
+
+            if (value == 'form') {
+               spt.show(form_el);
+               spt.hide(xml_el);
+            }
+            else {
+               spt.show(xml_el);
+               spt.hide(form_el);
+            }
+
+            '''
+        })
+        mode_wdg.add(mode_select)
+        mode_wdg.add_styles("float: right; margin: 0px 8px 0 0")
+        mode = mode_select.get_value()
+
+
+        # add the save button
+        from tactic.ui.widget import ActionButtonWdg
+        save_button = ActionButtonWdg( title='Save', tip='Save To Definition' )
+        save_button.add_style("margin-left: 5px")
+        save_button.add_style("margin-top: -5px")
+        save_button.add_style("float: right")
+        save_button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': my._get_save_cbjs_action()
+        } )
+        title_div = DivWdg()
+        top.add(title_div)
+        title_div.add_gradient("background", "background", -5 )
+        title_div.add_style("margin-bottom: 10px")
+        title_div.add_style("font-weight: bold")
+        title_div.add_style("padding: 4px")
+        title_div.add_style("width: 520px")
+        title_div.add_style("height: 18px")
+        title_div.add_border()
+        if my.is_insert:
+            title_div.add(IconWdg("New Element", IconWdg.NEW))
+            title_div.add("New Column")
+        else:
+            title_div.add("Edit Column Definition")
+
+        if not my.is_insert:
+            title_div.add(mode_wdg)
+            gear = my.get_gear_menu(view)
+            gear.add_style("float: right")
+                
+            # add gear menu 
+            top.add(gear)
+            top.add(save_button)
+
+
+
+
+        top.add("<br clear='all'/>")
+
+
+
+        # add in the pure xml wdg
+        xml_wdg = my.get_xml_wdg(xml_str)
+        if mode != 'xml':
+            xml_wdg.add_style("display: none")
+
+        config_wdg = my.get_definition_configs(config_view, element_name)
+        xml_wdg.add('<br>')
+        xml_wdg.add(config_wdg)
+
+        xml_wdg.add_class("spt_xml_top")
+        top.add(xml_wdg)
+
+        # add the name
+        from pyasm.web import Table
+        table = Table()
+        table.add_color("color", "color")
+        table.add_class("spt_form_top")
+        table.add_style("width: 530px")
+        if mode == 'xml':
+            table.add_style("display: none")
+        top.add(table)
+    
+        tr, td = table.add_row_cell()
+
+        attr_wdg = DivWdg()
+        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_style("margin-top: 10px")
+        attr_wdg.add_style("padding: 10px")
+        attr_wdg.add_border()
+        #title_wdg = DivWdg()
+        #title_wdg.add("Element Attributes")
+        #title_wdg.add_style("margin-top: -25px")
+        #attr_wdg.add(title_wdg)
+        td.add(attr_wdg)
+
+
+        attr_table = Table()
+        attr_table.add_color("color", "color")
+
+
+        # add the title
+        attr_table.add_row()
+        td = attr_table.add_cell("Title: ")
+        td.add_style("padding: 5px")
+        title_text = TextWdg("attr|title")
+        title_text.add_class("spt_element_definition_title")
+        title_text.add_attr("size", "50")
+        if title:
+            title_text.set_value(title)
+        attr_table.add_cell(title_text)
+        attr_wdg.add(attr_table)
+
+        title_text.add_behavior( {
+        'type': 'change',
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_element_definition");
+        var el = top.getElement(".spt_element_definition_name");
+        if (el && el.getStyle("display") != "none") {
+            var value = bvr.src_el.value;
+            var name = spt.convert_to_alpha_numeric(value);
+            el.value = name;
+        }
+        '''
+        } )
+
+
+
+        # add in the name widget
+        attr_table.add_row()
+        td = attr_table.add_cell("Name: ")
+        td.add_style("padding: 5px")
+        td = attr_table.add_cell()
+        name = my.kwargs.get("element_name")
+        if my.is_insert:
+            name_text = TextWdg("name")
+            name_text.add_class("spt_element_definition_name")
+            name_text.add_attr("size", "50")
+
+            td.add(name_text)
+
+        else:
+            #hidden = HiddenWdg("name", element_name)
+            hidden = TextWdg("name")
+            td.add(hidden)
+            hidden.set_value(element_name)
+            hidden.add_style("display", "none")
+            hidden.add_class("spt_element_definition_name")
+            if name:
+                hidden.set_value(name)
+
+            td.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_element_definition_name");
+                spt.toggle_show_hide(el);
+                var el2 = bvr.src_el.getElement(".spt_element_definition_span");
+                spt.toggle_show_hide(el2);
+                '''
+            } )
+
+
+            name_text = SpanWdg(element_name)
+            name_text.add_class("spt_element_definition_span")
+            td.add(name_text)
+            name_text.add_style('font-weight: bold')
+
+
+ 
+        # add the default security
+        """
+        attr_table.add_row()
+        td = attr_table.add_cell("Default Access: ")
+        td.add_style("padding: 5px")
+        access_select = SelectWdg("attr|default_access")
+        access_select.set_option("values", "allow|deny")
+        if access:
+            access_select.set_value(access)
+        attr_table.add_cell(access_select)
+        """
+
+
+ 
+        # add the width
+        attr_table.add_row()
+        td = attr_table.add_cell("Width: ")
+        td.add_style("padding: 5px")
+        width_text = TextWdg("attr|width")
+        if width:
+            width_text.set_value(width)
+        width_text.add_attr("size", "3")
+        attr_table.add_cell(width_text)
+
+ 
+        if not my.is_insert:
+
+            tr, td = attr_table.add_row_cell()
+            span = DivWdg("Enable Colors: ")
+            span.add_style('margin-left: 5px')
+            span.add_style('margin-top: 4px')
+            td.add(span)
+            color_wdg = CheckboxWdg("attr|color")
+            span.add(color_wdg)
+            color_wdg.add_attr("size", "50")
+            show_color = show_color != 'false'
+            if show_color:
+                color_wdg.set_checked()
+            #elif show_color == False:
+            #    color_wdg.set_option('disabled','disabled')
+
+
+            # this is required if one is changing the View mode definition post creation
+            # while making its editability info intact
+            # add a hidden Enable edit here when not in insert mode
+            editable_wdg = CheckboxWdg("attr|editable")
+            editable_wdg.add_style('display: none')
+            if editable:
+                editable_wdg.set_checked()
+            td.add(editable_wdg)
+
+
+        tr, td = table.add_row_cell()
+        td.add(SpanWdg("Widget Definition", css='small'))
+        td.add("<hr>")
+        td.add_style("padding-top: 20px")
+
+
+       
+        is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
+
+        if not is_edit_layout:
+            tr, td = table.add_row_cell()
+            td.add(HtmlElement.br())
+            attr_wdg = DivWdg()
+            attr_wdg.add_color("background", "background", -10)
+            attr_wdg.add_style("margin-top: 5px")
+            attr_wdg.add_style("padding: 10px")
+            attr_wdg.add_border()
+            title_wdg = DivWdg()
+            title_wdg.add("Display")
+            title_wdg.add_style("margin-top: -25px")
+            attr_wdg.add(title_wdg)
+            td.add(attr_wdg)
+
+
+            if not display_class:
+                display_class = my.kwargs.get('display_handler')
+
+            # add the widget information
+            class_labels = ['Empty', 'Raw Data', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', '-- Class Path --']
+            class_values = ['', 'raw_data', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', '__class__']
+            default_class='format'
+            widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False)
+            attr_wdg.add(widget_class_wdg)
+
+
+
+
+        tr, td = table.add_row_cell()
+        td.add(HtmlElement.br())
+
+   
+        if not my.is_insert:
+            tr, td = table.add_row_cell()
+
+            title_wdg = DivWdg()
+            swap = SwapDisplayWdg.get_triangle_wdg()
+            title_wdg.add(swap)
+            title_wdg.add("Colors")
+            td.add(title_wdg)
+
+            color_wdg = DivWdg()
+            SwapDisplayWdg.create_swap_title(title_wdg, swap, color_wdg, is_open=False)
+            color_wdg.add_class("spt_element_colors")
+            color_wdg.add_style("display: none")
+            color_wdg.add_color("background", "background", -10)
+            color_wdg.add_style("margin-left: 5px")
+            color_wdg.add_style("margin-bottom: 10px")
+            color_wdg.add_style("padding: 10px")
+            color_wdg.add_border()
+            td.add(color_wdg)
+
+            # add the widget information
+            color_wdg.add( my.get_color_wdg() )
+
+            # add definition configs
+            tr, td = table.add_row_cell()
+
+            config_wdg = my.get_definition_configs(config_view, element_name)
+            td.add(config_wdg)
+        
+        top.add_style("margin-bottom: 10px")
+
+        # set the main xml value if one with display handler is found
+        if my.main_xml:
+            my.main_xml_text.set_value(my.main_xml)
+        return top
+
+    def get_gear_menu(my, view):
+
+        # FIXME: the gear menu widget should be here
+        from tactic.ui.widget import GearMenuWdg, Menu, MenuItem
+        menu = Menu(width=200)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+
+
+        menu_item = MenuItem(type='action', label='Save to Definition')
+        behavior = {'cbjs_action': '''
+            spt.app_busy.show("Saving Element Definition");
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_element_definition");
+            var inputs = spt.api.Utility.get_input_values(top);
+            var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
+            var is_insert = %s;
+            var is_edit_layout = '%s';
+            var args = {
+                search_type: '%s',
+                view: 'definition',
+                is_insert : is_insert,
+                is_edit_layout: is_edit_layout
+            };
+            try {
+                server.execute_cmd(class_name, args, inputs);
+            }
+            catch(e) {
+                alert(spt.exception.handler(e));
+            }
+
+            spt.app_busy.hide();
+        ''' %(str(my.is_insert).lower(), my.is_edit_layout, my.search_type)}
+
+        menu_item.add_behavior(behavior)
+        menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='Save to Current View')
+        behavior = {'cbjs_action': '''
+            if (confirm("Are you sure you wish to save to current view? This will override the default definition") ) {
+            spt.app_busy.show("Saving to current view [%s]");
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_element_definition");
+            var inputs = spt.api.Utility.get_input_values(top);
+            var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
+            var is_insert = %s;
+            var is_edit_layout = '%s';
+            var args = {
+                search_type: '%s',
+                view: '%s',
+                is_insert : is_insert,
+                is_edit_layout: is_edit_layout
+            };
+            try {
+                server.execute_cmd(class_name, args, inputs);
+            }
+            catch(e) {
+                alert(spt.exception.handler(e));
+            }
+            spt.app_busy.hide();
+            }
+        '''%( view, str(my.is_insert).lower(), my.is_edit_layout, my.search_type, view)}
+        menu_item.add_behavior(behavior)
+        menu.add(menu_item)
+
+
+
+
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='Show Server Transaction Log')
+        behavior = {
+            'cbjs_action': "spt.popup.get_widget(evt, bvr)",
+            'options': {
+                'class_name': 'tactic.ui.popups.TransactionPopupWdg',
+                'title': 'Transaction Log',
+                'popup_id': 'TransactionLog_popup'
+            }
+        }
+        menu_item.add_behavior(behavior)
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Undo Last Server Transaction')
+        behavior = {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
+        menu_item.add_behavior(behavior)
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Redo Last Server Transaction')
+        behavior = {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
+        menu_item.add_behavior(behavior)
+        menu.add(menu_item)
+
+
+        gear_menu = GearMenuWdg()
+        gear_menu.add(menu)
+
+        return gear_menu
+
+    def get_xml_wdg(my, xml_str):
+
+        xml_wdg = DivWdg()
+        #xml_wdg.add_style('width: 550px')
+        xml_wdg.add_style("margin-top: 10px")
+        xml_wdg.add_style("padding: 10px")
+        xml_wdg.add_border()
+        title_wdg = DivWdg()
+        title_wdg.add("XML Definition")
+        title_wdg.add_style("margin-top: -23px")
+        xml_wdg.add(title_wdg)
+
+
+        my.main_xml_text = TextAreaWdg("xml_def")
+        my.main_xml_text.add_style('overflow: auto')
+        my.main_xml_text.add_style("margin: 10px")
+        my.main_xml_text.set_option("rows", "20")
+        my.main_xml_text.set_option("cols", "75")
+
+        if xml_str:
+            my.main_xml_text.set_value(xml_str)
+
+        xml_wdg.add(my.main_xml_text)
+        return xml_wdg
+
+
+
+    def get_color_wdg(my):
+        search_type = my.kwargs.get('search_type')
+        element_name = my.kwargs.get('element_name')
+
+        # get the color maps
+        color_config = WidgetConfigView.get_by_search_type(search_type, "color")
+        color_xml = color_config.configs[0].xml
+
+        color_maps = {}
+
+        name = element_name
+        xpath = "config/color/element[@name='%s']/colors" % name
+        text_xpath = "config/color/element[@name='%s']/text_colors" % name
+        bg_color_node = color_xml.get_node(xpath)
+        bg_color_map = color_xml.get_node_values_of_children(bg_color_node)
+
+        text_color_node = color_xml.get_node(text_xpath)
+        text_color_map = color_xml.get_node_values_of_children(text_color_node)
+ 
+
+
+        top = DivWdg()
+        top.add_class("spt_color_top")
+
+
+        existing_values = []
+        # get existing values
+        from pyasm.search import SqlException, SObjectValueException
+        try:
+            search = Search(search_type)
+            if search.column_exists(element_name):
+                search.add_column(element_name, distinct=True)
+                if search.column_exists("project_code"):
+                    search.add_project_filter()
+                search.set_limit(100)
+                sobjects = search.get_sobjects()
+                #existing_values = [x.get_value(element_name)[:50] for x in sobjects]
+
+                for x in sobjects:
+                    value = x.get_value(element_name)
+                    if isinstance(value, basestring):
+                        value = value[:50]
+                    existing_values.append(value)
+
+                existing_values.sort()
+        except (SObjectValueException, SqlException), e:
+            top.add("This widget cannot set colors")
+            return top
+
+        values = bg_color_map.keys()
+        values.sort()
+
+        from tactic.ui.input import ColorInputWdg
+        from tactic.ui.container import DynamicListWdg
+
+
+        if not values:
+            create = DivWdg()
+            top.add(create)
+            create.add("No colors have been defined. Click to add first color.")
+            create.add_style("padding: 10px")
+            create.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_color_top");
+            var list = top.getElement(".spt_color_list");
+            spt.hide(bvr.src_el);
+            spt.show(list);
+            '''
+            } )
+
+
+        list_top = DivWdg()
+        top.add(list_top)
+        if not values:
+            list_top.add_style("display: none")
+        list_top.add_class("spt_color_list")
+
+        list = DynamicListWdg()
+        list_top.add(list)
+
+        # create a template
+        template = DivWdg()
+        list.add_template(template)
+
+        color_input = ColorInputWdg(name="bg_color")
+        template.add(color_input)
+
+        template.add_style("width: 350px")
+        text = TextWdg("bg_color")
+
+        text.add_style("width: 55px")
+        text.add_style("float: left")
+        color_input.set_input(text)
+
+        select = SelectWdg("color|column")
+        select.set_option("values", existing_values)
+        template.add("&nbsp;"*2)
+        template.add(select)
+        template.add_style("padding: 3px")
+
+        # FIXME:
+        # add a first row.  Unfortunately we can't just add the tempate
+        # row.  This is because select row breaks if it is drawn twice.
+        if not values:
+            first_row = DivWdg()
+            list.add_item(first_row)
+
+            color_input = ColorInputWdg("bg_color")
+            first_row.add(color_input)
+
+            first_row.add_style("width: 300px")
+            text = TextWdg("bg_color")
+            #text.set_value("-click-")
+
+            text.add_style("width: 55px")
+            text.add_style("float: left")
+            color_input.set_input(text)
+
+            select = SelectWdg("color|column")
+            select.set_option("values", existing_values)
+            first_row.add("&nbsp;"*2)
+            first_row.add(select)
+            first_row.add_style("padding: 3px")
+
+
+        for value in values:
+            value_div = DivWdg()
+            #top.add(value_div)
+            list.add_item(value_div)
+            value_div.add_style("width: 300px")
+
+            # add a color chooser
+            bg_color = bg_color_map.get(value)
+            name = "bg_color"
+            if bg_color:
+                bg_color = bg_color.strip()
+                color_input = ColorInputWdg(name, start_color=bg_color)
+            else:
+                color_input = ColorInputWdg(name)
+            value_div.add(color_input)
+
+            text = TextWdg(name)
+            text.add_style("width: 55px")
+            text.add_style("float: left")
+            color_input.set_input(text)
+
+
+            # set the current color
+            if bg_color:
+                text.add_style("background: %s" % bg_color)
+                text.set_value(bg_color)
+
+            value_div.add_style("padding: 3px")
+
+            value_div.add("&nbsp;"*2)
+            value_div.add(value)
+
+            hidden = HiddenWdg("color|column")
+            value_div.add(hidden)
+            hidden.set_value(value)
+
+        return top
+
+
+    def get_definition_configs(my, config_view, element_name):
+        config_wdg = DivWdg()
+        
+
+        title_wdg = DivWdg()
+        config_wdg.add(title_wdg)
+        from pyasm.widget import SwapDisplayWdg
+        swap = SwapDisplayWdg.get_triangle_wdg()
+        title_wdg.add(swap)
+        title_wdg.add("Definitions in Config (Advanced)")
+
+        content_div = DivWdg()
+        SwapDisplayWdg.create_swap_title(title_wdg, swap, content_div, is_open=False)
+        config_wdg.add(content_div)
+        content_div.add_class("spt_element_definitions")
+        content_div.add_style("display: none")
+        content_div.add_color("background", "background", -10)
+        content_div.add_style("margin-left: 5px")
+        content_div.add_style("margin-bottom: 10px")
+        content_div.add_style("padding: 10px")
+        content_div.add_border()
+    
+        my.main_xml = None
+
+        for config in config_view.get_configs():
+            view = config.get_view()
+            xml = config.get_element_xml(element_name)
+
+            # find out which one to display up in the top text area
+            if not my.main_xml:
+                display_handler = config.get_display_handler(element_name)
+                action_handler = config.get_action_handler(element_name)
+                if display_handler or action_handler:
+                    my.main_xml = xml
+
+            config_div = DivWdg()
+            content_div.add(config_div)
+
+
+            view_div = DivWdg()
+            view_div.add_class("spt_view")
+            config_div.add(view_div)
+
+            if not xml:
+                icon_wdg = IconWdg( "Nothing defined", IconWdg.DOT_RED )
+                icon_wdg.add_style("float: right")
+                view_div.add(icon_wdg)
+            else:
+                icon_wdg = IconWdg( "Is defined", IconWdg.DOT_GREEN )
+                icon_wdg.add_style("float: right")
+                view_div.add(icon_wdg)
+
+            swap = SwapDisplayWdg()
+            view_div.add(swap)
+            swap.add_action_script('''
+                var info_wdg = bvr.src_el.getParent('.spt_view').getElement('.spt_info');
+                spt.toggle_show_hide(info_wdg);
+            ''')
+
+
+            mode = "predefined"
+            file_path = config.get_file_path()
+            if not file_path:
+                mode = "database"
+            elif file_path == 'generated':
+                mode = 'generated'
+                
+
+            # display the title
+            view_div.add("%s" % view)
+            view_div.add(" - [%s]" % mode)
+
+            info_div = DivWdg()
+            info_div.add_class("spt_info")
+            info_div.add_style("margin-left: 20px")
+            info_div.add_style("display: none")
+            #if not xml:
+            #    info_div.add_style("display: none")
+            #else:
+            #    swap.set_off()
+            view_div.add(info_div)
+
+            path_div = DivWdg()
+            if not file_path:
+                file_path = mode
+            path_div.add("Defined in: %s" % file_path)
+            info_div.add(path_div)
+
+            text_wdg = TextAreaWdg("xml")
+            text_wdg.add_style("font-size: 11px")
+            text_wdg.add_style('overflow: auto')
+            text_wdg.set_option("rows", 20)
+            text_wdg.set_option("cols", 70)
+            text_wdg.set_value(xml)
+            info_div.add(text_wdg)
+
+        return config_wdg
+
+class EditElementDefinitionWdg(ViewElementDefinitionWdg):
+
+    def init(my):
+        my.main_xml_text = None
+        my.main_xml = None
+    
+    def get_args_keys(my):
+        return {
+        'search_type': 'search type for this search widget',
+        'view': 'the top level view we are looking at',
+        'element_name': 'the element name to look at',
+        'config_view': 'config_view',
+        'edit_config_view': 'edit_config_view',
+        'is_edit_layout': 'True if it is edit layout',
+        'is_insert': 'True if it is insert'
+        }
+
+
+    def get_insert_view(my):
+        '''the insert view is less complicated with less options'''
+        widget_key = ''
+        edit_widget_key = ''
+        display_class = ''
+        display_options = {}
+
+        edit_class = ''
+        edit_options = {}
+        action_class = ''
+        action_options = {}
+
+        element_name = ''
+        edit = ''
+        title = ''
+        width = ''
+        xml_str = ''
+        editable = True
+
+        # see if this widget_class is editable
+       
+        is_editable = True
+
+        widget = Widget()
+
+       
+        title_div = DivWdg()
+        widget.add(title_div)
+        title_div.add_gradient("background", "background", -5 )
+        title_div.add_style("margin-bottom: 10px")
+        title_div.add_style("font-weight: bold")
+        title_div.add_style("padding: 4px")
+        title_div.add_style("width: 520px")
+        title_div.add_style("height: 18px")
+        title_div.add_border()
+        title_div.add(IconWdg("New Element", IconWdg.NEW))
+        title_div.add("New Column")
+
+       
+
+        from pyasm.web import Table
+        attr_table = Table()
+        attr_table.add_color("color", "color")
+
+
+        # add the editable
+        #attr_table.add_row()
+        tr, td = attr_table.add_row_cell()
+        td.add_style("padding: 5px")
+
+        widget.add(attr_table)
+        
+        td.add("Enable Edit: ")
+        editable_wdg = CheckboxWdg("attr|editable")
+        editable_wdg.add_attr("size", "50")
+        # hide the table if chcecked off by user
+        editable_wdg.add_behavior({'type': 'click_up',
+            'propagate_evt': True,
+            'cbjs_action': '''
+            var table = spt.get_cousin(bvr.src_el,'.spt_element_definition', '.spt_edit_definition');
+            if (bvr.src_el.checked)
+                spt.show(table);
+            else
+                spt.hide(table);
+            '''
+            })
+
+        if editable:
+            editable_wdg.set_checked()
+        elif is_editable == False:
+            editable_wdg.set_option('disabled','disabled')
+        td.add(editable_wdg)
+
+        td.add("&nbsp;"*3)
+
+
+
+        table = Table()
+        table.add_color("color", "color")
+        table.add_class("spt_edit_definition")
+        table.add_style("width: 530px")
+        if editable == False: 
+            table.add_style("display: none")
+
+        widget.add(table)
+
+        tr, td = table.add_row_cell()
+        td.add(SpanWdg("Widget Definition", css='small'))
+        td.add("<hr>")
+        td.add_style("padding-top: 20px")
+
+
+       
+    
+
+
+        
+
+
+       
+
+        tr, td = table.add_row_cell()
+        td.add(HtmlElement.br())
+
+        title_wdg = DivWdg()
+        swap = SwapDisplayWdg.get_triangle_wdg()
+        title_wdg.add(swap)
+        title_wdg.add("Edit")
+        td.add(title_wdg)
+     
+
+        attr_wdg = DivWdg()
+        
+        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=my.is_edit_layout)
+        attr_wdg.add_class("spt_element_edit")
+        
+        #attr_wdg.add_style("display: none")
+        attr_wdg.add_color("background", "background", -10)
+        #attr_wdg.add_style("margin-top: 5px")
+        attr_wdg.add_style("margin-left: 5px")
+        attr_wdg.add_style("padding: 10px")
+        attr_wdg.add_border()
+        td.add(attr_wdg)
+
+
+        # add the widget information
+        #class_labels = ['Default', 'Text', 'List', 'Color', '-- Class Path --']
+        #class_values = ['', 'text', 'select', 'color', '__class__']
+        class_labels = ['Default', 'Text', 'Select', 'Calendar' ,'Calendar Time', '-- Class Path --']
+        class_values = ['', 'text', 'select', 'calendar','calendar_time', '__class__']
+        prefix = 'edit'
+        default_class=''
+        
+        widget_class_wdg = WidgetClassSelectorWdg(widget_key=edit_widget_key, display_class=edit_class, display_options=edit_options,class_labels=class_labels,class_values=class_values, prefix=prefix, default_class=default_class, action_class=action_class, action_options = action_options)
+        attr_wdg.add(widget_class_wdg)
+
+        widget.add(attr_wdg)
+
+        return widget
+
+
+    def get_display(my):
+        top = DivWdg()
+        top.add_class("spt_element_definition")
+        top.add_style("width: 530px")
+        top.add_style("margin-bottom: 10px")
+
+        my.is_insert = my.kwargs.get("is_insert")
+        if my.is_insert in ['true', True]:
+            my.is_insert = True
+        else:
+            my.is_insert = False
+
+
+        my.is_edit_layout = my.kwargs.get('is_edit_layout')
+        element_name = my.kwargs.get('element_name')
+        search_type = my.kwargs.get('search_type')
+        my.search_type = search_type
+
+        view = my.kwargs.get('view')
+
+        config_view = WidgetConfigView.get_by_search_type(search_type, view)
+        edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
+
+       
+
+        if not my.is_insert:
+
+
+            display_class = config_view.get_display_handler(element_name)
+            widget_key = config_view.get_widget_key(element_name,'display')
+            display_options = config_view.get_display_options(element_name)
+            element_attr = config_view.get_element_attributes(element_name)
+            # test build the class
+            try:
+                widget = config_view.get_display_widget(element_name)
+            except Exception, e:
+                print "ERROR: ", e
+                widget = None
+            is_editable = False
+            if hasattr(widget, 'is_editable'):
+                is_editable = widget.is_editable()
+            
+            if is_editable:
+                
+                edit_class = edit_config_view.get_edit_handler(element_name)
+                edit_widget_key = edit_config_view.get_widget_key(element_name)
+                edit_options = edit_config_view.get_options(element_name, "edit")
+                action_class = edit_config_view.get_action_handler(element_name)
+                action_options = edit_config_view.get_options(element_name, "action")
+                
+            else:
+                edit_class = ''
+                edit_widget_key = ''
+                edit_options = {}
+                action_class = ''
+                action_options = {}
+            
+            # build the xml string
+            configs = config_view.get_configs()
+            for x in configs:
+                xml_str = x.get_element_xml(element_name)
+                xml_str = xml_str.strip()
+                if xml_str and xml_str != "<element name='%s'/>" % element_name:
+                    break
+            if not xml_str:
+                xml_str = "<element name='%s'/>" % element_name
+
+
+            edit = element_attr.get('edit')
+            title = element_attr.get('title')
+            width = element_attr.get('width')
+            if is_editable:
+                if is_editable=='optional':
+                    # it needs to be explicit in this case to turn on the editability for Edit Panel mainly
+                    editable = edit == 'true'
+                else:
+                    editable = edit != 'false'
+            else:
+               
+
+                editable = False
+
+        else:
+         
+            top.add( my.get_insert_view())
+            return top
+
+
+
+
+        # add in the mode selected
+        mode_wdg = DivWdg()
+        mode_wdg.add("Mode: ")
+        mode_select = SelectWdg("mode")
+        
+        mode_select.add_class('spt_element_def_mode')
+        mode_select.set_option("labels", "Form|XML")
+        mode_select.set_option("values", "form|xml")
+        # we want to start in Form all the time
+        #mode_select.set_persistence()
+        mode_select.add_behavior({
+            'type': 'change',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_element_definition");
+            var form_el = top.getElement(".spt_form_top");
+            var xml_el = top.getElement(".spt_xml_top");
+
+            if (value == 'form') {
+               spt.show(form_el);
+               spt.hide(xml_el);
+            }
+            else {
+               spt.show(xml_el);
+               spt.hide(form_el);
+            }
+
+            '''
+        })
+        mode_wdg.add(mode_select)
+        mode_wdg.add_styles("float: right; margin: 0 5px 4px 0")
+        mode = mode_select.get_value()
+
+
+
+        #top.add("<br clear='all'/>")
+
+
+        # add the save button
+        from tactic.ui.widget import ActionButtonWdg
+        save_button = ActionButtonWdg( title='Save', tip='Save To Definition' )
+        save_button.add_style("margin-left: 5px")
+        save_button.add_style("margin-top: -5px")
+        save_button.add_style("float: right")
+        save_button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': my._get_save_cbjs_action()
+        } )
+           
+
+        title_div = DivWdg()
+        top.add(title_div)
+        title_div.add_gradient("background", "background", -5 )
+        title_div.add_style("margin-bottom: 10px")
+        title_div.add_style("font-weight: bold")
+        title_div.add_style("padding: 4px")
+        title_div.add_style("width: 520px")
+        title_div.add_style("height: 18px")
+        title_div.add_border()
+        if my.is_insert:
+            title_div.add(IconWdg("New Element", IconWdg.NEW))
+            title_div.add("New Column")
+        else:
+            title_div.add("Edit Column Definition")
+
+
+        title_div.add(mode_wdg)
+
+       
+        # edit mode shouldn't use gear
+        """
+        gear = my.get_gear_menu()
+        gear.add_style("float: right")
+            
+        # add gear menu 
+
+        top.add(gear)
+
+        """
+        top.add(save_button)
+
+
+
+        # add in the pure xml wdg
+        xml_wdg = my.get_xml_wdg(xml_str)
+        if mode != 'xml':
+            xml_wdg.add_style("display: none")
+        
+        xml_wdg.add_class("spt_xml_top")
+        top.add(xml_wdg)
+
+        # add definition configs
+        #tr, td = table.add_row_cell()
+
+        config_wdg = my.get_definition_configs(edit_config_view, element_name)
+        xml_wdg.add('<br>')
+        xml_wdg.add(config_wdg)
+
+
+
+        # add the name
+        from pyasm.web import Table
+        table = Table()
+        table.add_color("color", "color")
+        table.add_class("spt_form_top")
+        table.add_style("width: 530px")
+        if mode == 'xml':
+            table.add_style("display: none")
+        top.add(table)
+
+
+        tr, td = table.add_row_cell()
+
+        attr_wdg = DivWdg()
+        attr_wdg.add_color("background", "background", -10)
+        attr_wdg.add_style("margin-top: 10px")
+        attr_wdg.add_style("padding: 10px")
+        attr_wdg.add_border()
+        #title_wdg = DivWdg()
+        #title_wdg.add("Element Attributes")
+        #title_wdg.add_style("margin-top: -25px")
+        #attr_wdg.add(title_wdg)
+        td.add(attr_wdg)
+
+
+        attr_table = Table()
+        attr_table.add_color("color", "color")
+
+        attr_wdg.add(attr_table)
+
+        # add the title
+        attr_table.add_row()
+      
+       
+        
+
+
+        # add in the name widget
+        attr_table.add_row()
+        td = attr_table.add_cell("Name: ")
+        td.add_style("padding: 5px")
+        td = attr_table.add_cell()
+        name = my.kwargs.get("element_name")
+        if my.is_insert:
+            name_text = TextWdg("name")
+            name_text.add_class("spt_element_definition_name")
+            name_text.add_attr("size", "50")
+
+        else:
+            name_text = SpanWdg(element_name)
+            name_text.add_style('font-weight: bold')
+            hidden = HiddenWdg("name", element_name)
+            td.add(hidden)
+            if name:
+                hidden.set_value(name)
+
+        td.add(name_text)
+
+
+     
+
+        # add the editable
+        #attr_table.add_row()
+        tr, td = attr_table.add_row_cell()
+        td.add_style("padding: 5px")
+
+        td.add("Enable Edit: ")
+        editable_wdg = CheckboxWdg("attr|editable")
+        editable_wdg.add_attr("size", "50")
+        if editable:
+            editable_wdg.set_checked()
+        elif is_editable == False:
+            editable_wdg.set_option('disabled','disabled')
+
+
+        editable_wdg.add_behavior({'type': 'click_up',
+            'propagate_evt': True,
+            'cbjs_action': '''
+            var table = spt.get_cousin(bvr.src_el,'.spt_element_definition', '.spt_edit_definition');
+            if (bvr.src_el.checked)
+                spt.show(table);
+            else
+                spt.hide(table);
+            '''
+            })
+
+        td.add(editable_wdg)
+
+        td.add("&nbsp;"*3)
+
+
+        # add a hidden Enable edit here when not in insert mode
+        """
+        color_wdg = CheckboxWdg("attr|color")
+        color_wdg.add_style('display: none')
+        if editable:
+            color_wdg.set_checked()
+        td.add(color_wdg)
+
+        """
+        tr, td = table.add_row_cell()
+        td.add(SpanWdg("Widget Definition", css='small'))
+        td.add("<hr>")
+        td.add_style("padding-top: 20px")
+
+
+
+        tr, td = table.add_row_cell()
+        tr.add_class('spt_edit_definition')
+
+        if editable == False: 
+            tr.add_style("display: none")
+        td.add(HtmlElement.br())
+
+        title_wdg = DivWdg()
+        swap = SwapDisplayWdg.get_triangle_wdg()
+        title_wdg.add(swap)
+        title_wdg.add("Edit")
+        td.add(title_wdg)
+     
+
+        attr_wdg = DivWdg()
+        
+        SwapDisplayWdg.create_swap_title(title_wdg, swap, attr_wdg, is_open=my.is_edit_layout)
+        attr_wdg.add_class("spt_element_edit")
+        
+        #attr_wdg.add_style("display: none")
+        attr_wdg.add_color("background", "background", -10)
+        #attr_wdg.add_style("margin-top: 5px")
+        attr_wdg.add_style("margin-left: 5px")
+        attr_wdg.add_style("padding: 10px")
+        attr_wdg.add_border()
+        td.add(attr_wdg)
+
+
+        # add the widget information
+        #class_labels = ['Default', 'Text', 'List', 'Color', '-- Class Path --']
+        #class_values = ['', 'text', 'select', 'color', '__class__']
+        class_labels = ['Default', 'Text', 'Select', 'Calendar' ,'Calendar Time', 'Time', '-- Class Path --']
+        class_values = ['', 'text', 'select', 'calendar','calendar_time', 'time', '__class__']
+        prefix = 'edit'
+        default_class=''
+        
+        widget_class_wdg = WidgetClassSelectorWdg(widget_key=edit_widget_key, display_class=edit_class, display_options=edit_options,class_labels=class_labels,class_values=class_values, prefix=prefix, default_class=default_class, action_class=action_class, action_options = action_options)
+        attr_wdg.add(widget_class_wdg)
+
+
+        # add definition configs
+        tr, td = table.add_row_cell()
+
+        #td.add(HtmlElement.br())
+
+        config_wdg = my.get_definition_configs(edit_config_view, element_name)
+        td.add(config_wdg)
+       
+        # set the main xml value if one with display handler is found
+        if my.main_xml:
+            my.main_xml_text.set_value(my.main_xml)
+        
+
+        return top
+
+
+
+    def get_xml_wdg(my, xml_str):
+
+        xml_wdg = DivWdg()
+        #xml_wdg.add_style('width: 550px')
+        xml_wdg.add_style("margin-top: 10px")
+        xml_wdg.add_style("padding: 10px")
+        xml_wdg.add_border()
+        title_wdg = DivWdg()
+        title_wdg.add("XML Definition")
+        title_wdg.add_style("margin-top: -23px")
+        xml_wdg.add(title_wdg)
+
+
+        my.main_xml_text = TextAreaWdg("xml_def")
+        my.main_xml_text.add_style('overflow: auto')
+        my.main_xml_text.add_style("margin: 10px")
+        my.main_xml_text.set_option("rows", "20")
+        my.main_xml_text.set_option("cols", "75")
+
+        if xml_str:
+            my.main_xml_text.set_value(xml_str)
+
+        xml_wdg.add(my.main_xml_text)
+
+       
+        
+
+        return xml_wdg
+
+    """
+
+    def get_color_wdg(my):
+        search_type = my.kwargs.get('search_type')
+        element_name = my.kwargs.get('element_name')
+
+        # get the color maps
+        color_config = WidgetConfigView.get_by_search_type(search_type, "color")
+        color_xml = color_config.configs[0].xml
+
+        color_maps = {}
+
+        name = element_name
+        xpath = "config/color/element[@name='%s']/colors" % name
+        text_xpath = "config/color/element[@name='%s']/text_colors" % name
+        bg_color_node = color_xml.get_node(xpath)
+        bg_color_map = color_xml.get_node_values_of_children(bg_color_node)
+
+        text_color_node = color_xml.get_node(text_xpath)
+        text_color_map = color_xml.get_node_values_of_children(text_color_node)
+ 
+
+
+        top = DivWdg()
+        top.add_class("spt_color_top")
+
+
+        # get existing values
+        from pyasm.search import SqlException, SObjectValueException
+        try:
+            search = Search(search_type)
+            search.add_column(element_name, distinct=True)
+            if search.column_exists("project_code"):
+                search.add_project_filter()
+            search.set_limit(100)
+            sobjects = search.get_sobjects()
+            #existing_values = [x.get_value(element_name)[:50] for x in sobjects]
+
+            existing_values = []
+            for x in sobjects:
+                value = x.get_value(element_name)
+                if isinstance(value, basestring):
+                    value = value[:50]
+                existing_values.append(value)
+
+            existing_values.sort()
+        except (SObjectValueException, SqlException), e:
+            top.add("This widget cannot set colors")
+            return top
+
+        values = bg_color_map.keys()
+        
+        values.sort()
+
+
+        from tactic.ui.input import ColorInputWdg
+        from tactic.ui.container import DynamicListWdg
+
+
+        if not values:
+            create = DivWdg()
+            top.add(create)
+            create.add("No colors have been defined. Click to add first color.")
+            create.add_style("padding: 10px")
+            create.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_color_top");
+            var list = top.getElement(".spt_color_list");
+            spt.hide(bvr.src_el);
+            spt.show(list);
+            '''
+            } )
+
+
+        list_top = DivWdg()
+        top.add(list_top)
+        if not values:
+            list_top.add_style("display: none")
+        list_top.add_class("spt_color_list")
+
+        list = DynamicListWdg()
+        list_top.add(list)
+
+        # create a template
+        template = DivWdg()
+        list.add_template(template)
+
+        color_input = ColorInputWdg(name="bg_color")
+        template.add(color_input)
+
+        template.add_style("width: 350px")
+        text = TextWdg("bg_color")
+
+        text.add_style("width: 55px")
+        text.add_style("float: left")
+        color_input.set_input(text)
+
+        select = SelectWdg("color|column")
+        select.set_option("values", existing_values)
+        template.add("&nbsp;"*2)
+        template.add(select)
+        template.add_style("padding: 3px")
+
+        # FIXME:
+        # add a first row.  Unfortunately we can't just add the tempate
+        # row.  This is because select row breaks if it is drawn twice.
+        if not values:
+            first_row = DivWdg()
+            list.add_item(first_row)
+
+            color_input = ColorInputWdg("bg_color")
+            first_row.add(color_input)
+
+            first_row.add_style("width: 300px")
+            text = TextWdg("bg_color")
+            #text.set_value("-click-")
+
+            text.add_style("width: 55px")
+            text.add_style("float: left")
+            color_input.set_input(text)
+
+            select = SelectWdg("color|column")
+            select.set_option("values", existing_values)
+            first_row.add("&nbsp;"*2)
+            first_row.add(select)
+            first_row.add_style("padding: 3px")
+
+
+        for value in values:
+            value_div = DivWdg()
+            #top.add(value_div)
+            list.add_item(value_div)
+            value_div.add_style("width: 300px")
+
+            # add a color chooser
+            bg_color = bg_color_map.get(value)
+            name = "bg_color"
+            if bg_color:
+                bg_color = bg_color.strip()
+                color_input = ColorInputWdg(name, start_color=bg_color)
+            else:
+                color_input = ColorInputWdg(name)
+            value_div.add(color_input)
+
+            text = TextWdg(name)
+            text.add_style("width: 55px")
+            text.add_style("float: left")
+            color_input.set_input(text)
+
+
+            # set the current color
+            if bg_color:
+                text.add_style("background: %s" % bg_color)
+                text.set_value(bg_color)
+
+            value_div.add_style("padding: 3px")
+
+            value_div.add("&nbsp;"*2)
+            value_div.add(value)
+
+            hidden = HiddenWdg("color|column")
+            value_div.add(hidden)
+            hidden.set_value(value)
+
+        return top
+
+
+        """
+
+__all__.append('WidgetClassSelectorWdg')
+class WidgetClassSelectorWdg(BaseRefreshWdg):
+    ''' Choice of Table Layout, Tile Layout, Custom Layout'''
+
+  
+
+
+    def get_display(my):
+        widget_key = my.kwargs.get("widget_key")
+        display_class = my.kwargs.get("display_class")
+        display_options = my.kwargs.get("display_options")
+        action_class = my.kwargs.get("action_class")
+        action_options = my.kwargs.get("action_options")
+        show_action = my.kwargs.get('show_action')
+
+        class_labels = my.kwargs.get("class_labels")
+        class_values = my.kwargs.get("class_values")
+        default_class = my.kwargs.get("default_class")
+        prefix = my.kwargs.get("prefix")
+        if not prefix:
+            prefix = 'option'
+
+        if default_class and not widget_key and not display_class:
+            widget_key = default_class
+            
+
+        # add the widget
+        top = DivWdg()
+        top.add_class("spt_widget_selector_top")
+        my.set_as_panel(top)
+
+        table = Table()
+
+        table.add_color("color", "color")
+        table.add_style("margin-top", "10px")
+        table.add_style("width", "100%")
+        top.add(table)
+
+        tr = table.add_row()
+        #tr.add_style("display: none")
+
+        td = table.add_cell()
+
+        td.add("Widget: ")
+        td.add_style("padding: 5px")
+        td.add_style("padding-left: 14px")
+
+
+        # put xxx_ in front to separate from other options
+        widget_select = SelectWdg("xxx_%s|widget_key" % prefix)
+        widget_select.add_class("spt_widget_key")
+        if not default_class:
+            widget_select.add_empty_option()
+        widget_select.set_option("labels", class_labels)
+        widget_select.set_option("values", class_values)
+        if widget_key:
+            widget_select.set_value(widget_key)
+        elif display_class:
+            widget_select.set_value('__class__')
+        elif default_class:
+            widget_select.set_value(default_class)
+        else:
+            #td.add("No display widget has been selected for this column<br/>")
+            pass
+
+        #widget_select.add_empty_option("-- Select --")
+        widget_select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_widget_selector_top");
+            var ui_top = bvr.src_el.getParent(".spt_element_top")
+            if (!ui_top) {
+                spt.alert('ui_top not found');
+                return;
+            }
+            var wdg = top.getElement(".spt_widget_selector_class");
+            var text = top.getElement(".spt_widget_display_class");
+            text.value = '';
+            if (value == '__class__') {
+                spt.show(wdg);
+            }
+            else if (value == '') {
+                spt.hide(wdg);
+            }
+            else {
+                
+                spt.hide(wdg);
+            }
+
+            var values = spt.api.Utility.get_input_values(top);
+            var wdg = top.getElement(".spt_widget_options_top");
+            spt.show(wdg);
+            spt.panel.refresh(wdg, values);
+
+            var edit = ui_top.getElement('input[name=attr|editable]');
+            // Manage Side Bar doesn't run the following
+            if (edit) {
+                var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
+                // dynamically toggle edit widget ui based on chosen widget key
+                if (['hidden_row','gantt','button','custom_layout','expression',''].contains(value))           
+                {
+                    edit.checked = false;
+                    if (value != 'expression')
+                        edit.setAttribute('disabled', 'disabled');
+                    else
+                        edit.removeAttribute('disabled');
+                    spt.hide(form_top);
+                }
+                else {
+                    edit.checked = true;
+                    edit.removeAttribute('disabled');
+                    spt.show(form_top);
+                    
+                }
+            }
+
+            
+
+            '''
+        } )
+        #widget_select.set_value(display_class)
+
+        
+        td = table.add_cell()
+        td.add_class("spt_widget_top")
+
+        help_div = DivWdg()
+        td.add(help_div)
+        help_div.add_style("float: right")
+        help_div.add_style("margin-top: -7px")
+
+        help_wdg = ActionButtonWdg(title="?", tip="Show Help", size='small')
+        help_div.add(help_wdg)
+
+        handler = WidgetClassHandler()
+        attrs = handler.get_all_elements_attributes("help")
+
+        help_wdg.add_behavior( {
+            'type': 'click_up',
+            'attrs': attrs,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_widget_top");
+                var key_el = top.getElement(".spt_widget_key");
+                var key = key_el.value;
+                spt.help.set_top();
+                var alias = bvr.attrs[key];
+                if (alias == null) {
+                    spt.alert("No documentation for this widget defined");
+                }
+                else {
+                    spt.help.load_alias(alias);
+                }
+            '''
+        } )
+        td.add(widget_select)
+
+        #table.add_row_cell("&nbsp;&nbsp;&nbsp;&nbsp;- or -")
+
+        # add the class
+        tr = table.add_row()
+        if widget_key or not display_class:
+            tr.add_style("display: none")
+        tr.add_class("spt_widget_selector_class")
+        td = table.add_cell("&nbsp;"*5)
+        td.add("> Class Name: ")
+        td.add_style("padding: 5px")
+
+        class_text = TextWdg("xxx_%s|display_class" % prefix)
+        class_text.add_class("spt_widget_display_class")
+        class_text.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_widget_selector_top");
+            var values = spt.api.Utility.get_input_values(top);
+            var wdg = top.getElement(".spt_widget_options_top");
+            spt.panel.refresh(wdg, values);
+            '''
+        } )
+        if display_class:
+            class_text.set_value(display_class)
+        class_text.add_attr("size", "50")
+        table.add_cell(class_text)
+
+        # introspect the widget
+        #if not display_class:
+        #    display_class = "pyasm.widget.SimpleTableElementWdg"
+        #display_class = "tactic.ui.panel.ViewPanelWdg"
+        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix)
+        table.add_row()
+        td = table.add_cell()
+        td.add(widget_options_wdg)
+
+        if not display_class and not widget_key:
+            widget_options_wdg.get_top_wdg().add_style("display: none")
+
+        if show_action != False:
+            tr = table.add_row()
+            td = table.add_cell("Action: ")
+            td.add_style("padding: 5px")
+            td.add_style("padding-left: 14px")
+        
+            action_options_wdg = ActionClassOptionsWdg(action_class=action_class, action_options=action_options, prefix='action')
+            if action_class:
+                table.add_row()
+                td = table.add_cell()
+                action_options_wdg = action_options_wdg.get_buffer_display()
+                td.add(action_options_wdg)
+            else:   
+                span = SpanWdg(HtmlElement.i('-- Default --'))
+                span.add_style('padding-left: 5px')
+                
+                swap = SwapDisplayWdg.get_triangle_wdg()
+                div = DivWdg(action_options_wdg.get_buffer_display())
+                swap.create_swap_title(span, swap, div=div) 
+                td.add(swap)
+                td.add(span)
+              
+                td.add(div)
+        '''
+        action_text = TextWdg("xxx_%s|action_class" % prefix)
+        action_text.add_attr('size','50')
+        action_text.add_class("spt_widget_action_class")
+        if action_class:
+            action_text.set_value(action_class)
+        else:
+            # hide the row
+            tr.add_style('display: none')
+        class_text.add_attr("size", "50")
+        table.add_cell(action_text)
+        '''
+
+        return top
+
+
+class ActionClassOptionsWdg(BaseRefreshWdg):
+
+    def get_args_keys(my):
+        return {
+        'action_class': 'the display class to show all of the options',
+        'action_options': 'the display options for this class',
+        'prefix': 'the prefix to put before the input names'
+        }
+
+    def init(my):
+        my.table = Table()
+
+    # sort
+    def options_sort(a, b):
+        if type(a) in types.StringTypes:
+            return 1
+        elif type(b) in types.StringTypes:
+            return -1
+
+        acategory = a.get('category')
+        if acategory == 'Required':
+            acategory = '1.Required'
+        if acategory == None:
+            acategory = ''
+        bcategory = b.get('category')
+        if bcategory == 'Required':
+            bcategory = '1.Required'
+        if bcategory == None:
+            bcategory = ''
+
+        aorder = a.get('order')
+        border = b.get('order')
+
+        avalue = "%s|%s" % (acategory, aorder)
+        bvalue = "%s|%s" % (bcategory, border)
+
+        if avalue == None:
+            return 1
+        if bvalue == None:
+            return -1
+
+        return cmp(avalue, bvalue)
+
+    options_sort = staticmethod(options_sort)
+
+
+    def add_style(my, style):
+        my.table.add_style(style)
+
+    def get_display(my):
+
+        prefix = my.kwargs.get('prefix')
+        if not prefix:
+            prefix = 'action'
+
+
+        # introspect the widget
+        web = WebContainer.get_web()
+        action_class = ''
+       
+        is_default = False
+
+        if not action_class:
+            action_class = web.get_form_value("xxx_%s|action_class" % prefix)
+        if not action_class:
+            action_class = my.kwargs.get("action_class")
+
+        if not action_class:
+            action_class = "pyasm.command.DatabaseAction"
+            is_default = True
+
+        
+        action_options = my.kwargs.get("action_options")
+        
+        #if is_default:
+        #    return None
+        
+        import types
+        if type(action_options) in types.StringTypes:
+            try:
+                action_options = eval(action_options)
+            except:
+                # !!!! Lost the options
+                action_options = {}
+        if not action_options:
+            action_options = {}
+
+        table = my.table
+        table.add_class('spt_action')
+        table.add_color("color", "color")
+        table.add_style("margin-top", "10px")
+        table.add_style("width", "100%")
+
+        action_text = TextWdg("xxx_%s|action_class" % prefix)
+        action_text.add_attr('size','50')
+        action_text.add_class("spt_widget_action_class")
+        if action_class and not is_default:
+            action_text.set_value(action_class)
+        tr = table.add_row()
+        tr.add_class("spt_widget_selector_class")
+        
+
+        td = table.add_blank_cell()
+        td = table.add_cell()
+        td.add('> Class Name: ')
+
+        table.add_cell(action_text)
+
+        #td.add_style("padding: 5px")
+        for key, value in action_options.items():
+            action_option = TextWdg("%s|%s|value" %(prefix, key))
+            action_option.set_value(value)
+            tr = table.add_row()
+            td = table.add_blank_cell()
+            td.add_style("padding: 15px")
+            table.add_cell('%s:'%key)
+            table.add_cell(action_option)
+
+        return table
+
+
+
+
+
+class WidgetClassOptionsWdg(BaseRefreshWdg):
+
+    def get_args_keys(my):
+        return {
+        'widget_key': 'the widget key to map the display class to',
+        'display_class': 'the display class to show all of the options',
+        'display_options': 'the display options for this class',
+        'prefix': 'the prefix to put before the input names',
+        'args_keys': 'explicitly set an args_keys data structure'
+        }
+
+    def init(my):
+        top = DivWdg()
+       
+        top.add_class("spt_widget_options_top")
+        my.set_as_panel(top)
+
+
+    # sort
+    def options_sort(a, b):
+        if type(a) in types.StringTypes:
+            return 1
+        elif type(b) in types.StringTypes:
+            return -1
+
+        acategory = a.get('category')
+        if acategory == 'Required':
+            acategory = '1.Required'
+        if acategory == None:
+            acategory = ''
+        bcategory = b.get('category')
+        if bcategory == 'Required':
+            bcategory = '1.Required'
+        if bcategory == None:
+            bcategory = ''
+
+        aorder = a.get('order')
+        border = b.get('order')
+
+        avalue = "%s|%s" % (acategory, aorder)
+        bvalue = "%s|%s" % (bcategory, border)
+
+        if avalue == None:
+            return 1
+        if bvalue == None:
+            return -1
+
+        return cmp(avalue, bvalue)
+
+    options_sort = staticmethod(options_sort)
+
+
+
+    def get_display(my):
+
+        top = my.top
+
+        prefix = my.kwargs.get('prefix')
+        if not prefix:
+            prefix = 'option'
+
+
+        # introspect the widget
+        web = WebContainer.get_web()
+        widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
+        display_class = ''
+        if widget_key:
+            handler = WidgetClassHandler()
+            display_class = handler.get_display_handler(widget_key)
+
+
+        if not display_class:
+            display_class = web.get_form_value("xxx_%s|display_class" % prefix)
+        if not display_class:
+            display_class = my.kwargs.get("display_class")
+
+        if not display_class:
+            display_class = "pyasm.widget.SimpleTableElementWdg"
+
+        display_options = my.kwargs.get("display_options")
+
+        import types
+        if type(display_options) in types.StringTypes:
+            try:
+                display_options = eval(display_options)
+            except:
+                # !!!! Lost the options
+                display_options = {}
+        if not display_options:
+            display_options = {}
+
+
+        class_options = my.kwargs.get("args_keys")
+        if not class_options:
+            class_options = {}
+            import_stmt = Common.get_import_from_class_path(display_class)
+            try:
+                if import_stmt:
+                    exec(import_stmt)
+                else:
+                    exec("from pyasm.widget import %s" % display_class)
+            except ImportError:
+                error = DivWdg()
+                error.add_style('color: red')
+                error.add("WARNING: could not import display class [%s]" % display_class)
+                top.add(error)
+
+            else:            
+                try:
+                    class_options = eval("%s.get_args_keys()" % display_class)
+                except Exception, e:
+                    error = DivWdg()
+                    error.add_style('color: red')
+                    error.add("WARNING: could not get options.  Failed on get_args_keys() for %s" %display_class)
+                    top.add(error)
+                    return top
+
+
+        if class_options:
+            top.add("<br/>")
+        #    title = DivWdg()
+        #    title.add_style("margin: 10px 0 10px 0")
+        #    title.add("Widget Options:")
+        #    top.add(title)
+
+
+
+        # convert to an array
+        class_options_array = []
+        for name, value in class_options.items():
+            if type(value) in types.StringTypes:
+                new_value = {
+                    'name': name,
+                    'description': value
+                }
+                class_options_array.append(new_value)
+
+                if name in ['expression', 'cbjs_action']:
+                    new_value['type'] = 'TextAreaWdg'
+                elif name == 'icon':
+                    new_value['type'] = 'IconSelectWdg'
+                else:
+                    new_value['type'] = 'TextWdg'
+                    new_value['size'] = '50'
+
+            else:
+                value['name'] = name
+                if not value.get('description'):
+                    value['description'] = 'No description'
+
+                class_options_array.append(value)
+
+
+        class_options_array.sort(my.options_sort)
+
+        current_div = DivWdg()
+        top.add(current_div)
+
+
+        has_recursive = False
+        last_category = None
+        is_open = True
+
+        for option in class_options_array:
+
+            category = option.get('category')
+            option_name = option.get('name')
+
+
+            if not category:
+                category = "Other Options"
+                is_open = False
+            if category != last_category:
+
+                current_div = DivWdg()
+                top.add(current_div)
+
+                if category in ['deprecated','internal']:
+                    current_div.add_style("display: none")
+                    # this is for FormatDefinitionEditWdg
+                    if option_name == 'format':
+                        continue
+
+                last_category = category
+
+                category_div = DivWdg()
+                current_div.add(category_div)
+
+                script = '''
+                var top = bvr.src_el.getParent(".spt_widget_section_top");
+                var edits = top.getElements(".spt_widget_section_edit");
+
+                for (var i = 0; i < edits.length; i++) {
+                    spt.toggle_show_hide(edits[i]);
+                }
+                '''
+                swap = SwapDisplayWdg.get_triangle_wdg()
+                category_div.add(swap)
+                category_div.add(category)
+                SwapDisplayWdg.create_swap_title(category_div, swap, is_open=is_open, action_script=script)
+
+                #category_div.add("<hr/>")
+                category_div.add_style("padding-bottom: 5px")
+                category_div.add_style("font-weight: bold")
+
+
+
+            current_div.add_class("spt_widget_section_top")
+
+            if category in ['deprecated','internal']:
+                current_div.add_style("display: none")
+
+            title = option_name
+            title = Common.get_display_title(title)
+
+            widget_type = option.get('type')
+            if widget_type == 'recursive':
+                has_recursive = True
+                title_wdg = DivWdg()
+                title_wdg.add( "")
+                title_wdg.add_style("width: 10px")
+
+            else:
+                title_wdg = DivWdg()
+                title_wdg.add("%s: " % title)
+                title_wdg.add_style("width: 160px")
+                description = option.get('description')
+                description = description.replace('  ', '')
+                description = description.replace('\n', ' ')
+                description = "(%s) %s" % (option_name, description)
+                title_wdg.set_attr('title', description )
+                title_wdg.add_style('cursor: help')
+
+                title_wdg.add_style("padding-left: 5px")
+
+
+            value = display_options.get(option_name)
+
+            name = "%s|%s|value" % (prefix, option_name)
+
+	   
+            # TextWdg can't display " well
+            if value and isinstance(value, basestring) and value.find('"') != -1:
+                if widget_type in [None, 'TextWdg']:
+                    widget_type = 'TextAreaWdg'
+
+            if widget_type == 'recursive':
+                edit_wdg = DivWdg()
+
+                # add the widget information
+                sub_widget_key = ''
+
+                sub_display_class = display_options.get(option_name)
+                if not sub_display_class:
+                    sub_display_class = 'tactic.ui.panel.FastTableLayoutWdg'
+                else:
+                    # remove the recursive widget from the list
+                    del(display_options[option_name])
+
+
+                sub_display_options = display_options
+                sub_class_labels = ['Table Layout', 'Fast Table Layout', 'Custom Layout', 'Tile Layout', '-- Class Path --']
+                sub_class_values = ['table_layout', 'fast_table_layout', 'custom_layout', 'tile_layout', '__class__']
+                sub_prefix = 'option'
+                default_class = 'table_layout'
+
+                widget_class_wdg = WidgetClassSelectorWdg(widget_key=sub_widget_key, display_class=sub_display_class, display_options=sub_display_options, class_labels=sub_class_labels,class_values=sub_class_values, prefix=sub_prefix, default_class=default_class)
+                edit_wdg.add(widget_class_wdg)
+
+
+            elif widget_type == 'CacheWdg' or option_name == 'use_cache':
+                edit_wdg = DivWdg()
+                edit_wdg.add_class("spt_cache")
+                select = SelectWdg(name)
+                edit_wdg.add(select)
+                select.add_empty_option('-- Select --')
+                values = option.get('values')
+                select.set_option('values', values)
+                if value:
+                    select.set_value(value)
+
+
+                select.add_behavior( {
+                'type': 'change',
+                #'search_type': my.search_type,
+                #'element_name': element_name,
+                'search_type': "prod/asset",
+                'element_name': "file_usage",
+                'cbjs_action': '''
+                kwargs = {
+                  'search_type': bvr.search_type,
+                  'element_name': bvr.element_name,
+                }
+                //spt.panel.load_popup("Aggregate", "tactic.ui.app.aggregate_wdg.AggregateWdg", kwargs)
+
+                var top = bvr.src_el.getParent(".spt_cache");
+                var element = top.getElement(".spt_cache_interval");
+                if (bvr.src_el.value == 'true') {
+                    element.setStyle("display", "");
+                }
+                else {
+                    if (confirm("Are you sure you wish to remove the caching?"))
+                    {
+                        element.setStyle("display", "none");
+                        // FIXME: remove the column?
+                    }
+                }
+                '''
+                } )
+
+                interval_wdg = DivWdg()
+                interval_wdg.add_class("spt_cache_interval")
+                if value != 'true':
+                    interval_wdg.add_style("display: none")
+                edit_wdg.add(interval_wdg)
+                interval_wdg.add("-> Recalculate every: ")
+
+                # TODO: get this info from the trigger
+                interval = 120
+                text = TextWdg("interval")
+                text.add_style("width: 30px")
+                text.set_value(interval)
+                interval_wdg.add(text)
+
+                unit_select = SelectWdg("unit")
+                unit_select.set_value(interval)
+                unit_select.set_option("values", "seconds|minutes|hours|days")
+                interval_wdg.add(" ")
+                interval_wdg.add(unit_select)
+
+                type_select = SelectWdg("data_type")
+                type_select.set_option("values", "string|text|integer|float|boolean|timestamp")
+                interval_wdg.add('<br/>')
+                interval_wdg.add("Data Type: ")
+                interval_wdg.add(type_select)
+
+
+
+            elif widget_type == 'SelectWdg':
+                edit_wdg = SelectWdg(name)
+                edit_wdg.add_empty_option('-- Select --')
+                values = option.get('values')
+                edit_wdg.set_option('values', values)
+                if value:
+                    edit_wdg.set_value(value)
+
+            elif widget_type == 'TextAreaWdg':
+                edit_wdg = TextAreaWdg(name)
+                if value:
+                    edit_wdg.set_value(value)
+                edit_wdg.add_attr("cols", "60")
+                edit_wdg.add_attr("rows", "3")
+
+            elif widget_type == 'CheckboxWdg':
+                edit_wdg = CheckboxWdg(name)
+                if value:
+                    edit_wdg.set_checked()
+                edit_wdg.set_option("value", "true")
+
+            elif widget_type == 'IconSelectWdg':
+                from tactic.ui.input import IconSelectWdg
+                edit_wdg = IconSelectWdg(name)
+
+            elif widget_type == 'TextWdg':
+                edit_wdg = TextWdg(name)
+                if value:
+                    edit_wdg.set_value(value)
+                edit_wdg.add_style("width: 250px")
+
+            elif widget_type == 'CalendarInputWdg':
+                cal_wdg = CalendarInputWdg(name)
+
+                cal_wdg.set_option('show_activator','true')
+                if value:
+                    cal_wdg.set_value(value)
+                edit_wdg = DivWdg(cal_wdg)
+                edit_wdg.add(HtmlElement.br())
+
+            else:
+                edit_wdg = None
+                try:
+                    kwargs = {
+                        'prefix': prefix,
+                        'name': name,
+                        'option': option,
+                        'display_options': display_options,
+                    }
+                    edit_wdg = Common.create_from_class_path(widget_type, [], kwargs)
+                    if value and hasattr(edit_wdg,'set_value'):
+                        edit_wdg.set_value(value)
+                except Exception, e:
+                    print "Cannot create widget: [%s]" % widget_type, e, e.message
+
+                if not edit_wdg:
+                    edit_wdg = TextWdg(name)
+                    if value:
+                        edit_wdg.set_value(value)
+                    edit_wdg.add_style("width: 250px")
+
+
+           
+
+            edit_div = DivWdg()
+            edit_div.add_class("spt_widget_section_edit")
+            if is_open == False:
+                edit_div.add_style("display: none")
+            edit_div.add(title_wdg)
+           
+            edit_div.add_style("padding-bottom: 5px")
+            edit_div.add_style("padding-left: 15px")
+
+            title_wdg.add_style("float: left")
+            current_div.add_style("padding-left: 10px")
+            current_div.add_style("padding-bottom: 10px")
+
+            edit_div.add(edit_wdg)
+            current_div.add(edit_div)
+
+
+
+        # If the type is recursive, then all options are passed to the child
+        # widget
+        if has_recursive:
+            return top
+
+
+        # find any display_options that are not in the options list
+        options_keys = class_options.keys()
+        display_options_keys = display_options.keys()
+
+        sub_keys = []
+        for class_option in class_options.values():
+            if isinstance(class_option, basestring):
+                continue
+
+            class_sub_keys = class_option.get("sub_keys")
+            if class_sub_keys:
+                sub_keys.extend( class_sub_keys )
+
+
+        not_defined_keys = []
+        for display_key in display_options_keys:
+            if display_key in ['class_name', 'widget_key']:
+                continue
+
+            if display_key in options_keys:
+                continue
+
+            # check for any subkeys that need to be ignored
+            if display_key in sub_keys:
+                continue
+
+            not_defined_keys.append(display_key)
+
+        current_div = DivWdg()
+        top.add(current_div)
+        current_div.add_style("padding-left: 10px")
+        current_div.add_style("padding-bottom: 10px")
+        if not_defined_keys:
+            category = "Extra Options<br/>"
+            current_div.add(HtmlElement.br())
+            current_div.add(HtmlElement.b(category))
+            last_category = category
+
+
+
+        for display_key in not_defined_keys:
+            name = "%s|%s|value" % (prefix, display_key)
+
+            table = Table()
+            current_div.add(table)
+
+            #tr.add_style("color: red")
+            title = Common.get_display_title(display_key)
+
+            td = table.add_cell('%s:' %title)
+            value = display_options.get(display_key)
+            td.add_style("vertical-align: top")
+            td.add_style("padding: 5px 5px 5px 20px")
+
+            #hidden = HiddenWdg(name, value)
+            td = table.add_cell()
+            hidden = TextWdg(name)
+            hidden.add_style("width: 250px")
+            hidden.set_value(value)
+            td.add(hidden)
+            td.add_style("padding: 5px 5px 5px 110px")
+
+            current_div.add(table)
+
+        return top
+
+
+
+
+class SimpleElementDefinitionCbk(Command):
+
+    EDIT_VIEW = 'edit_definition'
+    def get_title(my):
+        return "Element definition update"
+
+
+    def execute(my):
+        web = WebContainer.get_web()
+        my.is_insert = my.kwargs.get('is_insert')
+        my.is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
+
+        my.search_type = my.kwargs.get("search_type")
+
+        # get the view
+        user_view = web.get_form_value('view')
+        view = my.kwargs.get('view')
+        
+        # one exception:
+        if user_view=='edit_definition':
+            view = 'edit_definition'
+        
+
+        # usually there is user_view chosen
+        if not view:
+            view = web.get_form_value("view")
+            
+        if not view:
+            view = 'definition'
+
+        my.element_name = web.get_form_value("name")
+        my.element_name = my.element_name.strip()
+        if not my.element_name:
+            raise TacticException('Column name cannot be empty')
+        try:
+            my.element_name.encode('ascii')
+        except UnicodeEncodeError:
+            raise TacticException('Column name needs to be in English.. Non-English characters can be used in Title.')
+        assert my.element_name
+
+
+
+        mode = web.get_form_value("mode")
+        if mode == 'xml':
+            xml_str = web.get_form_value("xml_def")
+
+            element_xml = Xml()
+            element_xml.read_string(xml_str)
+            my.element_name = element_xml.get_value("element/@name")
+           
+            if my.is_edit_layout:
+                view = my.EDIT_VIEW
+            my.save_to_view(my.search_type, view, my.element_name, element_xml)
+            
+        else:
+            # put an xxx in front to separate it from the normal options
+            widget_key = web.get_form_value("xxx_option|widget_key")
+            edit_widget_key = web.get_form_value("xxx_edit|widget_key")
+            display_class = web.get_form_value("xxx_option|display_class")
+            edit_class = web.get_form_value("xxx_edit|display_class")
+            action_class = web.get_form_value("xxx_action|action_class")
+
+            if display_class == 'None':
+                display_class = ''
+            if edit_class == 'None':
+                edit_class = ''
+
+            # During insert, we save both view and edit.
+            if my.is_insert:
+                # only if it's not edit layout, we save the definition view
+
+                if not my.is_edit_layout:
+                    my.save(my.search_type, view, my.element_name, widget_key, display_class)
+
+                # hard code for drop_item to include the DropElementAction
+                if widget_key=='drop_item':
+                    action_class = "tactic.ui.table.DropElementAction"
+                    options = my.get_options("option")
+                    web.set_form_value('action|instance_type', options.get('instance_type'))
+                my.save(my.search_type, my.EDIT_VIEW, my.element_name, edit_widget_key, edit_class, action_class)
+            else:
+                if my.is_edit_layout:
+                    my.save(my.search_type, my.EDIT_VIEW, my.element_name, edit_widget_key, edit_class, action_class, user_view=view)
+                else:
+                    my.save(my.search_type, view, my.element_name, widget_key, display_class)
+
+
+        # save the color
+
+        if not my.is_edit_layout:
+            my.save_color()
+
+
+    def save(my, search_type, view, element_name, widget_key, display_class, action_class=None, user_view=''):
+        '''user_view is the view the user is looking at'''
+        web = WebContainer.get_web()
+        
+        width = web.get_form_value("attr|width")
+        title = web.get_form_value("attr|title")
+        editable = web.get_form_value("attr|editable") == 'on'
+        show_color = web.get_form_value("attr|color") == 'on'
+        # get a specific element
+        
+
+        # build the xml element
+        element_xml = Xml()
+        element_xml.create_doc("element")
+        root = element_xml.get_root_node()
+        element_xml.set_attribute(root, "name", element_name)
+
+        # add non-edit element properties
+        if view != my.EDIT_VIEW:
+            if title:
+                element_xml.set_attribute(root, "title", title)
+            else:
+                element_xml.del_attribute(root, "width")
+            if width:
+                element_xml.set_attribute(root, "width", width)
+            else:
+                element_xml.del_attribute(root, "width")
+
+            if not editable:
+                element_xml.set_attribute(root, "edit", "false")
+            else:
+                element_xml.set_attribute(root, "edit", "true")
+
+            # keep it clean and not set color if not false
+            if not show_color:
+                element_xml.set_attribute(root, "color", "false")
+            
+            #else:
+            #    element_xml.set_attribute(root, "color", "true")
+
+
+        # create the display_node
+        display_node = element_xml.create_element("display")
+        if widget_key and widget_key != '__class__':
+            element_xml.set_attribute(display_node, "widget", widget_key)
+            element_xml.append_child(root, display_node)
+        elif display_class:
+            element_xml.set_attribute(display_node, "class", display_class)
+            element_xml.append_child(root, display_node)
+
+        if view == my.EDIT_VIEW:
+            # access the view mode user_view(usually definition for now) to change its edit attribute
+            # if it's just a built-in view, ignore it now
+            # prevent saving non-editable column to edit view
+            config = WidgetDbConfig.get_by_search_type(search_type, user_view)
+            if not editable:
+                # remove the element from edit view
+                my.process_edit_view(search_type, element_name, remove=True)
+                # TODO: redefine user_view
+                if config:
+                    view_mode_xml = config.get_xml()
+                    node = config.get_element_node(element_name)
+                    if node is not None:
+                        element_xml.set_attribute(node, "edit", "false")
+                        config.set_value('config', view_mode_xml.to_string())
+                        config.commit()
+                return
+            else:
+                if config:
+                    view_mode_xml = config.get_xml()
+                    node = config.get_element_node(element_name)
+                    if node is not None:
+                        element_xml.set_attribute(node, "edit", "true")
+                        config.set_value('config', view_mode_xml.to_string())
+                        config.commit()
+                
+            options = my.get_options("edit")
+            my.process_edit_view(search_type, element_name)
+        else:
+            options = my.get_options("option")
+
+        for name, value in options.items():
+            option_node = element_xml.create_text_element(name, value)
+            element_xml.append_child(display_node, option_node)
+
+    
+        if view == my.EDIT_VIEW:
+        
+            # create the optional action node
+            action_node = element_xml.create_element("action")
+            options = my.get_options("action") 
+            if action_class:
+                element_xml.set_attribute(action_node, "class", action_class)
+                element_xml.append_child(root, action_node)
+
+                for name, value in options.items():
+                    option_node = element_xml.create_text_element(name, value)
+                    element_xml.append_child(action_node, option_node)
+        
+        my.save_to_view(search_type, view, element_name, element_xml)
+
+
+    def process_edit_view(my, search_type, element_name, remove=False):
+        ''' this one is special as it has to look for one in edit view first
+           and strip it down to a plain element as the new one will be saved in the edit_definition
+           view level'''
+
+        # find edit view
+        config_search_type = "config/widget_config"
+        search = Search(config_search_type)
+        search.add_filter("search_type", search_type)
+        search.add_filter("view", 'edit')
+        config_sobj = search.get_sobject()
+
+        if config_sobj:
+            if not remove:
+                node_xml = '<element name="%s"/>' %element_name
+                config_sobj.alter_xml_element(element_name, config_xml=node_xml)
+            else:
+                config_sobj.remove_node(element_name)
+            config_sobj.commit_config()
+        else:
+            node_xml = '<element name="%s"/>' %element_name
+            xml = Xml()
+            xml.read_string(node_xml)
+            my.save_to_view(search_type, "edit", element_name, xml)
+        
+    
+    def save_to_view(my, search_type, view, element_name, element_xml):
+
+        # save to view
+        search_type_obj = SearchType.get(search_type)
+        base_search_type = search_type_obj.get_base_key()
+        project = Project.get_by_search_type(search_type)
+        project_code = project.get_code()
+
+        #config_search_type = "config/widget_config?project=%s" % project_code
+        config_search_type = "config/widget_config"
+        search = Search(config_search_type)
+        search.add_filter("search_type", base_search_type)
+        search.add_filter("view", view)
+        config_sobj = search.get_sobject()
+        if not config_sobj:
+            # build a new config_sobj
+            config_sobj = SearchType.create(config_search_type)
+            config_sobj.set_value('search_type', base_search_type)
+            config_sobj.set_value('view', view)
+
+            # create a new xml document
+            xml = Xml()
+            xml.create_doc("config")
+            root = xml.get_root_node()
+            view_node = xml.create_element(view)
+            #root.appendChild(view_node)
+            element_xml.append_child(root, view_node)
+    
+        else:
+            xml = config_sobj.get_xml_value("config")
+
+
+        config = WidgetConfig.get(view, xml=xml)
+        try:
+            config.alter_xml_element(element_name, config_xml=element_xml.to_string())
+        except SetupException, e:
+            raise TacticException("Incorrectly formatted widget config found. %s"%e.__str__())
+
+
+        xml = config.get_xml()
+        
+        widget = None
+        # actually create the element
+        try:
+            widget = config.get_display_widget(element_name)
+        except:
+            print "Warning: Cannot create widget for [%s]" % element_name
+            #raise
+            #return
+
+       
+        if widget and view != my.EDIT_VIEW:
+            try:
+                # TODO: should check if the coluns exist! or only on insert
+                widget.create_required_columns(search_type)
+            except (TacticException, AttributeError), e: # for add column sql error
+                if my.is_insert: # will be caught in AlterTableCmd
+                    raise
+                else: # in edit mode, it's ok for now
+                    print "WARNING when creating required columns: ", e.message
+                    pass
+                #raise
+            except AttributeError:
+                # this is meant for the definition display, not for edit_definition view
+                print "Warning: [%s] does not have create_required_columns method"%element_name
+                raise
+            except Exception, e:
+                print "Warning: ", e.message
+                raise
+
+        # commit the config_sobj at the end if no exception is raised during insert
+        config_sobj.set_value("config", xml)
+        config_sobj.commit()
+
+      
+
+    def get_options(my, prefix):
+        web = WebContainer.get_web()
+
+        # get all of the options
+        keys = web.get_form_keys()
+        options = {}
+
+
+        # HACK: this relies on the fact that the first form value
+        # is the hidden row ...
+        display_class = web.get_form_value("xxx_%s|display_class" % prefix)
+        widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
+        if 'HiddenRowToggleWdg' in display_class  or widget_key == 'hidden_row':
+            hidden_class = web.get_form_values("xxx_%s|display_class" % prefix)[1]
+
+            # have to convert back to class_name:
+            
+            if not hidden_class:
+                # we call this one hidden_class for now instead of hidden_key since
+                # we have to convert it back to class_name anyways
+                hidden_class = web.get_form_values("xxx_%s|widget_key" % prefix)[1]
+
+            if hidden_class in ['table_layout','custom_layout','tile_layout', 'fast_table_layout']:
+                handler = WidgetClassHandler()
+                hidden_class = handler.get_display_handler(hidden_class)
+            options['dynamic_class'] = hidden_class
+
+
+        for key in keys:
+            if not key.startswith("%s|" % prefix):
+                continue
+
+            parts = key.split("|")
+            name = parts[1]
+
+            # skip the class defs
+            if name in ['display_class', 'widget_key', 'class_name']:
+                continue
+
+            # FIXME: a little hacky ... this is to compensate for that fact
+            # that FormatDefinition returns a lot of empty values.
+            # only the one with a value is valid
+            values = web.get_form_values(key)
+            for value in values:
+                if value != '':
+                    options[name] = value
+                    break
+
+            # put in some extra codes for use_cache
+            # DISABLE for 3.0
+            if name == 'use_cacheXXX':
+                interval = web.get_form_value("interval")
+                if not interval:
+                    interval = 0
+                else:
+                    interval = int(interval)
+                unit = web.get_form_value("unit")
+                if not unit:
+                    unit = 0
+
+                if unit == 'minutes':
+                    interval = interval * 60
+                elif unit == 'hours':
+                    interval = interval * 60*60
+                elif unit == 'days':
+                    interval = interval * 60*60*24
+
+                from tactic.ui.app.aggregate_wdg import AggregateRegisterCmd
+                kwargs = {
+                    'search_type': my.search_type,
+                    'element_name': my.element_name,
+                    'interval': interval
+                }
+                cmd = AggregateRegisterCmd(**kwargs)
+                cmd.execute()
+
+        return options
+
+
+    def save_color(my):
+        web = WebContainer.get_web()
+
+        search = Search("config/widget_config")
+        search.add_filter("search_type", my.search_type)
+        search.add_filter("view", "color")
+        config = search.get_sobject()
+        if not config:
+            config = SearchType.create("config/widget_config")
+            config.set_value("search_type", my.search_type)
+            config.set_value("view", "color")
+            config.set_value("config", "<config><color/></config>")
+            config.set_view("color")
+            config._init()
+
+
+        bg_colors = [];
+        text_colors = []
+
+
+        columns = web.get_form_values("color|column")
+        bg_color_list = web.get_form_values("bg_color")
+        text_color_list = web.get_form_values("text_color")
+        for i, column in enumerate(columns):
+            color = bg_color_list[i]
+            # color is empty from the template row
+            if column == '' or color == '':
+                continue
+            bg_colors.append( [column, color] )
+            #text_colors.append( [column, text_color_list[i]] )
+
+        '''
+        keys = web.get_form_keys()
+        for key in keys:
+            value = web.get_form_value(key)
+            if not value:
+                continue
+
+            value = value.strip()
+
+            if key.startswith("bg_color|"):
+                prefix, name = key.split("|")
+                bg_colors.append( [name, value] )
+            elif key.startswith("text_color|"):
+                prefix, name = key.split("|")
+                text_colors.append( [name, value] )
+        '''
+ 
+        element_xml = []
+        element_xml.append( '''<element name='%s'>''' % my.element_name )
+
+
+
+        # bg colors
+        if bg_colors:
+            element_xml.append( '''  <colors>''')
+            for name, value in bg_colors:
+                element_xml.append( '''    <value name="%s">%s</value>''' % (name,value) )
+            element_xml.append( '''  </colors>''')
+
+        # text colors
+        if text_colors:
+            element_xml.append( '''  <text_colors>''')
+            for name, value in text_colors:
+                element_xml.append( '''    <value name="%s">%s</value>''' % (name,value) )
+            element_xml.append( '''  </text_colors>''')
+
+        element_xml.append( '''</element>''' )
+
+        element_xml = "\n".join(element_xml)
+
+
+        config.append_xml_element(my.element_name, element_xml)
+        config.commit_config()
+
+
+

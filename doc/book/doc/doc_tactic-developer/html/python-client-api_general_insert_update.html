@@ -1,0 +1,134 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>insert_update</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_insert_multiple.html" title="insert_multiple">
+      <link rel="next" href="python-client-api_general_log.html" title="log">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_insert_multiple.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_log.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="insert_update">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_insert_update"></a>
+                         insert_update
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  insert_update(search_key, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True)
+                      </strong></span>
+                
+         </p>
+         <p>
+                Insert if the entry does not exist, update otherwise
+                
+         </p>
+         <h4><a name="d0e5211"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      search_key 
+                      </strong></span>
+                 -  a unique identifier key representing an sobject.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      data 
+                      </strong></span>
+                 -  a dictionary of name/value pairs which will be used to update
+                
+         </p>
+         <p>
+                the sobject defined by the search_key
+                
+         </p>
+         <h4><a name="d0e5225"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      metadata 
+                      </strong></span>
+                 -  a dictionary of values that will be stored in the metadata attribute if available
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      parent_key 
+                      </strong></span>
+                 -  set the parent key for this sobject
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      info 
+                      </strong></span>
+                 -  a dictionary of info to pass to the ApiClientCmd
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      use_id 
+                      </strong></span>
+                 -  use id in the returned search key
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      triggers 
+                      </strong></span>
+                 -  boolean to fire trigger on insert
+                
+         </p>
+         <h4><a name="d0e5252"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  represent the sobject with its current data.
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_insert_multiple.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_log.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

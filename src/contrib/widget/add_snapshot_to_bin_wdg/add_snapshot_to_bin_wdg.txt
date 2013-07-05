@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+  <add_snapshot_to_bin_wdg>
+
+    <html>
+      <body>
+
+        <div class="spt_top" style="height:60px">
+          <div class="spt_label_div"> </div>  
+          <br/>
+          <div style="float:left">         
+            <form name="spt_bin_form">
+              <select name="spt_bin_select" class="spt_bin_select">
+              </select>
+            </form>
+          </div>
+          <div style="float:right">
+            <input type="button" value="Submit" class="spt_submit_button"/>
+          </div>
+          <br/><br/>
+          <div class="spt_file_info">
+        
+          </div>
+        </div>
+      </body>
+
+    </html>
+
+   <behavior class='spt_top'>{
+      "type": "load",
+      "cbjs_action": <![CDATA['''
+          var server = TacticServerStub.get();
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el;
+
+          var search_key = bvr.kwargs.search_key;
+          top_el.search_key = search_key;
+          // Get the input snapshot info
+          var snapshot = server.get_by_search_key(search_key);
+          top_el.snapshot = snapshot;
+        
+          // Get the parent info
+          // The following line works in 3.0+
+          //var parent_sobject = server.get_parent(snapshot.__search_key__);
+
+          // The following 4 lines are needed in 2.6.0.v02
+          var parent_type = snapshot.search_type;
+          var parent_id = snapshot.search_id;
+          var parent_key = parent_type + "&id=" + parent_id;
+          var parent_sobject = server.get_by_search_key(parent_key);
+
+          top_el.parent_sobject = parent_sobject;
+
+          // Get the file info
+          var files = server.get_path_from_snapshot(snapshot.code);
+          var file_info_el = top_el.getElement(".spt_file_info");
+          //file_info_el.innerHTML = files;
+
+          // Set the Label
+         var label_text = "Choose the bin for submission of: <b>" + parent_sobject.code + " ["+ snapshot.context +"- v" +snapshot.version + "]</b>"   
+         label_div_el = top_el.getElement(".spt_label_div")
+         label_div_el.innerHTML = label_text;
+
+          // Set the context select dropdown values
+          var bin_list = server.eval("@SOBJECT(prod/bin)");
+          for (i=0; i<bin_list.length; i++) {
+                var option_value = bin_list[i].id;
+                var option_label = bin_list[i].code + " [" + bin_list[i].type + "]";
+                var new_option = new Option(option_label, option_value);
+                document.spt_bin_form.spt_bin_select.options[i] = new_option
+          }
+
+
+       
+      ''']]>
+    }</behavior>
+
+
+
+   <behavior class='spt_submit_button'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+          // Setup
+          var server = TacticServerStub.get();
+          var top_el = bvr.src_el.getParent(".spt_top")
+          var search_key = top_el.search_key
+          var snapshot = top_el.snapshot;
+          var parent_sobject = top_el.parent_sobject;
+          var artist = spt.Environment.get().get_user(); 
+
+         // Get the value from the spt_bin_select 
+         var bin_id =  document.spt_bin_form.spt_bin_select.value;
+
+
+          // Create the Submission
+          var submission_data = {
+              'search_id': parent_sobject.id,
+              'artist': artist,
+              'search_type': snapshot.search_type,
+              'context': snapshot.context,
+              'version': snapshot.version
+          };
+          var submission = server.insert("prod/submission", submission_data)
+
+          // Create the submission snapshot and add a dependendy to this snapshot
+          var submission_snapshot = server.create_snapshot(submission.__search_key__, "publish");
+          server.add_dependency_by_code(submission_snapshot.code, snapshot.code)
+
+
+          //  Create the Submission in Bin          
+          var sub_in_bin_data = {
+              'bin_id': bin_id, 
+              'submission_id': submission.id
+          };
+          var submission_in_bin = server.insert("prod/submission_in_bin", sub_in_bin_data);
+
+          alert("Successfully Added " + parent_sobject.code + "- " + snapshot.context + " [" + snapshot.version + "]");
+          var popup = spt.popup.get_popup( bvr.src_el ) 
+          spt.popup.close(popup); 
+
+
+       
+      ''']]>
+    }</behavior>
+
+
+
+ 
+  </add_snapshot_to_bin_wdg>
+</config> 

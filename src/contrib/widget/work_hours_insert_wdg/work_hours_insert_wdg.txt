@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- work_hours_insert_wdg v2.0 -->
+<config>
+  <work_hours_insert_wdg>
+
+    <html>
+
+      <style type="text/css">
+        .spt_div_frame {
+          padding:5px;
+          margin: 5px;
+          //border: 1px solid #141414;
+        }
+      </style>
+  
+      <div class="spt_top" style="width:300; height:200;">
+        <div class="spt_title"> </div>
+        <div class="spt_div_frame">
+          <table>
+            <tr>
+              <td><b>Day </b></td>
+              <td><div id="spt_day"> </div></td>
+            </tr>
+            <tr>
+              <td><b>Login (User): </b></td>
+              <td>
+                <element name="login">
+                  <display widget="select">
+                    <values_expr>@GET(sthpw/login.login)</values_expr>
+                    <default>{login.login}</default>
+                  </display>
+                </element>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Straight Time: </b></td>
+              <td><input class="spt_input" name="straight_time"/></td>
+            </tr>
+            <tr>
+              <td>
+                <element name="commit">
+                  <display class="tactic.ui.widget.TextBtnWdg">
+                    <label>Save</label>
+                    <size>medium</size>
+                  </display>
+                </element>
+              </td>
+            </tr>
+          </table>
+        </div> 
+      </div>
+
+    </html>
+
+
+
+    <behavior class='spt_top'>{
+      "type": "load",
+      "cbjs_action": <![CDATA['''
+        try {
+          // Get the Classes 
+          var server = TacticServerStub.get();
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el;
+
+          // Get the SObjects
+          var task_sk = bvr.kwargs.search_key;
+          var task_so = server.get_by_search_key(task_sk);
+          var parent_so = server.get_parent(task_sk) ;
+          
+          // attach the parent and task SObjects to the top_el
+          top_el.parent_so = parent_so;
+          top_el.task_so = task_so;
+
+          // Load the Calendar into the panel
+          var kwargs = {'name': 'spt_day'}
+          spt.panel.load("spt_day", "tactic.ui.widget.CalendarInputWdg", kwargs)
+
+          // Set the Title
+          var title_msg = "<h2>"+ parent_so.code + " - " + task_so.process + " Task</h2>";
+          var title_el = spt.get_element(top_el, ".spt_title") 
+          title_el.innerHTML = title_msg;
+
+
+        }
+        catch(err) {
+          alert(err);
+        }
+     
+       
+      ''']]>
+    }</behavior>
+
+
+    <behavior class='SPT_TextBtnWdg_TOP'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+      try {
+
+        // Get the Classes
+        var server = TacticServerStub.get();
+        var applet = spt.Applet.get();
+
+        // Retrieve the source element (top)
+        var top_el = bvr.src_el.getParent(".spt_top")
+        var inputs = spt.api.Utility.get_input_values(top_el);
+        //console.log(inputs)
+
+        // Get the values
+        var day = inputs.spt_day[0];        
+        var login = inputs.login[0]; 
+        var straight_time = inputs.straight_time[0];
+        
+        // Get the parent and the task sobjects stored in the top_el
+        var parent_so = top_el.parent_so;
+        var task_so  = top_el.task_so;
+
+        // Get info from the parent sobject
+        var parent_sk = parent_so.__search_key__;
+        var parent_type = parent_sk.split("&")[0];
+
+        // Build the data package for the work_hour SObject
+        var data = {
+          'search_id': parent_so.id,
+          'search_type': parent_type,
+          'project_code': task_so.project_code,
+          'category': 'work',
+          'login': login,
+          'straight_time': straight_time,
+          'task_code': task_so.code,
+          'day': day
+       }
+
+       // Insert the sthpw/work hour SObject
+       //console.log(data)
+       server.insert("sthpw/work_hour", data);
+       
+       alert("Added ["+ straight_time +"] Work Hours for "+ parent_so.code +" - "+ task_so.process +" Task");
+
+       spt.popup.close("work_hours_insert_popup");
+
+       }
+       catch(err) {
+         alert(err);
+       }
+      ''']]>
+    }</behavior>
+
+
+  </work_hours_insert_wdg>
+</config>

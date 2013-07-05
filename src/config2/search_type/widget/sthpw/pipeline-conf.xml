@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+<definition>
+    <element name="code"/>
+    <element name="editor" edit='false'>
+        <display class="pyasm.admin.creator.PipelineCreatorElementWdg"/>
+    </element>
+    <element name="description"/>
+    <element name="search_type"/>
+
+    <element name="color">
+    </element>
+
+    <element name="pipeline_hidden" title='Definition'>
+      <display class='HiddenRowToggleWdg'>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>sthpw/pipeline</search_type>
+        <show_search_limit>false</show_search_limit>
+        <show_insert>false</show_insert>
+        <show_row_select>false</show_row_select>
+        <show_gear>false</show_gear>
+        <view>pipeline_def</view>
+      </display>
+    </element>
+
+
+    <element name="pipeline">
+      <display class="XmlWdg"/>
+    </element>
+
+
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="editor"/>
+    <element name="description"/>
+    <element name="pipeline_hidden"/>
+    <element name="search_type"/>
+    <element name="color"/>
+</table>
+
+<site_wide>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="pipeline_hidden"/>
+    <element name="search_type"/>
+    <element name="color"/>
+    <element name="project_code"/>
+</site_wide>
+
+
+<!-- used to display a summary of the pipeline in the Pipeline Editor Tool -->
+<tool>
+    <element name="code"/>
+    <element name="description" width='300px'/>
+    <element name="pipeline_hidden"/>
+    <element name="search_type"/>
+    <element name="color"/>
+    <element name='num_processes'>
+      <display class='tactic.ui.table.ExpressionElementWdg'>
+        <expression>@COUNT(config/process)</expression>
+      </display>
+    </element>
+</tool>
+
+<pipeline_def>
+    <element name="pipeline" title='Pipeline Definition'/>
+</pipeline_def>
+
+
+
+<manage>
+    <element name="code"/>
+    <element name="color"/>
+    <element name="editor"/>
+    <element name="description"/>
+    <element name="pipeline_hidden"/>
+    <element name="search_type"/>
+    <element name="project_code"/>
+</manage>
+
+<!-- use for pipeline editor -->
+<pipeline>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="search_type"/>
+</pipeline>
+
+
+
+
+<insert>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="search_type">
+        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+    </element>
+    <element name="color">
+        <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+    <element name="pipeline" title='Pipeline Definition'/>
+
+</insert>
+
+<edit_definition>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="search_type">
+        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+    </element>
+<!--
+    <element name="pipeline">
+        <display class="pyasm.widget.TextAreaWdg">
+          <cols>75</cols>
+          <rows>30</rows>
+      </display>
+        <action class="pyasm.command.XmlAction"/>
+    </element>
+-->
+    <element name="project_code">
+        <display class="MultiSelectWdg">
+            <query>sthpw/project|code|code</query>
+            <empty>true</empty>
+        </display>
+        <action class="MultiDatabaseAction"/>
+    </element>
+
+    <element name="color">
+        <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+
+    <element name="autocreate_tasks">
+        <display class='CheckboxWdg'>
+        </display>
+    </element>
+</edit_definition>
+
+
+<edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="search_type"/>
+    <element name="project_code"/>
+    <element name="color"/>
+    <element name="autocreate_tasks"/>
+</edit>
+
+<pipeline_edit_tool>
+    <element name="code">
+      <display class='TextWdg'>
+        <read_only>true</read_only>
+      </display>
+    </element>
+    <element name="description"/>
+    <element name="search_type">
+        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+    </element>
+
+    <element name="color">
+        <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+
+    <element name="autocreate_tasks">
+        <display class='CheckboxWdg'>
+        </display>
+    </element>
+
+</pipeline_edit_tool>
+
+
+
+
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="description" width="300px"/>
+    <element name="search_type" width="150px"/>
+</add_item>
+
+</config>
+
+

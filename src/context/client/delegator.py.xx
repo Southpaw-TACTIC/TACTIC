@@ -1,0 +1,170 @@
+###########################################################
+#
+# Copyright (c) 2005, Southpaw Technology
+#                     All Rights Reserved
+#
+# PROPRIETARY INFORMATION.  This software is proprietary to
+# Southpaw Technology, and is not to be reproduced, transmitted,
+# or disclosed in any way without written permission.
+#
+#
+#
+
+import os, sys
+
+sys.path.insert(0,"C:")
+
+
+def usage():
+    print "usage: delegator.py <app> <function> <arg1> <arg2> ..."
+
+
+def execute(args):
+
+    app_name = args[0]
+    args = args[1:]
+    print "args: ", args
+
+    info = None
+
+    try:
+      from common import TacticInfo, TacticException
+
+      try:
+        # instantiate the info
+        if app_name == "flash":
+            from pyasm.application.flash import FlashInfo
+            info = FlashInfo(app_name)
+        else:
+            info = TacticInfo(app_name)
+
+
+        # if the application is houdini, then the last argument is the port
+        if app_name == "houdini8":
+            port = args.pop()
+            info.set_up_houdini(port)
+        elif app_name == "houdini":
+            info.set_up_houdini()
+        elif app_name == "maya":
+            info.set_up_maya()
+        elif app_name == "flash":
+            info.set_up_flash()
+        elif app_name == "xsi":
+            info.set_up_xsi(Application, XSIUIToolkit)
+        else:
+            raise TacticException("Application must be either 'houdini', 'maya' , 'xsi' or 'flash'")
+
+        tmp_dir = info.get_tmpdir()
+        if not os.path.exists(tmp_dir):
+            info.set_tmpdir(tmp_dir)
+        # load all of the modules
+        if args[0].count(".") == 0:
+            raise TacticException("Cannot load module path '%s'" % args[0] )
+        parts = args[0].split(".")
+        module = ".".join(parts[0:-1])
+        function = parts[-1]
+        exec( "import %s" % module )
+        #exec( "reload(%s)" % module )
+
+        function_args = []
+        if len(args) > 1:
+            function_args = [ '"%s"' % x for x in args[1:] ]
+            cmd = "%s.%s(%s)" % (module, function, ", ".join(function_args) )
+        else:
+            cmd = "%s.%s()" % (module, function)
+
+        print "cmd: ", cmd
+
+        exec(cmd)
+
+      except Exception, e:
+        # catch all exceptions and send them to the server
+        trace = print_stack_trace(e)
+        if app_name == "xsi":
+            Application.LogMessage(trace)
+            Application.LogMessage(e.__str__())
+
+        # temp HACK
+        lines = str(e).split("\\n")
+
+        msg = lines[len(lines)-2]
+        info.report_error(msg)
+
+
+    finally:
+        # houdini must close the port under all circumstances
+        if app_name == "houdini8":
+            try:
+                info.close_houdini()
+            except Exception, e:
+                print_stack_trace(e)
+
+            #raw_input()
+
+
+
+def print_stack_trace(e):
+    import sys,traceback
+
+    tb = sys.exc_info()[2]
+    stacktrace = traceback.format_tb(tb)
+    stacktrace_str = "".join(stacktrace)
+
+    # replace crazy windows paths with normal paths
+    stacktrace_str = stacktrace_str.replace("\\", "/")
+
+    print "-"*50
+    print stacktrace_str
+    print "Error: ", str(e)
+    print "-"*50
+    return stacktrace_str
+
+
+
+def start(*argv):
+
+    # assume the zip file is in the same path as the executable
+    executable = argv[0]
+    dir = os.path.dirname(executable)
+    tactic_zip = "%s/tactic.zip" % dir
+    sys.path.insert(0, tactic_zip)
+
+    custom_zip = "%s/custom.zip" % dir
+    if os.path.exists(custom_zip):
+        sys.path.insert(0, custom_zip)
+        try:
+            import custom
+        except ImportError:
+            pass
+            
+
+    args = argv[1:]
+
+    if len(args) < 2:
+        usage()
+    else:
+        execute(args)
+
+
+
+
+
+if __name__ == '__main__':
+    '''usage: delegator.py <application> <function> <arg1> <arg2> ...'''
+
+    # assume the zip file is in the same path as the executable
+    executable = sys.argv[0]
+    dir = os.path.dirname(executable)
+    sys.path.insert(0, "%s/tactic.zip" % dir)
+
+    args = sys.argv[1:]
+
+    if len(args) < 2:
+        usage()
+    else:
+        execute(args)
+
+
+
+
+

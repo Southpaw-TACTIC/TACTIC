@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<table>
+    <element name="key"/>
+    <element name="value"/>
+    <element name="description"/>
+    <element name="search_type"/> 
+    <element name="type"/>
+</table>
+ 
+<edit>
+    <element name="key">
+        <display class="TextWdg">
+            <size>50</size>
+            <hint>The key has special meaning in Tactic. Please consult the documentation before making changes to it.</hint>
+        </display>
+    </element>
+    <element name="value">
+        <display class="TextAreaWdg">
+            <hint>Separate a sequence with |. e.g. ref|art|pic. For a map, use this format R:ref|A:art|P:pic</hint>
+        </display>
+    <!--
+        <display class="pyasm.widget.CreateSelectWdg"/>
+        <action class="pyasm.widget.CreateSelectAction"/>
+    -->
+</element>
+    <element name="description"/>
+<element name="type">
+    <display class = "SelectWdg"> 
+        
+        <values>sequence|map|string</values>
+    </display>
+</element>
+    <element name="search_type"> 	 	 
+        <display class = "SelectWdg"> 	 	 
+            <query>sthpw/search_object|search_type|get_label()</query> 	 	            <query_filter>"search_type" != 'sthpw/search_object'</query_filter> 	 	    <empty>true</empty> 	 	 
+	    <hint>Pick a search type that this project setting is used for</hint> 	 	 
+        </display> 	 	 
+             
+    </element>
+    
+</edit>
+
+
+
+
+</config>
+

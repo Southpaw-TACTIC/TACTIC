@@ -1,0 +1,71 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Advanced Schema Configuration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_advanced-configuration.html" title="Advanced Configuration">
+      <link rel="prev" href="tactic-setup_advanced-configuration.html" title="Advanced Configuration">
+      <link rel="next" href="tactic-setup_setup_advanced-access-rule-configuration.html" title="Advanced Access Rule Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_advanced-configuration.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_advanced-access-rule-configuration.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Advanced Schema Configuration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_advanced-schema-configuration"></a>Advanced Schema Configuration
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>When creating a search type, the "Search Type" property defines the project schema
+            (project_namespace) and name for the search type. For example, if your current project is
+                    called <span class="bold"><strong>media</strong></span> then adding a new search type named "artwork"
+                    into the interface will automatically generate "media/artwork" and it will be added to the
+                    media project's schema
+         </p>
+         <h5><a name="d0e4999"></a>Schema XML Structure
+         </h5><pre class="screen">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;schema&gt;
+  &lt;search_type name='media/training_videos'/&gt;
+  &lt;search_type name='media/script'/&gt;
+  &lt;connect to='media/script' type='hierarchy' from='media/training_videos'/&gt;
+  &lt;search_type name='media/fonts'/&gt;
+  <span class="bold"><strong>&lt;search_type name='media/artwork'/&gt;</strong></span>
+&lt;/schema&gt;</pre><p>To add a new search for a different schema, all that is required is an explicit definition
+                    of the full Search Type "&lt;project_namespace&gt;/&lt;name&gt;". 
+         </p>
+         <p>For example to add an "artwork" search type in the "media" namespace, you would define the
+                    search type as "media/artwork". The specific schema information will be added to your
+                    current project only.
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_advanced-configuration.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_advanced-configuration.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_advanced-access-rule-configuration.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

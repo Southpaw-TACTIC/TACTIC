@@ -1,0 +1,1013 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Advanced Automation</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_setup_advanced-project-setup.html" title="Advanced Project Setup">
+      <link rel="prev" href="tactic-setup_setup_advanced-configuration.html" title="Advanced Configuration">
+      <link rel="next" href="tactic-setup_setup_expression-language.html" title="Expression Language">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_advanced-configuration.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-language.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Advanced Automation">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_advanced-automation"></a>Advanced Automation
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="section" title="TACTIC Event System Introduction">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_tactic-event-system"></a>TACTIC Event System Introduction 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The TACTIC Event System is built into the base transactional system in Tactic's core.
+               Every transaction which occurs in Tactic can fire an event which in turn, can be used to
+                       execute a trigger or notification. 
+            </p>
+            <p>These events can be incorporated to automate specific processes that are often repetitive.
+               At the simplest level, there are interfaces that help prepare and configure these aspects
+                       but, it is good to understand how they work. Overall, there are 2 levels that these events
+                       can be configured. The first is using the predefined event options provided in the Project
+                       Workflow or Project Schema interfaces and the second in the low level database
+                       events.
+            </p>
+            <h5><a name="d0e4582"></a>Predefined Events
+            </h5>
+            <p>The following list of events are the events provided in the Project Workflow interface.
+                       For more information in setting up Notifications and Triggers with this interface, please
+                       refer to <span class="bold"><strong>Project Automation - Triggers</strong></span> and <span class="bold"><strong>Project Automation - Notifications</strong></span></p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>A task Status is Changed</strong></span></td>
+                        <td>When the status of a task is changed. Further options are provided
+                                                   allowing for selection.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>A new note is added</strong></span></td>
+                        <td>When a new note (sthpw/note) is added to the project.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>A task is assigned</strong></span></td>
+                        <td>When a task is assigned to a user.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Files are checked in</strong></span></td>
+                        <td>When files are checked in to an SObject.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Files are checked out</strong></span></td>
+                        <td>When files are checked out from an SObject.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Custom event</strong></span></td>
+                        <td>Allows for calling of an event using the raw Database Events.</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <h5><a name="d0e4632"></a>Raw Database Events
+            </h5>
+            <p>Below is the list of the database level events. These events are run regardless of how
+                       they are called (interface, api, external integration etc)
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>done</strong></span></td>
+                        <td>Executed each time a transaction completes</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>insert</strong></span></td>
+                        <td>Executed each time a Search Object has been inserted.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>update</strong></span></td>
+                        <td>Executed each time a Search Object has been updated.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>change</strong></span></td>
+                        <td>Executed each time a Search Object has changed. This combines the events
+                                                   insert, update and delete.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>retire</strong></span></td>
+                        <td>Executed each time a Search Object has been retired.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>delete</strong></span></td>
+                        <td>Executed each time a Search Object has been deleted.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>checkin</strong></span></td>
+                        <td>Executed each time a checkin occurs for a Search Object</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>checkout</strong></span></td>
+                        <td>Executed each time a checkout occurs for a Search Object</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>timed</strong></span></td>
+                        <td>Executed on a timed interval. This is only supported for
+                                                   triggers.
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>For example, in a transaction where the status of a task is being changed, an association
+                       to this event can be made with the following notation:
+            </p><pre class="screen">update|sthpw/task|assigned</pre><p>The notation can consist of 3 sections although only the event is required. </p><pre class="screen">&lt;Event&gt;|&lt;SType&gt;|&lt;Column&gt;</pre><div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Event</strong></span></td>
+                        <td>The raw database event.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>SType</strong></span></td>
+                        <td>The Searchable Type (SType) the event is occurring for.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Column</strong></span></td>
+                        <td>The Column that was changed in the SType.</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="section" title="Project Automation - Triggers">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_project-automation-triggers"></a>Project Automation - Triggers
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Triggers are events that are called upon a transaction to automate workflow.  These
+                       triggers can be accessed within the Project Workflow view.
+            </p>
+            <p><span class="bold"><strong>Admin Viwes -&gt; Project Admin -&gt; Project Workflow</strong></span></p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline.png"></span></p>
+            <p>Each process in the pipeline can have their own triggers.  Right clicking on a process and
+                       choosing <span class="bold"><strong>show notification/trigger</strong></span> option will open a tab
+                       to define a trigger for that specific process.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/OpenTriggers.png"></span></p>
+            <p><span class="inlinemediaobject"><img src="media/TriggersTab.png"></span></p>
+            <p>The trigger tab will also display the assigned process. Clicking the insert button will
+                       open the trigger UI.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/AddNewTrigger.png"></span></p>
+            <p>
+                       
+            </p>
+            <div class="informaltable">
+               <table border="0">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Title</strong></span></td>
+                        <td>Title of the trigger.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Description</strong></span></td>
+                        <td>Description of the trigger.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Unique Code</strong></span></td>
+                        <td>&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Event</strong></span></td>
+                        <td>Drop down list of trigger events. This event is where the trigger is
+                                                       called.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Action</strong></span></td>
+                        <td>The action is what the event will </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                   
+            </p>
+            <p></p>
+            <p></p>
+            <h6><a name="d0e4798"></a>EVENT
+            </h6>
+            <p>The Events drop down list provides a wide range of different triggers.</p>
+            <p><span class="inlinemediaobject"><img src="media/Event.png"></span></p>
+            <p>Depending on the trigger the Event box may show additional options.</p>
+            <p><span class="bold"><strong>A new note is added</strong></span> - This Event will be called when a
+                       new note is inserted into the process.
+            </p>
+            <p><span class="bold"><strong>A task status is changed</strong></span> - This event will be called when
+                       a status is changed. The event box also gives a additional option to choose specific
+                       status.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Event_TaskStatusIsChanged.png"></span></p>
+            <p><span class="bold"><strong>A task is assigned</strong></span> - This event will be called when any
+                       task in the specified process is assigned.
+            </p>
+            <p><span class="bold"><strong>Files are checked in</strong></span> - This event will be called when
+                       there is a checkin to the specified trigger. This event also gives a additional option to
+                       choose what process the action will effect.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Event_FilesAreCheckedIn.png"></span></p>
+            <p><span class="bold"><strong>Files are checked out </strong></span>- This event will be called when
+                       there is a checkout to the specified trigger.
+            </p>
+            <p><span class="bold"><strong>Cusom Event</strong></span> - 
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Event_CustomEvent.png"></span></p>
+            <p></p>
+            <p></p>
+            <p>
+                       
+            </p>
+            <h6><a name="d0e4848"></a>ACTION
+            </h6>
+            <p>
+                   
+            </p>
+            <p>The Action drop down list provides a series of predifined actions that work with the above
+                       events.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Action.png"></span></p>
+            <p><span class="bold"><strong>Send a notification</strong></span> - See project automation notification
+                       docs.
+            </p>
+            <p><span class="bold"><strong>Update another task status</strong></span> - This action will update a
+                       task status. This action also opens additional options to update status of current and other
+                       process of the pipeline as well as the option of status.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Action_UpdateAnotherTaskStatus.png"></span></p>
+            <p><span class="bold"><strong>Create another task</strong></span> - This Action will create a task upon
+                       event. This action also opens additional options to choose from creating a task in current
+                       or next process.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Action_CreateAnotherTask.png"></span></p>
+            <p><span class="bold"><strong>Run python code</strong></span> - This Action will run python code upon
+                       event. The action box opens additional options to name and insert a python code.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Action_RunPythonCode.png"></span></p>
+            <p><span class="bold"><strong>Run python trigger</strong></span> - This Action will run python trigger
+                       upon event. The action box opens additional option to insert the name of the trigger. These
+                       can be custom written scripts that can be called from Tactic's API.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Action_RunPythonTrigger.png"></span></p>
+            <p>When satisfied with the options set to run a trigger, the trigger must be saved in order
+                       to be applied.  When the trigger is saved the title of the trigger will appear benieth the
+                       triggers panel.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/save_trigger.png"></span></p>
+            <p>There are no limitations of how many triggers you can have. Each process can have multiple
+                       triggers applied.
+            </p>
+            <p></p>
+         </div>
+         <div class="section" title="Project Automation - Notifications">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_project-automation-notifications"></a>Project Automation - Notifications
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="simplesect" title="Description">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e4907"></a>Description
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>Notifications are sent to inform the user that a particular transaction or event has
+                              occurred. 
+               </p>
+               <p>They are stored in a notification_log which can be found under <span class="bold"><strong>Admin Views -&gt; Site Admin -&gt; Notifications</strong></span>. 
+               </p>
+               <p>Notifications present information reported by transactions. They usually include what
+                              items are created or updated in addition to a description of the command. Below is an
+                              example of a notification:
+               </p>
+               <div class="mediaobject"><img src="media/notificationSobject.png"></div>
+               <p>With the mail server setting set up properly (set in the TACTIC Config file), TACTIC
+                              can send out email notifications to users.
+               </p>
+               <div class="mediaobject"><img src="media/notificationEmail.png"></div>
+            </div>
+            <div class="simplesect" title="Implementation">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e4927"></a>Implementation
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>There are 2 perspectives to work from when configuring notifications in TACTIC. </p>
+               <div class="itemizedlist">
+                  <ul class="itemizedlist">
+                     <li class="listitem">
+                        <p><span class="bold"><strong>Project Workflow</strong></span> - Notifications can be set
+                                               up per process in a pipeline which are used to automate the
+                                               pipeline/workflow
+                        </p>
+                     </li>
+                     <li class="listitem">
+                        <p><span class="bold"><strong>Project Schema</strong></span> - Notifications can be set up
+                                               at a simpler level where any of the Raw Database events can be used to trigger a
+                                               notification regardless of process.
+                        </p>
+                     </li>
+                  </ul>
+               </div>
+               <h6><a name="d0e4943"></a>Project Workflow
+               </h6>
+               <p>In the Workflow Editor, right click on a process and choose <span class="bold"><strong>show
+                                        notification/trigger</strong></span> to open a tab to define a trigger for that
+                              particular process.
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/3_project_automation_notifications_show_trigger.png"></span></p>
+               <p>This will open a new Triggers tab in the panel at the bottom for the assigned
+                              process.
+               </p>
+               <p>Click the [+] button to insert a trigger.  This will open the trigger/notification
+                              UI.
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/AddNewTrigger.png"></span></p>
+               <p>Notifications and Triggers work together in many ways.  A notification is defined as
+                              an Action.  To send a notification, an event must occur.
+               </p>
+               <p>In the Action drop down list <span class="bold"><strong>Send a Notification</strong></span> must
+                              be selected.
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/Action.png"></span></p>
+               <p><span class="bold"><strong>Send a Notification</strong></span> - This action will send a
+                              notification. The action box will open additional options to insert a subject and
+                              message. 
+               </p>
+            </div>
+            <div class="simplesect" title="Example 1">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e4977"></a>Example 1
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>Below is an example of a notification being sent on the event when a task status is
+                              changed to review:
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/9_project_automation_notifications_email_template.png"></span></p>
+               <p>The <span class="bold"><strong>Mail To:</strong></span> and <span class="bold"><strong>Mail
+                                        CC:</strong></span> input fields accepts the following types of input:
+               </p>
+               <p><span class="bold"><strong>Email</strong></span> - Capability to add regular emails allows to
+                              send personal email addresses e.g. joe@my_email.com
+               </p>
+               <p><span class="bold"><strong>Group</strong></span> - Capabilty to send to a group of users in
+                              TACTIC e.g. Supervisor
+               </p>
+               <p><span class="bold"><strong>Expression</strong></span> - Capabilty to insert expressions that
+                              specifies a user in TACTIC. All expressions are identified by curly brackets "{}". e.g.
+                              {@SOBJECT(sthpw/login)}
+               </p>
+               <p><span class="bold"><strong>Send a Notification</strong></span> - This action will send a
+                              notification. The action box will open additional options to insert a subject and
+                              message. 
+               </p>
+            </div>
+            <div class="simplesect" title="Example 2">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e5010"></a>Example 2
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>Below is an example which uses more expressions for a notification being sent whenever
+                              a task is assigned.
+               </p>
+               <p><span class="inlinemediaobject"><img src="media/9b_project_automation_notifications_task_is_assigned.png"></span></p>
+            </div>
+            <div class="simplesect" title="Project Schema">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h5 class="title"><a name="d0e5019"></a>Project Schema
+                        </h5>
+                     </div>
+                  </div>
+               </div>
+               <p>All notification configurations can be accessed through <span class="bold"><strong>Admin
+                                        Views -&gt; Site Admin-&gt; Notifications</strong></span></p>
+               <p><span class="inlinemediaobject"><img src="media/10_project_automation_notifications_no_process.png"></span></p>
+               <p>If there is no process specified, then the notification will be triggered regardless
+                              of process. e.g. during a snapshot or a checkin
+               </p>
+            </div>
+         </div>
+         <div class="section" title="Advanced Notification Setup">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="tactic-setup_setup_advanced-notification-setup"></a>Advanced Notification Setup
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The notification view is located in the TACTIC Sidebar under:</p>
+            <p>
+                       <span class="bold"><strong>Site Admin -&gt; Notifications</strong></span></p>
+            <p>This can also be accessed through the <span class="bold"><strong>Workflow Editor</strong></span>, by
+                       right clicking on a node and selecting from the context menu <span class="bold"><strong>Show
+                                 Triggers/Notifications</strong></span>.
+            </p>
+            <p>This view provides all the functionality required to set up the various types of
+                       notifications used to establish better production communication and instant status
+                       updates.
+            </p>
+            <div class="mediaobject"><img src="media/1_advanced_notification_setup_overview.png"></div>
+            <h3><a name="d0e5057"></a>Insert Notifications
+            </h3>
+            <p>To insert a new notification, select from the sidebar:</p>
+            <p>
+                       <span class="bold"><strong>Site Admin -&gt; Notifications</strong></span></p>
+            <p>The following table explains the basic usage of each property.</p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Event</strong></span></td>
+                        <td>The TACTIC event to execute the notification for</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Process</strong></span></td>
+                        <td>Events relating to  note, task, snapshot can make use of process to differentiate</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Description</strong></span></td>
+                        <td>The description of the purpose of the notification</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Subject</strong></span></td>
+                        <td>The subject of the notification. This uses the TACTIC Expression
+                                                   Language
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Message</strong></span></td>
+                        <td>The message body for the notification. This uses the TACTIC Expression
+                                                   Language
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Rules</strong></span></td>
+                        <td>The XML access rules used to filter the notification further </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Email Handler Class</strong></span></td>
+                        <td>The email handler class override for the notification. This allows for
+                                                   overriding of the notification with a python email handler class. This only
+                                                   needs to be used in specific situations.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Project Code</strong></span></td>
+                        <td>The project code for the notification. This allows for filtering of
+                                                   notifications for a specific project
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Type</strong></span></td>
+                        <td>The type of notification being sent. By default for notifications, this
+                                                   must be set to "email"
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Mail_to</strong></span></td>
+                        <td>An expression of the users to mail to in the email (supports multiple
+                                                   lines of expressions and / or email addresses and names of groups of users
+                                                   made in TACTIC)
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Mail_cc</strong></span></td>
+                        <td>An expression of the users to mail to in the email. It will appear in the
+                                                   cc category. (supports multiple lines of expressions and / or email
+                                                   addresses and groups)
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Mail_bcc</strong></span></td>
+                        <td>An expression of the users to mail to in the email. It will appear in the
+                                                   bcc category. (supports multiple lines of expressions and / or email
+                                                   addresses and groups)
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>Below are examples of what can be used in <span class="italic">mail_to</span>,
+                           <span class="italic">mail_cc</span>, or <span class="italic">mail_bcc</span>:
+            </p>
+            <p>For example, email the user 'admin' only:</p>
+            <p>
+                       
+            </p><pre class="screen">@SOBJECT(sthpw/login['login', 'admin'])</pre><p>
+                   
+            </p>
+            <p>For example, send to the user related to this sObject. If this is an event for task
+                       update, the email will be addressed to the assigned user:
+            </p>
+            <p>
+                       
+            </p><pre class="screen">@SOBJECT(sobject.sthpw/login)</pre><p>
+                   
+            </p>
+            <p>For example, send to the user related to this sObject as well as the user 'john'. If the
+                       event is insert|sthpw/note, it will be the person who enters the note. If the event is
+                       'update|sthpw/task', the person is the assignee of the task:
+            </p>
+            <p>
+                       
+            </p><pre class="screen">@UNION(@SOBJECT(sthpw/login['login', 'john']), @SOBJECT(sobject.sthpw/login))</pre><p>
+                   
+            </p>
+            <p>To make these mail_to expressions more readable, put more than 1 expression or email
+                       addresses on multiple lines. There is no need for @UNION. @GET can even be used to just get
+                       to the list of login names.
+            </p>
+            <p>For example, to send to everyone in the supervisor group, the assignee of a task, to all
+                       the users in the <span class="bold"><strong>mangers</strong></span> group and the email address
+                       support@southpawtech.com, enter 3 lines under mail_to:
+            </p>
+            <p>
+                       
+            </p><pre class="screen">@SOBJECT(sobject.sthpw/login)
+@GET(sthpw/login_in_group['login_group','supervisor'].login)
+managers
+support@southpawtech.com</pre><p>
+                   
+            </p>
+            <p></p>
+            <p><span class="bold"><strong>More on Expressions in Notifications</strong></span></p>
+            <p>The word "sobject" often appears in the <span class="italic">Mail to:</span> column
+                       but not in Message or Subject. This is because the implementation allows sending
+                       notifications to users related to the current sObject or just about anyone not necessarily
+                       related to the current sObject. As illustrated above, @SOBJECT(sobject.sthpw/login) is the
+                       task assignee but the users under the group supervisor is not related to this task and so
+                       the keyword "sobject" is not used. In the Message area, to refer to the current sObject
+                       status (task status if the event is update|sthpw/task), just use an @GET(.status), as the
+                       sobject is always assumed to be in this context.
+            </p>
+            <p></p>
+            <p><span class="bold"><strong>Task related notification</strong></span></p>
+            <p>To establish the relationship between the login search type and task search type, the
+                       following built-in schema line is used. It is not necessary to add it to the schema. It can
+                       be used as an example to create a custom search_type.
+            </p>
+            <p>
+                       
+            </p><pre class="screen">&lt;connect to='sthpw/task' relationship='code' from_col='login' from='sthpw/login' to_col='assigned'/&gt;</pre><p>
+                   
+            </p>
+            <p><span class="bold"><strong>Note related notification</strong></span></p>
+            <p>To establish the relationship between the login search type and note search type, the
+                       following built-in schema line is used. It is not necessary to add it to the schema.  It can
+                       be used as an example to create a custom search_type and to edit the schema.
+            </p>
+            <p>
+                       
+            </p><pre class="screen">&lt;connect to='sthpw/note' relationship='code' from_col='login' from='sthpw/login' to_col='login'/&gt;</pre><p>
+                   
+            </p>
+            <p>Sending a notification to the person who just entered the note is not often used. Instead,
+                       an email handler can be used in this situation to send to the supervisor and assignee of the
+                       task under the same context. A built-in email handler is called
+                       "pyasm.command.NoteEmailHandler". Instead of entering it into an expression for <span class="italic">mail_to</span>, enter it into the <span class="italic">email_handler_class</span> field. 
+            </p>
+            <h3><a name="d0e5226"></a>Email Test
+            </h3>
+            <p>
+                       
+            </p>
+            <div class="mediaobject"><img src="media/2_advanced_notification_email_test.png"></div>
+            <p>Once the fields <span class="italic">event</span>, <span class="italic">mail_to</span>, and <span class="italic">message</span> are
+                       properly filled in, to test the email, click on the <span class="bold"><strong>Email
+                                 Test</strong></span> button. It catches syntax errors or typos in expression in these fields
+                       as well as reporting any email server error if the service section of the TACTIC config file
+                       has not been properly filled in. Settings like firewall and TLS settings may also block an
+                       email from being sent out. 
+            </p>
+            <h4><a name="d0e5246"></a>Example 1:
+            </h4>
+            <p>In this example, the notification will be sent out each time a ticket is updated. It will
+                       also only send to users in the 'admin' and 'moderator' groups.
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Event</strong></span></td>
+                        <td>update|support/ticket</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Description</strong></span></td>
+                        <td>Sent when tickets are updated</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Subject</strong></span></td>
+                        <td>
+                                                   <pre class="screen">TACTIC Ticket {@GET(.id)} Has been updated.</pre>
+                                               </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Message</strong></span></td>
+                        <td>
+                                                   <pre class="screen">{@GET(.company_code)} TACTIC Ticket {@GET(.id)} has been updated.
+
+Subject: {@GET(.subject)}
+
+Summary: {@GET(.summary)}
+
+Status:  {@GET(.status)}
+
+From status: {@GET(sthpw/status_log['@LIMIT','1'].from_status)} 
+
+Please do not reply to this e-mail.  To reply or to make further
+comments, please login to the Ticketing system @ 
+http://tickets.southpawtech.com/tactic</pre>
+                                               </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>mail_to</strong></span></td>
+                        <td>
+                                                   
+                           <p>admin</p>
+                                                   
+                           <p>moderators</p>
+                                               
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Rules</strong></span></td>
+                        <td>&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Email Handler Class</strong></span></td>
+                        <td>&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Project Code</strong></span></td>
+                        <td>support</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Type</strong></span></td>
+                        <td>email</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <h4><a name="d0e5319"></a>Example 2:
+            </h4>
+            <p>In this example, the notification will be sent out each time a shot-based note is updated.
+                       It will send to manager's group and everyone assigned to the tasks of the shot. Since
+                       project_code is left empty, this works across all the projects in the system. 
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Event</strong></span></td>
+                        <td>insert|sthpw/note</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Description</strong></span></td>
+                        <td>Sent when shot-based notes are added</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Subject</strong></span></td>
+                        <td>
+                                                   <pre class="screen">{$PROJECT} {@GET(parent.sequence_code)} - {@GET(parent.code)} {@GET(.process)}</pre>
+                                               </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Message</strong></span></td>
+                        <td>
+                                                   <pre class="screen">Project: {$PROJECT}
+Code: {@GET(parent.sequence_code)}, {@GET(parent.code)}
+Process: {@GET(.process)}
+Note: {@GET(.note)}
+
+To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$PROJECT}/#/link/my_notes</pre>
+                                               </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Rules</strong></span></td>
+                        <td><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;'prod/shot' in @GET(.search_type)&lt;/rule&gt;
+&lt;/rules&gt;</pre></td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Email Handler Class</strong></span></td>
+                        <td>&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Project Code</strong></span></td>
+                        <td>&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Type</strong></span></td>
+                        <td>email</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>mail_to</strong></span></td>
+                        <td><pre class="screen">@GET(sobject.parent.sthpw/task.assigned)
+@GET(sthpw/login_in_group['login_group','manager'].login)</pre></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>The following sections explain each configuration aspect of Notifications in greater
+                       detail
+            </p>
+            <h3><a name="d0e5391"></a>Notification Expressions
+            </h3>
+            <p>TACTIC uses the TACTIC Expression Language to build dynamic Notification Subject and
+                       Message contents. This allows for each notification to be sent based on properties from the
+                       Search Objects it is being sent for.
+            </p>
+            <p>In the simple example Subject below, the "id" property is used from the "ticket" search
+                       object.
+            </p><pre class="screen">TACTIC Ticket {$GET(.id)} has been updated</pre><p>The expected results of this would be similar to the following:</p>
+            <p>"TACTIC Ticket 14 has been updated"</p>
+            <h6><a name="d0e5403"></a>Example 1
+            </h6>
+            <p>In essence, anything between the curly brackets "{}" is evaluated as an expression by
+                       TACTIC.
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>For more information regarding TACTIC Expression Language please refer to the
+                                  <span class="bold"><strong>TACTIC Expression Language</strong></span> docs
+               </p>
+            </div>
+            <h3><a name="d0e5413"></a>Filtering Notifications
+            </h3>
+            <p>TACTIC's notification architecture is a rules-based system built using the trigger
+                       architecture. Every time a command is executed, TACTIC looks through the list of defined
+                       triggers (including notifications) for a match. Under the <span class="bold"><strong>Triggers</strong></span> view will be an entry for the EmailTrigger class that is registered
+                       under the "email" event. It is possible to create custom Email Trigger handlers in that
+                       view.
+            </p>
+            <p>There are 3 main criteria used to filter out notifications:</p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p><span class="bold"><strong>group</strong></span>: Filters out notifications to be sent only
+                                        to users in the included groups.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>project</strong></span>: Filters out notifications so that only a
+                                        certain project can fire the email trigger.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>rules</strong></span>: Rules are an XML snippet which can finely
+                                        control the conditions when an email trigger may be fired.
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <h3><a name="d0e5438"></a>Groups
+            </h3>
+            <p>By planning groups to send notifications to, it allows for simple connections for
+                       deciphering which groups of users will receive notifications when the conditions of a
+                       particular notification rule are met. Once a notification has been created, it can be
+                       associated with any number of groups of users. All users in this group will then be sent a
+                       notification when the rule is triggered.
+            </p>
+            <p>The Groups view can be found under:</p>
+            <p>
+                       <span class="bold"><strong>Admin-&gt;Site Admin -&gt;Groups </strong></span></p>
+            <p>To specify a group to send a notification to, specify the group in the <span class="bold"><strong>mail_to</strong></span> column.
+            </p>
+            <h6><a name="d0e5453"></a>Project
+            </h6>
+            <p>By setting the project in the project column of a Notification, TACTIC will only use the
+                       notification trigger for the chosen project.
+            </p>
+            <h6><a name="d0e5457"></a>Access Rules 
+            </h6>
+            <p>When a notification rule has passed all of the criteria, a message is constructed. Most
+                       email events occur after a command has been completed. The email handler then takes the
+                       information from the command and creates a default message to be sent to the appropriate
+                       people.
+            </p>
+            <p>All rules are contained in groups. For notifications, there are a few predefined
+                       groups:
+            </p>
+            <h6><a name="d0e5463"></a>Example 1 
+            </h6>
+            <p>This rule group only allows tasks for prod/asset for the project sample3d to send out
+                       notification. Otherwise, it would send out notifications for tasks of all search
+                       types
+            </p><pre class="screen">&lt;rules&gt;
+   &lt;rule&gt;@GET(.search_type)=='prod/asset?project=sample3d'&lt;/rule&gt;
+&lt;/rules&gt;</pre><h6><a name="d0e5469"></a>Example 2
+            </h6>
+            <p>This rule group makes use of a key/value pair of attributes: that is, when the attribute
+                       with the value of "key" is equal to "value", the rule is passed. In the example below, all
+                       SObjects containing the attribute "context" with the value "client" are triggered.
+            </p><pre class="screen"> (deprecated)
+
+&lt;rules&gt;
+    &lt;rule group="SObject" key="context" value="client"/&gt;
+&lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(.context)=='client'&lt;/rule&gt;
+&lt;/rules&gt;</pre><h6><a name="d0e5477"></a>Example 3
+            </h6>
+            <p>For certain SObjects in TACTIC (like tasks), parent attributes can be used for
+                       constructing rules. The concept behind this is the same as group="sObject", but now we are
+                       referring to the parent of a task (for example, a 3D asset). This notification will only be
+                       sent if the task's parent, a 3D asset, is categorized under the "prp" asset library.
+            </p><pre class="screen">&lt;!-- DEPRICATED --&gt;                
+&lt;rules&gt;
+    &lt;rule group='parent' key='asset_library' value='prp'/&gt;
+&lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(prod/asset.asset_library)=='prp'&lt;rule&gt;
+&lt;/rules&gt;</pre><h6><a name="d0e5486"></a>Example 4
+            </h6>
+            <p>For notes in TACTIC, we may have 2 processes for notes (e.g. anim, anim_2) We can check if
+                       the process partially contains the word <span class="bold"><strong>anim</strong></span> by the
+                       following:
+            </p><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;'anim' in @GET(.process)&lt;rule&gt;
+&lt;/rules&gt;</pre><p>Note: list comparisons like @GET(.process) in ['anim','anim_2'] are not supported</p>
+            <h6><a name="d0e5497"></a>Example 5
+            </h6>
+            <p>For a check-in notification in TACTIC, we can choose to send only if the is_current
+                       attribute is True for the event insert|sthpw/snapshot by the following:
+            </p><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(.is_current)==True&lt;rule&gt;
+&lt;/rules&gt;</pre><h5><a name="d0e5503"></a>Email Handler Class
+            </h5>
+            <p>Each time a notification is executed, TACITC uses either the default email handler or it
+                       uses and email handler override defined by the Email Handler Class property for the
+                       notification. 
+            </p>
+            <p>The Email Handler Class digs deeply into the structure of the notifications using Python
+                       and the TACTIC client API. It is only needed for very specific rules which determine when a
+                       notification is sent.
+            </p>
+            <p>An example override is shown below:</p>
+            <p><span class="bold"><strong>Email Hander Cls:</strong></span>
+                       sites.support.email.TicketEmailHandler
+            </p><pre class="screen">__all__ = ['TicketEmailHandler']
+
+from pyasm.common import Environment, Xml, Date
+from pyasm.security import Login
+from pyasm.search import Search
+from pyasm.biz import GroupNotification, Pipeline, Task, Snapshot, File, Note
+   
+
+class TicketEmailHandler(object):
+    '''Email sent when a ticket is updated'''
+
+    def __init__(my, notification, SObject, parent, command):
+        my.notification = notification
+        my.sobject = SObject
+        my.command = command
+        my.parent = parent
+    
+    def check_rule(my):
+        '''determine whether an email should be sent'''
+        return True
+
+    def get_to(my):
+
+        ticket = my.sobject
+        user = ticket.get_value("login")
+        login = Login.get_by_login(user)
+        recipients = []
+        recipients.append(login)
+
+        return recipients
+  
+
+    def get_cc(my):
+ 
+        admin = Login.get_by_login("admin") 
+        recipients = []
+        recipients.append(admin)
+
+        return recipients
+
+
+    def get_subject(my):
+        
+        ticket = my.sobject
+        title = "Ticket Number: "
+        id = ticket.get_value("id")
+
+        return "%s%s"  % (title, id)
+
+
+    def get_message(my):
+
+        ticket = my.sobject
+        id = ticket.get_value("id")
+        subject = ticket.get_value("subject")
+        summary = ticket.get_value("summary")
+        status = ticket.get_value("status")
+
+        msg = []
+        msg.append("Ticket: %s" % id)
+        msg.append("")
+        msg.append("Status: %s" % status)
+        msg.append("")
+        msg.append("subject: %s" % subject)
+        msg.append("Summary: %s" % summary)
+        msg.append("")
+        
+        return "\n".join(msg)</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_advanced-configuration.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_setup_advanced-project-setup.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-language.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

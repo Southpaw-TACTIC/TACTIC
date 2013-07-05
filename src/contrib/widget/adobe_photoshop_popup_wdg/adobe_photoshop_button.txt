@@ -1,0 +1,18 @@
+<element name='photoshop_wdg' title='Photoshop'>
+  <display class='tactic.ui.table.ButtonElementWdg'>
+    <icon>ARROW_OUT</icon>
+    <cbjs_action>
+
+kwargs = {
+ 'view': 'adobe_photoshop_wdg',
+ 'search_key': bvr.search_key,
+  //'scripts_env': 'ADOBE_SCRIPTS',
+  'application':'Photoshop.exe'
+};
+
+spt.panel.load_popup('Adobe Photoshop Checkin', 'tactic.ui.panel.CustomLayoutWdg', kwargs);
+
+</cbjs_action>
+  </display>
+</element>
+

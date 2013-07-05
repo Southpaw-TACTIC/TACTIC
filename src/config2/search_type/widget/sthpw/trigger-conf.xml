@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<table>
+    <element name="event"/>
+    <element name="class_name"/>
+    <element name="script_path"/>
+    <element name="description"/>
+    <element name="mode"/> 
+    <element name="project_code"/> 
+</table>
+
+
+<edit>
+   <element name="event">
+        <display class="TextWdg">
+            <size>50</size>
+        </display>
+    </element> 
+    <element name="class_name">
+        <display class="TextWdg">
+            <hint>e.g. pyasm.command.EmailTrigger</hint>
+            <size>40</size>
+        </display>  
+    </element>    
+    
+    <element name="description"/>
+
+    <element name="mode">
+        <display class="SelectWdg">
+        <empty>true</empty>
+        <values>same process,same transaction|same process,new transaction|separate process,blocking|separate process,non-blocking</values>
+      </display>
+    </element>
+    
+    <element name="project_code"/>
+   
+    
+</edit>
+
+
+<add_item>
+    <element name="event" width="100px"/>
+    <element name="class_name" width="100px"/>
+    <element name="description" width="300px"/>
+    <element name="project_code" width="100px"/>
+</add_item>
+
+
+
+</config>
+
+

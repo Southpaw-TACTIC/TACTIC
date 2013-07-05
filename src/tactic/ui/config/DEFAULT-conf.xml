@@ -1,0 +1,948 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+
+  <!-- Default links -->
+
+ <element name="separator" title="Separator">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="new_link" title="New Link">
+    <display class="LinkWdg"/>
+  </element>
+
+  <element name="new_folder" title="New Folder">
+    <display class="SideBarSectionLinkWdg">
+        <view>new_folder</view>
+    </display>
+  </element>
+
+  <element name="new_separator" title="New Separator">
+    <display class="SeparatorWdg"/>
+  </element>
+
+
+
+  <!-- DEFAULT Project View Folders -->
+
+  <element name="_client_home" title="Client Home" icon='HOME' help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.startup.client_wdg.ClientWdg</class_name>
+    </display>
+  </element>
+
+  <element name="_home" title="Project Home" icon='HOME' help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.startup.content_creator_wdg.ContentCreatorWdg</class_name>
+    </display>
+  </element>
+
+  <element name="_startup" title="Project Startup" icon='STAR' help='project-startup-configuration'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.startup.MainWdg</class_name>
+    </display>
+  </element>
+
+  <element name="_manage" title="Manage" help='main'>
+    <display class="SideBarSectionLinkWdg">
+      <view>_manage</view>
+    </display>
+  </element>
+
+
+
+  <!-- Admin Section Folders-->
+
+
+  <element name="admin_views">
+    <display class="SideBarSectionLinkWdg">
+      <view>_admin_views</view>
+    </display>
+  </element>
+
+  <element name="user_admin" title="My Admin" icon="user_edit" help='project-startup-manage-users'>
+    <display class="SideBarSectionLinkWdg">
+        <view>_my_admin</view>
+    </display>
+  </element>
+
+
+  <element name="project_admin" title="Project" icon="project" help='main'>
+    <display class="SideBarSectionLinkWdg">
+      <view>_project_admin</view>
+    </display>
+  </element>
+  
+  <element name="global_admin" title="Global" icon="db_gear" help='main'>
+    <display class="SideBarSectionLinkWdg">
+      <view>_global_admin</view>
+    </display>
+  </element>
+
+  <element name="project_essentials" title="Project Essentials" icon="page_white_go" help='main'>
+    <display class="SideBarSectionLinkWdg">
+      <view>_project_essentials</view>
+    </display>
+  </element>
+
+
+
+<!-- My TACTIC -->
+
+  <element name="my_tactic" title="My TACTIC">
+    <display class="SideBarSectionLinkWdg">
+        <view>_my_tactic</view>
+    </display>
+  </element>
+  
+  <element name="_my_tactic" title="My TACTIC">
+    <display class="SideBarSectionLinkWdg">
+        <view>_my_tactic</view>
+    </display>
+  </element>
+
+  <element name="my_month_tasks" title='My Tasks This Month' icon="date">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.widget.SObjectCalendarWdg</class_name>
+    </display>
+  </element>
+
+  <element name="my_work_hours" title="My Work Hours" icon="time">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/work_hour</search_type>
+      <view>table</view>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"login","main_body_relation":"is","main_body_value":"{$LOGIN}"},
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+	{"prefix": "group", "group": "true", "order": "day"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="my_tasks" icon="date">
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>sthpw/task</search_type>
+      <view>my_task</view>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"assigned","main_body_relation":"is","main_body_value":"{$LOGIN}"},
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+        {"prefix": "group", "group": "true", "order": "parent"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="my_notes" icon="edit">
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>sthpw/note</search_type>
+      <view>my_notes</view>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"login","main_body_relation":"is","main_body_value":"{$LOGIN}"},
+	{"prefix": "group", "group": "true", "order": "project_code"},
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="my_schedule" title="My Schedule" icon="date">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.ScheduleToolWdg</class_name>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="my_notification" icon="email" title="My Notifications">
+    <display class="LinkWdg">
+        <show_insert>false</show_insert> 
+        <class_name>pyasm.prod.site.MyNotificationLogWdg</class_name>
+    </display>
+  </element>
+
+
+
+<!-- My Admin -->
+
+
+  <element name="manage_my_views" title="Manage My Views" icon="view_edit" help='view-manager'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ManageViewPanelWdg</class_name>
+      <view>my_view</view>
+    </display>
+  </element>
+
+  <element name="my_preference" icon="edit_settings" help='main'>
+    <display class="LinkWdg">
+        <show_insert>false</show_insert> 
+        <show_gear>false</show_gear> 
+        <show_search_limit>false</show_search_limit>
+        <show_save>false</show_save>
+        <search_type>sthpw/pref_list</search_type>
+        <view>user</view>
+        <mode>simple</mode>
+        <filter>
+         [{"prefix": "group", "group": "category", "order": "title"}]
+        </filter>
+    </display>
+  </element>
+
+
+
+<!-- Top level admin links -->
+
+  <element name="create_project" icon='star'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.app.ProjectCreateWdg</class_name>
+    </display>
+  </element>
+
+
+  <element name="advanced_project_setup" icon='advanced' help='project-startup-configuration'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.app.ProjectStartWdg</class_name>
+    </display>
+  </element>
+
+  <element name="configure" icon='film'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.startup.DbConfigWdg</class_name>
+    </display>
+  </element>
+
+
+<!-- Project Admin Links -->
+ 
+
+  <element name="project_configuration" title="Configuration"  icon="work" help='project-startup-configuration'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.ProjectConfigWdg</class_name>
+      </display>
+  </element>
+
+  <element name="manage_users" title="Manage Users" icon="group" help='project-startup-manage-users'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.UserConfigWdg</class_name>
+      </display>
+  </element>
+
+  <element name="manage_security" title="Manage Security" icon="lock" help='manage-security'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.SecurityWdg</class_name>
+      </display>
+  </element>
+
+  <element name="lists_of_items" title="Lists of Items" icon="contents" help='main'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.HomeWdg</class_name>
+      </display>
+  </element>
+
+  <element name="dashboards_homepage" title="Dashboards" icon="process" help='main'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.dashboards_wdg.DashboardsWdg</class_name>
+      </display>
+  </element>
+
+  <element name="reports_homepage" title="Reports" icon="chart_bar" help='main'>
+      <display class="LinkWdg">
+          <class_name>tactic.ui.startup.reports_wdg.ReportsWdg</class_name>
+      </display>
+  </element>
+
+
+  
+
+  <!-- Built-in sTypes -->
+  <element name="project_milestones" title="Project Milestones" icon="clock" help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/milestone</search_type>
+      <view>table</view>
+      <filter>
+      [
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="project_level_tasks" title="Project Level Tasks" icon="calendar" help='tasks-quickstart'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/task</search_type>
+      <view>table</view>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is","main_body_value":"sthpw/project"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="project_tasks" title="Project Tasks" icon="calendar" help='tasks-quickstart'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/task</search_type>
+      <view>table</view>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is not","main_body_value":"sthpw/project"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="project_notes" title="Notes" icon="note" help='notes-quickstart'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/note</search_type>
+      <view>table</view>
+      <filter>
+      [
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="project_work_hours" title="Work Hours" icon="time" help='tracking-work-hours'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/work_hour</search_type>
+      <view>table</view>
+      <filter>
+      [
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+
+  <element name="project_snapshots" title="Snapshots" icon="camera" help='main'>
+    <class_name>tactic.ui.panel.ViewPanelWdg</class_name>            
+    <display class="LinkWdg">
+      <search_type>sthpw/snapshot</search_type>
+      <view>table</view>
+      <filter>
+      [
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+
+
+  <element name="config_naming" title="Naming" icon="folder_edit" help='project-automation-file-naming'>
+    <display class="LinkWdg">
+        <search_type>config/naming</search_type>
+        <simple_search_view>simple_filter</simple_search_view>
+        <view>table</view>
+    </display>
+</element>
+
+  <element name="config_process" title="Process" icon="folder_edit" help='main'>
+    <display class="LinkWdg">
+      <search_type>config/process</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="config_widget_config" title="Widget Config" icon="plugin" help='main'>
+    <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <simple_search_view>simple_filter</simple_search_view>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="config_trigger" title="Server Triggers" icon="arrow_out" help='main'>
+    <display class="LinkWdg">
+      <search_type>config/trigger</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="config_client_trigger" title="Client Triggers" icon="arrow_out" help='main'>
+    <display class="LinkWdg">
+      <search_type>config/client_trigger</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+  <element name="config_custom_url" title="Custom URL" icon="website" help='main'>
+    <display class="LinkWdg">
+      <search_type>config/url</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+
+  <element name="sthpw_notification" title="Notifications" icon="note" help='configuration-notifications'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
+      <search_type>sthpw/notification</search_type>
+      <view>table</view>
+      <filter>
+      [
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+
+  <element name="sthpw_schema" title="Schema" icon="dependency" help='project-schema'>
+    <display class="LinkWdg">
+      <search_type>sthpw/schema</search_type>
+      <view>manage</view>
+    </display>
+  </element>
+
+  <element name="sthpw_pipelines" title="Pipelines" icon="pipeline" help='pipeline-process-options'>
+    <display class="LinkWdg">
+      <search_type>sthpw/pipeline</search_type>
+      <view>manage</view>
+    </display>
+  </element>
+
+
+
+
+
+
+<!-- Project admin links -->
+
+  <element name="project_workflow" title="Project Workflow" icon="pipeline" help='project-workflow'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.PipelineToolWdg</class_name>
+      <pipeline>project</pipeline>
+      <width>1400</width>
+      <height>400</height>
+    </display>
+  </element>
+
+  <element name="project_schema" title="Project Schema" icon="dependency" help="advanced-schema-configuration">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.SchemaToolWdg</class_name>
+      <width>1500</width>
+      <height>600</height>
+    </display>
+  </element>
+
+
+  <element name="manage_side_bar" title="Manage Side Bar" icon="view_edit" help='managing-sidebar'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ManageViewPanelWdg</class_name>
+    </display>
+  </element>
+
+  <element name="manage_views" title="Manage Views" icon="db_gear" help='view-manager'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.manager.ViewManagerWdg</class_name>
+    </display>
+  </element>
+
+  <element name="script_editor" title="Script Editor" icon="gear" help='tactic-script-editor'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.app.ShelfEditWdg</class_name>
+    </display>
+  </element>
+
+
+
+
+  <element name="manage_search_types" title="Manage sTypes" icon="db_gear" help='stype-register'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.app.SearchTypeToolWdg</class_name>
+    </display>
+  </element>
+
+  <element name="project_settings" title="Project Settings" icon="edit_settings" help='modify-project-settings'>
+    <display class="LinkWdg">
+      <search_type>config/prod_setting</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+     <element name="widget_config" icon="PLUGIN" help='main'>
+    <display class="LinkWdg">
+	    <search_type>config/widget_config</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+  <element name="global_trigger" title="Global Server Triggers" icon="arrow_out" help='project-automation-triggers'>
+    <display class="LinkWdg">
+      <search_type>sthpw/trigger</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+  <element name="_custom_layout_editor" title='Custom Layout Editor' icon="view" help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.CustomLayoutEditWdg</class_name>
+    </display>
+  </element>
+
+  <element name="ingestion" icon="import" help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.widget.file_browser_wdg.FileBrowserWdg</class_name>
+    </display>
+  </element>
+
+  <element name="plugins" icon="plugin" help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.app.PluginWdg</class_name>
+    </display>
+  </element>
+
+  <element name="freeform" icon="Freform Layout Tool" help='main'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.FreeFormLayoutToolWdg</class_name>
+    </display>
+  </element>
+
+
+
+
+
+
+<!-- Server Links -->
+
+ <element name="projects" icon="project" help='main'>
+    <display class="LinkWdg">
+        <search_type>sthpw/project</search_type>
+        <show_insert>false</show_insert> 
+        <simple_search_view>simple_filter</simple_search_view>
+        <view>table</view>
+        <filter>
+         [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"code","main_body_relation":"not in","main_body_value":"sthpw|admin|unittest"},
+         {"prefix":"main_body","main_body_enabled":"on","main_body_column":"is_template","main_body_relation":"is not","main_body_value":"1"}]
+        </filter>
+    </display>
+</element>
+
+
+ <element name="template_projects" icon="project" title="Template Projects" help='main'>
+    <display class="LinkWdg">
+        <search_type>sthpw/project</search_type>
+        <show_insert>false</show_insert> 
+        <simple_search_view>simple_filter</simple_search_view>
+        <view>template</view>
+        <filter>
+         [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"code","main_body_relation":"not in","main_body_value":"sthpw|admin|unittest"},
+         {"prefix":"main_body","main_body_enabled":"on","main_body_column":"is_template","main_body_relation":"is","main_body_value":"1"}]
+        </filter>
+    </display>
+  </element>
+
+
+
+  <element name="project_types" icon="project_type" help='main'>
+    <display class="LinkWdg">
+      <search_type>sthpw/project_type</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="notifications" icon="email" help='advanced-notification-setup'>
+    <display class="LinkWdg">
+      <search_type>sthpw/notification</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="users" icon="user" help="project-startup-manage-users">
+    <display class="LinkWdg">
+      <search_type>sthpw/login</search_type>
+      <view>table</view>
+      <simple_search_view>simple_filter</simple_search_view>
+    </display>
+  </element>
+
+
+  <element name="groups" icon="group" help='group-assignment'>
+    <display class="LinkWdg">
+      <search_type>sthpw/login_group</search_type>
+      <view>table</view>
+      <simple_search_view>simple_filter</simple_search_view>
+    </display>
+  </element>
+
+  <element name="users_in_groups" icon="group_link" help='group-assignment'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <search_type>sthpw/login_group</search_type>
+      <include>DEFAULT-conf.xml</include>
+      <view>user_to_group_planner</view>
+    </display>
+  </element>
+
+
+
+  <element name="manage_database" title="Manage Database" icon="db_gear" help='main'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.app.SetupManagerWdg</class_name>
+    </display>
+  </element>
+
+  <element name="license" title="License" icon="license" help='install-tactic-license'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.app.LicenseManagerWdg</class_name>
+        <allow_close>true</allow_close>
+    </display>
+  </element>
+
+
+  <element name="system_info" title="System Info" icon="db_gear" help='main'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.app.SystemInfoWdg</class_name>
+    </display>
+  </element>
+
+
+  <element name="system_config" title="System Config" icon="db_gear" help='main'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.startup.DbConfigWdg</class_name>
+    </display>
+</element>
+
+
+
+
+  <element name="db_resource" title="Database Resource" icon="db" help='main'>
+    <display class="LinkWdg">
+        <search_type>sthpw/db_resource</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+
+
+  <element name="exception_log" icon="error" help='exception-log'>
+    <display class="LinkWdg">
+      <show_insert>false</show_insert>  
+      <search_type>sthpw/exception_log</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="debug_log" icon="contents" help='main'>
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>sthpw/debug_log</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="wdg_settings" title="Widget Settings" icon="edit_settings" help='main'>
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>sthpw/wdg_settings</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+
+
+
+
+<!-- UI Tools -->
+
+  <!--
+  <element name="ui_playground" title="UI Playground">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.UiPlaygroundPanelWdg</class_name>
+    </display>
+  </element>
+  -->
+
+
+<!-- Application view -->
+  <element name="application">
+    <display class="SideBarSectionLinkWdg">
+       <view>_application</view>
+    </display>
+  </element>
+
+  <element name="asset_loader" icon="folder_go">
+    <display class="LinkWdg">
+      <search_type>prod/asset</search_type>
+      <view>load</view>
+    </display>
+  </element>
+
+  <element name="asset_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AssetCheckinWdg</class_name>
+      <search_type>prod/asset</search_type>
+      <texture_search_type>prod/texture</texture_search_type>
+    </display>
+  </element>
+
+  <element name="instance_loader" icon="folder_go">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AppAssetInstancePanelWdg</class_name>
+      <search_type>prod/shot_instance</search_type>
+      <view>load</view>
+      <show_search>true</show_search>
+    </display>
+  </element>
+
+  <element name="instance_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.InstanceCheckinWdg</class_name>
+      <search_type>prod/shot_instance</search_type>
+      <sequence_search_type>prod/sequence</sequence_search_type>
+    </display>
+  </element>
+
+  <element name="shot_loader" icon="film">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AppShotPanelWdg</class_name>
+      <search_type>prod/shot</search_type>
+      <view>load</view>
+    </display>
+  </element>
+
+  <element name="shot_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.ShotCheckinWdg</class_name>
+      <search_type>prod/shot</search_type>
+      <sequence_search_type>prod/sequence</sequence_search_type>
+      <texture_search_type>prod/shot_texture</texture_search_type>
+    </display>
+  </element>
+
+  <element name="session" icon="connect">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.SessionWdg</class_name>
+      <search_type>prod/asset</search_type>
+      <view>load</view>
+    </display>
+  </element>
+
+  <element name="checkin_log" icon="contents">
+    <display class="LinkWdg">
+        <!--<class_name>pyasm.prod.web.PublishLogWdg</class_name>-->
+        <search_type>sthpw/snapshot</search_type>
+        <search_view>search</search_view>
+      <view>log</view>
+    </display>
+  </element>
+
+  <element name="undo">
+    <display class="LinkWdg">
+      <search_type>sthpw/transaction_log</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+</definition>
+
+
+<project_view title="Project Views">
+</project_view>
+
+<admin_views>
+  <element name="_startup"/>
+  <element name="advanced_project_setup"/>
+  <element name="user_admin"/>
+  <element name="project_admin"/>
+  <element name="global_admin"/>
+
+  <element name="separator"/>
+
+  <element name="project_essentials"/>
+</admin_views>
+
+<!--
+<my_admin>
+  <element name="manage_my_views"/>
+  <element name="my_preference"/>
+</my_admin>
+-->
+
+<_my_admin title="My Admin">
+  <element name="manage_my_views"/>
+  <element name="my_preference"/>
+</_my_admin>
+
+
+<_my_tactic>
+  <element name="my_tasks"/>
+  <element name="my_month_tasks"/>
+  <element name="my_notification"/>
+  <element name="my_notes"/>
+  <element name="my_schedule"/>
+  <element name="my_work_hours"/>
+</_my_tactic>
+
+<_project_admin>
+  <element name="project_configuration"/>
+  <element name="manage_users"/>
+  <element name="_custom_layout_editor"/>
+  <element name="manage_security"/>
+  <element name="lists_of_items"/>
+  <element name="dashboards_homepage"/>
+  <element name="reports_homepage"/>
+  <element name="separator"/>
+  <element name="project_schema"/>
+  <element name="project_workflow"/>
+  <element name="manage_side_bar"/>
+  <element name="separator"/>
+  <element name="config_naming"/>
+  <element name="config_widget_config"/>
+  <element name="manage_views"/>
+  <element name="manage_search_types"/>
+  <!--<element name="users_in_groups"/>-->
+  <element name="separator"/>
+  <element name="script_editor"/>
+
+  <!--<element name="project_triggers"/>-->
+  <!--<element name="client_triggers"/>-->
+
+
+  <!--
+  <element name="ingestion"/>
+  <element name="plugins"/>
+  <element name="freeform"/>
+  -->
+</_project_admin>
+
+
+<_project_essentials>
+ 
+  <element name="project_tasks"/>
+  <element name="project_milestones"/>
+  <element name="project_notes"/>
+  <element name="project_work_hours"/>
+  <element name="project_snapshots"/>
+
+  <element name="separator"/>
+
+  <element name="config_naming"/>
+  <element name="config_process"/>
+  <element name="config_widget_config"/>
+  <element name="config_client_trigger"/>
+  <element name="config_trigger"/>
+  <element name="global_trigger"/>
+  <element name="config_custom_url"/>
+  <element name="sthpw_notification"/>
+  <element name="project_settings"/>
+
+  <element name="separator"/>
+
+  <element name="sthpw_schema"/>
+  <element name="sthpw_pipelines"/>
+
+
+  
+
+
+</_project_essentials>
+
+
+
+<_global_admin>
+  <element name="projects"/>
+  <element name="template_projects"/>
+  <!--<element name="project_types"/>-->
+
+  <element name="separator"/>
+
+  <element name="users"/>
+  <element name="groups"/>
+  <element name="users_in_groups"/>
+
+  <element name="separator"/>
+
+  <element name="exception_log"/>
+  <element name="debug_log"/>
+  <element name="wdg_settings"/>
+
+  <element name="separator"/>
+
+  <element name="license"/>
+  <element name="system_info"/>
+  <element name="system_config"/>
+  <element name="db_resource"/>
+
+  <element name="separator"/>
+
+</_global_admin>
+
+
+
+<!-- for new item creation-->
+<_template>
+  <element name="new_entry"/>
+  <element name="new_folder"/>
+  <element name="new_separator"/>
+</_template>
+
+<user_to_group_planner>
+<html>
+    <table>
+    <tr valign='top'>
+
+    <td min_width='500'>
+    <element name='planner_group' title='Groups' use_container='true' show_resize_scroll='true' height='1000' width='500'>
+       <display class='tactic.ui.panel.ViewPanelWdg'>
+         <search_type>sthpw/login_group</search_type>
+         <view>planner</view>
+         <search_view>_planner</search_view>
+         <do_search>true</do_search>
+       </display>
+     </element>
+    </td>
+
+    <td min_width='450'>
+    <element name='planner_login' title='Users' use_container='true' show_resize_scroll='true' height='1000' width='620'>
+       <display class='tactic.ui.panel.ViewPanelWdg'>
+         <search_type>sthpw/login</search_type>
+         <view>planner</view>
+         <search_view>_planner</search_view>
+         <do_search>true</do_search>
+       </display>
+     </element>
+    </td>
+
+    </tr>
+    </table>
+</html>
+ </user_to_group_planner> 
+
+
+
+</config>

@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+ 
+-->
+
+
+<config>
+
+<definition>
+  
+    <element name="timecard info">
+        <display class="TimecardInfoTableElement"/>
+    </element>
+    <element name="description"/>
+    <element name="year" edit="false"/>
+    <element name="week" edit="false"/>
+    <element name="weekly">
+        <display class="WeekTableElement">
+             <width>550</width>
+        </display>
+    </element>
+    <element name="login" edit="false"/>
+    <element name="project_code" title="project" edit="false"/>
+    <element name="discussion">
+        <display class="pyasm.widget.DiscussionWdg">
+            <setting>timecard_context</setting>
+        </display>
+    </element>
+    
+</definition>
+
+
+<table insert="false">
+  
+    <element name="timecard info"/>
+    <element name="project_code"/>
+    <element name="description"/>
+    <element name="year"/>
+    <element name="week"/>
+    <element name="weekly"/>
+    <element name="login"/>
+    <element name="notes_sheet"/>
+</table>
+
+<!-- The order cannot be changed here. It is used in TimecardCreateCmd -->
+<insert> 
+    <element name="any date in a week">
+        <display class="CalendarInputWdg">
+            <show_week>true</show_week>
+        </display>
+        <action class="NullAction"/>
+    </element>
+    <element name="desc">
+        <display class="SelectWdg">
+            <setting>timecard_item</setting>
+            <empty>true</empty>
+            <hint>This is for more general item like meeting or training. Set as [timecard_item] in Project Settings</hint> 
+        </display>
+        <action class="NullAction"/>
+    </element>
+  
+   
+    <element name="project_code">
+        <display class="pyasm.prod.web.ProjectSelectWdg"/>
+        <action class="TimecardCreateCmd"/>
+    </element>
+</insert>
+
+
+<edit>
+    <element name="description">
+        <display class="SelectWdg">
+            <setting>timecard_item</setting>
+            <empty>true</empty>
+        </display>
+    </element>
+    <element name="year">
+        <display class="TextWdg">
+        <read_only>true</read_only>
+        </display>
+    </element>
+    
+    <element name="week">
+        <display class="TextWdg">
+        <read_only>true</read_only>
+        </display>
+    </element>
+
+    <element name="custom">
+        <display class="WeekHourInputWdg">
+            <view>hour_input</view>
+        </display>
+           
+        <action class="CustomInfoAction"/>
+    </element>
+
+    <element name="login">
+        <display class='TextWdg'>
+            <read_only>true</read_only>
+        </display>
+    </element>
+    <element name="project_code">
+        <display class="pyasm.prod.web.ProjectSelectWdg"/>
+        <action class="NonEmptyAction"/>
+    </element>
+</edit>
+
+<!-- this is used by WeekHourInputWdg -->
+<hour_input>
+    <element name="mon">
+        <display class="pyasm.widget.TextWdg">
+            <hint>Enter the number of hours. e.g. 3 or 6.5</hint>
+        </display>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="tue">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="wed">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="thu">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="fri">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="sat">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+    <element name="sun">
+        <display class="pyasm.widget.TextWdg"/>
+        <action class="DatabaseAction">
+            <regexm>\d*\.?\d*$</regexm>
+        </action>
+    </element>
+
+</hour_input>
+<search>
+  <element name='Main Filter'>
+    <display class='tactic.ui.filter.WorkHourFilterWdg'>
+      <prefix>timecard_filter</prefix>
+      <search_type>sthpw/timecard</search_type>
+      
+    </display>
+  </element>
+
+  <element name='General'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>main_body</prefix>
+      <search_type>sthpw/timecard</search_type>
+      <columns>year|week</columns>
+      <mode>sobject</mode>
+    </display>
+  </element>
+</search>
+
+
+</config>
+

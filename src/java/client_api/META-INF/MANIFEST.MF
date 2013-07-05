@@ -1,0 +1,95 @@
+Manifest-Version: 1.0
+Export-Package: org.codehaus.jackson.schema;uses:="org.codehaus.jackso
+ n.node,org.codehaus.jackson.map,org.codehaus.jackson.annotate,org.cod
+ ehaus.jackson";version="1.9.4",org.codehaus.jackson.map.deser.impl;us
+ es:="org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.code
+ haus.jackson.map.deser,org.codehaus.jackson.map,org.codehaus.jackson.
+ util,org.codehaus.jackson.map.introspect,org.codehaus.jackson.map.uti
+ l,org.codehaus.jackson.map.deser.std,org.codehaus.jackson";version="1
+ .9.4",org.codehaus.jackson.map.exc;uses:="org.codehaus.jackson.map,or
+ g.codehaus.jackson";version="1.9.4",org.codehaus.jackson.map.annotate
+ ;uses:="org.codehaus.jackson.map,org.codehaus.jackson.annotate";versi
+ on="1.9.4",org.codehaus.jackson.map.ser.impl;uses:="org.codehaus.jack
+ son.io,org.codehaus.jackson.map,org.codehaus.jackson.map.ser.std,org.
+ codehaus.jackson,org.codehaus.jackson.map.ser,org.codehaus.jackson.ty
+ pe";version="1.9.4",org.codehaus.jackson.map.ser.std;uses:="org.codeh
+ aus.jackson.schema,org.codehaus.jackson.map.annotate,org.codehaus.jac
+ kson.map.ser.impl,org.codehaus.jackson.map.type,org.codehaus.jackson.
+ type,org.codehaus.jackson.io,org.codehaus.jackson.node,org.codehaus.j
+ ackson.map,org.codehaus.jackson.util,org.codehaus.jackson.map.introsp
+ ect,org.codehaus.jackson.map.util,org.codehaus.jackson,org.codehaus.j
+ ackson.map.ser";version="1.9.4",org.codehaus.jackson.map.type;uses:="
+ org.codehaus.jackson.map,org.codehaus.jackson.map.util,org.codehaus.j
+ ackson,org.codehaus.jackson.type";version="1.9.4",org.codehaus.jackso
+ n.map.module;uses:="org.codehaus.jackson.map.deser,org.codehaus.jacks
+ on.map,org.codehaus.jackson.map.type,org.codehaus.jackson,org.codehau
+ s.jackson.type";version="1.9.4",org.codehaus.jackson.node;uses:="org.
+ codehaus.jackson.io,org.codehaus.jackson.map,org.codehaus.jackson.uti
+ l,org.codehaus.jackson.impl,org.codehaus.jackson";version="1.9.4",org
+ .codehaus.jackson.map;uses:="org.codehaus.jackson.format,org.codehaus
+ .jackson.schema,org.codehaus.jackson.map.annotate,org.codehaus.jackso
+ n.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson.type,or
+ g.codehaus.jackson.io,org.codehaus.jackson.node,org.codehaus.jackson.
+ map.deser,org.codehaus.jackson.util,org.codehaus.jackson.map.introspe
+ ct,org.codehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,or
+ g.codehaus.jackson,org.codehaus.jackson.map.ser,org.codehaus.jackson.
+ map.jsontype.impl";version="1.9.4",org.codehaus.jackson.map.deser;use
+ s:="org.codehaus.jackson.map.exc,org.codehaus.jackson.map.deser.impl,
+ org.codehaus.jackson.map.annotate,org.codehaus.jackson.annotate,org.c
+ odehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jacks
+ on.io,org.codehaus.jackson.node,org.codehaus.jackson.map,org.codehaus
+ .jackson.util,org.codehaus.jackson.map.introspect,org.codehaus.jackso
+ n.map.jsontype,org.codehaus.jackson.map.util,org.codehaus.jackson,org
+ .codehaus.jackson.map.deser.std";version="1.9.4",org.codehaus.jackson
+ .map.introspect;uses:="org.codehaus.jackson.map.annotate,org.codehaus
+ .jackson.map.ser.std,org.codehaus.jackson.annotate,org.codehaus.jacks
+ on.map.type,org.codehaus.jackson.type,org.codehaus.jackson.map,org.co
+ dehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,org.codehau
+ s.jackson.map.jsontype.impl";version="1.9.4",org.codehaus.jackson.map
+ .jsontype;uses:="org.codehaus.jackson.map,org.codehaus.jackson.annota
+ te,org.codehaus.jackson.map.introspect,org.codehaus.jackson.type";ver
+ sion="1.9.4",org.codehaus.jackson.map.util;uses:="org.codehaus.jackso
+ n.io,org.codehaus.jackson.map,org.codehaus.jackson.map.type,org.codeh
+ aus.jackson.map.introspect,org.codehaus.jackson,org.codehaus.jackson.
+ type";version="1.9.4",org.codehaus.jackson.map.deser.std;uses:="org.c
+ odehaus.jackson.map.deser.impl,org.codehaus.jackson.map.annotate,org.
+ codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jack
+ son.io,org.codehaus.jackson.node,org.codehaus.jackson.map,org.codehau
+ s.jackson.map.deser,org.codehaus.jackson.util,org.codehaus.jackson.ma
+ p.introspect,org.codehaus.jackson,org.codehaus.jackson.map.util";vers
+ ion="1.9.4",org.codehaus.jackson.map.jsontype.impl;uses:="org.codehau
+ s.jackson.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson
+ .type,org.codehaus.jackson.map,org.codehaus.jackson.util,org.codehaus
+ .jackson.map.introspect,org.codehaus.jackson.map.jsontype,org.codehau
+ s.jackson,org.codehaus.jackson.map.util";version="1.9.4",org.codehaus
+ .jackson.map.ser;uses:="org.codehaus.jackson.schema,org.codehaus.jack
+ son.map.annotate,org.codehaus.jackson.map.ser.impl,org.codehaus.jacks
+ on.map.ser.std,org.codehaus.jackson.map.type,org.codehaus.jackson.typ
+ e,org.codehaus.jackson.node,org.codehaus.jackson.io,org.codehaus.jack
+ son.map,org.codehaus.jackson.util,org.codehaus.jackson.map.introspect
+ ,org.codehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,org.
+ codehaus.jackson";version="1.9.4"
+Private-Package: org.codehaus.jackson.map.ext
+Implementation-Title: Data mapper for Jackson JSON processor
+Implementation-Version: 1.9.4
+Built-By: tsaloranta
+Tool: Bnd-unknown version
+Bundle-Name: Data mapper for Jackson JSON processor
+Created-By: 1.6.0_29 (Apple Inc.)
+Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
+DynamicImport-Package:  org.joda.time, org.joda.time.format, org.w3c.d
+ om.ls, org.w3c.dom.bootstrap
+Bundle-Vendor: http://fasterxml.com
+Implementation-Vendor: http://fasterxml.com
+Bundle-Version: 1.9.4
+Bnd-LastModified: 1327108611083
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Import-Package: javax.xml.datatype,javax.xml.namespace,javax.xml.parse
+ rs,org.codehaus.jackson;version="1.9.4",org.codehaus.jackson.annotate
+ ;version="1.9.4",org.codehaus.jackson.format;version="1.9.4",org.code
+ haus.jackson.impl;version="1.9.4",org.codehaus.jackson.io;version="1.
+ 9.4",org.codehaus.jackson.type;version="1.9.4",org.codehaus.jackson.u
+ til;version="1.9.4",org.w3c.dom,org.xml.sax
+Bundle-SymbolicName: jackson-mapper-asl
+

@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<!-- This defines the default element values for any sobject
+in this namespace based purely on element name.  If an asset
+defines an attribute listed here and it does not override the
+display class, it will adopt the one defined here-->
+
+<config>
+
+
+<definition>
+    <element name="images" edit="false">
+        <display class="ThumbWdg">
+            <filename>true</filename>
+            <original>true</original>
+            <icon_size>90%</icon_size>
+        </display>
+    </element>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+
+    <element name="related">
+        <display class="SObjectConnectionElement"/>
+    </element>
+    <element name="general_publish" edit="false">
+        <display class="tactic.ui.table.GeneralPublishElementWdg">
+            <preview>false</preview>
+        </display>
+    </element>
+</definition>
+
+
+<table>
+    <element name="history"/>
+    <element name="images"/>
+    <element name="general_publish"/>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+    <element name="related"/>
+</table>
+
+
+<!-- to display this sobject in a simple list -->
+<list layout="TableWdg">
+
+    <element name="select_key">
+        <display class="pyasm.widget.CheckboxColWdg"/>
+    </element> 
+
+  <element name="snapshot">
+    <display class="ThumbWdg">
+      <icon_size>45</icon_size>
+    </display>
+  </element>
+
+  <element name="category"/>
+  <element name="description"/>
+</list>
+
+
+<edit>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="preview"/>
+
+    <element name="category">
+        <display class="SelectWdg">
+            <setting>art_reference_category</setting>
+            <empty>true</empty>
+            <persist>true</persist>
+        </display>
+    </element>
+
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+    <element name="keywords">
+        <display class="TextAreaWdg"/>
+    </element>
+
+    <element name="search_key">
+        <display class="pyasm.widget.SObjectBrowserWdg">
+            <search_types>prod/shot|prod/asset|prod/art_reference</search_types>
+        </display>
+        <action class="pyasm.widget.SObjectBrowserAction"/>
+    </element>
+
+    <element name="connection">
+        <display class="pyasm.widget.ClipboardCopyInputWdg">
+            <hint>This can be used instead of specifying Search key above</hint>
+        </display>
+        <action class="pyasm.widget.ClipboardCopyConnectionCmd"/>
+    </element>
+
+</edit>
+
+<insert>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+    <element name="images">
+        <display class="SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="UploadAction"/>
+    </element>
+
+    <element name="category">
+        <display class="SelectWdg">
+            <setting>art_reference_category</setting>
+            <empty>true</empty>
+            <persist>true</persist>
+        </display>
+    </element>
+
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+    <element name="keywords">
+        <display class="TextAreaWdg"/>
+    </element>
+
+    <element name="search_key">
+        <display class="pyasm.widget.SObjectBrowserWdg">
+            <search_types>prod/shot|prod/asset|prod/art_reference</search_types>
+        </display>
+        <action class="pyasm.widget.SObjectBrowserAction"/>
+    </element>
+</insert>
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context>ref|publish</context>
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+<add_item>
+    <element name="category" width="100px"/>
+    <element name="keywords" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+
+</config>
+
+
+
+

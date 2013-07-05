@@ -1,0 +1,304 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+  <adobe_photoshop_wdg>
+
+    <html>
+
+      <head>
+        <style type="text/css">
+          .frame_container {
+            border: 1px solid #000000;
+            margin: 10px; 
+            padding: 10px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="spt_top">
+
+          <div style="width:400; height: 80;" class="frame_container">        
+            <div style="float:left" ><img src="/assets/sthpw/plugin/adobe/photoshop_logo.png"/></div>
+            <input type="button" style="width:120px; float:right" class="spt_photoshop_button" value="Launch Photoshop"/>
+          </div>
+
+          <div style="width:400; height: 50;" class="frame_container">        
+            <div style="float:left; width:120px">
+              <textarea class="spt_description" rows="3" cols="45">Enter a Description</textarea>
+            </div>  
+            <div class="spt_context" style="float:right; width:120px">
+              <div style="float:left"><b>Context </b></div>
+              <div style="float:right;"><element name="context"/></div>
+            </div>
+            <br/><br/>
+            <input type="button" class="spt_checkin_button" value="Checkin" style="float:right; width:120px"/>
+          </div>
+
+          <div class="spt_checkin_history frame_container" style="width:400; height: 320">
+            <b>History</b>
+            <input type="button" style="width:120px; float:right" class="spt_load_button" value="Load Selected"/>
+            <br/><br/>
+            <div id="spt_history_panel" style="overflow:auto;width:400; height: 300"> </div>
+          </div>
+
+        </div>
+      </body>
+
+    </html>
+
+    <element name="context">
+      <display class="SelectWdg">
+        <values>design|photoshop|rough</values>
+      </display>
+    </element>
+
+
+
+
+   <behavior class='spt_top'>{
+      "type": "load",
+      "cbjs_action": '''
+
+        var applet = spt.Applet.get();
+        var top_el = bvr.src_el;
+
+        var search_key = bvr.kwargs.search_key;
+        top_el.search_key = search_key;
+
+        top_el.application = bvr.kwargs.application;
+
+        if (bvr.kwargs.scripts_env) {
+            var scripts_dir  = applet.getenv(bvr.kwargs.scripts_env)
+            top_el.scripts_dir = scripts_dir + "/TACTIC";
+        }
+        else {
+            var base_dirs = server.get_base_dirs();
+            var sandbox_base = base_dirs.win32_sandbox_dir;
+            top_el.scripts_dir = sandbox_base + "/temp"
+        }
+
+        var context_el = top_el.getElement(".spt_context")
+        var select_el = context_el.getElement(".spt_input");
+        top_el.context = select_el.value;
+      
+
+        var kwargs = {
+          "view":"table",
+          "search_type": "sthpw/snapshot",
+          "expression": "@SOBJECT(sthpw/snapshot['context', '"+ top_el.context +"'])",
+          "mode_exp":"relative",
+          "element_names": "preview,context,version,description,timestamp,is_current,dependency",
+          "mode":"simple",
+          "parent_key": search_key
+        }
+        spt.panel.load("spt_history_panel", "tactic.ui.panel.TableLayoutWdg", kwargs)
+       
+      '''
+    }</behavior>
+
+
+
+    <behavior class='spt_photoshop_button'>{
+      "type": "click_up",
+      "cbjs_action": '''
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var exec = top_el.application;
+          applet.exec_shell(exec, "false");
+      '''
+    }</behavior>
+
+
+
+    <behavior class='spt_load_button'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+        try {
+
+          //-------Get the Necessary Classes----------------------------------------------
+          var server = TacticServerStub.get()
+          var applet = spt.Applet.get()
+
+          photoshop_load = function(search_key) {
+
+            //-------Get the Path information
+            var snapshot = server.get_by_search_key(search_key);
+            var version = snapshot.version;
+            var snapshot_code = snapshot.code;
+
+            var path = server.get_path_from_snapshot(snapshot_code);
+
+            var repo_path = path;
+            
+            var path_split = path.split("assets")
+            var base_dirs = server.get_base_dirs();
+            var sandbox_base = base_dirs.win32_sandbox_dir;
+            var sandbox_path = sandbox_base + path_split[1]
+
+            //-------Download the files to the client machine------------------------------
+            spt.app_busy.show("Downloading to sandbox...", "Version: " + version)
+            var files = server.checkout_snapshot(snapshot_code);
+            //var sandbox_path = files[0];            
+ 
+
+            //-------Create the contents of the JSX script----------------------------------
+  
+            JSX = []
+  
+            JSX.push(  "#target photoshop;"  );
+            JSX.push(  "var file = '"+ sandbox_path +"';"  );
+            JSX.push(  "open(File(file));"  );
+
+            var script = JSX.join("\\n");
+
+
+
+            //-------Create the JSX script and execute on the clent machine----------------
+            spt.app_busy.show("Loading...", "Version: " + version)
+
+            applet.create_file(script_path, script)
+            applet.exec_shell(script_path, "false")
+          }
+      
+          //-------Execute----------------------------------------------------------
+
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var context = top_el.context;
+          var scripts_dir = top_el.scripts_dir;
+
+          var script_path = scripts_dir + "/photoshop-load.jsx"
+
+          var table = top_el.getElement(".spt_table");
+          search_keys = spt.dg_table.get_selected_search_keys(table);
+          
+          for (i=0; i<search_keys.length; i++) {
+            photoshop_load(search_keys[i])
+           }
+
+          spt.app_busy.hide();
+          var exec = top_el.application;
+          applet.exec_shell(exec, "false");
+      
+
+        }
+        catch(err) {
+          alert(err);
+          spt.app_busy.hide();
+        }
+
+
+      ''']]>
+    }</behavior>
+
+
+
+    <behavior class='spt_checkin_button'>{
+      "type": "click_up",
+      "cbjs_action": '''
+        try {
+          spt.app_busy.show("Checkin", " ")
+
+          var top_el = bvr.src_el.getParent(".spt_top");
+          var checkin_history_el = top_el.getElement(".spt_checkin_history")
+          var description_el = top_el.getElement(".spt_description");
+          var description = description_el.value;
+          var context = top_el.context;
+         
+           
+          //-------CODE HERE----------------------------------------------------------
+
+          
+          //-------Get the necessary classes------------------------------------------
+          var server = TacticServerStub.get()
+          var applet = spt.Applet.get()
+
+          //-------Setup the Variables-------------------------------------------
+
+          var base_dirs = server.get_base_dirs();
+          var sandbox_base = base_dirs.win32_sandbox_dir;
+          var temp_dir = sandbox_base + "/temp"
+
+          var scripts_dir = top_el.scripts_dir;
+          var script_path = scripts_dir + "/photoshop-checkin.jsx"
+          var search_key = top_el.search_key
+          var sobject = server.get_by_search_key(search_key)
+          var code = sobject.code
+
+          //-------Setup the output paths for the temp files-----------------------------
+          applet.rmtree(temp_dir)
+          applet.makedirs(temp_dir)
+          var psd_path = temp_dir + "/photoshop_checkin.psd"
+          var png_path = temp_dir + "/photoshop_checkin.png"
+
+          //-------Create the contents of the JSX script--------------------------------
+          var JSX = []
+        
+          JSX.push(  "#target photoshop;"  );
+          JSX.push(  "var psd_path = new File('"+ psd_path +"');"  );
+          JSX.push(  "var png_path = new File('"+ png_path +"')"  );
+          JSX.push(  "var doc = activeDocument;");
+          JSX.push(  "var temp_doc = doc.duplicate('temp')"  );
+          JSX.push(  "var options = new PNGSaveOptions();"  );
+          JSX.push(  "temp_doc.saveAs(File(psd_path));"  );
+          JSX.push(  "temp_doc.saveAs(File(png_path), options, asCopy=true);"  );
+          JSX.push(  "temp_doc.close();"  );
+
+          var script = JSX.join("\\n");
+          //-------Create and execute the JSX script------------------------------------
+          spt.app_busy.show("Saving PSD and PNG", "");
+
+          applet.create_file(script_path, script)
+          applet.exec_shell(script_path, "true")
+
+          //-------Checking the Resulting files-----------------------------------------
+          spt.app_busy.show( "Checking in ...",  "context: " + context);
+          //alert(context);
+          server.simple_checkin(search_key, context, psd_path, {'mode':'upload', 'description': description})
+          server.simple_checkin(search_key, "icon", png_path, {'mode':'upload', 'create_icon': 'true'})
+
+          spt.app_busy.hide();
+          spt.panel.refresh(checkin_history_el);
+ 
+        }
+        catch(err) {
+          spt.app_busy.hide();
+          alert(err)
+        }
+      
+      '''
+    }</behavior>
+
+
+
+
+
+    <behavior class='spt_context'>{
+      "type": "change",
+      "cbjs_action": '''
+
+        var top_el = bvr.src_el.getParent(".spt_top");
+        var context_el = bvr.src_el
+        var select_el = context_el.getElement(".spt_input");
+        top_el.context = select_el.value;
+        var search_key = top_el.search_key;
+
+        var kwargs = {
+          "view":"table",
+          "search_type": "sthpw/snapshot",
+          "expression": "@SOBJECT(sthpw/snapshot['context', '"+ top_el.context +"'])",
+          "mode_exp":"relative",
+          "element_names": "preview,context,version,description,timestamp,is_current,dependency",
+          "mode":"simple",
+          "parent_key":search_key
+        }
+        spt.panel.load("spt_history_panel", "tactic.ui.panel.TableLayoutWdg", kwargs)
+
+
+
+      '''
+    }</behavior>
+
+ 
+  </adobe_photoshop_wdg>
+</config> 
+

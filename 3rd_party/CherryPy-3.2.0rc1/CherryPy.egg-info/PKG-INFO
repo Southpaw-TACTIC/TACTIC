@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: CherryPy
+Version: 3.2.0rc1
+Summary: Object-Oriented HTTP framework
+Home-page: http://www.cherrypy.org
+Author: CherryPy Team
+Author-email: team@cherrypy.org
+License: BSD
+Download-URL: http://download.cherrypy.org/cherrypy/3.2.0/
+Description: CherryPy is a pythonic, object-oriented HTTP framework
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: Freely Distributable
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
