@@ -1,0 +1,12 @@
+#-- Start Entry --#
+insert = SearchType.create('config/url')
+insert.set_value('widget', """<element name='index'>
+  <display class='tactic.ui.panel.CustomLayoutWdg'>
+      <view>sample01_theme/index</view>
+  </display>
+</element>""")
+insert.set_value('description', """Index Page""")
+insert.set_value('url', """/index""")
+insert.set_value('timestamp', """2013-06-06 21:16:03.738306""")
+#-- End Entry --#
+

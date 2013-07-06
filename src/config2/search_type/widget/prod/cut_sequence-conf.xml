@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+
+<table>
+    <element name="files">
+        <display class="ThumbWdg">
+            <image_link_order>main|web|.swf</image_link_order>
+            <context>publish</context>
+        </display>
+    </element>
+
+    <element name="history"/>
+    <element name="sequence_code"/>
+    <element name="shot_code"/>
+    <element name="type"/>
+    <element name="description">
+        <display class="WikiElementWdg"/>
+    </element>
+    <element name="publish">
+        <display class="PublishTableElement"/>
+    </element>
+    <element name="update"/>
+
+</table>
+
+
+<edit>
+    <element name="files">
+        <display class="SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+    </element>
+    <element name="sequence_code">
+        <display class="SelectWdg">
+            <query>prod/sequence|code|code</query>
+        </display>
+    </element>
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <empty>true</empty>
+            <query>prod/shot|code|code</query>
+        </display>
+    </element>
+ 
+    <element name="type"/>
+    <element name="description"/>
+</edit>
+
+<!-- publishing view -->
+<publish>
+    <element name='image'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="UploadWdg">
+            <names>publish_icon|publish_main</names>
+        </display>
+        <action class="MultiUploadAction">
+            <names>publish_icon|publish_main</names>
+            <types>icon_main|main</types>
+        </action>
+    </element>
+</publish>
+
+
+<add_item>
+    <element name="sequence_code" width="100px"/>
+    <element name="shot_code" width="100px"/>
+    <element name="type" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+
+</config>
+

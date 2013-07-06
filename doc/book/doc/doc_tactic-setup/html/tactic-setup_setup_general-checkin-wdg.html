@@ -1,0 +1,895 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>General Check-in Widget</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-common.html" title="Common Widgets">
+      <link rel="prev" href="tactic-setup_setup_explorer-table-element-wdg.html" title="Explorer Button">
+      <link rel="next" href="tactic-setup_setup_sobject-checkin-history-wdg.html" title="Checkin History">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_explorer-table-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_sobject-checkin-history-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="General Check-in Widget">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_general-checkin-wdg"></a>General Check-in Widget
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p><span class="inlinemediaobject"><img src="media/checkin_widget_full.png"></span></p>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9187"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>This is the new preferred Check-in Widget for 3.7+. It makes use of the Java Applet to
+               accomplish various kinds of check-in functions like checking in a single file, sequences
+                           of files, or directories. The <span class="bold"><strong>copy</strong></span> or <span class="bold"><strong>preallocate</strong></span> transfer mode should be used when dealing with a
+                           large file transfer. <span class="bold"><strong>Upload</strong></span> transfer mode only supports
+                           checking in single files and sequences of files. <span class="bold"><strong>Upload</strong></span>
+                           is set to be the default in case new users do not have the handoff directory readily set
+                           up. 
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9204"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>General Check-in Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.widget.CheckinWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td>TableLayoutWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.7.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9266"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>transfer_mode</strong></span></p>
+                                                   
+                        </td>
+                        <td><span class="bold"><strong>upload</strong></span>, <span class="bold"><strong>copy</strong></span> and <span class="bold"><strong>move</strong></span> are
+                                                       supported. <span class="bold"><strong>copy</strong></span> is recommended for most
+                                                       situations when users are usually granted only read access to the TACTIC
+                                                       asset repo. <span class="italic">(default is copy)</span></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>mode</strong></span></p>
+                                                   
+                        </td>
+                        <td><span class="bold"><strong>sequence</strong></span>, <span class="bold"><strong>file</strong></span>, <span class="bold"><strong>dir</strong></span>, and
+                                                           <span class="bold"><strong>add</strong></span> are supported. <span class="bold"><strong>sequence</strong></span> is for file sequence checkin;
+                                                           <span class="bold"><strong>file</strong></span> is for single file checkin;
+                                                           <span class="bold"><strong>dir</strong></span> is for directory checkin; and
+                                                           <span class="bold"><strong>add</strong></span> is for appending file or dir to
+                                                       an existing snapshot. If not specified, multiple selections will be
+                                                       available for the user to choose. Note: upload transfer mode only
+                                                       supports single file or file sequence checkin.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>checkin_script_path</strong></span></p>
+                                                   
+                        </td>
+                        <td>a custom checkin script path to specify an override on what functions
+                                                       get called during a checkin. Note: If trying to do some preprocessing
+                                                       with the file or directory before checking in, just make use of
+                                                       validate_script_path function using Client Trigger. Client Trigger works
+                                                       by setting up this check-in script as a Client Trigger callback that
+                                                       affects the search type rather than just a column definition.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>validate_script_path</strong></span></p>
+                                                   
+                        </td>
+                        <td>a script path pointing to a JavaScript file that is run before the
+                                                       actual checkin. If it throws an error using "throw(&lt;error message&gt;)",
+                                                       the checkin will not initiate. This path can also use it to run some
+                                                       client-side preprocessing of the file or directory. It is not set up as
+                                                       a display option but rather as a Client Trigger callback.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>checkout_script_path</strong></span></p>
+                                                   
+                        </td>
+                        <td>a custom check-out script path to specify to override what happens
+                                                       during a check-out.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>process</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set, the process specified will be pre-selected when the General
+                                                       Check-in Widget is drawn,
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>lock_process</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true, the user will not be able to choose a different
+                                                       process during a checkin, in the General Check-in Widget
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_context</strong></span></p>
+                                                   
+                        </td>
+                        <td>When set to true, the <span class="bold"><strong>context</strong></span> will
+                                                       be displayed to the user. <span class="italic">(default is
+                                                              false)</span>
+                                                   
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Gear Menu Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9388"></a>Gear Menu Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Gear Menu in the Check-in Widget provides the following administration
+                           options:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_gear-menu.png"></span></p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Edit Process</strong></span></td>
+                        <td>Load the process options pop-up.  <span class="italic">The process
+                                                              and subcontext options are described further in the sections
+                                                              below</span></td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>List Processes</strong></span></td>
+                        <td>List all of the processes for the current pipeline.  This provides
+                                                       the same access to the as the Edit Process option but for all
+                                                       processes.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Show Server Transaction Log</strong></span></td>
+                        <td>Show the standard server transaction log</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Undo Last Server Transaction</strong></span></td>
+                        <td>Undo the last transaction. <span class="italic">When undoing a
+                                                              checkin, the files will also be removed in the file
+                                                              system.</span></td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Redo Last Server Transaction</strong></span></td>
+                        <td>Redo the last transaction. <span class="italic">When redoing a
+                                                              checkin, the files will be restored in the file
+                                                          system.</span></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9438"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The default settings will allow a user to check in files to an assets in the "publish"
+                           process. It provides a very general and loosely enforced workflow to check in and manage
+                           files. Often, it is required, that a particular process has very strict enforcement of
+                           naming conventions and check-in procedures.
+            </p>
+            <p>The General Check-in widget is highly configured and can be tuned precisely for each
+                           part of the process. The various customizations can fall into the following
+                           categories:
+            </p>
+            <p>
+                           
+            </p>
+            <table border="0" summary="Simple list" class="simplelist">
+               <tr>
+                  <td>Validation</td>
+               </tr>
+               <tr>
+                  <td>Subcontext options</td>
+               </tr>
+               <tr>
+                  <td>Custom interface</td>
+               </tr>
+               <tr>
+                  <td>Custom check-in script</td>
+               </tr>
+               <tr>
+                  <td>Naming conventions</td>
+               </tr>
+            </table>
+            <p>
+                       
+            </p>
+            <p>Each of these can be customized for the particular widget or at the process
+                           level.
+            </p>
+            <h6><a name="d0e9461"></a>Validation
+            </h6>
+            <p>Validation is a custom script that will is run before the check-in process occurs. It
+                           provides the ability to check that all files in the checkin conform to some custom logic
+                           required for a successful checkin. If the validation script fails, then the entire
+                           checkin is aborted.
+            </p>
+            <h6><a name="d0e9465"></a>Client Side Triggers
+            </h6>
+            <p>A client trigger set up allows control over what check-in script or validate_checkin
+                           script to call during a checkin. Here is an example of how to set the
+                           checkin/validate_folder script to run before the check in of prod/asset. The event name
+                           is CheckinWdg|validate_script_path|&lt;search_type&gt;. If only a particular process is
+                           desired to be run on check in for, like "texture", the event name would become
+                           CheckinWdg|validate_script_path|prod/asset|texture. To override the checkin_script_path,
+                           use the event CheckinWdg|checkin_script_path|&lt;search_type&gt;. If this event-based
+                           set-up seems a bit too involving, override the checkin_script_path for just this
+                           instance of the widget by using the standard display option
+                           &lt;checkin_script_path&gt;.
+            </p>
+         </div>
+         <div class="simplesect" title="Process Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9469"></a>Process Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>By default, the subcontext selection is set to <span class="bold"><strong>(auto)</strong></span>. It is the simplest to use and allows TACTIC to auto generate the
+                           subcontext. Because the subcontext is auto generated, strict naming conventions for the
+                           file are often sacrificed for ease of use. By default, the checked in file will just
+                           have a version number attached to it.
+            </p>
+            <p>It is possible to force a limited list of subcontext options on a particular checkin.
+                           This means that the files checked in will be named according to the subcontext selected
+                           and provides a limited set of approved containers in which files can be checked
+                           in.
+            </p>
+            <h6><a name="d0e9479"></a>Process/Context/Subcontext
+            </h6>
+            <p>Checkin's are always categorized by process. If there is no pipeline defined, the
+                           default process "publish" will be used. Categorizing checkin's by the process in the
+                           pipeline of an asset organizes the work done for an asset according to its product life
+                           cycle.
+            </p>
+            <p>Another important attribute of a checkin is the context. Assets are versioned
+                           according to their context which provide a namespace for versioning checkin's of an
+                           asset. All checkin's of an asset with the same context are versioned together. The
+                           context of an asset is a particular way to view an asset.
+            </p>
+            <p>For example, a 2D drawing of a character and a 3D model of the same character
+                           represent the same abstract asset, so are two different contents of the asset.  This can
+                           be implemented in TACTIC by specifying the following in the Check-in Widget's Context
+                           Options:
+            </p>
+            <p>
+                           
+            </p><pre class="screen"> Context Options: 2D_drawing|3D_model</pre><p>
+                       
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_context_dropdown.png"></span></p>
+            <p>Although the context can be any string, most often, it is built up from other
+                           parameters. The convention usually used is "&lt;process&gt;/&lt;subcontext&gt;". All of
+                           TACTIC's built-in check-in tools assume this relationship. The subcontext provides a
+                           namespace for checking in multiple subcategories of files within a single
+                           context.
+            </p>
+            <p>The following is an example of these subcontext options:</p>
+            <p>
+                           
+            </p><pre class="screen">Subcontext Options: hi|med|low</pre><p>
+                       
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_subcontext_dropdown.png"></span></p>
+            <p>Naming conventions are often strictly enforced, meaning that the folder and the file
+                           name are automatically supplied on check in of a file to the central repository.
+            </p>
+         </div>
+         <div class="simplesect" title="Default Check-in Widget Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9511"></a>Default Check-in Widget Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>In the panel on the right, when something from the list is selected for check in, the
+                           corresponding Check-in type (e.g.. <span class="bold"><strong>file</strong></span>, <span class="bold"><strong>directory</strong></span>, <span class="bold"><strong>sequence</strong></span>,
+                               <span class="bold"><strong>multiple individual files</strong></span>) is automatically
+                           selected by the Check-in Widget.
+            </p>
+            <p>For example, on the panel on the right, if a <span class="italic">file</span>
+                           is selected for check in, the Check-in type will automatically switch to <span class="bold"><strong>A File</strong></span> under the Check-in Options on the bottom left:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_file_selection.png"></span></p>
+            <p>For example, if a <span class="italic">folder</span> is selected to check in on
+                           the right panel, the Check-in type will automatically switch to <span class="bold"><strong>A
+                                     Directory</strong></span> under the Check-in Options on the bottom left:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_folder_selection.png"></span></p>
+         </div>
+         <div class="simplesect" title="More Context and Subcontext Examples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9552"></a>More Context and Subcontext Examples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>Example 1)</strong></span></p>
+            <p>To check in <span class="italic">high resolution</span> and <span class="italic">low resolution</span> files for a model process, first specify the
+                               <span class="bold"><strong>context_options</strong></span> under:
+            </p>
+            <p>
+                           <span class="bold"><strong>Checkin Widget -&gt; Gear Menu -&gt; Edit Process:</strong></span></p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_edit_processes.png"></span></p>
+            <p>Specify the following Context Options:</p>
+            <p>
+                           
+            </p><pre class="screen">Context Options: model/hi|model/lo</pre><p>
+                       
+            </p>
+            <p><span class="bold"><strong>OR</strong></span> specify the following Subcontext Options:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">Subcontext Options: hi|lo</pre><p>
+                       
+            </p>
+            <p>Both of the choices above give the <span class="italic">same</span>
+                           result.
+            </p>
+            <p>Result:</p><pre class="screen">process = model
+context = model/hi   (or model/lo)</pre><p>Only use either the context field or the subcontext field but not both fields.</p>
+            <p>
+                           
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>If values are specified for <span class="italic">both</span> the
+                                          <span class="bold"><strong>context_options</strong></span> and the <span class="bold"><strong>subcontext_options</strong></span>, only the <span class="bold"><strong>context_options</strong></span> will be used (the <span class="bold"><strong>subcontext_options</strong></span> will be ignored).
+               </p>
+            </div>
+            <p>
+                       
+            </p>
+            <p><span class="bold"><strong>
+                                 Example 2)
+                             </strong></span></p>
+            <p>To provide the same options (hi and lo) and avoid using subcontexts specify the
+                           following <span class="bold"><strong>context_options</strong></span>:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">context_options: model_hi|model_lo</pre><p>
+                       
+            </p>
+            <p>Result:</p>
+            <p>
+                           
+            </p><pre class="screen">process = model
+context = model_hi    (or model_lo)</pre><p>
+                       
+            </p>
+            <p>Notice that the forward slash '/' was not used, which avoids using subcontexts.</p>
+            <p><span class="bold"><strong>
+                                 Example 3)
+                             </strong></span></p>
+            <p>The following is another example of how to avoiding using subcontexts
+                           altogether.
+            </p>
+            <p>To check in a <span class="italic">proxy</span> and a <span class="italic">staging</span> context for a model process, specify the following <span class="bold"><strong>context_options</strong></span>:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">context_options: model_proxy|model_staging</pre><p>
+                       
+            </p>
+            <p>Result:</p>
+            <p>
+                           
+            </p><pre class="screen">process = model
+context = model_proxy    (or model_staging)</pre><p>
+                       
+            </p>
+            <p>Again, notice that the forward slash '/' was not used, which avoids using
+                           subcontexts.
+            </p>
+         </div>
+         <div class="simplesect" title="Subcontext Keywords: (auto), (main) and (text)">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9678"></a>Subcontext Keywords: (auto), (main) and (text)
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The following subcontext option keywords are supported:</p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>(auto)</strong></span></p>
+                                                       
+                        </td>
+                        <td>Uses the filename as the subcontext <span class="italic">(<span class="bold"><strong>auto</strong></span> is the default if no
+                                                                  values are specified for the context or subcontext
+                                                                  options)</span></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>(main)</strong></span></p>
+                                                       
+                        </td>
+                        <td>Uses the process as the context</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>(text)</strong></span></p>
+                                                       
+                        </td>
+                        <td>Allows the user to specify their own context for the file to
+                                                           check in
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>Example for <span class="bold"><strong>(auto)</strong></span>:
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>process:</strong></span></p>
+                                                       
+                        </td>
+                        <td>design</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>filename:</strong></span></p>
+                                                       
+                        </td>
+                        <td>my_checkin_file.txt</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>subcontext option
+                                                                        selected:</strong></span></p>
+                                                       
+                        </td>
+                        <td>(auto)</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>Result:</p>
+            <p>
+                           
+            </p><pre class="screen">context = design/my_checkin_file.txt</pre><p>
+                       
+            </p>
+            <p>Example for <span class="bold"><strong>(main)</strong></span>:
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>process:</strong></span></p>
+                                                       
+                        </td>
+                        <td>design</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>subcontext option
+                                                                        selected:</strong></span></p>
+                                                       
+                        </td>
+                        <td>(main)</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>Result:</p>
+            <p>
+                           
+            </p><pre class="screen">context = design (because <span class="italic">design</span> is the process)</pre><p>
+                       
+            </p>
+            <p>Example for<span class="bold"><strong> (text)</strong></span>:
+            </p>
+            <p>To check in different colors of a car for the design process eg. a green version of
+                           the car and a red version
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>process:</strong></span></p>
+                                                       
+                        </td>
+                        <td>design</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>subcontext option
+                                                                        selected:</strong></span></p>
+                                                       
+                        </td>
+                        <td>(text)</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>custom context inputted</strong></span></td>
+                        <td>green</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>Result:</p>
+            <p>
+                           
+            </p><pre class="screen">context = design/blue</pre><p>
+                       
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_text.png"></span></p>
+         </div>
+         <div class="simplesect" title="Providing a Custom Layout View For the Check-in Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9861"></a>Providing a Custom Layout View For the Check-in Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>A custom layout view can be provided in the check-in panel as options.</p>
+            <p>For example, to provide check boxes during the check in to submit the job to the
+                           render farm or to submit the file for the review process, create a custom view and
+                           specify the view in the <span class="bold"><strong>Check Options View</strong></span>.
+            </p>
+            <p>To do this, first, create a custom view under:</p>
+            <p>
+                           <span class="bold"><strong>Admin Views -&gt; Project -&gt; Widget Config</strong></span></p>
+            <p>Below is an example of a custom layout view:</p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_widget_config.png"></span></p>
+            <p>note: </p>
+            <p><span class="italic">In the example custom view above, to make use of these
+                                  custom UI check boxes, more work needs to be done to override the checkin_script or
+                                  checkin_validate_script.</span></p>
+            <p><span class="italic">The checkin_script and the checkin_validate script can be
+                                  found under: Checkin Widget -&gt; Gear Menu -&gt; List Processes</span></p>
+            <p><span class="italic">Example validate scripts can be found at the end of this
+                                  Check-in Widget doc in the section labeled Example Scripts: Example 1 and
+                                  2.</span></p>
+            <p>Then, specify the name of the view under:</p>
+            <p>
+                           <span class="bold"><strong>Checkin Widget -&gt; Gear Menu -&gt; List Processes</strong></span></p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_gear_menu_list_processes.png"></span></p>
+            <p>In the Check-in Options View, specify the name of the custom layout view for the
+                           check-in options:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/checkin-widget_checkin_options_view.png"></span></p>
+            <p>Finally, select a file to check in, the custom view with the check-in options will
+                           appear on the panel on the left.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Without custom check-in
+                                                                 options:</strong></span></td>
+                        <td><span class="bold"><strong>With customer check-in
+                                                                 options:</strong></span></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="inlinemediaobject"><img src="media/checkin-widget_custom_layout_before.png"></span></p>
+                                                       
+                        </td>
+                        <td><span class="inlinemediaobject"><img src="media/checkin-widget_custom_layout.png"></span></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Script Samples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9939"></a>Script Samples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>This script can be saved in the Script Editor accessible through the Gear Menu.</p>
+            <p>Example 1: checkin/validate_folder</p><pre class="screen">
+var values = bvr.values;
+var file_path = values.file_paths[0];
+var sk = values.search_key;
+var applet = spt.Applet.get();
+
+var file_list = applet.list_dir(file_path);
+
+for (var i=0; i &lt;file_list.length; i++){
+
+    var base =spt.path.get_basename(file_list[i]);
+    if ( base == 'DATA') {
+         throw('it contains a DATA folder. Checkin aborted');
+     
+    }
+}                
+        </pre><p>Example 2: checkin/validate_file</p><pre class="screen">
+var values = bvr.values;
+var file_path = values.file_paths[0];
+var sk = values.search_key;
+var applet = spt.Applet.get();
+
+var base =spt.path.get_basename(file_path);
+if ( base.test(/\\.mov$/)) {
+     throw('it does not have a mov extension. Validation failed.');
+}
+               
+        </pre><p>Example 3: Custom checkin_script using display option "checkin_script_path". The
+                           default snapshot_type is file, if the file extension is .mov, the snapshot_type is set
+                           to 'mov'.
+            </p><pre class="screen">
+var file_paths = bvr.values.file_paths;
+var description = bvr.values.description;
+var search_key = bvr.values.search_key;
+var context = bvr.values.context;
+var transfer_mode = bvr.values.transfer_mode
+var is_current = bvr.values.is_current;
+var path = file_paths[0]
+spt.app_busy.show("File Checkin", path);
+                 
+var snapshot_type = 'file';
+if (path.test(/\\.mov$/)){
+    snapshot_type = 'mov';
+}
+var server = TacticServerStub.get();
+snapshot = server.simple_checkin(search_key, context, path, 
+{description: description, mode: transfer_mode, is_current: is_current,
+ snapshot_type:'mov'});
+        </pre></div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9956"></a>Advanced 
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The General Check-in Widget is usually invoked with a CheckinButtonElementWdg with a
+                           transfer mode specified. In this implementation, the process will be preselected as
+                           "texture", providing the pipeline for this sObject does contain a process named
+                           'texture'. 
+            </p><pre class="screen">&lt;element name='general_checkin' title=' '&gt;
+  &lt;display class='tactic.ui.widget.CheckinButtonElementWdg'&gt;
+    &lt;transfer_mode&gt;copy&lt;/transfer_mode&gt;
+    &lt;process&gt;texture&lt;/process&gt;
+  &lt;/display&gt;
+  &lt;/element&gt;</pre><p>In this implementation, the process will be preselected as "model", providing the
+                           pipeline for this sObject does contain a process named 'model'. The user cannot switch
+                           to other processes in the pipeline, and only "New Directory" mode can be selected. 
+            </p><pre class="screen">&lt;element name='general_checkin' title=' '&gt;
+  &lt;display class='tactic.ui.widget.CheckinButtonElementWdg'&gt;
+    &lt;transfer_mode&gt;copy&lt;/transfer_mode&gt;
+    &lt;process&gt;model&lt;/process&gt;
+     &lt;lock_process&gt;true&lt;/lock_process&gt;
+    &lt;mode&gt;dir&lt;/mode&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_explorer-table-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-common.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_sobject-checkin-history-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

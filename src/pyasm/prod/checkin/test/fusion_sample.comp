@@ -1,0 +1,2865 @@
+Composition {
+	CurrentTime = 14,
+	RenderRange = { 1, 1, },
+	GlobalRange = { 1, 100, },
+	Version = "Fusion 5.21 build 24",
+	SavedOutputs = 1,
+	HeldTools = 0,
+	DisabledTools = 3,
+	LockedTools = 0,
+	AudioOffset = 0,
+	Resumable = true,
+	OutputClips = {
+		"Z:\\WTWTA\\sequences\\DC\\DC072_038\\2d\\fusion\\comp\\testTake\\testTake0001.exr",
+	},
+	Tools = {
+		Loader4_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "D:/assets/bar/render/shot/XG002/v004/image_0101969BAR.png.0051",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			PassThrough = true,
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 550, 412.5, },
+			},
+		},
+		Loader1_1_1_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip6",
+					Filename = "Y:\\WTWTA\\sequences\\DC\\shots\\DC072_038\\scans\\DC072_038_BG1\\dpx\\DC072_038_BG1.00001.dpx",
+					FormatID = "DPXFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 362776,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				["Clip2.DPXFormat.RedConversionGamma"] = Input {
+					Value = 1.7,
+				},
+				["Clip1.DPXFormat.RedFilmStockGamma"] = Input {
+					Value = 1,
+				},
+				["Clip1.DPXFormat.RedConversionGamma"] = Input {
+					Value = 1.7,
+				},
+				["Clip5.DPXFormat.RedConversionGamma"] = Input {
+					Value = 1.7,
+				},
+				["Clip2.DPXFormat.RedFilmStockGamma"] = Input {
+					Value = 1,
+				},
+				["Clip5.DPXFormat.RedFilmStockGamma"] = Input {
+					Value = 1,
+				},
+				MissingFrames = Input {
+					Value = 1,
+				},
+				EnableClipList = Input {
+					Value = 0,
+				},
+				["Clip6.DPXFormat.BypassConversion"] = Input {
+					Value = 1,
+				},
+				["Clip6.DPXFormat.RedFilmStockGamma"] = Input {
+					Value = 1,
+				},
+				["Clip6.DPXFormat.RedConversionGamma"] = Input {
+					Value = 1.7,
+				},
+				TimeCodeOffset = Input {
+					Value = 362776,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 330, 610.5, },
+			},
+		},
+		Loader1_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\HeadSelfIllum.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 550, 247.5, },
+			},
+		},
+		Loader6_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\Diffuse.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 825, 115.5, },
+			},
+		},
+		Loader4 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\PrefTexture.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 330, 313.5, },
+			},
+		},
+		Loader3_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\Spec.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1045, 280.5, },
+			},
+		},
+		Loader3 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\headmask.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1650, 379.5, },
+			},
+		},
+		Loader5 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "Z:\\WTWTA\\sequences\\DC\\DC072_038\\3d\\renderman\\tk000\\img_preview\\PrefTextureHair.0014.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 14,
+					Length = 1,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 0,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 0,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 1,
+					Depth = 1,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 1,
+				},
+			},
+			Inputs = {
+				Depth = Input {
+					Value = 1,
+				},
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2585, 412.5, },
+			},
+		},
+		Loader5_1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "Z:\\WTWTA\\sequences\\DC\\DC072_038\\3d\\renderman\\tk000\\img_preview\\HairMatte.0014.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 14,
+					Length = 1,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 0,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 0,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 1,
+					Depth = 1,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 1,
+				},
+			},
+			Inputs = {
+				Depth = Input {
+					Value = 1,
+				},
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2915, 412.5, },
+			},
+		},
+		Loader1 = Loader {
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Filename = "z:\\wtwta\\sequences\\dc\\dc072_038\\3d\\renderman\\s_tk007\\img\\cgmask.0001.exr",
+					FormatID = "OpenEXRFormat",
+					StartFrame = 1,
+					Length = 58,
+					Multiframe = false,
+					Saving = false,
+					LengthSetManually = true,
+					TrimIn = 0,
+					TrimOut = 57,
+					ExtendFirst = 0,
+					ExtendLast = 0,
+					Loop = 1,
+					Reverse = false,
+					ImportMode = 0,
+					PullOffset = 0,
+					AspectMode = 0,
+					Depth = 0,
+					TimeCode = 0,
+					KeyCode = "",
+					GlobalStart = 1,
+					GlobalEnd = 58,
+				},
+			},
+			Inputs = {
+				EnableClipList = Input {
+					Value = 0,
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1375, 247.5, },
+			},
+		},
+		divAlpha_1 = ChannelBoolean {
+			PassThrough = true,
+			NameSet = true,
+			CurrentSettings = 2,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								Name = "ChannelBooleans1",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 7,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "Loader4_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 660, 412.5, },
+			},
+		},
+		Resize2 = BetterResize {
+			Inputs = {
+				Width = Input {
+					Value = 1280,
+				},
+				Height = Input {
+					Value = 720,
+				},
+				PixelAspect = Input {
+					Value = { 1, 1, },
+				},
+				FilterMethod = Input {
+					Value = 9,
+				},
+				Input = Input {
+					SourceOp = "Loader1_1_1_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 495, 610.5, },
+			},
+		},
+		CC_lut = FileLUT {
+			NameSet = true,
+			Inputs = {
+				LUTFile = Input {
+					Value = "Y:\\WTWTA\\sequences\\DC\\shots\\DC072_038\\2d\\fusion\\lut\\DC072_038.alut",
+				},
+				Input = Input {
+					SourceOp = "Resize2",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 605, 610.5, },
+			},
+		},
+		divAlpha_2 = ChannelBoolean {
+			NameSet = true,
+			CurrentSettings = 2,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								Name = "ChannelBooleans1",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 7,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "Loader1_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 660, 247.5, },
+			},
+		},
+		divAlpha = ChannelBoolean {
+			NameSet = true,
+			CurrentSettings = 2,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								Name = "ChannelBooleans1",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 7,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "Loader6_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 181.5, },
+			},
+		},
+		MultDiffuse = ChannelBoolean {
+			NameSet = true,
+			Inputs = {
+				ProcessAlpha = Input {
+					Value = 0,
+				},
+				Operation = Input {
+					Value = 6,
+				},
+				Background = Input {
+					SourceOp = "divAlpha_2",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "divAlpha",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 247.5, },
+			},
+		},
+		spread = Blur {
+			NameSet = true,
+			Inputs = {
+				XBlurSize = Input {
+					Value = 10.4972376,
+				},
+				YBlurSize = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "Loader4",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 440, 346.5, },
+			},
+		},
+		divA = ChannelBoolean {
+			NameSet = true,
+			CurrentSettings = 2,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								Name = "ChannelBooleans1",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									Background = Input {
+										SourceOp = "MultDiffuse",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 445.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 7,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 8,
+				},
+				Background = Input {
+					SourceOp = "spread",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 550, 346.5, },
+			},
+		},
+		mergeOrig = Merge {
+			NameSet = true,
+			Inputs = {
+				PerformDepthMerge = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "divA",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Loader4",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 660, 346.5, },
+			},
+		},
+		mouthMaskIntoPref = Merge {
+			NameSet = true,
+			Inputs = {
+				ProcessAlpha = Input {
+					Value = 0,
+				},
+				PerformDepthMerge = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "MultDiffuse",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "mergeOrig",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap3",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 346.5, },
+			},
+		},
+		Bitmap1_1_1 = BitmapMask {
+			Inputs = {
+				Invert = Input {
+					Value = 1,
+				},
+				Image = Input {
+					SourceOp = "Loader3",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Red", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1100, 412.5, },
+			},
+		},
+		headSpec = Merge {
+			NameSet = true,
+			Inputs = {
+				ProcessAlpha = Input {
+					Value = 0,
+				},
+				ApplyMode = Input {
+					Value = FuID { "Screen", },
+				},
+				PerformDepthMerge = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "mouthMaskIntoPref",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "BC",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1_1_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 412.5, },
+			},
+		},
+		Bitmap1_2 = BitmapMask {
+			Inputs = {
+				Invert = Input {
+					Value = 1,
+				},
+				Image = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1100, 445.5, },
+			},
+		},
+		addEyesAndTeeth = ChannelBoolean {
+			CtrlWZoom = false,
+			NameSet = true,
+			Inputs = {
+				Operation = Input {
+					Value = 1,
+				},
+				ToGreen = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "Loader3",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1210, 511.5, },
+			},
+		},
+		Bitmap1_2_1 = BitmapMask {
+			Inputs = {
+				Invert = Input {
+					Value = 1,
+				},
+				Image = Input {
+					SourceOp = "addEyesAndTeeth",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1045, 511.5, },
+			},
+		},
+		Bitmap3 = BitmapMask {
+			Inputs = {
+				PaintMode = Input {
+					Value = FuID { "Multiply", },
+				},
+				Image = Input {
+					SourceOp = "Bitmap1_2",
+					Source = "Mask",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1_2_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 935, 511.5, },
+			},
+		},
+		Instance_CC_lut = FileLUT {
+			NameSet = true,
+			SourceOp = "CC_lut",
+			Inputs = {
+				Input = Input {
+					SourceOp = "headSpec",
+					Source = "Output",
+				},
+				StartEndRenderScripts = Input {
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap3",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 511.5, },
+			},
+		},
+		clampBlack = BrightnessContrast {
+			NameSet = true,
+			Inputs = {
+				ClipBlack = Input {
+					Value = 1,
+				},
+				Input = Input {
+					SourceOp = "Instance_CC_lut",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 544.5, },
+			},
+		},
+		multAlpha = ChannelBoolean {
+			NameSet = true,
+			CurrentSettings = 3,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									Foreground = Input {
+										SourceOp = "Loader8",
+										Source = "Output",
+									},
+									Background = Input {
+										SourceOp = "Dissolve1",
+										Source = "Output",
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2420, 412.5, },
+								},
+								CurrentSettings = 2,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							divAlpha_1 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									Operation = Input {
+										Value = 7,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Background = Input {
+										SourceOp = "clampBlack",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 165, 511.5, },
+								},
+								CtrlWZoom = false,
+								NameSet = true,
+								CurrentSettings = 3,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Foreground = Input {
+										SourceOp = "Loader8",
+										Source = "Output",
+									},
+									Background = Input {
+										SourceOp = "Dissolve1",
+										Source = "Output",
+									},
+									Operation = Input {
+										Value = 6,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								Name = "ChannelBooleans1_9",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2420, 412.5, },
+								},
+								CurrentSettings = 4,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[4] = {
+						Tools = ordered() {
+							ChannelBooleans1_9_1 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 4,
+									},
+									ToGreen = Input {
+										Value = 4,
+									},
+									Background = Input {
+										SourceOp = "Loader18",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 4,
+									},
+									ToAlpha = Input {
+										Value = 0,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 55, 115.5, },
+								},
+								CurrentSettings = 2,
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 6,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "clampBlack",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 577.5, },
+			},
+		},
+		Merge1 = Merge {
+			Inputs = {
+				Background = Input {
+					SourceOp = "CC_lut",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "multAlpha",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 770, 610.5, },
+			},
+		},
+		Bitmap1 = BitmapMask {
+			Inputs = {
+				PaintMode = Input {
+					Value = FuID { "Subtract", },
+				},
+				Image = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Blue", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1155, 478.5, },
+			},
+		},
+		Bitmap5 = BitmapMask {
+			Inputs = {
+				PaintMode = Input {
+					Value = FuID { "Subtract", },
+				},
+				Image = Input {
+					SourceOp = "Loader3",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1155, 544.5, },
+			},
+		},
+		CCTongue = ColorCorrector {
+			NameSet = true,
+			Inputs = {
+				WheelHue1 = Input {
+					Value = 0.0472973,
+				},
+				WheelSaturation1 = Input {
+					Value = 0.8378378,
+				},
+				WheelTintAngle1 = Input {
+					Value = 0.218583520905499,
+				},
+				WheelTintLength1 = Input {
+					Value = 0.0416,
+				},
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGain = Input {
+					Value = 0.7364865,
+				},
+				MasterRGBGamma = Input {
+					Value = 0.8648649,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.0732020547945205, 0.75, },
+									{ 0.219606164383562, 0.25, },
+									{ 0.292808219178082, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0.176369863013699, 0, },
+									{ 0.339041095890411, 0.566371681415929, },
+									{ 0.700342465753425, 1, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "Merge1",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap5",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1155, 610.5, },
+			},
+		},
+		Bitmap2 = BitmapMask {
+			Inputs = {
+				Image = Input {
+					SourceOp = "Loader3",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1375, 544.5, },
+			},
+		},
+		CCTeeth = ColorCorrector {
+			NameSet = true,
+			Inputs = {
+				CorrectionRange = Input {
+					Value = 1,
+				},
+				WheelSaturation1 = Input {
+					Value = 1.0608108,
+				},
+				WheelTintAngle1 = Input {
+					Value = 0.11365106450007,
+				},
+				WheelTintLength1 = Input {
+					Value = 0.0700444444444444,
+				},
+				WheelRangeDummy1 = Input {
+					Value = 1,
+				},
+				WheelTintAngle2 = Input {
+					Value = 0.0700031212374308,
+				},
+				WheelTintLength2 = Input {
+					Value = 0.0627555555555556,
+				},
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGamma = Input {
+					Value = 1.1216216,
+				},
+				SuppressionRangeDummy = Input {
+					Value = 1,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.0732020547945205, 0.75, },
+									{ 0.219606164383562, 0.25, },
+									{ 0.292808219178082, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0.176369863013699, 0, },
+									{ 0.339041095890411, 0.566371681415929, },
+									{ 0.700342465753425, 1, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "CCTongue",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap2",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1375, 610.5, },
+			},
+		},
+		Bitmap4 = BitmapMask {
+			Inputs = {
+				Image = Input {
+					SourceOp = "BrightnessContrast1",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1485, 544.5, },
+			},
+		},
+		CCLipsOnly = ColorCorrector {
+			NameSet = true,
+			Inputs = {
+				Blend = Input {
+					Value = 0.6351351,
+				},
+				WheelHue1 = Input {
+					Value = 0.0067568,
+				},
+				WheelSaturation1 = Input {
+					Value = 1.0202703,
+				},
+				WheelTintAngle1 = Input {
+					Value = 0.0442927663914524,
+				},
+				WheelTintLength1 = Input {
+					Value = 0.150755555555556,
+				},
+				WheelTintAngle3 = Input {
+					Value = -0.25,
+				},
+				WheelTintLength3 = Input {
+					Value = 0.000177777777777778,
+				},
+				WheelTintAngle4 = Input {
+					Value = 0.347200056107107,
+				},
+				WheelTintLength4 = Input {
+					Value = 0.105955555555556,
+				},
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGain = Input {
+					Value = 0.6891892,
+				},
+				MasterRGBGamma = Input {
+					Value = 1.1486486,
+				},
+				ShadowsRGBGamma = Input {
+					Value = 1.1081081,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.0732020547945205, 0.75, },
+									{ 0.219606164383562, 0.25, },
+									{ 0.292808219178082, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0.176369863013699, 0, },
+									{ 0.339041095890411, 0.566371681415929, },
+									{ 0.700342465753425, 1, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "CCTeeth",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap4",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1485, 610.5, },
+			},
+		},
+		ccEYES = ColorCorrector {
+			NameSet = true,
+			Inputs = {
+				CorrectionRange = Input {
+					Value = 1,
+				},
+				WheelTintAngle1 = Input {
+					Value = 0.0678998743900459,
+				},
+				WheelTintLength1 = Input {
+					Value = 0.103822222222222,
+				},
+				WheelRangeDummy1 = Input {
+					Value = 1,
+				},
+				WheelSaturation4 = Input {
+					Value = 1.1283784,
+				},
+				WheelTintAngle4 = Input {
+					Value = 0.411096157755324,
+				},
+				WheelTintLength4 = Input {
+					Value = 0.0632888888888889,
+				},
+				Channel = Input {
+					Value = 3,
+				},
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGain = Input {
+					Value = 0.7364865,
+				},
+				MasterRedGamma = Input {
+					Value = 1.0675676,
+				},
+				MasterRedBrightness = Input {
+					Value = 0.0067568,
+				},
+				MasterGreenGamma = Input {
+					Value = 1.0540541,
+				},
+				ShadowsBlueBrightness = Input {
+					Value = 0.061013514,
+				},
+				SuppressionRangeDummy = Input {
+					Value = 1,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.0380993150684932, 0.75, },
+									{ 0.114297945205479, 0.25, },
+									{ 0.152397260273973, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0.160958904109589, 0, },
+									{ 0.263698630136986, 0.889380530973451, },
+									{ 0.790239726027397, 0.75, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "CCLipsOnly",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1650, 610.5, },
+			},
+		},
+		BC = BrightnessContrast {
+			NameSet = true,
+			Inputs = {
+				Gain = Input {
+					Value = 2.2307692,
+				},
+				Gamma = Input {
+					Value = 0.4777778,
+				},
+				Input = Input {
+					SourceOp = "Loader3_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1045, 346.5, },
+			},
+		},
+		eyeSpec = Merge {
+			NameSet = true,
+			Inputs = {
+				ProcessAlpha = Input {
+					Value = 0,
+				},
+				ApplyMode = Input {
+					Value = FuID { "Screen", },
+				},
+				PerformDepthMerge = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "ccEYES",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "BC",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1815, 610.5, },
+			},
+		},
+		darkenEyeBorder = ColorCorrector {
+			NameSet = true,
+			Inputs = {
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGain = Input {
+					Value = 0.6177606,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.4, 0.2, },
+									{ 0.6, 0, },
+									{ 1, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0, 0, },
+									{ 0.4, 0, },
+									{ 0.6, 0.2, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "eyeSpec",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "ColorCurves1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1925, 610.5, },
+			},
+		},
+		Blur1 = Blur {
+			Inputs = {
+				XBlurSize = Input {
+					Value = 4,
+				},
+				YBlurSize = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "Bitmap1_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1870, 544.5, },
+			},
+		},
+		ColorCurves1 = ColorCurves {
+			PickColor = true,
+			Inputs = {
+				Red = Input {
+					SourceOp = "ColorCurves1Red",
+					Source = "Value",
+				},
+				Green = Input {
+					SourceOp = "ColorCurves1Green",
+					Source = "Value",
+				},
+				Blue = Input {
+					SourceOp = "ColorCurves1Blue",
+					Source = "Value",
+				},
+				Alpha = Input {
+					SourceOp = "LUTBezier1",
+					Source = "Value",
+				},
+				Input = Input {
+					SourceOp = "Blur1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1980, 544.5, },
+			},
+			Tools = {
+				ColorCurves1Red = LUTBezier {
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.164685725550629, 0.332515859349349, }, },
+							[0.494057176651886] = { 0.997547578048047, LH = { 0.329371451101258, 0.665031718698698, }, RH = { 0.662704784434591, 0.665031718698698, }, Flags = { Linear = true, }, },
+							[1] = { 0, LH = { 0.831352392217295, 0.332515859349349, }, Flags = { Linear = true, }, },
+						},
+					},
+					SplineColor = { 1, 0, 0, },
+					CtrlWShown = false,
+					NameSet = true,
+				},
+				ColorCurves1Green = LUTBezier {
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.164685725550629, 0.332515859349349, }, },
+							[0.494057176651886] = { 0.997547578048047, LH = { 0.329371451101258, 0.665031718698698, }, RH = { 0.662704784434591, 0.665031718698698, }, Flags = { Linear = true, }, },
+							[1] = { 0, LH = { 0.831352392217295, 0.332515859349349, }, Flags = { Linear = true, }, },
+						},
+					},
+					SplineColor = { 0, 1, 0, },
+					CtrlWShown = false,
+					NameSet = true,
+				},
+				LUTBezier1 = LUTBezier {
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.164685725550629, 0.332515859349349, }, },
+							[0.494057176651886] = { 0.997547578048047, LH = { 0.329371451101258, 0.665031718698698, }, RH = { 0.662704784434591, 0.665031718698698, }, Flags = { Linear = true, }, },
+							[1] = { 0, LH = { 0.831352392217295, 0.332515859349349, }, Flags = { Linear = true, }, },
+						},
+					},
+					SplineColor = { 0.8, 0.8, 0.8, },
+					CtrlWShown = false,
+				},
+				ColorCurves1Blue = LUTBezier {
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.164685725550629, 0.332515859349349, }, },
+							[0.494057176651886] = { 0.997547578048047, LH = { 0.329371451101258, 0.665031718698698, }, RH = { 0.662704784434591, 0.665031718698698, }, Flags = { Linear = true, }, },
+							[1] = { 0, LH = { 0.831352392217295, 0.332515859349349, }, Flags = { Linear = true, }, },
+						},
+					},
+					SplineColor = { 0, 0, 1, },
+					CtrlWShown = false,
+					NameSet = true,
+				},
+			},
+		},
+		blurEyeBorder = Blur {
+			NameSet = true,
+			Inputs = {
+				YBlurSize = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "darkenEyeBorder",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "ColorCurves1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2035, 610.5, },
+			},
+		},
+		ColorCorrector1 = ColorCorrector {
+			PassThrough = true,
+			Inputs = {
+				ReleaseMatch = Input {
+					Disabled = true,
+				},
+				MasterRGBGamma = Input {
+					Value = 0.8716216,
+				},
+				ColorRanges = Input {
+					Value = ColorCurves {
+						Curves = {
+							{
+								Points = {
+									{ 0, 1, },
+									{ 0.4, 0.2, },
+									{ 0.6, 0, },
+									{ 1, 0, },
+								},
+							},
+							{
+								Points = {
+									{ 0, 0, },
+									{ 0.4, 0, },
+									{ 0.6, 0.2, },
+									{ 1, 1, },
+								},
+							},
+						},
+					},
+				},
+				Input = Input {
+					SourceOp = "blurEyeBorder",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap6",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2145, 610.5, },
+			},
+		},
+		SoftGlow1 = SoftGlow {
+			Inputs = {
+				Gain = Input {
+					Value = 3.4797297,
+				},
+				YGlowSize = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2200, 511.5, },
+			},
+		},
+		Bitmap6 = BitmapMask {
+			Inputs = {
+				Image = Input {
+					SourceOp = "SoftGlow1",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2200, 544.5, },
+			},
+		},
+		blurMouth = Blur {
+			NameSet = true,
+			Inputs = {
+				YBlurSize = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "ColorCorrector1",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap6",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2255, 610.5, },
+			},
+		},
+		mouth = BitmapMask {
+			NameSet = true,
+			Inputs = {
+				Image = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+				Center = Input {
+					Value = { 0.510869565217391, 0.5, },
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2420, 478.5, },
+			},
+		},
+		Bitmap1_1 = BitmapMask {
+			Inputs = {
+				Image = Input {
+					SourceOp = "Loader3",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Red", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1650, 445.5, },
+			},
+		},
+		mergeEyes = BitmapMask {
+			NameSet = true,
+			Inputs = {
+				Image = Input {
+					SourceOp = "mouth",
+					Source = "Mask",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap1_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2420, 511.5, },
+			},
+		},
+		mergeHeadAlpha = BitmapMask {
+			NameSet = true,
+			Inputs = {
+				Level = Input {
+					Value = 0.5163776,
+				},
+				PaintMode = Input {
+					Value = FuID { "Add", },
+				},
+				EffectMask = Input {
+					SourceOp = "mergeEyes",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2420, 544.5, },
+			},
+		},
+		Grain1 = Grain {
+			Inputs = {
+				Power = Input {
+					Value = 0.5,
+				},
+				RedDifference = Input {
+					Value = 2.1387283,
+				},
+				GreenDifference = Input {
+					Value = 1.8111753,
+				},
+				BlueDifference = Input {
+					Value = 3.2177264,
+				},
+				GrainSoftness = Input {
+					Value = 2,
+				},
+				Red = Input {
+					SourceOp = "Grain1Red",
+					Source = "Value",
+				},
+				Green = Input {
+					SourceOp = "Grain1Green",
+					Source = "Value",
+				},
+				Blue = Input {
+					SourceOp = "Grain1Blue",
+					Source = "Value",
+				},
+				Input = Input {
+					SourceOp = "blurMouth",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "mergeHeadAlpha",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2420, 610.5, },
+			},
+		},
+		Grain1Red = LUTBezier {
+			KeyColorSplines = {
+				[0] = {
+					[0] = { 0, RH = { 0.00854311813210434, 0.187254978789369, }, Flags = { Linear = true, }, },
+					[0.0595] = { 1, LH = { 0.0250770848960615, 0.997449586675022, }, RH = { 0.373, 1, }, },
+					[1] = { 1, LH = { 0.6865, 1, }, Flags = { Linear = true, }, },
+				},
+			},
+			SplineColor = { 1, 0, 0, },
+		},
+		Grain1Green = LUTBezier {
+			KeyColorSplines = {
+				[0] = {
+					[0] = { 0, RH = { 0.00854311813210434, 0.187254978789369, }, Flags = { Linear = true, }, },
+					[0.0595] = { 1, LH = { 0.0250770848960615, 0.997449586675022, }, RH = { 0.373, 1, }, },
+					[1] = { 1, LH = { 0.6865, 1, }, Flags = { Linear = true, }, },
+				},
+			},
+			SplineColor = { 0, 1, 0, },
+		},
+		Grain1Blue = LUTBezier {
+			KeyColorSplines = {
+				[0] = {
+					[0] = { 0, RH = { 0.00854311813210434, 0.187254978789369, }, Flags = { Linear = true, }, },
+					[0.0595] = { 1, LH = { 0.0250770848960615, 0.997449586675022, }, RH = { 0.373, 1, }, },
+					[1] = { 1, LH = { 0.6865, 1, }, Flags = { Linear = true, }, },
+				},
+			},
+			SplineColor = { 0, 0, 1, },
+		},
+		ChannelBooleans1 = ChannelBoolean {
+			CurrentSettings = 2,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								CtrlWZoom = false,
+								CustomData = {
+								},
+								Inputs = {
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								CtrlWZoom = false,
+								CustomData = {
+								},
+								Inputs = {
+									Operation = Input {
+										Value = 7,
+									},
+									ToRed = Input {
+										Value = 3,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+								Name = "ChannelBooleans1",
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								CtrlWZoom = false,
+								CustomData = {
+								},
+								Inputs = {
+									Operation = Input {
+										Value = 6,
+									},
+									ToRed = Input {
+										Value = 3,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+							},
+						},
+					},
+					[4] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								CtrlWZoom = false,
+								CustomData = {
+								},
+								Inputs = {
+									ToRed = Input {
+										Value = 4,
+									},
+									ToGreen = Input {
+										Value = 4,
+									},
+									ToBlue = Input {
+										Value = 4,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 7,
+				},
+				ToGreen = Input {
+					Value = 0,
+				},
+				ToBlue = Input {
+					Value = 0,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "Loader5",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Loader5_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2750, 412.5, },
+			},
+		},
+		MatteControl1 = MatteControl {
+			Inputs = {
+				MatteCombine = Input {
+					Value = 1,
+				},
+				Background = Input {
+					SourceOp = "ChannelBooleans1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Loader5_1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2750, 478.5, },
+			},
+		},
+		Instance_Instance_CC_lut = FileLUT {
+			NameSet = true,
+			SourceOp = "CC_lut",
+			Inputs = {
+				Input = Input {
+					SourceOp = "MatteControl1",
+					Source = "Output",
+				},
+				StartEndRenderScripts = Input {
+				},
+				EffectMask = Input {
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2695, 511.5, },
+			},
+		},
+		ChannelBooleans1_10 = ChannelBoolean {
+			CurrentSettings = 3,
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1_10 = ChannelBoolean {
+								CtrlWZoom = false,
+								CustomData = {
+								},
+								Inputs = {
+									Background = Input {
+										SourceOp = "ChannelBooleans1",
+										Source = "Output",
+									},
+								},
+								ViewInfo = OperatorInfo {
+									Pos = { 2805, 577.5, },
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Operation = Input {
+										Value = 7,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Operation = Input {
+										Value = 6,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+								CustomData = {
+								},
+								Name = "ChannelBooleans1",
+							},
+						},
+					},
+					[4] = {
+						Tools = ordered() {
+							ChannelBooleans1 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 4,
+									},
+									ToGreen = Input {
+										Value = 4,
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 4,
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2860, 511.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 6,
+				},
+				ToRed = Input {
+					Value = 3,
+				},
+				ToGreen = Input {
+					Value = 3,
+				},
+				ToBlue = Input {
+					Value = 3,
+				},
+				ToAlpha = Input {
+					Value = 4,
+				},
+				Background = Input {
+					SourceOp = "Instance_Instance_CC_lut",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2750, 544.5, },
+			},
+		},
+		ChannelBooleans1_9 = ChannelBoolean {
+			CustomData = {
+				Settings = {
+					[1] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									Foreground = Input {
+										SourceOp = "Loader8",
+										Source = "Output",
+									},
+									Background = Input {
+										SourceOp = "Dissolve1",
+										Source = "Output",
+									},
+								},
+								Name = "ChannelBooleans1_9",
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2420, 412.5, },
+								},
+								CurrentSettings = 2,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[2] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									Operation = Input {
+										Value = 7,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Background = Input {
+										SourceOp = "Dissolve1",
+										Source = "Output",
+									},
+									Foreground = Input {
+										SourceOp = "Loader8",
+										Source = "Output",
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2420, 412.5, },
+								},
+								CurrentSettings = 3,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[3] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 3,
+									},
+									ToBlue = Input {
+										Value = 3,
+									},
+									Operation = Input {
+										Value = 6,
+									},
+									ToGreen = Input {
+										Value = 3,
+									},
+									Background = Input {
+										SourceOp = "Dissolve1",
+										Source = "Output",
+									},
+									Foreground = Input {
+										SourceOp = "Loader8",
+										Source = "Output",
+									},
+									ToAlpha = Input {
+										Value = 4,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 2420, 412.5, },
+								},
+								CurrentSettings = 4,
+								CustomData = {
+								},
+							},
+						},
+					},
+					[4] = {
+						Tools = ordered() {
+							ChannelBooleans1_9 = ChannelBoolean {
+								Inputs = {
+									ToRed = Input {
+										Value = 4,
+									},
+									ToGreen = Input {
+										Value = 4,
+									},
+									Foreground = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+									Background = Input {
+										SourceOp = "Loader5",
+										Source = "Output",
+									},
+									ToBlue = Input {
+										Value = 4,
+									},
+									ToAlpha = Input {
+										Value = 0,
+									},
+								},
+								CtrlWZoom = false,
+								ViewInfo = OperatorInfo {
+									Pos = { 770, 478.5, },
+								},
+								CustomData = {
+								},
+							},
+						},
+					},
+				},
+			},
+			Inputs = {
+				Operation = Input {
+					Value = 2,
+				},
+				ToRed = Input {
+					Value = 7,
+				},
+				ToGreen = Input {
+					Value = 2,
+				},
+				Background = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "Loader1",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1430, 412.5, },
+			},
+		},
+		BrightnessContrast1 = BrightnessContrast {
+			Inputs = {
+				Alpha = Input {
+					Value = 1,
+				},
+				ClipBlack = Input {
+					Value = 1,
+				},
+				ClipWhite = Input {
+					Value = 1,
+				},
+				Input = Input {
+					SourceOp = "ChannelBooleans1_9",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 1430, 445.5, },
+			},
+		},
+		Bitmap4_1 = BitmapMask {
+			CtrlWZoom = false,
+			Inputs = {
+				Invert = Input {
+					Value = 1,
+				},
+				Image = Input {
+					SourceOp = "BrightnessContrast1",
+					Source = "Output",
+				},
+				Channel = Input {
+					Value = FuID { "Green", },
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2640, 577.5, },
+			},
+		},
+		Merge2 = Merge {
+			Inputs = {
+				PerformDepthMerge = Input {
+					Value = 0,
+				},
+				Background = Input {
+					SourceOp = "Grain1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "ChannelBooleans1_10",
+					Source = "Output",
+				},
+				EffectMask = Input {
+					SourceOp = "Bitmap4_1",
+					Source = "Mask",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2750, 610.5, },
+			},
+		},
+		inverseCC_lut = FileLUT {
+			NameSet = true,
+			Inputs = {
+				LUTFile = Input {
+					Value = "Y:\\WTWTA\\sequences\\DC\\shots\\DC072_038\\2d\\fusion\\lut\\DC072_038_inverse.alut",
+				},
+				Input = Input {
+					SourceOp = "Merge2",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 2915, 610.5, },
+			},
+		},
+		Saver1 = Saver {
+			Inputs = {
+				["QuickTimeMovies.Compression"] = Input {
+					Value = FuID { "Sorenson Video 3_SVQ3", },
+				},
+				["QuickTimeMovies.Quality"] = Input {
+					Value = 100,
+				},
+				["QuickTimeMovies.KeyFrames"] = Input {
+					Value = 1,
+				},
+				["QuickTimeMovies.FrameRateFps"] = Input {
+					Value = 24,
+				},
+				Clip = Input {
+					Value = Clip {
+						Filename = "Z:\\WTWTA\\sequences\\DC\\DC072_038\\2d\\fusion\\comp\\testTake\\testTake0001.exr",
+						FormatID = "OpenEXRFormat",
+						StartFrame = 0,
+						Length = 0,
+						Multiframe = false,
+						Saving = true,
+						LengthSetManually = false,
+						TrimIn = 0,
+						TrimOut = 4294967295,
+						ExtendFirst = 0,
+						ExtendLast = 0,
+						Loop = 1,
+						Reverse = false,
+						ImportMode = 0,
+						PullOffset = 0,
+						AspectMode = 0,
+						Depth = 0,
+						TimeCode = 0,
+						KeyCode = "",
+						GlobalStart = -1000000000,
+						GlobalEnd = 0,
+					},
+				},
+				OutputFormat = Input {
+					Value = FuID { "OpenEXRFormat", },
+				},
+				SequenceStartFrame = Input {
+					Disabled = true,
+				},
+				Input = Input {
+					SourceOp = "inverseCC_lut",
+					Source = "Output",
+				},
+			},
+			ViewInfo = OperatorInfo {
+				Pos = { 3190, 610.5, },
+			},
+		},
+	},
+	Views = {
+		{
+			Mode = 3,
+			LayoutPreset = 0,
+			Left = 418,
+			Top = 418,
+			Width = 2076,
+			Height = 1002,
+			Views = {
+				Main = MultiView {
+					Active = "Flow",
+					Flow = FlowView {
+						Flags = {
+							Navigator = true,
+							GridSnap = true,
+							AutoSnap = true,
+							RemoveRouters = true,
+						},
+						NavigatorSize = { 100, 100, },
+						Direction = "Horizontal",
+						PipeStyle = "Direct",
+						Scale = 1.17016,
+						Offset = { 122.101, 15.1199, },
+					},
+					Console = ConsoleView {
+						Show = {
+						},
+						History = {
+						},
+					},
+					Timeline = TimelineView {
+						TreeControlState = {
+						},
+						DisplayMode = "All Tools",
+						ShowCurrentTimeTools = false,
+						Filter = "Show All",
+						ShowSelectedTools = false,
+						ShowAnimatedToolsOnly = false,
+						ShowEditBoxes = false,
+						KeyFrameView = {
+							Position = { Left = 130, Bottom = 709, },
+							ScaleX = 0.0513437057991513,
+							OffsetX = -3.95346534653465,
+							OffsetY = 0,
+							AutoScaling = true,
+							AutoSnapTo = "frame",
+							AutoSnapToGuidelines = true,
+							GuidelinesSnapTo = "frame",
+						},
+						Spreadsheet = { LeftPos = 130, Visible = false, },
+					},
+					Spline = SplineEditorView {
+						LeftPos = 225,
+						ScaleX = 0.2,
+						ScaleY = 0.0034965034965035,
+						OffsetX = -3.6,
+						OffsetY = 0.136363636363636,
+						AutoScaling = true,
+						AutoSnapTo = "frame",
+						AutoSnapToGuidelines = true,
+						GuidelinesSnapTo = "frame",
+						ShowKeyMarkers = false,
+						IndependentHandles = false,
+						ShowNonSplineModifiers = false,
+						ShowOneToolOnly = false,
+						ShowSelectedTools = false,
+						ShowAllInputs = false,
+						Filter = "Show All",
+					},
+				},
+				Controls = MultiView {
+					Active = "Tools",
+				},
+				Time = {
+					VisibleRange = { 1, 100, },
+				},
+			},
+			Layout = {
+				Columns = 2,
+				RatioX = 1,
+				RatioY = 1,
+				{
+					Rows = 3,
+					RatioX = 0.88454011741683,
+					RatioY = 0.0101078167115903,
+					{
+						Columns = 2,
+						RatioX = 1,
+						RatioY = 0.482408660351827,
+						{
+							ID = "Left",
+							RatioX = 0.500221533008418,
+							RatioY = 0.0112201963534362,
+							Pop = true,
+						},
+						{
+							ID = "Right",
+							RatioX = 0.499778466991582,
+							Pop = true,
+						},
+						Pop = true,
+					},
+					{
+						ID = "Main",
+						RatioY = 0.48105548037889,
+						Pop = true,
+					},
+					{
+						ID = "Time",
+						SnapY = 52,
+						Flat = true,
+					},
+				},
+				{
+					Rows = 2,
+					PixelX = 293,
+					{
+						ID = "Controls",
+						RatioX = 1,
+						RatioY = 1,
+					},
+					{
+						ID = "Transport",
+						FixedY = -2,
+					},
+				},
+			},
+		},
+	},
+	Prefs = {
+		Comp = {
+			AutoSave = {
+				Delay = 180,
+				OnRender = true,
+			},
+			Memory = {
+				FramesAtOnce = 4,
+				Render = {
+					SimultaneousBranching = true,
+				},
+				Interactive = {
+					SimultaneousBranching = true,
+				},
+			},
+			NumberStyles = {
+				ClipFrame = 2,
+			},
+			Views = {
+				Right = {
+					Viewer = {
+						Channel = 4294967295,
+						CheckerUnderlay = false,
+					},
+					View2 = {
+						Viewer = {
+							ID = "GLHistogramViewer",
+							CheckerUnderlay = false,
+						},
+						ViewLUT = {
+						},
+					},
+					SubView = {
+						Enabled = false,
+					},
+					QuadLayoutName = "Left 3",
+					View3 = {
+						Viewer = {
+							ID = "GL3DHistogramViewer",
+							CheckerUnderlay = false,
+						},
+						ViewLUT = {
+						},
+					},
+					ViewLUT = {
+					},
+					View1 = {
+						Viewer = {
+							ID = "GLVectorViewer",
+							CheckerUnderlay = false,
+						},
+						ViewLUT = {
+						},
+					},
+					QuadView = false,
+					SideB = {
+						Viewer = {
+							ScaleMode = 0,
+							Channel = 4294967295,
+							CheckerUnderlay = false,
+						},
+						ViewLUT = {
+						},
+					},
+				},
+				Left = {
+					Viewer = {
+						Channel = 4294967295,
+						CheckerUnderlay = false,
+					},
+					ViewLUT = {
+					},
+				},
+			},
+			FrameFormat = {
+				Name = "HDTV 720",
+				Width = 1280,
+				Height = 720,
+				Rate = 30,
+				PerFeet = 1,
+				GuideRatio = 1.77777777777778,
+				DepthFull = 2,
+				DepthPreview = 2,
+				DepthInteractive = 2,
+				DepthLoader = 1,
+				AspectLoader = 1,
+			},
+			LastFile = "E:\\werew.tga",
+			Unsorted = {
+				GlobalStart = 1,
+				GlobalEnd = 100,
+			},
+			SplineEditor = {
+				AutoSnap = {
+					Keys = 18,
+				},
+			},
+			Timeline = {
+				ViewFilterMode = 0,
+			},
+			FilterModeName = "Show All",
+			Cluster = {
+				SideFrames = 0,
+			},
+			Paths = {
+			},
+			LastLUTFile = "Y:\\WTWTA\\2d\\fusion\\lutSetup\\LUTS\\RB065_031_5.alut",
+			QuickTime = {
+			},
+		},
+	},
+}
+
+ 

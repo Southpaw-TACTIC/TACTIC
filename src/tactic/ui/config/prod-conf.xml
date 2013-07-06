@@ -1,0 +1,529 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+
+   
+<!-- Preproduction view -->
+  <element name="preproduction" title="Preproduction">
+    <display class="SideBarSectionLinkWdg">
+        <view>_preproduction</view>
+    </display>
+  </element>
+
+  <element name="reference" icon="arrow_switch">
+    <display class="LinkWdg">
+      <search_type>prod/art_reference</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="scripts" icon="details">
+    <display class="LinkWdg">
+      <search_type>prod/script</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="storyboards" icon="application_tile_vertical">
+    <display class="LinkWdg">
+      <search_type>prod/storyboard</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="camera_data" icon="camera">
+    <display class="LinkWdg">
+      <search_type>prod/camera</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="notes" icon="note">
+    <display class="LinkWdg">
+      <search_type>sthpw/note</search_type>
+      <view>summary</view>
+    </display>
+  </element>
+
+
+
+<!-- Shot Pipeline -->
+  <element name="shot_pipeline" title="Shot Pipeline">
+    <display class="SideBarSectionLinkWdg">
+        <view>_shot_pipeline</view>
+    </display>
+  </element>
+
+  <element name="shot_list" icon="contents">
+    <display class="LinkWdg">
+      <search_type>prod/shot</search_type>
+      <view>manage</view>
+    </display>
+  </element>
+
+  <element name="shot_summary" title="Summary" icon="chart_bar">
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>prod/shot</search_type>
+      <view>summary</view>
+   </display>
+  </element>
+
+  <element name="shot_tasks" title="Shot Tasks" icon="date">
+    <display class="LinkWdg">
+      <search_type>sthpw/task</search_type>
+      <view>table</view>
+      <state>
+          <search_type>prod/shot</search_type>
+      </state>
+      <filter>
+       [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},{"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"starts with","main_body_value":"prod/shot?"}, {"prefix": "group", "group": "true", "order": "parent"}]
+      </filter>
+    </display>
+    <web>
+        <parent_search_type>prod/shot</parent_search_type>
+    </web>
+  </element>
+
+  <element name="artist_shot" title="Artist (3D Shots)" icon="user">
+    <display class="LinkWdg">
+      <search_type>prod/shot</search_type>
+      <view>artist</view>
+    </display>
+  </element>
+
+  <element name="sequences" icon="film">
+    <display class="LinkWdg">
+      <search_type>prod/sequence</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="shot_notes" title="Notes" icon="note">
+    <display class="LinkWdg">
+      <search_type>sthpw/note</search_type>
+      <view>summary</view>
+      <filter>
+        <prefix>main_body</prefix>
+        <main_body_column>search_type</main_body_column>
+        <main_body_relation>starts with</main_body_relation>
+        <main_body_value>prod/shot?</main_body_value>
+      </filter>
+    </display>
+  </element>
+
+  <element name="asset_in_shot" title="Shot Planner" icon="photos">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+      <search_type>prod/shot</search_type>
+      <view>asset_to_shot_planner</view>
+      <include>prod-conf.xml</include>
+    </display>
+  </element>
+
+
+ <element name="layers" icon="layer">
+    <display class="LinkWdg">
+      <search_type>prod/layer</search_type>
+      <view>table</view>
+    </display>
+ </element>
+
+  <element name="composites" icon="layer">
+    <display class="LinkWdg">
+      <search_type>prod/composite</search_type>
+      <view>table</view>
+    </display>
+  </element>
+<!-- Asset Pipeline -->
+  <element name="asset_pipeline" title="Asset Pipeline">
+    <display class="SideBarSectionLinkWdg">
+        <view>_asset_pipeline</view>
+    </display>
+  </element>
+
+  <element name="asset_list" icon="contents">
+    <display class="LinkWdg">
+      <search_type>prod/asset</search_type>
+      <view>manage</view>
+    </display>
+  </element>
+
+  <element name="asset_notes" title="Notes" icon="note">
+    <display class="LinkWdg">
+      <search_type>sthpw/note</search_type>
+      <view>summary</view>
+      <filter>
+        <prefix>main_body</prefix>
+        <main_body_column>search_type</main_body_column>
+        <main_body_relation>starts with</main_body_relation>
+        <main_body_value>prod/asset?</main_body_value>
+      </filter>
+    </display>
+  </element>
+
+  <element name="asset_tasks" title="Asset Tasks" icon="date">
+    <display class="LinkWdg">
+      <search_type>sthpw/task</search_type>
+      <view>table</view>
+      <state>
+          <search_type>prod/asset</search_type>
+      </state>
+      <filter>
+        [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},{"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"starts with","main_body_value":"prod/asset?"}, {"prefix": "group", "group": "true", "order": "parent"}]
+       </filter>
+    </display>
+    <web>
+        <parent_search_type>prod/asset</parent_search_type>
+    </web>
+  </element>
+
+  <element name="asset_library" title="Asset Libraries" icon="tag_orange">
+    <display class="LinkWdg">
+      <search_type>prod/asset_library</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="asset_summary" title="Summary" icon="chart_bar">
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>prod/asset</search_type>
+      <view>summary</view>
+    </display>
+  </element>
+
+  <element name='artist_asset' title="Artist (3D Assets)" icon="user">
+    <display class="LinkWdg">
+      <search_type>prod/asset</search_type>
+      <view>artist</view>
+    </display>
+  </element>
+
+  <element name="note" title="Notes" icon="note">
+    <display class="LinkWdg">
+      <search_type>sthpw/note</search_type>
+      <view>summary</view>
+    </display>
+  </element>
+
+<!-- Review Views -->
+
+<element name="review">
+    <display class="SideBarSectionLinkWdg">
+        <view>_review</view>
+    </display>
+  </element>
+
+  <element name="bins" icon="db">
+    <display class="LinkWdg">
+      <search_type>prod/bin</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="all_submissions" icon="photos">
+    <display class="LinkWdg">
+      <search_type>prod/submission</search_type>
+      <view>table</view>
+      <simple_search_view>simple_filter</simple_search_view>
+    </display>
+  </element>
+
+  <element name="dailies_submission_list" icon="calendar">
+      <display class="LinkWdg">
+        <search_type>prod/submission</search_type>
+        <show_insert>false</show_insert> 
+        <custom_search_view>dailies_search</custom_search_view>
+        <simple_search_view>simple_dailies_filter</simple_search_view>
+        <type>dailies</type>
+        <view>table</view>
+    </display>
+  </element>
+  
+  <element name="client_submission_list" icon="user">
+       <display class="LinkWdg">
+        <search_type>prod/submission</search_type>
+        <show_insert>false</show_insert> 
+        <custom_search_view>client_search</custom_search_view>
+        <simple_search_view>simple_client_filter</simple_search_view>
+        <type>client</type>
+        <view>client</view>
+    </display>
+  </element>
+
+
+<!-- overview view -->
+  <element name="overview">
+    <display class="SideBarSectionLinkWdg">
+        <view>_overview</view>
+    </display>
+  </element>
+
+  <element name="sequences_overview" icon="film">
+    <display class="LinkWdg">
+      <show_insert>false</show_insert> 
+      <search_type>prod/sequence</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="milestones" title="Milestones" icon="clock">
+    <display class="LinkWdg">
+      <search_type>sthpw/milestone</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="assets_summary" icon="arrow_switch">
+    <display class="LinkWdg">
+        <class_name>pyasm.prod.web.LayoutSummaryWdg</class_name>
+    </display>
+  </element>
+
+  <element name="shots_summary" icon="arrow_switch">
+    <display class="LinkWdg">
+        <class_name>pyasm.prod.web.AssetSummaryWdg</class_name>
+    </display>
+  </element>
+
+  <element name="dependency_summary" icon="dependency">
+    <display class="LinkWdg">
+        <class_name>pyasm.prod.web.DependencySummaryWdg</class_name>
+    </display>
+  </element>
+
+
+
+<!-- editorial view -->
+  <element name="editorial">
+    <display class="SideBarSectionLinkWdg">
+        <view>_editorial</view>
+    </display>
+  </element>
+
+  <element name="plates" icon="camera">
+    <display class="LinkWdg">
+      <search_type>prod/plate</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+  <element name="cut_sequences" icon="film">
+    <display class="LinkWdg">
+      <search_type>prod/cut_sequence</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+
+  
+
+<!-- Application view -->
+  <element name="application">
+    <display class="SideBarSectionLinkWdg">
+       <view>_application</view>
+    </display>
+  </element>
+
+  <element name="asset_loader" icon="folder_go">
+    <display class="LinkWdg">
+      <search_type>prod/asset</search_type>
+      <view>load</view>
+    </display>
+  </element>
+
+  <element name="asset_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AssetCheckinWdg</class_name>
+      <search_type>prod/asset</search_type>
+      <texture_search_type>prod/texture</texture_search_type>
+    </display>
+  </element>
+
+  <element name="instance_loader" icon="folder_go">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AppAssetInstancePanelWdg</class_name>
+      <search_type>prod/shot_instance</search_type>
+      <view>load</view>
+      <show_search>true</show_search>
+    </display>
+  </element>
+
+  <element name="instance_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.InstanceCheckinWdg</class_name>
+      <search_type>prod/shot_instance</search_type>
+    </display>
+  </element>
+
+  <element name="shot_loader" icon="film">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.AppShotPanelWdg</class_name>
+      <search_type>prod/shot</search_type>
+      <view>load</view>
+    </display>
+  </element>
+
+  <element name="shot_checkin" icon="save">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.ShotCheckinWdg</class_name>
+      <search_type>prod/shot</search_type>
+      <texture_search_type>prod/shot_texture</texture_search_type>
+    </display>
+  </element>
+
+  <element name="session" icon="connect">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.cgapp.SessionWdg</class_name>
+      <search_type>prod/asset</search_type>
+      <view>load</view>
+    </display>
+</element>
+
+ 
+
+  <element name="undo">
+    <display class="LinkWdg">
+      <search_type>sthpw/transaction_log</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
+</definition>
+
+
+<prod>
+  <element name="my_tactic"/>
+
+  <element name="separator"/>
+
+  <element name="preproduction"/>
+  <element name="asset_pipeline"/>
+  <element name="shot_pipeline"/>
+  <element name="editorial"/>
+
+  <element name="separator"/>
+
+  <element name="review"/>
+  <element name="overview"/>
+
+  <element name="separator"/>
+  <element name="application"/>
+
+  </prod>
+
+
+<_preproduction>
+    <element name="reference"/>
+    <element name="scripts"/>
+    <element name="storyboards"/>
+    <element name="camera_data"/>
+    <element name="notes"/>
+</_preproduction>
+
+
+<_asset_pipeline>
+    <element name="asset_list"/>
+    <element name="asset_summary"/>
+    <element name="asset_tasks"/>
+    <element name="artist_asset"/>
+    <element name="asset_library"/>
+    <element name="asset_notes"/>
+</_asset_pipeline>
+
+
+<_shot_pipeline>
+  <element name="shot_list"/>
+  <element name="shot_summary"/>
+  <element name="shot_tasks"/>
+  <element name="artist_shot"/>
+  <element name="sequences"/>
+  <element name="shot_notes"/>
+  <element name="asset_in_shot"/>
+  <element name="layers"/>
+  <element name="composites"/>
+</_shot_pipeline>
+
+
+<_overview>
+  <element name="sequences_overview"/>
+  <element name="milestones"/>
+  <element name="assets_summary"/>
+  <element name="shots_summary"/>
+  <element name="dependency_summary"/>
+</_overview>
+
+<_review>
+  <element name="bins"/>
+  <element name="all_submissions"/>
+  <element name="dailies_submission_list"/>
+  <element name="client_submission_list"/>
+</_review>
+
+<_editorial>
+  <element name="plates"/>
+  <element name="cut_sequences"/>
+</_editorial>
+
+
+<_application>
+  <element name="asset_loader"/>
+  <element name="asset_checkin"/>
+  <element name="instance_loader"/>
+  <element name="instance_checkin"/>
+  <element name="shot_loader"/>
+  <element name="shot_checkin"/>
+  <element name="session"/>
+  <element name="checkin_log"/>
+</_application>
+
+
+<asset_to_shot_planner>
+    <html>
+        <table>
+        <tr valign='top'>
+
+        <td>
+        <element name='planner_shot' title='Shots' use_container='true' show_resize_scroll='true' width='600' height='800'>
+           <display class='tactic.ui.panel.ViewPanelWdg'>
+               <search_type>prod/shot</search_type>
+               <view>planner_asset</view>
+               <search_view>_planner</search_view>
+             <do_search>true</do_search>
+           </display>
+        </element>
+        </td>
+
+        <td>
+        <element name='planner_asset' title='Assets' use_container='true' show_resize_scroll='true' width='500' height='800'>
+           <display class='tactic.ui.panel.ViewPanelWdg'>
+               <search_type>prod/asset</search_type>
+               <view>planner</view>
+               <search_view>_planner</search_view>
+             <do_search>true</do_search>
+           </display>
+        </element>
+        </td>
+
+        </tr>
+        </table>
+    </html>
+</asset_to_shot_planner> 
+
+</config>
+
+
+

@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<table>
+    <element name="id"/>
+    <element name="code" />
+    <!--
+    <element name="jump">
+        <display class="pyasm.prod.web.DailiesLink">
+            <dailies_tab>dailies</dailies_tab>
+        </display>
+    </element>
+    -->
+    <element name="description"/>
+    <element name="label"/>
+    <element name="type"/>
+</table>
+
+
+
+<edit>
+    <element name="code" type="timestamp">
+        <display class="tactic.ui.widget.CalendarInputWdg">
+            <read_only>false</read_only>
+        </display>
+    </element>
+    <element name="description"/>
+    <element name="label">
+        <display class="SelectWdg">
+            <hint>This is an optional label defined in prod settings</hint>
+            <empty>true</empty>
+            <setting>bin_label</setting>
+        </display>
+    </element>
+    <element name="type">
+        <display class="SelectWdg">
+            <hint>It is mandatory to select a type, e.g. client, dailies</hint>
+            <empty>true</empty>
+            <setting>bin_type</setting>
+        </display>
+        <action class="NonEmptyAction"/>
+    </element>
+    
+</edit>
+
+<insert>
+    <element name="code" type="timestamp"/>
+    <element name="description"/>
+    <element name="label">
+        <display class="SelectWdg">
+            <hint>This is an optional label defined in prod settings</hint>
+            <empty>true</empty>
+            <setting>bin_label</setting>
+        </display>
+    </element>
+    <element name="type">
+        <display class="SelectWdg">
+            <hint>It is mandatory to select a type, e.g. client, dailies</hint>
+            <empty>true</empty>
+            <setting>bin_type</setting>
+        </display>
+        <action class="NonEmptyAction"/>
+    </element>
+    
+</insert>
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="label" width="100px"/>
+    <element name="type" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+
+</config>
+

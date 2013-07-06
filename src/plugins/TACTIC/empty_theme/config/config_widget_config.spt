@@ -1,0 +1,26 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-04-09 09:06:26.134699""")
+insert.set_value('config', """<config>
+<empty_theme.index>
+<html>
+<style type="text/css">
+.message {
+  padding: 30px;
+  margin: 100px auto;
+  border: solid 1px black;
+  width: 400px;
+  height: 100px;
+  text-align: center;
+  font-size: 2em;
+  background: #CCC;
+}
+</style>
+<div class="message">Empty Theme</div>
+</html>
+</empty_theme.index>
+</config>""")
+insert.set_value('view', """empty_theme.index""")
+#-- End Entry --#
+

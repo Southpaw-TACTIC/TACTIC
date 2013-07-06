@@ -1,0 +1,286 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="icon" edit="false">
+        <display class="ThumbWdg">
+            <filename>true</filename>
+            <detail>false</detail>
+            <!--<original>true</original>-->
+            <image_link_order>main|web|.swf</image_link_order>
+            <icon_size>90%</icon_size>
+        </display>
+    </element>
+
+    <element name="bin">
+        <display class="pyasm.prod.web.BinTableElementWdg"/>
+    </element>
+
+    <element name="info">
+         <display class="pyasm.prod.web.SubmissionDataTableElement"/>
+    </element>
+    <element name="description"/>
+
+    <!-- <element name="timestamp"/> -->
+    
+    <element name="artist"/>
+
+    <element name="status"/>
+        
+
+
+    <element name="notes">
+        <display class="tactic.ui.widget.DiscussionElementWdg">
+            <process>dailies</process>
+        </display>
+    </element>
+    
+    <element name="update">
+        <display class="UpdateWdg">
+            <width>60</width>
+        </display>
+    </element>
+</definition>
+
+<dailies_search>
+    <element name='Main Filter'>
+      <display class='tactic.ui.filter.filter_wdg.SubmissionFilterWdg'>
+        <search_type>prod/submission</search_type>
+        <prefix>dailies</prefix>
+        <type>dailies</type>
+      </display>
+    </element>
+   
+    <element name='General'>
+      <display class='tactic.ui.filter.filter_wdg.GeneralFilterWdg'>
+        <search_type>prod/submission</search_type>
+        <custom_filter_view/>
+        <prefix>main_body</prefix>
+        <mode>sobject</mode>
+        <columns/>
+      </display>
+  </element>
+</dailies_search>
+
+<client_search>
+    <element name='Main Filter'>
+      <display class='tactic.ui.filter.filter_wdg.SubmissionFilterWdg'>
+        <search_type>prod/submission</search_type>
+        <prefix>client</prefix>
+        <type>client</type>
+      </display>
+    </element>
+   
+    <element name='General'>
+      <display class='tactic.ui.filter.filter_wdg.GeneralFilterWdg'>
+        <search_type>prod/submission</search_type>
+        <custom_filter_view/>
+        <prefix>main_body</prefix>
+        <mode>sobject</mode>
+        <columns/>
+      </display>
+  </element>
+</client_search>
+
+<simple_filter>
+    <element name='all_bin' title='All Bin'>
+        <display class='tactic.ui.filter.SelectFilterElementWdg'>
+            <labels_expr>@GET(prod/bin.code)</labels_expr>
+            <values_expr>@GET(prod/bin.id)</values_expr>
+            <column>prod/submission_in_bin.bin_id</column>
+        </display>
+    </element>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>description|artist|context</column>
+        </display>
+    </element>
+</simple_filter>
+
+<simple_client_filter>
+    <element name='client_bin' title='Client Bin'>
+        <display class='tactic.ui.filter.SelectFilterElementWdg'>
+            <labels_expr>@GET(prod/bin['type','client'].code)</labels_expr>
+            <values_expr>@GET(prod/bin['type','client'].id)</values_expr>
+            <column>prod/submission_in_bin.bin_id</column>
+        </display>
+    </element>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>description|artist|context</column>
+        </display>
+    </element>
+</simple_client_filter>
+
+<simple_dailies_filter>
+    <element name='dailies_bin' title='Dailies Bin'>
+        <display class='tactic.ui.filter.SelectFilterElementWdg'>
+            <labels_expr>@GET(prod/bin['type','dailies'].code)</labels_expr>
+            <values_expr>@GET(prod/bin['type','dailies'].id)</values_expr>
+            <column>prod/submission_in_bin.bin_id</column>
+           
+        </display>
+    </element>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>description|artist|context</column>
+        </display>
+    </element>
+</simple_dailies_filter>
+
+<table>
+    <element name="icon"/>
+    <element name="bin" width="100px"/>
+
+    <element name="info">
+         <display class="pyasm.prod.web.SubmissionDataTableElement"/>
+    </element>
+    <element name="description">
+        <display class="WikiElementWdg"/>
+    </element>
+
+    <element name="timestamp"/>
+    
+    <element name="artist"/>
+
+    <element name="status"/>
+
+    <element name="notes" width="300px"/>
+    
+</table>
+
+
+<client layout="TableWdg">
+    <element name="icon"/>
+    <element name="bin" width="100px"/>
+
+    <element name="info">
+         <display class="pyasm.prod.web.SubmissionDataTableElement"/>
+    </element>
+    <element name="description"/>
+    <element name="timestamp"/>
+    <element name="artist"/>
+    <element name="status"/>
+    <element name="notes">
+        <display class="tactic.ui.widget.DiscussionElementWdg">
+            <process>client</process>
+        </display>
+    </element>
+       
+</client>
+
+
+<!-- to submit from the asset list tab -->
+<insert>
+
+    <element name="submit" title="Submission">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <client_action>submission</client_action>
+        </display>
+        <action class="NullAction"/>
+       
+    </element>
+
+    <element name="bin_select">
+        <display class="pyasm.prod.web.BinSelectionWdg">
+            <persist>true</persist>
+        </display>
+        <action class="AddToBinAction"/>
+    </element> 
+
+    <element name="description"> 
+    <!-- <display class="TextAreaWdg"/> -->
+        <display class="pyasm.prod.web.SubmissionDescriptionWdg"/>
+    </element>
+    <element name="artist"> 
+        <display class="pyasm.prod.web.UserSelectWdg">
+            <default_user>true</default_user>
+            <persist>true</persist>
+        </display>
+    </element>
+    <!--
+    <element name="options">
+        <display class="pyasm.prod.web.SubmissionOptionsWdg">
+            <show_client>true</show_client>
+        </display>
+        <action class="NullAction"/>
+    </element>-->
+</insert>
+
+
+
+
+<edit>
+    <element name="icon">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="snapshot_code">
+        <display class='TextWdg'>
+            <read_only>true</read_only>
+        </display>
+    </element>
+    <element name="description"/>
+    <element name="timestamp"/>
+    <element name="login">
+        <display class='TextWdg'>
+            <read_only>true</read_only>
+        </display>
+    </element>
+    <element name="artist"> 
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+    <element name="status">
+        <display class="SelectWdg">
+            <setting>dailies_submission_status</setting>
+            <empty>true</empty>
+        </display>
+    </element>
+
+
+</edit>
+
+
+<publish>
+    <element name="icon">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="snapshot">
+        <display class="SimpleUploadWdg"/>
+        <action class="UploadAction"/>
+    </element>
+
+    <element name="status"/>
+        
+
+</publish>
+
+<add_item>
+    <element name="bin" width="100px"/>
+    <element name="artist" width="100px"/>
+    <element name="status" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+
+
+</config>
+

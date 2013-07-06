@@ -1,0 +1,141 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Importing CSV Data</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_setup_import-export.html" title="Import and Export">
+      <link rel="prev" href="tactic-setup_setup_import-export.html" title="Import and Export">
+      <link rel="next" href="tactic-setup_setup_exporting-csv-data.html" title="Exporting CSV Data">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_import-export.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_exporting-csv-data.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Importing CSV Data">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_importing-csv-data"></a>Importing CSV Data 
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/1_importing_csv_data_overview.png"></div>
+         <p>Data can be imported into TACTIC and associated with the appropriate columns. Since TACTIC
+            is based on a table system, data can be exported as a CSV file for easy manipulation in a
+                    spreadsheet program.
+         </p>
+         <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+            <h3 class="title">Note</h3>
+            <p>For more information on exporting existing CSV data, go to the section, "Exporting CSV
+                           Data."
+            </p>
+         </div>
+         <p><span class="bold"><strong>To import a CSV file:</strong></span></p>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">
+                  <p>Go to <span class="bold"><strong>Gear Menu -&gt; File -&gt; Import CSV ...</strong></span></p>
+                  <p><span class="inlinemediaobject"><img src="media/2_importing_csv_data_gear_menu.png"></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Select an sType or copy and paste the data from a spreadsheet. Once an sType is
+                                     selected, the required columns will be displayed to the right of the drop down.
+                                     Although these aren't the only columns that can be imported for this sType, they
+                                     represent the minimum requirements for a successful import.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/3_importing_csv_data_select_sType.png"></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Browse and upload the CSV file. The CSV file is the raw format required by TACTIC.
+                                     Below is an example of the contents of a CSV file: 
+                  </p><pre class="screen">"id","title","description"
+1,"Nuclear Explosion","Stock footage of a nuclear explosion"
+2,"Car Chase","Stock footage of a overhead car chase."
+3,"Car Warehouse","3D Car asset in a warehouse setting"
+4,"Sport Car Warehouse","3D Car sport car"
+5,"Robot Bar","Robots drinking in a bar"</pre><p>Below is an example of a CSV file being manipulated in a spreadsheet
+                                     application.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/5_importing_csv_data_CVS.png"></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Click the Upload button. The TACTIC system will introspect the CSV file and fill
+                                     in the rest of the import interface.
+                  </p>
+                  <p><span class="inlinemediaobject"><img src="media/4_importing_csv_data_associate_value.png"></span></p>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>Parsing Options</strong></span></p>
+                  <p><span class="inlinemediaobject"><img src="media/6_importing_csv_data_parsing_options.png"></span></p>
+                  <div class="informaltable">
+                     <table border="1">
+                        <colgroup>
+                           <col width="135.0pt">
+                           <col width="350.0px">
+                        </colgroup>
+                        <tbody>
+                           <tr>
+                              <td><span class="bold"><strong>Use Title Row</strong></span></td>
+                              <td>When checked, this import will read the first row in the file to
+                                                                 determine which item columns are being imported.
+                              </td>
+                           </tr>
+                           <tr>
+                              <td><span class="bold"><strong>Sample Data Row</strong></span></td>
+                              <td>Specify a row in the file to use as a sample for the data
+                                                                 import.
+                              </td>
+                           </tr>
+                           <tr>
+                              <td><span class="bold"><strong>Encoder</strong></span></td>
+                              <td>Select the encoding format for the data: ASCII (default), UTF-8,
+                                                                 Excel ISO 8859-1
+                              </td>
+                           </tr>
+                           <tr>
+                              <td><span class="bold"><strong>Identifying Column</strong></span></td>
+                              <td>Select the column which unique identifies the corresponding row
+                                                                 in the table to update the data with.
+                              </td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </li>
+               <li class="listitem">
+                  <p><span class="bold"><strong>Import</strong></span></p>
+                  <p>The bottom of the page shows a preview of the import results. Hitting the
+                                         <span class="bold"><strong>Import</strong></span> button will start the CSV import.
+                  </p>
+               </li>
+            </ol>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_import-export.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_setup_import-export.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_exporting-csv-data.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

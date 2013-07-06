@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2011, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+<definition>
+    <element name='data'>
+      <display class='tactic.ui.table.JsonElementWdg'/>
+    </element>
+    <element name='transaction'>
+    </element>
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="data"/>
+    <element name="state"/>
+    <element name="error_log"/>
+    <element name="host"/>
+</table>
+
+<edit_definition>
+    <element name='state'>
+      <display class='SelectWdg'>
+        <values>pending|error|cancel|ignore|complete</values>
+      </display>
+    </element>
+</edit_definition>
+
+
+
+</config>
+
+

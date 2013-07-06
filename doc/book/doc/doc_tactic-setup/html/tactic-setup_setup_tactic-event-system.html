@@ -1,0 +1,181 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Event System Introduction</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_advanced-automation.html" title="Advanced Automation">
+      <link rel="prev" href="tactic-setup_advanced-automation.html" title="Advanced Automation">
+      <link rel="next" href="tactic-setup_setup_project-automation-triggers.html" title="Project Automation - Triggers">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_advanced-automation.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-automation-triggers.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Event System Introduction">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_tactic-event-system"></a>TACTIC Event System Introduction 
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>The TACTIC Event System is built into the base transactional system in Tactic's core.
+            Every transaction which occurs in Tactic can fire an event which in turn, can be used to
+                    execute a trigger or notification. 
+         </p>
+         <p>These events can be incorporated to automate specific processes that are often repetitive.
+            At the simplest level, there are interfaces that help prepare and configure these aspects
+                    but, it is good to understand how they work. Overall, there are 2 levels that these events
+                    can be configured. The first is using the predefined event options provided in the Project
+                    Workflow or Project Schema interfaces and the second in the low level database
+                    events.
+         </p>
+         <h5><a name="d0e5466"></a>Predefined Events
+         </h5>
+         <p>The following list of events are the events provided in the Project Workflow interface.
+                    For more information in setting up Notifications and Triggers with this interface, please
+                    refer to <span class="bold"><strong>Project Automation - Triggers</strong></span> and <span class="bold"><strong>Project Automation - Notifications</strong></span></p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="bold"><strong>A task Status is Changed</strong></span></td>
+                     <td>When the status of a task is changed. Further options are provided
+                                                allowing for selection.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>A new note is added</strong></span></td>
+                     <td>When a new note (sthpw/note) is added to the project.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>A task is assigned</strong></span></td>
+                     <td>When a task is assigned to a user.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Files are checked in</strong></span></td>
+                     <td>When files are checked in to an SObject.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Files are checked out</strong></span></td>
+                     <td>When files are checked out from an SObject.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Custom event</strong></span></td>
+                     <td>Allows for calling of an event using the raw Database Events.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e5516"></a>Raw Database Events
+         </h5>
+         <p>Below is the list of the database level events. These events are run regardless of how
+                    they are called (interface, api, external integration etc)
+         </p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="bold"><strong>done</strong></span></td>
+                     <td>Executed each time a transaction completes</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>insert</strong></span></td>
+                     <td>Executed each time a Search Object has been inserted.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>update</strong></span></td>
+                     <td>Executed each time a Search Object has been updated.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>change</strong></span></td>
+                     <td>Executed each time a Search Object has changed. This combines the events
+                                                insert, update and delete.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>retire</strong></span></td>
+                     <td>Executed each time a Search Object has been retired.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>delete</strong></span></td>
+                     <td>Executed each time a Search Object has been deleted.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>checkin</strong></span></td>
+                     <td>Executed each time a checkin occurs for a Search Object</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>checkout</strong></span></td>
+                     <td>Executed each time a checkout occurs for a Search Object</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>timed</strong></span></td>
+                     <td>Executed on a timed interval. This is only supported for
+                                                triggers.
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>For example, in a transaction where the status of a task is being changed, an association
+                    to this event can be made with the following notation:
+         </p><pre class="screen">update|sthpw/task|assigned</pre><p>The notation can consist of 3 sections although only the event is required. </p><pre class="screen">&lt;Event&gt;|&lt;SType&gt;|&lt;Column&gt;</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="bold"><strong>Event</strong></span></td>
+                     <td>The raw database event.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>SType</strong></span></td>
+                     <td>The Searchable Type (SType) the event is occurring for.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>Column</strong></span></td>
+                     <td>The Column that was changed in the SType.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_advanced-automation.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_advanced-automation.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_project-automation-triggers.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,191 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>directory_checkin</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_delete_sobject.html" title="delete_sobject">
+      <link rel="next" href="python-client-api_general_download.html" title="download">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_delete_sobject.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_download.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="directory_checkin">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_directory_checkin"></a>
+                         directory_checkin
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  directory_checkin(search_key, context, dir, snapshot_type="directory", description="No description", file_type='main', is_current=True,
+                  level_key=None, metadata={}, mode="copy", is_revision=False, checkin_type="strict")
+                      </strong></span>
+                
+         </p>
+         <p>
+                Check in a directory of files.  This informs TACTIC to treat the 
+                
+         </p>
+         <p>
+                entire directory as single entity without regard to the structure
+                
+         </p>
+         <p>
+                of the contents.  TACTIC will not know about the individual files
+                
+         </p>
+         <p>
+                and the directory hierarchy within the base directory and it it left
+                
+         </p>
+         <p>
+                up to the and external program to intepret and understand this.
+                
+         </p>
+         <p>
+                This is often used when logic on the exact file structure exists in
+                
+         </p>
+         <p>
+                some external source outside of TACTIC and it is deemed too complicated
+                
+         </p>
+         <p>
+                to map this into TACTIC's snapshot definition.
+                
+         </p>
+         <h4><a name="d0e3143"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      search_key 
+                      </strong></span>
+                 -  a unique identifier key representing an sobject
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      dir 
+                      </strong></span>
+                 -  the directory that needs to be checked in
+                
+         </p>
+         <h4><a name="d0e3155"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      snapshot_type 
+                      </strong></span>
+                 -  type of snapshot this checkin will have
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      description 
+                      </strong></span>
+                 -  description related to this checkin
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_type 
+                      </strong></span>
+                 -  the type of file that will be associated with this group
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      is_current 
+                      </strong></span>
+                 -  makes this snapshot current
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      level_key 
+                      </strong></span>
+                 -  the search key of the level if used
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      metadata 
+                      </strong></span>
+                 -  add metadata to snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      mode 
+                      </strong></span>
+                 -  determines whether the files passed in should be copied, moved
+                
+         </p>
+         <p>
+                or uploaded.  By default, this is 'copy'
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      is_revision 
+                      </strong></span>
+                 -  flag to set this as a revision instead of a version
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      checkin_type 
+                      </strong></span>
+                 -  auto or strict which controls whether to auto create versionless
+                
+         </p>
+         <h4><a name="d0e3204"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  snapshot 
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_delete_sobject.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_download.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

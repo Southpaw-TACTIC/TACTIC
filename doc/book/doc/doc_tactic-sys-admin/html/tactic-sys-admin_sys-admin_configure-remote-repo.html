@@ -1,0 +1,66 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Configure the Remote Repo</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_fileserver.html" title="Fileserver">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_relocate-assets-directory.html" title="Relocating the 'assets' directory">
+      <link rel="next" href="tactic-sys-admin_scalability.html" title="Scalability">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_relocate-assets-directory.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_scalability.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Configure the Remote Repo">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_configure-remote-repo"></a>Configure the Remote Repo
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+            The remote repository (repo) setting describes the specific environment that remote users or a
+            remote facility may use, in the situation where it differs from the environment used by the
+                    master repository. 
+         </p>
+         <p>To set up a remote repo, you can insert an entry that
+                    represents users or a group of users that fall under a certain IP address or IP mask combo. 
+         </p>
+         <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+            <h3 class="title">Note</h3>
+            <p>If you want everyone at an IP address to use the same remote repo, a typical IP mask
+                           value is <code class="code">255.255.255.255</code></p>
+         </div>
+         <p>The login name is only required when you are not using an IP address or IP mask
+                    combo to specify users. The sandbox path and local repo path can be a network path like:
+                
+         </p><pre class="screen">\\&lt;server_name&gt;\&lt;share_name&gt;\..\repo </pre><p>or (for Windows)</p><pre class="screen">Z:/repo</pre></div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_relocate-assets-directory.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_fileserver.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_scalability.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

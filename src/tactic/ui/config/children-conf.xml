@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005-2009, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<children>
+
+  <element name="Notes">
+    <display class="LinkWdg">
+        <search_type>sthpw/note</search_type>
+        <view>summary</view>
+    </display>
+  </element>
+
+  <element name="Tasks">
+    <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="Submissions">
+    <display class="LinkWdg">
+        <search_type>prod/submission</search_type>
+        <view>table</view>
+        <show_insert>false</show_insert>
+    </display>
+  </element>
+
+  <element name="Snapshots">
+    <display class="LinkWdg">
+        <search_type>sthpw/snapshot</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="Search Object Log">
+    <display class="LinkWdg">
+        <search_type>sthpw/sobject_log</search_type>
+        <view>table</view>
+        <show_insert>false</show_insert>
+    </display>
+  </element>
+
+<!--
+  <element name="?Assigned Shots">
+    <display class="LinkWdg">
+        <search_type>prod/shot_instance</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="References">
+    <display class="LinkWdg">
+        <search_type>prod/art_reference</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="Render Queue">
+    <display class="LinkWdg">
+        <search_type>sthpw/queue</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="Renders">
+    <display class="LinkWdg">
+        <search_type>prod/render</search_type>
+        <view>table</view>
+    </display>
+  </element>
+-->
+
+</children>
+
+</config>
+
+

@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="preview"/>
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="display_name"/>
+    <element name="email"/>
+    <element name="project_code"/>
+    <element name="license_type"/>
+    <element name="password" type="password">
+    </element>
+</definition>
+
+
+<edit_definition>
+    <element name="preview"/>
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="display_name"/>
+    <element name="email"/>
+    <element name="project_code"/>
+    <element name="license_type"/>
+    <element name="password" type="password">
+    </element>
+</edit_definition>
+
+
+<table>
+    <element name="preview"/>
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="display_name"/>
+    <element name="email"/>
+    <element name="license_type"/>
+</table>
+
+
+<planner>
+
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="login"  width="120px"/>
+    <element name="first_name"  width="180px"/>
+    <element name="last_name" width="150px"/>
+<!--
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumSObjectInstancesWdg"/>
+    </element>
+-->
+</planner>
+
+
+
+
+<schedule layout='TableWdg'>
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+
+   <element name="gantt">
+       <display class="GanttWdg">
+           <handlers>ResourceUsageGanttWdg</handlers>
+       </display>
+   </element>
+</schedule>
+
+
+
+<work_hours layout='TableLayoutWdg'>
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+
+
+    <element name="work_hour_detail" title=' ' edit='false'>
+      <display class='HiddenRowToggleWdg'>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>sthpw/work_hour</search_type>
+        <show_search_limit>false</show_search_limit>
+        <show_insert>false</show_insert>
+        <!--
+        <show_row_select>false</show_row_select>
+        -->
+        <show_gear>false</show_gear>
+        <view>table</view>
+      </display>
+    </element>
+
+
+
+
+    <element name="this_monday" title='Mon' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','=',$THIS_MONDAY].straight_time) + @SUM(sthpw/work_hour['day','=',$THIS_MONDAY].overtime)</expression>
+        </display>
+    </element>
+    <element name="this_tuesday" title='Tue' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','=',$THIS_TUESDAY].straight_time) + @SUM(sthpw/work_hour['day','=',$THIS_TUESDAY].overtime)</expression>
+        </display>
+    </element>
+    <element name="this_wednesday" title='Wed' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','=',$THIS_WEDNESDAY].straight_time) + @SUM(sthpw/work_hour['day','=',$THIS_WEDNESDAY].overtime)</expression>
+        </display>
+    </element>
+
+    <element name="this_thursday" title='Thu' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','=',$THIS_THURSDAY].straight_time) + @SUM(sthpw/work_hour['day','=',$THIS_THURSDAY].overtime)</expression>
+        </display>
+    </element>
+
+
+    <element name="this_friday" title='Fri' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','=',$THIS_FRIDAY].straight_time) + @SUM(sthpw/work_hour['day','=',$THIS_FRIDAY].overtime)</expression>
+        </display>
+    </element>
+
+
+    <element name="this_week" title='Week' edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','>',$THIS_SUNDAY].straight_time) + @SUM(sthpw/work_hour['day','>',$THIS_SUNDAY].overtime)</expression>
+        </display>
+    </element>
+
+    <element name="this_month" edit='false'>
+        <display widget="expression">
+          <expression>@SUM(sthpw/work_hour['day','>',$THIS_MONTH].straight_time) + @SUM(sthpw/work_hour['day','>',$THIS_MONTH].overtime)</expression>
+        </display>
+    </element>
+
+
+</work_hours>
+
+
+
+
+<edit>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg">
+            <show_icon>true</show_icon>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>icon</context>
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+
+    <element name="login">
+        <display class="TextWdg"/>
+        <action class="LoginAction"/>
+    </element>
+     
+    <element name="password">
+        <display class="PasswordWdg"/>
+        <action class="PasswordAction"/>
+    </element>
+
+    <element name="password re-enter">
+        <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+
+    <!--<element name="login_groups"/>-->
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="email"/>
+
+    <!--
+    <element name="project_code"/>
+    -->
+
+    <element name="license_type">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>disabled|user|float</values>
+      </display>
+    </element>
+</edit>
+
+<edit_account layout="EditWdg">
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>icon</context>
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+
+    <element name="login">
+        <display class="TextWdg">
+            <read_only>true</read_only>
+        </display>
+        <action class="NullAction"/>
+    </element>
+     
+    <element name="password">
+        <display class="PasswordWdg"/>
+        <action class="PasswordAction"/>
+    </element>
+
+    <element name="password re-enter">
+        <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+
+    <!--<element name="login_groups"/>-->
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="email"/>
+
+</edit_account>
+
+
+<insert>
+    <element name="thumb">
+        <display class="pyasm.widget.ThumbInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+    <element name="picture"/>
+
+    <element name="login">
+        <action class="LoginAction"/>
+    </element>
+    <element name="password">
+        <display class="PasswordWdg"/>
+        <action class="PasswordAction"/>
+    </element>
+
+    <element name="password re-enter">
+        <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+
+
+
+    <!--<element name="login_groups"/>-->
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="email"/>
+
+    <!--
+    <element name="project_code"/>
+    -->
+</insert>
+
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>login|first_name|last_name</column>
+        </display>
+    </element>
+</simple_filter>
+
+
+</config>
+
+

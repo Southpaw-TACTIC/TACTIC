@@ -1,0 +1,10 @@
+<manifest>
+  <data>
+    <code>TACTIC/empty_theme</code>
+    <title>Empty Theme</title>
+    <description>Empty Theme</description>
+    <type>theme</type>
+  </data>
+  <sobject search_type="config/widget_config" view="empty_theme.%" path="config/config_widget_config.spt" ignore_columns="id,code"/>
+  <sobject search_type="config/url" url="/index" path="config/config_url.spt" ignore_columns="id,code"/>
+</manifest>

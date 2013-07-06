@@ -1,0 +1,165 @@
+<!--
+  
+   Copyright (c) 2009, Southpaw Technology
+                       All Rights Reserved
+   
+   PROPRIETARY INFORMATION.  This software is proprietary to
+   Southpaw Technology, and is not to be reproduced, transmitted,
+   or disclosed in any way without written permission.
+
+-->
+
+<!-- Theme: DARK -->
+
+<html>
+
+<head>
+<title>TACTIC Palette Reference - Dark theme</title>
+<style>
+    .title_3 {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.85em;
+        font-weight: bold;
+    }
+    .ident {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    .description {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.7em;
+        font-weight: normal;
+    }
+    td.block_white {
+        background: white;
+        width: 60px;
+        height: 60px;
+    }
+    td.block_black {
+        background: black;
+        width: 60px;
+        height: 60px;
+    }
+    td.block_grey {
+        background: #7F7F7F;  /* 50% grey */
+        width: 60px;
+        height: 60px;
+    }
+    div.inset {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        top: 4%;
+        left: 25%;
+    }
+</style>
+<script language="javascript">
+
+var color_info_list = [
+
+{ 'color_style': '#c2c2c2',
+    'description': ' - Bright text color in Project Title in page header<br/> - Bright text color in DG table cells' },
+
+{ 'color_style': '#949494',
+    'description': ' - Side Bar Section Grey<br/> - Bright outlines on Search section fields and on HR in that section' },
+
+{ 'color_style': '#656565',
+    'description': ' - Side Bar mid-grey for link background highlight' },
+
+{ 'color_style': '#545454',
+    'description': ' - DG Table data row hover highlight (when not selected) background' },
+
+{ 'color_style': '#434343',
+    'description': ' - Primary Page Background Grey, and base DG Table data row background' },
+
+{ 'color_style': '#393950',
+    'description': ' - DG Table data row selected, on hover background' },
+
+{ 'color_style': '#3f3f3f',
+    'description': ' - Search section, sub-section field option background' },
+
+{ 'color_style': '#323232',
+    'description': ' - Search section, sub-section opened background<br/> - Main Body Rounded-div Background Grey' },
+
+{ 'color_style': '#292940',
+    'description': ' - DG Table data row selected background<br/> - Side Bar Nav section Text Color' },
+
+{ 'color_style': '#202020',
+    'description': ' - Search section, search sub-section header background<br/> - Discussion Widget Rounded-div Background Grey' },
+
+{ 'color_style': '#101211',
+    'description': ' - DG Table Header Row Background Grey<br/> - Detail page panel section title background' },
+
+{ 'color_style': '#000000',
+    'description': ' - Search Tools section outline background (black)' },
+
+{ 'color_style': '#A19647',
+    'description': ' - Discussion widget, user login text color' },
+
+{ 'color_style': '#ff8202',
+    'description': ' - Orange text color on a.hover links' },
+
+{ 'color_style': '#336699',
+    'description': ' - Blue hover background for menus' }
+
+];
+
+
+function generate_color_table()
+{
+    var html = [];
+
+    html.push( '<table style="padding: 5px; border: 0px; border-collapse: collapse;">' );
+
+    for( var i=0; i < color_info_list.length; i++ )
+    {
+        var color_info = color_info_list[i];
+
+        html.push( '<tr>' );
+        html.push( '<td class="ident">[' + (i+1) + ']</td>' );
+        html.push( '<td class="ident">' + color_info.color_style + '</td>' );
+        html.push( '<td class="block_white"><div class="inset" style="background: ' +
+                   color_info.color_style + '">&nbsp;</div></td>' );
+        html.push( '<td class="block_grey"><div class="inset" style="background: ' +
+                   color_info.color_style + '">&nbsp;</div></td>' );
+        html.push( '<td class="block_black"><div class="inset" style="background: ' +
+                   color_info.color_style + '">&nbsp;</div></td>' );
+        html.push( '<td class="description">&nbsp;&nbsp;' + color_info.description + '</td>' );
+        html.push( '</tr>' );
+    }
+    html.push( "</table>" );
+
+    return html.join('\n');
+}
+
+
+function do_it()
+{
+    var tdiv = document.getElementById("TableDiv");
+    if( ! tdiv ) {
+        console.log( "ERROR: No DIV found with ID 'TableDiv'!" );
+    }
+
+    tdiv.innerHTML = generate_color_table();
+}
+
+</script>
+</head>
+
+<body onload="do_it();">
+
+<br/>
+<div class="title_3">&nbsp;&nbsp;Dark TACTIC Theme Color Palette</div>
+<br/>
+
+<div id="TableDiv" style="padding: 20px;">
+</div>
+
+<br/>
+<br/>
+
+</body>
+
+</html>
+

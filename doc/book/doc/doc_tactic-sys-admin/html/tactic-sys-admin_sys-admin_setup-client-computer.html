@@ -1,0 +1,87 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Client Computer Setup Requirements</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_client-setup.html" title="Client Setup">
+      <link rel="prev" href="tactic-sys-admin_client-setup.html" title="Client Setup">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_client-setup.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Client Computer Setup Requirements">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_setup-client-computer"></a>Client Computer Setup Requirements
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>The following are requirements for a client using TACTIC.</p>
+         <p><span class="bold"><strong>TACTIC Temp Directory Creation</strong></span></p>
+         <p>TACTIC needs to be able to create the TACTIC temporary directory. TACTIC uses this
+                    directory as scratch pad space to store temporary files.
+         </p>
+         <p>The location of this directory depends on the client operating system:</p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>Linux: <span class="command"><strong>/tmp/sthpw</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Windows: <span class="command"><strong>C:/sthpw</strong></span></p>
+               </li>
+               <li class="listitem">
+                  <p>Mac OS X: <span class="command"><strong>/tmp/sthpw</strong></span></p>
+               </li>
+            </ul>
+         </div>
+         <p><span class="bold"><strong>Set environment variables</strong></span></p>
+         <p><span class="command"><strong>$TACTIC_ASSET_DIR</strong></span></p>
+         <p>This environment variable is used to point to the root of
+                    <code class="filename">asset_base_dir</code> (the directory where assets are stored). This value
+                    defaults to "/home/apache/assets" in the TACTIC server. On Windows machines, this path is
+                    usually mapped as a letter drive  (for example, Z:\) or as a UNC path (for example,
+                    \\server\volume\directory\). This environment variable is set by the server on the client
+                    machine during loading if it does not already exist. 
+         </p>
+         <p>On a per-project basis, you can set the project setting with the keys
+                    "win32_client_repo_dir" and "linux_client_repo_dir" so one project can have its asset
+                    directory mapped to Drive Z: and another mapped to Drive T:.
+         </p>
+         <p><span class="bold"><strong>Browser Plugins</strong></span></p>
+         <p>TACTIC uses the Java plugin in many cases to communicate with the client computer's
+                    operating system. This plugin is mostly used in application integration to pass files
+                    through the client web browser to and from the TACTIC server.
+         </p>
+         <p>To download the latest version of the Java plugin, go to <a class="link" href="http://www.java.com" target="_top"><span class="bold"><strong>http://www.java.com</strong></span></a></p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_client-setup.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_client-setup.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;</td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

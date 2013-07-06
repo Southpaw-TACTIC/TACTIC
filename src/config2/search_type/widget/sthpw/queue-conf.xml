@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+
+    <element name="icon">
+        <display class="ThumbWdg">
+            <icon_size>30</icon_size>
+            <redirect>true</redirect>
+        </display>
+    </element>
+
+    <element name="dispatcher_id"/>
+
+    <element name="priority"/>
+    <element name="queue"/>
+    <element name="state">
+    <!--
+        <display class='pyasm.prod.render.QubeState'/>
+    -->
+    </element>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="policy_code" title="policy"/>
+    <element name="command"/>
+    <element name="description" width='200px'/>
+
+    
+    <element name="serialized_hidden" title='Data'>
+      <display class='HiddenRowToggleWdg'>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>sthpw/queue</search_type>
+        <show_search_limit>false</show_search_limit>
+        <show_insert>false</show_insert>
+        <show_row_select>false</show_row_select>
+        <show_gear>false</show_gear>
+        <view>data</view>
+      </display>
+    </element>
+
+
+    <element name="serialized" title="data">
+    </element>
+
+</definition>
+
+
+<table>
+    <!--
+    <element name="icon"/>
+    <element name="dispatcher_id"/>
+    <element name="policy_code" title="policy"/>
+    -->
+    <element name="id"/>
+    <element name="description" width='200px'/>
+    <element name="priority"/>
+    <element name="queue"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="project_code"/>
+    <element name="command"/>
+    <element name="script_path"/>
+    <element name="serialized_hidden"/>
+    <element name="state"/>
+    <element name="host"/>
+</table>
+
+
+
+<interval>
+    <element name="queue"/>
+    <element name="state"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="command"/>
+    <element name="serialized_hidden"/>
+    <element name="description" width='200px'/>
+</interval>
+
+
+
+
+<test>
+    <element name="project_code"/>
+    <element name="command"/>
+    <element name="serialized_hidden"/>
+    <element name="interval"/>
+    <element name="state"/>
+    <element name="queue"/>
+    <element name="priority"/>
+    <element name="login"/>
+</test>
+
+
+
+<data>
+    <element name="serialized"/>
+</data>
+ 
+
+ 
+<summary>
+
+    <element name="dispatcher_id"/>
+    <element name="priority"/>
+    <element name="queue"/>
+    <element name="state"/>
+    <element name="login"/>
+    <element name="timestamp"/>
+    <element name="policy_code" title="policy"/>
+    <element name="command"/>
+    <element name="description"/>
+</summary>
+
+
+
+<edit>
+    <element name="queue"/>
+    <element name="priority">
+        <display class="TextWdg">
+            <edit_all>true</edit_all>
+        </display>
+    </element>
+    <element name="description"/>
+    <element name="state">
+        <display class="TextWdg">
+            <edit_all>true</edit_all>
+        </display>
+    </element>
+    <element name="login">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+</edit>
+
+<submit>
+    <element name="sobject_info">
+        <display class="pyasm.prod.web.RenderSubmitInfoWdg">
+            <show_title>false</show_title>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+
+
+    <element name="queue">
+        <display class="SelectWdg">
+            <values>Qube</values>
+        </display>
+    </element>
+
+    <element name="description">
+        <display class="pyasm.prod.web.SubmissionDescriptionWdg">
+        </display>
+    </element>
+
+    <!-- Job Specific -->
+    <!-- Due to stack trace, commenting this out now
+    <element name="settings">
+      <display class="CustomInfoInputWdg">
+        <view>render_submit</view>
+      </display>
+      <action class="NullAction"/>
+    </element>
+    -->
+
+    <element name="job_type">
+        <display class="SelectWdg">
+            <setting>render_job_type</setting>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <!-- Policy determines the details of the render -->
+    <!--
+    <element name="policy_code" title="policy">
+        <display class="SelectWdg">
+            <query>prod/render_policy|code|code</query>
+        </display>
+    </element>
+    -->
+
+
+    <element name="resolution">
+        <action class="NullAction"/>
+    </element>
+
+
+
+
+    <element name="priority">
+        <display class="TextWdg">
+            <edit_all>true</edit_all>
+            <default>9999</default>
+        </display>
+    </element>
+
+    
+
+    <element name="action">
+        <display class="NoneWdg"/>
+        <action class="pyasm.prod.web.SObjectRenderCbk">
+        </action>
+    </element>
+</submit>
+
+<render_submit>
+    <element name="job_type">
+        <display class="SelectWdg">
+            <setting>render_job_type</setting>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <!-- Policy determines the details of the render -->
+    <element name="policy_code" title="policy">
+        <display class="SelectWdg">
+            <query>prod/render_policy|code|code</query>
+        </display>
+    </element>
+
+
+    <element name="resolution"/>
+</render_submit>
+
+
+
+</config>
+
+

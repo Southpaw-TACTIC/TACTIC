@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+<element name="id"/>
+<element name="login"/>
+<element name="timestamp" type="datetime"/>
+<element name="description"/>
+<element name="namespace"/>
+<element name="type"/>
+<element name="transaction" edit="false">
+   <display class="XmlWdg"/>
+</element>
+
+<element name='transaction_log_hidden' title='Details'>
+  <display widget='hidden_row'>
+    <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+    <search_type>sthpw/transaction_log</search_type>
+    <show_search_limit>false</show_search_limit>
+    <show_insert>false</show_insert>
+    <show_select>false</show_select>
+    <show_gear>false</show_gear>
+    <view>log</view>
+    <show_shelf>false</show_shelf>
+  </display>
+</element>
+</definition>
+
+
+<table edit="false">
+<!--
+<element name="id"/>
+-->
+<element name="code"/>
+<element name="login"/>
+<element name="timestamp"/>
+<element name="description"/>
+<element name="namespace"/>
+<element name="type"/>
+<element name='transaction_log_hidden'/>
+</table>
+
+
+<color>
+  <element name='type'>
+      <text_colors>
+          <redo>#F33</redo>
+      </text_colors>
+  </element>
+</color>
+
+
+<edit>
+</edit>
+
+<log>
+    <element name="transaction"/>
+</log>
+</config>
+
+

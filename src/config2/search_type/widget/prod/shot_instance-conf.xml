@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+  <element name="preview" edit='false'>
+    <display class="ThumbWdg">
+      <!-- TODO: this is ugly. need a more formal relationship -->
+      <icon_size>100%</icon_size>
+      <redirect>prod/asset|code|asset_code</redirect>
+    </display>
+  </element>
+
+  <element name="history"/>
+  <element name="asset_code"/>
+  <element name="shot_code"/>
+  <element name="name"/>
+
+  <element name="input" edit="false" sortable="false">
+    <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>prod/shot_instance</search_type>
+        <shot_search_type>prod/shot</shot_search_type>
+        <mode>input</mode>
+    </display>
+  </element>
+
+  <element name="output" edit="false" sortable="false">
+    <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>prod/shot_instance</search_type>
+        <shot_search_type>prod/shot</shot_search_type>
+        <mode>output</mode>
+    </display>
+  </element>
+
+  <element name="publish" edit="false" sortable="false">
+    <display class="tactic.ui.cgapp.PublishElementWdg">
+        <search_type>prod/shot_instance</search_type>
+    </display>
+  </element>
+
+
+</definition>
+
+
+
+<table>
+  <element name="history"/>
+  <element name="asset_code"/>
+  <element name="shot_code"/>
+  <element name="name"/>
+</table>
+
+
+<load default="table">
+   
+  <element name="preview"/>
+
+  <element name="history" width='1%'>
+    <display class="HiddenRowToggleWdg">
+        <dynamic_class>pyasm.prod.web.InstanceHistoryWdg</dynamic_class>
+        <asset_search_type>prod/asset</asset_search_type>
+        <search_type>prod/shot_instance</search_type>
+    </display>
+  </element>
+
+  <element name="asset_code"/>
+<!-- WHAT IS THIS???
+  <element name="asset_name">
+      <display class="AuxDataWdg"/>
+  </element>
+-->
+  <element name="name"/>
+
+  <element name="input"/>
+  <element name="output"/>
+
+</load>
+
+
+<publish default="table">
+   
+  <element name="preview"/>
+
+  <element name="history" width='1%'>
+    <display class="HiddenRowToggleWdg">
+      <dynamic_class>pyasm.prod.web.InstanceHistoryWdg</dynamic_class>
+    </display>
+  </element>
+
+  <element name="name"/>
+
+  <element name="publish"/>
+
+  <element name="last_version">
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>v{@GET(sthpw/snapshot['is_latest','t'].version),%0.3d}</expression>
+    </display>
+  </element>
+
+  <element name="last_date">
+    <display class='tactic.ui.table.ExpressionElementWdg'>
+      <expression>{@GET(sthpw/snapshot['is_latest','t'].timestamp),%Y-%m-%d</expression>
+    </display>
+  </element>
+
+</publish>
+
+
+
+
+<edit>
+  <element name="shot_code"/>
+  <element name="asset_code"/>
+  <element name="name"/>
+ 
+</edit>
+
+<add_item>
+  <element name="asset_code" width="100px"/>
+  <element name="shot_code" width="100px"/>
+  <element name="name" width="100px"/>
+</add_item>
+
+
+</config>
+

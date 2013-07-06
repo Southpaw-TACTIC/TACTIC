@@ -1,0 +1,80 @@
+/* *********************************************************
+ *
+ * Copyright (c) 2009, Southpaw Technology
+ *                     All Rights Reserved
+ * 
+ * PROPRIETARY INFORMATION.  This software is proprietary to
+ * Southpaw Technology, and is not to be reproduced, transmitted,
+ * or disclosed in any way without written permission.
+ * 
+ * 
+ */ 
+
+
+/* FONT-palette styles ... */
+
+.look_fnt_title_1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: normal;
+}
+
+.look_fnt_title_2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-weight: normal;
+}
+
+.look_fnt_title_3 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.look_fnt_title_4 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.look_fnt_title_5 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.look_fnt_text {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.look_fnt_text_small {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.look_fnt_serif {
+    font-family: Times, serif;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.look_fnt_code {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+
+/* font modifiers for bold and italic */
+
+.look_fnt_bold {
+    font-weight: bold;
+}
+
+.look_fnt_italic {
+    font-style: italic;
+}
+

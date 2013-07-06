@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="url"/>
+    <element name="widget">
+        <display class="XmlWdg"/>
+    </element>
+    <element name="timestamp"/>
+    <element name="description"/>
+
+    <element name='link'>
+        <display widget="button">
+            <icon>LINK</icon>
+            <cbjs_action>
+                var row = bvr.src_el.getParent(".spt_table_row");
+                var search_key = row.getAttribute("spt_search_key");
+                var server = TacticServerStub.get();
+                var env = spt.Environment.get();
+                var server_url = env.get_server_url();
+                var project = env.get_project();
+
+                var sobject = server.get_by_search_key(search_key);
+                var url = server_url + "/tactic/" + project + sobject.url;
+                window.open(url);
+            </cbjs_action>
+        </display>
+    </element>
+
+</definition>
+
+
+<table>
+    <element name="url" width="200px"/>
+    <element name="widget" width="400px"/>
+    <element name="description" width="400px"/>
+    <element name="link"/>
+</table>
+
+<edit>
+    <element name="url" width="200px"/>
+    <element name="description" width="400px"/>
+    <element name="widget" width="400px"/>
+</edit>
+
+
+
+</config>

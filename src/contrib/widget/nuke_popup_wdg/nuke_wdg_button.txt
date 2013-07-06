@@ -1,0 +1,16 @@
+<element name='nuke_wdg' title='Nuke'>
+  <display class='tactic.ui.table.ButtonElementWdg'>
+    <icon>ARROW_OUT</icon>
+    <cbjs_action>
+
+      kwargs = {
+        'view': 'nuke_wdg',
+        'search_key': bvr.search_key,
+        'application': 'Nuke6.0.exe'
+      };
+      spt.panel.load_popup('Nuke Widget', 'tactic.ui.panel.CustomLayoutWdg', kwargs);
+
+    </cbjs_action>
+  </display>
+</element>
+

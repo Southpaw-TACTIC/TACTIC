@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<!-- This defines the default element values for any sobject
+in this namespace based purely on element name.  If an asset
+defines an attribute listed here and it does not override the
+display class, it will adopt the one defined here-->
+
+<config>
+
+
+<definition>
+    <element name="parent">
+        <display class="tactic.ui.table.ParentGroupTableElementWdg"/>
+    </element>
+
+
+    <element name="images"/>
+    <element name="snapshot"/>
+    <element name="files"/>
+<!--
+    <element name="assigned">
+        <display class="pyasm.widget.UserMoreInfoWdg"/>
+    </element>
+
+    <element name="login">
+        <display class="pyasm.widget.UserMoreInfoWdg"/>
+    </element>
+    -->
+    <element name="login">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+    <element name="search_type">
+        <display class="SearchTypeElementWdg"/>
+    </element>
+
+    <element name="history">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.flash.FlashAssetHistoryWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="checkin">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>sprod.AssetHistoryWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="dependency" edit="false">
+        <display class="DependencyLink"/>
+    </element>
+
+
+    <element name="info">
+        <display class="FlashAssetInfoWdg"/>
+    </element>
+
+    <element name="notes" edit="false">
+        <display class="tactic.ui.widget.DiscussionWdg"/>
+    </element>
+
+
+    <element name="render" edit="false">
+        <display class="pyasm.prod.web.RenderTableElementWdg"/>
+    </element>
+
+
+    <element name="timestamp" type="datetime">
+    </element>
+
+    <element name="project_code" title="Projects">
+        <display class="ArrayTableElementWdg"/>
+    </element>
+
+
+    <element name="weekly">
+     <display class="WeekTableElement">
+       <width>550</width>
+     </display>
+    </element>  
+
+<!-- 
+    <element name="update" edit="false">
+        <display class="UpdateWdg"/>
+    </element>
+-->
+
+    <element name="detail" title="Details" edit="false">
+        <display class="tactic.ui.table.SObjectDetailElementWdg">
+            <use_parent>true</use_parent>
+        </display>
+    </element>
+
+    <element name="color">
+        <display class="tactic.ui.common.SimpleTableElementWdg">
+            <css_background>@GET(.color)</css_background>
+        </display>
+    </element>
+
+</definition>
+
+
+
+<edit>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="NullAction"/>
+    </element>
+ 
+
+    <element name="files">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="images">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+
+    <element name="episode_code">
+        <display class="SelectWdg">
+            <query>prod/episode|code|code</query>
+        </display>
+    </element>
+
+
+    <element name="asset_type">
+        <display class="SelectWdg">
+            <query>prod/asset_type|code|description</query>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="rules">
+        <display class="TextAreaWdg">
+            <rows>10</rows>
+        </display>
+    </element>
+    <element name="message">
+        <display class="TextAreaWdg"/>
+    </element>
+
+    <element name="project_code">
+        <display class="pyasm.prod.web.ProjectSelectWdg"/>
+    </element>
+
+    <!--
+     <element name="search_type">
+         <display class="pyasm.prod.web.SearchTypeSelectWdg"/>
+     </element>
+     -->
+     <element name="login">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+
+    <element name="timestamp"/>
+    <element name='assigned'>
+        <display class='tactic.ui.input.ProcessGroupSelectWdg'/>
+    </element>
+    <element name='supervisor'>
+        <display class='tactic.ui.input.ProcessGroupSelectWdg'/>
+    </element>
+    
+</edit>
+
+<insert>
+    <element name="project_code">
+        <display class="MultiSelectWdg">
+            <query>sthpw/project|code|code</query>
+            <empty>true</empty>
+        </display>
+        <action class="MultiDatabaseAction"/>
+    </element>
+</insert>
+
+
+<tile>
+    <element name="preview" width="100px"/>
+    <element name="code"/>
+    <element name="description"/>
+</tile> 
+
+
+
+
+
+</config>
+
+
+
+

@@ -1,0 +1,416 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+
+<my_reports>
+    <element name='my_month_tasks'/>
+    <element name='my_work_hours'/>
+    <element name='my_checkins'/>
+    <element name='my_activity_calendar'/>
+</my_reports>
+
+
+
+<task_reports>
+    <element name='project_schedule'/>
+    <element name='user_schedules'/>
+    <element name='tasks_due_this_week'/>
+    <element name='weekly_tasks_completed'/>
+    <element name='task_burndown'/>
+    <element name='tasks_due_chart'/>
+    <element name='task_status_count'/>
+</task_reports>
+
+<work_hour_reports>
+    <element name="bid_vs_actual_hours"/>	
+    <element name="approved_vs_unapproved_hours"/>	
+    <element name="unapproved_work_hours"/>
+    <element name="approved_work_hours"/>
+</work_hour_reports>
+
+
+<checkin_reports>
+    <element name='checkin_count_chart'/>
+    <element name='disk_usage_chart'/>
+    <element name='user_checkin_count'/>
+    <element name='user_file_size'/>
+</checkin_reports>
+
+
+<sample_charts>
+    <element name='sample_chart_01'/>
+    <element name='sample_chart_02'/>
+</sample_charts>
+
+
+
+<definition>
+
+
+  <!-- My Reports -->
+
+  <element name="my_month_tasks" title='My Tasks This Month' icon="date" image="CALENDAR_02" description="Personal task calendar">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.widget.SObjectCalendarWdg</class_name>
+        <assigned>$LOGIN</assigned>
+    </display>
+  </element>
+
+  <element name="my_work_hours" title="My Work Hours" icon="time" image="TASK_01" description="Personal Work Hours List">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/work_hour</search_type>
+      <view>table</view>
+      <show_header>false</show_header>
+      <mode>simple</mode>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"login","main_body_relation":"is","main_body_value":"{$LOGIN}"},
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+	{"prefix": "group", "group": "true", "order": "day"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="my_checkins" title="My Checkins" icon="time" image="TASK_01" description="My Check-ins for the current project">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/snapshot</search_type>
+      <view>checkin_history</view>
+      <show_header>false</show_header>
+      <mode>simple</mode>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"login","main_body_relation":"is","main_body_value":"{$LOGIN}"},
+	{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+	{"prefix": "group", "group": "true", "order": "timestamp"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+
+  <element name="my_activity_calendar" title='My Activity Calendar' icon="date" image="CALENDAR_02" description="Personal summary of activities layed out on a calendar view.">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.tools.schedule_wdg.ScheduleUserToolWdg</class_name>
+        <assigned>$LOGIN</assigned>
+    </display>
+  </element>
+
+
+
+
+
+  <!-- Task Reports -->
+
+
+  <element name='weekly_tasks_completed' title='Weekly Tasks Completed' image="GRAPH_BAR_04" description='Task count completed each week'>
+    <display class="LinkWdg">
+        <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+        <title>Task Completed Chart</title>
+        <y_title># Tasks</y_title>
+        <search_type>sthpw/task</search_type>
+        <start_date>{$THIS_YEAR}</start_date>
+        <elements>{@COUNT()}</elements>
+        <column>actual_end_date</column>
+        <chart_type>bar</chart_type>
+    </display>
+  </element>
+
+
+  <element name='tasks_due_this_week' title='Tasks Due This Week' image="REPORT_02" description='List of all task that are due this week'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/task</search_type>
+      <view>table</view>
+      <expression>@SOBJECT(sthpw/task['bid_end_date','>',$PREV_SUNDAY]['bid_end_date','&lt;',$NEXT_SUNDAY])</expression>
+    </display>
+  </element>
+
+  <element name='task_burndown' title='Tasks Burndown' image='GRAPH_ARROW_03' description='Bid Vs Actual Task completion over time'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <title>Task Burndown Chart</title>
+      <y_title># Tasks</y_title>
+      <interval>weekly</interval>
+      <chart_type>area</chart_type>
+      <search_type>sthpw/task</search_type>
+      <expression>@SOBJECT(sthpw/task['project_code',$PROJECT])</expression>
+      <column>bid_end_date</column>
+      <!--<start_date>{$THIS_YEAR}</start_date>-->
+      <!--<end_date>{$NEXT_YEAR}</end_date>-->
+      <total>@COUNT()</total>
+      <running>$running + @COUNT()</running>
+      <chart_data>
+      [
+        {
+          "chart_type": "bar",
+          "element": "@COUNT()"
+        },
+        {
+          "chart_type": "area",
+          "element": "$total - $running"
+        }
+      ]
+      </chart_data>
+    </display>
+  </element>
+
+
+  <element name='tasks_due_chart' title='Tasks Due Chart' image="GRAPH_BAR_03" description='All the tasks due each week'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <title>Task Due Chart</title>
+      <y_title># Tasks</y_title>
+      <search_type>sthpw/task</search_type>
+      <start_date>2011-01-01</start_date>
+      <end_date>2012-01-01</end_date>
+      <elements>{@COUNT()}</elements>
+      <column>bid_end_date</column>
+      <chart_type>bar</chart_type>
+    </display>
+  </element>
+
+
+
+  <!-- Should we use this one or use the charing library -->
+  <element name="task_status_count" title="Task Status Count" image="GRAPH_BAR_02" description="A breakdown of the current task status">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.report.TaskStatusCountReportWdg</class_name>
+    </display>
+  </element>
+
+
+  <element name="project_schedule" title="Project Schedule" icon="date" image='CALENDAR_01' description='Project tasks displayed on a calendar'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.widget.SObjectCalendarWdg</class_name>
+      <project>$PROJECT</project>
+    </display>
+  </element>
+
+
+  <element name="user_schedules" title="User Schedule" icon="date" image='CALENDAR_01' description='User Activity and Schedule calendar'>
+    <display class="LinkWdg">
+      <class_name>tactic.ui.tools.ScheduleToolWdg</class_name>
+    </display>
+  </element>
+
+
+  <!-- Work hours reports -->
+
+  <element name='bid_vs_actual_hours' title='Bid vs Actual Hours' image="CLOCK_01" description='Number of Work Hours Bid vs Actual Logged Per Week'>
+    <display class="LinkWdg">
+      <labels>Total Hours Bid|Total Hours Logged</labels>
+      <chart_type>bar</chart_type>
+      <title>Bid Work Hours vs Actual Work Hours</title>
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <expression>@SOBJECT(sthpw/task['project_code',$PROJECT])</expression>
+      <interval>monthly</interval>
+      <start_date>{$PREV_YEAR}</start_date>
+      <column>bid_end_date</column>
+      <y_title>Total Hours</y_title>
+      <chart_data>
+        [
+          {
+            "element": "@SUM(.bid_duration)",
+            "expression": "@SOBJECT(sthpw/task['project_code',$PROJECT])",
+            "search_type": "sthpw/task",
+            "column": "bid_end_date"
+          
+          },
+          {
+            "expression": "@SOBJECT(sthpw/work_hour['project_code',$PROJECT])",
+            "element": "@SUM(.straight_time)",
+            "column": "day"
+          }
+        ]
+      </chart_data>
+    </display>
+  </element>
+
+
+
+  <element name='approved_vs_unapproved_hours' title='Approved vs Unapproved Hours' image="CLOCK_01" description='Work Hours Approved vs Unapproved Per Week'>
+    <display class="LinkWdg">
+      <labels>Total Hours Approved|Total Hours Unapproved</labels>
+      <chart_type>bar</chart_type>
+      <title>Approved Work Hours vs Unapproved Work Hours</title>
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <expression>@SOBJECT(sthpw/work_hour['project_code',$PROJECT])</expression>
+      <interval>weekly</interval>
+      <!--<start_date>{$PREV_YEAR}</start_date>-->
+      <column>day</column>
+      <y_title>Total Hours</y_title>
+      <chart_data>
+        [
+          {
+            "element": "@SUM(.straight_time)",
+            "expression": "@SOBJECT(sthpw/work_hour['project_code',$PROJECT]['status', 'approved'])",
+            "column": "day"
+          
+          },
+          {
+            "expression": "@SOBJECT(sthpw/work_hour['project_code',$PROJECT]['status', '!=', 'approved'])",
+            "element": "@SUM(.straight_time)",
+            "column": "day"
+          }
+        ]
+      </chart_data>
+    </display>
+  </element>
+
+
+
+
+  <element name="unapproved_work_hours" title="Unapproved Hours" icon="time" image="TASK_01" description="Unapproved work hours logged by users.">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/work_hour</search_type>
+      <view>table</view>
+      <show_header>false</show_header>
+      <mode>simple</mode>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"status","main_body_relation":"is not","main_body_value":"approved"},
+	{"prefix": "group", "group": "true", "order": "day"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+  <element name="approved_work_hours" title="Approved Hours" icon="time" image="TASK_01" description="Approved work hours logged by users.">
+    <display class="LinkWdg">
+      <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+      <search_type>sthpw/work_hour</search_type>
+      <view>table</view>
+      <show_header>false</show_header>
+      <mode>simple</mode>
+      <filter>
+      [
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
+        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"status","main_body_relation":"is","main_body_value":"approved"},
+	{"prefix": "group", "group": "true", "order": "day"}
+      ]
+      </filter>
+    </display>
+  </element>
+
+
+
+
+  <!-- Checkin Reports -->
+
+<element name='disk_usage_chart' title='Disk Usage Chart' image="GRAPH_LINE_06" description='Show the disk usage of all check-ins for each week'>
+  <display class="LinkWdg">
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <title>Total Disk Usage</title>
+      <y_axis>Disk Usage (in MB)</y_axis>
+      <search_type>sthpw/file</search_type>
+      <start_date>{$6_MONTHS_AGO}</start_date>
+      <elements>{@SUM(.st_size)/1024/1024}</elements>
+  </display>
+</element>
+
+
+<element name='checkin_count_chart' title='Check-in Count Chart' image="GRAPH_BAR_01" description='Charts the number of check-ins done each week this year'>
+  <display class="LinkWdg">
+      <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+      <title>Check-in Count Chart</title>
+      <search_type>sthpw/snapshot</search_type>
+      <start_date>{$THIS_YEAR}</start_date>
+      <elements>{@COUNT()}</elements>
+  </display>
+</element>
+
+
+<element name='user_checkin_count' title='Check-ins per User' image='GRAPH_ARROW_03' description='Number of check-ins per user'>
+  <display class="LinkWdg">
+      <class_name>tactic.ui.chart.SObjectChartWdg</class_name>
+      <title>Number of check-ins per user</title>
+      <expression>@SOBJECT(sthpw/login)</expression>
+      <x_axis>login</x_axis>
+      <y_axis>{@COUNT(login:sthpw/snapshot)}</y_axis> 
+  </display>
+</element>
+
+
+
+<element name='user_file_size' title='Total File Usage per User' image='GRAPH_ARROW_03' description='Total files checked-in per user'>
+  <display class="LinkWdg">
+      <class_name>tactic.ui.chart.SObjectChartWdg</class_name>
+      <title>Total file usage per user</title>
+      <expression>@SOBJECT(sthpw/login)</expression>
+      <x_axis>login</x_axis>
+      <y_axis>{@SUM(@GET(login:sthpw/snapshot.sthpw/file.st_size))/1024/1024}</y_axis> 
+  </display>
+</element>
+
+
+
+
+
+<!--
+<element name='project_status' title='Project Status' description='Chart of the overall project status'>
+  <display class="LinkWdg">
+      <class_name>tactic.ui.chart.ExpressionChartWdg</class_name>
+      <title>Task Completed Chart</title>
+      <x_expression>@SOBJECT(config/process)</x_expression>
+      <y_expression>@COUNT(sthpw/task[@DISTINCT(search_type,search_id)]['process',$X_VALUE]['is_complete',True])</y_expression>
+      <y_expression>@COUNT(sthpw/task['process',$X_VALUE]['is_complete',True])</y_expression>
+  </display>
+</element>
+-->
+
+
+
+
+
+<!-- Sample Charts -->
+<element name='sample_chart_01' title="Sample Chart 1" image="GRAPH_LINE_04" description="Example - Charting capabilities">
+  <display class="LinkWdg">
+    <class_name>tactic.ui.chart.chart2_wdg.SampleBarChartWdg</class_name>
+  </display>
+</element>
+
+
+
+<element name='sample_chart_02' title='Sample Chart 2' image="GRAPH_LINE_03" description='Example - Time based chart'>
+    <display class="LinkWdg">
+       <labels>Megabytes|# Files</labels>
+       <class_name>tactic.ui.chart.CalendarChartWdg</class_name>
+        <y_title>Disk Usage (in MB)</y_title>
+        <interval>monthly</interval>
+        <search_type>sthpw/file</search_type>
+        <chart_data>[
+      {
+        "chart_type": "bar",
+        "element": "@SUM(.st_size)/1024/1024"
+	},
+      {
+        "chart_type": "area",
+        "element": "@COUNT()"
+      
+      }
+        ]</chart_data>
+   </display>
+</element>
+
+
+
+
+</definition>
+
+</config>

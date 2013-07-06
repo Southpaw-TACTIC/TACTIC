@@ -1,0 +1,176 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Project Templates</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_projects.html" title="Create Projects">
+      <link rel="prev" href="tactic-setup_setup_create-new-project.html" title="Create a New Project">
+      <link rel="next" href="tactic-setup_project-startup.html" title="Project Startup">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_create-new-project.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_project-startup.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Project Templates">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_project-templates"></a>Project Templates
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/1_project_templates_overview.png"></div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <p>When a new project is created based on a <span class="bold"><strong>template</strong></span>
+                           project, the following internal structure will be copied over:
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="120.75pt">
+                     <col width="350.0px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>search types</strong></span> and <span class="bold"><strong>custom columns</strong></span></p>
+                                                       
+                        </td>
+                        <td>The <span class="bold"><strong>sTypes</strong></span> and their <span class="bold"><strong>custom columns</strong></span> are copied over from the
+                                                               template.
+                           <p>eg. project/asset.</p>
+                           <p>Keep in mind that
+                                                                  the instances of these types are not copied over
+                           </p>
+                           <p>ie.
+                                                                  the items themselves are not copied over
+                           </p>
+                           <p>
+                                                                  
+                           </p>
+                           <div class="mediaobject"><img src="media/2_project_templates_stypes.png"></div>
+                           <p>
+                                                              
+                           </p>
+                           <p>The <span class="bold"><strong>custom columns</strong></span> are
+                                                                  copied over from the template.
+                           </p>
+                           <div class="mediaobject"><img src="media/4_project_templates_custom_columns.png"></div>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>pipeline</strong></span> and <span class="bold"><strong>task statuses</strong></span></p>
+                                                       
+                        </td>
+                        <td>The <span class="bold"><strong>processes</strong></span> and the <span class="bold"><strong>task statuses</strong></span> are copied over from the
+                                                           template. 
+                           <p>eg. <span class="bold"><strong>processes</strong></span>:
+                                                                  design, rought, final, delivery 
+                           </p>
+                           <p>
+                                                                  
+                           </p>
+                           <div class="mediaobject"><img src="media/3_project_templates_pipeline.png"></div>
+                           <p>
+                                                              
+                           </p>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p><span class="bold"><strong>notifications</strong></span> and <span class="bold"><strong>triggers</strong></span></p>
+                                                       
+                        </td>
+                        <td>The <span class="bold"><strong>notificaions </strong></span>and <span class="bold"><strong>triggers </strong></span>are copied over from the
+                                                           template.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>sidebar</strong></span></td>
+                        <td>The links of the views in the sidebar are copied over from the
+                                                           template.
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>
+                           
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>The only difference between a project that is a template and a regular project
+                                      is simply a checkmark in a column named <span class="bold"><strong>is_template</strong></span> in the projects table.
+               </p>
+            </div>
+            <p>
+                       
+            </p>
+            <p>To toggle the <span class="bold"><strong>is_template</strong></span> attribute of a regular
+                           project, as the administrator go to:
+            </p>
+            <p>
+                           <span class="bold"><strong>Admin views -&gt; Site Admin -&gt; Projects</strong></span></p>
+            <p>Add the column <span class="bold"><strong>is_template</strong></span> and remove the Search
+                           Filters.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/5_project_templates_projects.png"></div>
+            <p>
+                       
+            </p>
+            <p>Notice that there exists the following view for convenience:</p>
+            <p>
+                           <span class="bold"><strong>Admin views -&gt; Site Admin -&gt; Template Projects</strong></span></p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>After a new project is created based on a template, any changes made to the
+                                      template will not affect the new project.
+               </p>
+               <p>ie. only the structure that existed in the template at the time the project
+                                      was created will be used
+               </p>
+            </div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_create-new-project.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_projects.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_project-startup.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

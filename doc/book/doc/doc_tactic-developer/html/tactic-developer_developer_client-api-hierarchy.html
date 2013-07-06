@@ -1,0 +1,160 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Navigating Search Type Hierarchy</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="tactic-developer_client-api.html" title="Client API">
+      <link rel="prev" href="tactic-developer_developer_client-api-structure.html" title="Client API Structure">
+      <link rel="next" href="tactic-developer_developer_client-api-basic.html" title="Basic Operations">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="section" title="Navigating Search Type Hierarchy">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-developer_developer_client-api-hierarchy"></a>Navigating Search Type Hierarchy
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Hierarchies">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e437"></a>Hierarchies
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Each project in TACTIC contains a collection of search types. The schema defines how
+               these search types are related to each other. There is a wide variety of possible ways
+               that two search types can be related to each other. The schema abstracts these
+                  relationships so that it is easy to navigate through these hierarchies. 
+            </p>
+            <p>The following relationship types are used:</p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p><span class="bold"><strong>parent_code</strong></span>: The column named
+                                                "parent_code" is used to define the parent code. You would need to look at
+                                                the schema definition to know the exact search_type of each parent. This
+                                                relationship type has the advantage that it standardizes the name of the
+                                                parent column.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>sobject_code</strong></span>: A naming convention of
+                                                &lt;parent_table&gt;_code is used to define the parent code. SObjects reference
+                                                each other through the "code" column, which is guaranteed to be unique. (The
+                                                code column is used instead of "id" because it is easier to read.) This is a
+                                                more intuitive relationship type than "parent_code".
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>search_type</strong></span>: The parent code is defined
+                                                by an arbitrary relationship using two columns: search_type and search_id.
+                                                Together, they uniquely identify parent SObjects.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>search_key</strong></span>: The parent code is defined by
+                                                a single column called "search_key," which contains a unique identifier for
+                                                the parent.
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <p>Of the above types, sobject_code and search_type are used most often. Any of these
+                           types can be used at any time and be related to each other. Having an intimate knowledge
+                           of these relationships can be confusing, so to keep things organized a project schema is
+                           used to define which search_types can be related to other search_types and in which
+                           ways. In other words, TACTIC uses the schema definition for the project to abstract
+                           relationships and make them easier to understand.
+            </p>
+         </div>
+         <div class="simplesect" title="Methods">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e467"></a>Methods
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>get_parent()</strong></span></p>
+            <p>There are a number of methods to help navigate through the search type hierarchy.</p>
+            <p>Every search type can have a single parent type. You can query this type with
+                           get_parent_type(). For example, to find the parent type of a
+                           "prod/asset":
+            </p><pre class="programlisting">search_type = "prod/asset"
+parent_type = server.get_parent_type(search_type)
+print parent_type</pre><p>When executed, the above code snippet would return the string "prod/asset_library".</p>
+            <p><span class="bold"><strong>get_child_types()</strong></span></p>
+            <p>When the parent/child relationship is search_type or search_key, each SObject will
+                           have its own parent. In this case, the parent would return "*", which indicates that all
+                           search types are a possible parent.
+            </p>
+            <p>To find child types, use the get_child_types() function. This function returns a list
+                           because a search_type can and will have a number of search types as children. This
+                           method will return all of the possible search types.
+            </p>
+            <p><span class="bold"><strong>get_parent()</strong></span></p>
+            <p>Most search_types will only have one parent type (except those that defer the
+                           parentage to the SObject itself). The get_parent() method allows you to obtain the
+                           individual parent SObject of an
+                           SObject.
+            </p><pre class="programlisting">search_type = "prod/asset"
+code = "vehicle011"
+search_key = server.build_search_key(search_type, code)
+parent = server.get_parent(search_key)
+print parent.get('code')</pre><p>Executing the above code snippet would result in the
+                           output:
+            </p><pre class="programlisting">vehicles</pre><p>because the parent type of "prod/asset" is "prod/asset_library" and the parent of
+                           "vehicle011" is the asset library "vehicles"
+            </p>
+            <p><span class="bold"><strong>get_all_children()</strong></span></p>
+            <p>Search types can and will have a number of child types. Some types defer the parentage
+                           to the SObject itself to determine the parent type. So when searching for children of
+                           parents, it is necessary to pass in a child type to narrow down the search. The options
+                           for child types can be found by the method
+                           get_child_types().
+            </p><pre class="programlisting">search_type = "prod/asset_library"
+code = "vehicles"
+search_key = server.build_search_key(search_type, code)
+child_type = "prod/asset"
+children = server.get_all_children(search_key, child_type)
+for child in children:
+    print child.get('code')</pre><p>This code snippet will print out all of the codes of the children of this particular
+                           asset library, namely all of the assets in the asset library "vehicles."
+            </p>
+            <p>get_all_children() can also be used to get snapshots (sthpw/snapshot) or tasks
+                           (sthpw/task) as well. These are special child types that defer the parent type to the
+                           individual
+                           SObjects.
+            </p><pre class="programlisting">search_type = 'prod/asset'
+code = 'vehicle011'
+search_key = seaver.build_search_key(search_type, code)
+child_type = 'sthpw/task'
+tasks = server.get_all_children(search_key, child_type)</pre><p>This code snippet will obtain all of the tasks associated with vehicle011.</p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-developer_developer_client-api-structure.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-developer_client-api.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_client-api-basic.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

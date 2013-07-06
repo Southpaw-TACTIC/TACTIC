@@ -1,0 +1,592 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Install - Windows Server 2008</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-tactic-application.html" title="Install TACTIC Application">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_install-tactic-centos-6.2.html" title="TACTIC Install - CentOS 6.2">
+      <link rel="next" href="tactic-sys-admin_sys-admin_install-tactic-fedora-12.html" title="How to Install TACTIC on Fedora 12">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-centos-6.2.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-fedora-12.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Install - Windows Server 2008">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_install-tactic-windows-server-2008"></a>TACTIC Install - Windows Server 2008
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>To completely install TACTIC Enterprise, there are three main components that have to be
+                    set up in the following order:
+         </p>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">A Database</li>
+               <li class="listitem">The TACTIC Installer</li>
+               <li class="listitem">A Web Server</li>
+            </ol>
+         </div>
+         <div class="simplesect" title="Install the Database">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1776"></a>Install the Database
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC stores all metadata in a database called PostgreSQL. This is an industrial
+                           strength, hugely scalable database that has proven itself in thousands of industries
+                           around the world. Go to the <a class="link" href="http://www.postgresql.org" target="_top">PostgreSQL website</a> for more information.
+            </p>
+            <div class="procedure">
+               <ol class="procedure" type="1">
+                  <li class="step" title="Step 1">
+                     <p>From the PostgreSQL site (http://www.postgresql.org), download the .msi file for the
+                                    latest binary distribution. We have encountered no problems using any of the versions
+                                    above 8.4. You can find the binary distribution at this site. Follow the installation
+                                    wizard for PostgreSQL. It is safe to choose all of the default settings if you do not
+                                    have much experience with the PostgreSQL. It is best not to set a password during
+                                    installation, although the Windows installer may force you to set one up. 
+                     </p>
+                  </li>
+                  <li class="step" title="Step 2">
+                     <p>Unzip Tactic Enterprise in a temporary location like C:/temp</p>
+                  </li>
+                  <li class="step" title="Step 3">
+                     <p>It is mandatory you edit the "pg_hba.conf" file after installation</p>
+                     <p></p>
+                     <p>It is located in C:/Program Files/PostgreSQL/&lt;version&gt;/data This file determines
+                                            all of the user permissions for PostgreSQL. You can open this file with any
+                                            text editor like notepad. To begin with, turn on all of the permissions
+                                            contained in this file. This is a temporary measure that will greatly simplify
+                                            the installation process. You may lock down these permissions at a later date.
+                                            Please consult the PostgreSQL documentation on how to do this. TACTIC ships with
+                                            a sample "pg_hba.conf" file (located in
+                                            &lt;TACTIC_unzipped_package&gt;/src/install/postgresql/pg_hba.conf). This file has
+                                            an open security setting for ease of installation. It's best to back up your
+                                            current pg_hba.conf file before copying over with the file provided by TACTIC.
+                                            Note: in Windows, you would need to comment out the line
+                     </p>
+                     <p>local all all trust</p>
+                     <p>You add a comment by putting a '#' at the beginning of the line like
+                                            this:
+                     </p>
+                     <p>#local all all trust</p>
+                  </li>
+                  <li class="step" title="Step 4">
+                     <p>Add the PostgreSQL bin directory to the environment path in Advanced System Settings:
+                                            C:\Program Files\PostgreSQL\&lt;version&gt;\bin\ 
+                     </p>
+                     <p>To do this, go to Start --&gt; Control Panel. If it's organized in category mode,
+                                            go to system and security --&gt; system. If its not categorized, you should see
+                                            system directly. In system, find advanced system and settings --&gt; go to the
+                                            advanced tab --&gt; Environment variables. Now in the system variables box,
+                                            Navigate to the variable "Path". Add the bin directory to the end of the
+                                            value.
+                     </p>
+                  </li>
+                  <li class="step" title="Step 5">
+                     <p>Restart the PostgreSQL Service:</p>
+                     <p>You can go to the control panel again to do this. If it's organized in
+                                            category mode, go to system and security --&gt; administrative tools. If it's not
+                                            categorized, you will see administrative tools directly. Inside, you can find
+                                            services. Find the postgresql service and restart it. Note: If you have command
+                                            prompt open, you need to reopen it for the environment variable to take effect.
+                     </p>
+                  </li>
+               </ol>
+            </div>
+            <p><span class="bold"><strong>Verification</strong></span></p>
+            <p>Verify that psql works in the command prompt:</p><pre class="screen">&gt; psql -U postgres template1</pre><p>It should give you a prompt:</p><pre class="screen">template1=#</pre><p>If you see this prompt without the need to enter a password, you have successfully
+                           installed the PostgreSQL database. Type \q to exit.
+            </p>
+         </div>
+         <div class="simplesect" title="Install TACTIC">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1827"></a>Install TACTIC
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="procedure">
+               <p></p>
+               <p><span class="bold"><strong>Windows</strong></span></p>
+               <p>Unfortunately, Python is not preinstalled on Windows machines; however, with the
+                                  installer this is not difficult.
+               </p>
+               <p>The Python installer does not set the Python path, so this must be added</p>
+               <div class="procedure">
+                  <ol class="procedure" type="1">
+                     <li class="step" title="Step 1">Go to <span class="command"><strong>Start-&gt;Control Panel-&gt;System</strong></span></li>
+                     <li class="step" title="Step 2">Click on the "Advanced" tab.</li>
+                     <li class="step" title="Step 3">Select "Path" under "System Variables" and click the "Edit" button.</li>
+                     <li class="step" title="Step 4">Add Python to the environment path: "C:\Python26\" to the end of the "Variable
+                                            Value" 
+                     </li>
+                  </ol>
+               </div>
+               <p>To test that Python is working from the command prompt, run the command:
+                                  <span class="command"><strong>python</strong></span>
+                              
+               </p>
+               <p>You should get the following
+                                  prompt:
+               </p><pre class="screen">Python 2.6.2 (#67, Sep 28 2009, 12:41:11) [MSC v.1310 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt;</pre><ol class="procedure" type="1">
+                  <li class="step" title="Step 1">
+                     <p><span class="bold"><strong>Install Python and supporting modules</strong></span></p>
+                     <p>The TACTIC source code is written in Python. As such, the complete codebase is
+                                    open.
+                     </p>
+                     <p>To install Python, you can find an msi at <a class="link" href="http://www.python.org" target="_top"><span class="bold"><strong>http://www.python.org</strong></span></a>. TACTIC requires
+                                    Python 2.6 or higher.
+                     </p>
+                     <p>TACTIC also requires a number of Python modules to function correctly. These modules
+                                            are generally not installed by default with the standard Python distributions.
+                                            For Windows, they are already packaged in a file python_modules.zip available
+                                            for download in the release section of the downloads page at <span class="bold"><strong><a class="link" href="http://community.southpawtech.com/downloads" target="_top">http://community.southpawtech.com/downloads</a></strong></span></p>
+                     <div class="itemizedlist">
+                        <ul class="itemizedlist">
+                           <li class="listitem"><span class="bold"><strong>PIL 1.1.7</strong></span> (Python Image Library)
+                           </li>
+                           <li class="listitem"><span class="bold"><strong>ImageMagick 6.7.8</strong></span> (A command line program which complements PIL)
+                                              - <a class="link" href="www.imagemagick.org" target="_top">http://www.imagemagick.org</a></li>
+                           <li class="listitem"><span class="bold"><strong>psycopg2 2.3.1</strong></span> (Database
+                                              connectivity)
+                           </li>
+                           <li class="listitem"><span class="bold"><strong>PyCrypto version 2.0.1/2.1</strong></span> (For de-encrypting
+                                              the license file) - <a class="link" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a></li>
+                           <li class="listitem"><span class="bold"><strong>simplejson 2.1.1 (not needed since Python
+                                                        2.6)</strong></span> simplejson.egg can be installed with the EasyInstaller. It is
+                                              need for JSON string encoding and parsing
+                           </li>
+                           <li class="listitem"><span class="bold"><strong>lxml 2.1 or 2.2</strong></span> (XML and XPath
+                                          processing)
+                           </li>
+                           <li class="listitem"><span class="bold"><strong>pywin32-(build 2##)</strong></span> (Python Windows OS
+                                                      module)
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+                  <li class="step" title="Step 2">
+                     <p>If you haven't done so already above, unzip Tactic Enterprise in a temporary location like
+                                            C:/temp
+                     </p>
+                  </li>
+                  <li class="step" title="Step 3">Go to
+                                     <span class="command"><strong>C:/temp/tactic_#.#.#/src/install/</strong></span><pre class="screen"># cd C:/temp/tactic_#.#.#.#/src/install</pre></li>
+                  <li class="step" title="Step 4">Execute: <span class="command"><strong>install.py</strong></span><div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+                        <h3 class="title">Note</h3>You must invoke the installation with root user privileges because it attempts
+                                            to write to the &lt;python_install&gt;/site-packages directory.
+                     </div><pre class="screen"># python install.py </pre><p>The installer will ask a number of questions. First it ask for the
+                                            &lt;TACTIC_BASE_DIR&gt;:
+                     </p><pre class="screen">Please enter the base path of the TACTIC installation:
+
+(C:/Program Files/Southpaw) -&gt;</pre><p>It would copy the source code to the base path. An Apache Web Server file will
+                                            be generated at the end which you would need to copy to the Apache config area
+                                            upon installation of the web server. If there are existing files in the
+                                            destination directory the installer will ask for your confirmation to remove it.
+                                            At the end, you will see this:
+                     </p><pre class="screen">Installing service TacticService
+Changing service configuration
+Service updated
+
+*** Installation of TACTIC completed at [C:/Program Files/Southpaw] *** 
+            
+       
+Next, please install the Apache Web Server and then copy the Apache config extension
+[C:/Program Files/Southpaw/projects/config/tactic_win32.conf] to the Apache web server config area. e.g.
+C:/Program Files/Apache Software Foundation/Apache2.2/conf </pre></li>
+               </ol>
+            </div>
+            <p><span class="bold"><strong>Verification</strong></span></p>
+            <p>When the installation is completed, an asset directory will be created at
+                           '&lt;TACTIC_BASE_DIR&gt;/assets'. 
+            </p>
+            <p>The file tactic_paths.py will be created in the following directories: </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="50px">
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>Windows</td>
+                        <td>
+                                                           
+                           <p>
+                                                                  
+                           </p><pre class="screen">C:/Python##/Lib/site-packages/tacticenv</pre><p>
+                                                              
+                           </p>
+                                                           
+                           <p>Default
+                                                                  contents:
+                           </p><pre class="screen">TACTIC_INSTALL_DIR="C:/Program Files/Southpaw/tactic"
+TACTIC_SITE_DIR="C:/Program Files/Southpaw/projects"
+                        </pre>
+                                                       </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p><span class="bold"><strong>Network machine access</strong></span></p>
+            <p>If you are on the server, you can access it by using the URL http://localhost/tactic.
+                           For other people to access it on the network, you need to find out its IP address. In a
+                           linux server, you can use the command "ifconfig" to locate it. It's the one listed as
+                           the inet addr. 
+            </p>
+            <p>Next, you need to run TACTIC behind Apache.</p>
+         </div>
+         <div class="simplesect" title="Install the Web Server">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1972"></a>Install the Web Server
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC should be run behind an Apache web server. You can download Apache software at
+                               <a class="link" href="http://www.apache.org/" target="_top">http://www.apache.org/</a>
+                       
+            </p>
+            <p>The TACTIC application server is able to serve up static content such as images, PDF
+                           files, Quicktime files, and so on, but it is not the most efficient at this because it
+                           is written in Python. This is what Apache is designed for. By running TACTIC behind
+                           Apache, it relieves TACTIC from serving the static content so that it can focus on the
+                           dynamic content. 
+            </p>
+            <p>For production use, it is highly recommended that TACTIC is run behind the Apache
+                           server. This has many scalability advantages. When running behind Apache, Apache uses a
+                           reverse proxy and proxy balancer module to forward requests to communicate with
+                           TACTIC.
+            </p>
+            <p><span class="bold"><strong>Windows </strong></span></p>
+            <p>After the installation, some changes may need to be made in the "httpd.conf" file for
+                           Apache.
+            </p><pre class="screen">C:/Program Files/Apache Software Foundation/Apache2.2/conf/httpd.conf</pre><p>Make sure the following lines are uncommented:</p>
+            <p>
+                           
+            </p><pre class="screen">LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+LoadModule deflate_module modules/mod_deflate.so</pre><p>
+                       
+            </p>
+            <p>These lines may already be uncommented, depending on your distribution and version of
+                           Apache. You need version 2.0.31 or later.
+            </p>
+            <p>The TACTIC installer generates an Apache extension conf file on completion. You need
+                           to copy that file to a directory that is recognized by Apache.
+            </p>
+            <p>For Windowse: this directory is: </p>
+            <p><code class="code"> C:/Program Files/Apache Software Foundation/Apache2.2/conf</code></p>
+            <p>You must add the following line to the "httpd.conf" file so that it will read the
+                           extension conf file provided by the installer:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">Include conf/tactic_win32.conf</pre><p>
+                       
+            </p>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <p><span class="bold"><strong>Web Server configuration</strong></span></p>
+            <p>In our provided file:</p>
+            <p>
+                           
+            </p><pre class="screen">tactic_win32.conf</pre><p>
+                       
+            </p>
+            <p>Make sure the following lines exist:</p><pre class="screen"># Using the ProxyPass directives
+ProxyPreserveHost on
+
+&lt;Proxy balancer://tactic&gt;
+BalancerMember http://localhost:8081/tactic
+BalancerMember http://localhost:8082/tactic
+BalancerMember http://localhost:8083/tactic
+&lt;/Proxy&gt;
+ProxyPass /tactic balancer://tactic
+ProxyPass /projects balancer://tactic</pre><p>
+                           
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>Warning: For load balancing, only use either:</p>
+               <p>1) the Proxy Balancer method (recommended)</p>
+               <p><span class="bold"><strong>or</strong></span></p>
+               <p>2) the RewriteRule method (not recommended).</p>
+               <p>Do <span class="bold"><strong>not</strong></span> use both methods at the same
+                                      time.
+               </p>
+            </div>
+            <p>
+                           
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>For configuring load-balancing set-up in a real production, please refer to
+                                      the Load Balancing section in the Sys-admin docs.
+               </p>
+            </div>
+            <p>
+                           
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>When trying to set up Apache on a Windows Server, to specify a share folder
+                                      for Apache to use, you may need to include the name of the share folder in the
+                                      path.
+               </p>
+               <p>For example, use the following if you have named the share folder "my_share": </p>
+               <p>
+                                      
+               </p><pre class="screen">Alias /assets "//10.0.0.17/my_share/assets"</pre><p>
+                                  
+               </p>
+            </div>
+            <p>
+                       
+            </p>
+            <p>Note: For configuring load-balancing set-up in a real production, please refer to the
+                           Load Balancing section of this Sys-admin doc.
+            </p>
+            <p>Finally, after verifying the configuration is correct, restart the Apache service:
+               
+            </p><pre class="screen">
+You can do it in the Windows Services UI or through the task tray and right click on the Apache icon.
+           </pre></div>
+         <div class="simplesect" title="Run TACTIC in development mode">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2070"></a>Run TACTIC in development mode
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Go to the &lt;TACTIC_INSTALL_DIR&gt;/src/bin folder</p>
+            <p><span class="command"><strong>cd C:/Program Files/Southpaw/tactic/src/bin </strong></span></p>
+            <p><span class="command"><strong>python startup_dev.py</strong></span></p>
+            <p>This "startup_dev.py" script is the development script which will dump output to the
+                           screen. The other startup script "startup.py" is the production start-up script and will
+                           dump output to a log file. The development start-up script is also much slower as it
+                           monitors the file system to see if any files have changed.
+            </p>
+            <p>The output would look like the following:</p><pre class="screen">Registering site ... admin
+Registering site ... default
+Registering site ... test
+Registering site ... my_project
+
+Starting TACTIC ...
+
+05/Jul/2007:11:16:29 CONFIG INFO Server parameters:
+05/Jul/2007:11:16:29 CONFIG INFO server.environment: development
+05/Jul/2007:11:16:29 CONFIG INFO server.log_to_screen: True
+05/Jul/2007:11:16:29 CONFIG INFO server.log_file: D:/tactic_temp/log/tactic_log
+05/Jul/2007:11:16:29 CONFIG INFO server.log_tracebacks: True
+05/Jul/2007:11:16:29 CONFIG INFO server.log_request_headers: True
+05/Jul/2007:11:16:29 CONFIG INFO server.protocol_version: HTTP/1.0
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_host:
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_port: 8081
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_file:
+05/Jul/2007:11:16:29 CONFIG INFO server.reverse_dns: False
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_queue_size: 10
+05/Jul/2007:11:16:29 CONFIG INFO server.thread_pool: 5
+05/Jul/2007:11:16:30 HTTP INFO Serving HTTP on http://localhost:8081/</pre><p><span class="command"><strong>http://&lt;TACTIC_server_address&gt;/tactic/admin/</strong></span></p>
+            <p>You should see the TACTIC login appear. </p>
+            <div class="mediaobject"><img src="media/sys-admin-tactic-windows-server-2008-loginScreen.png"></div>
+            <p>There is a default user created on installation. This is the "admin" user and this
+                           user has the ability to see and change all aspects of the system. Log in as the admin
+                           user:
+            </p>
+            <div class="informaltable">
+               <table border="0">
+                  <colgroup>
+                     <col width="100px">
+                     <col width="100px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>user:</strong></span></td>
+                        <td><span class="command"><strong>admin</strong></span></td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>password:</strong></span></td>
+                        <td><span class="command"><strong>tactic</strong></span></td>
+                     </tr>
+                  </tbody>
+               </table>
+               <div class="caption">
+                  <p>Note: You may be asked to change your password automatically at startup
+                                         without entering these default credentials.
+                  </p>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Run TACTIC in service mode">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2119"></a>Run TACTIC in service mode
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Note: The TACTIC service should have been set up during the installation. You just
+                           need to start it.  
+            </p>
+            <p>First, stop TACTIC running in dev mode if applicable by pressing Ctrl + C in that
+                           shell
+            </p>
+            <p>In Windows, :</p>
+            <p><span class="command"><strong>Start the "Tactic Application Server" in Windows Services
+                             UI.</strong></span></p>
+            <div class="mediaobject"><img src="media/windowsServices.png"></div>
+            <p>At this point you will need to install a TACTIC license file and then begin to set up
+                           a project. 
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>For more information on installing the license file, please refer to the
+                                                <span class="bold"><strong>License Installation
+                                                      Documentation</strong></span>.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>For more information on getting started with projects, please refer to the
+                                                <span class="bold"><strong>Sys Admin Project
+                                                  Guides</strong></span>.
+                     </p>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <p><span class="bold"><strong>Note on supplementary directories used in TACTIC:</strong></span></p>
+            <p>In the config file &lt;TACTIC_DATA_DIR&gt;/config/tactic-conf.xml, you will find
+                           different references to directory under the path /home/apache like
+                           /home/apache/tactic_temp , assets, and handoff. They are there because /home/apache is
+                           the base directory chosen for installation. You will find the Windows equivalent in the
+                           Windows installation. It could be different in your case. In the future, you can change
+                           their locations by editing the config file. If the assets directory is changed, ensure
+                           it's also updated in the Apache Web server config extension tactic.conf.
+            </p>
+         </div>
+         <div class="simplesect" title="System Info Page">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2157"></a>System Info Page
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>To view different information about the system and set-up, you can go to the Global
+                           --&gt; System Info page. For example, you can verify if load-balancing is set up and
+                           certain key directories are writable by TACTIC.
+            </p>
+            <p></p>
+         </div>
+         <div class="simplesect" title="Troubleshooting">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2163"></a>Troubleshooting
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>If you see missing images on logging in or errors in the output log saying certain js
+                                            files are not found, it means the Apache extension file tactic.conf is not being
+                                            referenced or you have not updated the paths in it to reflect current
+                                            &lt;TACTIC_INSTALL_DIR&gt;. For example, if your &lt;TACTIC_INSTALL_DIR&gt; is
+                                            /home/apache/tactic, you should see the line in tactic.conf: 
+                     </p>
+                     <p> </p><pre class="screen">Alias /context C:/Program Files/Southpaw/tactic/src/context</pre></li>
+                  <li class="listitem">
+                     <p>If you try to check in a Preview Image and can't see the icon generated, your assets
+                                            alias in the Apache extension file may not be in sync with the asset_base_dir in
+                                            the TACTIC config file tactic_linux-conf.xml 
+                     </p>
+                     <p> </p><pre class="screen">Alias /assets           C:/ProgramData/Southpaw/assets</pre><p> should point to the asset_base_dir as found in tactic_win32-conf.xml </p>
+                     <p>
+                                    
+                     </p><pre class="screen">&lt;asset_base_dir&gt;C:/ProgramData/Southpaw/assets&lt;/asset_base_dir&gt;</pre></li>
+                  <li class="listitem">
+                     <p>If you want to re-run install.py, the installation will ask if you to confirm
+                                            backing up the sthpw database before dropping it. If you choose to do it
+                                            yourself, here is the command:
+                     </p>
+                     <p> </p><pre class="screen">pg_dump -c -U postgres sthpw &gt; sthpw_backup.sql
+dropdb -U postgres sthpw</pre></li>
+                  <li class="listitem">
+                     <p>If you try to connect to the http://&lt;server IP&gt;/tactic and it just times out, your server
+                                            firewall could be blocking access.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>If the Windows TACTIC Service has trouble starting up, you can try to edit the Properties , go
+                                            to Log On tab, and adjust the Log on as user with the Windows login which has
+                                            write/read access to the tactic_temp location as well as the asset_base_dir
+                                            location. 
+                     </p>
+                  </li>
+               </ul>
+            </div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-centos-6.2.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-tactic-application.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-fedora-12.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

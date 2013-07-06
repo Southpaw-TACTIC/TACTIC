@@ -1,0 +1,264 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Button</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-view.html" title="View Widgets">
+      <link rel="prev" href="tactic-setup_setup_expression-value-element-wdg.html" title="Expression Value Element">
+      <link rel="next" href="tactic-setup_setup_link-element-wdg.html" title="Link Element">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_expression-value-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_link-element-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Button">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_button-element-wdg"></a>Button
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p><span class="inlinemediaobject"><img src="media/button-element-wdg_view.png"></span></p>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7537"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The ButtonElementWdg is an icon that behaves as a button which must be placed inside a
+               TableLayoutWdg. This widget allows you to add a simple button with in a table that when
+               pressed, will execute a JavaScript callback. This callback can be inline to the element
+               definition or it can point to a script code or script path in the Script Editor (
+                         "custom_scripts" table).
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7542"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Button</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.table.ButtonElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Button</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td>TableLayoutWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7604"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The usage of the button widget is very simple. It appears as an icon in the cell of a
+                           table. Hovering over it will light the color and if a "tool_tip" is defined, then this
+                           message will appear. Clicking on the button will activate the callback and perform
+                           whatever action has been set up for this button.
+            </p>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7609"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The button widget is often implemented through the view options when creating/editing
+                           a column.
+            </p>
+            <h5><a name="d0e7614"></a>Options
+            </h5>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>icon</strong></span></p>
+                                                   
+                        </td>
+                        <td>The icon to display for the button. See IconWdg for
+                                                       reference.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>script</strong></span></p>
+                                                   
+                        </td>
+                        <td>Points to the script code that is executed when the button is
+                                                       clicked
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>path</strong></span></p>
+                                                   
+                        </td>
+                        <td>Points to the folder/script_name of the config/custom_script that is
+                                                       to be executed when the button is clicked (This is recommended
+                                                       option)
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>icon_tip</strong></span></td>
+                        <td>Text to display as a tool-tip when mouse is hovering over
+                                                       icon
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>enable</strong></span></p>
+                                                   
+                        </td>
+                        <td>Expression to determine whether the button is enabled or not</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>cbjs_action</strong></span></td>
+                        <td>Inline script</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7669"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Simple inline alert using default icons.</p><pre class="screen">&lt;element name='my_button' title='My Button Example'&gt;
+  &lt;display class='tactic.ui.table.ButtonElementWdg'&gt;
+    &lt;cbjs_action&gt;alert('Pressed')&lt;/cbjs_action&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><p>Add a custom icon listed in IconWdg</p><pre class="screen">&lt;element name='my_button' title='My Button Example'&gt;
+  &lt;display class='tactic.ui.table.ButtonElementWdg'&gt;
+    &lt;icon&gt;FILM&lt;/icon&gt;
+    &lt;cbjs_action&gt;alert('Pressed')&lt;/cbjs_action&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><p>A more complex inline code using CDATA</p><pre class="screen">&lt;element name='my_button' title='My Button Example'&gt;
+  &lt;display class='tactic.ui.table.ButtonElementWdg'&gt;
+    &lt;icon&gt;FILM&lt;/icon&gt;
+    &lt;cbjs_action&gt;
+&lt;![CDATA[
+if ( confirm("Are you sure you want to press") ){
+    alert("do something...")
+}
+]]&gt;
+    &lt;/cbjs_action&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><p>This will call the custom_script with the folder "test" and title "my_test_script".
+                           Inlining long JavaScript can be messy and this provides a means of separating out the
+                           behavior logic from the configuration. The script that is called will have a bvr object
+                           available to it. This behavior object will have a number of attributes which are useful
+                           for extracting information about the button that was pressed.
+            </p><pre class="screen">&lt;element name='my_button' title='My Button Example'&gt;
+  &lt;display class='tactic.ui.table.ButtonElementWdg'&gt;
+    &lt;icon&gt;FILM&lt;/icon&gt;
+    &lt;path&gt;test/my_test_script&lt;/path&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_expression-value-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-view.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_link-element-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,37 @@
+dn: CN=ftw.app.savi.admin,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com
+objectClass: top
+objectClass: group
+cn: ftw.app.savi.admin
+description: Webspear user group on FTWSAVI.  Owner Linda Gamez, Steve Braue
+ r
+distinguishedName: CN=ftw.app.savi.admin,OU=Users,OU=EIS,DC=domain,DC=us,DC=lm
+ co,DC=com
+member: CN=Pars2app\, Pars2app,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com
+member: CN=Tschaar\, Thom P,OU=Users,OU=Aero,DC=acct03,DC=us,DC=xxxx,DC=com
+member: CN=Newman\, Vivian K,OU=Users,OU=Aero,DC=domain,DC=us,DC=xxxx,DC=com
+member: CN=Reed\, William R,OU=Users,OU=CSV,DC=domain,DC=us,DC=xxxx,DC=com
+member: CN=Costanzo\, Charles R,OU=Users,OU=Aero,DC=domain,DC=us,DC=xxxx,DC=co
+ m
+member: CN=Perrotta\, Anthony J,OU=Users,OU=Aero,DC=domain,DC=us,DC=xxxx,DC=co
+ m
+member: CN=Bunkley\, Cheryl B,OU=Users,OU=CSV,DC=domain,DC=us,DC=xxxx,DC=com
+member: CN=Estes\, Bob F,OU=Users,OU=Aero,DC=domain,DC=us,DC=xxxx,DC=com
+name: ftw.app.savi.admin
+dSCorePropagationData: 20090723011411.0Z
+dSCorePropagationData: 20081122015713.0Z
+dSCorePropagationData: 20081028211925.0Z
+dSCorePropagationData: 20081028211925.0Z
+dSCorePropagationData: 16100115200105.0Z
+groupType: -2147483644
+instanceType: 4
+msExchPoliciesExcluded: {26491CFC-9E50-4857-861B-0CB8DF22B5D7}
+objectCategory: CN=Group,CN=Schema,CN=Configuration,DC=adroot,DC=xxxx,DC=com
+objectGUID:: 77+977+977+9AO+/ve+/ve+/vU3vv70Q77+977+9Te+/vQ==
+objectSid:: AQUAAAAAAAUVAAAAPSITAEhRAAx9Pe+/vW1c77+9AQA=
+sAMAccountName: ftw.app.savi.admin
+sAMAccountType: 536870912
+showInAdvancedViewOnly: FALSE
+uSNChanged: 309934828
+uSNCreated: 280126524
+whenChanged: 20090827195641.0Z
+whenCreated: 20081016180649.0Z

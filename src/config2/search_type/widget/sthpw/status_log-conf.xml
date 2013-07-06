@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2011, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+
+<definition>
+    <element name='process'>
+        <display widget='expression'>
+            <expression>@GET(parent.process)</expression>
+        </display>
+    </element>
+    <element name='from_status'/>
+    <element name='to_status'/>
+    <element name='login'/>
+    <element name='timestamp'/>
+</definition>
+
+<table>
+    <element name='process'/>
+    <element name='from_status'/>
+    <element name='to_status'/>
+    <element name='login'/>
+    <element name='timestamp'/>
+</table>
+
+
+
+</config>
+
+

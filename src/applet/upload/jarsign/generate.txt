@@ -1,0 +1,10 @@
+
+From: http://personal.vsnl.com/sureshms/javasign1.html
+
+# generate the store
+keytool -genkey -keystore sthpw.store -alias sthpw 
+
+# generate the certificate
+keytool -export -keystore sthpw.store -alias sthpw -file sthpw.cer 
+
+

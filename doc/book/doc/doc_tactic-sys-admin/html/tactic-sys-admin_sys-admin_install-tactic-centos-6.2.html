@@ -1,0 +1,595 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Install - CentOS 6.2</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-tactic-application.html" title="Install TACTIC Application">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html" title="TACTIC Install - CentOS 5.7">
+      <link rel="next" href="tactic-sys-admin_sys-admin_install-tactic-windows-server-2008.html" title="TACTIC Install - Windows Server 2008">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-windows-server-2008.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Install - CentOS 6.2">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_install-tactic-centos-6.2"></a>TACTIC Install - CentOS 6.2
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>While there may be some slight variations in the steps in different versions of CentOS 6,
+                    this guide can be used for CentOS 6.x as a reference.
+         </p>
+         <h3><a name="d0e1263"></a>Requirements
+         </h3>
+         <p>TACTIC requires the following software to be installed:</p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>Apache HTTP server 2.2</p>
+               </li>
+               <li class="listitem">
+                  <p>Postgres Database Server 8.4 or higher</p>
+               </li>
+               <li class="listitem">
+                  <p>Python 2.6 or 2.7 with the following Python modules:</p>
+                  <div class="itemizedlist">
+                     <ul class="itemizedlist">
+                        <li class="listitem">
+                           <p>Python Imaging Library 1.1.7</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Python lxml 2.3.5</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Pycrypto 2.3</p>
+                        </li>
+                        <li class="listitem">
+                           <p>Psycopg2 2.4.6</p>
+                        </li>
+                     </ul>
+                  </div>
+               </li>
+            </ul>
+         </div>
+         <p>It should be noted that while there may be newer versions of these Python modules, TACTIC
+                    3.9.0.rc04 has been tested with these particular versions.
+         </p>
+         <h3><a name="d0e1292"></a>Disabling Security for Testing
+         </h3>
+         <p>To get TACTIC up quickly without fiddling with OS security, it is prudent to disable
+                    firewalling and SELinux. This is by no means an endorsement to run your server without these
+                    services. Once you have TACTIC up and running,  you are advised to read the section
+                    &lt;TACTIC SECURITY&gt;.
+         </p>
+         <p>CentOS 6.2 uses the iptables service as a firewall. To disable this temporarily, you can
+                    issue the following commands as
+                    root.
+         </p><pre class="screen">/etc/init.d/iptables save
+/etc/init.d/iptables stop</pre><p>This will disable the firewall for the currently running CentOS session. Should you wish
+                    these settings to persist across reboots, you can issue the following command as
+                    root.
+         </p><pre class="screen">/sbin/chkconfig iptables off</pre><p>To disable SELinux, edit the file /etc/selinux/config as root with your editor of choice
+                    and set the SELINUX variable to 'disabled'. 
+         </p><pre class="screen">SELINUX=disabled</pre><p>Since getting this setting to take effect requires a reboot, you can also issue the
+                    following command for it to take effect immediately.
+         </p><pre class="screen">echo 0 &gt; /selinux/enforce</pre><p></p>
+         <h3><a name="d0e1313"></a>Installing Apache HTTP server
+         </h3>
+         <p>In case Apache 2.2  is not already pre-installed on CentOS 6.2, issue the following
+                    command as root:
+         </p><pre class="screen">yum install httpd</pre><p>This package has several dependencies and they should be installed as well. </p>
+         <p>It would be good to familarize yourself with some of the more pertinent paths in the
+                    Apache installation on CentOS 6.2. They are listed below for your convenience.
+         </p>
+         <p>
+                    
+         </p>
+         <table frame="void" id="d0e1325">
+            <caption>Table&nbsp;1.&nbsp;Common Paths in Apache 2.2</caption>
+            <col width="180.0px">
+            <col width="310.0px">
+            <tbody>
+               <tr>
+                                      
+                  <td>/etc/httpd/conf/httpd.conf</td>
+                                      
+                  <td>Path to the main Apache configuration file.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/etc/httpd/conf.d/</td>
+                                      
+                  <td>Path to the Apache dynamic configuration directory.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/log/httpd/error.log</td>
+                                      
+                  <td>Path the the Apache error log.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/www/html</td>
+                                      
+                  <td>Path to the Document Root folder of the base Apache install.</td>
+                                  
+               </tr>
+            </tbody>
+         </table>
+         <p>
+                
+         </p>
+         <p> It's best to test your Apache install at this point. The included main Apache
+                    configuration file is enough to get the server started. You will need create a small html
+                    file to do this. Using your editor of choice, create a file called index.html, with the
+                    content as
+                    follows:
+         </p><pre class="screen">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Apache Base Install&lt;/title&gt;
+  &lt;/head&gt;
+&lt;body&gt;
+   &lt;p&gt;Apache Install Successful&lt;/p&gt; 
+&lt;/body&gt;
+&lt;/html&gt;</pre><p>Save the file in /var/www/html and issue the following command as root to ensure proper
+                    permissions are set:
+         </p><pre class="screen">chmod 755 /var/www/html/index.html</pre><p>The Apache server can be started. As root, issue the following
+                    command:
+         </p><pre class="screen">/etc/init.d/httpd start</pre><p>The service should start successfully. Otherwise, consult the Apache error log listed
+                    above to discover any problems that may have occured.
+         </p>
+         <p>At last, you can point a web browser to the IP address associated with the server. If you
+                    see the text "Apache Install Successful", then your server is up and running and can serve
+                    pages properly. 
+         </p>
+         <p>Finally, to make the Apache service persist through reboots, issue the following command
+                    as root:
+         </p><pre class="screen">/sbin/chkconfig httpd on</pre><p>Then reboot the server and make sure that httpd comes up on reboot and that you can view
+                    the test page properly. Later in the install,  the Apache server will be configured to
+                    interact with TACTIC properly.
+         </p>
+         <h3><a name="d0e1386"></a>Installing Postgres Database Server
+         </h3>
+         <p>TACTIC requires PostgreSQL version 8.4 or higher. First we must make sure that we didn't
+                    include the default version Postgres in our base install. As root please issue the following
+                    command:
+         </p><pre class="screen">rpm -qva | grep -i postgres</pre><p>This command will search your installed
+                    packages and filter the output for any packages containing the work postgres. If you receive
+                    any output from this command please uninstall the packages by issuing the following
+                    command:
+         </p><pre class="screen">rpm -e &lt;package_name&gt;</pre><p>Where &lt;package_name&gt; is the name of the package you wish to uninstall.  Consult the RPM
+                    or Yum manpages for further instructions on installing and uninstalling packages.  
+         </p>
+         <p>Lastly before installing any new Postgres repository, we want to make sure to exclude the
+                    default version of Postgres from showing up in the base and update Yum repositories included
+                    with the operating system itself. Using a text editor, edit the file
+                    /etc/yum.repos.d/CentOS-Base.repo to include the line under both the [base] section and the
+                    [updates] section of the file. :
+         </p><pre class="screen">exclude=postgresql*</pre><p>Save the file. For more information on the Yum installer and repository system please see
+                    the manpages for yum or the yum website http://yum.baseurl.com 
+         </p>
+         <p>Once we have uninstalled any previous versions of Postgres, we can then proceed installing
+                    a new Yum repository that contains the version of Postgres we want to install. As root issue
+                    the following
+                    commands:
+         </p><pre class="screen">rpm -Uvh http://yum.postgresql.org/9.2/redhat/rhel-6-x86_64/pgdg-centos92-9.2-6.noarch.rpm</pre><p>At the time of writing the current version of Postgres was 9.2-6, for more current
+                    installation versions please visit http://yum.pgrpms.org/repopackages.php and view the
+                    available repository RPMs for your operating system and architecture.
+         </p>
+         <p>Lastly, we will install the proper Postgres version 9.2 RPMs. As root, issue the following
+                    command:
+         </p><pre class="screen">yum install postgresql postgresql-server postgresql-contrib postgresql-devel</pre><p>Now that Postgres is installed, you are advised to make some basic configuration to make
+                    sure the installation is ready for use with TACTIC. 
+         </p>
+         <p>Here are the pertinent Postgres file paths that will be used throughout the install: </p>
+         <p>
+                    
+         </p>
+         <table frame="void" id="d0e1419">
+            <caption>Table&nbsp;2.&nbsp;Common Paths in Postgres 9.2 on CentOS 6.2</caption>
+            <col width="180px">
+            <col width="310px">
+            <tbody>
+               <tr>
+                                      
+                  <td>/var/lib/pgsql/9.2</td>
+                                      
+                  <td>Path to the main Postgres directory.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/lib/pgsql/data/pg_hba.conf</td>
+                                      
+                  <td>Path to the host based authentication file for Postgres. </td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/lib/pgsql/9.2/pgstartup.log</td>
+                                      
+                  <td>Path to the Postgres startup log.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/lib/pgsql/9.2/data/pg_log</td>
+                                      
+                  <td>Path to Postgres database logs.</td>
+                                  
+               </tr>
+            </tbody>
+         </table>
+         <p>
+                
+         </p>
+         <p>Initialize the database:</p><pre class="screen">su - postgres -c /usr/pgsql-9.2/bin/initdb</pre><p>Once that command successfully completes we can then start the service. As root issue the
+                    following command:
+         </p><pre class="screen">service postgresql-9.2 start</pre><p>If the service starts successfully, we can move forward. Otherwise, you can review any
+                    startup errors in the Postgres startup log. Further troubleshooting help can be found at
+                    http://postgresql.org.
+         </p>
+         <p>Lastly, to make sure the Postgres service persist through reboots. you will issue the
+                    following command:
+         </p><pre class="screen">chkconfig --levels 235 postgresql-9.2 on</pre><p>Reboot your server to ensure the service comes up appropriately.</p>
+         <h3><a name="d0e1474"></a>Installing Python Devel for the preinstalled Python
+         </h3>
+         <p>As noted above TACTIC requires version 2.6 or 2.7 of Python.  In CentOS 5.x, we used to
+                    recommend installing Python 2.7 along side the built-in Python 2.4. In CentOS 6.2, the
+                    built-in Python 2.6.6 already suffices. 
+         </p>
+         <p>First, we need to install some development libraries and a compiler. As root issue the
+                    following command:
+         </p><pre class="screen">yum install gcc zlib-devel libxslt-devel libxml2-devel 
+
+yum install python-devel</pre><p>This will install the Python Devel and all the other relevant libraries to install the
+                    various Python modules.
+         </p>
+         <h3><a name="d0e1484"></a>Installing Python Modules
+         </h3>
+         <p>
+                    
+         </p>
+         <h5><a name="d0e1488"></a>Installing lxml 2.3.5
+         </h5>
+         <p>
+                
+         </p>
+         <p>TACTIC requires lxml version 2.2 or above. 2.3.5 is used at the time of writing. As root,
+                    issue the following
+                    commands:
+         </p><pre class="screen">cd /tmp
+wget http://lxml.de/files/lxml-2.3.5.tgz
+tar -zxvf lxml-2.3.5.tgz
+cd lxml-2.3.5
+python setup.py install</pre><p>Verify the installation by running your custom python binary and trying to import the
+                    module. As root issue the following command:
+         </p><pre class="screen">python</pre><p>You should receive a python environment and prompt similar to
+                    this:
+         </p><pre class="screen">Python 2.6.6 (r271:86832, Apr 12 2011, 16:16:18)
+[GCC 4.1.2 20080704 (Red Hat 4.1.2-51)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt; </pre><p>At the prompt please type the following:</p><pre class="screen">import lxml</pre><p>If you receive another prompt and no error occurs, the import was successful and LXML is
+                    installed.  We will use the same procedure to check the veracity of our other modules
+                    installations as well.
+         </p>
+         <p>
+                    
+         </p>
+         <h5><a name="d0e1511"></a>Installing Python Imaging Library 1.1.7
+         </h5>
+         <p>
+                
+         </p>
+         <p>We follow the same procedure to install the Python Imaging Library.  As root issue the
+                    following
+                    commands:
+         </p><pre class="screen">cd /tmp
+wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+tar -zxvf Imaging-1.1.7.tar.gz
+cd Imaging-1.1.7
+/opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
+                    at the python prompt: 
+         </p><pre class="screen">import PIL</pre><h5><a name="d0e1522"></a>Installing Pycrypto 2.3
+         </h5>
+         <p>The installation of Pycrypto also follows this template. As root issue the following
+                    commands:
+         </p><pre class="screen">cd /tmp
+wget http://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.3.tar.gz
+tar -zxvf pycrypto-2.3.tar.gz
+cd pycrypto-2.3
+python setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
+                    at the Python prompt:
+         </p><pre class="screen">import Crypto</pre><h5><a name="d0e1532"></a>Installing Psycopg2 2.4.6
+         </h5>
+         <p>Psycopg2 is a Postgres database adapter for Python. The install is akin to the previous 3
+                    except that since we've customized our Postgres install, we have to let Psycopg2 know that
+                    as well. First lets get the package and uncompress it. As root issue the
+                    following:
+         </p><pre class="screen">yum install postgresql-libs</pre><p>
+                    
+         </p><pre class="screen">cd /tmp
+wget http://initd.org/psycopg/tarballs/PSYCOPG-2-4/psycopg2-2.4.6.tar.gz
+tar -zxvf psycopg2-2.4.6.tar.gz
+cd psycopg2-2.4.6</pre><p>
+                
+         </p>
+         <p>Now we have to modify the pg_config variable in the file setup.cfg. Using your editor to
+                    open /tmp/psycopg2-2.4.6/setup.cfg and edit the pg_config entry to match the
+                    following:
+         </p><pre class="screen">pg_config=/usr/pgsql-9.2/bin/pg_config</pre><p>Now we should be able to install Psycopg2 properly. As root issue the following
+                    command:
+         </p><pre class="screen">python setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
+                    at the python prompt:
+         </p><pre class="screen">import psycopg2</pre><p>Now that all the TACTIC components are installed, we can begin running the TACTIC
+                        installer.
+         </p>
+         <h3><a name="d0e1557"></a>Installing Tactic 3.9.0.rc04
+         </h3>
+         <p>First we have to download the TACTIC source from the Southpaw Community website. Using a
+                    web browser navigate to http://community.southpawtech.com. After you have logged in, please
+                    click on "Downloads" in the upper right hand corner of the website. Once you are on the
+                    downloads page, you should see the download link for the latest TACTIC Enterprise. Save the
+                    TACTIC Enterprise zip file in /tmp on the server. 
+         </p>
+         <p>Once we have the Tactic source we need to unpack it. As root issue the following
+                    commands:
+         </p><pre class="screen">cd /tmp
+unzip tactic-3.9.0.rc04.zip</pre><p>Once the TACTIC source is unpacked, you should familarize yourself with its directory
+                    structure. The prefix of the paths will change during install; however, the directory
+                    structure will remain the same.
+         </p>
+         <p>
+                    
+         </p>
+         <table id="d0e1569">
+            <caption>Table&nbsp;3.&nbsp;Common Paths in Tactic 3.9.0.rc04</caption>
+            <col width="180px">
+            <col width="310px">
+            <tbody>
+               <tr>
+                                      
+                  <td>/tmp/tactic-3.9.0.rc04/doc</td>
+                                      
+                  <td>Path to the Tactic documentation.</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/tmp/tactic-3.9.0.rc04/src</td>
+                                      
+                  <td>Path to the Tactic source files. </td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/tmp/tactic-3.9.0.rc04/src/install</td>
+                                      
+                  <td>Path to the Tactic install script and configuration files for Tactic
+                                             dependencies.
+                  </td>
+                                  
+               </tr>
+            </tbody>
+         </table>
+         <p>
+                
+         </p>
+         <p>Before we run the Tactic installer, we must further configure Postgres to ensure proper
+                    installation of Tactic.
+         </p>
+         <h5><a name="d0e1602"></a>Configuring Postgres
+         </h5>
+         <p>Tactic supplies a custom host based authentication file for Postgres. After stopping the
+                    Postgres service we will install the file in question, restart the service and verify that
+                    the configuration has been properly put in place. As root issue the following
+                    commands:
+         </p><pre class="screen">service postgresql-9.2 stop
+mv /var/lib/pgsql/9.2/data/pg_hba.conf /var/lib/pgsql/9.2/data/pg_hba.conf.INSTALL 
+cp /tmp/tactic-3.9.0.rc04/src/install/postgresql/pg_hba.conf /var/lib/pgsql/9.2/data/pg_hba.conf
+chown postgres:postgres /var/lib/pgsql/9.2/data/pg_hba.conf
+service postgresql-9.2 start</pre><p>If the service starts successfully we can then proceed to verification. If not please
+                    consult the Postgres startup log for error information. Postgres must be running as a
+                    service during the Tactic install. Next we will test the install.  As root, issue the
+                    following command:
+         </p><pre class="screen">psql -U postgres template1</pre><p>This command should fire up a prompt like this:</p><pre class="screen">template1=# </pre><p>If  you can see this prompt without being asked for a password, the configuration changes
+                    have been successful. Type \q to exit.
+         </p>
+         <h5><a name="d0e1618"></a>Installing Tactic
+         </h5>
+         <p>
+                    
+         </p><pre class="screen">python /tmp/tactic-3.9.0.rc03/src/install/install.py</pre><p>
+                
+         </p>
+         <p>The installer will ask you a number of questions.  You should be prompted by the
+                    following:
+         </p><pre class="screen">Please enter the base path of the TACTIC installation:
+
+(/home/apache) -&gt; /opt/tactic</pre><p>Choose your custom Tactic path, this will be the base directory for your Tactic
+                    installation.  We have chosen /opt/tactic.  Next you will be asked to identify the user used
+                    to run the Apache
+                    service.
+         </p><pre class="screen">Please enter the user Apache Web Server is run under:
+
+(apache) -&gt;</pre><p>In many cases the default user "apache" is correct.  However you can verify this easily in
+                    another shell by issueing the following command as root:
+         </p><pre class="screen">ps -ef | grep httpd</pre><p>The first column of output is the username Apache is running under. Should you receive no
+                    output, make sure your httpd service is running. Under CentOS 6.2 the apache user is
+                    "apache" so we will accept the default the installer gives us.
+         </p>
+         <p>The installer will then install the Tactic databases, configure Tactic and copy the source
+                    code into the Tactic base directory.
+         </p>
+         <h5><a name="d0e1641"></a>Configuring
+                        Apache
+         </h5>
+         <p>Lastly Tactic requires us to install the custom Apache configuration file it has created
+                    during the installation process.  As root issue the following
+                    commands:
+         </p><pre class="screen">cp /opt/tactic/projects/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an included module path in
+                    the main Apache configuration file.  As root issue the following
+                    command:
+         </p><pre class="screen">cat /etc/httpd/conf/httpd.conf | grep conf.d</pre><p>If you receive the following as output we have installed the Tactic Apache configuration
+                    file correctly.
+         </p><pre class="screen">Include conf.d/*.conf</pre><p>If you do not receive this output, using your editor as root edit the file
+                    /etc/httpd/conf/httpd.conf and at the bottom of the file insert the statement listed above.
+                    Save the file.
+         </p>
+         <p>Lastly we will create a redirect for Tactic using the index.html file at the document root
+                    of the Apache server. Using a text editor as root, edit the file /var/www/html/index.html to
+                    contain only the following
+                    line:
+         </p><pre class="screen">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</pre><p>Restart the Apache service to make sure the configuration hasn't caused any problems.  As
+                    root issue the following command:
+         </p><pre class="screen">/etc/init.d/httpd restart</pre><p>Lastly we need to ensure that the Apache server has loaded the modules needed for proxying
+                    and load balancing the Tactic service.  As root issue the following
+                    command:
+         </p><pre class="screen">/usr/sbin/httpd -t -D DUMP_MODULES</pre><p>In the resulting output look for the following
+                    modules:
+         </p><pre class="screen">rewrite_module (shared)
+proxy_module (shared)
+proxy_http_module (shared)
+proxy_balancer_module (shared)
+deflate_module (shared)</pre><p>The CentOS 6.2 install of Apache includes a large array of modules enabled by default,
+                    including the ones required by Tactic.
+         </p>
+         <h3><a name="d0e1675"></a>Starting Tactic in
+                        Development Mode
+         </h3>
+         <p>We are now prepared to start the Tactic service for the first time.   Tactic must be run
+                    as the Apache user.  Usually we would su to the apache user, however since its a system
+                    account without a login this will not work without optionally telling su to give the Apache
+                    user a shell environment.  In a shell with the LD_LIBRARY_PATH set as laid out in the
+                    section "Installing Python 2.7 Modules", as root issue the following
+                    command:
+         </p><pre class="screen">su apache -s /bin/bash -c "/opt/python2.7/bin/python2.7 /opt/tactic/tactic/src/bin/startup_dev.py"</pre><p>You should see the following
+                    output:
+         </p><pre class="screen">Registering site ... admin
+Registering site ... sthpw
+Registering site ... default
+
+Starting TACTIC ...
+
+Starting Scheduler ....
+[08/Nov/2011:23;13:20] ENGINE Bus STARTING
+[08/Nov/2011:23;13:20] ENGINE Started monitor thread '_TimeoutMonitor'.
+[08/Nov/2011:23;13:20] ENGINE Started monitor thread 'Autoreloader'
+[08/Nov/2011:23;13:21] ENGINE Serving on 127.0.0.1:8081
+[08/Nov/2011:23;13:21] ENGINE Bus STARTED</pre><p>You should now be able to navigate a web browser to http://localhost/tactic/admin.
+                    Alternatively, use the non-local IP address or fully qualified domain name you have assigned
+                    to your TACTIC server in place of localhost. You should see the TACTIC login screen.
+         </p>
+         <p>TACTIC defines an administrative user by default. The login information is:</p>
+         <div class="variablelist">
+            <dl>
+               <dt><span class="term">Username: admin, </span><span class="term">Password: (set it on your first login)</span></dt>
+               <dd></dd>
+            </dl>
+         </div>
+         <p>In 3.9, the login screen requires you to change the password immediately. You will have to
+                    type it in twice to confirm.  
+         </p>
+         <h3><a name="d0e1697"></a>Installing TACTIC as a
+                        Service
+         </h3>
+         <p>The TACTIC service file is simple to install</p>
+         <p>Use the key combination CTRL+c in the shell running TACIC in Development mode to stop it
+                    first when you are ready to run TACTIC as a service. 
+         </p>
+         <p>Change the following line in the file
+                    /opt/tactic/tactic/src/install/service/tactic:
+         </p><pre class="screen">su - $TACTIC_USER -m -c "$LAUNCH" &gt;&gt; $LOG 2&gt;&amp;1 &amp;</pre><p>to
+                    this:
+         </p><pre class="screen">su $TACTIC_USER -s /bin/bash -m -c "$LAUNCH" &gt;&gt; $LOG 2&gt;&amp;1 &amp;</pre><p>Save the file.</p>
+         <p>Now as root, type the
+                    following:
+         </p><pre class="screen">cp /opt/tactic/tactic/src/install/service/tactic /etc/init.d/tactic
+chmod 755 /etc/init.d/tactic
+/sbin/chkconfig tactic on
+/etc/init.d/tactic start</pre><p>TACTIC should now start properly as a service. Test this by launching a web browser and
+                    navigating to the TACTIC login page as you did previously. If you are having trouble, the
+                    following error logs will help you diagnose your problems:
+         </p>
+         <p>
+                    
+         </p>
+         <table id="d0e1721">
+            <caption>Table&nbsp;4.&nbsp;Common Error Logs </caption>
+            <col width="180px">
+            <col width="310px">
+            <tbody>
+               <tr>
+                                      
+                  <td>/opt/tactic/tactic_temp/log/stdout.log</td>
+                                      
+                  <td>Path to the TACTIC standard out log assuming you have chosen /opt/tactic as
+                                             the base installation path
+                  </td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/log/tactic</td>
+                                      
+                  <td>Path to the TACTIC error log in service mode</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/log/httpd/error_log</td>
+                                      
+                  <td>Path to the Apache error log</td>
+                                  
+               </tr>
+               <tr>
+                                      
+                  <td>/var/log/httpd/access_log</td>
+                                      
+                  <td>Path to the Apache access log</td>
+                                  
+               </tr>
+            </tbody>
+         </table>
+         <p>
+                
+         </p>
+         <p>Finally, reboot the server and test whether the TACTIC service continues to perform across
+                    reboots. You are advised to set up log rotation by reviewing the Rotate Log section in the
+                    Sys Admin documentation. 
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-tactic-application.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-windows-server-2008.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,96 @@
+try {  
+  // Get the server and applet clases
+  var server = TacticServerStub.get();
+  var applet = spt.Applet.get();
+  
+  // get the base serer URL from the environment
+  var env = spt.Environment.get();
+  var base_url = env.get_server_url();
+  
+  // Get the base sandbox dir based on the OS
+  var base_dirs = server.get_base_dirs();
+  if (spt.browser.os_is_Windows() ) {
+      var base_sandbox = base_dirs.win32_sandbox_dir;
+  }
+  else {
+      var base_sandbox = base_dirs.linux_sandbox_dir;
+  }
+  
+  // Get the incoming snapshot
+  var search_key = bvr.search_key;
+  var snapshot  = server.get_by_search_key(search_key);
+
+  // Setup the required variables
+  var level_count = 0;
+  var file_count = 0
+  var temp_snapshots = []; 
+  var all_snapshots = [];   
+  var init_snapshots = [snapshot]
+
+  
+  // Loop through the snapshot dependencies recursively 
+  // filling up the all_snapshots array with all snapshots.
+  // Loop until a level returns no dependencies. 
+  while (init_snapshots.length > 0 ) {
+      for (var s=0; s<init_snapshots.length; s++) {
+          // For this snapshot, list all dependent snapshot sobjects
+          // and add them into the temp_array
+          var dep_snapshots =  server.get_all_dependencies(init_snapshots[s].code)
+          temp_snapshots = temp_snapshots.concat(dep_snapshots); 
+      }
+      // Add the snapshots in the temp to the main all_snapshots.
+      all_snapshots = all_snapshots.concat(init_snapshots)
+      // Clear out the init_snapshots then fill it wil the temp_snapshots 
+      // These are all snapshots from the current layer
+      init_snapshots.length = 0
+      init_snapshots = init_snapshots.concat(temp_snapshots);
+      // Clear out the temp snapshots and start again.  If init_snapshots
+      // is empty, the loop will stop and the download will proceed.
+      temp_snapshots.length = 0
+      level_count += 1;
+   }
+
+
+  // Now loop through the list of snapshots and download all of them
+  // to the user's sandbox.
+
+  for (i=0; i<all_snapshots.length; i++) {
+    // Get the code from the snapshot
+    var snapshot_code = all_snapshots[i].code;
+    // get 2 arrays of the paths, the relative server path and the destination ssandbox path
+    var relative_paths = server.get_all_paths_from_snapshot(snapshot_code, {'mode': 'web'})
+    var sandbox_paths = server.get_all_paths_from_snapshot(snapshot_code, {'mode': 'sandbox'})
+    
+    // Loop through all of the files and download them
+    for (k=0; k< relative_paths.length; k++) {
+    
+        // Append the server url to the relative path.
+        var src_path = base_url + relative_paths[k]
+        var dst_path = sandbox_paths[k]
+    
+        // Set the busy message and download the file
+        spt.app_busy.show("Downloading", relative_paths[k])
+        applet.download_file(src_path, dst_path)
+        
+    }
+    // Add to the file_count for reporting
+    file_count += relative_paths.length;  
+
+  }
+
+  // build and alert the results message.
+  var message = []  
+  message.push("Downloaded ["+ all_snapshots.length +"] Snapshots");
+  message.push("There were ["+ level_count +"] Dependency Levels");
+  message.push("There were ["+ file_count +"] Files Downloaded");
+  message = message.join("\n")
+  alert(message)  
+
+  //  Opend the file browser to the base sansbox dir
+  applet.open_explorer(base_sandbox)
+  spt.app_busy.hide();
+}
+catch(err) {
+  alert(err);
+  spt.app_busy.hide();
+}

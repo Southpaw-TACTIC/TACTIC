@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+
+  <!-- template -->
+
+  <element name="new_entry">
+    <display class="LinkWdg"/>
+  </element>
+
+  <element name="new_folder">
+    <display class="SideBarSectionLinkWdg"/>
+  </element>
+
+
+  <element name="new_separator">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="admin">
+    <display class="SideBarSectionLinkWdg">
+        <view>admin</view>
+    </display>
+  </element>
+
+</definition>
+
+
+
+<template>
+  <element name="new_entry"/>
+  <element name="new_folder"/>
+  <element name="new_separator"/>
+</template>
+
+
+
+
+
+
+<flash>
+  <element name="_asset_pipeline"/>
+  <element name="admin"/>
+</flash>
+
+
+<!-- Administration views -->
+<!--
+<admin>
+    <element name="Projects">
+      <display class="LinkWdg">
+        <search_type>sthpw/project</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+
+    <element name="Users">
+      <display class="LinkWdg">
+        <search_type>sthpw/login</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Groups">
+      <display class="LinkWdg">
+        <search_type>sthpw/login_group</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Users in Groups">
+      <display class="LinkWdg">
+        <class_name>pyasm.prod.web.SObjectPlannerWdg</class_name>
+        <search_type>sthpw/login_in_group</search_type>
+        <left_search_type>sthpw/login</left_search_type>
+        <right_search_type>sthpw/login_group</right_search_type>
+      </display>
+    </element>
+
+    <element name="Users in Groups2">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.widget.SObjectGroupWdg</class_name>
+        <search_type>sthpw/login_in_group</search_type>
+        <left_search_type>sthpw/login</left_search_type>
+        <right_search_type>sthpw/login_group</right_search_type>
+      </display>
+    </element>
+
+
+
+    <element name="Separator1r32r">
+     <display class="SeparatorWdg"/>
+    </element>
+
+
+    <element name="Schema">
+      <display class="LinkWdg">
+        <search_type>sthpw/schema</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+
+    <element name="Pipelines">
+      <display class="LinkWdg">
+        <search_type>sthpw/pipeline</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+    <element name="Triggers">
+      <display class="LinkWdg">
+        <search_type>sthpw/trigger</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Exception Log">
+      <display class="LinkWdg">
+        <search_type>sthpw/exception_log</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+
+    <element name="Debug Log">
+      <display class="LinkWdg">
+        <search_type>sthpw/debug_log</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Snapshot">
+      <display class="LinkWdg">
+        <search_type>sthpw/snapshot</search_type>
+        <view>log</view>
+      </display>
+    </element>
+
+
+    <element name="Separator1r32r">
+     <display class="SeparatorWdg"/>
+    </element>
+
+
+
+  <element name="* UI Playground">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.panel.UiPlaygroundPanelWdg</class_name>
+    </display>
+  </element>
+
+  <element name="* Manage Project Views">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ManageViewPanelWdg</class_name>
+    </display>
+  </element>
+
+  <element name="* Project Settings">
+    <display class="LinkWdg">
+        <search_type>prod/prod_setting</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+
+</admin>
+-->
+</config>
+
+

@@ -1,0 +1,263 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Note (discussion)</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-common.html" title="Common Widgets">
+      <link rel="prev" href="tactic-setup_setup_sobject-checkin-history-wdg.html" title="Checkin History">
+      <link rel="next" href="tactic-setup_setup_note-sheet-wdg.html" title="Note Sheet Widget">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_sobject-checkin-history-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_note-sheet-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Note (discussion)">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_discussion-wdg"></a>Note (discussion)
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10135"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Notes Widget allows users to write notes for a particular item (sObject). This
+               widget allows team members to exchange comments for a process by writing them in the
+               Notes Widget. The notes are displayed chronologically with latest one appearing at the
+               top. The complete history is displayed by default. It's one of the common columns which
+               can be added in any view for an sType. A similar note entry widget called the Note Sheet
+               Widget, focuses more on the speed of entry rather than the display of the conversation.
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10140"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Notes</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.widget.DiscussionWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Table Element Widget </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td>TableLayoutWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>2.5 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>This widget interacts with the built in sthpw/note table</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10202"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>To create a new note, select the New Note button. </p>
+            <p>This will switch the DiscussionWdg into insert mode where notes and context of the
+                           notes can be entered.
+            </p>
+            <p>In most cases, the grouping for the notes is derived through selecting a 'context'.
+                           This context is often chosen in relation to the context of a given 'task' or 'snapshot'
+                           (Checkin) for the same parent sObject. This then associates all tasks, notes and
+                           snapshots under a specific Search Object. This allows users to retrieve historical data
+                           for a Search Object through a context. This answers the question "What's the history of
+                           this Asset from the design department?"
+            </p>
+            <p>To navigate the history of the notes, click on a particular note and it will expand
+                           and display the full note. 
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>Depending on the configuration, the grouping (context) items will be grouped and
+                                  separated by a group label represented as &lt;&lt; <span class="italic">label
+                                     </span>&gt;&gt;. In that case, selecting the group label will trigger a warning
+                                  pop-up. 
+               </p>
+               <p>To unset a value, you can usually select the empty value with the label '-- Select
+                                  --'. 
+               </p>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10221"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Notes widget is a common column which can be added using the Column Manager. The
+                           item name is "notes". A "default" context is used in this simple implementation. 
+            </p>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10226"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>context</strong></span></p>
+                                                   
+                        </td>
+                        <td>a global context can be specified</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>append_context</strong></span></p>
+                                                   
+                        </td>
+                        <td>a context can be appended to the current list (deprecated)</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>setting</strong></span></p>
+                                                   
+                        </td>
+                        <td>A project setting can be used to drive the contexts. This provides
+                                                       the key of the project setting.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>append_setting</strong></span></p>
+                                                   
+                        </td>
+                        <td>This serves the same purpose as setting but would append the contexts
+                                                       at the end
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>include_submission</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true, it would include the notes for the submission (a
+                                                       child) of the current sObject. 
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10279"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div><pre class="screen">&lt;element name="discussion" edit="false"&gt;
+        &lt;display class="pyasm.widget.DiscussionWdg"&gt;
+            &lt;context&gt;default&lt;/context&gt;
+        &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_sobject-checkin-history-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-common.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_note-sheet-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

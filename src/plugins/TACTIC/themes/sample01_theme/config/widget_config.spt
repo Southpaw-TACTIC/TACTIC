@@ -1,0 +1,464 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.footer>
+<html>
+<style type="text/css">
+.web_footer {
+    min-height: 150px;
+    background-color: [expr]@COLOR('background3')[/expr];
+    //border: solid 1px [expr]@COLOR('border')[/expr];
+    margin-top: -1px;
+    padding: 10px;
+}
+</style>
+<div class="web_footer">
+
+</div>
+</html>
+</sample01_theme.footer>
+</config>""")
+insert.set_value('view', """sample01_theme.footer""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.index>
+<mako>
+<![CDATA[
+colors = server.eval("@PALETTE()")
+]]>
+</mako>
+<html>
+<element view=".styles"/>
+<div style="min-width: 500px; min-height: 500px;">
+  <table style="width: 100%; height: 100%">
+    <tr>
+      <td colspan="2" style="vertical-align: top; height: 100px;">
+        <element view=".header"/>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 153px;">
+        <element view=".sidebar"/>
+      </td>
+      <td style="vertical-align: top">
+        <div class="web_content">
+          <element name="web_content" view=".content"/>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+          <element name="web_footer" view=".footer"/>
+      </td>
+    </tr>
+  </table>
+</div>
+</html>
+</sample01_theme.index>
+</config>""")
+insert.set_value('view', """sample01_theme.index""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.sidebar>
+<html>
+<style type="text/css">
+<![CDATA[
+<%
+num_menus = 5;
+menu_width = 140;
+menu_height = 30;
+
+
+%>]]>
+
+
+.web_menu_wdg {
+    color: [expr]@COLOR('color')[/expr];
+    text-align: left;
+    margin-left: 0px;
+    //margin-bottom: -1px;
+    position: relative;
+    padding: 0px;
+    
+    width: ${menu_width + 13};
+    height: 100%;
+    //border: solid 1px green;
+ 
+}
+
+
+.web_menu_wdg .main_link {
+  list-style-type: none;
+  display: block;
+  cursor: pointer;
+}
+
+
+
+.web_menu_wdg .main_ul {
+  list-style-type: none;
+  display: block;
+  margin: -1px 0px 0px 0px;
+  padding: 0px;
+  background: [expr]@COLOR('background3')[/expr];
+  height: 100%;
+}
+
+
+.web_menu_wdg .main_li {
+    margin-left: 0px;
+    padding: 0px;
+}
+
+
+.web_menu_wdg .menu_header {
+    padding: 6px 1px 5px 5px;
+    font-weight: bold;
+    border-style: solid;
+    border-width: 1 1 1 1;
+    border-color: [expr]@COLOR('border')[/expr];
+
+    width: ${menu_width+5};
+}
+
+
+.web_menu_wdg .sub_ul {
+    list-style-type: none;
+    display: block;
+    padding: 0px;
+    border-style: solid;
+    border-width: 0 1 1 1;
+    border-color: [expr]@COLOR('border')[/expr];
+    display: none;
+    margin-left: ${menu_width+12};
+    margin-top: ${-menu_height+2};
+    background: [expr]@COLOR('background3')[/expr];
+    position: absolute;
+    z-index: 1000;
+
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    width: ${menu_width};
+}
+
+.web_menu_wdg .sub_ul li {
+  padding: 5px 5px;
+  text-align: left;
+  border-style: solid;
+  border-width: 1 1 1 1;
+  border-color: [expr]@COLOR('border')[/expr];
+  height: ${menu_height - 10};
+}
+
+.web_menu_wdg a {
+  text-decoration: none;
+}
+
+.web_menu_wdg .sub_ul a:link {
+    color: #FFF;
+}
+</style>
+<div style="height: 100%;">
+  <div class="menu">
+    <element name="menu">
+      <display class="tactic.ui.panel.SimpleSideBarWdg">
+        <use_href>true</use_href>
+        <view>project_view</view>
+        <target>web_content</target>
+      </display>
+    </element>
+  </div>
+</div>
+</html>
+<behavior class="main_li" event="mouseenter"><![CDATA[
+// make sure they are all closed
+var top = bvr.src_el.getParent(".main_ul");
+var sub_els = top.getElements(".sub_ul");
+for ( var i = 0; i < sub_els.length; i++) {
+    sub_els[i].setStyle("display", "none");
+}
+
+var sub_el = bvr.src_el.getElement(".sub_ul");
+if (sub_el) {
+    sub_el.setStyle("opacity", 0);
+    new Fx.Tween(sub_el, {duration: "short"}).start('opacity', 1.0);
+    sub_el.setStyle("display", "block");
+}
+]]></behavior>
+
+
+<behavior class="main_li" event="mouseleave"><![CDATA[
+var sub_el = bvr.src_el.getElement(".sub_ul");
+if (sub_el) {
+    sub_el.setStyle("display", "none");
+}
+]]></behavior>
+
+
+<behavior class="main_link" event="mouseenter"><![CDATA[
+bvr.src_el.setStyle("background-color", "#444");
+]]></behavior>
+
+
+<behavior class="main_link" event="mouseleave"><![CDATA[
+bvr.src_el.setStyle("background-color", "");
+]]></behavior>
+
+
+<behavior class="sub_li" event="mouseenter"><![CDATA[
+bvr.src_el.setStyle("background-color", "#444");
+]]></behavior>
+
+
+<behavior class="sub_li" event="click_up"><![CDATA[
+var el = bvr.src_el.getParent(".sub_ul");
+el.setStyle("display", "none");
+]]></behavior>
+
+
+<behavior class="sub_li" event="mouseleave"><![CDATA[
+bvr.src_el.setStyle("background-color", "");
+]]></behavior>
+
+
+<behavior class="menu" event="mouseleave"><![CDATA[
+var els = bvr.src_el.getElements(".sub_ul");
+for ( var i = 0; i < els.length; i++) {
+    els[i].setStyle("display", "none");
+}
+]]></behavior>
+</sample01_theme.sidebar>
+</config>""")
+insert.set_value('view', """sample01_theme.sidebar""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.header>
+<html>
+<div class="web_header">
+  <div>
+<![CDATA[
+<%
+plugin_path = server.get_plugin_dir("TACTIC/default_theme")
+path = "%s/media/logo.png" % plugin_path
+
+project_code = server.get_project()
+project = server.get_by_code("sthpw/project", project_code)
+
+%>]]>
+</div>
+  <div>
+    <div style="float: right">
+      <div class="sign_out hand" style="color: black; float: right; padding: 15px">Sign Out</div>
+      <div style="color: black; float: right; padding: 15px">[abs_expr]@GET(login.display_name)[/abs_expr]</div>
+    </div>
+    <div>
+      <div style="position: absolute; top: 15px; left: 15px;">
+        <a href="/jobs">
+          <img style="padding: 0px; width: 50%" src="${path}"/>
+        </a>
+      </div>
+      <div style="position: absolute; top: 15px; left: 200px; font-size: 1.5em;">
+          ${project.get("title")}
+      </div>
+    </div>
+  </div>
+</div>
+</html>
+<behavior class="sign_out"><![CDATA[
+var ok = function(){
+var server = TacticServerStub.get();
+server.execute_cmd("SignOutCmd", {login: bvr.login} );
+var href = document.location.href;
+var parts = href.split("#");
+
+window.location.href=parts[0];
+}
+spt.confirm("Are you sure you wish to sign out?", ok )
+]]></behavior>
+</sample01_theme.header>
+</config>""")
+insert.set_value('view', """sample01_theme.header""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.content>
+<html>
+<div style="margin-left: -3px; margin-right: -3px">
+  <element name="home">
+    <display class="tactic.ui.container.TabWdg">
+      <config>
+        <!---
+        <element name="home" title="Home">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>default_theme.home</view>
+          </display>
+        </element>
+        -->
+        <element name="examples">
+          <display class="tactic.ui.startup.ExamplesWdg"/>
+        </element>
+      </config>
+      <show_add>false</show_add>
+      <tab_offset>5px</tab_offset>
+    </display>
+  </element>
+</div>
+</html>
+</sample01_theme.content>
+</config>""")
+insert.set_value('view', """sample01_theme.content""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.home>
+<mako>
+<![CDATA[
+project_code = server.get_project()
+
+project = server.eval("@SOBJECT(sthpw/project['code','%s'])" % project_code, single=True)
+]]>
+</mako>
+<html>
+<style type="text/css">
+.theme_content {
+  padding: 10px;
+  color: #000;
+  border: solid 1px #AAA;
+  min-height: 500px;
+  background: #FFF
+}
+
+
+.theme_msg {
+  font-size: 18px;
+  padding: 10px;
+  background: #D1D7E2;
+  font-weight: bold;
+  margin: -10px -10px 10px -10px;
+  text-align: center; 
+}
+
+
+.theme_title {
+  font-size: 1.5em;
+  border: solid 1px #AAA;
+  padding: 30px;
+  width: 450px;
+  font-weight: bold;
+  margin: 150px auto;
+}
+</style>
+<div class="theme_content">
+  <div class="theme_msg">${project.get("title")}</div>
+  <div class="theme_title">
+        Project [${project.get("title")}] has just been created. 
+        </div>
+</div>
+</html>
+</sample01_theme.home>
+</config>""")
+insert.set_value('view', """sample01_theme.home""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2013-06-06 21:14:09.050135""")
+insert.set_value('config', """<config>
+<sample01_theme.styles>
+<html>
+<style type="text/css">
+body {
+    #background: #FFF !important;
+
+}
+
+.web_main {
+    width: 100%;
+    //padding: 0px 100px;
+}
+
+
+.web_inner {
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+
+    margin: auto;
+    width: 90%;
+    min-width: 800px;
+}
+
+.web_header {
+    background-color: [expr]@COLOR('background2')[/expr];
+    height: 100px;
+    margin: 0px auto;
+    position: relative;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-color: [expr]@COLOR('border')[/expr];
+}
+
+
+.web_menu {
+    text-align: center; 
+    margin-top: 20px;
+    position: absolute;
+    width: 100%;
+   
+}
+
+
+
+
+.web_content {
+    //width: 1280px; 
+    min-width: 800px;
+    margin: 0px auto;
+    padding-top: 10px;
+}
+
+
+
+.web_footer {
+    background-color: [expr]@COLOR('background3', -10)[/expr]; 
+    padding: 20px; 
+    //width: 960px; 
+    //height: 150px;
+    border: solid 1px [expr]@COLOR('border')[/expr];
+    overflow: auto;
+}
+</style>
+<div>
+</div>
+</html>
+</sample01_theme.styles>
+</config>""")
+insert.set_value('view', """sample01_theme.styles""")
+#-- End Entry --#
+

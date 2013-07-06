@@ -1,0 +1,88 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Database Configuration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-database.html" title="Install Database">
+      <link rel="prev" href="tactic-sys-admin_install-database.html" title="Install Database">
+      <link rel="next" href="tactic-sys-admin_configuration.html" title="Server Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_install-database.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_configuration.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Database Configuration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_database-configuration"></a>TACTIC Database Configuration
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>By default TACTIC will look at localhost to the database. This is the simplest
+            implementation and most installations will have the database on the same physical server as
+            the TACTIC application servers. However, in scaling up TACTIC, it may become necessary to
+               separate the database server from the TACTIC applications servers.
+         </p>
+         <p>TACTIC can be configured to look at an external database by connecting through sockets of
+                    TCP/IP. This can be set in the TACTIC configuration file.
+         </p>
+         <p>While it is possible to edit this file manually, it is often simpler to use the provided
+                    utility found in: &lt;TACTIC_INSTALL_DIR&gt;/src/bin/util/change_db_info.py
+         </p>
+         <p>This command line script will ask a series of questions and update the appropriate
+                    configuration file
+         </p>
+         <p><span class="bold"><strong>Usage:</strong></span></p>
+         <p>python change_db_info.py </p>
+         <p>When executing, the script will ask configuration questions and show a default value in
+                    brackets. If the default is sufficient, merely press enter without entering anything in will
+                    accept the default.
+         </p>
+         <p>Below is a sample output where all the default values are accepted:</p>
+         <p><span class="bold"><strong>TACTIC Database Configuration</strong></span></p>
+         <p>Please enter the database vendor (PostgreSQL or Oracle):</p>
+         <p>(PostgreSQL) -&gt; </p>
+         <p>Please enter database server hostname or IP address:</p>
+         <p>(localhost) -&gt;</p>
+         <p>Please enter user name accessing the database:</p>
+         <p>(postgres) -&gt;</p>
+         <p>Please enter database password:</p>
+         <p>      (ENTER to keep password, '__EMPTY__' for empty password)</p>
+         <p>Enter Password -&gt;</p>
+         <p>     Vendor: [PostgreSQL]</p>
+         <p>      Server: [localhost]</p>
+         <p>      User: [postgres]</p>
+         <p>Save to config (N/y) -&gt;</p>
+         <p>Once the values have been saved, a restart of TACTIC is required to start using the new
+                    database configuration.
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_install-database.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-database.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_configuration.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

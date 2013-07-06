@@ -1,0 +1,187 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TaskCheckinManageWdg(renamed: Use TaskCheckoutManageWdg)</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets.html" title="TACTIC Widgets">
+      <link rel="prev" href="tactic-setup_setup_general-checkin-wdg.html" title="CheckInWdg">
+      <link rel="next" href="tactic-setup_setup_hidden-row-toggle-wdg.html" title="HiddenRowToggleWdg">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="section" title="TaskCheckinManageWdg(renamed: Use TaskCheckoutManageWdg)">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_task-checkin-manage-wdg"></a>TaskCheckinManageWdg(renamed: Use TaskCheckoutManageWdg)
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5798"></a>Description
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Update: This has been modified to only handle check-out functions in 3.5. Please refer
+                           to the WorkElementWdg to configure the Work column. 
+            </p>
+            <p>The Task Checkin Manage Widget is now used for accessing the checkout tool. It appears
+               as a sub tab. After a task is assigned, an artist can go to the "My Tasks" link where
+                           there is a "Work" column which will expand to this widget. The concept of a WIP (Work in
+                           Progress) folder is applied here. The user can choose between checking out the latest or
+                           the current snapshot.
+            </p>
+            <h5><a name="d0e5805"></a>Info
+            </h5>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td> Task Checkin Manage Widget </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Common Title</strong></span></p>
+                                                   
+                        </td>
+                        <td> Checkout</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.table.TaskCheckinManageWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Table Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td>TableLayoutWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>2.6.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5875"></a>Usage
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The main function of this widget is to choose between checking out latest or checking
+                           out current snapshot for the selected process. If there is no applicable latest or
+                           current snapshot, clicking on the button will just open up a Check-out widget for you to
+                           browse its check-in history. The WIP folder is where you can put your work-up files. It
+                           is on the same level as the sandbox for the process. 
+            </p>
+         </div>
+         <div class="mediaobject"><img src="media/taskcheckinmanagewdg_overview.png"></div>
+         <h6><a name="d0e5883"></a>Options
+         </h6>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>checkout_panel_script_path</strong></span></p>
+                                            
+                     </td>
+                     <td>Deprecated in 3.5. Use the tab_config_&lt;&gt; method to set up custom
+                                                checkout tab. For instance, this xml snippet can be used to a add a check
+                                                out sub
+                                                tab:<pre class="screen"><p> &lt;element name="checkout" title="Checkout"&gt; </p><p>  &lt;display class='tactic.ui.table.TaskCheckoutManageWdg'&gt;
+  &lt;parent_key&gt;{@GET(state.search_key)}&lt;/parent_key&gt;</p>  &lt;/display&gt; <p>&lt;/element&gt;</p></pre></td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>checkout_script_path</strong></span></p>
+                                            
+                     </td>
+                     <td>A custom check-out script path you can specify to override the
+                                                default check-out script. The default check-out script checks out
+                                                everything under the selected snapshot. Refer to Example 4.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                                                
+                        <p><span class="bold"><strong>show_versionless_folder</strong></span></p>
+                                            
+                     </td>
+                     <td>If set to true, it displays the latest and current versionless folders.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_general-checkin-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_hidden-row-toggle-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

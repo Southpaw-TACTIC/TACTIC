@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+  <element name="snapshot">
+    <display class="ThumbWdg">
+      <icon_size>60</icon_size>
+    </display>
+  </element>
+
+  <element name="code"/>
+  <element name="snapshot_code"/>
+  <element name="file_name"/>
+  <element name="relative_dir"/>
+
+  <element name="timestamp">
+      <display class="DateTimeWdg"/>
+  </element>
+  <element name="md5"/>
+  <element name="st_size"/>
+
+</definition>
+
+
+
+<table>
+  <element name="snapshot"/>
+  <element name="code"/>
+  <element name="snapshot_code"/>
+  <element name="file_name"/>
+  <element name="relative_dir"/>
+  <element name="timestamp"/>
+  <element name="md5"/>
+</table>
+
+</config>
+

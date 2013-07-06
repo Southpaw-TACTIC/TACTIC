@@ -1,0 +1,51 @@
+
+
+<form>
+
+
+
+<applet code="upload.GeneralApplet" 
+        codebase="./dist/lib"
+        archive="Upload-latest.jar"
+        width="600" height="120" id="upload">
+Your browser is completely ignoring the &lt;APPLET&gt; tag!
+</applet>
+
+
+<input type="hidden" name="upload_file_names" value="" id="upload_file_names">
+
+
+
+
+<script>
+
+
+    upload = document.getElementById("upload")
+    alert (upload.read_file("/tmp/actionLog.txt"))
+    
+function do_submit()
+{
+    upload = document.getElementById("upload")
+    if ( upload == null )
+        return true
+
+    // actually upload the file 
+    upload.do_upload()
+
+
+    files = upload.get_uploaded_files()
+    input = document.getElementById("upload_file_names")
+    input.value = files
+    return true;
+}
+
+</script>
+
+
+<br>
+<input type=submit value="Upload Files" onclick="return do_submit()">
+</form>
+
+
+
+

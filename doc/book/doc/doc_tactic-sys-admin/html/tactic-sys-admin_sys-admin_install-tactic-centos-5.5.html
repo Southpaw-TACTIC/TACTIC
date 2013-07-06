@@ -1,0 +1,206 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC Install - CentOS 5.5</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-tactic-application.html" title="Install TACTIC Application">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_install-tactic-general.html" title="General TACTIC Install">
+      <link rel="next" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html" title="TACTIC Install - CentOS 5.7">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-general.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC Install - CentOS 5.5">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_install-tactic-centos-5.5"></a>TACTIC Install - CentOS 5.5 
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>Below are the step-by-step instructions of how to install TACTIC on CentOS 5.5. For CentOS
+            6.2 and above, please refer to the TACTIC Install - CentOS 6.2 page. 
+         </p>
+         <p>
+                    
+         </p>
+         <h3><a name="d0e573"></a>CentOS 5.5
+         </h3>
+         <p>
+                
+         </p>
+         <p>Unfortunately, CentOS 5.5 comes pre-packaged with an outdated version of Python: Python
+                    2.4. TACTIC requires Python 2.7.
+         </p>
+         <p>To get around this, when we install Python 2.7, we do not overwrite the original Python
+                    2.4. See steps #8 and #9.
+         </p>
+         <p>Overwritting the original Python would break some software packages, such as Yum.</p>
+         <p>We must remember to call Python2.7 explicitly whenever we run any TACTIC python scripts,
+                    including startup.py
+         </p>
+         <div class="orderedlist">
+            <ol class="orderedlist" type="1">
+               <li class="listitem">
+                  <p>Log in as the root user.</p>
+               </li>
+               <li class="listitem">
+                  <p>Open the passwd file.</p><pre class="screen">vi /etc/passwd</pre><p>Modify the apache home directory and login shell to look like the
+                                         following:
+                  </p><pre class="screen">apache:x:48:48:Apache:/home/apache:/bin/bash </pre></li>
+               <li class="listitem">
+                  <p>Set password for apache to: south123paw</p><pre class="screen">passwd apache</pre></li>
+               <li class="listitem">
+                  <p>Open to the sudoers file.</p><pre class="screen">visudo</pre><p>Add the apache user by including the following line in the appropriate
+                                         location in the file:
+                  </p><pre class="screen">apache ALL=(ALL) ALL</pre></li>
+               <li class="listitem">
+                  <p>Create the home directory for apache.</p><pre class="screen">mkdir /home/apache
+chown apache:apache /home/apache
+chmod a+rx /home/apache</pre></li>
+               <li class="listitem">
+                  <p>Disable SElinux by setting SELINUX=disabled</p><pre class="screen">vi /etc/selinux/config</pre></li>
+               <li class="listitem">
+                  <p>Remove the existing Postgres and Install Postgres 8.4 modules.</p><pre class="screen">yum remove postgresql postgresql-libs postgresql-server
+
+vi /etc/yum.repos.d/CentOS-Base.repo
+Add the exclude line to the 2 section base and updates:
+
+[base]
+exclude=postgresql*
+[updates]
+exclude=postgresql*
+
+rpm -Uvh http://yum.pgrpms.org/reporpms/8.4/pgdg-centos-8.4-2.noarch.rpm
+yum install -y postgresql postgresql-server postgresql-contrib
+yum install -y postgresql-devel
+yum install -y gcc zlib-devel samba libxslt-devel libxml2-devel</pre></li>
+               <li class="listitem">
+                  <p>Install Python 2.7.</p><pre class="screen">cd; wget http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz
+tar zxvf Python-2.7.1.tgz
+cd Python-2.7.1
+./configure -with-zlib=/usr/include
+make install</pre></li>
+               <li class="listitem">
+                  <p>Installing Python 2.7 will install python2.7 command "ahead" of the original
+                                         python so that "python" from the command line is now 2.7. This will potentially
+                                         break yum or other OS admin tools. To fix this, remove the python executable for
+                                         2.7.
+                  </p><pre class="screen">rm /usr/local/bin/python</pre></li>
+               <li class="listitem">
+                  <p>Restart the shell so that the environment is clean.</p>
+               </li>
+               <li class="listitem">
+                  <p>Install lxml.</p><pre class="screen">cd; wget http://codespeak.net/lxml/lxml-2.2.8.tgz
+tar zxvf lxml-2.2.8.tgz
+cd lxml-2.2.8
+python2.7 setup.py install</pre></li>
+               <li class="listitem">
+                  <p>Install PIL.</p><pre class="screen">cd; wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+tar zxvf Imaging-1.1.7.tar.gz
+cd Imaging-1.1.7
+python2.7 setup.py install</pre></li>
+               <li class="listitem">
+                  <p>Install psycopg2.</p><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.3.2.tar.gz
+http://initd.org/psycopg/tarballs/PSYCOPG-2-3/psycopg2-2.3.1.tar.gz
+tar zxvf psycopg2-2.3.2.tar.gz
+cd psycopg2-2.3.2
+python2.7 setup.py install</pre></li>
+               <li class="listitem">
+                  <p>Install PyCrypto.</p><pre class="screen">cd; wget http://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.3.tar.gz
+tar zxvf pycrypto-2.3.tar.gz
+cd pycrypto-2.3
+python2.7 setup.py install</pre></li>
+               <li class="listitem">
+                  <p>Disable firewall.</p><pre class="screen">/etc/init.d/iptables save
+/etc/init.d/iptables stop</pre></li>
+               <li class="listitem">
+                  <p>Create and open the index.html for redirection.</p><pre class="screen">vi /var/www/html/index.html</pre><p>Insert the following contents:</p><pre class="screen">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</pre></li>
+               <li class="listitem">
+                  <p>Re-login as the apache user.</p>
+               </li>
+               <li class="listitem">
+                  <p>Download the TACTIC source code</p>
+                  <p>Open the following link in a web browser and download the latest TACTIC
+                                         Enterprise release.
+                  </p><pre class="screen">http://community.southpawtech.com/downloads</pre><p>Set up the TACTIC service.</p><pre class="screen">cd /tmp/
+unzip tactic-3.6.0.v01.zip
+
+sudo cp /tmp/tactic-3.6.0.v01/src/install/service/tactic/etc/init.d
+sudo chmod 775 /etc/init.d/tactic
+sudo /sbin/chkconfig tactic on</pre></li>
+               <li class="listitem">
+                  <p>Set up Postgres.</p><pre class="screen">sudo service postgresql initdb
+sudo /etc/init.d/postgresql start
+   
+sudo mv /var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf.bak
+sudo cp /tmp/tactic-3.6.0.v01/src/install/postgresql/pg_hba.conf /var/lib/pgsql/data
+sudo chown postgres:postgres /var/lib/pgsql/data/pg_hba.conf
+sudo /sbin/chkconfig postgresql on
+sudo /etc/init.d/postgresql restart </pre></li>
+               <li class="listitem">
+                  <p>Install TACTIC. You will be asked to enter a base directory for installation.
+                                         We call this &lt;TACTIC_BASE_DIR&gt;
+                  </p><pre class="screen">cd /tmp/tactic-3.6.0.v01/src/install
+sudo python2.7 install.py
+sudo /sbin/chkconfig tactic on</pre></li>
+               <li class="listitem">
+                  <p>Set up Apache. Copy the tactic.conf generated by the TACTIC Installer.</p><pre class="screen">sudo cp  &lt;TACTIC_BASE_DIR&gt;/projects/config/tactic.conf /etc/httpd/conf.d/
+sudo /sbin/chkconfig httpd on
+sudo /etc/init.d/httpd start </pre></li>
+               <li class="listitem">
+                  <p>Startup TACTIC in dev mode.</p><pre class="screen">python2.7 /home/apache/tactic/src/bin/startup_dev.py</pre></li>
+               <li class="listitem">
+                  <p>Try accessing TACTIC through a web browser on a client machine.
+                                         http://&lt;server IP&gt;/tactic
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>Once startup_dev works, Ctrl^C out of the process.</p><pre class="screen">Ctrl^C</pre></li>
+               <li class="listitem">
+                  <p>Open the TACTIC service file for edit.</p><pre class="screen">sudo vi /etc/init.d/tactic</pre><p>Modify the variable for PYTHON as follows:</p><pre class="screen">PYTHON=/usr/local/bin/python2.7</pre></li>
+               <li class="listitem">
+                  <p>Open the TACTIC configuration file for edit.</p><pre class="screen">vi  &lt;TACTIC_BASE_DIR&gt;/projects/config/tactic_linux-conf.xml</pre><p>Modify the option variable for python as follows:</p><pre class="screen">&lt;python&gt;/usr/local/bin/python2.7&lt;/python&gt;</pre></li>
+               <li class="listitem">
+                  <p>Start TACTIC as a service and install the license in a Java-enabled
+                                         browser.
+                  </p><pre class="screen">sudo /etc/init.d/tactic start</pre></li>
+               <li class="listitem">
+                  <p>To view different information about the system and set-up, you can go to the
+                                         Site Admin --&gt; System Info page. For example, you can verify if load-balancing
+                                         is set up and certain key directories are writable by TACTIC. 
+                  </p>
+               </li>
+            </ol>
+         </div>
+         <p>End of installation instructions.</p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_install-tactic-general.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-tactic-application.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_install-tactic-centos-5.7.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

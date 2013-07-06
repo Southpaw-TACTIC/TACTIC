@@ -1,0 +1,479 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+<config>
+
+
+<definition>
+    <element name="parent" title="Created for">
+        <display class="tactic.ui.table.ExpressionElementWdg">
+            <!--
+            <expression>@GET(parent.code)</expression>
+            -->
+            <expression>@GET(.search_code)</expression>
+            <calc_mode>fast</calc_mode>
+            <order_by>search_type</order_by>
+        </display>
+        <!-- This might be a solution to defining inline editing??? -->
+        <edit class="TaskSObjectSelectWdg"/>
+        <action class="tactic.ui.table.ParentGroupAction"/>
+    </element>
+
+    <element name="parent_name" title="Created for">
+        <display class="tactic.ui.table.ExpressionElementWdg">
+          <expression>@IF(@GET(parent.name), @GET(parent.name), @GET(parent.code))</expression>
+	</display>
+    </element>
+
+    <element name="process" title='Process' edit="true">
+        <display class="tactic.ui.table.ProcessElementWdg"/>
+    </element>
+
+    <element name="context">
+        <display class="pyasm.widget.TaskParentSpacingTableElement"/>
+    </element>
+
+    <element name="subcontext" edit="true">
+        <display class="tactic.ui.table.SubContextElementWdg"/>
+    </element>
+
+    <element name="description" width="250px"/>
+
+    <element name="milestone_code" title="Milestone"/>
+
+    <element name="status">
+        <display class="tactic.ui.widget.TaskStatusElementWdg"/>
+    </element>
+    
+    <element name='assigned' title='Assigned'>
+        <display class='tactic.ui.input.LoginTableElementWdg'/>
+    </element>
+    
+    <element name='supervisor' title="Supervisor">
+        <display class='tactic.ui.input.LoginTableElementWdg'/>
+    </element>
+    
+    <element name="priority" title='Priority'/>
+
+
+    <element name="schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <show_title>true</show_title>
+        <options>[
+        {
+            "start_date_col":  "bid_start_date",
+            "end_date_col":    "bid_end_date",
+            "color":            "#4b4",
+            "edit":             "true"
+        }
+        ]</options>
+      </display>
+  </element>
+
+  <element name="bid_start_date" type="timestamp" title='Bid Start'>
+    <display widget="format">
+      <type>date</type>
+      <format>1999-12-31</format>
+    </display> 	    
+  </element>
+
+  <element name="bid_end_date" type="timestamp" title='Bid End'> 
+    <display widget="format">
+      <type>date</type>
+      <format>1999-12-31</format>
+    </display> 	    
+  </element>
+
+
+  <element name="project_code" title="Project"/>
+
+<!--
+    <element name="work" title="Work">
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>tactic.ui.table.TaskCheckinManageWdg</dynamic_class>
+            <transfer_mode>upload</transfer_mode>
+        </display>
+    </element>
+-->
+
+    <element name="work_hours" title="Work Hours">
+        <display class="tactic.ui.table.WorkHoursElementWdg">
+        </display>
+        <!-- This is defined in edit_definition
+        <action class="tactic.ui.table.WorkHoursElementAction"/>
+        -->
+    </element>
+
+    <element name="work" title="Work on Task">
+        <display class="tactic.ui.table.WorkElementWdg">
+        <transfer_mode>upload</transfer_mode>
+        <icon>WORK</icon>
+        </display>
+    </element>
+
+    <element name="notes" title="Task Notes">
+        <display class="tactic.ui.widget.DiscussionElementWdg">
+          <use_parent>true</use_parent>
+        </display>
+    </element>
+
+    <element name="days_due" title="Days Due">
+        <display class="tactic.ui.table.TaskDaysDueElementWdg">
+        </display>
+    </element>
+
+
+      
+</definition>
+
+
+
+<edit_definition>
+    <element name="parent"  title="Created for">
+        <display class="tactic.ui.input.TaskSObjectInputWdg"/>
+        <action class="NullAction"/>
+    </element>
+    <element name="project_code"/>
+    <element name="process">
+        <display class="tactic.ui.input.ProcessInputWdg"/>
+    </element>
+    <element name="context">
+        <display class="tactic.ui.input.ProcessInputWdg">
+            <context>true</context>
+        </display>
+    </element>
+    <element name='subcontext'>
+        <display class="tactic.ui.input.SubContextInputWdg"/>
+        <action class="tactic.ui.input.SubContextAction"/>
+    </element>
+    <element name="description"/>
+    <element name="milestone_code" title="Milestone">
+        <display class="SelectWdg">
+            <values_expr>@GET(sthpw/milestone['project_code',$PROJECT]['project_code','is','NULL']['or'].code)</values_expr>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name='assigned'>
+        <display class='tactic.ui.input.ProcessGroupSelectWdg'/>
+    </element>
+    <element name='supervisor'>
+        <display class='tactic.ui.input.ProcessGroupSelectWdg'/>
+    </element>
+    
+    <element name="bid_start_date" type="timestamp">
+        <display class="tactic.ui.widget.CalendarInputWdg">
+        </display>
+    </element>
+    <element name="bid_end_date" type="timestamp"> 
+        <display class="tactic.ui.widget.CalendarInputWdg">
+        </display>
+        <action class="TaskDateAction"/>
+    </element>
+
+    <element name="bid_duration">
+      <!--    
+	<display class="SelectWdg">
+            <values>|0.5|1.0|1.5|2.0|2.5|3.0|3.5|4.0|4.5|5.0|5.5|6.0|6.5|7.0|7.5|8.0|8.5|9.0|9.5|10.0|10.5|11.0|11.5|12.0|12.5|13.0|13.5|14.0|14.5|15.0</values>
+        </display>
+       -->
+        <display class='TextWdg'/>
+      </element>
+
+    <element name="priority">
+        <display class="SelectWdg">
+            <values>|5|4|3|2|1</values>
+            <labels>- No priority -|5 - Critical|4 - Very Important|3- Important|2 - Medium|1 - Low Priorty</labels>
+        </display>
+    </element>
+
+  <element name="pipeline_code">
+    <display class="SelectWdg">
+        <values_expr>@GET(sthpw/pipeline['search_type','sthpw/task']['project_code','EQ', $PROJECT]['project_code','is','NULL']['or'].code)</values_expr>
+        <default>task</default>
+        <empty>true</empty>
+    </display>
+  </element>
+
+    <element name="status" depend="pipeline_code">
+        <display class="tactic.ui.widget.TaskStatusSelectWdg">
+        </display>
+    </element>
+
+    <element name="schedule">
+        <action class="tactic.ui.table.GanttCbk">
+             <options>[
+        {
+            "start_date_col":  "bid_start_date",
+            "end_date_col":    "bid_end_date",
+            "mode":            "default"
+        },
+        {
+            "start_date_col":  "actual_start_date",
+            "end_date_col":    "actual_end_date",
+            "mode":            "default"
+        }
+ 
+        ]</options>
+        </action>
+    </element> 
+
+
+    <element name="work_hours">
+      <action class="tactic.ui.table.WorkHoursElementAction"/>
+  </element> 
+     <!-- backward compatible -->
+     <element name="work_hours_list">
+      <action class="tactic.ui.table.WorkHoursElementAction"/>
+    </element> 
+
+</edit_definition>
+
+
+<table>
+    <element name="parent"/>
+    <element name="work"/>
+    <element name="process"/>
+    <element name="description"/>
+    <element name="milestone_code"/>
+    <element name="status"/>
+    <element name="assigned"/>
+    <element name="priority"/>
+    <element name="days_due"/>
+    <element name="schedule"/>
+</table>
+
+
+<!-- This is shown in TaskDetailWdg -->
+<single_process>
+    <element name="process" />
+    <element name="context"/>
+    <element name="subcontext"/>
+    <element name="description"/>
+    <element name="milestone_code"/>
+    <element name="status"/>
+    <element name="assigned"/>
+    <element name="priority"/>
+    <element name="schedule"/>
+</single_process>
+
+
+<inline_add_item>
+    <element name="process" width="100px"/>
+    <element name="expand"/>
+    <element name="general_checkin"/>
+    <element name="general_checkin_simple"/>
+    <element name="description" width="300px"/>
+    <element name="milestone_code"/>
+    <element name="status" width="100px"/>
+    <element name="assigned" width="100px"/>
+    <element name="supervisor" title="Supervisor"/>
+    <element name="priority" width="50px"/>
+    <element name="schedule" width="300px"/>
+</inline_add_item>
+
+
+<task_list>
+    <element name="work"/>
+    <element name="process" width="100px"/>
+    <element name="description" width="300px"/>
+    <element name="milestone_code" title="Milestone" width="100px"/>
+    <element name="status" width="100px"/>
+    <element name="assigned" width="100px"/>
+    <element name="supervisor" title="Supervisor" width="100px"/>
+    <element name="notes" width="300px">
+        <display class="tactic.ui.widget.DiscussionElementWdg">
+            <use_parent>true</use_parent>
+        </display>
+    </element>
+</task_list>
+
+
+
+<summary>
+    <element name="process"/>
+    <element name="description"/>
+    <element name="status">
+        <display class="SimpleTableElementWdg"/>
+    </element>
+    <element name="priority"/>
+    <element name="assigned"/>
+
+</summary>
+
+
+
+
+
+
+<!-- used in completion in overview tab -->
+<!--
+<completion>
+    <element name="asset">
+        <display class="pyasm.widget.SObjectAttachTableElement">
+            <label>Add task to process</label>
+            <status_history>true</status_history>
+        </display>    
+    </element>
+    <element name="milestone_code" title="Milestone"/>
+    <element name="process"/>
+    <element name="description"/>
+    <element name="status">
+        <display class="SimpleTableElementWdg"/>
+    </element>
+    <element name="assigned"/>
+    <element name="priority"/>
+    <element name="schedule">
+        <display class="CalendarBarWdg">
+            <width>620</width>
+            <bid_edit>false</bid_edit>
+            <actual_display>false</actual_display>
+            <actual_edit>false</actual_edit>
+        </display>
+    </element>
+    <element name="completion">
+        <display class="TaskCompletionWdg">
+            <width>50</width>
+        </display>
+    </element>
+</completion>
+-->
+
+<!--
+<timecard default="table">
+    <element name="shot">
+        <display class="SObjectAttachTableElement"/>
+    </element>
+    <element name="description"/>
+    <element name="timecard">
+        <display class="TimecardTableElement"/>
+        <action class="TimecardCmd"/>
+    </element>
+    <element name="bid_duration"/>
+</timecard>
+-->
+
+
+<my_task insert="false">
+    <element name="project_code"/>
+    <element name="parent"/>
+    <element name="expand"/>
+    <element name="process"/>
+    <element name="description"/>
+    <element name="status"/>
+    <element name="assigned"/>
+    <element name="priority"/>
+    <element name="bid_start_date"/>
+    <element name="bid_end_date"/>
+    <element name="general_checkin"/>
+    <element name="work_hours"/>
+    <element name="notes"/>
+</my_task>
+
+
+<edit>
+    <element name="parent" edit="false"/>
+    <element name="project_code"/>
+    <element name="process"/>
+    <element name="context"/>
+    <element name='subcontext'/>
+    <element name="description"/>
+    <element name="milestone_code" title="Milestone"/>
+    <element name='assigned'/>
+    <element name='supervisor'/>
+    <element name="bid_start_date" type="timestamp"/>
+    <element name="bid_end_date" type="timestamp"/> 
+    <element name="bid_duration"/>
+    <element name="priority"/>
+    <element name="pipeline_code"/>
+   <element name="status" depend="pipeline_code"/>
+</edit>
+
+
+
+<insert>
+    <element name="parent"/>
+    <element name="process"/>
+    <element name="description"/>
+    <element name="milestone_code"/>
+    <element name="assigned"/>
+    <element name="supervisor"/>
+    <element name="bid_start_date"/>
+    <element name="bid_end_date"/>
+    <element name="bid_duration"/>
+    <element name="priority"/>
+    <element name="pipeline_code"/>
+    <element name="status"/>
+</insert>
+
+
+<insert_template>
+
+    <element name="process">
+        <display class="pyasm.prod.web.ProcessSelectWdg"/>
+        <action class="NonEmptyAction"/>
+    </element>
+
+
+    <element name="description">
+    <!--
+        <display class="pyasm.widget.TextAreaWithSelectWdg">
+            <edit_all>true</edit_all>
+        </display>
+    -->
+    </element>
+    <element name="assigned">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+    <element name="supervisor">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+
+    <element name="s_status">
+        <display class="HiddenWdg">
+            <value>__TEMPLATE__</value>
+        </display>
+    </element>
+</insert_template>
+
+<edit_template>
+    <element name="process">
+        <display class="pyasm.prod.web.ProcessSelectWdg"/>
+        <action class="NonEmptyAction"/>
+    </element>
+
+    <element name="description">
+    <!--
+        <display class="pyasm.widget.TextAreaWithSelectWdg">
+            <edit_all>true</edit_all>
+        </display>
+    -->
+    </element>
+    <element name="assigned">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+    <element name="supervisor">
+        <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+
+    <element name="s_status">
+        <display class="HiddenWdg">
+            <value>__TEMPLATE__</value>
+        </display>
+    </element>
+</edit_template>
+
+
+</config>
+

@@ -1,0 +1,20 @@
+
+
+<application>
+
+
+<widget class="HtmlElement" html_type="div" css_style="background-color: #000000">
+    <!-- add the header -->
+    <widget class="photo.modules.HeaderWdg"/>
+
+    <!-- create the main asset widget -->
+    <widget class="AssetWdg" args="photo">
+        <!-- add in a search -->
+        <search/>
+    </widget>
+
+</widget>
+
+</application>
+
+

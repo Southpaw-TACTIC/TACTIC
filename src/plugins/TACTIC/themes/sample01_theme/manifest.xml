@@ -1,0 +1,10 @@
+<manifest>
+  <data>
+    <code>TACTIC/themes/sample01_theme</code>
+    <title>Sample 01 Theme</title>
+    <type>theme</type>
+    <description>Sample theme with a side bar, header and footer with a content area.</description>
+  </data>
+  <sobject search_type="config/widget_config" view="sample01_theme.%" path="config/widget_config.spt" ignore_columns="id,code"/>
+  <sobject search_type="config/url" url="/index" path="config/config_url.spt" ignore_columns="id,code"/>
+</manifest>

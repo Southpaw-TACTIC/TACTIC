@@ -1,0 +1,208 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Search Interface</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-end-user.html" title="TACTIC End User">
+      <link rel="up" href="tactic-end-user_searching.html" title="Searching">
+      <link rel="prev" href="tactic-end-user_searching.html" title="Searching">
+      <link rel="next" href="tactic-end-user_end-user_search-compound.html" title="Compound Searching">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-end-user_searching.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-end-user_end-user_search-compound.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Search Interface">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-end-user_end-user_search-interface"></a>Search Interface
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p><span class="inlinemediaobject"><img src="media/1_search_overview.png"></span></p>
+         <h4><a name="d0e1414"></a>Description
+         </h4>
+         <p>The TACTIC Search Box is used to build filters to refine the results in the view. A
+            variety of search filters can be constructed, ranging from simple column searches to large
+            complex compound searches. The creation of search filters closely resembles that of creating
+            mail filters in a mail application. Each search filter plays a role in the outcome of the
+            final results. The Search Box is flexible enough to handle any kind of search.
+         </p>
+         <h4><a name="d0e1418"></a>Keyword Search
+         </h4>
+         <p>Open the Search Criteria by clicking the <span class="inlinemediaobject"><img src="media/NEW_search_button.png"></span> button on the tool shelf.
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/2_search_keyword.png"></span></p>
+         <p>The keyword search section allows for creation of a search filter to search on the words
+                    found in the column named <span class="bold"><strong>keywords</strong></span>. These keywords must be
+                    manually inputted and updated.
+         </p>
+         <h4><a name="d0e1435"></a>Filter
+         </h4>
+         <p><span class="inlinemediaobject"><img src="media/3_search_filter.png"></span></p>
+         <p>The Filter section allows for the creation and activation of search filters.  Each search
+                    filter operates on one attribute on that sType. These searches use standard text search
+                    logic and supports TACTIC's expression language.
+         </p>
+         <p>The <span class="bold"><strong>Clear</strong></span> button clears out all the data in all the
+                    search filters: resets the drop down selection boxes and clears out the input search
+                    criteria box.
+         </p>
+         <h4><a name="d0e1448"></a>Parent Search
+         </h4>
+         <p><span class="inlinemediaobject"><img src="media/4a_search_parent_schema.png"></span></p>
+         <p><span class="inlinemediaobject"><img src="media/4b_search_parent_search_filter.png"></span></p>
+         <p>A search can be based on any property of a parent search type. For example, if
+                    asset_category is the parent type then a search can be made based on the properties of the
+                    parent. For example, a filter can be created on the parent (asset_category) where the code
+                    is  "video".
+         </p>
+         <h4><a name="d0e1460"></a>Children Search
+         </h4>
+         <p><span class="inlinemediaobject"><img src="media/5_search_children.png"></span></p>
+         <p>The Children search filter allows refining based on data in columns in the children. For
+                    example, a filter can be created to find all tasks where the priority is greater than
+                    3.
+         </p>
+         <h4><a name="d0e1468"></a>Matching and Compound Searches
+         </h4>
+         <p>Click the [+] icon beside a search parameter to add additional search definitions. </p>
+         <p><span class="inlinemediaobject"><img src="media/6_search_plus.png"></span></p>
+         <p>The drop down selection box at the top of the search box can be used to set up the search
+                    to be match open (matching <span class="bold"><strong>any</strong></span> of the definitions) or match
+                    specific (matching <span class="bold"><strong>all</strong></span> of the definitions). The default
+                    match option is "Match all".
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/7_search_match.png"></span></p>
+         <p>Compound Search gives the capability to set an <span class="bold"><strong>AND</strong></span> or an
+                        <span class="bold"><strong>OR</strong></span> option for filters.  The default compound search
+                    option is "AND".
+         </p>
+         <p>To switch the compound search option, select "Compound Search" from the drop down selection
+                    box at the top, add a new search filter, click on the word "and" that appears between the
+                    search filters to toggle it to "or".
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/8_search_compound.png"></span></p>
+         <h4><a name="d0e1503"></a>Operators
+         </h4>
+         <p><span class="inlinemediaobject"><img src="media/9_search_operators.png"></span></p>
+         <div class="informaltable">
+            <table border="0">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="bold"><strong>is</strong></span></td>
+                     <td>Finds an exact match. eg. Process "is" Compositing</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>is not</strong></span></td>
+                     <td>Finds all the results that do not match exactly. eg. Process "is not"
+                                                    Compositing
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>contains</strong></span></td>
+                     <td>Does a partial match. eg. Process "contains" ompost</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>does not contain</strong></span></td>
+                     <td>Finds all the results that do not match a partial match.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>is empty</strong></span></td>
+                     <td>Match the empty field.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>starts with</strong></span></td>
+                     <td>Match on the beginning part of the string. eg. Process "starts with"
+                                                    Comp
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>ends with</strong></span></td>
+                     <td>Match the ending part of the string. eg. Process "ends with"
+                                                    ing
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>in</strong></span></td>
+                     <td>Match any of the strings delimited by "|". eg Process "in"
+                                                    Compositing|Lighting
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>not in</strong></span></td>
+                     <td>Find all the results that do not match the strings delimited by
+                                                    "|".
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="bold"><strong>is distinct</strong></span></td>
+                     <td>Skip duplicates. eg. Sequence "is distinct".</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p><span class="bold"><strong>
+                              
+                  <p>The "In" Operator</p>
+                          </strong></span></p>
+         <p>It is possible to search for items in a list using a simple text string
+                        with a "|" operator. For example, search for either "TM_001" or "TM_002" or
+                        "TM_003":
+         </p><pre class="screen">Sequence code  [in] "TM_001|TM_002|TM_003"</pre><p><span class="inlinemediaobject"><img src="media/10_search_operator_in.png"></span></p>
+         <p>The vertical bar (a logical "or") is a delimiter that
+                        specifies that the search should look for any item with the code "TM_001" or "TM_002" or
+                        "TM_003". 
+         </p>
+         <p>To switch the compound search option, select "Compound Search" from the
+                    drop down selection box at the top, add a new search filter, click on the word "and" that
+                    appears between the search filters to toggle it to "or".
+         </p><span class="bold"><strong>
+                           
+               <p>The "Is Distinct" Operator</p>
+                       </strong></span><p>This operator filters out items with the same column value.  ie. The results will only
+                        contain items that have a distinct entry in that column.
+         </p><pre class="screen">Sequence code  [is distinct]</pre><p><span class="inlinemediaobject"><img src="media/11a_search_operator_is_distinct_view.png"></span></p>
+         <p><span class="inlinemediaobject"><img src="media/11b_search_operator_is_distinct_filter.png"></span></p>
+         <p>note: there is no need to put any criteria in the box when using the operator
+                            <span class="bold"><strong>is distinct</strong></span></p>
+         <h4><a name="d0e1611"></a>Saving Searches
+         </h4>
+         <p>When saving a view as either "Project View" or "My View", the search filters are also
+                    saved with the view. Once the view is saved, the next time the view is opened, the search
+                    filters will be applied. This makes saving a view essentially like generating a report with
+                    a predefined set of criteria.
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-end-user_searching.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-end-user_searching.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-end-user_end-user_search-compound.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-end-user.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>
