@@ -802,9 +802,6 @@ spt.mouse._CB_hover_over = function( evt )
             else if( hover_bvr.add_looks || hover_bvr.add_look_suffix ) {
                 spt.mouse._hover_add_looks( hover_el, hover_bvr, drag_drop_codes );
             }
-            else if( hover_bvr.cbjs_over ) {
-                alert("over");
-            }
             else {
                 spt.behavior.run_callback_fn( 'over', evt, hover_bvr, null );
             }
