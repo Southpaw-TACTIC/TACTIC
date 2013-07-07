@@ -905,6 +905,60 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return True
 
 
+    @xmlrpc_decorator
+    def log_message(my, ticket, key, message=None, status=None, category="default"):
+
+        # go low level
+        sql = Sql("sthpw")
+        sql.connect()
+
+        from pyasm.search import Update, Select, Insert
+        select = Select()
+        select.add_table("message")
+        select.set_database(sql)
+        select.add_filter("code", key)
+        statement = select.get_statement()
+        last_message = sql.do_query(statement)
+        if not last_message:
+            update = Insert()
+            update.set_database(sql)
+            update.set_table("message")
+            update.set_value("code", key)
+        else:
+            update = Update()
+            update.set_database(sql)
+            update.set_table("message")
+            update.add_filter("code", key)
+        update.set_value("category", category)
+
+        if message != None:
+            update.set_value("message", message)
+        if status != None:
+            update.set_value("status", status)
+
+        statement = update.get_statement()
+
+        sql.do_update(statement)
+        sql.close()
+
+        return last_message
+
+        # FIXME: this does not work anymore because Sql objects are take from
+        # the thread and not the transaction
+        transaction = Transaction.get(force=True)
+        transaction.set_record(False)
+        sobject = Search.eval("@SOBJECT(sthpw/message['code','%s'])" % key, single=True)
+        if not sobject:
+            sobject = SObjectFactory.create("sthpw/message")
+            sobject.set_value("code", key)
+        #sobject.set_value("login", user_name)
+        sobject.set_value("category", category)
+        sobject.set_value("message", message )
+        sobject.commit(triggers=False)
+        transaction.commit()
+        transaction.remove_from_stack()
+
+
 
     #
     # Undo/Redo functionality

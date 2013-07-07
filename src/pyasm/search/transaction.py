@@ -455,11 +455,12 @@ class Transaction(Base):
                 transaction = transactions[-1]
 
         if force:
-            # start a new transaction
+            # force start a new transaction
             transaction = Transaction()
             transaction.start()
             Container.append_seq(Transaction.KEY,transaction)
         elif create:
+            # only create a transaction if it does not exist
             if transaction:
                 # just start the transaction
                 transaction.start()

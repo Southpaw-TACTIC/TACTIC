@@ -22,6 +22,33 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.0.0.a01
     #
 
+
+    def upgrade_v4_1_0_a01_004(my):
+        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/subscription', 'sthpw', 'Subscription', 'sthpw', 'subscription', 'pyasm.search.SObject', 'Subscription', 'public');
+        ''')
+
+
+
+    def upgrade_v4_1_0_a01_003(my):
+        my.run_sql('''
+        CREATE TABLE subscription (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            category varchar(256),
+            message_code varchar(256),
+            login varchar(256),
+            project_code varchar(32),
+            status varchar(32),
+            last_cleared timestamp,
+            timestamp timestamp,
+            CONSTRAINT "subscription_code_idx" UNIQUE ("code"),
+            CONSTRAINT "subscription_message_code_idx" UNIQUE ("message_code")
+        );
+        ''') 
+
+
+
+
     def upgrade_v4_1_0_a01_002(my):
         my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message', 'sthpw', 'Messages', 'sthpw', 'message', 'pyasm.search.SObject', 'Message', 'public');
         ''')
@@ -32,10 +59,11 @@ class SthpwUpgrade(BaseUpgrade):
         CREATE TABLE message (
             id serial PRIMARY KEY,
             code varchar(256),
-            key varchar(32),
             category varchar(256),
             message text,
+            status varchar(32),
             login varchar(256),
+            project_code varchar(32),
             timestamp timestamp
         );
         ''') 

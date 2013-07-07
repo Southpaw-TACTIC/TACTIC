@@ -281,12 +281,10 @@ TacticServerStub = function() {
         }
         var applet = null;
         if (mode != 'uploaded') {
-            // applet is not necessary in uploaded mode
-            applet = spt.Applet.get();
-
             // put in a check for Perforce for the moment because file.exists()
             // is very slow when looking for //depot
             if (file_path.substr(0, 2) != '//') {
+                var applet = spt.Applet.get();
                 if (applet.is_dir(file_path)){
                     alert('[' + file_path + '] is a directory. Exiting...');
                     return;
@@ -1032,8 +1030,10 @@ TacticServerStub = function() {
         return ret_val;
     }
 
-    this.execute_python_script = function(script_path, kwargs, callback) {
-        return this._delegate("execute_python_script", arguments, {kwargs:kwargs}, null, callback);
+    this.execute_python_script = function(script_path, script_kwargs, kwargs) {
+        if (kwargs) callback = kwargs.on_complete;
+        else callback = null;
+        return this._delegate("execute_python_script", arguments, kwargs, null, callback);
     }
 
     this.execute = function(code) {
@@ -1132,13 +1132,13 @@ TacticServerStub = function() {
     this.async_get_widget = function(class_name, kwargs) {
         var callback = kwargs['cbjs_action'];
         this._delegate("get_widget", arguments, kwargs, "string", callback);
-        return ret_val;
+        return;
     }
 
     this.async_eval = function(class_name, kwargs) {
         var callback = kwargs['cbjs_action'];
         this._delegate("eval", arguments, kwargs, null, callback);
-        return ret_val;
+        return;
     }
 
 

@@ -202,6 +202,15 @@ spt.html5upload.upload_file = function(kwargs) {
   var fd = new FormData();
   for (var i = 0; i < el.files.length; i++) {
       fd.append("file"+i, el.files[i]);
+
+/*
+      var reader_load = kwargs.reader_load;
+      if (reader_load) {
+          var reader = new FileReader();
+          reader.onload = reader_load;
+          reader.readAsDataURL(el.files[i]);
+      }
+*/
   }
   fd.append("num_files", el.files.length);
 
@@ -216,7 +225,7 @@ spt.html5upload.upload_file = function(kwargs) {
       xhr.upload.addEventListener("progress", upload_progress, false);
   }
   if (upload_complete) {
-      xhr.addEventListener("load",  upload_complete, false);
+      xhr.addEventListener("load", upload_complete, false);
   }
   if (upload_failed) {
       xhr.addEventListener("error", upload_failed, false);
@@ -340,6 +349,10 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.app_busy.show("Uploading ["+percent+"%% complete]");
             '''
 
+        reader_load = my.kwargs.get("reader_load")
+        if not reader_load:
+            reader_load = ""
+
 
         button.add_behavior( {
             'type': 'click_up',
@@ -370,8 +383,13 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             }
 
+            var reader_load = function(file) {
+            %s;
+            }
+
 
             var upload_file_kwargs =  {
+                  reader_load: reader_load,
                   upload_start: upload_start,
                   upload_complete: upload_complete,
                   upload_progress: upload_progress 
@@ -387,7 +405,7 @@ class UploadButtonWdg(BaseRefreshWdg):
 	   
             spt.html5upload.select_file( onchange);
 
-            ''' % (upload_start, upload_progress, on_complete, upload_init)
+            ''' % (upload_start, upload_progress, on_complete, reader_load, upload_init)
         } )
 
         return top

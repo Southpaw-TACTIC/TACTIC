@@ -2476,6 +2476,40 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
+                { "type": "action", "label": "Subscript to Item", "icon": IconWdg.CONTENTS,
+                    "bvr_cb": { 'cbjs_action': '''
+                    var activator = spt.smenu.get_activator(bvr);
+                    var layout = activator.getParent(".spt_layout");
+                    var version = layout.getAttribute("spt_version");
+
+                    var search_key;
+
+                    var tbody;
+                    if (version == "2") {
+                        spt.table.set_layout(layout);
+                        tbody = activator;
+                    }
+                    else {
+                        tbody = activator.getParent('.spt_table_tbody');
+                    }
+                    
+                    var search_key = tbody.getAttribute("spt_search_key");
+                    var server = TacticServerStub.get();
+                    // search_key here is "id" based: need code based
+                    var sobject = server.get_by_search_key(search_key);
+                    search_key = sobject.__search_key__;
+
+                    login = spt.Environment.get().get_user();
+
+                    server.insert("sthpw/subscription", {message_code: search_key, login: login, category: "sobject" } )
+ 
+                    ''' },
+                    "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                      'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                             my.look_row_selected, my.look_row ] }
+                },
+
+
                 { "type": "title", "label": 'All Table Items' },
 
                 { "type": "action", 
@@ -2501,6 +2535,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
                 }
                 ])
+
+
+
 
         version = my.get_layout_version()
 

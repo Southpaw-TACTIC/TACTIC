@@ -3571,6 +3571,11 @@ class SObject(object):
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
 
+                # add message
+                my._add_message(sobject)
+
+
+
             # cache this sobject, by code and id
             if cache:
                 search_type = my.get_search_type()
@@ -3587,6 +3592,38 @@ class SObject(object):
             my._update_code_dependencies(prev_code)
 
 
+
+    # TEST TEST TEST
+    def _add_message(my, sobject):
+
+        search_type = sobject.get_base_search_type()
+        if search_type.startswith("sthpw/"):
+            return
+
+        project_code = Project.get_project_code()
+
+        # FIXME: this is tenuous
+        # only send messages for project sobjects
+        if not search_type.startswith("%s/" % project_code):
+            return
+
+        message_code = sobject.get_search_key()
+
+        search = Search("sthpw/message")
+        search.add_filter("code", message_code)
+        message = search.get_sobject()
+
+        if not message:
+            message = SearchType.create("sthpw/message")
+            message.set_value("code", message_code)
+            message.set_value("category", "sobject")
+
+        message.set_value("message", "Updated %s" % sobject.get_code() )
+        message.set_value("timestamp", "NOW")
+        message.commit()
+
+        return message
+        
 
 
     def _call_triggers(my, trigger_update_data, mode, output, process, parent_type, triggers):

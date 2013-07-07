@@ -660,6 +660,10 @@ class TacticServerStub(object):
         return my.server.log(my.ticket, level,message, category)
 
 
+
+    def log_message(my, key, message=None, status=None, category="default"):
+        return my.server.log_message(my.ticket, key, message, status, category)
+
     #
     # Transaction methods
     #

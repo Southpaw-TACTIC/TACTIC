@@ -188,7 +188,7 @@ class SwapDisplayWdg(BaseRefreshWdg):
 
         else:
             show_border = my.kwargs.get("show_border")
-            if show_border in ['True', 'true']:
+            if show_border in [True, 'true']:
                 on_div.add_border()
                 off_div.add_border()
 

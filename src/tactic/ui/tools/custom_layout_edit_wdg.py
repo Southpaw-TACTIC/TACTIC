@@ -957,6 +957,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
             text = TextAreaWdg("mako")
             text.add_class("spt_mako")
+            text.add_class("spt_python")
             content_id = text.set_unique_id()
 
             title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
@@ -1739,13 +1740,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         # add sidebar 
         template = SimpleSidebarTemplate()
-        menu_item = MenuItem(type='action', label='Add Sidebar Template')
+        menu_item = MenuItem(type='action', label='Add Side Bar Template')
         menu.add(menu_item)
 
         menu_item.add_behavior( {
             'type': 'click_up',
             'html': template.html,
             'style': template.style,
+            'python': template.python,
             'behavior': template.behavior,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
@@ -1757,8 +1759,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             var style_el = top.getElement(".spt_style");
             var behavior_el = top.getElement(".spt_behavior");
+            var python_el = top.getElement(".spt_python");
             style_el.value = bvr.style;
             behavior_el.value = bvr.behavior;
+            python_el.value = bvr.python;
 
             setTimeout( function() {
                 spt.ace_editor.set_editor_top(top);
@@ -2523,6 +2527,8 @@ class SimpleMenuTemplate(object):
 </div>
         '''
 
+        my.python = ''
+
 
         my.style = '''
 <%
@@ -2690,12 +2696,21 @@ class SimpleSidebarTemplate(SimpleMenuTemplate):
         '''
 
 
+        my.python = '''
+bgcolor = server.eval("@COLOR('background3')")
+bgcolor2 = server.eval("@COLOR('background3',-10)")
+
+kwargs['bgcolor'] = bgcolor
+kwargs['bgcolor2'] = bgcolor2
+        '''
 
         my.style = '''
 <%
 num_menus = 5;
-menu_width = 140;
+menu_width = 200;
 menu_height = 30;
+
+
 %>
 
 
@@ -2735,15 +2750,19 @@ menu_height = 30;
 .web_menu_wdg .main_li {
     margin-left: 0px;
     padding: 0px;
+    //background: #F00;
+    background-image: url(/context/icons/silk/_spt_bullet_arrow_right_dark.png);
+    background-repeat: no-repeat;
+    background-position: center right;
 }
 
 
 .web_menu_wdg .menu_header {
     padding: 6px 1px 5px 5px;
     font-weight: bold;
-    border-style: solid;
-    border-width: 1 1 1 1;
-    border-color: [expr]@COLOR('border')[/expr];
+    //border-style: solid;
+    //border-width: 1 1 1 1;
+    //border-color: [expr]@COLOR('border')[/expr];
 
     width: ${menu_width+5};
 }
@@ -2752,9 +2771,9 @@ menu_height = 30;
 .web_menu_wdg .sub_ul {
     list-style-type: none;
     display: block;
-    padding: 0px;
+    padding: 5px;
     border-style: solid;
-    border-width: 0 1 1 1;
+    border-width: 1 1 1 1;
     border-color: [expr]@COLOR('border')[/expr];
     display: none;
     margin-left: ${menu_width+12};
@@ -2767,16 +2786,26 @@ menu_height = 30;
     overflow-y: auto;
     overflow-x: hidden;
 
+    box-shadow: 0px 0px 15px [expr]@COLOR('shadow')[/expr];
+    border-radius: 5px;
+
     width: ${menu_width};
 }
 
 .web_menu_wdg .sub_ul li {
   padding: 5px 5px;
   text-align: left;
-  border-style: solid;
-  border-width: 1 1 1 1;
-  border-color: [expr]@COLOR('border')[/expr];
-  height: ${menu_height - 10};
+  //border-style: solid;
+  //border-width: 1 1 1 1;
+  //border-color: [expr]@COLOR('border')[/expr];
+  height: ${menu_height - 15};
+  cursor: pointer;
+}
+
+.web_menu_wdg .main_title {
+  margin-top: 15px;
+  font-size: 1.2em;
+  margin-left: -5px;
 }
 
 .web_menu_wdg a {
@@ -2791,7 +2820,14 @@ menu_height = 30;
 
 
         my.behavior = '''
+<behavior class="web_menu_wdg" event="load">
+var top = bvr.src_el.getParent(".spt_custom_top");
+top.setAttribute("id", "side_bar");
+</behavior>
+
+
 <behavior class="main_li" event="mouseenter">
+bvr.src_el.setStyle("background-color", bvr.kwargs.bgcolor2);
 // make sure they are all closed
 var top = bvr.src_el.getParent(".main_ul");
 var sub_els = top.getElements(".sub_ul");
@@ -2809,6 +2845,7 @@ if (sub_el) {
 
 
 <behavior class="main_li" event="mouseleave">
+bvr.src_el.setStyle("background-color", "");
 var sub_el = bvr.src_el.getElement(".sub_ul");
 if (sub_el) {
     sub_el.setStyle("display", "none");
@@ -2817,7 +2854,7 @@ if (sub_el) {
 
 
 <behavior class="main_link" event="mouseenter">
-bvr.src_el.setStyle("background-color", "#444");
+bvr.src_el.setStyle("background-color", bvr.kwargs.bgcolor2);
 </behavior>
 
 
@@ -2827,7 +2864,7 @@ bvr.src_el.setStyle("background-color", "");
 
 
 <behavior class="sub_li" event="mouseenter">
-bvr.src_el.setStyle("background-color", "#444");
+bvr.src_el.setStyle("background-color", bvr.kwargs.bgcolor2);
 </behavior>
 
 
