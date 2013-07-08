@@ -2893,6 +2893,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var search_class = target.getAttribute("spt_search_class");
     var search_view = target.getAttribute('spt_search_view');
     var show_search = target.getAttribute("spt_show_search");
+    var show_keyword_search = target.getAttribute("spt_show_keyword_search");
     var show_insert = target.getAttribute("spt_show_insert");
     var show_select = target.getAttribute("spt_show_select");
     var show_shelf = target.getAttribute("spt_show_shelf");
@@ -2958,6 +2959,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'search_key': search_key,
         'search_class': search_class,
         'show_search': show_search,
+        'show_keyword_search': show_keyword_search,
         'show_insert': show_insert,
         'show_select': show_select,
         'show_shelf': show_shelf,

@@ -2964,6 +2964,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
+        keywords = my.kwargs.get("keywords")
 
         search_limit = my.kwargs.get("search_limit")
 

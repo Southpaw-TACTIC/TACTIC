@@ -42,7 +42,7 @@ class SthpwUpgrade(BaseUpgrade):
             last_cleared timestamp,
             timestamp timestamp,
             CONSTRAINT "subscription_code_idx" UNIQUE ("code"),
-            CONSTRAINT "subscription_message_code_idx" UNIQUE ("message_code")
+            CONSTRAINT "subscription_message_code_idx" ("message_code")
         );
         ''') 
 
@@ -65,6 +65,7 @@ class SthpwUpgrade(BaseUpgrade):
             login varchar(256),
             project_code varchar(32),
             timestamp timestamp
+            CONSTRAINT "message_code_idx" UNIQUE ("code"),
         );
         ''') 
 

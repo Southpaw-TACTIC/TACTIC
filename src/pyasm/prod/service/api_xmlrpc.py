@@ -907,6 +907,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def log_message(my, ticket, key, message=None, status=None, category="default"):
+        print "message: ", message
+        if type(message) == types.DictType:
+            message = jsondumps(message)
 
         # go low level
         sql = Sql("sthpw")
@@ -936,12 +939,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if status != None:
             update.set_value("status", status)
 
+        login = Environment.get_user_name()
+        update.set_value("login", login)
+        update.set_value("timestamp", "NOW")
+
         statement = update.get_statement()
 
         sql.do_update(statement)
         sql.close()
 
-        return last_message
+        #return last_message
+        return "OK"
 
         # FIXME: this does not work anymore because Sql objects are take from
         # the thread and not the transaction

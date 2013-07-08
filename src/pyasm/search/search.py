@@ -983,14 +983,17 @@ class Search(Base):
         return True
 
 
-    def add_user_filter(my, user=None, column=None):
+    def add_user_filter(my, user=None, column=None, table=""):
         '''convenience function to add a filter for the given sobject'''
         if user == None:
             user = Environment.get_user_name()
         if not column:
             column = "login"
 
-        my.add_filter(column, user)
+        if not table:
+            table = my.select.get_table()
+
+        my.add_filter(column, user, table=table)
 
     def add_project_filter(my, project_code=None, show_unset=True):
         from pyasm.biz import Project
@@ -2629,6 +2632,15 @@ class SObject(object):
         return seq
 
 
+    def get_datetime_value(my, name):
+        value = my.get_value(name)
+        if value:
+            value = parser.parse(value)
+        else:
+            value = None
+        return value
+
+
 
     def get_json_value(my, name, default=None):
         '''get the value that is stored as a json data structure'''
@@ -3572,7 +3584,7 @@ class SObject(object):
 
 
                 # add message
-                my._add_message(sobject)
+                my._add_message(sobject, output)
 
 
 
@@ -3594,20 +3606,23 @@ class SObject(object):
 
 
     # TEST TEST TEST
-    def _add_message(my, sobject):
+    def _add_message(my, sobject, data):
 
         search_type = sobject.get_base_search_type()
-        if search_type.startswith("sthpw/"):
+        if search_type in ['sthpw/note','sthpw/task','sthpw/snapshot']:
+            search_type = sobject.get_value("search_type")
+            search_code = sobject.get_value("search_code")
+            message_code = "%s&code=%s" % (search_type, search_code)
+
+        elif search_type.startswith("sthpw/"):
             return
+        elif search_type.startswith("config/"):
+            return
+        else:
+            message_code = sobject.get_search_key()
 
         project_code = Project.get_project_code()
 
-        # FIXME: this is tenuous
-        # only send messages for project sobjects
-        if not search_type.startswith("%s/" % project_code):
-            return
-
-        message_code = sobject.get_search_key()
 
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
@@ -3618,8 +3633,10 @@ class SObject(object):
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
-        message.set_value("message", "Updated %s" % sobject.get_code() )
+        json_data = jsondumps(data)
+        message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
+        message.set_value("status", "complete")
         message.commit()
 
         return message

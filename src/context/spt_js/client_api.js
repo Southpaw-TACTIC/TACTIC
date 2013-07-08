@@ -208,6 +208,11 @@ TacticServerStub = function() {
     }
 
 
+    this.log_message = function(key, message, kwargs) {
+        return this._delegate("log_message", arguments, kwargs);
+    }
+
+
     /*
      * Checkin/checkout methods
      */
@@ -1217,18 +1222,18 @@ TacticServerStub = function() {
    
         //console.log(args);
 
-        // handle asyncrhonous mode
+        // handle asynchronous mode
         if (typeof(callback) != 'undefined' && callback != null) {
             var self = this;
             client.set_callback( function(request) {
-                self.async_callback(request);
+                self.async_callback(client, request);
             } );
             client.invoke( func_name, args );
 
-            // remember this
-            this.func_name = func_name;
-            this.ret_type = ret_type;
-            this.callback = callback;
+            // Store on the client
+            client.func_name = func_name;
+            client.ret_type = ret_type;
+            client.callback = callback;
             return;
         }
 
@@ -1240,13 +1245,14 @@ TacticServerStub = function() {
 
     }
 
-    this.async_callback = function(request) {
+    this.async_callback = function(client, request) {
         if (request.readyState == 4) {
             if (request.status == 200) {
-                var data = this._handle_ret_val(this.func_name, request, this.ret_type);
-                this.callback(data);
+                var data = this._handle_ret_val(client.func_name, request, client.ret_type);
+                client.callback(data);
             } else {
-                alert("status is " + request.status);
+                //alert("status is " + request.status);
+                throw("status is " + request.status);
             }
         }
     }
