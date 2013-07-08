@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<definition>
+  <element name="code"/>
+  <element name="description"/>
+  <element name="sort_order"/>
+  <element name="submit">
+    <display class="SubmissionLinkTableElement"/>
+  </element>
+  <element edit='false' name='completion'/>
+
+  <element name="shot_task_schedule">
+    <display class="tactic.ui.table.GanttElementWdg">
+      <options>[
+      {
+        "start_date_expr":  "@MIN(prod/shot.sthpw/task.bid_start_date)",
+        "end_date_expr":    "@MAX(prod/shot.sthpw/task.bid_end_date)",
+        "color":            "#33F",
+        "edit":             "true",
+        "default":          "false"
+      }
+      ]</options>
+    </display>
+    <action class="tactic.ui.table.GanttCbk">
+        <options>[
+            {
+              "prefix":           "bid",
+              "sobjects":         "@SOBJECT(prod/shot.sthpw/task)",
+              "mode":             "cascade"
+            }
+        ]</options>
+    </action>
+</element>
+</definition>
+
+
+<table>
+  <element name="code"/>
+  <element name="description"/>
+  <element name="completion"/>
+  <element name="submit"/>
+</table>
+
+<table_episode>
+    <element name="detail">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.AssetDetailWdg</dynamic>
+        </display>
+    </element>
+    <element name="images">
+        <display class="pyasm.prod.web.ThumbPublishWdg"/>
+    </element>
+  <element name="code"/>
+  <element name="description"/>
+  <element name="episode_code"/>
+  <element name="sort_order"/>
+  <element name="submit">
+        <display class="SubmissionLinkTableElement"/>
+  </element>
+  <element name="update">
+      <display class="UpdateWdg">
+          <edit_view>edit_episode</edit_view>
+          <insert_view>edit_episode</insert_view>
+      </display>
+  </element>
+
+</table_episode>
+
+<completion>
+    <element name="code"/>
+    <element name="description"/>
+
+
+    <element name="frame_completion">
+        <display class="pyasm.prod.web.FrameCompletionWdg">
+        </display>
+    </element>
+
+
+    <element name="completion">
+        <display class="pyasm.prod.web.EpisodeCompletionWdg">
+            <width>200</width>
+        </display>
+    </element>
+</completion>
+
+
+
+
+<!-- for the layout page, to add asset instances to sequences -->
+<layout>
+    <element name="prod_sequence">
+        <display class="pyasm.prod.web.ShotCheckboxWdg">
+            <persist_on_submit>true</persist_on_submit>
+        </display> 
+    </element>
+
+    <element name="instances">
+        <display class="HiddenRowToggleWdg">
+            <title_icon>Contents</title_icon>
+            <dynamic>pyasm.prod.web.SequenceInstanceListWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="images">
+        <display class="ThumbWdg">
+        <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="description"/>
+
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumSequenceInstanceWdg"/>
+    </element>
+</layout>
+
+<edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+</edit>
+
+<edit_episode>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="episode_code">
+        <display class = "SelectWdg">
+            <query>prod/episode|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+</edit_episode>
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <names>publish_icon|publish_main</names>
+            <required>false|true</required>
+            <setting>sequence_manual_publish_context</setting>
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+<add_item>
+  <element name="code" width="100px"/>
+  <element name="description" width="300px"/>
+</add_item>
+
+
+<insert>
+   <element name="preview_insert"/>
+   <element name="code"/>
+</insert>
+
+</config>
+
+
+
+

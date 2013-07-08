@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="category"/>
+    <element name="level"/>
+    <element name="message"/>
+    <element name="timestamp"/>
+    <element name="login"/>
+</definition>
+
+
+<table>
+    <element name="category"/>
+    <element name="level"/>
+    <element name="message"/>
+    <element name="timestamp"/>
+    <element name="login"/>
+</table>
+
+<edit>
+    <element name="category"/>
+    <element name="level"/>
+    <element name="message"/>
+    <element name="timestamp"/>
+    <element name="login"/>
+</edit>
+
+</config>
+
+

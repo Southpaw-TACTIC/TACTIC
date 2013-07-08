@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config version="2">
+
+
+<!-- directory pointing to the temp and log files of Tactic -->
+<install>
+    <hostname>localhost</hostname>
+    <tmp_dir>/home/apache/tactic_temp</tmp_dir>
+</install>
+
+
+<!-- external services -->
+<services>
+    <mailserver></mailserver>
+    <python>python</python>
+    <python_path></python_path>
+    <render_submit_class></render_submit_class>
+    <render_dispatcher></render_dispatcher>
+    <system_class></system_class>
+    <process_count>3</process_count>
+    <thread_count>50</thread_count>
+    <process_time_alive></process_time_alive>
+</services>
+
+
+<!-- database -->
+<database>
+    <vendor>PostgreSQL</vendor>
+    <server>localhost</server>
+    <port>5432</port>
+    <user>postgres</user>
+    <password>none</password>
+    <sobject_database>sthpw</sobject_database>
+    <pool_max_connections>1</pool_max_connections>
+</database>
+
+
+<perforce>
+    <web_dir>perforce</web_dir>
+    <p4>p4</p4>
+    <port>1666</port>
+</perforce>
+
+
+
+<security>
+    <version>2</version>
+    <ticket_expiry>10 hour</ticket_expiry>
+    <authenticate_mode>default</authenticate_mode>
+    <authenticate_class></authenticate_class>
+    <authenticate_version>2</authenticate_version>
+    <auto_create_user>false</auto_create_user>
+    <api_require_password>true</api_require_password>
+    <api_password></api_password>
+</security>
+
+
+<look>
+    <palette>AQUA</palette>
+</look>
+
+
+<checkin>
+    <asset_base_dir>/home/apache/assets</asset_base_dir>
+    <web_base_dir>/assets</web_base_dir>
+    <win32_local_base_dir>C:/spt</win32_local_base_dir>
+    <linux_local_base_dir>/tmp/sthpw</linux_local_base_dir>
+    <win32_sandbox_dir>C:/spt/sandbox</win32_sandbox_dir>
+    <linux_sandbox_dir>/tmp/sthpw/sandbox</linux_sandbox_dir>
+    <win32_client_repo_dir></win32_client_repo_dir>
+    <linux_client_repo_dir></linux_client_repo_dir>
+    <win32_client_handoff_dir></win32_client_handoff_dir>
+    <linux_client_handoff_dir></linux_client_handoff_dir>
+    <win32_server_handoff_dir></win32_server_handoff_dir>
+    <linux_server_handoff_dir></linux_server_handoff_dir>
+    <sudo_no_password>false</sudo_no_password>
+    <version_padding>3</version_padding>
+</checkin>
+
+
+
+</config>
+
+

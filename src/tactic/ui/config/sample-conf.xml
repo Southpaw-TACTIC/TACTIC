@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+  <sample>
+  <element name="MY TACTIC">
+    <display class="SideBarSectionLinkWdg">
+        <view>my_tactic</view>
+    </display>
+  </element>
+
+
+  <element name="Separator974">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="Modelling">
+    <display class="SideBarSectionLinkWdg">
+        <view>lighting</view>
+    </display>
+  </element>
+
+  <element name="Rigging">
+    <display class="SideBarSectionLinkWdg">
+        <view>lighting</view>
+    </display>
+  </element>
+
+  <element name="Animation">
+    <display class="SideBarSectionLinkWdg">
+        <view>lighting</view>
+    </display>
+  </element>
+
+  <element name="Effects">
+    <display class="SideBarSectionLinkWdg">
+        <view>lighting</view>
+    </display>
+  </element>
+
+
+
+
+  <element name="Lighting">
+    <display class="SideBarSectionLinkWdg">
+        <view>lighting</view>
+    </display>
+  </element>
+
+
+  <element name="Shot Planner">
+    <display class="LinkWdg">
+        <class_name>pyasm.prod.web.SObjectPlannerWdg</class_name>
+        <search_type>prod/shot_instance</search_type>
+        <left_search_type>prod/asset</left_search_type>
+        <right_search_type>prod/shot</right_search_type>
+    </display>
+  </element>
+
+
+
+  <element name="Asset Loader">
+    <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>load</view>
+    </display>
+  </element>
+
+
+  <element name="Separator1">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="All Assets">
+    <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>summary</view>
+    </display>
+  </element>
+
+  <element name="Asset: vehicle003">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.panel.SObjectPanelWdg</class_name>
+        <search_key>prod/asset?project=sample3d&amp;code=vehicle003</search_key>
+    </display>
+  </element>
+
+
+  <element name="Shot: RC_001_001">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.panel.SObjectPanelWdg</class_name>
+        <search_key>prod/shot?project=sample3d&amp;code=RC_001_001</search_key>
+    </display>
+  </element>
+
+
+
+  <element name="Separator2">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="Sequences">
+    <display class="LinkWdg">
+        <search_type>prod/sequence</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+
+  <element name="Shots">
+    <display class="LinkWdg">
+        <search_type>prod/shot</search_type>
+        <view>manage</view>
+    </display>
+  </element>
+
+  <element name="Separator3">
+    <display class="SeparatorWdg"/>
+  </element>
+
+
+  <element name="* Admin">
+    <display class="SideBarSectionLinkWdg">
+        <view>admin</view>
+    </display>
+  </element>
+
+  </sample>
+
+  <my_tactic>
+
+  <element name="Back">
+    <display class="BackWdg">
+      <parent_view>sample</parent_view>
+    </display>
+  </element>
+
+  <element name="My Tasks">
+    <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="Separator1">
+    <display class="SeparatorWdg"/>
+  </element>
+
+  <element name="My Department">
+    <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+  <element name="My Schedule">
+    <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+</my_tactic>
+
+<lighting>
+    <element name="Back">
+      <display class="BackWdg">
+        <parent_view>sample</parent_view>
+      </display>
+    </element>
+
+    <element name="Separator1">
+     <display class="SeparatorWdg"/>
+    </element>
+
+    <element name="Sequence Lighting">
+      <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+
+    <element name="Key Lighting">
+      <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+
+    <element name="Another Lighting">
+      <display class="SideBarSectionLinkWdg">
+        <view>more_lighting</view>
+      </display>
+    </element>
+
+</lighting>
+
+
+<more_lighting>
+    <element name="Back">
+      <display class="BackWdg">
+        <parent_view>lighting</parent_view>
+      </display>
+    </element>
+
+    <element name="Bizarre Lighting">
+      <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+    <element name="Esoteric Lighting">
+      <display class="LinkWdg">
+        <search_type>prod/asset</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+</more_lighting>
+
+
+<!-- Administration views -->
+<admin>
+    <element name="Back">
+      <display class="BackWdg">
+        <parent_view>sample</parent_view>
+      </display>
+    </element>
+
+    <element name="Separator1">
+     <display class="SeparatorWdg"/>
+    </element>
+
+    <element name="Projects">
+      <display class="LinkWdg">
+        <search_type>sthpw/project</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+
+    <element name="Users">
+      <display class="LinkWdg">
+        <search_type>sthpw/login</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Groups">
+      <display class="LinkWdg">
+        <search_type>sthpw/login_group</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Separator1r32r">
+     <display class="SeparatorWdg"/>
+    </element>
+
+
+    <element name="Schema">
+      <display class="LinkWdg">
+        <search_type>sthpw/schema</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+
+    <element name="Pipelines">
+      <display class="LinkWdg">
+        <search_type>sthpw/pipeline</search_type>
+        <view>manage</view>
+      </display>
+    </element>
+
+    <element name="Triggers">
+      <display class="LinkWdg">
+        <search_type>sthpw/trigger</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Exception Log">
+      <display class="LinkWdg">
+        <search_type>sthpw/exception_log</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+
+    <element name="Debug Log">
+      <display class="LinkWdg">
+        <search_type>sthpw/debug_log</search_type>
+        <view>table</view>
+      </display>
+    </element>
+
+    <element name="Snapshot">
+      <display class="LinkWdg">
+        <search_type>sthpw/snapshot</search_type>
+        <view>log</view>
+      </display>
+    </element>
+
+    <element name="Separator1r32r">
+     <display class="SeparatorWdg"/>
+    </element>
+
+
+  <element name="* Manage Project Views">
+    <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ManageViewPanelWdg</class_name>
+    </display>
+  </element>
+
+  <element name="* Project Settings">
+    <display class="LinkWdg">
+        <search_type>prod/prod_setting</search_type>
+        <view>table</view>
+    </display>
+  </element>
+
+
+</admin>
+
+
+
+</config>
+
+

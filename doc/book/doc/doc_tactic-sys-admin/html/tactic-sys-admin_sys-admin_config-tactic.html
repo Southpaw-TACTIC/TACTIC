@@ -1,0 +1,636 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Configuration File</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_configuration.html" title="Server Configuration">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_deploy-tactic-configuration.html" title="Configuring TACTIC and Co-Services">
+      <link rel="next" href="tactic-sys-admin_sys-admin_configure-tactic-service.html" title="Configure the TACTIC Service">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_deploy-tactic-configuration.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-tactic-service.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Configuration File">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_config-tactic"></a>Configuration File
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>The TACTIC <code class="filename">config</code> file stores settings such as directory locations
+                    and email server information.
+         </p>
+         <p>The name of the TACTIC config file and the location can be found here:</p>
+         <p>
+                    
+         </p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="120.0px">
+                  <col width="120.0px">
+                  <col width="100.0.px">
+               </colgroup>
+               <thead>
+                  <tr>
+                     <th>Filename</th>
+                     <th>Operating System</th>
+                     <th>Location</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr>
+                     <td>tactic-conf.xml</td>
+                     <td>Windows or Linux</td>
+                     <td>&lt;TACTIC_DATA_DIR&gt;/config</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>
+                
+         </p>
+         <p>note: Prior to TACTIC 3.8, the TACTIC config file is named differently for each operating
+                    system.  See the table below:
+         </p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="120.0px">
+                  <col width="120.0px">
+                  <col width="100.0.px">
+               </colgroup>
+               <thead>
+                  <tr>
+                     <th>Filename</th>
+                     <th>Operating System</th>
+                     <th>Location</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr>
+                     <td>tactic_win32-conf.xml</td>
+                     <td>Windows</td>
+                     <td>&lt;TACTIC_INSTALL_DIR&gt;/project/config</td>
+                  </tr>
+                  <tr>
+                     <td>tactic_linux-conf.xml</td>
+                     <td>Linux</td>
+                     <td>&lt;TACTIC_INSTALL_DIR&gt;/project/config</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>For Windows, the &lt;TACTIC_DATA_DIR&gt; is C:\ProgramData\Tactic\data by default.</p>
+         <p>Otherwise, &lt;TACTIC_INSTALL_DIR&gt; is usually /home/apache by default on a Linux machine.
+                    Southpaw supplies the TACTIC config file as a template on installation. Once installed, this
+                    file can be modified to reflect any of the options described in the sections below. If an
+                    option tag does not exist in a particular section in your config file, TACTIC will assume a
+                    default or it can simply be added in.
+         </p>
+         <h5><a name="d0e3551"></a>Install
+         </h5>
+         <p>This section defines the hostname for the server (if different from "localhost") as well
+                    as the temp directory to be used for TACTIC. The tmp_dir is where temporary files are stored
+                    as well as the TACTIC log files.
+         </p><pre class="screen">&lt;install&gt;
+    &lt;hostname&gt;localhost&lt;/hostname&gt;
+    &lt;tmp_dir&gt;/home/apache/tactic_temp&lt;/tmp_dir&gt;
+&lt;/install&gt;</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>hostname</strong></span></td>
+                     <td>This section defines the hostname for the server (if different from
+                                                "localhost"). The hostname is what TACTIC listens to.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>tmp_dir</strong></span></td>
+                     <td>The temp directory to be used by TACTIC. </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3574"></a>Services
+         </h5>
+         <p>This section defines information regarding the services external to TACTIC.</p><pre class="screen">&lt;services&gt;
+    &lt;mailserver&gt;smtp8.sympatico.ca&lt;/mailserver&gt;
+    &lt;mail_user&gt;some_username&lt;/mail_user&gt;
+    &lt;mail_password&gt;some_password&lt;/mail_password&gt;
+    &lt;mail_port&gt;a port number other than 25&lt;/mail_port&gt;
+    &lt;mail_sender_disabled&gt;true&lt;/mail_sender_disabled&gt;
+    &lt;mail_tls_enabled&gt;true&lt;/mail_tls_enabled&gt;
+    &lt;python&gt;python&lt;/python&gt;
+    &lt;python_path&gt;/home/apache/custom&lt;/python_path&gt;
+    &lt;render_submit_class&gt;sites.racoon.modules.command.CustomRenderSubmit&lt;/render_submit_class&gt;
+    &lt;process_count&gt;3&lt;/process_count&gt;
+    &lt;thread_count&gt;50&lt;/thread_count&gt;
+    &lt;process_time_alive&gt;30&lt;/process_time_alive&gt;
+    &lt;system_class&gt;&lt;/system_class&gt;
+&lt;/services&gt;</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>mailserver</strong></span></td>
+                     <td>The URL of the SMTP mail server</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>mail_password</strong></span></td>
+                     <td>The password for accessing the SMTP mail server that requires
+                                                authentication
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>mail_user</strong></span></td>
+                     <td>The user name for accessing the SMTP mail server that requires
+                                                authentication
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>mail_port</strong></span></td>
+                     <td>The port for the SMTP mail server (if different that 25)</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>mail_sender_disabled</strong></span></td>
+                     <td>disable using the sender name in sending of email in case the email
+                                                server does not allow sender's email not owned by the sender
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>mail_tls_enabled</strong></span></td>
+                     <td>enable TLS (Transport Layer Security) for the connection to email
+                                                server
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>python</strong></span></td>
+                     <td>The root path of the Python installation. "python" is usually
+                                                sufficient.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>python_path</strong></span></td>
+                     <td>The server-side location for client files. This location can also be
+                                                mounted from a shared volume if you wish to maintain stricter server access
+                                                for clients. For multiple paths, separate with |. e.g. /home/apache/custom|/home/apache/custom_two
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>render_submit_class</strong></span></td>
+                     <td>The class used for render submissions.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>process_count</strong></span></td>
+                     <td>The number of processes the TACTIC service would spawn. It needs to match the number of ports used in the 
+                                            load balancing scheme in the Apache configuration.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>thread_count</strong></span></td>
+                     <td>The number of worker threads generated for each instance of the TACTIC process. If not set, it defaults to 10 which is too
+                        low to handle rapid requests.. 
+                                                TACTIC's default is 50 on new installation. 
+                                                A good balance of process_count and thread_count can improve response time of the server.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>process_time_alive</strong></span></td>
+                     <td>The number of minutes a TACTIC process gets respawned. It helps with the memory 
+                                            consumption inherent with a long-running Python process. 
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>system_class</strong></span></td>
+                     <td>Allows for an override some of the low level system functionality. For
+                                                example 'mkdirs' and 'exists'
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3663"></a>Security
+         </h5>
+         <p>This section defines information regarding the services external to TACTIC.</p><pre class="screen">&lt;security&gt;
+    &lt;ticket_expiry&gt;10 hour&lt;/ticket_expiry&gt;
+    &lt;authenticate_mode&gt;default&lt;/authenticate_mode&gt;
+    &lt;authenticate_class&gt;&lt;/authenticate_class&gt;
+    &lt;authenticate_version&gt;2&lt;/authenticate_version&gt;
+    &lt;case_insensitive_login&gt;&gt;false&lt;/case_insensitive_login&gt;&gt;
+    &lt;auto_create_user&gt;false&lt;/auto_create_user&gt;
+    &lt;api_require_password&gt;true&lt;/api_require_password&gt;
+    &lt;api_password&gt;&lt;/api_password&gt;
+&lt;/security&gt;
+</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>ticket_expiry</strong></span></td>
+                     <td>The number of hours a login ticket expires after</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>authenticate_mode</strong></span></td>
+                     <td>
+                                                
+                        <p>default: This basically just looks at the tactic database for
+                                                       information.
+                        </p>
+                                                
+                        <p>autocreate: This autocreates the first time and then leaves the
+                                                       information alone.
+                        </p>
+                                                
+                        <p>cache: This caches the information to the tactic database on every
+                                                       login 
+                        </p>
+                                            
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>authenticate_class</strong></span></td>
+                     <td>A full class path to override the default class
+                                                "pyasm.security.TacticAuthenticate". 
+                        <p>Note: Your custom class needs to
+                                                       override the method verify() which takes two arguments: login and
+                                                       password.
+                        </p>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>authenticate_version</strong></span></td>
+                     <td>1 is the old way of authentication. 2 is the new way.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>case_insensitive_login</strong></span></td>
+                     <td>If set to 'true', it allows case insensitive login name. When autocreate
+                                                mode is used, all login entries created will have a lowercase login name. It
+                                                can be used in combination with Active Directory setup. 
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>auto_create_user</strong></span></td>
+                     <td>Auto create user in TACTIC during authentication phase if it does not
+                                                exist. (Deprecated: use "authenticate_mode" in new way of authentication)
+                                            
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>api_require_passowrd</strong></span></td>
+                     <td>Client API script requires password to login or not</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>api_password</strong></span></td>
+                     <td>A generic Client API password can be set here</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3733"></a>Database
+         </h5><pre class="screen">&lt;database&gt;
+    &lt;vendor&gt;PostgreSQL&lt;/vendor&gt;
+    &lt;server&gt;localhost&lt;/server&gt;
+    &lt;port&gt;&lt;/port&gt;
+    &lt;user&gt;postgres&lt;/user&gt;
+    &lt;password&gt;none&lt;/password&gt;
+    &lt;sobject_database&gt;sthpw&lt;/sobject_database&gt;
+    &lt;pool_max_connections&gt;1&lt;/pool_max_connections&gt;
+&lt;/database&gt;</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>vendor</strong></span></td>
+                     <td>The database vendor (software) the database will be installed on.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>server</strong></span></td>
+                     <td>The hostname of the server. This is localhost if TACTIC and the database
+                                                are on the same server
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>port</strong></span></td>
+                     <td>The database connection port</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>user</strong></span></td>
+                     <td>The user name for the database connection</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>password</strong></span></td>
+                     <td>The password for the database connection.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>sobject_database</strong></span></td>
+                     <td>The database where SObject definitions will be stores</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>pool_max_connections</strong></span></td>
+                     <td>The pool of connections available for connecting to the database.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3784"></a>Perforce
+         </h5><pre class="screen">&lt;perforce&gt;
+    &lt;web_dir&gt;perforce&lt;/web_dir&gt;
+    &lt;p4&gt;p4&lt;/p4&gt;
+    &lt;port&gt;1666&lt;/port&gt;
+&lt;/perforce&gt;</pre><div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>web_dir</strong></span></td>
+                     <td>The webdir for the perforce connection.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>p4</strong></span></td>
+                     <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>port</strong></span></td>
+                     <td>The port to be used for connection to perforce.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3810"></a>Look
+         </h5>
+         <p>This setting provides a method of setting the TACTIC skin in the server for all users. In
+                    this example, the 'BON_NOCHE' palette specified:
+         </p><pre class="screen">&lt;look&gt;
+    &lt;palette&gt;BON_NOCHE&lt;/palette&gt;
+&lt;/look&gt;</pre><p>Other available palettes are 'AQUA', 'BRIGHT', 'DEFAULT', 'SILVER', 'AVIATOR', and
+                    'ORIGAMI'. Alternatively, the whole palette can be customized as follows:
+         </p><pre class="screen">&lt;look&gt;
+     &lt;palette&gt;{
+             'color':        '#000000',         # main font color
+             'color2':       '#FFFFFF',         # secondary font color
+             'color3':       '#FFFFFF',         # tertiary font color
+             'background':   '#FDEEA7',         # main background color
+             'background2':  '#1A9481',         # secondary background color
+             'background3':  '#003D5c',         # tertiary background color
+             'border':       '#666666'          # main border color
+    }&lt;/palette&gt;
+&lt;/palette&gt;
+&lt;/look&gt;</pre><p> The side bar color may not change right away until the next TACTIC service restart. </p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150px">
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>palette</strong></span></td>
+                     <td>The default palette setting for all TACTIC users.</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <h5><a name="d0e3833"></a>Checkin
+         </h5>
+         <p>TACTIC uses the following directory and path settings for internal and client interaction.
+                    They are included in the <code class="filename">&lt;checkin/&gt;</code> tag (for checkins).
+         </p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col width="150.0px">
+                  <col width="306.75pt">
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td><span class="command"><strong>versionless_mode</strong></span></td>
+                     <td><span class="bold"><strong>copy </strong></span>or <span class="bold"><strong>symlink</strong></span>: Turn on versionless mode for checkins for all
+                                                projects. To set the versionless mode per project, go to <span class="bold"><strong>Project Admin -&gt; Project Settings </strong></span>and add a the
+                                                key <span class="bold"><strong>versionless_mode</strong></span> and the value:
+                                                    <span class="bold"><strong>copy </strong></span>or <span class="bold"><strong>symlink</strong></span>.
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>asset_base_dir</strong></span></td>
+                     <td>The directory where the assets are stored in the TACTIC server.</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>web_base_dir</strong></span></td>
+                     <td>The root URL that maps the asset_base_dir directory</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>win32_local_base_dir</strong></span></td>
+                     <td>The base directory in Windows client machines</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>linux_local_base_dir</strong></span></td>
+                     <td>The base directory in Linux client machines</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>win32_sandbox_dir</strong></span></td>
+                     <td>The default sandbox directory in the Windows client machines (it can be
+                                                overridden by Remote Repo)
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>linux_sandbox_dir</strong></span></td>
+                     <td>The default sandbox directory in the Linux client machines (it can be
+                                                overridden by Remote Repo)
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>win32_client_repo_dir</strong></span></td>
+                     <td>
+                                                
+                        <p>Maps the asset_base_dir directory as seen by the Windows client. For
+                                                       example, if asset_base_dir is on a Linux server with a path like
+                                                       "/home/apache/assets" but from the Windows client, it is mapped as
+                                                       "Z:/assets", then "Z:/assets" should be the value for this
+                                                       setting.
+                        </p>
+                                                
+                        <p>By default, this path is empty because the system assumes the client
+                                                       and server are on the same Windows machine.
+                        </p>
+                                            
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>linux_client_repo_dir</strong></span></td>
+                     <td>Same as win32_client_repo_dir except it is from the perspective of a
+                                                Linux client machine
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>win32_client_handoff_dir</strong></span></td>
+                     <td>Windows client-side handoff directory for Client API transactions. (Find
+                                                out more about the handoff directory below.)
+                     </td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>win32_server_handoff_dir</strong></span></td>
+                     <td>Windows server-side handoff directory for Client API transactions</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>linux_client_handoff_dir</strong></span></td>
+                     <td>Linux client-side handoff directory for Client API transactions</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>linux_server_handoff_dir</strong></span></td>
+                     <td>Linux server-side handoff directory for Client API transactions</td>
+                  </tr>
+                  <tr>
+                     <td><span class="command"><strong>sudo_no_password</strong></span></td>
+                     <td>It controls whether sudo can be run to change the user id and group id of
+                                                the files checked in. It is particularly important if you want to ensure
+                                                files checked in to the TACTIC repository are owned by TACTIC and not
+                                                overwritable by just any users. If set to true, "no password" should be
+                                                enabled for the user TACTIC is run as in the OS. e.g. For Fedora, assuming
+                                                you have sudo installed: 
+                        <p></p>In the file /etc/sudoers, the following line
+                                                should be uncommented: 
+                        <p>%wheel ALL=(ALL) NOPASSWD: ALL </p>
+                                                
+                        <p></p> In the file /etc/group, apache should be added to the group
+                                                    
+                        <p>wheel wheel:x:10:root,apache</p>
+                                            
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p><span class="bold"><strong>The handoff directories</strong></span></p>
+         <p>Handoff directories can be seen by both the server and the client machines. They are used
+                    for 3D checkins and client API interactions, and are important for specifying how the client
+                    and server sides see the same location. 
+         </p>
+         <p>For example, if you have the location <code class="filename">//192.168.0.105/handoff</code>
+                    available on your network and it is mounted as <code class="filename">/home/apache/handoff</code> on
+                    a server, then it would be important to include the following entries:
+         </p><pre class="screen">&lt;win32_client_handoff_dir&gt;//192.168.0.105/handoff&lt;/win32_client_handoff_dir&gt;
+&lt;win32_server_handoff_dir&gt;&lt;/win32_server_handoff_dir&gt;
+&lt;linux_client_handoff_dir&gt;&lt;/linux_client_handoff_dir&gt;
+&lt;linux_server_handoff_dir&gt;/home/apache/handoff&lt;/linux_server_handoff_dir&gt;</pre><p><span class="bold"><strong>Directory configuration examples</strong></span></p>
+         <p>Example 1 </p>
+         <div class="itemizedlist">
+            <p>The assets directory is located on the TACTIC server and allows for read-only access
+                           from client machines in the local subnet.
+            </p>
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>The assets directory is located on the TACTIC server and allows for read-only
+                                     access from client machines in the local subnet.
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>The handoff directory is located on the TACTIC server and allows for read/write
+                                     access from client machines in the local subnet
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>The Windows and Linux client_repo_dir looks directly to the server for the
+                                     available "assets" share
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>The Windows and Linux client_handoff_dir looks directly to the server for the
+                                     available "handoff" share
+                  </p>
+               </li>
+            </ul>
+         </div><pre class="screen">&lt;checkin&gt;
+    &lt;asset_base_dir&gt;/home/apache/assets&lt;/asset_base_dir&gt;
+    &lt;web_base_dir&gt;/assets
+    &lt;win32_local_base_dir&gt;C:/sthpw&lt;/win32_local_base_dir&gt;
+    &lt;linux_local_base_dir&gt;/tmp/sthpw&lt;/linux_local_base_dir&gt;
+    &lt;win32_sandbox_dir&gt;C:/sthpw/sandbox&lt;/win32_sandbox_dir&gt;
+    &lt;linux_sandbox_dir&gt;/tmp/sthpw/sandbox&lt;/linux_sandbox_dir&gt;
+    &lt;win32_client_repo_dir&gt;//192.168.0.105/apache/assets&lt;/win32_client_repo_dir&gt;
+    &lt;linux_client_repo_dir&gt;//192.168.0.105/apache/assets&lt;/linux_client_repo_dir&gt;
+    &lt;win32_client_handoff_dir&gt;//192.168.0.105/apache/handoff&lt;win32_client_handoff_dir&gt;
+    &lt;win32_server_handoff_dir&gt;&lt;/win32_server_handoff_dir&gt;
+    &lt;linux_client_handoff_dir&gt;/home/apache/handoff&lt;/linux_client_handoff_dir&gt;
+    &lt;linux_server_handoff_dir&gt;/home/apache/handoff&lt;/linux_server_handoff_dir&gt;
+&lt;/checkin&gt;
+</pre><p>Example 2</p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>The assets directory is located on another server and mounted locally on the
+                                         TACTIC server to /mnt1/assets.
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>The Windows and Linux client_repo_dir is mapped/mounted to the TACTIC
+                                         'asset_base_dir'
+                  </p>
+               </li>
+               <li class="listitem">
+                  <p>The Windows and Linux client_handoff_dir is mapped/mounted to the TACTIC
+                                         'server_handoff_dir'
+                  </p>
+               </li>
+            </ul>
+         </div><pre class="screen">&lt;checkin&gt;
+    &lt;asset_base_dir&gt;/mnt1/assets&lt;/asset_base_dir&gt;
+    &lt;web_base_dir&gt;/assets
+    &lt;win32_local_base_dir&gt;C:/sthpw&lt;/win32_local_base_dir&gt;
+    &lt;linux_local_base_dir&gt;/tmp/sthpw&lt;/linux_local_base_dir&gt;
+    &lt;win32_sandbox_dir&gt;C:/sthpw/sandbox&lt;/win32_sandbox_dir&gt;
+    &lt;linux_sandbox_dir&gt;/tmp/sthpw/sandbox&lt;/linux_sandbox_dir&gt;
+    &lt;win32_client_repo_dir&gt;z:/assets&lt;/win32_client_repo_dir&gt;
+    &lt;linux_client_repo_dir&gt;/assets&lt;/linux_client_repo_dir&gt;
+    &lt;win32_client_handoff_dir&gt;z:/tactic_handoff&lt;win32_client_handoff_dir&gt;
+    &lt;win32_server_handoff_dir&gt;&lt;/win32_server_handoff_dir&gt;
+    &lt;linux_client_handoff_dir&gt;/tactic_handoff&lt;/linux_client_handoff_dir&gt;
+    &lt;linux_server_handoff_dir&gt;/home/apache/tactic_handoff&lt;/linux_server_handoff_dir&gt;
+&lt;/checkin&gt;</pre><pre class="screen">
+</pre></div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_deploy-tactic-configuration.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_configuration.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-tactic-service.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

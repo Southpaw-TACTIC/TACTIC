@@ -1,0 +1,105 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Project Workflow Introduction</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_advanced-project-setup.html" title="Advanced Project Setup">
+      <link rel="prev" href="tactic-setup_setup_project-automation-file-naming.html" title="Project Automation - File Naming">
+      <link rel="next" href="tactic-setup_settings.html" title="Settings">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_project-automation-file-naming.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_settings.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Project Workflow Introduction">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_project-workflow-introduction"></a>Project Workflow Introduction
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>The <span class="bold"><strong>pipeline</strong></span> defines all of the processes and
+            deliverables required in the creation of an item, and is the central entity that ties the
+            whole production together. In simple terms, a pipeline is simply a definition of workflow
+                    processes. 
+         </p>
+         <p>In TACTIC, the pipeline workflow is used to lay out the steps which a particular
+            Searchable Type (sType) needs to follow as it flows through its processes. Searchable
+            Objects (sObjects) in TACTIC are by nature like static containers or place holders that
+            contain everything that relates to them. When this content needs to be organized, managed
+            and produced as a part of a workflow, this is where a pipeline comes into play. A Pipeline
+            allows for this item "container" to be placed on a digital conveyor belt where it will stop
+                    at each process and will be filled with Tasks, Notes, Snapshots (checked in files) and more.
+                    On top of this, the contents are tagged with this process allowing for a separate history
+                    representing each stop on the conveyor belt. 
+         </p>
+         <p><span class="inlinemediaobject"><img src="media/pipelines.png"></span></p>
+         <h4><a name="d0e4891"></a>Workflow Concepts
+         </h4>
+         <p>At the very beginning, a clear diagram should be defined of the processes, their
+                    relationships to each other and the deliverables between each of the processes.
+         </p>
+         <p>Each <span class="bold"><strong>sType</strong></span> can have its own pipeline(s), so you create
+                    different pipelines for different sTypes.
+         </p>
+         <p>The best approach to building a pipeline is to start simple, processes can always be added
+                    later. Overall, the general concept for defining the processes in a pipeline, is to break
+                    down each place where separate file versioning, tasks and notes will need to be generated
+                    and tracked
+         </p>
+         <p>Simply put: you have a series of processes, named in any way you wish. Each process is
+                    often represented by a task assigned to a user which needs to be worked on. The completion
+                    of a process occurs when this task complete (often indicated by setting it to a final status
+                    ie approved, complete etc). While this task is in progress, files will be checked in and
+                    notes will be tracked as the process is worked on.
+         </p>
+         <h4><a name="d0e4904"></a>Status
+         </h4>
+         <p>Each process also contains a set of possible "statuses" which which typically a used by
+                    the tasks. For example the "model" process can have a possible status of (Waiting, Ready, In
+                    Progress, Revise, Review, Approved, Client approved). Each status helps track the current
+                    state of the process and are often the spawning point of automatically setting downstream
+                    and upstream process status, sending automated notifications and using the python triggers,
+                    etc.
+         </p>
+         <h4><a name="d0e4908"></a>Subcontext (advanced)
+         </h4>
+         <p>At times there may need to be a further breakdown within a process, this can be achieved
+                    through using a <span class="bold"><strong>subcontext</strong></span>. Sub-contexts are used for
+                    departments to check-in and track work and progress internally without other departments
+                    needing to interact withe the content. For example, in the case of a VFX process in a shot
+                    pipeline, someone checking in files may be able to add extra specification (subcontext) such
+                    as VFX/dynamics, VFX/water, or VFX/smoke.  Another situation is where multiple variation of
+                    something need to be checked in.  For example you may need a "red" and a "blue" design so
+                    the subcontexts for a design checkin would be design/red and desing/blue.
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_project-automation-file-naming.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_advanced-project-setup.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_settings.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

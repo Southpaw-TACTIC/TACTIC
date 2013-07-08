@@ -1,0 +1,9 @@
+<manifest>
+  <data>
+    <code>sample3d</code>
+    <title>Sample 3D</title>
+    <description>A sample3d project for testing</description>
+  </data>
+  <search_type code="prod/asset"/>
+  <search_type code="prod/shot"/>
+</manifest>

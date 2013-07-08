@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="type" title="base_type"/>
+    
+    <element name="dir_naming_cls"/>
+    <element name="file_naming_cls"/>
+    <element name="code_naming_cls"/>
+    <element name="node_naming_cls"/>
+    <element name="sobject_mapping_cls"/>
+    <element name="repo_handler_cls"/>
+</definition>
+
+
+
+<table>
+    <element name="code"/>
+    <element name="type" title="base_type"/>
+    
+    <element name="dir_naming_cls"/>
+    <element name="file_naming_cls"/>
+    <element name="code_naming_cls"/>
+    <element name="node_naming_cls"/>
+    <element name="sobject_mapping_cls"/>
+    <element name="repo_handler_cls"/>
+</table>
+
+
+<edit>
+    <element name="code"/>
+    <element name="type">
+        <display class="SelectWdg">
+            <values>prod|flash|game|simple|unittest</values>
+            <labels>Prod|Flash|Game|Simple|Unittest</labels>
+            <empty>true</empty>
+        </display>
+    </element>
+    <element name="dir_naming_cls"/>
+    <element name="file_naming_cls"/>
+    <element name="code_naming_cls"/>
+    <element name="node_naming_cls"/>
+    <element name="sobject_mapping_cls"/>
+    <element name="repo_handler_cls"/>
+</edit>
+
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="type" title="base_type" width="100px"/>
+    <element name="dir_naming_cls" width="100px"/>
+    <element name="file_naming_cls" width="100px"/>
+    <element name="code_naming_cls" width="100px"/>
+    <element name="node_naming_cls" width="100px"/>
+    <element name="sobject_mapping_cls" width="100px"/>
+    <element name="repo_handler_cls" width="100px"/>
+</add_item>
+
+</config>
+
+

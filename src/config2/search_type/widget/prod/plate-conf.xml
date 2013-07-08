@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+
+<table layout="TableLayoutWdg">
+    <element name="preview">
+        <display class="ThumbWdg">
+            <context>icon</context>
+        </display>
+    </element>
+
+    <element name="history"/>
+    <element name="code"/>
+    <element name="name"/>
+
+    <element name="shot_code"/>
+    <element name="type"/>
+    <element name="description">
+        <display class="WikiElementWdg"/>
+    </element>
+    <element name="file_range"/>
+    <element name="login"/>
+</table>
+
+
+<edit_definition>
+    <element name="code"/>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>icon</context>
+        </display>
+    </element>
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <persist>true</persist>
+            <query>prod/shot|code|code</query>
+        </display>
+    </element>
+    <element name="name"/>
+ 
+    <element name="type"/>
+    <element name="description"/>
+    <element name="file_range"/>
+    <element name="login"/>
+</edit_definition>
+
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="name" width="100px"/>
+    <element name="shot_code" width="100px"/>
+    <element name="type" width="100px"/>
+    <element name="description" width="300px"/>
+    <element name="login" width="100px"/>
+</add_item>
+
+
+</config>
+

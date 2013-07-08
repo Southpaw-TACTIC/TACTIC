@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+    AUTHOR:
+        Remko Noteboom
+
+-->
+
+<!-- This file represents the template of all of the options for an
+sobject configurtion file -->
+
+<config>
+
+<search>
+    <!-- Implicit ordering.  This adds an order by to every query for this
+    sobject. -->
+    <!-- <order-by></order-by> -->
+</search>
+
+<properties>
+  <!-- redirect the snapshots to another table for this sobject -->
+  <!--
+  <snapshot-database>prod</database-table>
+  <snapshot-table>prod_snapshot</snapshot-table>
+  -->
+</properties>
+
+
+<!-- list of attributes on top of the column names, which are implied -->
+<attrs>
+<!--
+    <attr name="status" class="pyasm.biz.StatusAttr2">
+        <pipeline>shot</pipeline>
+    </attr>
+-->
+</attrs>
+
+</config>
+

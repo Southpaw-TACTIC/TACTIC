@@ -1,0 +1,964 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology Inc
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Software Inc, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<!-- This defines the default element values for any sobject
+in this namespace based purely on element name.  If an asset
+defines an attribute listed here and it does not override the
+display class, it will adopt the one defined here-->
+
+<config>
+
+<!-- simple starting point for a view -->
+<custom>
+    <element name="preview"/>
+    <element name="code"/>
+</custom>
+
+
+
+<default_definition>
+<!--
+    <element name="code">
+        <display class="pyasm.alpha.sobject_navigator_wdg.SObjectCodeLinkTableElementWdg"/>
+    </element>
+-->
+    <element name="color">
+        <display class="tactic.ui.common.SimpleTableElementWdg">
+            <css_background>{$VALUE}</css_background>
+        </display>
+    </element>
+
+    <!-- test for custom views -->
+    <element name="frames">
+        <display class="pyasm.prod.web.FrameRangeWdg"/>
+    </element>
+    <element name="drop" title="Drop(Test)">
+        <display class="tactic.ui.table.DropElementWdg"/>
+    </element>
+    <element name="drop_item">
+        <display class="tactic.ui.table.DropElementWdg"/>
+    </element>
+
+    <!-- end test -->
+   <!--
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>100%</icon_size>
+        </display>
+    </element>-->
+
+
+
+    <element name="edit_item" edit="false">
+        <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>EDIT</icon>
+            <cbjs_action>
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var tbody = bvr.src_el.getParent(".spt_table_tbody");
+            if (!tbody) {
+                tbody = bvr.src_el.getParent(".spt_table_row");
+            }
+            var search_key = tbody.getAttribute("spt_search_key");
+            var kwargs = {
+              'search_key': search_key
+            }
+            spt.panel.load_popup("Edit Item", class_name, kwargs)
+            </cbjs_action>
+        </display>
+    </element>
+
+    <element name='delete' title=" " edit="false" width="1px">
+        <display class='tactic.ui.table.DeleteElementWdg'/>
+    </element>
+
+
+
+
+    <element name="detail" title="Details" edit="false">
+        <display class="tactic.ui.table.SObjectDetailElementWdg">
+        </display>
+    </element>
+
+
+
+    <element name="preview">
+        <display class="ThumbWdg">
+            <icon_size>100%</icon_size>
+      </display>
+    </element>
+
+
+
+    <element name="images" edit='false'>
+        <display class="ThumbWdg">
+            <icon_size>100%</icon_size>
+        </display>
+    </element>
+
+    <element name="files" edit='false'>
+        <display class="ThumbWdg" edit='false'>
+            <icon_size>100%</icon_size>
+        </display>
+    </element>
+
+    <element name="history" title="History" edit="false">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <icon>HISTORY</icon>
+            <dynamic_class>tactic.ui.widget.SObjectCheckinHistoryWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="checkin">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <dynamic_class>pyasm.prod.web.AssetHistoryWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="general_checkin_simple" title='Check-in/out' help="general-checkin" edit="false">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <dynamic_class>tactic.ui.checkin.SimpleCheckinWdg</dynamic_class>
+        </display>
+    </element>
+
+    <element name="general_checkin" title='Check-in (Full)' help="general-checkin" edit="false" width="27px">
+        <display class="tactic.ui.table.CheckinButtonElementWdg">
+            <width>600</width>
+        </display>
+    </element>
+
+
+
+    <!--
+    <element name="description">
+        <display class="WikiTextWdg"/>
+    </element>
+    -->
+    <element name="dependency" edit="false">
+        <display class="DependencyLink"/>
+    </element>
+
+
+    <element name="timestamp" type="timestamp"/>
+
+    <element name="info">
+        <display class="pyasm.flash.widget.FlashAssetInfoWdg"/>
+    </element>
+
+    <element name="discussion" edit="false" title="Discussion [old]">
+        <display class="pyasm.widget.DiscussionWdg">
+        </display>
+    </element>
+
+    <element name="forum" edit="false">
+        <display class="tactic.ui.widget.DiscussionElementWdg"/>
+    </element>
+
+
+
+
+    <element name="notes">
+        <display class="tactic.ui.widget.DiscussionElementWdg"/>
+    </element>
+    <element name="notes_popup" title='Notes'>
+        <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>EDIT</icon>
+            <cbjs_action>
+            var class_name = 'tactic.ui.widget.DiscussionWdg';
+            var tbody = bvr.src_el.getParent(".spt_table_tbody");
+            if (!tbody) {
+                tbody = bvr.src_el.getParent(".spt_table_row");
+            }
+            var search_key = tbody.getAttribute("spt_search_key");
+            var kwargs = {
+              'search_key': search_key
+            }
+            spt.panel.load_popup("Notes", class_name, kwargs)
+            </cbjs_action>
+        </display>
+ 
+
+    </element>
+
+
+    <element name="notes_sheet" edit="false">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <title_icon>note_go</title_icon>
+            <dynamic_class>tactic.ui.app.NoteSheetWdg</dynamic_class>
+        </display>
+    </element>
+
+
+    <element name="work_hours_list" title='Work Hours List' edit="false">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <title_icon>note_go</title_icon>
+            <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+            <search_type>sthpw/work_hour</search_type>
+            <view>add</view>
+            <show_search_limit>false</show_search_limit>
+            <show_gear>false</show_gear>
+        </display>
+    </element>
+
+
+
+    <element name="connection" title='Connections' edit="false">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <title_icon>note_go</title_icon>
+            <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+            <search_type>sthpw/connection</search_type>
+            <show_shelf>false</show_shelf>
+            <view>table</view>
+        </display>
+    </element>
+
+
+
+
+
+
+    <element name="general_publish" edit="false">
+        <display class="tactic.ui.table.GeneralPublishElementWdg">
+            <preview>true</preview>
+        </display>
+    </element>
+
+
+    <element name="render">
+        <display class="pyasm.prod.web.RenderTableElementWdg"/>
+    </element>
+
+
+    <element name="status"/>
+
+    <element name="task_edit" title="Tasks">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+            <search_type>sthpw/task</search_type>
+            <view>inline_add_item</view>
+	    <icon>DATE_MAGNIFY</icon>
+            <show_gear>true</show_gear>
+            <show_search_limit>true</show_search_limit>
+            <show_search>false</show_search>
+            <show_shelf>true</show_shelf>
+            <show_insert>true</show_insert>
+        </display>
+    </element>
+
+    <element name="summary">
+        <display class="tactic.ui.table.SObjectSummaryElementWdg"/>
+    </element>
+
+
+    <element name="show_related" title="Name">
+        <display class="tactic.ui.table.RowAddElementWdg"/>
+    </element>
+
+
+
+
+    <element name='task_pipeline_panels' title='Task Pipeline'>
+       <display class='tactic.ui.table.TaskElementWdg'>
+        <layout>panel</layout>
+        <status_color>status</status_color>
+        <show_assigned>true</show_assigned>
+        <show_dates>true</show_dates>
+        <edit>true</edit>
+        <edit_status>true</edit_status>
+        <edit_assigned>true</edit_assigned>
+      </display>
+      <action class='tactic.ui.table.TaskElementCbk'/>
+    </element>
+
+
+    <element name='task_pipeline_vertical' title='Task Pipeline'>
+       <display class='tactic.ui.table.TaskElementWdg'>
+        <layout>vertical</layout>
+        <status_color>status</status_color>
+        <show_assigned>true</show_assigned>
+        <show_dates>true</show_dates>
+        <edit>true</edit>
+        <edit_status>true</edit_status>
+        <edit_assigned>true</edit_assigned>
+        <edit_assigned>true</edit_assigned>
+      </display>
+      <action class='tactic.ui.table.TaskElementCbk'/>
+    </element>
+
+
+    <element name='task_pipeline_report' title='Task Report'>
+       <display class='tactic.ui.table.TaskElementWdg'>
+        <layout>panel</layout>
+        <bg_color>status</bg_color>
+        <show_assigned>true</show_assigned>
+        <show_dates>true</show_dates>
+        <edit>false</edit>
+        <edit_status>false</edit_status>
+        <edit_assigned>false</edit_assigned>
+        <edit_assigned>false</edit_assigned>
+      </display>
+      <action class='tactic.ui.table.TaskElementCbk'/>
+    </element>
+
+
+
+    <element name='task_status_edit'>
+       <display class='tactic.ui.table.TaskElementWdg'>
+        <layout>panel</layout>
+        <!--
+        <context_color>status</context_color>
+        <bg_color>status</bg_color>
+        -->
+
+        <status_color>status</status_color>
+        <show_assigned>true</show_assigned>
+        <show_dates>true</show_dates>
+        <edit>true</edit>
+
+        <edit_status>true</edit_status>
+        <edit_assigned>true</edit_assigned>
+        <edit_assigned>true</edit_assigned>
+      </display>
+      <action class='tactic.ui.table.TaskElementCbk'/>
+    </element>
+
+
+
+
+
+
+    <element name="task_status_history">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+            <search_type>sthpw/status_log</search_type>
+            <view>table</view>
+            <expression>@SOBJECT(sthpw/task.sthpw/status_log)</expression>
+            <show_shelf>false</show_shelf>
+        </display>
+    </element>
+
+
+
+    <!-- DEPRECATED -->
+    <element name="task_gear">
+        <display class="TaskGearElementWdg"/>
+        <action class="InitialTaskCreateAction"/>
+    </element>
+
+    <element name="task_status">
+        <display class="ParallelStatusWdg"/>
+    </element>
+
+    <element name="task" edit="false">
+        <display class="pyasm.widget.SObjectTaskTableElement">
+            <width>250</width>
+            <bid_edit>false</bid_edit>
+            <simple_date>False</simple_date>
+        </display>
+    </element>
+
+
+    <element name="completion" edit="false">
+        <display class="tactic.ui.table.TaskCompletionWdg">
+            <width>50</width>
+        </display>
+    </element>
+    
+    <element name="group_completion" edit="false">
+        <display class="tactic.ui.table.TaskGroupCompletionWdg">
+            <width>50</width>
+        </display>
+    </element>
+
+    <element name="explorer" edit="false">
+        <display class="tactic.ui.table.ExplorerElementWdg"/>
+    </element>
+
+    <element name="detail" title="Details" edit="false">
+        <display class="tactic.ui.table.SObjectDetailElementWdg"/>
+    </element>
+
+    <!-- DEPRECATED -->
+    <element name="expand" title="Expand" edit="false">
+        <display class="tactic.ui.table.SObjectDetailElementWdg"/>
+    </element>
+
+
+    <element name="task_schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+        {
+          "start_date_expr":  "@MIN(sthpw/task.bid_start_date)",
+          "end_date_expr":    "@MAX(sthpw/task.bid_end_date)",
+          "color":            "#33F",
+          "edit":             "true",
+          "default":          "false"
+        },
+        {
+          "start_date_expr":  "@MIN(sthpw/task.actual_start_date)",
+          "end_date_expr":    "@MAX(sthpw/task.actual_end_date)",
+          "color":            "#7abc14",
+          "edit":             "false",
+          "default":          "false"
+        }
+
+	]</options>
+        </display>
+      <action class="tactic.ui.table.GanttCbk">
+        <sobjects>@SOBJECT(sthpw/task)</sobjects>
+        <options>[
+        {
+          "prefix":           "bid",
+          "sobjects":         "@SOBJECT(sthpw/task)",
+          "mode":             "cascade"
+        },
+        {
+          "prefix":           "actual",
+          "sobjects":         "@SOBJECT(sthpw/task)",
+          "mode":             "cascade"
+        }
+
+        ]</options>
+      </action>
+    </element>
+
+
+    <element name="folder_drop" title="Folder / File drop" width='300px'>
+        <display class="tactic.ui.table.DropElementWdg">
+            <css_background-color>#425952</css_background-color>
+            <accepted_drop_type>sthpw/snapshot</accepted_drop_type>
+            <cbjs_drop_action>file_drop_action(evt, bvr)</cbjs_drop_action>
+      </display>
+      <action class="tactic.ui.widget.file_browser_wdg.FileIngestCmd">
+      </action>
+    </element>
+
+
+    <element name="file_list" title="File List">
+      <display class="tactic.ui.table.SObjectFilesElementWdg">
+      </display>
+    </element>
+
+
+
+
+
+    <!-- Budget columns -->
+
+
+    <element name="bid_hours" title="Bid Hours" width="100px" edit="false">
+      <display widget="expression">
+        <group_bottom>@SUM(.bid_hours)</group_bottom>
+        <expression>@SUM(sthpw/task.bid_duration)</expression>
+        <inline_styles>font-weight: bold;</inline_styles>
+        <bottom>@SUM(.bid_hours)</bottom>
+      </display>
+    </element>
+    <element name="bid_cost" title="Bid Cost" width="100px" edit="false">
+      <display widget="expression">
+        <group_bottom>${@SUM(.bid_cost)}</group_bottom>
+        <expression>@SUM(@GET(sthpw/task.bid_duration) * @GET(sthpw/task.sthpw/login.hourly_wage))</expression>
+        <inline_styles>font-weight: bold;</inline_styles>
+        <bottom>${@SUM(.bid_cost)}</bottom>
+      </display>
+    </element>
+    <element name="actual_hours" title="Actual Hours" width="100px" edit="false">
+      <display widget="expression">
+        <group_bottom>@SUM(.actual_hours)</group_bottom>
+        <expression>@SUM(sthpw/task.sthpw/work_hour.straight_time)</expression>
+        <inline_styles>font-weight: bold;</inline_styles>
+        <bottom>@SUM(.actual_hours)</bottom>
+      </display>
+    </element>
+    <element name="actual_cost" title="Actual Cost" width="100px" edit="true">
+      <display widget="expression">
+        <group_bottom>${@SUM(.actual_cost)}</group_bottom>
+        <bottom>${@SUM(.actual_cost)}</bottom>
+        <expression>@SUM(@GET(sthpw/task.sthpw/work_hour.straight_time) * @GET(sthpw/task.sthpw/work_hour.sthpw/login.hourly_wage))</expression>
+        <inline_styles>font-weight: bold;</inline_styles>
+        <display_expression>${@GET(.actual_cost)}</display_expression>
+      </display>
+    </element>
+    <element name="is_overbudget" title="Overbudget" width="100px" edit="false">
+      <display widget="expression">
+        <expression>@GET(.bid_cost) &lt; @GET(.actual_cost)</expression>
+        <mode>check</mode>
+      </display>
+    </element>
+    <element name="variance" title="Variance" width="100px" edit="false">
+      <display widget="expression">
+        <group_bottom>${@SUM(.variance)}</group_bottom>
+        <display_format>-$1,234.00</display_format>
+        <expression>@GET(.bid_cost) - @GET(.actual_cost) </expression>
+        <inline_styles>font-weight: bold;</inline_styles>
+        <bottom>${@SUM(.variance)}</bottom>
+      </display>
+    </element>
+    <element name="cost_breakdown" title="Cost Breakdown" width="100px" edit="false">
+      <display widget="hidden_row">
+        <icon_tip>Asset Cost Breakdown</icon_tip>
+        <search_type>sthpw/task</search_type>
+        <width>100%</width>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <show_shelf>false</show_shelf>
+        <view>asset_cost_breakdown</view>
+        <expression>@SOBJECT(sthpw/task)</expression>
+        <show_select>true</show_select>
+        <icon>CONTENTS</icon>
+      </display>
+    </element>
+    <element name="asset_panel_wdg" title="Asset Panel" edit="false">
+      <display widget="custom_layout">
+        <include_mako>true</include_mako>
+        <view>asset_panel_wdg</view>
+      </display>
+    </element>
+    <element name="preview_tile" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>50%</icon_size>
+        <latest_icon>true</latest_icon>
+        <detail>false</detail>
+      </display>
+    </element>
+    <element name="usage_mb" title="Usage MB" width="122.9px" edit="true">
+      <display widget="expression">
+        <group_bottom>{@SUM(.usage_mb), %0.2f}Mb</group_bottom>
+        <expression>@SUM(sthpw/snapshot.sthpw/file.st_size) /1024000</expression>
+        <display_expression>{@GET(.usage_mb), %0.2f}MB</display_expression>
+        <bottom>{@SUM(.usage_mb), %0.2f}Mb</bottom>
+      </display>
+    </element>
+  
+
+</default_definition>
+
+
+
+
+<search layout='SearchWdg'>
+  <element name='Quick Search'>
+    <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+      <prefix>simple</prefix>
+    </display>
+  </element>
+
+  <element name='Custom'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>custom</prefix>
+      <mode>custom</mode>
+      <custom_filter_view>custom_filter</custom_filter_view>
+    </display>
+  </element>
+
+  <element name='Filter'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>main_body</prefix>
+      <mode>sobject</mode>
+    </display>
+  </element>
+
+ <element name='Parent'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>parent</prefix>
+      <mode>parent</mode>
+    </display>
+ </element>
+
+  <element name='Children'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>children</prefix>
+      <mode>child</mode>
+    </display>
+  </element>
+
+</search>
+
+
+
+
+
+<table>
+    <element name="code"/>
+</table>
+
+
+<!-- used to upload preview -->
+
+<preview layout="EditWdg">
+    <element name="preview"/>
+</preview>
+
+<planner_left>
+
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumSObjectInstancesWdg"/>
+    </element>
+
+</planner_left>
+
+
+<planner_right>
+
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="instances">
+        <display class="Htactic.ui.table.HiddenRowElementWdg">
+            <title_icon>Contents</title_icon>
+            <dynamic>pyasm.prod.web.SObjectInstanceListWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumSObjectInstancesWdg"/>
+    </element>
+
+</planner_right>
+
+
+
+<!-- for the layout page, to add asset instances to shots -->
+<layout>
+
+  <element name="select_instance">
+    <display class="pyasm.prod.web.SObjectCheckboxWdg"/>
+  </element>
+
+  <element name="images">
+    <display class="ThumbWdg">
+      <icon_size>45</icon_size>
+      <!-- TODO: this is ugly. need a more formal relationship -->
+      <!--
+      <redirect>prod/asset|code|asset_code</redirect>
+      -->
+    </display>
+  </element>
+
+  <element name="code"/>
+
+<!--
+  <element name="update">
+        <display class="UpdateWdg">
+            <insert>false</insert>
+            <delete>true</delete>
+        </display>
+  </element>
+--> 
+</layout>
+
+
+<!-- display in the loader with Maya -->
+<load default="table">
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="checkin"/>
+
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="input">
+        <display class="pyasm.prod.web.SnapshotLoaderWdg">
+            <mode>input</mode>
+        </display>
+    </element>
+
+    <element name="load">
+        <display class="pyasm.prod.web.SnapshotLoaderWdg">
+            <mode>output</mode>
+        </display>
+    </element>
+</load>
+
+
+<render_submit>
+    <element name="job_type">
+        <display class="SelectWdg">
+            <setting>render_job_type</setting>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <!-- Policy determines the details of the render -->
+    <element name="policy_code" title="policy">
+        <display class="SelectWdg">
+            <query>prod/render_policy|code|code</query>
+        </display>
+    </element>
+
+
+    <element name="resolution"/>
+</render_submit>
+
+
+
+<insert>
+    <!-- this one is used more for built-in insert view of asset or shot-->
+    <element name="preview_insert">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+    <element name="picture">
+         <display class="tactic.ui.widget.SimpleUploadWdg">
+         </display>
+         <action class="NullAction"/>
+     </element>
+
+    <element name="images">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="files" edit="true">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+
+    <element name="snapshot" edit="true">
+         <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="NullAction"/>
+    </element>
+   
+
+    <element name="episode_code">
+        <display class="SelectWdg">
+            <query>prod/episode|code|code</query>
+            <empty>true</empty>
+            <web_state>true</web_state>
+        </display>
+    </element>
+    <!--
+    <element name="asset_library">
+        <display class="SelectWdg">
+            <query>prod/asset_library|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+        -->
+
+    <element name="sequence_code">
+        <display class="SelectWdg">
+            <query>prod/sequence|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="name"/>
+
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+    <element name="sort_order">
+        <display class="TextWdg">
+            <hint>An integer. 1 will stay at the top</hint>
+        </display>
+    </element>
+</insert>
+
+
+<edit>
+
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+     <element name="picture">
+         <display class="tactic.ui.widget.SimpleUploadWdg">
+         </display>
+          <action class="pyasm.command.UploadAction"/>
+     </element>
+
+    <element name="images">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+        <!-- <action class="UploadAction"/>-->
+    </element>
+
+    <element name="files">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+        <!-- <action class="UploadAction"/>-->
+    </element>
+
+
+    <element name="snapshot">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+        <!-- <action class="UploadAction"/>-->
+    </element>
+   
+
+    <element name="episode_code">
+        <display class="SelectWdg">
+            <query>prod/episode|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+    <element name="sequence_code">
+        <display class="SelectWdg">
+            <query>prod/sequence|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <query>prod/shot|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name="asset_code">
+        <display class="SelectWdg">
+            <query>prod/asset|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+  
+
+  <element name="pipeline_code">
+    <display class="tactic.ui.input.PipelineInputWdg"/>
+  <!--
+    <display class="SelectWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <empty>true</empty>
+    </display>
+    -->
+  </element>
+
+
+    <element name="task_status">
+        <display class="ParallelStatusEditWdg"/>
+    </element>
+
+
+    <element name="timestamp"/>
+
+
+
+
+
+    <element name="code" title="Code (optional)">
+        <display class="TextWdg">
+            <hint>Unique code for this item.  If left empty, then one will automatically be assigned.</hint>
+        </display>
+    </element>
+
+
+
+    <element name="short_code"/>
+    <element name="name"/>
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+
+   <element name="sort_order">
+        <display class="TextWdg">
+            <hint>Order with an integer. 1 will stay at the top</hint>
+        </display>
+    </element>
+
+    <element name="add_initial_tasks">
+        <display class="CheckboxWdg"/>
+        <action class="pyasm.command.InitialTaskCreateAction"/>
+    </element>
+
+    
+</edit>
+
+
+<preview_edit>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <!--
+        <action class="NullAction"/>
+        -->
+        <action class="UploadAction"/>
+    </element>
+</preview_edit>
+
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context_expr>@GET(sthpw/task.process)</context_expr>
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+<add_item>
+    <element name="preview" width="100px"/>
+    <element name="code" width="100px"/>
+</add_item> 
+
+
+
+
+<tracking layout="TableLayoutWdg" >
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="keywords"/>
+    <element name="description"/>
+    <element name="explorer"/>
+    <element name="general_checkin"/>
+    <element name="history"/>
+    <element name="task_edit"/>
+    <element name="task_status_edit"/>
+</tracking>
+
+
+
+
+</config>
+
+
+
+

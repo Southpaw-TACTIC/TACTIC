@@ -1,0 +1,15 @@
+<element edit='true' name='work_hours_insert'>
+  <display widget='button'>
+    <cbjs_action>
+
+      var kwargs = {
+        'view': 'work_hours_insert_wdg',
+        'search_key': bvr.search_key
+      }
+
+      spt.panel.load_popup("work_hours_insert_popup", "tactic.ui.panel.CustomLayoutWdg", kwargs);
+    
+    </cbjs_action>
+    <icon>TIME</icon>
+  </display>
+</element>

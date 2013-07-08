@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<!-- put in a simple upload -->
+
+
+<table>
+    <element name="files">
+        <display class="ThumbWdg">
+            <context>publish</context>
+        </display>
+    </element>
+    <element name="history"/>
+    <element name="shot_code"/>
+    <element name="description"/>
+    <element name="publish">
+        <display class="PublishTableElement"/>
+    </element>
+</table>
+
+
+<edit>
+    <element name="files">
+        <display class="SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+    </element>
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <query>prod/shot|code|code</query>
+        </display>
+    </element>
+    <element name="description"/>
+</edit>
+
+
+<!-- publishing view for camera data in an image or pdf format -->
+<publish>
+    <element name='image'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="UploadWdg">
+            <names>publish_icon|publish_main</names>
+        </display>
+        <action class="MultiUploadAction">
+            <names>publish_icon|publish_main</names>
+            <types>icon_main|main</types>
+        </action>
+    </element>
+</publish>
+
+<add_item>
+    <element name="shot_code" width="100px"/>
+    <element name="description" width="300px"/>
+</add_item>
+
+</config>
+
+

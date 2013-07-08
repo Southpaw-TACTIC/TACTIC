@@ -1,0 +1,159 @@
+#!/bin/bash
+#############################################################
+#
+#    Copyright (c) 2005, Southpaw Technology
+#                        All Rights Reserved
+#
+#    PROPRIETARY INFORMATION.  This software is proprietary to
+#    Southpaw Technology, and is not to be reproduced, transmitted,
+#    or disclosed in any way without written permission.
+#
+
+# chkconfig: 2345 85 15
+# description: Startup script for Tactic on UNIX systems.
+
+# Repurposed from WebKit
+
+TACTIC_INSTALL_DIR=`python -c 'import tacticenv; print tacticenv.get_install_dir()'`
+TACTIC_SITE_DIR=`python -c 'import tacticenv; print tacticenv.get_site_dir()'`
+
+echo "TACTIC_INSTALL_DIR = $TACTIC_INSTALL_DIR"
+echo "TACTIC_SITE_DIR = $TACTIC_SITE_DIR"
+echo
+
+# Some variables
+TACTIC_USER=apache
+PYTHON=/usr/bin/python
+export PYTHON
+PID_FILE=/var/run/tactic.pid
+LOG=/var/log/tactic
+
+APP_DIR=$TACTIC_INSTALL_DIR/src/bin
+APP_EXEC=monitor.py
+# end configuration section
+
+
+# Source function library.
+# Use the funtions provided by Red Hat or use our own
+if [ -f /etc/rc.d/init.d/functions ]
+then
+    . /etc/rc.d/init.d/functions
+else
+    function action {
+        echo "$1"
+        shift
+        $@
+    }
+    function success {
+        echo -n "Success"
+    }
+    function failure {
+        echo -n "Failed"
+    }
+fi
+
+
+# add /usr/local/bin
+export PATH=$PATH:/usr/local/bin
+
+
+case "$1" in
+    start)
+        echo -n  "Starting Tactic: "
+        pushd $APP_DIR > /dev/null
+        LAUNCH="$PYTHON $APP_DIR/$APP_EXEC"
+
+        # log separator
+        echo "----------------------------------------------------------------------" >> $LOG
+        STARTUP_PIDS=()
+        # run as root:
+        #$LAUNCH >> $LOG 2>&1 &
+        if test -f "$PID_FILE" ; then
+            PID=`cat $PID_FILE`
+            if kill -0 $PID >&-; then
+                echo "Tactic is already running"
+                exit 0
+            else
+                # monitor has been stopped, check for startup processes
+                i=0
+                for line in $(ps axw|grep startup.py |grep -v grep|awk '{print $1}'); do
+                    STARTUP_PIDS[$i]=$line
+                    i=`expr $i + 1`
+                done
+                if [ ${#STARTUP_PIDS[@]} -gt 0 ]; then
+                    echo
+                    echo -n $"The TACTIC monitor process has been stopped. You need to kill the TACTIC startup processes with these pids first before starting the service:  ${STARTUP_PIDS[*]}"
+                    echo
+                    exit 0
+                fi
+            fi
+        fi
+
+        # run as a user
+        #su -m -c "$LAUNCH" $TACTIC_USER >> $LOG 2>&1 &
+        su - $TACTIC_USER -m -c "$LAUNCH" >> $LOG 2>&1 &
+
+        echo $! > $PID_FILE
+        popd > /dev/null
+        success "Starting Tactic"
+        echo
+        ;;
+
+    stop)
+        echo -n "Shutting down Tactic: "
+        STARTUP_PIDS=()
+
+        if test -f "$PID_FILE" ; then
+            PID=`cat $PID_FILE`
+	    echo `kill $PID >> $LOG 2>&1`
+            if kill $PID >> $LOG 2>&1 ; then
+                i=0
+                for line in $(ps axw|grep startup.py |grep -v grep|awk '{print $1}'); do
+                    STARTUP_PIDS[$i]=$line
+                    i=`expr $i + 1`
+                done
+            
+                if [ ${#STARTUP_PIDS[@]} -gt 0 ]; then
+                    #echo -n $"killing pids:  ${STARTUP_PIDS[*]}"
+                    kill -9 ${STARTUP_PIDS[*]}
+                    /bin/rm $PID_FILE
+                    sleep 2
+                    success "Shutting down Tactic"
+                else
+                    /bin/rm $PID_FILE
+                    echo "Cannot find TACTIC startup processes to stop"
+                fi    
+            else
+                echo ""
+                echo "Could not kill process $PID named in $PID_FILE. Check tail of $LOG."
+                failure "Shutting down Tactic"
+            fi
+        else
+            echo ""
+            echo "No Tactic pid file found. Looked for $PID_FILE."
+            failure "No Tactic pid file found. Looked for $PID_FILE."
+        fi
+        echo
+        ;;
+
+    restart)
+        $0 stop
+        $0 start
+        ;;
+
+    debug)
+        echo -n  "Debugging Tactic: "
+        LAUNCH="$PYTHON $APP_DIR/$APP_EXEC"
+        $LAUNCH
+
+        success "Starting Tactic"
+        echo
+        ;;
+
+    *)
+        echo "Usage: tactic {start|stop|restart|debug}"
+        exit 1
+
+esac
+
+exit 0

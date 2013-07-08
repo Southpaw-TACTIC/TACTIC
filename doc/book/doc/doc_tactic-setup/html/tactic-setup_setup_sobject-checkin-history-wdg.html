@@ -1,0 +1,237 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Checkin History</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-common.html" title="Common Widgets">
+      <link rel="prev" href="tactic-setup_setup_general-checkin-wdg.html" title="General Check-in Widget">
+      <link rel="next" href="tactic-setup_setup_discussion-wdg.html" title="Note (discussion)">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_general-checkin-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_discussion-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Checkin History">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_sobject-checkin-history-wdg"></a>Checkin History
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/1_sobject_checkin_history_overview.png"></div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9975"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Checkin History Widget is a toggle that opens a hidden row that displays all the
+               snapshots (snapshots are checkins at a particular moment in time for a context) for an
+                           item.
+            </p>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <h4><a name="d0e9981"></a>Info
+            </h4>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Checkin History Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Common Title</strong></span></p>
+                                                   
+                        </td>
+                        <td>History</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.widget.SObjectCheckinHistoryWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Common</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.0.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10042"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The following details are displayed by the Checkin History Widget for a task: </p>
+            <p>
+                           
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p><span class="bold"><strong>preview</strong></span> of the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>whether checkout of the snapshot is <span class="bold"><strong>locked</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p>toggle to open a hidden row to list the <span class="bold"><strong>files</strong></span> in the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>link to <span class="bold"><strong>checkout</strong></span> this particular
+                                                snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>context</strong></span> of the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>version</strong></span> of the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>revision</strong></span> of the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>login</strong></span> who checked in the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>timestamp</strong></span> of the checkin
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>description</strong></span> written by the user at the
+                                                time of the snapshot
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>indicator whether the snapshot is the <span class="bold"><strong>current</strong></span> version for that context
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>toggle to open the notes using the <span class="bold"><strong>Note
+                                                          Sheet</strong></span> Widget
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10115"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Checkin History Widget can be found as a common column that can be added using the
+                           Column Manager.
+            </p>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10120"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>There are no options provided for the Checkin History Widget.</p>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e10125"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div><pre class="screen">&lt;element name="history" edit="false"&gt;
+    &lt;display class="HiddenRowToggleWdg"&gt;
+        &lt;icon&gt;HISTORY&lt;/icon&gt;
+        &lt;dynamic_class&gt;tactic.ui.widget.SObjectCheckinHistoryWdg&lt;/dynamic_class&gt;
+    &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_general-checkin-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-common.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_discussion-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

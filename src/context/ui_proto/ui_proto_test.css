@@ -1,0 +1,306 @@
+
+
+/* --- Added Styles for Mockup demo -- */
+
+
+a.maq_main_text_link:link, a.maq_main_text_link:visited { color: #c2c2c2; }
+
+a.maq_main_text_link:hover { color: #ff8202; }
+
+a.sort_column:link, a.sort_column:visited, a.sort_column:hover { color: #9ba2a2; }
+
+.maq_browser_slider_hover
+{
+    background-image: url('/context/ui_proto/icons/interface/slider_bar_bkg.png');
+    background-repeat: repeat-y;
+    cursor: pointer;
+}
+
+
+.maq_project_title
+{
+    font-family: Verdana, Arial, Helvetica;
+    font-size: 3.0em;
+    vertical-align: top;
+}
+
+.maq_view_title
+{
+    font-family: Verdana, Arial, Helvetica;
+    font-size: 1.7em;
+    color: #949494;
+    margin: 0px;
+    padding: 0px;
+    padding-left: 5px;
+    padding-right: 10px;
+}
+
+.maq_view_subtitle
+{
+    font-family: Verdana, Arial, Helvetica;
+    font-size: 1.2em;
+    color: #636363;
+}
+
+.maq_modified_asterix_span
+{
+    font-family: Verdana, Arial, Helvetica;
+    font-size: 2.0em;
+    color: #bb0000;
+    visibility: hidden;
+}
+
+.maq_saved_draft_div
+{
+    visibility: hidden;
+    max-height: 0px;
+}
+
+.maq_search_bar
+{
+    background: #0d0d0d;
+    color: #cccccc;
+    border: solid 1px #4c4e4d;
+    padding: 2px 5px;
+}
+
+.maq_view_table
+{
+    background: #434343;
+    text-align: left;
+    /*text-indent: 3px;*/
+    border-collapse: collapse;
+}
+
+.cell_left
+{
+    border: none;
+    border-top: solid 1px #5a5e5d;
+    border-bottom: solid 1px #5a5e5d;
+
+    border-left: solid 1px #5a5e5d;
+    padding: 0px;  /* THIS MUST BE HERE FOR COLUMN RESIZE TO WORK PROPERLY IN IE */
+}
+
+.cell_right
+{
+    border: none;
+    border-top: solid 1px #5a5e5d;
+    border-bottom: solid 1px #5a5e5d;
+
+    border-right: solid 1px #5a5e5d;
+    padding: 0px;  /* THIS MUST BE HERE FOR COLUMN RESIZE TO WORK PROPERLY IN IE */
+}
+
+.header_cell_main
+{
+    cursor: default;
+}
+
+
+.header_cell_resize
+{
+    min-width: 3px;
+    max-width: 2px;
+    width: 3px;
+
+    cursor: col-resize;
+}
+
+
+.debug_cell_resize
+{
+    background-color: #440000;
+}
+
+
+.maq_view_table_header
+{
+    background-color: #161817;
+    color: #9ba2a2;
+    height: 30px;
+}
+
+.maq_ctx_menu_entry {
+    background: #FFFFFF;
+    color: #000000;
+}
+
+.maq_ctx_menu_entry_hover {
+    background: #6C98D9;
+    color: #FFFFFF;
+}
+
+.maq_row
+{
+}
+
+.maq_row_hover
+{
+    background-color: #545454;
+}
+
+.maq_row_selected
+{
+    background-color: #292940;
+}
+
+.maq_row_selected_hover
+{
+    background-color: #393950;
+}
+
+.maq_select_td_unchecked
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_unchecked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+.maq_select_td_checked
+{
+    background-image: url('/context/ui_proto/icons/interface/checkbox_checked.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: default;
+}
+
+/*
+.maq_row_hover
+{
+    background-color: #545454;
+}
+
+.maq_row_selected.maq_row_hover
+{
+    background-color: #393950;
+}
+*/
+
+.maq_icon_cell
+{
+    height: 40px;
+    vertical-align: middle;
+    text-align: center;
+    text-indent: 0px;
+}
+
+.maq_icon
+{
+    border: none;
+    height: 30px;
+    background: #ffffff;
+}
+
+.maq_button
+{
+    color: #434343;
+    background: #a4a4a4;
+
+    border-right: solid 2px #333333;
+    border-bottom: solid 2px #333333;
+
+    border-left: solid 1px #ffffff;
+    border-top: solid 1px #ffffff;
+
+    padding-left: 6px;
+    padding-right: 6px;
+
+    cursor: pointer;
+}
+
+.maq_action_menu_button
+{
+    border: solid 1px #434343;
+    width: 55px;
+    color: #434343;
+    text-indent: 6px;
+    text-align: left;
+
+    background-image: url('/context/ui_proto/icons/interface/action_menu_downarrow.png');
+    background-repeat: no-repeat;
+    background-position: 100% 0%;
+    background-color: #a4a4a4;
+
+    cursor: pointer;
+}
+
+
+a:hover .maq_action_menu_button
+{
+    background-color: #181818;
+    color: #a4a4a4;
+}
+
+
+.maq_action_menu_popup
+{
+    visibility: hidden;
+    position: absolute;
+    background: #a4a4a4;
+    padding: 4px;
+}
+
+
+.maq_action_menu_popup_item
+{
+    color: #434343;
+    text-align: right;
+    width: 100%;
+}
+
+
+a:hover .maq_action_menu_popup_item
+{
+    background: #434343;
+    color: #a4a4a4;
+    text-align: right;
+    width: 100%;
+}
+
+
+/* ---------------------------------------------- NEW STUFF ------------------------------------------------------ */
+
+.spt_dg_row
+{
+}
+
+.spt_dg_row_hover
+{
+    background-color: #545454;
+}
+
+.spt_dg_row_selected
+{
+    background-color: #292940;
+}
+
+.spt_dg_row_selected_hover
+{
+    background-color: #393950;
+}
+
+.spt_labeledhidable_label
+{
+    font-family: Arial, Helvetica, Sans-serif;
+    color: #929292;
+}
+
+
+.spt_labeledhidable_label_hover
+{
+    color: #AAAAAA;
+    cursor: default;
+}
+
+
+.spt_rounded_div
+{
+    border: none;
+    padding: 0px;
+    border-collapse: collapse;
+}
+
+
+

@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+
+<definition>
+  
+    <element name="code"/>
+    <element name="category"/>
+    <element name="initials"/>
+    <element name="title"/>
+    <element name="type"/>
+    <element name="status"/>
+
+    <element name="project_info" edit="false">
+        <display class="tactic.ui.table.ProjectWdg"/>
+    </element>
+
+    <element name="is_template" edit="false">
+        <display widget='format'>
+            <format>Checkbox</format>
+        </display>
+    </element>
+
+    <element name="palette"/>
+
+    <element name="db_resource"/>
+
+    <element name="task_schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>
+          [
+            {
+              "start_date_expr":  "@MIN(sthpw/task.bid_start_date)",
+              "end_date_expr":    "@MAX(sthpw/task.bid_end_date)",
+              "color":            "#33F",
+              "edit":             "true",
+              "default":          "false"
+            }
+          ]
+        </options>
+      </display>
+      <action class="tactic.ui.table.GanttCbk">
+        <sobjects>@SOBJECT(sthpw/task)</sobjects>
+        <options>
+          [
+            {
+              "prefix":           "bid",
+              "sobjects":         "@SOBJECT(sthpw/task)",
+              "mode":             "cascade"
+            }
+          ]
+        </options>
+      </action>
+    </element>
+
+    <element name="template_update" edit="false">
+        <display class="tactic.ui.table.ProjectTemplateUpdateWdg">
+            <icon>SAVE</icon>
+        </display>
+    </element>
+
+
+</definition>
+
+
+
+<table insert='false'>
+    <element name="preview"/>
+    <element name="category"/>
+    <element name="code"/>
+    <!--
+    <element name="initials"/>
+    -->
+    <element name="title"/>
+    <element name="status"/>
+    <element name="type"/>
+    <element name="project_info"/>
+    <element name="is_template"/>
+    <element name="palette"/>
+    <element name="db_resource"/>
+</table>
+
+
+
+<template insert='false'>
+    <element name="preview"/>
+    <element name="category"/>
+    <element name="code"/>
+    <!--
+    <element name="initials"/>
+    -->
+    <element name="title"/>
+    <element name="status"/>
+    <element name="type"/>
+    <element name="project_info"/>
+    <element name="is_template"/>
+    <element name="template_update"/>
+    <element name="palette"/>
+</template>
+
+
+
+
+
+<simple>
+    <element name="snapshot"/>
+    <element name="title"/>
+    <element name="type"/>
+
+</simple>
+
+
+<mytactic>
+    <element name="snapshot"/>
+    <element name="title"/>
+    <element name="summary">
+        <display class="MyTacticSummaryWdg"/>
+    </element>
+</mytactic>
+
+
+
+<insert>
+    <element name="snapshot">
+        <display class="SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="NullAction"/>
+    </element>
+
+    <element name="code">
+        <display class="TextWdg">
+            <!-- commmenting out because it does not display properly -->
+            <hint>Alpha/numeric characters only</hint>
+            <required>true</required>
+        </display>
+        <action class="DatabaseAction">
+            <regexs>^\d|\W</regexs>
+        </action>
+    </element>
+
+    <element name="initials">
+        <display class="TextWdg">
+            <!-- commmenting out because it does not display properly -->
+            <hint>2 or 3 letter/digit short form of the project code.</hint>
+        </display>
+    </element>
+
+    <element name="title">
+        <display class="TextWdg">
+            <required>true</required>
+        </display>
+        <action class="NonEmptyAction"/>
+    </element>
+    <element name="type">
+        <display class="SelectWdg">
+            <query>sthpw/project_type|code|get_label()</query>
+            <hint>This is the code in Project Types Tab</hint>
+        </display>
+    </element>
+    
+
+    <element name="create">
+        <display class="NoneWdg"/>
+        <action class="ProjectCreateAction"/>
+    </element>
+
+</insert>
+
+
+<edit>
+    <element name="code"/>
+    <element name="type">
+        <display class="SelectWdg">
+            <query>sthpw/project_type|code|get_label()</query>
+            <hint>Make sure you are changing to one derived from the same type!</hint>
+            <read_only>false</read_only>
+        </display>
+    </element>
+
+    <element name="status">
+        <display class="SelectWdg">
+            <values>pending|in_progres|on_hold|complete|archived</values>
+            <labels>Pending|In Progres|On Hold|Complete|Archived</labels>
+            <empty>-- Select --</empty>
+        </display>
+    </element>
+
+    <element name="palette">
+        <display class="SelectWdg">
+            <values>Aqua|Dark|Silver|Origami|Bon Noche|Aviator</values>
+            <empty>-- Default --</empty>
+        </display>
+    </element>
+
+
+
+</edit>
+
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>code|description|title</column>
+        </display>
+    </element>
+</simple_filter>
+
+
+
+</config>
+
+

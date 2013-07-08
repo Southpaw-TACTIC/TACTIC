@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name='pipeline_code'/>
+    <element name='process'/>
+    
+
+    <element name='sort_order'/>
+    <element name='search_type'>
+        <display widget='expression'>
+            <expression>@GET(sthpw/pipeline.search_type)</expression>
+            <calc_mode>fast</calc_mode>
+        </display>
+    </element>
+    <element name='checkin_mode'/>
+    <element name='checkin_validate_script_path'/>
+    <element name='checkin_options_view'/>
+    <element name='subcontext_options'/>
+    <element name="color"/>
+
+</definition>
+
+
+<table>
+    <element name='pipeline_code'/>
+    <element name='process'/>
+    <element name='search_type'/>
+    <element name='sort_order'/>
+    <element name='checkin_mode'/>
+    <element name='checkin_validate_script_path'/>
+    <element name="color"/>
+    <element name='context_options'/>
+    <element name='subcontext_options'/>
+    <element name='checkin_options_view'/>
+</table>
+
+
+<edit>
+    <element name='pipeline_code'>
+         <display class="TextWdg">
+             <read_only>true</read_only>
+        </display>
+    </element>
+    <element name='process'/>
+    <element name='sort_order'/>
+    <element name='checkin_mode'/>
+    <element name='context_options'/>
+    <element name='subcontext_options'/>
+    <element name='color'/>
+</edit>
+
+<insert>
+    <element name='pipeline_code'>
+        <display class="SelectWdg">
+             <empty>true</empty>
+             <values_expr>@GET(sthpw/pipeline['search_type','not in','sthpw/task'].code)</values_expr>
+        </display>
+    </element>
+    <element name='process'/>
+    <element name='sort_order'/>
+    <element name='checkin_mode'/>
+    <element name='context_options'/>
+    <element name='subcontext_options'/>
+    <element name='color'/>
+</insert>
+
+
+<edit_definition>
+    <element name='subcontext_options'>
+         <display class="TextWdg">
+             <hint>(main), (auto), (text) or | separated list of subcontexts</hint>
+         </display>
+    </element>
+    <element name='pipeline_code'>
+        <display class="TextWdg"/>
+    </element>
+    <element name='checkin_mode'>
+        <display class='SelectWdg'>
+            <values>file|dir|sequence|multi_file</values>
+            <labels>File|Directory|Sequence|Multiple Files</labels>
+            <empty>true</empty>
+        </display>
+    </element>
+    <element name='color'>
+        <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+</edit_definition>
+
+
+</config>

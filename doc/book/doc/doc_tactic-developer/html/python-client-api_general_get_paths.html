@@ -1,0 +1,163 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>get_paths</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_get_path_from_snapshot.html" title="get_path_from_snapshot">
+      <link rel="next" href="python-client-api_general_get_pipeline_processes.html" title="get_pipeline_processes">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_get_path_from_snapshot.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_get_pipeline_processes.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="get_paths">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_get_paths"></a>
+                         get_paths
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)
+                      </strong></span>
+                
+         </p>
+         <p>
+                Get paths from an sobject
+                
+         </p>
+         <h4><a name="d0e4492"></a>
+                params:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      search_key 
+                      </strong></span>
+                 -  a unique identifier key representing an sobject
+                
+         </p>
+         <h4><a name="d0e4499"></a>
+                keyparams:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      context 
+                      </strong></span>
+                 -  context of the snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      version 
+                      </strong></span>
+                 -  version of the snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_type 
+                      </strong></span>
+                 -  file type defined for the file node in the snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      level_key 
+                      </strong></span>
+                 -  the unique identifier of the level that this
+                
+         </p>
+         <p>
+                was checked into
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      single 
+                      </strong></span>
+                 -  If set to True, the first of each path set is returned
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      versionless 
+                      </strong></span>
+                 -  boolean to return the versionless snapshot, which takes a version of 
+                
+         </p>
+         <h4><a name="d0e4533"></a>
+                return
+                
+         </h4>
+         <p>
+                A dictionary of lists representing various paths.  The paths returned
+                
+         </p>
+         <p>
+                are as follows:
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      
+                      </strong></span>
+                 -  client_lib_paths: all the paths to the repository relative to the client
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      
+                      </strong></span>
+                 -  lib_paths: all the paths to the repository relative to the server
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      
+                      </strong></span>
+                 -  sandbox_paths: all of the paths mapped to the sandbox
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      
+                      </strong></span>
+                 -  web: all of the paths relative to the http server
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_get_path_from_snapshot.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_get_pipeline_processes.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

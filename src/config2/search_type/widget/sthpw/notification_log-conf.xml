@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition>
+
+<element name="timestamp" type='datetime'/>
+<element name="subject"/>
+
+<element name="message">
+    <display class="WikiElementWdg">
+        <replace_tag>false</replace_tag>
+    </display>
+</element>
+
+<element name="recipients">
+     <display class="tactic.ui.table.RecipientElementWdg"/>
+</element>
+
+<element name="notification_panel" title="Notification">
+  <display class="tactic.ui.panel.CustomLayoutWdg">
+  <html>
+    <table>
+      <tr>
+        <td>
+          <h3>[expr]@GET(.subject)[/expr]</h3>
+        </td>
+      </tr>
+      <tr>
+        <td>
+	  <div>
+            <pre style="word-wrap: break-word; white-space: pre-wrap">
+              <element name="message">
+                <display class="tactic.ui.table.ExpressionElementWdg">
+	          <expression>@GET(.message)</expression>      
+		</display>
+	      </element>	
+	    </pre>
+	  </div>	  
+        </td>
+      </tr>
+    </table>
+  </html>
+  </display>
+</element>
+
+</definition>
+
+<table insert='false' edit='false'>
+
+<element name="timestamp" width="75"/>
+
+<element name="recipients" width="100">
+
+</element>
+
+<element name="subject" width="200"/>
+<element name="message" width="400"/>
+</table>
+
+
+
+
+
+<edit>
+<!--
+    <element name="project_code">
+        <display class="SelectWdg">
+            <query>sthpw/project|code|code</query>
+        </display>
+    </element>
+-->
+    <element name="login"/>
+    <element name="subject"/>
+    <element name="message"/>
+
+</edit>
+
+<message>
+  <element name='message'>
+    <display class='WikiElementWdg'>
+      <replace_tag>false</replace_tag>
+    </display>
+  </element>
+</message>
+
+
+<search>
+  <element name='Quick Search'>
+    <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+      <search_type>sthpw/notification_log</search_type>
+      <columns>subject|message</columns>
+      <prefix>simple</prefix>
+    </display>
+  </element>
+
+  <element name='Filter'>
+    <display class='tactic.ui.filter.GeneralFilterWdg'>
+      <prefix>main_body</prefix>
+      <search_type>sthpw/notification_log</search_type>
+      <columns>subject|message</columns>
+      <mode>sobject</mode>
+    </display>
+  </element>
+  <element name='Internal'>
+    <display class='tactic.ui.filter.NotificationLogFilterWdg'>
+      <prefix>hidden</prefix>
+      <search_type>sthpw/notification_log</search_type>
+    </display>
+  </element>
+
+</search>
+
+
+
+
+
+
+</config>
+
+

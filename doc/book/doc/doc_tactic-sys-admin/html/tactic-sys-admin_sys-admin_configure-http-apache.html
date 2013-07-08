@@ -1,0 +1,251 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Apache HTTP Co-Service Configuration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-web-server.html" title="Install Web Server">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_configure-http.html" title="HTTP Co-Service Installation/Configuration">
+      <link rel="next" href="tactic-sys-admin_sys-admin_configure-http-iis-7.html" title="IIS 7+ HTTP Co-Service Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-http.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-http-iis-7.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Apache HTTP Co-Service Configuration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_configure-http-apache"></a>Apache HTTP Co-Service Configuration
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Installation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2766"></a>Installation
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Installation of Apache can be done through any number of means, depending on the
+               software package on hand, and the target OS used. Please consult the Apache
+                           documentation for installation information.
+            </p>
+         </div>
+         <div class="simplesect" title="Configuration">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2771"></a>Configuration
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>All steps require use of a command shell. The example posted below is working as root
+                           user, but some OS's are not enabled for root user access. The root user may have do be
+                           enabled on the target machine, otherwise commands must be prepended with "sudo", or
+                           whatever method required for editing service files, starting and stopping services, etc. 
+            </p>
+            <div class="simplesect" title="Locate the httpd.conf file">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2776"></a>Locate the httpd.conf file
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>The httpd.conf file (sometimes alternatively, the apache2.conf file) is the
+                                  configuration file for Apache. Locate this file on the target machine. For purposes
+                                  of this illustration, the httpd.conf file name will be used. 
+               </p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">leowiz:~ root# locate httpd.conf
+/private/etc/apache2/httpd.conf
+/private/etc/apache2/original/httpd.conf
+leowiz:~ root#</pre></div>
+               <p>Alternatively "find" will do the same thing;</p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">leowiz:~ root# find / -name httpd.conf
+/private/etc/apache2/httpd.conf
+/private/etc/apache2/original/httpd.conf
+leowiz:~ root#</pre></div>
+               <p>In this case, the "/private/etc/apache2/httpd.conf" file is the one we are
+                                  interested in.
+               </p>
+            </div>
+            <div class="simplesect" title="Include the TACTIC configuration file in Apache">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2791"></a>Include the TACTIC configuration file in Apache
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>For isolation of configuration options for editing purposes, the TACTIC
+                                  configuration file is a single file which should be referred to by the Apache
+                                  configuration file. In this case, the default "tactic.conf" file will be used. The
+                                  file is included at the end of this document.
+               </p>
+               <p>Find out if the httpd.conf file has an "Include" statement that refers to a
+                                  directory the TACTIC Apache configuration file can be put in.
+               </p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">leowiz:~ root# grep Include /private/etc/apache2/httpd.conf
+Include /private/etc/apache2/extra/httpd-mpm.conf
+#Include /private/etc/apache2/extra/httpd-default.conf
+#Include /private/etc/apache2/extra/httpd-ssl.conf
+Include /private/etc/apache2/other/*.conf
+leowiz:~ root#</pre></div>
+               <p>In this case, the line at the bottom is the one that is required;</p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">Include /private/etc/apache2/other/*.conf</pre></div>
+               <p>If there is no such include, then a line can be added to the httpd.conf
+                                  file.
+               </p>
+               <p>In the above example, there is a reference to a directory wild-card configuration
+                                  inclusion. Essentially then, any files with the suffix ".conf" will be activated.
+                                  This is where the TACTIC configuration file will be stored. Either the default
+                                  configuration file can be used with some editing, due to the variations in location
+                                  of the TACTIC service application. 
+               </p>
+            </div>
+            <div class="simplesect" title="Instruct Apache to proxy static files">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2810"></a>Instruct Apache to proxy static files 
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>For purposes of efficiency, Apache will proxy files that are static. In the
+                                  tactic.conf file, there are 2 major directives that are of concern regarding
+                                  directory access. There is the directives that enable the TACTIC GUI widgets to
+                                  work,
+               </p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">&lt;Directory "/home/apache/tactic" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre></div>
+               <p>The second set is:</p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">&lt;Directory "/home/apache/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre></div>
+               <p>In the default example, the TACTIC application is stored at "/home/apache/tactic"
+                                  while the assets are stored at "/home/apache/assets" The directives here allow
+                                  Apache access to proxy these file locations for TACTIC.
+               </p>
+            </div>
+            <div class="simplesect" title="Instruct Apache to rewrite the &#34;/tactic&#34; URL subpath">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2825"></a>Instruct Apache to rewrite the "/tactic" URL subpath
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>Since Apache is serving only static files, it can be configured to serve the
+                                  dynamic content served by TACTIC using a proxy.
+               </p>
+               <p>To enable the Apache proxy service, the tactic.conf file must contain directives
+                                  that enable the proxy and rewrite modules to serve the TACTIC service.
+               </p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">ProxyPreserveHost on
+RewriteEngine on
+
+# for cherrypy
+RewriteRule   ^/tactic/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/tactic http://localhost:8081/tactic/ [P,L]
+RewriteRule   ^/projects/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/projects http://localhost:8081/tactic/ [P,L]</pre></div>
+               <p>In this example, the TACTIC service is located on the same machine, on port 8081.
+                                  All URL requests that have a "/tactic" or "/projects" in the URL will be redirected
+                                  to the TACTIC service, which by default is on port 8081.
+               </p>
+               <p>To effectively use load-balancing on this machine, replace it with the following
+                                  configuration instead:
+               </p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen"># This is for using a random load_balancing scheme
+RewriteMap    lb    rnd:/home/apache/sites/load_balance.txt
+RewriteRule   ^/tactic/(.+)$ http://${lb:dynamic}/tactic/$1    [P,L]
+RewriteRule   ^/projects/(.+)$ http://${lb:dynamic}/tactic/$1  [P,L]
+RewriteRule   ^/tactic http://${lb:dynamic}/tactic/            [P,L]
+RewriteRule   ^/projects http://${lb:dynamic}/tactic/          [P,L]</pre></div>
+               <p>The file, /home/apache/sites/load_balance.txt contains</p>
+               <div class="sidebar">
+                  <p class="title"><b></b></p><pre class="screen">lb	localhost:8081|localhost:8082|localhost:8083</pre></div>
+               <p>The Apache configuration files have now been modified to proxy and rewrite TACTIC
+                                  requests.
+               </p>
+            </div>
+            <div class="simplesect" title="Restart the Apache Service">
+               <div class="titlepage">
+                  <div>
+                     <div>
+                        <h2 class="title"><a name="d0e2849"></a>Restart the Apache Service
+                        </h2>
+                     </div>
+                  </div>
+               </div>
+               <p>Apache needs to be restarted for the configuration changes to take effect. Most
+                                  Apache installations have a "apachectl" command. To restart apache, use;
+               </p>
+               <p><span class="command"><strong> apachectl restart</strong></span></p>
+               <p>Once Apache has been restarted, it should be serving TACTIC requests. </p>
+            </div>
+         </div>
+         <div class="simplesect" title="Conclusion">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2859"></a>Conclusion
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>At this point Apache should be configured to proxy TACTIC service requests to the
+                           TACTIC service, while leaving all other requests to Apache itself.
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-http.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-web-server.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-http-iis-7.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

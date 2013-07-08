@@ -1,0 +1,133 @@
+#!/bin/sh
+#############################################################
+#
+#    Copyright (c) 2005, Southpaw Technology
+#                        All Rights Reserved
+#
+#    PROPRIETARY INFORMATION.  This software is proprietary to
+#    Southpaw Technology, and is not to be reproduced, transmitted,
+#    or disclosed in any way without written permission.
+#
+
+# chkconfig: 2345 85 15
+# description: Startup script for Tactic on UNIX systems.
+
+# Repurposed from WebKit
+
+# Configuration section
+export TACTIC_INSTALL_DIR=/home/apache/tactic
+export TACTIC_SITE_DIR=/home/apache/tactic/devsite
+
+# set path to the all important config file
+export TACTIC_CONFIG_PATH=$TACTIC_SITE_DIR/config/tactic_linux-conf.xml
+
+# set the necessary python paths
+TACTIC_SRC=$TACTIC_INSTALL_DIR/src
+WEBWARE_DIR=$TACTIC_INSTALL_DIR/3rd_party/Webware
+CHERRYPY_DIR=$TACTIC_INSTALL_DIR/3rd_party/CherryPy
+
+export PYTHONPATH=$TACTIC_SRC:$TACTIC_SITE_DIR:$CHERRYPY_DIR
+
+
+# Some webware variables
+TACTIC_USER=apache
+PYTHON=/usr/bin/python
+WEBKIT_DIR=$TACTIC_SITE_DIR/webware
+PID_FILE=/var/run/tactic_slave.pid
+LOG=/var/log/tactic_slave
+#PYTHONPATH=
+
+
+# end configuration section
+
+
+# Source function library.
+# Use the funtions provided by Red Hat or use our own
+if [ -f /etc/rc.d/init.d/functions ]
+then
+    . /etc/rc.d/init.d/functions
+else
+    function action {
+        echo "$1"
+        shift
+        $@
+    }
+    function success {
+        echo -n "Success"
+    }
+    function failure {
+        echo -n "Failed"
+    }
+fi
+
+
+# add /usr/local/bin
+export PATH=$PATH:/usr/local/bin
+
+
+[ -x $WEBKIT_DIR/AppServer ] || exit 0
+
+case "$1" in
+    start)
+        echo -n  "Starting Tactic: "
+        pushd $WEBKIT_DIR > /dev/null
+        LAUNCH="$PYTHON $TACTIC_SRC/pyasm/prod/queue/slave_startup.py"
+        #LAUNCH="$WEBKIT_DIR/AppServer"
+
+        # log separator
+        echo "----------------------------------------------------------------------" >> $LOG
+
+        # run as root:
+        #$LAUNCH >> $LOG 2>&1 &
+
+        # run as a user
+        su -m -f -c "$LAUNCH" $TACTIC_USER >> $LOG 2>&1 &
+
+        echo $! > $PID_FILE
+        popd > /dev/null
+        success "Starting Tactic"
+        echo
+        ;;
+
+    stop)
+        echo -n "Shutting down Tactic: "
+        if test -f "$PID_FILE" ; then
+            PID=`cat $PID_FILE`
+	    echo `kill $PID >> $LOG 2>&1`
+            if kill $PID >> $LOG 2>&1 ; then
+                /bin/rm $PID_FILE
+                success "Shutting down Tactic"
+            else
+                echo ""
+                echo "Could not kill process $PID named in $PID_FILE. Check tail of $LOG."
+                failure "Shutting down Tactic"
+            fi
+        else
+            echo ""
+            echo "No Tactic pid file found. Looked for $PID_FILE."
+            failure "No Tactic pid file found. Looked for $PID_FILE."
+        fi
+        echo
+        ;;
+
+    restart)
+        $0 stop
+        $0 start
+        ;;
+
+    debug)
+        echo -n  "Debugging Tactic: "
+        LAUNCH="$PYTHON $TACTIC_SRC/pyasm/prod/queue/slave_startup.py"
+        $LAUNCH
+
+        success "Starting Tactic"
+        echo
+        ;;
+
+    *)
+        echo "Usage: tactic_slave {start|stop|restart|debug}"
+        exit 1
+
+esac
+
+exit 0

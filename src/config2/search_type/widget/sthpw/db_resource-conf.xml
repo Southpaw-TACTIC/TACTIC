@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="host"/>
+    <element name="port"/>
+    <element name="vendor"/>
+    <element name="login"/>
+    <element name="password"/>
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="host"/>
+    <element name="port"/>
+    <element name="vendor"/>
+    <element name="login"/>
+    <element name="password"/>
+</table>
+
+<edit>
+    <element name="code" title="Code">
+        <display class="TextWdg">
+        </display>
+    </element>
+    <element name="host">
+        <display class="TextWdg">
+            <size>50</size>
+        </display>
+    </element>
+    <element name="port"/>
+    <element name="vendor">
+        <display class="SelectWdg">
+            <values>PostgreSQL|MySQL|Sqlite|SQLServer|Oracle</values>
+            <labels>PostgreSQL|MySQL|SQLite|SQLServer|Oracle</labels>
+        </display>
+    </element>
+    <element name="login">
+        <display class="TextWdg"/>
+    </element>
+    <element name="password">
+        <display class="PasswordWdg"/>
+    </element>
+</edit>
+
+</config>
+
+

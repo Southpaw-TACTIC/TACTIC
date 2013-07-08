@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2010, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="description"/>
+
+    <element name="manifest_hidden" title='Manifest' width='1%'>
+      <display class='HiddenRowToggleWdg'>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>sthpw/plugin</search_type>
+        <show_search_limit>false</show_search_limit>
+        <show_insert>false</show_insert>
+        <show_row_select>false</show_row_select>
+        <show_gear>false</show_gear>
+        <view>manifest</view>
+      </display>
+    </element>
+
+    <element name="drop_zone">
+      <display class="tactic.ui.table.DropElementWdg"/>
+      <action class="tactic.command.PluginSObjectAdderCmd">
+      </action>
+    </element>
+
+
+    <element name="manifest">
+      <display class="XmlWdg"/>
+    </element>
+
+
+
+    <element name="create">
+      <display class='tactic.ui.table.ButtonElementWdg'>
+        <cbjs_action>
+        spt.api.app_busy_show("Creating New Plugin", "")
+        var server = TacticServerStub.get();
+        var class_name = 'tactic.command.PluginCreator';
+        var plugin = server.get_by_search_key(bvr.search_key);
+        var manifest = plugin.manifest;
+        var search_key = bvr.search_key;
+        server.execute_cmd(class_name, {manifest:manifest,search_key:search_key});
+        spt.api.app_busy_hide()
+        </cbjs_action>
+      </display>
+    </element>
+
+
+    <!--
+    <element name="download">
+      <display class='tactic.ui.table.ButtonElementWdg'>
+        <icon>DOWNLOAD</icon>
+        <cbjs_action>
+        alert('Not implemented');
+        </cbjs_action>
+      </display>
+    </element>
+    -->
+
+
+    <element name="uninstall">
+      <display class='tactic.ui.table.ButtonElementWdg'>
+        <cbjs_action>
+        if ( confirm("Are you sure you wish to uninstall this plugin" )) {
+            spt.api.app_busy_show("Uninstalling Plugin")
+            var server = TacticServerStub.get();
+            var server = TacticServerStub.get();
+            var class_name = 'tactic.command.PluginUninstaller';
+            var plugin = server.get_by_search_key(bvr.search_key);
+            var manifest = plugin.manifest;
+            server.execute_cmd(class_name, {manifest:manifest});
+
+            var top = bvr.src_el.getParent(".spt_table");
+
+            spt.api.app_busy_show("Refreshing ...", "");
+            spt.panel.refresh("side_bar");
+            spt.panel.refresh(top);
+
+            spt.api.app_busy_show("Success", "");
+
+            spt.api.app_busy_hide()
+        }
+        </cbjs_action>
+        <icon>DELETE</icon>
+      </display>
+    </element>
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="version"/>
+    <element name="description"/>
+    <element name="manifest_hidden" width='1%'/>
+    <element name="drop_zone" width='1%'/>
+    <element name="create" width='1%'/>
+    <!--
+    <element name="download" width='1%'/>
+    -->
+    <element name="uninstall" width='1%'/>
+</table>
+
+
+<manifest>
+    <element name="manifest"/>
+</manifest>
+
+
+
+
+</config>

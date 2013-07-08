@@ -1,0 +1,590 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Custom Layout Editor</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="tactic-developer_widgets.html" title="Custom Widgets">
+      <link rel="prev" href="doc_developer_tactic-widgets.html" title="Widget Architecture">
+      <link rel="next" href="tactic-developer_developer_custom-interfaces-in-tactic.html" title="Custom Widget Basics">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="doc_developer_tactic-widgets.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_custom-interfaces-in-tactic.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Custom Layout Editor">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-developer_developer_custom-layout-editor"></a>Custom Layout Editor
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/custom_layout_editor_overview.png"></div>
+         <div class="simplesect" title="What the Custom Layout Editor Provides">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1044"></a>What the Custom Layout Editor Provides
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The Custom Layout Editor allows you to have complete control over the look and feel of
+               TACTIC using many of the standard web technologies (HTML, CSS and Javascript). With this
+               tool, you can build your own TACTIC components (called widgets) that have the ability to
+               interact with one another intelligently, making it easier for you to design your very
+                           own TACTIC interface. 
+            </p>
+         </div>
+         <div class="simplesect" title="HTML">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1049"></a>HTML
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Custom Layouts enable the laying out of custom widgets using standard HTML.</p>
+         </div>
+         <div class="simplesect" title="Element Tag">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1054"></a>Element Tag
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC Custom Layout introduces a new html tag &lt;element&gt; which lets TACTIC
+                           widgets to be embedded into HTML.
+            </p>
+            <p>There are two formats for a TACTIC element: a short form and a long form:</p>
+            <p>short form:</p>
+            <p>
+                           
+            </p><pre class="screen">&lt;element view='forms/my_form'/&gt;</pre><p>
+                       
+            </p>
+            <p>long form:</p><pre class="screen">&lt;element&gt;
+  &lt;display class='tactic.ui.panel.CustomLayoutWdg'&gt;
+    &lt;view&gt;forms/my_form&lt;/view&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre><p>This ability to reference other views and elements makes it easy to keep a top level
+                           view that draws from other views.
+            </p>
+            <p>For display class names of other widgets, see section on Common Widgets.</p>
+         </div>
+         <div class="simplesect" title="Styles">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1076"></a>Styles
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>You can create styles for each view in the Styles tab. However, most of the time it
+                           will be useful to reference a central stylesheet for a number of views.
+            </p>
+            <p>In order to include a top level stylesheet, you can create an empty view with only
+                           styles defined and include these styles into other top level views, just as how you
+                           would reference a normal view. 
+            </p>
+            <p>For example, you can create a view called 'common/styles' and add this line to the
+                           HTML of a view where you want the styles to appear. 
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;element view='common/styles'/&gt;</pre><p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Behaviors">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1090"></a>Behaviors
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC's behavior system makes use of standard JavaScript behaviors with the added
+                           functionality of some built-in classes. 
+            </p>
+            <p>Here are two ways to add an alert behavior to a button class called
+                           'my_button'.
+            </p><pre class="screen">&lt;behavior class=&#8221;my_button&#8221; event='click_up'&gt;
+alert('Hello World'); 
+&lt;/behavior&gt; 
+
+&lt;behavior class='my_button'&gt;{ 
+'type': 'click_up', 
+'cbjs_action': "' 
+
+alert('Hello World');
+
+"' 
+}&lt;/behavior&gt;</pre><p>
+                           Here are the types of events that the TACTIC behavior system has built-in support
+                           for:
+            </p><pre class="screen">click_up | click | wheel | double_click | drag | hover | move | change | blur | mouseover | mouseout | keyup | keydown | listen </pre><p>You can set the behavior class to activate upon the firing of another event using the
+                           'listen' type event. 
+            </p><pre class="screen">&lt;behavior class='my_button'&gt;{
+'type': 'click_up', 'cbjs_action': "'
+spt.named_events.fire_event('my_event_trigger'); "'
+}&lt;/behavior&gt;
+
+&lt;behavior class='my_class'&gt;{
+'type': 'listen',
+'event_name': 'my_event_trigger',
+'cbjs_action': "'
+
+alert('Hello World');
+
+"'
+}&lt;/behavior&gt;</pre><p>When the behavior is applicable to a specific HTML element (eg. click, click_up,
+                           mouseover, etc.), you can get element for which the behavior originated from using the
+                           'bvr.src_el' (Behavior Source Element) tag. 
+            </p><pre class="screen">var table = bvr.src_el.getParent('.my_table');
+var cells = table.getElements('.my_cells');
+cells.setStyle('background', 'red'); </pre><p>TACTIC&#8217;s powerful framework comes with many API functions that make developing for
+                           TACTIC easier. Here are some common ones. 
+            </p>
+            <p>Show loading popup: </p>
+            <p>
+                           
+            </p><pre class="screen">spt.app_busy.show('Saving data...') </pre><p>
+                       
+            </p>
+            <p>Hide loading popup: </p>
+            <p>
+                           
+            </p><pre class="screen">spt.app_busy.hide() </pre><p>
+                       
+            </p>
+            <p>Load an element: </p><pre class="screen">spt.panel.load(element_name, class_name, kwargs) </pre><p>Load an element into a popup: </p><pre class="screen">spt.panel.load_popup(element_name, class_name, kwargs) </pre><p>Close a popup: </p><pre class="screen">spt.popup.close(popup_element) </pre></div>
+         <div class="simplesect" title="Images">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1139"></a>Images
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Images can be checked into TACTIC and used in interface design. In the Files tab, you
+                           can check in images using the Check-in wizard.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_images.PNG"></div>
+            <p>
+                       
+            </p>
+            <p>Once the file is checked in, you use the web path as the URL of the image.</p>
+         </div>
+         <div class="simplesect" title="Python">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1152"></a>Python
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC integrates the efficiency of Python in a Custom Layout Editor tab, functioning
+                           together seamlessly with HTML, CSS and JavaScript. As can be seen in the example below,
+                           Python works in connection with these other languages to produce a desired output. 
+            </p>
+            <p><span class="underline">Example</span></p>
+            <p>HTML code in Custom Layout Editor HTML
+                           tab:
+            </p><pre class="screen">&lt;div class="hello_world"&gt;
+    Hello World
+&lt;/div&gt;</pre><p>CSS code in Custom Layout Editor Styles
+                           tab:
+            </p><pre class="screen">.hello_world {
+    font-size: 2em;
+    padding: 1px;
+    border: solid 1px black;
+    background: ${background};
+}</pre><p>Python code in Custom Layout Editor Python
+                           tab:
+            </p><pre class="screen">background = "#F00"</pre><p>Custom Layout Editor Test Output:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_python_example.png"></div>
+            <p>
+                       
+            </p>
+            <p>The example demonstrates the use of Python in the creation of a title block.
+                           Essentially, the Python coding is only setting the background color of the title block.
+                           However, it can be used for more complicated applications, as in the Testing Interface
+                           section.
+            </p>
+            <p>The Python tab provides the user with the opportunity to use the Python language in
+                           the editor without the restriction of having to use embedded Mako.
+            </p>
+         </div>
+         <div class="simplesect" title="Mako">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1184"></a>Mako
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The custom layout engine embeds the Mako, a powerful templating engine which allows
+                           you to embed Python scripts and logic within HTML. Here is a simple example for its
+                           usage.
+            </p><pre class="screen">&lt;div&gt; 
+&lt;% 
+my_car = 'A ferrari'
+%&gt; 
+&lt;/div&gt;
+&lt;p&gt;${my_car}&lt;/p&gt; </pre><p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_mako_eg.PNG"></div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect">
+            <div class="titlepage"></div>
+            <p>Mako makes passing and accessing of data in TACTIC easy, especially combined with the
+                           support of XML by TACTIC widgets for passing arguments. 
+            </p>
+            <p>The 'kwargs.get' function can be used to get the value of an XML attribute of an
+                           element, whether it is an attribute already supported by the element or an arbitrary
+                           one. Here is an example of setting a value for an arbitrary attribute. 
+            </p>
+            <p>HTML code in top level view: </p><pre class="screen">&lt;element&gt; 
+  &lt;display class='tactic.ui.panel.CustomLayoutWdg'&gt; 
+    &lt;view&gt;my_forms.photoshoot_form&lt;/view&gt;
+    &lt;args&gt;Hello&lt;/args&gt; 
+  &lt;/display&gt;
+&lt;/element&gt; </pre><p>HTML code in a view named 'my_forms.photoshoot_form': </p><pre class="screen">&lt;element&gt; 
+  &lt;display class='tactic.ui.input.TextInputWdg'&gt; 
+    &lt;default&gt;${kwargs.get("args")}&lt;/default&gt; 
+  &lt;/display&gt; 
+&lt;/element&gt; </pre><p>For the example above, the text field will be populated with the string 'Hello'. </p>
+            <p>Most of the time, it will be beneficial to use Mako to pass search keys from one view
+                           to another. That's covered in a bit more detail in the Creating Forms section of this
+                           document.
+            </p>
+         </div>
+         <div class="simplesect" title="Injecting Widgets">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1214"></a>Injecting Widgets
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>You can inject your custom widgets or TACTIC built-in widgets into your view through
+                           the user interface. You can do it through the gear menu:
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_gear_menu.PNG"></div>
+            <p>All these injection options allow you to inject the widget you want directly where
+                           your cursor is in the code. All these injections have the name field in common. The name
+                           field allows you to name your widget in case you want to refer to it later in the
+                           code.
+            </p>
+            <p>Selecting<span class="bold"><strong> Inject Widget </strong></span> allows you to inject
+                               <span class="bold"><strong> any</strong></span> widget you want. You need to define which
+                           widget to inject, you can select your widget through the dropdown or select classpath
+                           and write the class path of a built-in TACTIC widget. After selecting, a built-in
+                           widget, you may have to fill in additional arguments which are required to successfully
+                           run the widget.
+            </p>
+            <p>Selecting<span class="bold"><strong> Inject Text Input </strong></span> allows you to inject the
+                           text input field widget. You can specify many options like the width of the input field.
+                           The <span class="bold"><strong> Inject Look Ahead Text Input</strong></span> is similar except
+                           there is a look ahead which comes with the input field.
+            </p>
+            <p>Similarly, you can inject a table or a calendar where you are given other options to
+                           customize them respectively. 
+            </p>
+         </div>
+         <div class="simplesect" title="Adding View to sidebar">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1242"></a>Adding View to sidebar
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="mediaobject"><img src="media/custom_layout_editor_sidebar.PNG"></div>
+            <p>You can add the view you have created directly to the sidebar. To do this, click on
+                           the gear in the top menu and select &#8220;Add to Side Bar&#8221;. This will add this view to the
+                           sidebar under the Project Views. By default, It will get named according to the view
+                           name and &#8220;/&#8221; will be treated as a space. For example, &#8220;app/chart&#8221; will be named &#8220;App
+                           Chart&#8221;. You can always rename these views in the sidebar by right clicking on them and
+                           selecting &#8220;Edit Side Bar&#8221;. Now select the view you want to edit and change the Title
+                           field.
+            </p>
+         </div>
+         <div class="simplesect" title="Creating URLs">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1250"></a>Creating URLs
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>When you startup tactic and go to the main project URL (&#8230;/tactic/&lt;project_name&gt;),
+                           you are presented with the tactic homepage of the project. That tactic homepage URL can
+                           be changed to show one of your created views. To do this, open up your view in the
+                           custom layout editor, then from the gear menu select &#8220;Set as Project Url&#8221;. The current
+                           view you have open will be shown when you go the main project URL. You can come back to
+                           admin side of tactic by adding &#8220;/admin&#8221; to the URL (&#8230;/tactic/&lt;project_name&gt;/admin). 
+            </p>
+            <p>You can also turn your view into a custom URL. This means that your view will open
+                           when you go to a specific URL. To do this, open your view in the custom layout editor,
+                           then from the gear menu select &#8220;Add as Custom Url&#8221;. This will open up a dialog box where
+                           you can specify what URL should open up the view. The URL specified there is showing the
+                           URL which is appended to (&#8230;/tactic). You can specify which widget to run in the URL in
+                           the widget field. By default, it shows the widget code for the view that was open in the
+                           custom layout editor. You can check all your custom URLs by going to the gear menu and
+                           selecting &#8220;Show Custom URLs&#8221;. This will show all the existing custom URLs. This is where
+                           you can delete existing custom URLs. 
+            </p>
+         </div>
+         <div class="simplesect" title="Creating Forms">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1257"></a>Creating Forms
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Forms provide an interface for updating TACTIC data. The Custom Layout Editor makes
+                           the creation of forms easy with built-in widgets and functions.
+            </p>
+            <p>TACTIC already has some predefined input widgets that can be used as input fields for
+                           forms, and they are referenced like any other widget. 
+            </p>
+            <p>TextInputWdg</p>
+            <p>SelectWdg </p>
+            <p>TextAreaWdg </p>
+            <p>CalendarInputWdg </p>
+            <p>ActionButtonWdg </p><pre class="screen">&lt;element name='my_text_input_field'&gt;
+  &lt;display class='tactic.ui.input.TextInputWdg'&gt;
+    &lt;default&gt;Hello&lt;/default&gt; 
+    &lt;width&gt;100px&lt;/width&gt;
+  &lt;/display&gt;
+&lt;/element&gt; </pre><p>You can find more details on the exact XML attributes that are supported by each
+                           widget in the Common Widgets section. 
+            </p>
+            <p>Here are some useful functions for generating forms. </p>
+            <p>
+                           
+            </p><pre class="screen">spt.api.get_input_values(div_container) </pre><p>
+                       
+            </p>
+            <p>This gets the values of the all the input fields of a div as an array with the
+                           attributes being the names of the element names.
+            </p><pre class="screen">server.update(search_key, data) </pre><p>This updates an sobject with data that is passed in as an array. </p>
+            <p>The search key is a key that uniquely identifies an sobject. </p>
+            <p>Here is an example of usage of both for updating a TACTIC task through a form. </p>
+            <p>In this example, the search key of an sobject is passed into the view through a list
+                           of keyword arguments, and it is kept as a hidden input for ease of access. The clicking
+                           of the save button activates the behavior for saving the form. 
+            </p><pre class="screen">HTML: &lt;div class='spt_form'&gt; 
+  &lt;input type="hidden" name="spt_search_key" value="${kwargs.get('search_key')}"/&gt; 
+    &lt;element name='spt_status'&gt;
+      &lt;display class='SelectWdg'&gt;
+        &lt;values&gt;Assigned|Pending|Approved|Waiting&lt;/values&gt;
+        &lt;search_key&gt;${kwargs.get("search_key")}&lt;/search_key&gt;
+      &lt;/display&gt;  
+    &lt;/element&gt; 
+
+  &lt;input type="button" class="spt_save_button" value="Save &gt;&gt;"/&gt; 
+&lt;/div&gt; 
+
+JavaScript: 
+
+&lt;behavior class="spt_save_button&gt; { 
+"type": "click", 
+"cbjs_action": ''' 
+  //gets the parent of the behavior source element
+  var top = bvr.src_el.getParent('.spt_form'); 
+
+  //gets all the input values 
+  var values = spt.api.get_input_values(top); 
+
+  var data = { 
+    //gets value of element named 'spt_status' 
+    //sets it as the value of the 'status' column for the task sobject 
+    status: values.spt_status; 
+  } 
+
+  search_key = values.spt_search_key; 
+  server.update(search_key, data) ''' 
+}</pre></div>
+         <div class="simplesect" title="Testing Interface">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1299"></a>Testing Interface
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>You can customize your views to behave during a testing phase. To do this, you can add
+                           a condition in your code to check whether the code is being run in testing mode. You can
+                           use the following condition in the python section of the code: 
+            </p><pre class="screen">if kwargs.get("is_test") in [True, 'true']:</pre><p>This condition will be true if it is testing mode. You can now use this condition to
+                           setup your variables correctly. You can run the view in testing mode by clicking the
+                           test button in the top menu.
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_testing.png"></div>
+            <p>In addition, these custom views can also be defined to take the form of a specific
+                           view type: widget or column.
+            </p>
+            <p>Widget is a free form view type. It is designed to allow your view to be versatile in
+                           its presentation in TACTIC. These widget type views can appear in
+                           stand-alone pop-up windows, tab view layouts, forms, tables, text inputs, menus, or
+                           even buttons. An extension of this versatility lies in their ability to be injected into
+                           other custom views as well, much like what was described in the Injecting Widgets
+                           section.
+            </p>
+            <p>Column allows for the customization of a table column. This column is available to be
+                           added to any table through the Column Manager under Plugin Widgets. The ability to
+                           modify the aesthetics and data presentation of a column will allow the user to display
+                           the data they want in a specific format. For example, if metadata for a particular
+                           asset, such as an image, needs to be shown in a table, a column can be formatted to list
+                           the metadata information through the use of an embedded table, as shown below. Other
+                           formatting techniques, like alternating row colors, can be added as well.
+            </p>
+            <p><span class="underline">Example</span></p>
+            <p>HTML code in HTML Custom Layout
+                           tab:
+            </p><pre class="screen">&lt;div&gt;
+&lt;%
+table = []
+table.append("&lt;table cellpadding='4px'&gt;")
+i = 0
+for name, value in data.items():
+    i = i + 1
+    if (i % 2 == 0):
+        table.append("&lt;tr style='background: #BBB'&gt;")
+    else:
+        table.append("&lt;tr style='background: #DDD'&gt;")
+    
+    table.append("&lt;td style='width: 100px'&gt;%s&lt;/td&gt;" % name)
+    table.append("&lt;td&gt;%s&lt;/td&gt;" % value)    
+    table.append("&lt;/tr&gt;")
+
+table.append("&lt;/table&gt;")
+table = "".join(table)
+
+context.write(table)
+%&gt;
+&lt;/div&gt;</pre><p>Python code in Custom Layout Python
+                           tab:
+            </p><pre class="screen">data = {
+    'Frame Size:': "768 x 512",
+    'Colorspace:': "yuvj420p",
+    'Location:': "C:\...\",
+    'File Type:': "MJPEG (Motion JPEG)",
+}</pre><p>Output Column in Table:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_column_view_type.png"></div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Tips and Techniques">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1336"></a>Tips and Techniques
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>
+                                 Handling None:
+                             </strong></span></p>
+            <p>The default value for the empty string in Python is the word "None". This does not
+                           help very much when you want to obtain something like the search key of an sobject
+                           because if there is no search key, instead of getting an empty string, you get the
+                           string "None". And if you try to pass "None" into an element, an error will likely
+                           result. 
+            </p>
+            <p>The way to work around that is to add an "or" at the end of your kwargs.get function. </p>
+            <p>
+                           
+            </p><pre class="screen">ie: kwargs.get("search_key") or "" </pre><p>
+                       
+            </p>
+            <p><span class="bold"><strong>Embed Elements: </strong></span></p>
+            <p>A shortcut for embedding elements into the HTML is by clicking on the gear menu. </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_embed_elements.png"></div>
+            <p>
+                       
+            </p>
+            <p>Similarly, if you would like to inject another view into your current view, you can do
+                           so by right clicking on the view you want to inject.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_inject.png"></div>
+            <p>
+                       
+            </p>
+            <p><span class="bold"><strong>Element Name as Column of sObject:</strong></span></p>
+            <p>If you pass a search key into an element, it automatically takes the element name as
+                           the column if you do not specify one. In the example below, the text input will display
+                           the id of the sObject with the given search key. 
+            </p><pre class="screen">&lt;element name="id"&gt;
+  &lt;display class="tactic.ui.input.TextInputWdg"&gt; 
+    &lt;search_key&gt;${search_key}&lt;/search_key&gt;
+    &lt;width&gt;100px&lt;/width&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="doc_developer_tactic-widgets.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-developer_widgets.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_custom-interfaces-in-tactic.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

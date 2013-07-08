@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="schema">
+        <display class="XmlWdg"/>
+    </element>
+    <element name="update"/>
+
+    <element name="create">
+        <display class="pyasm.admin.creator.PipelineCreatorElementWdg"/>
+    </element>
+</definition>
+
+
+<table>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="schema"/>
+</table>
+
+
+<manage>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="schema"/>
+    <element name="create"/>
+</manage>
+
+
+
+<edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="schema" type='xml'>
+        <display class='TextAreaWdg'/>
+    </element>
+</edit>
+
+<insert>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="schema" type='xml'>
+        <display class='TextAreaWdg'/>
+    </element>
+</insert>
+
+
+
+
+
+<add_item>
+    <element name="code" width="100px"/>
+    <element name="description" width="100px"/>
+    <element name="schema" width="400px"/>
+</add_item>
+
+
+</config>
+
+

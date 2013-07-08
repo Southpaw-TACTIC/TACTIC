@@ -1,0 +1,284 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Active Directory Integration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_configuration.html" title="Server Configuration">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_configure-ssl.html" title="TACTIC Configuring SSL">
+      <link rel="next" href="tactic-sys-admin_fileserver.html" title="Fileserver">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-ssl.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_fileserver.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Active Directory Integration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_active-directory"></a>Active Directory Integration
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4278"></a>Description
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC provides the ability to easily connect to any active directory installation for
+               both authentication and for synchronization of user data. With a set of directives in
+               the TACTIC configuration file, it is possible to connect to Active Directory for
+                           authentication and user information.
+            </p>
+            <p>This synchronization takes place at login time. At this point, TACTIC takes the
+                           desired information for a particular user and caches it into the "sthpw/login" search
+                           type. Subsequent requests would normally use an issued ticket given at login time. On
+                           these requests, no further querying of active directory is needed until the ticket
+                           expires or the user signs out the application.
+            </p>
+         </div>
+         <div class="simplesect" title="Prerequisites">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4285"></a>Prerequisites
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The active directory modules make use of win32 libraries for python. These must be
+                           installed in order for the connection to active directory to function properly
+            </p>
+         </div>
+         <div class="simplesect" title="Configuration">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4290"></a>Configuration
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>There are a number of directives in the TACTIC config file that can be used to
+                           configure the active directory settings. These allow you to adjust TACTIC behavior to
+                           suit the needs of the facility.
+            </p>
+            <p>In order to turn on active directory authentication, you must change the authenticate
+                           class to the following: 
+            </p>
+            <p>authenticate_class: tactic.active_directory.ADAuthenticate</p>
+            <p>The following directives can be set under the active directory category:</p>
+            <p><span class="bold"><strong>domains:</strong></span> This is a "|" delimited list of the domains
+                           that exist in the network. If specified, a selection box for domains will be added to
+                           the login page. 
+            </p>
+            <p><span class="bold"><strong>allow: </strong></span>can be "all", which allows everyone to log in
+                           if authentication is approved or it can point to the name of a specific Active Directory
+                           attribute that must be set to True. If a person is denied access, the will receive the
+                           error: "Permission denied due to insufficient Active Directory clearance". 
+            </p>
+            <p><span class="bold"><strong>default_groups: </strong></span>defines the default groups that a
+                           user will belong to if none is specified. Multiple groups are delimited by "|". 
+            </p>
+            <p><span class="bold"><strong>default_license_type: </strong></span>determines the default license
+                           type for a user if none is specified in the Active Directory attribute
+                           "tacticLicenceType".
+            </p>
+         </div>
+         <div class="simplesect" title="Example of Typical Entry">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4317"></a>Example of Typical Entry
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Below is an example of a typical entry in the TACTIC config file: </p>
+            <p>&lt;active_directory&gt; </p>
+            <p>     &lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt; </p>
+            <p>     &lt;allow&gt;tacticEnabled&lt;/allow&gt;</p>
+            <p>     &lt;default_groups&gt;client&lt;/default_groups&gt; </p>
+            <p>     &lt;default_license_type&gt;user&lt;/default_license_type&gt; </p>
+            <p>&lt;/active_directory&gt;</p>
+         </div>
+         <div class="simplesect" title="Example Configurations">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4334"></a>Example Configurations
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Allow anyone to login: </p>
+            <p>&lt;active_directory&gt; </p>
+            <p>     &lt;allow&gt;all&lt;allow&gt; </p>
+            <p>     &lt;/active_directory&gt; </p>
+            <p>Allow anyone to login and will be put in the "client" group if user has no groups
+                           specified. 
+            </p>
+            <p>&lt;active_directory&gt; </p>
+            <p>     &lt;allow&gt;all&lt;/allow&gt; </p>
+            <p>&lt;/active_directory&gt; </p>
+            <p>Only allow thos with the attibute tacticEnabled in Active Directory set to "true" </p>
+            <p>&lt;active_directory&gt; </p>
+            <p>     &lt;allow&gt;tacticEnabled&lt;/allow&gt; </p>
+            <p>&lt;/active_directory&gt; </p>
+            <p>Enable users to select a domain (xxx, yyy or zzz) in the login screen </p>
+            <p>&lt;active_directory&gt; </p>
+            <p>     &lt;allow&gt;all&lt;/allow&gt; </p>
+            <p>     &lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt;</p>
+            <p>&lt;/active_directory&gt;</p>
+         </div>
+         <div class="simplesect" title="Mapping">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4371"></a>Mapping
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Active Directory attributes use camel case notation (aaaBbbCcc), while TACTIC users
+                           lowercase with underscore separators for columns( aaa_bbb_ccc). In order to maintain
+                           consistency within the TACTIC application, a mapping of columns from active directory to
+                           TACTIC is provided. The following mappings are made by default:
+            </p>
+            <p>
+                           
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                           
+                           <p>mail</p>
+                                                       
+                        </td>
+                        <td>email</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p>telephoneNumber</p>
+                                                       
+                        </td>
+                        <td>
+                                                           
+                           <p>phone_number</p>
+                                                       
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>department</td>
+                        <td>department</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p>displayName</p>
+                                                       
+                        </td>
+                        <td>first_name, last_name (broken up)</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                           
+                           <p>tacticLicenceType</p>
+                                                       
+                        </td>
+                        <td>license_type</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+            <p>The Active Directory variable "tacticLicenseType" is a custom variable that indicates
+                           which type of license a particular user can occupy in TACTIC. If this attribute is
+                           missing from a users active directory profile, then they will be denied a login. This
+                           attribute can be used to determine if a particular user in active directory is allowed
+                           to login to TACTIC. 
+            </p>
+            <p>The only supported license for this attribute are "user" and "default". Other license
+                           types have not yet been implemented yet.
+            </p>
+         </div>
+         <div class="simplesect" title="Groups">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4428"></a>Groups
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>On log in, TACTIC will look at all of the groups that a user belongs to in Active
+                           Directory and match those group names to the "ad_login_group" column in the
+                           "sthpw/login_group" search type. This grouping list will synchronized at this time,
+                           removing the users from groups not specified in Active Directory and add those that are
+                           specified. This means that Active Directory is in full control of the groups that a user
+                           is part of and therefore must be managed entirely in Active Directory. 
+            </p>
+            <p>For the name of the group, TACTIC only looks at the root of the path to map the group
+                           name. For example, an active directory group with the following distinguished name: 
+            </p>
+            <p>memberOf: CN=supervisor,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com </p>
+            <p>TACTIC will need only "supervisor" to be entered in the "ad_login_group"
+                           column.
+            </p>
+         </div>
+         <div class="simplesect" title="Exceeding License">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e4439"></a>Exceeding License
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>If on logging in, the number of users exceeds the number of users in the license, then
+                           that user will be denied access and an entry in the "sthpw/login" search type will not
+                           be made. However, all other users currently registered can continue to work
+                           normally.
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_configure-ssl.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_configuration.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_fileserver.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

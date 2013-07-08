@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="login_group" title='Group'/>
+    <element name="description"/>
+
+    <element name="global_rules">
+      <display class="tactic.ui.panel.SecurityManagerButtonWdg"/>
+    </element>
+
+
+    <element name="users">
+        <display class="tactic.ui.table.DropElementWdg">
+            <!--
+          <css_background-color>#425952</css_background-color>
+            -->
+           <instance_type>sthpw/login_in_group</instance_type>
+           <accepted_drop_type>sthpw/login</accepted_drop_type>
+      </display>
+    </element>
+
+    <element name="access_rules_hidden" title='Access Rules'>
+      <display class='tactic.ui.table.HiddenRowElementWdg'>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <search_type>sthpw/login_group</search_type>
+        <show_search_limit>false</show_search_limit>
+        <show_insert>false</show_insert>
+        <show_row_select>false</show_row_select>
+        <show_gear>false</show_gear>
+        <view>access_rule</view>
+      </display>
+    </element>
+
+
+    <element name="access_rules">
+      <display class="XmlWdg"/>
+    </element>
+
+
+    <element name="user_assign">
+        <display widget='button'>
+            <icon>USER_ADD</icon>
+            <cbjs_action>
+                var class_name = "tactic.ui.startup.UserAssignWdg";
+                var kwargs = {
+                    search_key: bvr.search_key
+                }
+                spt.panel.load_popup("Assign Users to Group", class_name, kwargs);
+            </cbjs_action>
+        </display>
+    </element>
+
+
+
+
+</definition>
+
+
+<access_rule>
+    <element name="access_rules"/>
+</access_rule>
+
+
+<table>
+    <element name="login_group"/>
+    <element name="users"/>
+    <element name="user_assign"/>
+    <element name="description"/>
+    <element name="access_level"/>
+    <element name="global_rules"/>
+    <element name="access_rules_hidden"/>
+</table>
+
+<!-- a simple less technical interface without using the drop -->
+<startup>
+    <element name="project_code"/>
+    <element name="login_group"/>
+    <element name="description"/>
+    <element name="access_level"/>
+    <element name="user_assign"/>
+    <element name="users"/>
+    <element name="global_rules"/>
+</startup>
+
+
+
+
+
+<permissions>
+    <element name="login_group"/>
+    <element name="description"/>
+    <element name="global_rules"/>
+</permissions>
+
+
+
+
+
+
+<planner>
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+    <element name="login_group" width="80"/>
+    <element name="users" width="200"/>
+</planner>
+
+
+<planner_right>
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>60</icon_size>
+        </display>
+    </element>
+
+    <element name="instances">
+        <display class="HiddenRowToggleWdg">
+            <title_icon>Contents</title_icon>
+            <dynamic>pyasm.prod.web.SObjectInstanceListWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="login_group"/>
+    <element name="description"/>
+
+    <element name="number_of_instances">
+        <display class="pyasm.prod.web.NumSObjectInstancesWdg"/>
+    </element>
+
+</planner_right>
+
+
+
+
+<edit>
+    <element name="login_group" title='Group'/>
+    <element name="description"/>
+    <element name="access_level"/>
+    <element name="access_rules" type='xml'>
+        <display class='TextAreaWdg'/>
+    </element>
+
+    <element name='add_to_project'>
+        <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
+    </element>
+    <!--<element name="sub_groups"/>-->
+</edit>
+
+
+
+<insert>
+    <element name="login_group" title='Group'/>
+    <element name="description"/>
+    <element name="add_to_project">
+        <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
+        <action class="tactic.ui.startup.SecurityAddGroupToProjectAction"/>
+    </element>
+</insert>
+
+
+
+
+
+
+<edit_definition>
+   <element name="users">
+      <action class="tactic.ui.table.DropElementAction">
+        <instance_type>sthpw/login_in_group</instance_type>
+      </action>
+  </element>
+
+  <element name="access_level">
+      <display class="SelectWdg">
+          <empty>true</empty>
+          <values>none|low|medium|high</values>
+      </display>
+  </element>
+
+
+
+
+
+</edit_definition>
+
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>login_group|description</column>
+        </display>
+    </element>
+</simple_filter>
+
+
+
+</config>
+
+

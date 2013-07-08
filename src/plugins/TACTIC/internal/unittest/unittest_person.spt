@@ -1,0 +1,31 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('description', """Unittest Person""")
+insert.set_value('database', """unittest""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Unittest Person""")
+insert.set_value('namespace', """unittest""")
+insert.set_value('search_type', """unittest/person""")
+insert.set_value('table_name', """person""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('unittest/person')
+table.add('age',                      'integer' )
+table.add('approval',                 'text' )
+table.add('birth_date',               'timestamp' )
+table.add('city_code',                'varchar', length='256' )
+table.add('code',                     'varchar', length='256' )
+table.add('description',              'text' )
+table.add('discussion',               'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('metadata',                 'text' )
+table.add('name_first',               'varchar', length='100' )
+table.add('name_last',                'varchar', length='100' )
+table.add('nationality',              'varchar', length='100' )
+table.add('picture',                  'text' )
+table.add('pipeline_code',            'varchar', length='256' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

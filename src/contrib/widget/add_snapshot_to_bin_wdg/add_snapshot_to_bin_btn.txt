@@ -1,0 +1,13 @@
+<element edit='true' name='add_snapshot_to_bin_wdg' title='Add to Bin'>
+  <display class='tactic.ui.table.ButtonElementWdg'>
+    <cbjs_action>      
+      kwargs = {
+        'view': 'add_snapshot_to_bin_wdg',
+        'search_key': bvr.search_key
+      };
+      spt.panel.load_popup('Add Snapshot to Bin Widget', 'tactic.ui.panel.CustomLayoutWdg', kwargs);
+
+    </cbjs_action>
+  </display>
+  <edit class='TextWdg'/>
+</element>

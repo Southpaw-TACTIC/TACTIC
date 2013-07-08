@@ -1,0 +1,268 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Widget Architecture</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="tactic-developer_widgets.html" title="Custom Widgets">
+      <link rel="prev" href="tactic-developer_widgets.html" title="Custom Widgets">
+      <link rel="next" href="tactic-developer_developer_custom-layout-editor.html" title="Custom Layout Editor">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-developer_widgets.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_custom-layout-editor.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Widget Architecture">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="doc_developer_tactic-widgets"></a>Widget Architecture
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <h4><a name="d0e879"></a>What are Widgets?
+         </h4>
+         <p>Widgets are drawable entities. They have the ability to draw themselves and also have the
+                   ability to contain other widgets and call on their drawing.
+         </p>
+         <h4><a name="d0e883"></a>Widget Architecture?
+         </h4>
+         <p>The TACTIC interface is entirely built on top of widget architecture. A widget has a
+                    drawing mechanism which displays the widget. Widgets can contain any number of other widgets
+                    and pass information to them. 
+         </p>
+         <p>Certain widgets also make use of configuration xml documents in order to configure how
+                    they should be drawn. These configs are useful because they allow very quick and readable
+                    configuration of complex widgets. This document can also be stored in the database as a way
+                    of remembering the state of how to redraw a particular widget. This is widely used in TACTIC
+                    to store various parts of the interface in the database. 
+         </p>
+         <p>Every widget has a display method which completely controls how a widget is displayed.
+                    This display is recursive as each widget will call all of it's children's display method. In
+                    this manner, the entire interface is build up. 
+         </p>
+         <p>Widgets derive data to draw from sobjects. Generally a search is performed to retrieve
+                    sobjects which are then used to draw the widget. The widget itself can perform the search or
+                    it can recieve sobjects from some external source.
+         </p>
+         <h4><a name="d0e893"></a>Widget Config
+         </h4>
+         <p>Numerous widgets use configuration xml documents to help them draw their display. These
+                    widgets are considered to be "layout" widgets in that they generally use the configurations
+                    to determine what the child widgets are and how and where they are drawn within the parent
+                    layout widget. The widget config is an xml document which describes the child elements and
+                    how they should be display. The format is defined as follows.
+         </p><pre class="screen">&lt;config&gt;
+  &lt;VIEW&gt;
+    &lt;element name='NAME'  OPTION='VALUE'&gt;
+      &lt;display class='CLASS_PATH'&gt;
+        &lt;KWARG&gt;VALUE&lt;/KWARG&gt;
+        &lt;KWARG&gt;VALUE&lt;/KWARG&gt;
+      &lt;/dispaly&gt;
+    &lt;/element&gt;
+    &lt;element name='NAME' OPTION='VALUE'&gt;
+      &lt;display class='CLASS_PATH'&gt;
+        &lt;KWARG&gt;VALUE&lt;/KWARG&gt;
+        &lt;KWARG&gt;VALUE&lt;/KWARG&gt;
+      &lt;/dispaly&gt;
+    &lt;/element&gt;
+  &lt;/VIEW&gt;
+&lt;/config&gt;</pre><p>Where capitalized words represent variable entries.</p>
+         <div class="informaltable">
+            <table border="1">
+               <colgroup>
+                  <col>
+                  <col>
+               </colgroup>
+               <tbody>
+                  <tr>
+                     <td>VIEW</td>
+                     <td>The name of a view which encompases a particular configuration. There can
+                                                be any number of views in a configuration documentation
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>OPTION</td>
+                     <td>An option defining a state or setting of this element. This information
+                                                does not get passed to the element widget
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>VALUE</td>
+                     <td>A value or a particular argument or options</td>
+                  </tr>
+                  <tr>
+                     <td>CLASS_PATH</td>
+                     <td>The fully qualified python path of the widget class</td>
+                  </tr>
+                  <tr>
+                     <td>KWARG</td>
+                     <td>A kwarg that is passed to the class on construction</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p>A simple example of a configuration is as follows:</p><pre class="screen">&lt;config&gt;
+&lt;simple&gt;
+  &lt;element name='email'&gt;
+    &lt;display class='custom.MyCustomWdg'&gt;
+      &lt;title&gt;My Widget&lt;/title&gt;
+    &lt;/display&gt;
+  &lt;/element&gt;
+&lt;/simple&gt;
+&lt;/config&gt;</pre><p>In this case, the "simple" view defines a single element called "email". This element </p>
+         <p>The configuration document can contain any number of "views". Each "view" can contain any
+                    number of elements. Inside each element, there are xml snippets which represents an xml
+                    serialization of a widget. In the example above:
+         </p><pre class="screen">&lt;display class='custom.MyCustomWdg'&gt;
+  &lt;title&gt;My Widget&lt;/title&gt;
+&lt;/display&gt;</pre><p>translates into python server code as follows:</p><pre class="screen">from custom import MyCustomWdg
+widget = MyCustomWdg(title='My Widget')</pre><p>TACTIC uses this format extensively to serialize widgets to the database. Although any
+                    source can be used, the config is most often defined in the widget config table of a
+                    particular project. 
+         </p>
+         <p>There are a couple of layout classes that make heavy use of the widget config. </p>
+         <p><span class="bold"><strong>SideBarWdg:</strong></span></p>
+         <p><span class="bold"><strong>TableLayoutWdg:</strong></span> this class is the used to display most
+                    tabular data in TACTIC. It contains many features to make the display of tabular data
+                    dynamic and flexible. Views can be customized and saved. It is probably the most used layout
+                    class in TACTIC. It makes heavy use of the widget config for its display. It's importance is
+                    sufficient to warrent a section on its own below. 
+         </p>
+         <p><span class="bold"><strong>CustomLayoutWdg:</strong></span> this class makes use of a special
+                    version of the config. It defines elements, but they are defined within an html tag,
+                    allowing for precise layout of elements using HTML. This allows for very flexible layouts
+                    while still being able make use of TACTIC widgets.
+         </p>
+         <h5><a name="d0e960"></a>SideBarWdg
+         </h5>
+         <p>The SideBarWdg defines the look of the side bar on the left of the TACTIC interface. The
+                    SideBarWdg makes heavy use of the widget config to determine the contents of the side bar.
+                    There are 3 main types of widgets that would be defined as elements in the SideBarWdg: 
+         </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>LinkWdg </p>
+               </li>
+               <li class="listitem">
+                  <p>FolderWdg (Currently SectionWdg) </p>
+               </li>
+               <li class="listitem">
+                  <p>SeparatorWdg </p>
+               </li>
+            </ul>
+         </div>
+         <p>The top level view for the project views can be found in the widget config table with the
+                    criteria: 
+         </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>search_type = 'SideBarWdg'</p>
+               </li>
+               <li class="listitem">
+                  <p>view = 'project_view' </p>
+               </li>
+            </ul>
+         </div>
+         <p>This will defined a list of elements that appear in the top level of the "Project View".
+                    An example would look like the following:
+         </p><pre class="screen">&lt;config&gt;
+  &lt;project_view&gt;
+    &lt;element name='summary'/&gt;
+    &lt;element name='modeling'/&gt;
+  &lt;/project_view&gt;
+&lt;/config&gt;</pre><p>Although, you could defined the display section here, there are are hierarchical
+                    definitions to the elements. If a definition is not found inline, TACTIC will look at the
+                    the database for the specially named "definition" view. 
+         </p>
+         <div class="itemizedlist">
+            <ul class="itemizedlist">
+               <li class="listitem">
+                  <p>search_type = 'SideBarWdg' </p>
+               </li>
+               <li class="listitem">
+                  <p>view = 'definition'</p>
+               </li>
+            </ul>
+         </div><pre class="screen">&lt;config&gt;
+  &lt;definition&gt;
+    &lt;element name='summary' title='Asset Summary'&gt;
+      &lt;display class='LinkWdg'&gt;
+        &lt;class_name&gt;tactic.ui.panel.ViewPanelWdg&lt;/class_name&gt;
+        &lt;search_type&gt;prod/asset&lt;/search_type&gt;
+        &lt;view&gt;summary&lt;/view&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+    &lt;element name='modeling' title='Modelling'&gt;
+      &lt;display class='FolderWdg'&gt;
+        &lt;view&gt;modeling&lt;/view&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/definition&gt;
+&lt;/config&gt;</pre><p>Both the summary and modeling elements are defined in this special "definition" view" </p>
+         <p>Since all of the folders at all levels cascade to look at the "definition" view, it is
+                    useful to always define defintions of elements in the "definiton" view. This will allow a
+                    consistent definition for all of the "views" in the project view. 
+         </p>
+         <p>The "summary" view is defined as a LinkWdg. This widget takes the information defined in
+                    the options and then displays that class in the main body of the TACTIC interface. 
+         </p><pre class="screen">widget = ViewPanelWdg( search_type='prod/asset', view='summary' ) </pre><p>As stated ealier, the ViewPanelWdg, combines a SearchWdg with a TableLayoutWdg. </p>
+         <p>The second element defines a "modeling" folder. Whe a folder is click, it will open up and
+                    display another list that is derived from the "modeling" view.
+         </p>
+         <h5><a name="d0e1010"></a>TableLayoutWdg
+         </h5>
+         <p>This widget is the primary class used in TACTIC to lay out tabular data. It makes heavy
+                    use of widget config to define what to display. 
+         </p>
+         <p>To display the rows and columns of the tabular layout, this widget makes use of the
+                    following: 
+         </p>
+         <p>a) rows which are sobjects </p>
+         <p>b) columns which are widgets derived from BaseTableElementWdg. </p>
+         <p>The table layout widget is able to perform a search base on input criteria. It is also
+                    able to receive sobjects through its set_objects() method. 
+         </p>
+         <p>This widget iterates through each of the sobjects per row. </p>
+         <p>For each column, the table draws the list of widgets provided by the config. This config
+                    is typically defined in in the database in the widget config table. 
+         </p>
+         <p>Two parameters are typcially used to find a particular widget config. </p>
+         <p>a) Search Type </p>
+         <p>b) View</p>
+         <h5><a name="d0e1032"></a>BaseTableElementWdg
+         </h5>
+         <p>BaseTableElementWdg are extensively used in the UI. Each column in a table you see in
+                    TACTIC derives from it. For examples of how to create your own, please refer to the Widget
+                    Development section. 
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-developer_widgets.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-developer_widgets.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-developer_developer_custom-layout-editor.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

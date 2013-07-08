@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+
+<definition>
+    <element name="history"/>
+    <element name="files" edit="false">
+        <display class="ThumbWdg">
+            <file_type>true</file_type>
+    </display>
+    </element>
+    <element name="sequence_code" title="sequence"/>
+    <element name="code"/>
+    <element name="stage"/>
+    <element name="title"/>
+    <element name="author"/>
+    <element name="general_publish" edit="false">
+        <display class="tactic.ui.table.GeneralPublishElementWdg">
+            <preview>false</preview>
+        </display>
+    </element>
+</definition>
+
+
+<table>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="general_publish"/>
+    <element name="sequence_code" title="sequence"/>
+    <element name="code"/>
+    <element name="stage"/>
+    <element name="title"/>
+    <element name="author"/>
+</table>
+
+
+<summary layout="TableWdg">
+  <element name="files"/>
+  <element name="code"/>
+  <element name="title"/>
+</summary>
+
+
+<edit>
+
+  <element name="thumb">
+    <display class="pyasm.widget.ThumbInputWdg"/>
+    <action class="NullAction"/>
+  </element>
+
+  <element name="sequence_code">
+     <display class="SelectWdg">
+       <web_state>true</web_state>
+       <empty>true</empty>
+      <query>prod/sequence|code|code</query>
+    </display> 
+  </element>
+
+  <element name="title"/>
+
+  <element name="code"/>
+  <element name="author"/>
+
+  <element name="stage">
+      <display class="SelectWdg">
+        <setting>script_stage</setting>
+      </display>
+  </element>
+
+</edit>
+
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context>script|publish</context>
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+<add_item>
+    <element name="sequence_code" title="sequence" width="100px"/>
+    <element name="code" width="100px"/>
+    <element name="stage" width="100px"/>
+    <element name="title" width="100px"/>
+    <element name="author" width="100px"/>
+</add_item>
+
+</config>
+
+
+
+
+

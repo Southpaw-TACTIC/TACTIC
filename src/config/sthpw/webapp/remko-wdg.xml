@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+    AUTHOR:
+        Remko Noteboom
+
+-->
+
+
+<application>
+  <include module='photo.modules'/>
+  <include module='prod.modules'/>
+  <widget class='pyasm.widget.MyBoomLayout'>
+    <!-- add all of the header widgets -->
+    <widgets type='header'>
+      <widget class='modules.photo.HeaderWdg'/>
+    </widgets>
+    <!-- add all of the left widgets -->
+    <widgets type='left'>
+      <widget class='pyasm.widget.MyBoomNavWdg'/>
+      <widget class='pyasm.widget.MyBoomNavWdg'/>
+    </widgets>
+    <!-- add all of the right widgets -->
+    <widgets type='right'>
+      <widget class='pyasm.widget.MyBoomSampleContentWdg'/>
+      <widget class='pyasm.widget.MyBoomPersonWdg'/>
+    </widgets>
+  </widget>
+</application>

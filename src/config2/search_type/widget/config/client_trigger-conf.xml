@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="event"/>
+    <element name="callback"/>
+    <element name="description"/>
+    <element name="timestamp"/>
+    <element name="edit" title="Edit">
+      <display class='tactic.ui.table.ButtonElementWdg'>
+        <icon>EDIT</icon>
+        <cbjs_action><![CDATA[
+        var callback = spt.dg_table.get_element_value(bvr.src_el, "callback");
+        spt.panel.load_popup("TACTIC Script Editor",
+            "tactic.ui.app.ShelfEditWdg", {'script_path': callback}, {"load_false": true} );
+        ]]></cbjs_action>
+      </display>
+    </element>
+</definition>
+
+
+<table>
+    <element name="event"/>
+    <element name="callback"/>
+    <element name="editor"/>
+    <element name="description"/>
+</table>
+
+
+<edit>
+    <element name="event"/>
+    <element name="callback">
+    <!-- This does not return the expected
+      <display class='SelectWdg'>
+        <values_expr>@GET(config/custom_script.folder)/@GET(config/custom_script.folder)</values_expr>
+        <mode_expr>absolute</mode_expr>
+      </display>
+    -->
+    </element>
+    <element name="description"/>
+    <element name="timestamp"/>
+</edit>
+
+
+</config>

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<definition>
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <filename>true</filename>
+        </display>
+    </element>
+
+<!--
+    <element name="checkin_wdg">
+        <display class="pyasm.browser.RepoActionWdg">
+            <callback>pyasm.browser.TacticCompCheckinCbk</callback>
+        </display>
+    </element>   
+-->
+
+    <element name="comp_explore">
+        <display class="pyasm.prod.web.CompLayerTableElementWdg"/>
+    </element>
+
+
+</definition>
+
+<table>
+    <element name="history"/>
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="checkin_wdg"/>
+    <element name="comp_explore"/>
+</table>
+
+
+<edit>
+    <element name='preview'/>
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <query>prod/shot|code|code</query>
+            <web_state>true</web_state>
+        </display>
+    </element>
+    <element name="name"/>
+</edit>
+
+
+<add_item>
+    <element name="shot_code" width="100px"/>
+    <element name="name" width="100px"/>
+</add_item>
+
+
+
+</config>

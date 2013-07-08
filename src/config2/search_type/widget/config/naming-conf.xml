@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+    <element name="search_type"/>
+    <!--<element name="snapshot_type"/>-->
+    <!--<element name="context"/>-->
+
+    <!-- Disabling for now
+    <element name="ingest_rule_code"/>
+    -->
+
+
+    <element name="dir_naming"/>
+    <element name="file_naming"/>
+    <element name="sandbox_dir_naming"/>
+
+    <element name="update">
+        <display class="UpdateWdg">
+            <delete>true</delete>
+        </display>
+    </element>
+
+    <element name="latest_versionless" width="1%">
+        <display widget='format'>
+            <format>Checkbox</format>
+        </display>
+    </element>
+
+    <element name="current_versionless" width="1%">
+        <display widget='format'>
+            <format>Checkbox</format>
+        </display>
+    </element>
+
+
+    <element name="manual_version" width="1%">
+        <display widget='format'>
+            <format>Checkbox</format>
+        </display>
+    </element>
+    <element name="condition"/>
+
+
+</definition>
+
+<edit_definition>
+    <element name="search_type">
+        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+    </element>
+
+    <element name="dir_naming" title="Directory Naming">
+        <display class="TextAreaWdg">
+            <size>70</size>
+            <hint>Define the portion after the default folders(i.e. {project}/{search_type})</hint>
+        </display>
+    </element>
+
+    <element name="file_naming" title="File Naming">
+        <display class="TextAreaWdg">
+            <size>70</size>
+        </display>
+    </element>
+
+    <element name="sandbox_dir_naming" title="Sandbox Directory Naming">
+        <display class="TextAreaWdg">
+            <size>70</size>
+        </display>
+    </element>
+
+    <element name="checkin_type" title="Check-in Type">
+        <display class="SelectWdg">
+            <values>strict|auto</values>
+            <empty>-- default --</empty>
+        </display>
+    </element>
+
+
+
+    <element name="condition">
+        <display class="TextAreaWdg">
+            <size>70</size>
+        </display>
+    </element>
+
+
+    <element name="snapshot_type">
+        <display class="TextWdg">
+            <hint>Type of snapshots are affected (e.g. '', sequence, file, directory)</hint>
+        </display>
+    </element>
+
+</edit_definition>
+
+
+<table>
+    <element name="search_type"/>
+    <!--<element name="ingest_rule_code"/>-->
+    <!--<element name="process"/>-->
+    <element name="context"/>
+    <element name="latest_versionless"/>
+    <element name="current_versionless"/>
+    <element name="manual_version"/>
+    <element name="condition"/>
+    <element name="checkin_type"/>
+    <element name="dir_naming"/>
+    <element name="file_naming"/>
+    <element name="sandbox_dir_naming"/>
+</table>
+
+
+
+<edit>
+   
+    <element name="search_type"/>
+    <element name="context"/>
+
+    <element name="latest_versionless"/>
+    <element name="current_versionless"/>
+    <element name="checkin_type"/>
+    <element name="condition"/>
+
+    <element name="dir_naming"/>
+    <element name="file_naming"/>
+    <element name="sandbox_dir_naming"/>
+
+</edit>
+
+<insert>
+    <element name="search_type"/>
+    <element name="context"/>
+
+    <element name="latest_versionless"/>
+    <element name="current_versionless"/>
+    <element name="checkin_type"/>
+    <element name="condition"/>
+
+    <element name="dir_naming"/>
+    <element name="file_naming"/>
+    <element name="sandbox_dir_naming"/>
+
+</insert>
+
+
+
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>context|search_type|snapshot_type</column>
+        </display>
+    </element>
+</simple_filter>
+
+</config>

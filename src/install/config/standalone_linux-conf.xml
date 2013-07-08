@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config version="2">
+
+
+<!-- database -->
+<database>
+    <vendor>Sqlite</vendor>
+</database>
+
+<security>
+    <version>2</version>
+</security>
+
+<services>
+    <mailserver></mailserver>
+    <mail_user></mail_user>
+    <mail_password></mail_password>
+    <mail_port></mail_port>
+    <mail_tls_enabled></mail_tls_enabled>
+</services>
+
+<look>
+    <palette>AQUA</palette>
+</look>
+
+
+<checkin>
+    <asset_base_dir></asset_base_dir>
+    <web_base_dir>/assets</web_base_dir>
+    <win32_local_base_dir>C:/sthpw</win32_local_base_dir>
+    <linux_local_base_dir>/tmp/sthpw</linux_local_base_dir>
+    <win32_sandbox_dir>C:/sthpw/sandbox</win32_sandbox_dir>
+    <linux_sandbox_dir>/tmp/sthpw/sandbox</linux_sandbox_dir>
+    <win32_client_repo_dir></win32_client_repo_dir>
+    <linux_client_repo_dir></linux_client_repo_dir>
+    <win32_client_handoff_dir></win32_client_handoff_dir>
+    <linux_client_handoff_dir></linux_client_handoff_dir>
+    <win32_server_handoff_dir></win32_server_handoff_dir>
+    <linux_server_handoff_dir></linux_server_handoff_dir>
+    <sudo_no_password>false</sudo_no_password>
+    <version_padding>3</version_padding>
+</checkin>
+
+</config>
+
+

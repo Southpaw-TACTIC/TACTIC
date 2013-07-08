@@ -1,0 +1,600 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005-2008, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+<config>
+
+<!-- The definition view defines all of the elements -->
+<definition layout="TableLayoutWdg">
+    <element name="code"/>
+
+    <element name="name"/>
+
+   
+    <element name="uber_notes"/>
+
+    <element name="asset_library" title='Library'/>
+    <element name="pipeline_code" title="Pipeline"/>
+
+    <element name="preview"/>
+
+    <element name="info" edit='false'>
+        <display class="pyasm.prod.web.AssetInfoWdg"/>
+    </element>
+
+    <element name="task" edit='false'>
+        <display class="pyasm.widget.SObjectTaskTableElement">
+            <width>250</width>
+            <simple_date>true</simple_date>
+            <bid_edit>false</bid_edit>
+        </display>
+    </element>
+
+    <element name="discussion" edit="false">
+        <display class="pyasm.widget.DiscussionWdg">
+            <sticky>new</sticky>
+        </display>
+    </element>
+
+
+    <element name="task_edit"/>
+
+    <element name="task_status"/>
+
+
+    <element name="input" edit="false" sortable="false">
+        <display class="tactic.ui.cgapp.LoaderElementWdg">
+            <search_type>prod/asset</search_type>
+            <mode>input</mode>
+        </display>
+    </element>
+
+    <element name="output" edit="false" sortable="false">
+        <display class="tactic.ui.cgapp.LoaderElementWdg">
+            <search_type>prod/asset</search_type>
+            <mode>output</mode>
+        </display>
+    </element>
+
+
+    <element name="submit" edit="false" sortable="false">
+        <display class="SubmissionLinkTableElement"/>
+    </element>
+
+    <element name="related">
+        <display class="pyasm.flash.widget.RelatedAssetInsertElement"/>
+    </element>
+
+    <element name="task_schedule"/>
+
+
+</definition>
+
+
+
+<preview layout="EditWdg">
+    <element name="preview"/>
+</preview>
+
+
+
+
+<!-- the edit view defines how each of the elements are edited -->
+<edit_definition>
+    <element name="code">
+        <display class="TextWdg"/>
+    </element>
+
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <client_action>icon_checkin</client_action>
+            <context>icon</context>
+        </display>
+    </element>
+
+    <element name="asset_library">
+        <display class="SelectWdg">
+            <required>true</required>
+            <query>prod/asset_library|code|code</query>
+            <empty>true</empty>
+        </display>
+     
+    </element>
+
+    <element name="name">
+        <display class="TextWdg">
+            <required>true</required>
+        </display>
+    </element>
+
+    <element name="description" type="string"/>
+
+
+  <element name="pipeline_code"/>
+
+  <element name="asset_type">
+    <display class="SelectWdg">
+        <query>prod/asset_type|code|code</query>
+    </display>
+  </element>
+
+</edit_definition>
+
+
+
+<table layout="TableLayoutWdg">
+    <element name="preview"/>
+    <element name="detail"/>
+    <element name="asset_library"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+    <element name="submit"/>
+</table>
+
+
+
+
+<manage layout="TableLayoutWdg">
+    <element name="preview"/>
+    <element name="asset_library"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+    <element name="submit"/>
+    <element name="task_edit"/>
+</manage>
+
+
+
+<artist>
+    <element name="general_checkin"/>
+    <element name="preview"/>
+    <element name="info"/>
+    <element name="task"/>
+    <element name="discussion"/>
+</artist>
+
+
+
+<supe layout="TableWdg">
+
+    <element name="preview"/>
+    <element name="info"/>
+
+    <element name="task">
+        <display class="pyasm.widget.SObjectTaskTableElement">
+            <supe>true</supe>
+            <width>250</width>
+            <bid_edit>true</bid_edit>
+        </display>
+    </element>
+
+    <element name="discussion">
+        <display class="pyasm.widget.DiscussionWdg">
+            <append_setting>notes_asset_prod_context</append_setting>
+            <sticky>new</sticky>
+        </display>
+    </element>
+
+
+</supe>
+
+<!-- to display this sobject in a simple list -->
+<list layout="TableWdg">
+  <element name="snapshot"/>
+
+  <element name="code"/>
+  <element name="name"/>
+</list>
+
+<!-- notes for production -->
+<asset_prod_notes>
+
+  <element name="preview"/>
+  <element name="asset">
+        <display class="pyasm.prod.web.AssetInfoWdg"/>
+  </element>
+
+  <element name="notes">
+    <display class="DiscussionWdg">
+        <append_setting>notes_asset_prod_context</append_setting>
+        <scroll>false</scroll>
+        <include_submission>true</include_submission>
+    </display>
+  </element>
+
+</asset_prod_notes>
+
+
+
+<summary layout="TableWdg">
+    <element name="preview"/>
+    <element name="general_checkin"/>
+    <element name="detail"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="task_status"/>
+
+    <element name="task_schedule"/>
+
+    <element name="completion" edit="false">
+        <display class="TaskCompletionWdg">
+            <width>80</width>
+        </display>
+    </element>
+</summary>
+
+
+<!-- used in shot detail to display status summary of asset -->
+<summary_small>
+
+    <element name="detail"/>
+    
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>40</icon_size>
+        </display>
+    </element>
+    <element name="asset_info">
+        <display class="pyasm.prod.web.CondensedAssetInfoWdg">
+            <css>smaller</css>
+        </display>
+    </element>
+    <element name="task_status">
+        <display class="ParallelStatusWdg">
+            <label_format>small</label_format>
+            <bar_height>1</bar_height>
+            <report>false</report>
+        </display>
+    </element>
+
+    <element name="completion" edit="false">
+    </element>
+
+</summary_small>
+
+
+
+
+
+<!-- used in the project management tab to display completion -->
+<completion default="table" layout="TableWdg">
+    <element name="snapshot">
+        <display class="ThumbWdg">
+            <icon_size>30</icon_size>
+        </display>
+    </element>
+
+    <element name="code"/>
+
+    <element name="description"/>
+
+    <element name="task_completion" edit="false">
+        <display class="TaskCompletionWdg"/>
+    </element>
+
+</completion>
+
+
+<!-- for the shot planning page, to add asset instances to shots -->
+<layout>
+
+    <element name="prod_asset">
+        <display class="pyasm.prod.web.AssetCheckboxWdg">
+            <persist_on_submit>true</persist_on_submit>
+        </display>
+
+    </element>
+
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+</layout>
+
+
+<!-- for the overview tab - shows what shots each asset is planned in -->
+<shots_in_asset default="table" layout="TableWdg">
+    <element name="preview"/>
+
+    <element name="info">
+        <display class="pyasm.prod.web.AssetInfoWdg">
+            <width>500</width>
+        </display>
+    </element>
+
+    <element name="tasks">
+        <display class="pyasm.prod.web.TasksInSObjectWdg"/>
+    </element>
+
+    <element name="assigned shots">
+        <display class="pyasm.prod.web.AssignedShotWdg"/>
+    </element>
+
+</shots_in_asset>
+
+
+<render default="table">
+    <element name="detail"/>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="description"/>
+
+    <element name="dependency"/>
+
+    <element name="versions">
+        <display class="pyasm.prod.web.VersionHistoryWdg"/>
+    </element>
+
+    <element name="render">
+        <display class="pyasm.prod.web.RenderTableElementWdg"/>
+    </element>
+
+    <element name="update"/>
+
+</render>
+
+
+
+<!-- display in the loader with Maya -->
+<load default="table" layout="TableWdg">
+    <element name="preview"/>
+
+    <element name="checkin" edit='false' width='1%'>
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>pyasm.prod.web.AssetHistoryWdg</dynamic_class>
+        </display>
+    </element>
+    <!--
+    <element name="xxx" edit='false' width='1%'>
+        <display class="HiddenRowToggleWdg">
+            <dynamic_class>tactic.ui.panel.ViewPanelWdg</dynamic_class>
+            <search_type>sthpw/snapshot</search_type>
+            <view>loadx</view>
+            <mode>simple</mode>
+            <show_general_search>false</show_general_search>
+        </display>
+    </element>
+    -->
+ 
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="input"/>
+    <element name="output"/>
+</load>
+
+
+<!-- display subreferences loader with Maya -->
+<subreference default="table">
+    
+    <element name="images">
+        <display class="ThumbWdg">
+            <icon_size>45</icon_size>
+        </display>
+    </element>
+
+    <element name="checkin">
+        <display class="HiddenRowToggleWdg">
+            <dynamic>pyasm.prod.web.AssetHistoryWdg</dynamic>
+        </display>
+    </element>
+
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+
+    <element name="input">
+        <display class="pyasm.prod.web.AssetLoaderWdg">
+            <mode>input</mode>
+        </display>
+    </element>
+
+</subreference>
+
+
+
+
+<!-- used in Maya Set loading tab -->
+<set_items>
+    <element name="update">
+        <display class="pyasm.prod.web.AssetCheckboxWdg"/>
+    </element>
+    <element name="icon">
+        <display class="pyasm.widget.ThumbWdg">
+            <icon_size>45</icon_size>
+        </display>
+    </element>
+    <element name="instance">
+        <display class="pyasm.widget.AuxDataWdg"/>
+    </element>
+    <element name="session ver">
+        <display class="pyasm.prod.web.SessionVersionWdg"/>
+    </element>
+    <element name="latest ver">
+        <display class="pyasm.prod.web.LatestVersionWdg"/>
+    </element>
+     
+</set_items>    
+
+
+
+
+
+<insert>
+    <element name="preview_insert"/>
+
+    <element name="asset_library"/>
+
+    <element name="name">
+        <display class="TextWdg">
+            <required>true</required>
+        </display>
+        <action class="pyasm.command.UniqueValueAction"/>
+    </element>
+
+    <element name="code">
+        <display class="NoneWdg"/>
+        <action class="pyasm.prod.command.AssetCodeUpdate"/>
+    </element>
+
+    <element name="description"/>
+
+
+  <element name="pipeline_code"/>
+
+  <element name="asset_type">
+    <display class="SelectWdg">
+        <query>prod/asset_type|code|code</query>
+    </display>
+  </element>
+
+<!--
+  <element name="custom">
+    <display class="CustomInfoInputWdg"/>
+    <action class="CustomInfoAction"/>
+  </element>
+-->
+
+</insert>
+
+
+<edit>
+    <element name="code"/>
+
+    <!--<element name="preview"/>-->
+
+
+    <element name="asset_library">
+        <display class="SelectWdg">
+            <query>prod/asset_library|code|code</query>
+            <empty>true</empty>
+            <web_state>true</web_state>
+        </display>
+    </element>
+
+
+    <element name="name">
+        <display class="TextWdg">
+            <mode>string</mode>
+        </display>
+    </element>
+
+    <element name="description">
+        <display class="TextAreaWdg">
+            <mode>string</mode>
+        </display>
+    </element>
+
+  <element name="pipeline_code">
+  <!--
+    <display class="SelectWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <query_filter>"search_type" like '%/asset'</query_filter>
+        <empty>true</empty>
+    </display>
+    -->
+  </element>
+
+  <element name="asset_type">
+    <display class="SelectWdg">
+        <query>prod/asset_type|code|code</query>
+    </display>
+  </element>
+
+
+</edit>
+
+<!-- for manual publishing thru uploading -->
+<publish>
+    <element name='images'>
+        <display class='ThumbInputWdg'/>
+        <action class="NullAction"/>
+    </element>
+    <element name="publish_files">
+        <display class="tactic.ui.widget.UploadWdg">
+            <context_expr>@GET(sthpw/task.process)</context_expr>
+            <!--<setting>asset_manual_publish_context</setting>-->
+        </display>
+        <action class="NullAction"/>
+        
+    </element>
+</publish>
+
+
+<insert_related default="edit">
+    <element name="related">
+        <display class="pyasm.flash.widget.RelatedAssetInputWdg"/>
+        <action class="pyasm.flash.widget.RelatedAssetAction"/>
+    </element>
+
+    <element name="type">
+        <display class="SelectWdg">
+            <setting>related_alpha</setting>
+            <hint>This is the alpha part of the related asset suffix</hint>
+        </display>
+        <action class="NullAction"/>
+    </element>
+    <element name="name"/>
+    <element name="description">
+        <display class="pyasm.flash.widget.RelatedAssetDescriptionWdg"/>
+    </element>
+
+   <element name="pipeline_code">
+    <display class="pyasm.prod.web.ShotPipelineWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <query_filter>"search_type" like '%/asset'</query_filter>
+    </display>
+    <action class="pyasm.prod.web.ShotTaskCreatorAction"/>
+  </element>
+ 
+</insert_related>
+
+
+
+<add_item>
+    <element name="asset_library" width="100px"/>
+    <element name="code" width="100px"/>
+    <element name="name" width="100px"/>
+    <element name="pipeline_code" width="100px"/> 
+    <element name="description" width="300px"/>
+    <!--
+    <element name="task_gear" width="30px"/>
+    <element name="task_edit" width="30px">
+      <display>
+        <multi>false</multi>
+      </display>
+    </element>
+    -->
+</add_item>
+
+<planner>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+</planner>
+
+<tile>
+    <element name='preview'/>
+    <element name='code'/>
+</tile>
+
+
+</config>
+
+

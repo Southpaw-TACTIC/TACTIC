@@ -1,0 +1,40 @@
+<config>
+  <completion_expression_wdg include_mako='true'>
+
+    <html>
+      <div>
+        <![CDATA[
+          <%
+
+    EXPR = kwargs.get('expression')
+    THICKNESS = kwargs.get('thickness')
+    if not THICKNESS:
+        THICKNESS = 20
+
+    BAR_COLOR = kwargs.get('bar_color')
+    if not BAR_COLOR:
+        BAR_COLOR = "#3F3"
+    completion = server.eval(EXPR, sobject, single=True)
+
+    if completion != None:
+        completion_str = "%3d%%" % (completion * 100)
+        width =  completion * 100
+        div_style = "100%%; border:1px solid #000;"
+        bar_style = "color:#000; width:%s%%; height:%spx; background:%s" %( width, THICKNESS, BAR_COLOR )
+        div = []
+        div.append( "<div style='%s'>" %( div_style ) )
+
+        
+        div.append( "<div style='%s'>%s</div>" %( bar_style, completion_str ) )
+        div.append( "</div>" )
+        div = "".join(div)
+        context.write(div)
+
+          %>
+        ]]>
+
+      </div>
+    </html>
+
+  </completion_expression_wdg>
+</config>

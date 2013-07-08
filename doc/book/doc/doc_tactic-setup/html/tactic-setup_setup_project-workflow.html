@@ -1,0 +1,425 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Workflow Editor</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_project-workflow.html" title="Advanced Workflow">
+      <link rel="prev" href="tactic-setup_project-workflow.html" title="Advanced Workflow">
+      <link rel="next" href="tactic-setup_sidebar.html" title="Sidebar">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_project-workflow.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_sidebar.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Workflow Editor">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_project-workflow"></a>Workflow Editor
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p><span class="inlinemediaobject"><img src="media/1_workflow_editor_overview.png"></span></p>
+         <div class="simplesect" title="Introduction">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2775"></a>Introduction
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Workflow Editor is a graphical tool in TACTIC used to interactively create
+               pipelines (workflows). It is a node-based tool which creates processes in a pipeline and
+               connects them. The Workflow Editor makes it easier to create large complex pipelines to
+                filter and process information and file system flow.
+            </p>
+            <p>The Workflow Editor is simple to use and similar to node base utilities commonly found
+               in other applications. Nodes can be created in the canvas and connected together. Each
+                           node represents a process (with attributes associated to it) and each connection
+                           represents information being delivered from one process to the other. Together, the
+                           Workflow Editor helps you create a definition of the pipeline document and drive much of
+                           the information flow in TACTIC.
+            </p>
+            <p><span class="bold"><strong>Access the Workflow Editor</strong></span></p>
+            <p>Access the Workflow Editor by going to:</p>
+            <p><span class="bold"><strong>Admin Views -&gt; Project Admin -&gt; Project
+                                 Workflow</strong></span></p>
+         </div>
+         <div class="simplesect" title="Insert a new pipeline">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2790"></a>Insert a new pipeline
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>When the option for "Has Pipeline" is selected during the registration of the sType,
+                           this defines a default pipeline for that sType. This pipeline can be found defined in
+                           the Workflow Editor in the sidebar under <span class="bold"><strong>Project
+                                     Pipelines</strong></span>. To add a new pipeline manually, the select the [+] icon in
+                           bottom panel of the Workflow Editor.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/2_workflow_editor_pipelines_panel.png"></span></p>
+         </div>
+         <div class="simplesect" title="Interface Walk Through">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2802"></a>Interface Walk Through
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The buttons at the top of the Workflow Editor allow various operations on the
+                           canvas:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_tools.png"></span></p>
+            <p>
+                           
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Create:</strong></span> Creates a new node on the
+                                                canvas.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Delete:</strong></span> Deletes the selected node.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Save:</strong></span> Saves the current state of the
+                                                pipeline to the database.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Clear:</strong></span> Clears the canvas.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Properties:</strong></span> Opens the Node Properties
+                                                panel. 
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Edit Properties of a Pipeline">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2840"></a>Edit Properties of a Pipeline
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>To edit the properties of a pipeline, first select a node in the pipeline and then
+                           click on the <span class="bold"><strong>Edit Properties</strong></span> button on the tool shelf.  
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>For more information regarding the Process Options, refer to the section Project
+                                  Workflow -&gt; Pipeline Process Options
+               </p>
+            </div>
+            <p><span class="inlinemediaobject"><img src="media/7_workflow_editor_properties.png"></span></p>
+         </div>
+         <div class="simplesect" title="Lay Out a Pipeline">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2855"></a>Lay Out a Pipeline
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>When you click the green plus button, <span class="bold"><strong>Create</strong></span><span class="inlinemediaobject"><img src="media/add_button.png"></span>, a new node will appear on the canvas.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_node_insert.png"></span></p>
+            <p>Rename the node: Select the new node and press CTRL-LMB to rename the node.
+                           Alternatively, right click and select <span class="bold"><strong>Rename Node</strong></span> from
+                           the context menu.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_node_naming.png"></span></p>
+            <p>Type in the new name for the node ("Model," in this example), and press <span class="bold"><strong>Enter</strong></span>.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_node.png"></span></p>
+            <p>Create another new node (called "Texture" in this example).</p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_nodes.png"></span></p>
+            <p>To create a connection between the two nodes, click on the handle on the right side of
+                           the "Model" node. This will create a connector which will follow the cursor.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_node_connector.png"></span></p>
+            <p>Click on the left handle of the "Texture" node to complete the connection. Now, the 2
+                           nodes are connected together. Once 2 nodes are connected, they will stay connected
+                           unless the connector is selected and deleted.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/pipeline_node_connection.png"></span></p>
+            <p>It is also possible to have one node connect to more than one node. In the following
+                           example, the "Model" process delivers to both the "Texture" process and a "Rig"
+                           process:
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/Pipeline_node_tree.png"></span></p>
+         </div>
+         <div class="simplesect" title="Pipeline Workflow Automation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2912"></a>Pipeline Workflow Automation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Repetition and daily components that make up a user's workflow can be made easier
+                           through automation of notifications, file/directory naming and triggering custom logic.
+                           Automations such as these can vary from simply sending an email or automatically setting
+                           upstream and downstream task statuses to running custom Python scripts and tools to
+                           encode files, submit renders, generate previews, deliver files to clients, etc.
+            </p>
+            <p>On the Workflow Editor's canvas, right-clicking on a node will bring up the context
+                           menu where the automation interfaces can be loaded into the lower half of the interface.
+                           These options include:
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Show Properties</strong></span></td>
+                        <td>Loads the Node Properties window.</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Show Triggers/Notifications</strong></span></td>
+                        <td>Loads the Triggers and Notifications setup Interface</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Show File Naming</strong></span></td>
+                        <td>Loads the Directory and File naming convention setup
+                                                       Interface
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>Each of the menu options are explained in the "Project Automation" section of the
+                                  documentation.
+               </p>
+            </div>
+         </div>
+         <div class="simplesect" title="Mouse and Keyboard Shortcuts">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e2945"></a>Mouse and Keyboard Shortcuts
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>When the cursor is over the canvas in the pipeline editor, the following mouse and
+                           keyboard shortcuts are available:
+            </p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>LMB</strong></span> on a node
+                        </td>
+                        <td>Select the node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB</strong></span> on the empty canvas
+                                                       space
+                        </td>
+                        <td>Clears selection</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + Ctrl</strong></span> click on a node
+                        </td>
+                        <td>Edits the name of the node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + Shift</strong></span> click on a node
+                        </td>
+                        <td>Add node to selection</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + drag</strong></span> on a node
+                        </td>
+                        <td>Drags the node around the canvas</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + drag</strong></span> on the empty canvas
+                                                       space
+                        </td>
+                        <td>Pans around the canvas</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + Shift + drag</strong></span> to form a
+                                                       selection box
+                        </td>
+                        <td>Forms a selection box</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>LMB + Ctrl + drag</strong></span> to the left or the
+                                                       right
+                        </td>
+                        <td>Zooms in or out on the canvas</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>DELETE</strong></span></td>
+                        <td>Deletes the selected node(s)</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="To Change Node Color">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e3017"></a>To Change Node Color
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>To change the node color, go to the <span class="bold"><strong>Workflow Editor -&gt;
+                                     sidebar</strong></span></p>
+            <p>right click on the pipeline and select <span class="bold"><strong>Edit Pipeline
+                                     Data</strong></span></p>
+            <p><span class="inlinemediaobject"><img src="media/3_workflow_editor_edit_pipeline_data.png"></span></p>
+            <p>Next, click on the color input field.  A color swatch will pop-up.  Select the new
+                           color for this pipeline from the color swatch.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/4_workflow_editor_change_node_color.png"></span></p>
+            <p>Another way to change the color is in the <span class="bold"><strong>Workflow Editor -&gt;
+                                     Pipelines tab (panel at the bottom)</strong></span> click on the <span class="bold"><strong>color</strong></span> column and pick the color from the color swatch.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/5_workflow_editor_change_node_color_method_two.png"></span></p>
+         </div>
+         <div class="simplesect" title="Pipeline Node Context Menu Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e3050"></a>Pipeline Node Context Menu Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Right click on the pipeline node will display the following menu options:</p>
+            <p><span class="inlinemediaobject"><img src="media/6_workflow_editor_node_context_menu.png"></span></p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td><span class="bold"><strong>Add To Current Group</strong></span></td>
+                        <td>Add the selected node to the current group</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Rename Node</strong></span></td>
+                        <td>Rename the current selected node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Delete Node</strong></span></td>
+                        <td>Delete the current selected node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Delete Group</strong></span></td>
+                        <td>Delete the group for the current selected node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Edit Properties</strong></span></td>
+                        <td>Edit the properties for the current selected node</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Show Triggers/Notifications</strong></span></td>
+                        <td>Display the triggers and notifications view in the bottom
+                                                       panel
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Show Processes</strong></span></td>
+                        <td>Display the processes in the bottom panel</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>Customize Task Status</strong></span></td>
+                        <td>Create a custom task status pipeline for the process (refresh the
+                                                       Workflow Editor to see it added to the sidebar)
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e3112"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Behind the scenes, the pipeline is an XML text document. This document is how TACTIC
+                           stores its representation of the pipeline structure of nodes and connections.
+            </p>
+            <p>Although it is rare to need to manually edit the pipeline XML structure, it is
+                           available at the bottom of the Workflow Editor in the pipelines table in the <span class="bold"><strong>Data</strong></span> column.
+            </p>
+            <p>Below is an example of the pipeline XML for the <span class="bold"><strong>Model -&gt; Rig /
+                                     Texture</strong></span> pipeline:
+            </p><pre class="screen">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;pipeline scale='100'&gt;
+  &lt;process name='model' ypos='-95' xpos='-138'/&gt;
+  &lt;process name='rig' color='blue' xpos='38' completion='80' task_pipeline='task' ypos='-165'/&gt;
+  &lt;process name='texture' ypos='-51' xpos='42'/&gt;
+  &lt;connect to='rig' from='model'/&gt;
+  &lt;connect to='texture' from='model'/&gt;
+&lt;/pipeline&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_project-workflow.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_project-workflow.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_sidebar.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

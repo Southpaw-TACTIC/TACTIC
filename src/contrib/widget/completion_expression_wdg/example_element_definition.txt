@@ -1,0 +1,8 @@
+<element edit='false' name='total_shots_waiting'>
+  <display widget='custom_layout'>
+    <view>completion_expression_wdg</view>
+    <expression>@COUNT(di/shot.sthpw/task['status', 'waiting'])*1.0 / @COUNT(di/shot.sthpw/task)</expression>
+    <thickness>30</thickness>
+    <bar_color>#FFF</bar_color>
+  </display>
+</element>

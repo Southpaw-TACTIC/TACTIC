@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+
+
+<config>
+
+<definition layout="TableLayoutWdg">
+    <element name="namespace"/>
+    <element name="search_type">
+        <display class="SimpleTableElementWdg"/>
+    </element>
+    <element name="title"/>
+    <element name="description"/>
+    <element name="database"/>
+    <element name="table_name"/>
+    <element name="class_name"/>
+    <element name="has_table">
+      <display class="tactic.ui.app.SearchTypeHasTableElementWdg"/>
+    </element>
+    <element name="color"/>
+</definition>
+
+
+<table layout="TableLayoutWdg">
+    <element name="namespace"/>
+    <element name="search_type"/>
+    <element name="title"/>
+    <element name="description"/>
+    <element name="database"/>
+    <element name="table_name"/>
+    <element name="has_table"/>
+    <element name="class_name"/>
+    <element name="color"/>
+</table>
+
+
+
+<simple layout="TableLayoutWdg">
+    <element name="search_type"/>
+    <element name="table_name"/>
+    <element name="description"/>
+</simple>
+
+
+
+
+
+<insert_foo>
+    <element name="search_type"/>
+    <element name="namespace"/>
+    <element name="description"/>
+    <element name="database"/>
+    <element name="title"/>
+    <element name="table_name"/>
+    <element name="class_name"/>
+    <element name="title"/>
+</insert_foo>
+
+
+
+
+
+<edit>
+    <element name="search_type">
+        <display class="TextWdg"/>
+    </element>
+    <element name="namespace"/>
+    <element name="title">
+        <display class="TextWdg"/>
+    </element>
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+    <element name="database"/>
+    <element name="table_name"/>
+    <element name="class_name"/>
+    <element name="color">
+        <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+</edit>
+
+
+
+
+
+</config>
+
+
+
+
+
+
+

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+-->
+
+<config>
+
+<filter>
+  <element name="Search">
+    <display class="tactic.ui.filter.SObjectSearchFilterWdg">
+      <search_type>prod/asset</search_type>
+    </display>
+  </element>
+
+  <element name="Filter">
+    <display class="tactic.ui.filter.GeneralFilterWdg">
+      <prefix>main_body</prefix>
+      <search_type>prod/asset</search_type>
+      <filters>1</filters>
+    </display>
+  </element>
+
+  <values>
+    <main_body_column>code</main_body_column>
+  </values>
+
+</filter>
+
+
+</config>
+
