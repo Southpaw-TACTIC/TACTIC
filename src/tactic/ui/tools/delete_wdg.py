@@ -918,7 +918,10 @@ class DeleteProjectCmd(DeleteCmd):
         if related_types:
             for related_type in related_types:
                 search = Search(related_type)
-                search.add_filter("project_code", project_code)
+                if related_type == "sthpw/schema":
+                    search.add_filter("code", project_code)
+                else:
+                    search.add_filter("project_code", project_code)
                 count = search.get_count()
                 sobjects = search.get_sobjects()
                 for sobject in sobjects:

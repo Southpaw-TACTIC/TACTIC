@@ -818,7 +818,7 @@ class Search(Base):
 
 
 
-    def add_relationship_search_filter(my, search, op='in', delay_null=False):
+    def add_relationship_search_filter(my, search, op='in', delay_null=False,use_multidb=False):
         '''optimized relationship filter so that you don't need the results
         of the sub search.  This is much faster because the search is done
         completely in the database without having to go through the whole
@@ -889,7 +889,8 @@ class Search(Base):
             # we cannot do a subselect because the relationship could be
             # from a different database, so we have to do an initial query
             # first
-            can_join_across_db = False
+            #can_join_across_db = False
+            can_join_across_db = use_multidb
             if can_join_across_db:
                 my.add_op('begin')
                 if my_is_from:
@@ -914,7 +915,6 @@ class Search(Base):
 
 
                 my.add_op('and')
-                print "join db: ", my.get_statement()
                 return True
 
 
@@ -1269,15 +1269,50 @@ class Search(Base):
         if not attrs:
             return
 
-        if from_search_type == attrs.get("from"):
-            from_col = attrs.get("from_col")
-            to_col = attrs.get("to_col")
+
+
+        relationship = attrs.get("relationship")
+        if relationship == 'search_type':
+            relationship = schema.resolve_search_type_relationship(attrs, from_search_type, to_search_type)
+
+
+        if relationship in ["search_code", "search_id"]:
+
+            from_db_resource = SearchType.get_db_resource_by_search_type(from_search_type)
+            from_database = from_db_resource.get_database()
+            to_db_resource = SearchType.get_db_resource_by_search_type(to_search_type)
+            to_database = to_db_resource.get_database()
+
+            if from_search_type == attrs.get("from"):
+                if relationship == "search_code":
+                    from_col = "search_code"
+                    to_col = "code"
+                else:
+                    from_col = "search_id"
+                    to_col = "id"
+                my.add_filter("search_type", my.get_search_type(),table=from_table)
+            else:
+                if relationship == "search_code":
+                    from_col = "code"
+                    to_col = "search_code"
+                else:
+                    from_col = "id"
+                    to_col = "search_id"
+                my.add_filter("search_type", my.get_search_type(),table=to_table)
+
         else:
-            from_col = attrs.get("to_col")
-            to_col = attrs.get("from_col")
+            from_database = None
+            to_database = None
+            if from_search_type == attrs.get("from"):
+                from_col = attrs.get("from_col")
+                to_col = attrs.get("to_col")
+            else:
+                from_col = attrs.get("to_col")
+                to_col = attrs.get("from_col")
+
 
         if from_table:
-            my.select.add_join(from_table, to_table, from_col, to_col, join="LEFT OUTER")
+            my.select.add_join(from_table, to_table, from_col, to_col, join="LEFT OUTER", database=from_database, database2=to_database)
         else:
             my.select.add_join(to_table, join="LEFT OUTER")
 

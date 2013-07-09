@@ -44,7 +44,8 @@ class UnittestEnvironment(object):
 
     def delete(my):
         print "Deleting existing Unittest project"
-        delete_cmd = DeleteProjectCmd(project_code="unittest")
+        related_types = ["sthpw/schema"]
+        delete_cmd = DeleteProjectCmd(project_code="unittest", related_types=related_types)
         delete_cmd.execute()
 
 
@@ -56,5 +57,5 @@ if __name__ == '__main__':
     cmd = UnittestEnvironment()
     cmd.create()
 
-    cmd.delete()
+    #cmd.delete()
 

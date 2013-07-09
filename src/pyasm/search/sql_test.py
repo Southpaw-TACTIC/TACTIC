@@ -34,7 +34,6 @@ class SqlTest(unittest.TestCase):
 
         try:
 
-        
             db_res = DbResource.get_default('unittest')
             sql = DbContainer.get(db_res)
             impl = sql.get_database_impl()
@@ -44,7 +43,7 @@ class SqlTest(unittest.TestCase):
                 my.sthpw_prefix = '''"sthpw"."public"'''
             else:
                 my.prefix = '''"unittest"'''
-                my.sthpw_prefix = '''"sthpw"."public"'''
+                my.sthpw_prefix = '''"sthpw"'''
 
 
             my._test_get_connect()
@@ -172,7 +171,7 @@ class SqlTest(unittest.TestCase):
         insert.set_value("name_first", "Bugs")
         insert.set_value("name_last", "Bunny")
         statement = insert.get_statement()
-        expected = '''INSERT INTO "unittest"."public"."person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')'''
+        expected = '''INSERT INTO %s."person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')''' % my.prefix
         my.assertEquals(expected, statement)
 
 
@@ -242,15 +241,27 @@ class SqlTest(unittest.TestCase):
 
     def _test_transaction(my):
         """test a transaction"""
+
+        database_type = Project.get_by_code("unittest").get_database_type()
+        if database_type == "MySQL":
+            print
+            print "WARNING: !!!!!!!"
+            print "_test_tranaction is disabled"
+            print "WARNING: !!!!!!!"
+            print
+            return
+
+
         db_res = DbResource.get_default('unittest')
         sql = DbContainer.get(db_res)
 
         count_sql = 'select count(*) from "person"'
 
+        num_records = sql.get_int(count_sql)
+
         # start the transaction, update and roll back
         sql.start()
 
-        num_records = sql.get_int(count_sql)
 
         insert = Insert()
         insert.set_table("person")
@@ -422,11 +433,16 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         # clear cache
         Container.put("SearchType:column_info:%s" % search_type, None)
         cache_dict = Container.get("DatabaseImpl:column_info")
-        table_info = cache_dict.get('DbResource:PostgreSQL:localhost:5432:unittest:country')
+
+        # assume database is the same as sthpw
+        database_type = Project.get_by_code("unittest").get_database_type()
+        db_resource = DbResource.get_default('unittest')
+        table_info = cache_dict.get("%s:%s" % (db_resource, "country"))
+        #table_info = cache_dict.get('DbResource:PostgreSQL:localhost:5432:unittest:country')
         my.assertEquals(table_info != None, True)
 
-        # clear for postgres db resource only
-        key = "%s:%s" % ('DbResource:PostgreSQL:localhost:5432:unittest', 'country')
+        #key = "%s:%s" % ('DbResource:PostgreSQL:localhost:5432:unittest', 'country')
+        key = "%s:%s" % (db_resource, "country")
         cache_dict[key] = None
         exists = SearchType.column_exists(search_type, 'special_place')
         my.assertEquals(exists, False)

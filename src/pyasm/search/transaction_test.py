@@ -31,19 +31,23 @@ import unittest,os
 class TransactionTest(unittest.TestCase):
 
 
-    def setUp(my):
+    def test_all(my):
 
         # intialiaze the framework as a batch process
         batch = Batch()
         from pyasm.biz import Project
         Project.set_project("unittest")
 
+        test_env = UnittestEnvironment()
+        test_env.create()
 
-    def test_all(my):
-        my._test_transaction()
-        my._test_undo()
-        my._test_file_undo()
-        my._test_debug_log()
+        try:
+            my._test_transaction()
+            my._test_undo()
+            my._test_file_undo()
+            my._test_debug_log()
+        finally:
+            test_env.delete()
 
 
     def _test_transaction(my):

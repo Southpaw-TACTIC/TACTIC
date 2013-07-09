@@ -343,9 +343,34 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
         if category == 'sobject':
             message_code = subscription.get_value("message_code")
             sobject = Search.get_by_search_key(message_code)
-            thumb = ThumbWdg()
-            thumb.set_sobject(sobject)
-            thumb.set_icon_size(size)
+            thumb = DivWdg()
+
+            thumb_wdg = ThumbWdg()
+            thumb.add(thumb_wdg)
+            thumb_wdg.set_sobject(sobject)
+            thumb_wdg.set_icon_size(size)
+
+            search_code = sobject.get_code()
+
+            thumb.add_behavior( {
+                'type': 'click_up',
+                'search_key': message_code,
+                'search_code': search_code,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+                var kwargs = {
+                    search_key: bvr.search_key
+                }
+                spt.tab.set_main_body_tab();
+                var title = "Detail ["+bvr.search_code+"]";
+                spt.app_busy.show("Loading " + bvr.search_code);
+                spt.tab.add_new(bvr.search_code, title, class_name, kwargs);
+                spt.app_busy.hide();
+                '''
+                } )
+
+
+
         else:
             thumb = DivWdg()
             thumb.add_style("width: %s" % size)

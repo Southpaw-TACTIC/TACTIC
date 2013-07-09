@@ -136,6 +136,12 @@ class Project(SObject):
         return database_name
 
 
+    def get_database_type(my):
+        db_resource = my.get_project_db_resource()
+        impl = DatabaseImpl.get()
+        return impl.get_database_type()
+
+
     def database_exists(my):
         '''returns whether a database exists for this project'''
         if not my.get_value("code"):

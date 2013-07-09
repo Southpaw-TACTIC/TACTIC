@@ -23,8 +23,14 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
 
-    def upgrade_v4_1_0_a01_004(my):
+    def upgrade_v4_1_0_a01_005(my):
         my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/subscription', 'sthpw', 'Subscription', 'sthpw', 'subscription', 'pyasm.search.SObject', 'Subscription', 'public');
+        ''')
+
+
+    def upgrade_v4_1_0_a01_004(my):
+        my.run_sql('''
+        CREATE INDEX "subscription_message_code_idx" on subscription (message_code);
         ''')
 
 
@@ -40,9 +46,8 @@ class SthpwUpgrade(BaseUpgrade):
             project_code varchar(32),
             status varchar(32),
             last_cleared timestamp,
-            timestamp timestamp,
-            CONSTRAINT "subscription_code_idx" UNIQUE ("code"),
-            CONSTRAINT "subscription_message_code_idx" ("message_code")
+            "timestamp" timestamp,
+            CONSTRAINT "subscription_code_idx" UNIQUE (code)
         );
         ''') 
 
@@ -64,8 +69,8 @@ class SthpwUpgrade(BaseUpgrade):
             status varchar(32),
             login varchar(256),
             project_code varchar(32),
-            timestamp timestamp
-            CONSTRAINT "message_code_idx" UNIQUE ("code"),
+            "timestamp" timestamp,
+            CONSTRAINT "message_code_idx" UNIQUE (code)
         );
         ''') 
 

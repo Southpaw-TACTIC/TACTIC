@@ -1,10 +1,12 @@
 <manifest>
   <data>
-    <code>unittest</code>
+    <code>TACTIC/unittest</code>
     <title>Unittest Project</title>
     <description>This contains sTypes definitions needed to run the unit tests.</description>
   </data>
   <search_type code="unittest/person"/>
   <search_type code="unittest/city"/>
   <search_type code="unittest/country"/>
+  <search_type code="unittest/job"/>
+  <search_type code="unittest/request"/>
 </manifest>

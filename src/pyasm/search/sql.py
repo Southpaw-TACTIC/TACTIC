@@ -1666,7 +1666,7 @@ class Select(object):
         return my.tables[0]
 
 
-    def add_join(my, table1, table2=None, column=None, column2=None, join="LEFT OUTER"):
+    def add_join(my, table1, table2=None, column=None, column2=None, join="LEFT OUTER", database=None, database2=None):
         '''
         SELECT *
         FROM "job"
@@ -1701,7 +1701,36 @@ class Select(object):
             column1 = column
             column2 = "id"
 
+        # handle the database scoping
+        if not database:
+            database1 = my.database
+        else:
+            database1 = database
+        parts = []
+        if database1:
+            parts.append('"%s"' % database1)
+        if my.schema:
+            parts.append('"%s"' % my.schema)
+        prefix1 = ".".join(parts)
+ 
 
+        # handle the database scoping
+        if not database2:
+            database2 = my.database
+        parts = []
+        if database2:
+            parts.append('"%s"' % database2)
+        if my.schema:
+            parts.append('"%s"' % my.schema)
+        prefix2 = ".".join(parts)
+ 
+
+ 
+
+        expr = '''%s JOIN %s."%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
+
+        # NOTE: there should be no need to database specfic joins
+        """
         if my.impl.get_database_type() == 'Oracle':
             # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
             # for use with set-ups that use a service user to access the Oracle DB
@@ -1715,6 +1744,7 @@ class Select(object):
                 table2, column2)
         else:
             expr = '''%s JOIN "%s" ON "%s"."%s" = "%s"."%s"''' % (join, table2, table1, column1, table2, column2)
+        """
 
         my.joins.append(expr)
 
@@ -1839,9 +1869,11 @@ class Select(object):
             column_type = column_types.get(column)
 
 
+        # NOTE: This is probably already handled in DatabaseImpl
         # FIXME: not sure which is better here ... in either case, this should
         # be put into databsae impl
         #value = my._convert_to_database_boolean(value)
+        """
         if my.impl.get_database_type() == 'Sqlite':
             if not column_type:
                 column_types = my.impl.get_column_types(my.database, my.tables[0])
@@ -1853,6 +1885,7 @@ class Select(object):
                 elif value == False:
                     quoted = False
                     value = 0
+        """
 
 
 
@@ -2102,7 +2135,17 @@ class Select(object):
                 quoted_cols = []
                 for i, column in enumerate(my.columns):
                     if column == my.distinct_col:
-                        quoted_col = 'distinct "%s"."%s"' % (my.column_tables[i],column)
+
+                        parts = []
+                        if my.database:
+                            parts.append('"%s"' % my.database)
+                        if my.schema:
+                            parts.append('"%s"' % my.schema)
+                        parts.append('"%s"' % my.column_tables[i])
+                        prefix = ".".join(parts)
+                        quoted_col = 'distinct %s."%s"' % (prefix, column)
+
+                        #quoted_col = 'distinct "%s"."%s"' % (my.column_tables[i],column)
                     else:
                         #if column == '*':
                         #    quoted_col ='"%s".*' % (my.column_tables[i])
