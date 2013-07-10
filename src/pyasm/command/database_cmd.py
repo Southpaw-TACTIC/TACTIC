@@ -181,6 +181,10 @@ class ColumnAddCmd(Command):
                 raise TacticException('[%s] already existed in this table [%s]'%(column, table))
                 return
 
+            if sql.get_database_type() == "MySQL":
+                if type == "varchar":
+                    type = "varchar(256)"
+
             # FIXME: database dependency should be in DatabaseImpl
             if sql.get_database_type() == "Oracle":
                 statement = 'ALTER TABLE "%s" ADD("%s" %s)' % \

@@ -502,7 +502,10 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
             #td.add(message.get_value("status"))
             #td = table.add_cell()
             timestamp = message.get_datetime_value("timestamp")
-            timestamp_str = timestamp.strftime("%b %d, %Y - %H:%M")
+            if timestamp:
+                timestamp_str = timestamp.strftime("%b %d, %Y - %H:%M")
+            else:
+                timestamp_str = ""
             td.add(timestamp_str)
 
             #td = table.add_cell()

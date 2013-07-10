@@ -741,6 +741,23 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             }
         )
 
+
+        # This is a lot of work, so hiding
+        """
+        menu_items.append(
+            { "type": "action", "label": "Edit Simple Search",
+                "bvr_cb": {
+                    'cbjs_action': "alert('Simple Search')",
+                    'is_admin': is_admin,
+                    'is_table_embedded_smenu_activator': True
+              }
+            }
+        )
+        """
+
+
+
+
         if not my.embedded_table and security.check_access("builtin", "view_save_my_view", "allow", default='allow'):
             menu_items.insert( 4,
                 { "type": "action", "label": 'Save a New View',

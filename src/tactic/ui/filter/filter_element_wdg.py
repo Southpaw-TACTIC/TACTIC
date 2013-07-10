@@ -252,9 +252,14 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                             search2.add_op_filters(filters)
                         else:
                             search2.add_filter(column, value, op)
-                search.add_relationship_search_filter(search2, op="in")
+
+                use_multidb = False
+                search.add_relationship_search_filter(search2, op="in", use_multidb=use_multidb)
+
             except SearchException, e:
                 raise SearchException('[%s] in simple search definition may have syntax error. %s ' %(expression, e.__str__()))
+
+
             return
 
         if sobjects:
@@ -265,6 +270,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             search.add_relationship_filters(sobjects, op=op)
         else:
             search.set_null_filter()
+
 
 
 
@@ -449,9 +455,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
             op_select.add_style("float: left")
             div.add(op_select)
 
-        
 
-        
         div.add(text)
         return div
 
@@ -766,8 +770,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         else:
             raise TacticException('Mode [%s] in keyword search not support' % my.mode)
-
-        print "overall: ", overall_search.get_statement()
 
 
     def get_display(my):

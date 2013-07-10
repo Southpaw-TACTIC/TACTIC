@@ -800,7 +800,9 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.side_bar.save_definition_cbk(bvr)
+            spt.app_busy.show("Saving Definition");
+            spt.side_bar.save_definition_cbk(bvr);
+            spt.app_busy.hide();
             '''
         } )
         button.add_style("float: right")

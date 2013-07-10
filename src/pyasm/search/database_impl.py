@@ -373,6 +373,50 @@ class DatabaseImpl(object):
 
 
 
+
+    def can_join(db_resource1, db_resource2):
+
+        # if the hosts are difference, joins cannot happen
+        host1 = db_resource1.get_host()
+        host2 = db_resource2.get_host()
+        if host1 != host2:
+            return False
+
+        # if the database types are differenct, joins cannot happen
+        database_type1 = db_resource1.get_database_type()
+        database_type2 = db_resource2.get_database_type()
+        if database_type1 != database_type2:
+            return False
+
+        # if the host is the same and the database is the same, then joins
+        # can happen
+        database1 = db_resource1.get_database()
+        database2 = db_resource2.get_database()
+        if database1 == database2:
+            return True
+
+        # multi database joins are not support in Postgres or Sqlite
+        if database_type1 in ["PostgreSQL", "Sqlite"]:
+            return False
+        if database_type2 in ["PostgreSQL", "Sqlite"]:
+            return False
+
+        # otherwise joins can happen between the two resources
+        return True
+
+    can_join = staticmethod(can_join)
+
+
+    def can_search_types_join(search_type1, search_type2):
+        from search import SearchType
+        db_resource = SearchType.get_db_resource_by_search_type(search_type1)
+        db_resource2 = SearchType.get_db_resource_by_search_type(search_type2)
+        can_join = DatabaseImpl.can_join(db_resource, db_resource2)
+        return can_join
+    can_search_types_join = staticmethod(can_search_types_join)
+
+
+
 class SQLServerImpl(DatabaseImpl):
     '''Implementation for Microsoft SQL Server's SQL'''
 

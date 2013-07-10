@@ -818,7 +818,7 @@ class Search(Base):
 
 
 
-    def add_relationship_search_filter(my, search, op='in', delay_null=False,use_multidb=False):
+    def add_relationship_search_filter(my, search, op='in', delay_null=False,use_multidb=None):
         '''optimized relationship filter so that you don't need the results
         of the sub search.  This is much faster because the search is done
         completely in the database without having to go through the whole
@@ -833,12 +833,12 @@ class Search(Base):
             search = Search("MMS/job")
             sobjects = search.get_sobjects()
             search2 = Search("MMS/request")
-            search2.add_relatinship_filter(sobjects)
+            search2.add_relationship_filter(sobjects)
 
         (fast method)
             search = Search("MMS/job")
             search2 = Search("MMS/request")
-            search2.add_relatinship_search_filter(search)
+            search2.add_relationship_search_filter(search)
         '''
 
         if not search:
@@ -850,6 +850,7 @@ class Search(Base):
         search_type = my.get_base_search_type()
         full_search_type = my.get_search_type()
         related_type = search.get_base_search_type()
+        full_related_type = search.get_search_type()
 
         search_type_obj = my.get_search_type_obj()
         table = search_type_obj.get_table()
@@ -886,12 +887,12 @@ class Search(Base):
             if relationship == 'search_type':
                 relationship = schema.resolve_search_type_relationship(attrs, search_type, related_type)
 
-            # we cannot do a subselect because the relationship could be
-            # from a different database, so we have to do an initial query
-            # first
-            #can_join_across_db = False
-            can_join_across_db = use_multidb
-            if can_join_across_db:
+            # see if a multi database join can be made
+            can_join = DatabaseImpl.can_search_types_join(full_search_type, full_related_type)
+            if can_join and use_multidb != None:
+                can_join = use_multidb
+
+            if can_join:
                 my.add_op('begin')
                 if my_is_from:
                     my.add_filter("search_type", search.get_search_type() )
@@ -3669,6 +3670,7 @@ class SObject(object):
             message.set_value("category", "sobject")
 
         json_data = jsondumps(data)
+        json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
         message.set_value("status", "complete")
