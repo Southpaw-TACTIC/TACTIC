@@ -223,8 +223,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 search.add_filter(column, value, op)
                 search.add_filter(column, None)
                 search.add_op('or')
-            elif op in ['~']:
-                filters = [[column,'~',value]]
+            elif op in ['~','EQI']:
+                filters = [[column,'EQI',value]]
                 search.add_op_filters(filters)
             else:
                 search.add_filter(column, value, op)
@@ -247,8 +247,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                             search2.add_filter(column, value, op)
                             search2.add_filter(column, None)
                             search2.add_op('or')
-                        elif op in ['~']:
-                            filters = [[column,'~',value]]
+                        elif op in ['~','EQI']:
+                            filters = [[column,'EQI',value]]
                             search2.add_op_filters(filters)
                         else:
                             search2.add_filter(column, value, op)

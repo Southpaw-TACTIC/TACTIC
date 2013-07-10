@@ -1889,7 +1889,6 @@ class OracleImpl(PostgresImpl):
         expr = "REGEXP_LIKE(\"%s\", '%s', '%s')" % (column, regex, op)
         parts.append(expr)
         return " ".join(parts)
-        #return "\"%s\" %s '%s'" %(column, op, regex)
 
 
 
@@ -2826,6 +2825,32 @@ class MySQLImpl(PostgresImpl):
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
             
         return "\"%s\" %s '%s'" %(column, op, regex)
+
+
+    #
+    # Regex expressions
+    #
+    def get_regex_filter(my, column, regex, op='EQI'):
+        if op == 'EQI':
+            op = 'REGEXP'
+            case_sensitive = False
+        elif op == 'EQ':
+            op = 'REGEXP'
+            case_sensitive = True
+        elif op == 'NEQI':
+            op = 'NOT REGEXP'
+            case_sensitive = False
+        elif op == 'NEQ':
+            op = 'NOT REGEXP'
+            case_sensitive = True
+        else:
+            raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
+
+        if case_sensitive:
+            return "\"%s\" %s '%s'" %(column, op, regex)
+        else:
+            regex = regex.lower()
+            return "LOWER(\"%s\") %s '%s'" %(column, op, regex)
 
 
 
