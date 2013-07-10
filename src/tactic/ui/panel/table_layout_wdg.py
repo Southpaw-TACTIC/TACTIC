@@ -439,53 +439,55 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # can key on this
         inner.add_attr("spt_version", "2")
 
-
         # add an upload_wdg
         from tactic.ui.input import Html5UploadWdg
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
-
-
-        # get all client triggers
-        exp = "@SOBJECT(config/client_trigger['event','EQ','%s$'])" %my.search_type
-        client_triggers = Search.eval(exp)
-
         
-        # set unique to True to prevent duplicated event registration when opening multiple tables
-        # listens to event like accept|sthpw/task
-        for client_trigger in client_triggers:
-             inner.add_behavior( {
-            'type': 'listen',
-            'unique' : True,
-            'event_name': client_trigger.get_value('event'),
-            'script_path': client_trigger.get_value('callback'),
-            'cbjs_action': '''
-            if (bvr.firing_element)
-                spt.table.set_table(bvr.firing_element);
-
-            var input = bvr.firing_data;
-            //var new_value = input.new_value;
+        if my.kwargs.get('temp') != True:
             
-            // 2nd arg is the args for this script
-            spt.CustomProject.run_script_by_path(bvr.script_path, bvr.firing_data);
-            '''
-            })
-        inner.add_behavior( {
-            'type': 'listen',
-            'unique' : True,
-            'event_name': 'update|%s' %my.search_type,
-            'cbjs_action': '''
+            # get all client triggers
+            exp = "@SOBJECT(config/client_trigger['event','EQ','%s$'])" %my.search_type
+            client_triggers = Search.eval(exp)
 
-            var table = spt.table.get_table();
-            var input = bvr.firing_data;
-            if (input.search_key) {
-                var row = table.getElement('.spt_table_row[spt_search_key=' + input.search_key+ ']');
-                var sks = [input.search_key];
-                spt.table.refresh_rows([row], sks, {}) 
-            }
-            '''
-            })
+            
+            # set unique to True to prevent duplicated event registration when opening multiple tables
+            # listens to event like accept|sthpw/task
+            for client_trigger in client_triggers:
+                 inner.add_behavior( {
+                'type': 'listen',
+                'unique' : True,
+                'event_name': client_trigger.get_value('event'),
+                'script_path': client_trigger.get_value('callback'),
+                'cbjs_action': '''
+                if (bvr.firing_element)
+                    spt.table.set_table(bvr.firing_element);
+
+                var input = bvr.firing_data;
+                //var new_value = input.new_value;
+                
+                // 2nd arg is the args for this script
+                spt.CustomProject.run_script_by_path(bvr.script_path, bvr.firing_data);
+                '''
+                })
+
+            # for redraw of a row, fire update_row|project/asset
+            inner.add_behavior( {
+                'type': 'listen',
+                'unique' : True,
+                'event_name': 'update_row|%s' %my.search_type,
+                'cbjs_action': '''
+
+                var table = spt.table.get_table();
+                var input = bvr.firing_data;
+                if (input.search_key) {
+                    var row = table.getElement('.spt_table_row[spt_search_key=' + input.search_key+ ']');
+                    var sks = [input.search_key];
+                    spt.table.refresh_rows([row], sks, {}) 
+                }
+                '''
+                })
 
 
         # TEST: client trigger
@@ -2094,7 +2096,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
       
         cbjs_action =  '''
 
-
 spt.table.get_table = function() {
     return spt.table.last_table;
 }
@@ -2105,6 +2106,7 @@ spt.table.get_table_id = function() {
 }
 
 spt.table.set_table = function(table) {
+
     if (!table) {
         log.critical('Cannot run spt.table.set_table() with an undefined table');
      	return;
@@ -4577,10 +4579,12 @@ spt.table.operate_selected = function(action)
         if my.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table on load
+            
+            // just load it once and set the table if loaded already
             if (spt.table) {
+                spt.table.set_table(bvr.src_el);
                 return;
             }
-
 
 
             spt.table = {};
