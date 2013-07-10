@@ -153,8 +153,9 @@ class PythonTrigger(Trigger):
             print("WARNING: Empty python script [%s]" %script_sobj.get_code())
             return {}
 
-        trigger_sobj = my.trigger_sobj.get_sobject_dict()
-        my.input['trigger_sobject'] = trigger_sobj
+        if my.trigger_sobj:
+            trigger_sobj = my.trigger_sobj.get_sobject_dict()
+            my.input['trigger_sobject'] = trigger_sobj
         cmd = PythonCmd(code=script, input=my.input)
         ret_val = cmd.execute()
 
