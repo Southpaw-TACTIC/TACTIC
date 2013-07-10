@@ -369,9 +369,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
         var pipeline_code = top.getAttribute("spt_pipeline_code");
         var process = top.getAttribute("spt_process");
         var search_type = top.getAttribute("spt_search_type");
+
+
         values.pipeline_code = pipeline_code;
         values.process = process;
-        values.search_type = search_type;
+
+        var event = values.event;
+        
+        // skip sending thru search_type for checkin type event
+        if (!event.test(/^checkin/)) {
+            values.search_type = search_type;
+        }
 
 
         var cbk = content.getAttribute("spt_trigger_add_cbk");
@@ -510,15 +518,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'A task status is changed',
                 'A task is assigned',
             ]
-            if my.search_type:
-                event_labels.append('Files are checked in')
-                #event_labels.append('Files are checked out')
+            
+            #event_labels.append('Files are checked out')
 
             event_values = [
                 'insert|sthpw/note',
                 'change|sthpw/task|status',
                 'change|sthpw/task|assigned',
             ]
+            if my.search_type:
+                event_labels.append('Files are checked in')
+                event_values.append("checkin|%s"%my.search_type)
         else:
             event_labels = [
                 'An item is added',
@@ -689,6 +699,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             td.add("Do the following: ")
             
             #td = table.add_cell()
+            # Action Select
             select = SelectWdg("trigger")
             select.set_option("labels", trigger_labels)
             select.set_option("values", trigger_values)
@@ -717,7 +728,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
             var event = event_el.value;
             bvr.kwargs['event'] = event;
-
+            
             var trigger_type = bvr.src_el.value;
             var trigger_wdg;
             var trigger_cbk;
@@ -1800,6 +1811,10 @@ class NotificationTriggerEditCbk(Command):
 class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
+        event = my.kwargs.get('event')
+            
+        is_task_status_changed = event =='change|sthpw/task|status'
+
         div = DivWdg()
         div.add_class("spt_python_script_trigger_top")
 
@@ -1846,7 +1861,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         div.add(HtmlElement.br(2))
 
-        if not script:
+        if not script and is_task_status_changed:
             script='''
 ############################################################
 from pyasm.common import jsondumps, jsonloads
@@ -1905,7 +1920,13 @@ class PythonScriptTriggerEditCbk(Command):
         description = my.kwargs.get("description")
         process = my.kwargs.get("process")
         listen_process = my.kwargs.get("listen_process")
+
+        
+
         search_type = my.kwargs.get("search_type")
+
+        
+
         src_status=my.kwargs.get("src_status")
         
 
@@ -1922,13 +1943,17 @@ class PythonScriptTriggerEditCbk(Command):
             trigger.set_value("listen_process", listen_process)
         if search_type:
             trigger.set_value("search_type", search_type)
+        else: 
+            if event.startswith('checkin'):
+                trigger.set_value("search_type", "")
 
-        data = {
-            'src_status': src_status
-        }
+        if src_status:
+            data = {
+                'src_status': src_status
+            }
 
-        data = jsondumps(data)
-        trigger.set_value("data", data)
+            data = jsondumps(data)
+            trigger.set_value("data", data)
 
         trigger.commit()
 
