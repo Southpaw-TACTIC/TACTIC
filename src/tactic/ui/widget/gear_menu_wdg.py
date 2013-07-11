@@ -298,9 +298,36 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         if security.check_access("builtin", "import_csv", "allow"):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
-                { "type": "action", "label": "Import CSV ...",
+                { "type": "action", "label": "Import CSV",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_import_cbk(evt,bvr);' }
                 } )
+
+
+
+        if security.check_access("builtin", "ingest", "allow"):
+            menu_items.append( {"type": "separator"} )
+            menu_items.append(
+                { "type": "action", "label": "Ingest Files",
+                    "bvr_cb": { 'cbjs_action': '''
+                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+                    var search_type = table.getAttribute("spt_search_type");
+
+
+                    var kwargs = {
+                        search_type: search_type
+                    };
+                    //spt.tab.set_main_body_tab();
+                    //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
+                    var title = "Ingest: " + search_type;
+                    spt.panel.load_popup(title, class_name, kwargs);
+                    '''
+                 }
+                } )
+
+
 
         return {'menu_tag_suffix': 'FILE', 'width': 180, 'opt_spec_list': menu_items}
 

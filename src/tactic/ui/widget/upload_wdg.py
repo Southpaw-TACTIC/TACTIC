@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = [ 'GlobalUploadWdg', 'SimpleUploadWdg', 'UploadWdg', 'UploadProgressWdg' ]
+__all__ = [ 'SimpleUploadWdg', 'UploadWdg', 'UploadProgressWdg' ]
 
 
 import os, shutil, string, types, random
@@ -21,84 +21,7 @@ from pyasm.search import SearchKey
 
 from tactic.ui.common import BaseRefreshWdg
 
-# DEPRECATED
-class GlobalUploadWdg(BaseRefreshWdg):
-    def get_args_keys(my):
-        return {
-        'key': 'the key to the this upload widget'
-        }
-        
-    def get_display(my):
-        key = my.kwargs.get("key")
 
-
-        div = DivWdg()
-
-        # create the button that will be replace by the swf element
-        yet_another_div = DivWdg()
-        yet_another_div.add_style("border", "solid blue 2px")
-        yet_another_div.set_id("cow_button")
-        yet_another_div.add_class("spt_upload")
-        yet_another_div.add_style("position: absolute")
-        yet_another_div.add_style("margin-left: -1000px")
-        yet_another_div.add_attr("spt_key", key)
-
-        # the button div that will get replaced by the swf
-        button_div = DivWdg()
-        yet_another_div.add(button_div)
-        div.add(yet_another_div)
-
-        button_id = "%sButton" % key
-        button_div.set_id(button_id)
-        button_div.add_class("spt_upload_button")
-        button_div.add_style("display: block")
-
-        
-
-        # add the onload behavior for this widget to initialize the swf
-        #load_div = DivWdg()
-        #behavior = {
-        #    'type': 'load',
-        #    'cbfn_action': "spt.Upload.setup_cbk",
-        #    'key': key,
-        #    'settings': {
-        #        'upload_complete_handler':  'spt.Upload.icon_complete',
-        #        'file_queued_handler':  'spt.Upload.icon_file_queued',
-        #    }
-        #}
-        #load_div.add_behavior(behavior)
-        #div.add(load_div)
-        
-
-        # add a listener to upload this file
-        behavior = {
-            'type': 'listen',
-            'event_name': 'edit_pressed',
-            'cbjs_action': "spt.Upload.upload_cbk(bvr)"
-        }
-        div.add_behavior(behavior)
-
-        # add a listener to upload this file
-        behavior = {
-            'type': 'listen',
-            'event_name': 'upload',
-            'cbjs_action': "spt.Upload.upload_cbk(bvr)"
-        }
-        div.add_behavior(behavior)
-
-
-        # test
-        span = SpanWdg(css="hand")
-        span.add("Test")
-        behavior = {
-            'type': 'click_up',
-            'cbjs_action': "spt.Upload.clone_upload()",
-        }
-        span.add_behavior(behavior)
-        div.add(span)
-
-
-        return div
 
 
 class SimpleUploadWdg(BaseInputWdg):
@@ -699,4 +622,90 @@ spt.uploader.upload_file = function(file) {
 }
 
     '''
+
+
+
+
+
+# DEPRECATED
+"""
+class GlobalUploadWdg(BaseRefreshWdg):
+    def get_args_keys(my):
+        return {
+        'key': 'the key to the this upload widget'
+        }
+        
+    def get_display(my):
+        key = my.kwargs.get("key")
+
+
+        div = DivWdg()
+
+        # create the button that will be replace by the swf element
+        yet_another_div = DivWdg()
+        yet_another_div.add_style("border", "solid blue 2px")
+        yet_another_div.set_id("cow_button")
+        yet_another_div.add_class("spt_upload")
+        yet_another_div.add_style("position: absolute")
+        yet_another_div.add_style("margin-left: -1000px")
+        yet_another_div.add_attr("spt_key", key)
+
+        # the button div that will get replaced by the swf
+        button_div = DivWdg()
+        yet_another_div.add(button_div)
+        div.add(yet_another_div)
+
+        button_id = "%sButton" % key
+        button_div.set_id(button_id)
+        button_div.add_class("spt_upload_button")
+        button_div.add_style("display: block")
+
+        
+
+        # add the onload behavior for this widget to initialize the swf
+        #load_div = DivWdg()
+        #behavior = {
+        #    'type': 'load',
+        #    'cbfn_action': "spt.Upload.setup_cbk",
+        #    'key': key,
+        #    'settings': {
+        #        'upload_complete_handler':  'spt.Upload.icon_complete',
+        #        'file_queued_handler':  'spt.Upload.icon_file_queued',
+        #    }
+        #}
+        #load_div.add_behavior(behavior)
+        #div.add(load_div)
+        
+
+        # add a listener to upload this file
+        behavior = {
+            'type': 'listen',
+            'event_name': 'edit_pressed',
+            'cbjs_action': "spt.Upload.upload_cbk(bvr)"
+        }
+        div.add_behavior(behavior)
+
+        # add a listener to upload this file
+        behavior = {
+            'type': 'listen',
+            'event_name': 'upload',
+            'cbjs_action': "spt.Upload.upload_cbk(bvr)"
+        }
+        div.add_behavior(behavior)
+
+
+        # test
+        span = SpanWdg(css="hand")
+        span.add("Test")
+        behavior = {
+            'type': 'click_up',
+            'cbjs_action': "spt.Upload.clone_upload()",
+        }
+        span.add_behavior(behavior)
+        div.add(span)
+
+
+        return div
+"""
+
 

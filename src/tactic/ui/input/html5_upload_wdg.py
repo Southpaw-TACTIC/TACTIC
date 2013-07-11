@@ -403,7 +403,7 @@ class UploadButtonWdg(BaseRefreshWdg):
                 spt.html5upload.upload_file(upload_file_kwargs);
 	    }
 	   
-            spt.html5upload.select_file( onchange);
+            spt.html5upload.select_file( onchange );
 
             ''' % (upload_start, upload_progress, on_complete, reader_load, upload_init)
         } )
