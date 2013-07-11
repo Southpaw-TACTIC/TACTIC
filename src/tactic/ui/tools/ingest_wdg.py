@@ -14,6 +14,7 @@
 from pyasm.web import DivWdg
 from pyasm.widget import IconWdg
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.widget import IconButtonWdg
 
 from tactic.ui.input import UploadButtonWdg
 
@@ -47,7 +48,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             return div
 
 
-        div.add("Select files to be uploaded and ingested:")
+        div.add("Select files or drag/drop files to be uploaded and ingested:")
         div.add("<br/>"*2)
 
         files_div = DivWdg()
@@ -67,46 +68,126 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_attr("ondragover", "return false")
         files_div.add_attr("ondrop", "spt.drag.noop(event, this)")
         files_div.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            spt.drag = {}
+        'type': 'load',
+        'cbjs_action': '''
+        spt.drag = {}
 
-            spt.drag.noop = function(evt, el) {
-                var top = $(el).getParent(".spt_uploadx_top");
-                var files_el = top.getElement(".spt_upload_files");
-                evt.stopPropagation();
-                evt.preventDefault();
-                evt.dataTransfer.dropEffect = 'copy';
-                var files = evt.dataTransfer.files;
-                for (var i = 0; i < files.length; i++) {
-                    var file = files[i];
-                    var info = file.name + " (" + file.size + ")<br/>";
-                    files_el.innerHTML = files_el.innerHTML + info;
-              }
+        spt.drag.show_file = function(file, top) {
+            var template = top.getElement(".spt_upload_file_template");
+            var clone = spt.behavior.clone(template);
+            clone.removeClass("spt_upload_file_template");
+            clone.addClass("spt_upload_file");
+            clone.setStyle("display", "");
+
+            var name = file.name;
+            var size = parseInt(file.size / 1024 * 10) / 10;
+
+            var thumb_el = clone.getElement(".spt_thumb");
+
+            if (true) {
+                var reader = new FileReader();
+                reader.thumb_el = thumb_el;
+                reader.onload = function(e) {
+                    this.thumb_el.innerHTML = [
+                        '<img class="thumb" src="',
+                        e.target.result,
+                        '" title="', escape(name),
+                        '" width="60px"',
+                        '" padding="5px"',
+                        '"/>'
+                    ].join('');
+                }
+                reader.readAsDataURL(file);
             }
-            '''
+         
+            clone.getElement(".spt_name").innerHTML = file.name;
+            clone.getElement(".spt_size").innerHTML = size + " KB";
+            clone.inject(top);
+        }
+
+        spt.drag.noop = function(evt, el) {
+            var top = $(el).getParent(".spt_uploadx_top");
+            var files_el = top.getElement(".spt_upload_files");
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = 'copy';
+            var files = evt.dataTransfer.files;
+
+            for (var i = 0; i < files.length; i++) {
+                spt.drag.show_file(files[i], files_el);
+            }
+        }
+        '''
         } )
 
         # create a template that will be filled in for each file
-        for i in range(0,10):
-            file_template = DivWdg()
-            files_div.add(file_template)
-            file_template.add_style("margin-top: 5px")
+        files_div.add_relay_behavior( {
+            'type': 'mouseenter',
+            'color': files_div.get_color("background3", -5),
+            'bvr_match_class': 'spt_upload_file',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.color);
+            '''
+        } )
+        files_div.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_upload_file',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+        files_div.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_remove',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_upload_file");
+            spt.behavior.destroy_element(top);
+            '''
+        } )
 
-            name_div = DivWdg()
-            file_template.add(name_div)
-            name_div.add("Image001.jpg")
-            name_div.add_style("float: left")
-            name_div.add_style("width: 250px")
 
-            size_div = DivWdg()
-            file_template.add(size_div)
-            size_div.add("433Mb")
-            size_div.add_style("float: left")
 
-            icon = IconWdg("Remove", IconWdg.DELETE)
-            file_template.add(icon)
 
+        file_template = DivWdg()
+        file_template.add_class("spt_upload_file_template")
+        files_div.add(file_template)
+        file_template.add_style("margin-bottom: 3px")
+        file_template.add_style("padding: 3px")
+        file_template.add_style("height: 40px")
+        file_template.add_style("display: none")
+
+        thumb_div = DivWdg()
+        file_template.add(thumb_div)
+        thumb_div.add_style("float: left")
+        thumb_div.add_style("width: 60");
+        thumb_div.add_style("height: 40");
+        thumb_div.add_style("overflow: hidden");
+        thumb_div.add_style("margin: 3 10 3 0");
+        thumb_div.add_class("spt_thumb")
+
+
+        name_div = DivWdg()
+        name_div.add_class("spt_name")
+        file_template.add(name_div)
+        name_div.add("image001.jpg")
+        name_div.add_style("float: left")
+        name_div.add_style("width: 150px")
+
+        size_div = DivWdg()
+        size_div.add_class("spt_size")
+        file_template.add(size_div)
+        size_div.add("433Mb")
+        size_div.add_style("float: left")
+        size_div.add_style("width: 150px")
+        size_div.add_style("text-align: right")
+
+        remove_div = DivWdg()
+        remove_div.add_class("spt_remove")
+        file_template.add(remove_div)
+        icon = IconButtonWdg(title="Remove", icon=IconWdg.DELETE)
+        icon.add_style("float: right")
+        remove_div.add(icon)
+        #remove_div.add_style("text-align: right")
 
 
         div.add("<br/>")
@@ -136,13 +217,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_el.setStyle("display", "");
 
         var files_el = top.getElement(".spt_upload_files");
-        files_el.setStyle("display", "");
- 
+
         var files = spt.html5upload.get_files();
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var info = file.name + " (" + file.size + ")<br/>";
-            files_el.innerHTML = files_el.innerHTML + info;
+            //files_el.innerHTML = files_el.innerHTML + info;
+            spt.drag.show_file(file, files_el);
         }
 
         dsfasdfsdf
