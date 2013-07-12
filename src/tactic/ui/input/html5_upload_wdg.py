@@ -170,75 +170,70 @@ spt.html5upload.upload_failed = function(evt) {
 
 spt.html5upload.upload_file = function(kwargs) {
 
-  if (!kwargs) {
-      kwargs = {};
-  }
-
-  var xhr = new XMLHttpRequest();
-  var form = spt.html5upload.form;
-  var el = form.getElement(".spt_file") ;
-  var file_name = el.value;
-  if (file_name.test(/,/)) {
-      spt.alert('Comma , is not allowed in file name.');
-      spt.html5upload.clear();
-      return;
-  }
-
-  var upload_start = kwargs.upload_start;
-  var upload_complete = kwargs.upload_complete;
-  var upload_progress = kwargs.upload_progress;
-  var upload_failed = spt.html5upload.upload_failed;
-  var transaction_ticket = kwargs.ticket;
-  if (!transaction_ticket) {
-      server = TacticServerStub.get();
-      transaction_ticket = server.get_transaction_ticket();
-  }
-
-
-  var el = form.getElement(".spt_file");
-  //console.log(el.files);
-  //var fd = form.getFormData();
-
-  var fd = new FormData();
-  for (var i = 0; i < el.files.length; i++) {
-      fd.append("file"+i, el.files[i]);
-
-/*
-      var reader_load = kwargs.reader_load;
-      if (reader_load) {
-          var reader = new FileReader();
-          reader.onload = reader_load;
-          reader.readAsDataURL(el.files[i]);
-      }
-*/
-  }
-  fd.append("num_files", el.files.length);
-
-  fd.append('transaction_ticket', transaction_ticket);
+    if (!kwargs) {
+        kwargs = {};
+    }
  
-
-  /* event listeners */
-  if (upload_start) {
-      xhr.upload.addEventListener("loadstart", upload_start, false);
-  }
-  if (upload_progress) {
-      xhr.upload.addEventListener("progress", upload_progress, false);
-  }
-  if (upload_complete) {
-      xhr.addEventListener("load", upload_complete, false);
-  }
-  if (upload_failed) {
-      xhr.addEventListener("error", upload_failed, false);
-  }
-  //xhr.addEventListener("abort", uploadCanceled, false);
-  xhr.addEventListener("abort", function() {console.log("abort")}, false);
-  xhr.open("POST", "/tactic/default/UploadServer/", true);
-  xhr.send(fd);
+    var files = kwargs.files;
+    if (typeof(files) == 'undefined') {
+        // get the file from the form element
+        var form = spt.html5upload.form;
+        var el = form.getElement(".spt_file") ;
+        files = el.files;
+    }
+   
+    /* 
+    var file_name = el.value;
+    if (file_name.test(/,/)) {
+        spt.alert('Comma , is not allowed in file name.');
+        spt.html5upload.clear();
+        return;
+    }
+    */
+   
+    var upload_start = kwargs.upload_start;
+    var upload_complete = kwargs.upload_complete;
+    var upload_progress = kwargs.upload_progress;
+    var upload_failed = spt.html5upload.upload_failed;
+    var transaction_ticket = kwargs.ticket;
+    if (!transaction_ticket) {
+        server = TacticServerStub.get();
+        transaction_ticket = server.get_transaction_ticket();
+    }
+   
+   
+   
+    // build the form data structure
+    var fd = new FormData();
+    for (var i = 0; i < files.length; i++) {
+        fd.append("file"+i, files[i]);
+    }
+    fd.append("num_files", files.length);
+    fd.append('transaction_ticket', transaction_ticket);
+   
+   
+    /* event listeners */
+   
+    var xhr = new XMLHttpRequest();
+    if (upload_start) {
+        xhr.upload.addEventListener("loadstart", upload_start, false);
+    }
+    if (upload_progress) {
+        xhr.upload.addEventListener("progress", upload_progress, false);
+    }
+    if (upload_complete) {
+        xhr.addEventListener("load", upload_complete, false);
+    }
+    if (upload_failed) {
+        xhr.addEventListener("error", upload_failed, false);
+    }
+    //xhr.addEventListener("abort", uploadCanceled, false);
+    xhr.addEventListener("abort", function() {console.log("abort")}, false);
+    xhr.open("POST", "/tactic/default/UploadServer/", true);
+    xhr.send(fd);
 
 
 }
-
-
         '''
         } )
 
@@ -364,7 +359,7 @@ class UploadButtonWdg(BaseRefreshWdg):
             var search_key = bvr.search_key;
 
             // set the form
-            spt.html5upload.form = $(bvr.upload_id);
+            spt.html5upload.set_form( $(bvr.upload_id) );
 
             spt.html5upload.kwargs = bvr.kwargs;
 
@@ -386,7 +381,6 @@ class UploadButtonWdg(BaseRefreshWdg):
             var reader_load = function(file) {
             %s;
             }
-
 
             var upload_file_kwargs =  {
                   reader_load: reader_load,
