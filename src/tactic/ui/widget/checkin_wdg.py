@@ -128,13 +128,15 @@ class CheckinWdg(BaseRefreshWdg):
  
         # get the pipeline
         my.pipeline = Pipeline.get_by_sobject(my.sobject)
+        my.autogeneration=False
         if not my.pipeline:
             my.processes = ['publish']
+            my.autogeneration=True
         else:
             my.processes = my.pipeline.get_process_names()
             if not my.processes:
                 my.processes = ['publish']
-
+                my.autogeneration=True
         if not my.process:
             # get the last process
             current_process = WidgetSettings.get_value_by_key("current_process")
@@ -469,11 +471,10 @@ class CheckinWdg(BaseRefreshWdg):
             process_div.add_style("font-size: 14px")
             process_div.add_style("padding-top: 5px")
           
-            if my.processes == ['publish']:
+            if my.processes == ['publish'] and my.autogeneration == True:
                 # in case a single pipeline with one process called "publish" is defined
                 # we should not hide it
-                pass
-                #process_div.add_style("display: none")
+                process_div.add_style("display: none")
 
 
 
