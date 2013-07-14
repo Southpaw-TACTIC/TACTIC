@@ -462,6 +462,7 @@ class ShelfEditWdg(BaseRefreshWdg):
         script_div.add_border()
         script_div.add_color("background", "background3")
         script_div.add_color("color", "color3")
+        script_div.add_color("color", "color3")
         script_div.add_style("padding: 8px")
         script_div.add_style("overflow-x: hidden")
         script_div.add_style("overflow-y: auto")

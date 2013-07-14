@@ -25,7 +25,9 @@ TZGMT = gettz('GMT')
 class SPTDate(object):
 
     def now(cls):
+        # utcnow is already converted to GMT
         date = datetime.utcnow()
+        date = date.replace(tzinfo=TZGMT)
         date = cls.convert(date)
         return date
     now = classmethod(now)

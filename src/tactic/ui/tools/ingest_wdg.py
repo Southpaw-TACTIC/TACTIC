@@ -13,22 +13,25 @@
 
 from pyasm.web import DivWdg
 from pyasm.widget import IconWdg
+from pyasm.command import Command
+from pyasm.search import SearchType, Search
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import IconButtonWdg
 
 from tactic.ui.input import UploadButtonWdg
 from tactic.ui.widget import ActionButtonWdg
 
-__all__ = ['IngestUploadWdg']
+from tactic_client_lib import TacticServerStub
+
+__all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
 
 class IngestUploadWdg(BaseRefreshWdg):
 
     def get_display(my):
         div = DivWdg()
-        div.add_class("spt_uploadx_top")
+        div.add_class("spt_ingest_top")
         div.add_style("width: 500px")
-        div.add_style("height: 400px")
         div.add_style("padding: 20px")
         div.add_color("background", "background")
 
@@ -50,21 +53,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        div.add("Select files or drag/drop files to be uploaded and ingested:")
-        div.add("<br/>"*2)
-
-
-
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         div.add(upload)
-        button = IconButtonWdg(title="Test", icon=IconWdg.ADD)
+        button = ActionButtonWdg(title="Add")
+        button.add_style("float: right")
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
 
-            var top = bvr.src_el.getParent(".spt_uploadx_top");
+            var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_upload_files");
 
 	    var onchange = function (evt) {
@@ -79,6 +78,30 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
          } )
+
+
+
+        button = ActionButtonWdg(title="Clear")
+        button.add_style("float: right")
+        div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+
+         '''
+         } )
+
+
+
+        div.add("Select files or drag/drop files to be uploaded and ingested:")
+        div.add("<br/>"*2)
+
 
 
         files_div = DivWdg()
@@ -102,12 +125,16 @@ class IngestUploadWdg(BaseRefreshWdg):
         'cbjs_action': '''
         spt.drag = {}
 
-        spt.drag.show_file = function(file, top) {
+        spt.drag.show_file = function(file, top, delay) {
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
             clone.removeClass("spt_upload_file_template");
             clone.addClass("spt_upload_file");
             clone.setStyle("display", "");
+
+            if (typeof(delay) == 'undefined') {
+                delay = 0;
+            }
 
             // remember the file handle
             clone.file = file;
@@ -118,6 +145,19 @@ class IngestUploadWdg(BaseRefreshWdg):
             var thumb_el = clone.getElement(".spt_thumb");
 
             if (true) {
+
+                //var loadingImage = loadImage(
+                setTimeout( function() {
+                    var loadingImage = loadImage(
+                        file,
+                        function (img) {
+                            thumb_el.appendChild(img);
+                        },
+                        {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
+                    );
+                }, delay );
+
+                /*
                 var reader = new FileReader();
                 reader.thumb_el = thumb_el;
                 reader.onload = function(e) {
@@ -131,6 +171,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                     ].join('');
                 }
                 reader.readAsDataURL(file);
+                */
             }
          
             clone.getElement(".spt_name").innerHTML = file.name;
@@ -139,15 +180,26 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         spt.drag.noop = function(evt, el) {
-            var top = $(el).getParent(".spt_uploadx_top");
+            var top = $(el).getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_upload_files");
             evt.stopPropagation();
             evt.preventDefault();
             evt.dataTransfer.dropEffect = 'copy';
             var files = evt.dataTransfer.files;
 
+            var delay = 0;
+            var skip = false;
             for (var i = 0; i < files.length; i++) {
-                spt.drag.show_file(files[i], files_el);
+                var size = files[i].size;
+
+                if (size >= 10*1024*1024) continue
+
+                spt.drag.show_file(files[i], files_el, delay);
+
+                if (size < 100*1024)       delay += 50;
+                else if (size < 1024*1024) delay += 500;
+                else if (size < 10*1024*1024) delay += 1000;
+
             }
         }
         '''
@@ -233,25 +285,29 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(progress_div)
         progress_div.add_style("width: 100%")
         progress_div.add_style("height: 15px")
+        progress_div.add_style("margin-bottom: 10px")
         progress_div.add_border()
-        progress_div.add_style("display: none")
+        #progress_div.add_style("display: none")
 
         progress = DivWdg()
         progress_div.add(progress)
         progress.add_class("spt_upload_progress")
         progress.add_style("width: 0px")
         progress.add_style("height: 100%")
-        progress.add_style("background-color: red")
+        progress.add_gradient("background", "background3", -10)
         progress.add_style("text-align: right")
+        progress.add_style("overflow: hidden")
+        progress.add_style("padding-right: 3px")
+
+        from tactic.ui.app import MessageWdg
+        progress.add_behavior( {
+            'type': 'load',
+            'cbjs_action': MessageWdg.get_onload_js()
+        } )
 
 
 
-
-
-        div.add("<br/>"*2)
-
-
-
+        # NOTE: files variable is passed in automatically
 
         upload_init = '''
         var server = TacticServerStub.get();
@@ -259,43 +315,69 @@ class IngestUploadWdg(BaseRefreshWdg):
         '''
 
         upload_progress = '''
-        var top = bvr.src_el.getParent(".spt_uploadx_top");
+        var top = bvr.src_el.getParent(".spt_ingest_top");
         progress_el = top.getElement(".spt_upload_progress");
-        progress_el.setStyle("width", 300);
-        progress_el.innerHTML = "100%";
-        
+        var percent = Math.round(evt.loaded * 100 / evt.total);
+        progress_el.setStyle("width", percent + "%");
+        progress_el.innerHTML = String(percent) + "%";
         '''
 
 
         on_complete = '''
-        var top = bvr.src_el.getParent(".spt_uploadx_top");
+        var top = bvr.src_el.getParent(".spt_ingest_top");
         progress_el = top.getElement(".spt_upload_progress");
-        progress_el.setStyle("width", 300);
         progress_el.innerHTML = "100%";
+        progress_el.setStyle("width", "100%");
         
-        var server = TacticServerStub.get();
-
         var search_type = bvr.kwargs.search_type;
 
+        var filenames = [];
         for (var i = 0; i != files.length;i++) {
             var name = files[i].name;
-            sobject = server.insert(search_type, { name: name });
-            console.log(sobject);
-            console.log(files[i]);
-            server.simple_checkin(sobject.__search_key__, "publish", name, {mode:'uploaded'});
-            percent = parseInt((i+1) / files.length*100);
-            progress_el.setStyle("width", 300*percent/100);
-            progress_el.innerHTML = "Check-in: " + percent + "%";
+            filenames.push(name);
         }
-        server.finish();
+
+        var key = spt.message.generate_key();
+
+        var kwargs = {
+            search_type: search_type,
+            filenames: filenames,
+            key: key,
+        }
+        on_complete = function() {
+            spt.alert("Ingest complete");
+            server.finish();
+        };
+
+        var class_name = 'tactic.ui.tools.IngestUploadCmd';
+
+        server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
+
+        on_progress = function(message) {
+            msg = JSON.parse(message.message);
+            var percent = msg.progress;
+            var description = msg.description;
+
+            console.log(description)
+
+            progress_el.setStyle("width", percent+"%");
+            progress_el.innerHTML = percent + "%";
+        }
+        spt.message.set_interval(key, on_progress, 2000);
+
         '''
 
 
         upload_div = DivWdg()
         div.add(upload_div)
-        upload_div.add_border()
-
+        #button = UploadButtonWdg(**kwargs)
         button = ActionButtonWdg(title="Ingest")
+        upload_div.add(button)
+        button.add_style("float: right")
+        upload_div.add_style("margin-bottom: 15px")
+        upload_div.add("<br clear='all'/>")
+
+
         button.add_behavior( {
             'type': 'click_up',
             'kwargs': {
@@ -303,8 +385,11 @@ class IngestUploadWdg(BaseRefreshWdg):
             },
             'cbjs_action': '''
 
-            var top = bvr.src_el.getParent(".spt_uploadx_top");
+            var top = bvr.src_el.getParent(".spt_ingest_top");
             var file_els = top.getElements(".spt_upload_file");
+
+            // get the server that will be used in the callbacks
+            var server = TacticServerStub.get();
 
             // retrieved the stored file handles
             var files = [];
@@ -312,7 +397,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 files.push( file_els[i].file );
             }
             if (files.length == 0) {
-                alert("No files selcted");
+                alert("No files selected");
                 return;
             }
 
@@ -340,15 +425,53 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
 
+            %s
+
             spt.html5upload.upload_file(upload_file_kwargs);
-            ''' % (upload_progress, on_complete)
+
+            ''' % (upload_progress, on_complete, upload_init)
         } )
 
 
-        #button = UploadButtonWdg(**kwargs)
-        upload_div.add(button)
-        button.add_style("float: right")
-
-
         return div
+
+
+
+
+class IngestUploadCmd(Command):
+
+    def execute(my):
+
+        filenames = my.kwargs.get("filenames")
+        search_type = my.kwargs.get("search_type")
+        key = my.kwargs.get("key")
+
+        server = TacticServerStub.get()
+
+        for count, filename in enumerate(filenames):
+
+            sobject = SearchType.create(search_type)
+            sobject.set_value("name", filename)
+            sobject.commit()
+
+            search_key = sobject.get_search_key()
+
+            # use API
+            server.simple_checkin(search_key, "publish", filename, mode='uploaded')
+            percent = int((float(count)+1) / len(filenames)*100)
+            print filename, percent
+
+            msg = {
+                'progress': percent,
+                'description': 'Checking in file [%s]' % filename,
+            }
+
+            server.log_message(key, msg, status="in progress")
+
+        msg = {
+            'progress': '100',
+            'description': ''
+        }
+        server.log_message(key, msg, status="complete")
+
 

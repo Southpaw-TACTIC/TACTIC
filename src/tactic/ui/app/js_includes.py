@@ -18,27 +18,7 @@ third_party = [
     "mootools/mootools-core-1.4.1-full-nocompat-yc.js",
     "mootools/mootools-more-1.4.0.1-yc.js",
 
-    #"mooDialog/Overlay.js",
-    #"mooDialog/MooDialog.js",
-    #"mooDialog/MooDialog.Extra.js",
-
-    #"mooRainbow/Source/mooRainbow.js",
-    # -- Compatibility library to temporarily house functions to make
-    # -- things work from the old js stuff
-    #"compat.js",           # DEPRECATED: if this functionality is needed
-                            # is should be put in the api
-
     "json2.js",
-
-
-    # DEPRECATED
-    #"ofc/js/swfobject.js",   # NOTE: this *cannot* be made to work inline
-                             # Not sure why this needs to be in the <head> tag,
-                             # but need to remove this dependency
-    #"edit_area/edit_area_full.js", # similar ro swfobject.js, it is required
-                                   # that this is initialized at page
-                                   # initialization and not afterwards
-    #"ckeditor/ckeditor.js"
 
 ]
 
@@ -107,6 +87,7 @@ spt_js = [
     "custom_project.js",
     "spt_onload_startup.js",
     "api/api.js",       # add in the new api
+    "load-image.min.js",
 ]
 
 

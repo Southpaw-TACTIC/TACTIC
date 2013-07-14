@@ -427,8 +427,11 @@ class ThumbWdg2(BaseRefreshWdg):
             file_type = "main"
             path = snapshot.get_web_path_by_type(file_type)
 
-        if not icon_path and path:
+        if icon_path:
+            path = icon_path
+        elif path:
             path = my.find_icon_link(path)
+
  
         return path
 

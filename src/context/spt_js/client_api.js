@@ -1026,8 +1026,13 @@ TacticServerStub = function() {
 
 
     this.execute_cmd = function(class_name, args, values, kwargs) {
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs);
-        if (ret_val.status == "ERROR") {
+        if (kwargs) callback = kwargs.on_complete;
+        else callback = null;
+        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback);
+        if (callback) {
+            return;
+        }
+        if (ret_val && ret_val.status == "ERROR") {
             // FIXME: put in a propert error here
             //alert("ERROR: " + ret_val.msg);
             throw ret_val;

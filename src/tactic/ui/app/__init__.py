@@ -47,4 +47,7 @@ from project_start_wdg import *
 from help_wdg import *
 from quick_box_wdg import *
 
+from message_wdg import *
+
+
 

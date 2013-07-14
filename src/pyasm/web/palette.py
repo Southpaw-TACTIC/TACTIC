@@ -37,6 +37,21 @@ class Palette(object):
     DARK = DEFAULT
 
 
+    BLACK = {
+    'color':        '#AAA',         # main font color
+    'color2':       '#AAA',         # secondary font color
+    'color3':       '#222222',      # tertiary font color
+    'background':   '#101010',      # main background color
+    'background2':  '#100000',      # secondary background color
+    'background3':  '#000000',      # tertiary background color
+    'border':       '#202020',      # main border color
+    'shadow':       '#202020',      # main shadow color
+    'theme':        'dark',
+
+    'table_border': '#202020',
+    }
+
+
     AQUA = {
     'color':        '#000',         # main font color
     'color2':       '#333',         # secondary font color
@@ -83,9 +98,6 @@ class Palette(object):
     'table_border': '#FFF',
     'theme':        'default'
     }
-
-
-
 
 
     # bon noche theme

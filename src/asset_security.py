@@ -12,21 +12,21 @@
 
 import tacticenv
 
-from pyasm.security import Batch
-Batch('admin')
+from pyasm.common import Environment, SPTDate
+from pyasm.security import Batch, Security
+Batch()
 
 from tactic_client_lib import TacticServerStub
 
-import os, sys, xmlrpclib
+import os, sys, xmlrpclib, datetime
 from mod_python import apache, Cookie
+
 
 
 # This will ensure that any asset requires a valid ticket
 
 
 def accesshandler(request):
-
-    #return apache.OK
 
     cookies = Cookie.get_cookies(request)
 
@@ -39,9 +39,13 @@ def accesshandler(request):
     if not ticket:
         return apache.HTTP_FORBIDDEN
 
-    #search = Search("sthpw/ticket")
-    #search.add_filter("ticket", ticket)
-    #return apache.HTTP_FORBIDDEN
+    server = TacticServerStub.get(protocol='local')
+    expr = "@SOBJECT(sthpw/ticket['ticket','%s'])" % ticket
+    sobject = server.eval(expr, single=True)
+    now = SPTDate.now()
+    expiry = sobject.get("expiry")
+    if expiry and expiry < str(now):
+        return apache.HTTP_FORBIDDEN
 
     request.add_common_vars()
     path = str(request.subprocess_env['REQUEST_URI'])
@@ -50,20 +54,11 @@ def accesshandler(request):
 
 
     # FIXME: find some mechanism which is more acceptable ... like /icons
-    if path.find("_icon_") != -1:
-        return apache.OK
+    #if path.find("_icon_") != -1:
+    #    return apache.OK
 
-    server = TacticServerStub.get(protocol='local')
     return apache.OK
 
-    #return apache.HTTP_FORBIDDEN
-
-    # go to webware and see if this is allowed
-    #server = xmlrpclib.Server(xmlrpc_url)
-    #if server.is_allowed(ticket, path) == False:
-    #    return apache.HTTP_FORBIDDEN
-    #else:
-    #    return apache.OK
 
 
 def outputfilter_example(filter):

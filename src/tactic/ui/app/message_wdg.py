@@ -474,6 +474,10 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
 
             message_value = message.get_value("message")
             if message_value.startswith("{") and message_value.endswith("}"):
+
+                # FIXME: this is needed because the json has some bad
+                # \\ issues. 
+                message_value = message_value.replace(r"\\", "\\");
                 message_value = jsonloads(message_value)
                 update_data = message_value.get("update_data")
 
@@ -642,8 +646,8 @@ spt.message.set_interval = function(key, callback, interval) {
                 callback(message);
             }
             else {
-                console.log("WARNING: message is undefined!!");
-                spt.message.stop_interval(key);
+                console.log("WARNING: message is undefined for key ["+key+"]");
+                //spt.message.stop_interval(key);
                 return;
             }
         }
@@ -652,6 +656,7 @@ spt.message.set_interval = function(key, callback, interval) {
             alert(e);
         }
         if (message.status == "complete") {
+            console.log("stopping interval: " + key);
             spt.message.stop_interval(key);
         }
     }
