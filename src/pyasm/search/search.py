@@ -459,13 +459,7 @@ class Search(Base):
 
                 if name.startswith("@"):
                     if name == '@ORDER_BY':
-                        parts = filter[1].split(" ")
-                        column = parts[0]
-                        if len(parts) == 2:
-                            direction = parts[1]
-                        else:
-                            direction = "asc"
-                        my.add_order_by(column, direction)
+                        my.add_order_by(filter[1])
                     elif name == '@LIMIT':
                         my.set_limit(filter[1])
                     elif name == '@OFFSET':

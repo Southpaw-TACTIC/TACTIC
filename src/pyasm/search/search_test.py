@@ -18,7 +18,7 @@ from sql import *
 from search import *
 from transaction import *
 from database_impl import *
-from pyasm.unittest import UnittestEnvironment
+from pyasm.unittest import *
 from pyasm.biz import Project
 import unittest
 
@@ -31,29 +31,35 @@ class SearchTest(unittest.TestCase):
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
-       
-
-
 
     def test_all(my):
         test_env = UnittestEnvironment()
         test_env.create()
         my.transaction = Transaction.get(create=True)
         try:
+
+            my.person = Person.create( "5", "a",
+                    "ComputerWorld", "1")
+            my.person = Person.create( "4", "b",
+                    "ComputerWorld", "3")
+            my.person = Person.create( "3", "c",
+                    "ComputerWorld", "3")
+            my.person = Person.create( "2", "d",
+                    "ComputerWorld", "4") 
+            my.person = Person.create( "1", "e",
+                    "ComputerWorld", "5") 
+            my._test_order_by()                               
             my._test_search_key()
             my._test_search()
 
             # FIXME: this requires sample3d project
             #my._test_search_other_project()
-            my._test_order_by()
             my._test_search_type()
             my._test_metadata()
             my._test_search_type_existence()
-            
             my._test_project()
             my._test_search_filter()
             my._test_dates_search()
-
             my._test_child_search()
             my._test_parent_search()
             my._test_add_column_search()
@@ -67,6 +73,28 @@ class SearchTest(unittest.TestCase):
             test_env.delete()
 
     def _test_order_by(my):
+
+
+        sobjects = Search.eval("@SOBJECT(unittest/person['@ORDER_BY','description desc, name_first desc'])")
+        sobjects1 = Search.eval("@SOBJECT(unittest/person['@ORDER_BY','description, name_first'])")
+        sobjects2 = Search.eval("@SOBJECT(unittest/person['@ORDER_BY','description desc, name_first'])")
+        name_list = []
+        name_list1 = []
+        name_list2 = []
+        for x in sobjects:
+             name = x.get_value('name_last') 
+             name_list.append(name)
+        for x in sobjects1:
+             name = x.get_value('name_last') 
+             name_list1.append(name)
+        for x in sobjects2:
+             name = x.get_value('name_last') 
+             name_list2.append(name)
+        my.assertEquals(name_list,['e','d','b','c','a'])
+        my.assertEquals(name_list1,['a','c','b','d','e'])
+        my.assertEquals(name_list2,['e','d','c','b','a'])
+
+
         search = Search('unittest/city')
         search.add_order_by('name')
         statement = search.get_statement()
