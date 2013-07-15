@@ -128,15 +128,15 @@ class CheckinWdg(BaseRefreshWdg):
  
         # get the pipeline
         my.pipeline = Pipeline.get_by_sobject(my.sobject)
-        my.autogeneration=False
+        my.auto_process = False
         if not my.pipeline:
             my.processes = ['publish']
-            my.autogeneration=True
+            my.auto_process = True
         else:
             my.processes = my.pipeline.get_process_names()
             if not my.processes:
                 my.processes = ['publish']
-                my.autogeneration=True
+                my.auto_process = True
         if not my.process:
             # get the last process
             current_process = WidgetSettings.get_value_by_key("current_process")
@@ -471,7 +471,7 @@ class CheckinWdg(BaseRefreshWdg):
             process_div.add_style("font-size: 14px")
             process_div.add_style("padding-top: 5px")
           
-            if my.processes == ['publish'] and my.autogeneration == True:
+            if my.processes == ['publish'] and my.auto_process == True:
                 # in case a single pipeline with one process called "publish" is defined
                 # we should not hide it
                 process_div.add_style("display: none")
@@ -1012,7 +1012,7 @@ spt.checkin.checkin_path = function(search_key, file_path, process, options) {
         }
 
         // FIXME: this is not really used, but kept here is case it is revived
-        // This sets the padding level for autogeneration of context with
+        // This sets the padding level for auto_process of context with
         // numbers: ie: design0023
         var padding = 0;
 
