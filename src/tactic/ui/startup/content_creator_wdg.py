@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['ContentCreatorWdg', 'ExamplesWdg']
+__all__ = ['ContentCreatorWdg', 'ExamplesWdg', 'ToolsWdg']
 
 from pyasm.common import Environment, Common
 from pyasm.search import Search
@@ -26,7 +26,7 @@ from misc_wdg import QuickLinksWdg, TitleWdg
 
 
 
-class ContentCreatorWdg(BaseRefreshWdg):
+class ToolsWdg(BaseRefreshWdg):
     '''This is the welcome widget widget will appear on creation of a new
     project
     '''
@@ -41,8 +41,8 @@ class ContentCreatorWdg(BaseRefreshWdg):
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
         section_wdg.add_border()
-        section_wdg.add_style("width: 225px")
-        section_wdg.add_style("height: 200px")
+        section_wdg.add_style("width: 200px")
+        section_wdg.add_style("height: 215px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
         #section_wdg.set_box_shadow("2px 2px 2px 2px")
@@ -94,7 +94,7 @@ class ContentCreatorWdg(BaseRefreshWdg):
         section_wdg.add(div)
         div.add_style("padding: 3px")
         div.add_style("margin: 10px")
-        div.add_style("width: 209px")
+        #div.add_style("width: 209px")
         div.add_style("height: 64px")
 	div.add_style("text-align: center")
         div.add(image)
@@ -127,7 +127,7 @@ class ContentCreatorWdg(BaseRefreshWdg):
 
         project = Project.get()
 
-        title = TitleWdg(title='Examples')
+        title = TitleWdg(title='Tools')
         top.add(title)
 
 
@@ -319,6 +319,32 @@ class ContentCreatorWdg(BaseRefreshWdg):
         table.add_row()
 
 
+
+        td = table.add_cell()
+        td.add_style("vertical-align: top")
+        td.add_style("padding: 3px")
+        title = "Themes"
+        image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
+        description = '''Themes define the look and feel of a project.'''
+
+        behavior = {
+        'type': 'click_up',
+        'cbjs_action': '''
+        var class_name = 'tactic.ui.startup.themes_wdg.ThemesWdg';
+        var kwargs = {
+            help_alias: 'project-startup-dashboards'
+            };
+        spt.tab.set_main_body_tab();
+        spt.tab.add_new("themes", "Themes", class_name, kwargs);
+        '''
+        }
+        dashboard_wdg = my.get_section_wdg(title, description, image, behavior)
+        td.add(dashboard_wdg)
+
+
+
+
+
         td = table.add_cell()
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
@@ -328,39 +354,20 @@ class ContentCreatorWdg(BaseRefreshWdg):
 
 
         # read the config file
-        from pyasm.widget import WidgetConfig
-        tmp_path = __file__
-        dir_name = os.path.dirname(tmp_path)
-        file_path="%s/../config/dashboard-conf.xml" % (dir_name)
-        config = WidgetConfig.get(file_path=file_path, view="definition")
+        #from pyasm.widget import WidgetConfig
+        #tmp_path = __file__
+        #dir_name = os.path.dirname(tmp_path)
+        #file_path="%s/../config/dashboard-conf.xml" % (dir_name)
+        #config = WidgetConfig.get(file_path=file_path, view="definition")
 
 
 
         # FIXME: this bypasses the link security 
-        element_name = "dashboards"
-        attrs = config.get_element_attributes(element_name)
-        dashboard_data = {}
-        kwargs = config.get_display_options(element_name)
-        class_name = kwargs.get('class_name')
-
-        """
-        dashboard_data['class_name'] = class_name
-        dashboard_data['kwargs'] = kwargs
-        dashboard_data['title'] = attrs.get("title")
-        dashboard_data['description'] = attrs.get("description")
-        dashboard_data['image'] = attrs.get("image")
-
-        behavior = {
-        'type': 'click_up',
-        'dashboard': dashboard_data,
-        'cbjs_action': '''
-        var class_name = 'tactic.ui.startup.dashboards_wdg.DashboardsWdg';
-        var kwargs = {};
-        spt.tab.set_main_body_tab();
-        spt.tab.add_new("dashboards", "Dashboards", bvr.dashboard.class_name, bvr.dashboard.kwargs);
-        '''
-        }
-        """
+        #element_name = "dashboards"
+        #attrs = config.get_element_attributes(element_name)
+        #dashboard_data = {}
+        #kwargs = config.get_display_options(element_name)
+        #class_name = kwargs.get('class_name')
 
         behavior = {
         'type': 'click_up',
@@ -375,7 +382,6 @@ class ContentCreatorWdg(BaseRefreshWdg):
         }
         dashboard_wdg = my.get_section_wdg(title, description, image, behavior)
         td.add(dashboard_wdg)
-
 
 
 
@@ -460,8 +466,12 @@ class ContentCreatorWdg(BaseRefreshWdg):
 
 
 
-class ExamplesWdg(ContentCreatorWdg):
+class ExamplesWdg(ToolsWdg):
     pass
+
+class ContentCreatorWdg(ToolsWdg):
+    pass
+
 
 
 

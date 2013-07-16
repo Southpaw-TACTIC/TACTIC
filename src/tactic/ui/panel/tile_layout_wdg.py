@@ -375,7 +375,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         if not title:
             title = sobject.get_code()
 
-        description = sobject.get_value("description")
+        description = sobject.get_value("description", no_exception=True)
         if description:
             div.add_attr("title", sobject.get_code())
 

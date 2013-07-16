@@ -189,7 +189,8 @@ class PopupWdg(BaseRefreshWdg):
         widget.add_border()
         widget.add_color("background", "background")
 
-        widget.set_box_shadow(color="#000")
+        #widget.set_box_shadow(color="#000")
+        widget.set_box_shadow()
 
 
         table = Table()
@@ -327,8 +328,10 @@ class PopupWdg(BaseRefreshWdg):
         # add the drag capability.
         # NOTE: need to use getParent because spt.popup has not yet been
         # initialized when this is processed
+        shadow_color = drag_div.get_color("shadow")
         drag_div.add_behavior( {
             'type':'smart_drag',
+            'shadow_color': shadow_color,
             'drag_el': "@.getParent('.spt_popup')",
             'bvr_match_class': 'spt_popup_title',
             'options': {'z_sort': 'bring_forward'},
@@ -339,7 +342,7 @@ class PopupWdg(BaseRefreshWdg):
                   spt.popup.offset_y = document.body.scrollTop;
                   spt.popup.hide_background();
                   var parent = bvr.src_el.getParent(".spt_popup");
-                  parent.setStyle("box-shadow","0px 0px 20px rgba(1,0,0,0.4)");
+                  parent.setStyle("box-shadow","0px 0px 20px " + bvr.shadow_color);
               }
               else {
                   spt.popup.offset_x = 0;

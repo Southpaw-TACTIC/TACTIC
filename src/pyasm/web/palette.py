@@ -40,7 +40,7 @@ class Palette(object):
     BLACK = {
     'color':        '#AAA',         # main font color
     'color2':       '#AAA',         # secondary font color
-    'color3':       '#222222',      # tertiary font color
+    'color3':       '#AAA',      # tertiary font color
     'background':   '#101010',      # main background color
     'background2':  '#100000',      # secondary background color
     'background3':  '#000000',      # tertiary background color

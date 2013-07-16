@@ -18,6 +18,30 @@ from pyasm.search.upgrade.project import *
 
 class ConfigUpgrade(BaseUpgrade):
 
+    #
+    # 4.1.0.a01
+    #
+
+    def upgrade_v4_1_0_a01_002(my):
+        my.run_sql('''
+        CREATE TABLE spt_plugin_content (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            plugin_code varchar(256),
+            search_type varchar(256),
+            search_code varchar(256)
+        );
+        ''')
+
+
+    def upgrade_v4_1_0_a01_001(my):
+        my.run_sql('''
+        ALTER TABLE "widget_config" ADD "description" text;
+        ''')
+
+    #
+    # 4.0.0.b08
+    #
     def upgrade_v4_0_0_b08_003(my):
         my.run_sql('''
         ALTER TABLE "naming" DROP "checkin_mode";

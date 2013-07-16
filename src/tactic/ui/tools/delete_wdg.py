@@ -40,11 +40,26 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
         search_key = my.kwargs.get("search_key")
-        sobject = Search.get_by_search_key(search_key)
-        if not sobject:
+        search_keys = my.kwargs.get("search_keys")
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+            sobjects = [sobject]
+            search_keys = [search_key]
+        elif search_keys:
+            sobjects = Search.get_by_search_keys(search_keys)
+            sobject = sobjects[0]
+
+        if not sobjects:
             msg =  "%s not found" %search_key
             return msg
         search_type = sobject.get_base_search_type()
+
+        if search_type in ['sthpw/project', 'sthpw/search_object']:
+            msg = 'You cannot delete these items with this tool'
+            return msg
+
+
+        my.search_keys = search_keys
 
 
         title = DivWdg()
@@ -106,7 +121,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             if related_type in ['sthpw/search_object','sthpw/search_type']:
                 continue
 
-            item_div = my.get_item_div(sobject, related_type)
+            item_div = my.get_item_div(sobjects, related_type)
             if item_div:
                 items_div.add(item_div)
                 valid_related_ctr += 1
@@ -124,6 +139,10 @@ class DeleteToolWdg(BaseRefreshWdg):
             # changed the heading to say no dependencies
             content.add("The item to be deleted has no dependencies.<br/>", 'heading')
 
+
+        content.add("There are %s items to be deleted" % len(my.search_keys))
+        content.add("<br/>"*2)
+
         content.add("Do you wish to continue deleting?")
         content.add("<br/>"*2)
 
@@ -136,7 +155,7 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         button.add_behavior( {
         'type': 'click_up',
-        'search_key': search_key,
+        'search_keys': my.search_keys,
         'cbjs_action': '''
         spt.app_busy.show("Deleting");
 
@@ -145,12 +164,12 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         var class_name = "tactic.ui.tools.DeleteCmd";
         var kwargs = {
-            'search_key': bvr.search_key,
+            'search_keys': bvr.search_keys,
             'values': values
         };
         var server = TacticServerStub.get();
         try {
-            server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_key + ']'});
+            server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_keys + ']'});
             server.execute_cmd(class_name, kwargs);
             server.finish();
 
@@ -194,8 +213,10 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 
-    def get_item_div(my, sobject, related_type):
+    def get_item_div(my, sobjects, related_type):
         item_div = DivWdg()
+
+        sobject = sobjects[0]
 
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
@@ -205,10 +226,14 @@ class DeleteToolWdg(BaseRefreshWdg):
         item_div.add(": ")
 
         if related_type.startswith("@SOBJECT"):
-            related_sobjects = Search.eval(related_type, sobject, list=True)
+            related_sobjects = Search.eval(related_type, [sobject], list=True)
         else:
             try:
-                related_sobjects = sobject.get_related_sobjects(related_type)
+                related_sobjects = []
+                for sobject in sobjects:
+                    sobjs = sobject.get_related_sobjects(related_type)
+                    related_sobjects.extend(sobjs)
+
             except Exception, e:
                 print "WARNING: ", e
                 related_sobjects = []
@@ -241,19 +266,33 @@ class DeleteCmd(Command):
     is_undoable = classmethod(is_undoable)
 
     def execute(my):
+
+        # if a single sobject is passed in
         sobject = my.kwargs.get("sobject")
         if not sobject:
             search_key = my.kwargs.get("search_key")
             sobject = Search.get_by_search_key(search_key)
-        if not sobject:
+
+        if sobject:
+            sobjects = [sobject]
+        else:
+            search_keys = my.kwargs.get("search_keys")
+            sobjects = Search.get_by_search_keys(search_keys)
+
+        if not sobjects:
             return
 
 
-        search_type = sobject.get_base_search_type()
-
         # find all the relationships
-        schema = Schema.get()
+        my.schema = Schema.get()
 
+        for sobject in sobjects:
+            my.delete_sobject(sobject)
+
+
+    def delete_sobject(my, sobject):
+
+        search_type = sobject.get_base_search_type()
 
         values = my.kwargs.get("values")
         if values:
@@ -264,7 +303,7 @@ class DeleteCmd(Command):
         # always delete notes and task and snapshot
         #if not related_types:
         #    related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
-        #related_types = schema.get_related_search_types(search_type)
+        #related_types = my.schema.get_related_search_types(search_type)
         if related_types:
             for related_type in related_types:
                 if not related_type or related_type == search_type:
@@ -679,10 +718,17 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         top.add(content)
         content.add_style("padding: 10px")
 
+        if not search_key:
+            warning_msg = "Projects must be deleted individually"
+            content.add(DivWdg(warning_msg, css='warning'))
+            content.add("<br/>")
+            return top
+
         warning_msg = "Deleting a project will delete the database associated with this project.  All data will be lost.  Please consider carefully before proceeding."
         if warning_msg:
             content.add(DivWdg(warning_msg, css='warning'))
             content.add("<br/>")
+
         
         if not project_code:
             content.add("This project [%s] has been deleted."%search_key)

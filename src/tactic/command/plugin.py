@@ -752,6 +752,7 @@ class PluginInstaller(PluginBase):
         # register the plugin.
         register = my.kwargs.get("register")
         code = None
+        plugin = None
         if register in ['true', True]:
             node = my.xml.get_node("manifest/data")
             data = my.xml.get_node_values_of_children(node)
@@ -774,6 +775,7 @@ class PluginInstaller(PluginBase):
             if version:
                 plugin.set_value("version", version)
 
+            # NOTE: is this really needed?
             plugin.set_value("manifest", my.manifest)
 
             if my.plugin_dir.startswith(my.base_dir):
@@ -782,6 +784,10 @@ class PluginInstaller(PluginBase):
                 plugin.set_value("rel_dir", rel_dir)
 
             plugin.commit()
+
+        my.plugin = plugin
+
+
 
         my.import_manifest(nodes)
 
@@ -1072,6 +1078,14 @@ class PluginInstaller(PluginBase):
                     try:
                         if commit:
                             sobject.commit(triggers=False)
+
+                            
+                            plugin_content = SearchType.create("config/plugin_content")
+                            plugin_content.set_value("search_type", sobject.get_search_type())
+                            plugin_content.set_value("search_code", sobject.get_code())
+                            plugin_content.set_value("plugin_code", my.plugin.get_code())
+                            plugin_content.commit()
+
                     except UnicodeDecodeError, e:
                         print "Skipping due to unicode decode error: [%s]" % statement_str
                         continue
@@ -1125,12 +1139,20 @@ class PluginUninstaller(PluginBase):
             elif node_name == 'include':
                 my.handle_include(node)
 
+
+        # remove contents
+        search = Search("config/plugin_content")
+        search.add_filter("plugin_code", my.code)
+        plugin_contents = search.get_sobjects()
+        for plugin_content in plugin_contents:
+            plugin_content.delete()
+
+
+
         # deregister the plugin
         plugin = Search.eval("@SOBJECT(config/plugin['code','%s'])" % my.code, single=True)
-        if not plugin:
-            return
-
-        plugin.delete()
+        if plugin:
+            plugin.delete()
 
 
     def remove_search_type(my, node):

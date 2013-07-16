@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg']
+__all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
 from pyasm.common import Date, Common, Environment, FormatValue
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
@@ -622,7 +622,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                     'view': 'table',
                     'keywords': keywords,
                     'simple_search_view': 'simple_search',
-                    //'show_shelf': false,
+                    'show_shelf': false,
                 }
                 spt.tab.set_main_body_tab();
                 spt.tab.add_new("Search", "Search", class_name, kwargs);
@@ -775,6 +775,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         results_div = DivWdg()
         my.top.add(results_div)
         results_div.add_style("display: none")
+        results_div.add_style("z-index: 1000")
         results_div.add_style("position: absolute")
         results_div.add_style("top: 20px")
         results_div.add_style("left: 0px")
@@ -1177,3 +1178,99 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
+class GlobalSearchWdg(BaseRefreshWdg):
+
+    ARGS_KEYS = {
+    'show_button': {
+        'description': 'Determines whether or not to show a button beside the search text field',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 1,
+        'category': 'Options'
+    },
+    }
+ 
+
+    def get_display(my):
+
+        top = my.top
+
+
+        # DISABLED for now.  The search is on sobject_list which does not
+        # display the icon correctly in tile view
+        layout = my.kwargs.get("layout")
+        if not layout:
+            layout = ''
+        layout = ''
+
+
+        search_wdg = DivWdg()
+        search_wdg.add_class("spt_main_top")
+        top.add(search_wdg)
+        #search_wdg.add_style("padding: 10px")
+        #search_wdg.add_style("margin: 10px auto")
+        #search_wdg.add("Search: ")
+        #search_wdg.add("&nbsp;"*3)
+
+
+        custom_cbk = {}
+        custom_cbk['enter'] = '''
+            var top = bvr.src_el.getParent(".spt_main_top");
+            var search_el = top.getElement(".spt_main_search");
+            var keywords = search_el.value;
+
+            if (keywords != '') {
+                var class_name = 'tactic.ui.panel.ViewPanelWdg';
+                var kwargs = {
+                    'search_type': 'sthpw/sobject_list',
+                    'view': 'result_list',
+                    'keywords': keywords,
+                    'simple_search_view': 'simple_filter',
+                    'show_shelf': false,
+                    'layout': '%s',
+                }
+                spt.tab.set_main_body_tab();
+                spt.tab.add_new("Search Results", "Search Results", class_name, kwargs);
+            }
+         ''' % layout
+
+
+        from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
+        #text = TextInputWdg(name="search")
+        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk)
+        #text = TextWdg("search")
+        text.add_class("spt_main_search")
+        search_wdg.add(text)
+
+        show_button = my.kwargs.get("show_button")
+        if show_button in [True, 'true']:
+            button = HtmlElement.button("GO")
+            search_wdg.add(button)
+            button.add_behavior( {
+                'type': 'click_up',
+                'layout': layout,
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_main_top");
+                var search_el = top.getElement(".spt_main_search");
+                var keywords = search_el.value;
+
+                if (keywords == '') {
+                    return;
+                }
+
+                var class_name = 'tactic.ui.panel.ViewPanelWdg';
+                var kwargs = {
+                    'search_type': 'sthpw/sobject_list',
+                    'view': 'result_list',
+                    'keywords': keywords,
+                    'simple_search_view': 'simple_filter',
+                    'show_shelf': false,
+                    'layout': bvr.layout,
+                }
+                spt.tab.set_main_body_tab();
+                spt.tab.add_new("Search Results", "Search Results", class_name, kwargs);
+                '''
+            } )
+
+ 
+        return top

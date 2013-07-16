@@ -924,6 +924,14 @@ class HtmlElement(Widget):
     input = staticmethod(input)
 
 
+    def button(value="button"):
+        element = HtmlElement("input")
+        element.add_attr("value", value)
+        element.add_attr("type", "button")
+        return element
+    button = staticmethod(button)
+
+
     def textarea(rows=1,cols=10,widget=None):
         element = HtmlElement("textarea")
         element.set_attr("rows", rows)

@@ -2431,9 +2431,10 @@ class PluginDirListActionCbk(Command):
 
             shutil.move(upload_path, to_path)
 
-            from pyasm.common import ZipUtil
-            zip_util = ZipUtil()
-            zip_util.extract(cls, to_path)
+            if to_path.endswith(".zip"):
+                from pyasm.common import ZipUtil
+                zip_util = ZipUtil()
+                zip_util.extract(to_path)
 
 
 

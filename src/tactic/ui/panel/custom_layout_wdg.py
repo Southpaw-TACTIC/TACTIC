@@ -16,7 +16,7 @@ import cStringIO
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads
 from pyasm.biz import Schema, ExpressionParser, Project
-from pyasm.search import Search, SearchKey, WidgetDbConfig
+from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table, Widget, Html, WebContainer
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg
 
@@ -199,6 +199,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         my.category = my.kwargs.get("category")
         my.search_type = my.kwargs.get("search_type")
 
+        my.plugin = None
+
 
         xml = None
 
@@ -296,6 +298,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         my.config = config
         #my.def_config = config    # This is unnessary?
+
+        # find out if there is a plugin associated with this
+        my.plugin = my.kwargs.get("plugin")
+        if not my.plugin and isinstance(my.config, SObject):
+            my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
+
 
         # try to get the sobject if this is in a table element widget
         if my.search_key:
@@ -562,8 +570,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
         #html = html.decode('utf-8')
         template = Template(html, output_encoding='utf-8', input_encoding='utf-8')
 
-        server = my.server.get_server()
-
         # get the api version of the sobject
         if not my.is_table_element:
             if my.sobject_dicts == None:
@@ -577,8 +583,17 @@ class CustomLayoutWdg(BaseRefreshWdg):
         else:
             sobject = {}
 
+        if my.plugin:
+            plugin = my.plugin.get_sobject_dict()
+            plugin_dir = my.server.get_plugin_dir(plugin)
+        else:
+            plugin = {}
+            plugin_dir = ""
+        my.kwargs['plugin_dir'] = plugin_dir
+
+
         try:
-            html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, kwargs=my.kwargs)
+            html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)
 
             # we have to replace all & signs to &amp; for it be proper html
             html = html.replace("&", "&amp;")

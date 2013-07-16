@@ -173,12 +173,18 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
  
 
     
-   <!-- FIXME -->
-   <!-- put in the config relationships here for now.  It does not yet
-   read the config xml for dependencies
-   -->
-   <connect from="config/ingest_rule" to="config/ingest_session" relationship="code" from_col="spt_ingest_session_code" to_col="code"/>
+    <!-- FIXME -->
+    <!-- put in the config relationships here for now.  It does not yet
+    read the config xml for dependencies
+    -->
+    <connect from="config/ingest_rule" to="config/ingest_session" relationship="code" from_col="spt_ingest_session_code" to_col="code"/>
 
+    <connect from="config/plugin_content" to="config/plugin"
+                from_col="plugin_code" to_col="code"
+                relationship='code' type='hierarchy'/>
+
+    <connect from="config/plugin_content" to="*"
+                relationship='search_type'/>
 
 
    <search_type name="sthpw/sync_job"/>
@@ -333,6 +339,8 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/url'/>
    <search_type name='config/ingest_session'/>
    <search_type name='config/ingest_rule'/>
+   <search_type name='config/plugin'/>
+   <search_type name='config/plugin_content'/>
 
    <connect from="config/ingest_rule" to="config/ingest_session" type="code" from_col="spt_ingest_session_code" to_col="code"/>
 

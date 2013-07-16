@@ -23,6 +23,11 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
 
+    def upgrade_v4_1_0_a01_006(my):
+        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/plugin_content', 'config', 'Plugin Contents', '{project}', 'spt_plugin_content', 'pyasm.search.SObject', 'Plugin Contents', 'public');
+        ''')
+
+
     def upgrade_v4_1_0_a01_005(my):
         my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/subscription', 'sthpw', 'Subscription', 'sthpw', 'subscription', 'pyasm.search.SObject', 'Subscription', 'public');
         ''')

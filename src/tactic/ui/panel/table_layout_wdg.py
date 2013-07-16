@@ -4485,9 +4485,83 @@ spt.table.row_ctx_menu_save_changes_cbk = function(evt, bvr)
 
 }
 
+
+
+spt.table.delete_row = function(row) {
+    var rows = [row];
+    return spt.table.delete_rows(rows);
+}
+
+spt.table.delete_rows = function(rows) {
+
+    var row = rows[0];
+    var layout = spt.table.get_layout();
+
+    var search_key = row.get("spt_search_key");
+    var search_key_info = spt.dg_table.parse_search_key( search_key );
+    var search_type = search_key_info.search_type;
+
+
+    var search_keys = [];
+    for (var i = 0; i < rows.length; i++) {
+        var tmp_row = rows[i];
+        var search_key = tmp_row.get("spt_search_key");
+        search_keys.push(search_key);
+    }
+
+
+    // open delete popup
+    var class_name;
+    if (search_type == "sthpw/search_type") { 
+        class_name = 'tactic.ui.tools.DeleteSearchTypeToolWdg';
+    }
+    else if (search_type == "sthpw/project") { 
+        class_name = 'tactic.ui.tools.DeleteProjectToolWdg';
+    }
+    else {
+        class_name = 'tactic.ui.tools.DeleteToolWdg';
+    }
+    var kwargs = {
+      search_keys: search_keys,
+    }
+    var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+
+    var on_post_delete = function() {
+        var on_complete = "$(id).setStyle('display', 'none')";
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (layout.getAttribute("spt_version") == "2") {
+                spt.table.remove_hidden_row(row);
+            }
+            Effects.fade_out(row, 500, on_complete);
+        }
+    }
+
+    popup.spt_on_post_delete = on_post_delete;
+
+    return;
+}
+
+
 spt.table.delete_selected = function()
 {
+    var selected_rows = spt.table.get_selected_rows();
+    var num = selected_rows.length;
+    if (num == 0) {
+        spt.alert("Nothing selected to " + action);
+        return;
+    }
+
+    spt.table.delete_rows(selected_rows);
+
+
+    return;
+
+    /*
+    var bvr = { src_el: spt.table.layout };
+    spt.dg_table.drow_smenu_delete_cbk({}, bvr)
     spt.table.operate_selected('delete');
+    */
 }
 
 spt.table.retire_selected = function()

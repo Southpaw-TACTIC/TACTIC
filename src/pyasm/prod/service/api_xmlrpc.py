@@ -2375,13 +2375,21 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_plugin_dir(my, ticket, plugin_code):
         '''gets the plugin directory from the client perspective'''
-        search = Search("config/plugin")
-        search.add_filter("code", plugin_code)
-        plugin = search.get_sobject()
+
+        if isinstance(plugin_code, SObject):
+            plugin = plugin_code
+            plugin_code = plugin.get("code")
+        elif isinstance(plugin_code, dict):
+            plugin = plugin_code
+            plugin_code = plugin.get("code")
+        else:
+            search = Search("config/plugin")
+            search.add_filter("code", plugin_code)
+            plugin = search.get_sobject()
         if not plugin:
             rel_dir = plugin_code
         else:
-            rel_dir = plugin.get_value("rel_dir")
+            rel_dir = plugin.get("rel_dir")
 
         if plugin_code.startswith("TACTIC"):
             return "/tactic/builtin_plugins/%s" % rel_dir

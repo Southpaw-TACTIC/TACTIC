@@ -11,7 +11,7 @@
 #
 
 __all__ = ['CustomLayoutEditWdg', 'CustomLayoutEditTestWdg','CustomLayoutHelpWdg', 'CustomLayoutEditSaveCmd', 'CustomLayoutActionCbk']
-from pyasm.common import  jsondumps, jsonloads, TacticException
+from pyasm.common import  jsondumps, jsonloads, TacticException, Environment
 from pyasm.search import Search, SearchType
 from pyasm.biz import Project
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
@@ -322,6 +322,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
+
+
+        my.plugin = None
 
         # Disabling for now until we can actually get this working.
         """
@@ -771,8 +774,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             nothing_wdg.add_style("text-align: center")
             nothing_wdg.add_style("margin: 60px auto")
             right_div.add(nothing_wdg)
-           
-            
+
             
         else:
             if is_new:
@@ -783,6 +785,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 mako = ''
                 kwargs = ''
                 widget_type = ''
+                my.plugin = None
             else:
 
                 pretty = True
@@ -831,6 +834,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         pre.add_attr("wrap", "true")
                         error_msgs.append("Syntax error found: <br> %s<br><br> %s" %(e.__str__(), pre.get_buffer_display()))
 
+
+
+
+                # find out if this custom layout belongs to a plugin
+                expr = "@SOBJECT(config/plugin_content.config/plugin)"
+                my.plugin = Search.eval(expr, cur_config, single=True)
+
+
             if error_msgs:
                 left_div.add_behavior({
                     'type': 'load',
@@ -869,12 +880,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if html:
                 text.set_value(html)
 
-            #html_div.add(text)
 
-            #from tactic.ui.widget import CKEditorWdg
-            #editor = CKEditorWdg(name="html", value=html)
-            #html_div.add(editor)
-
+            # add the editor
             from tactic.ui.app import AceEditorWdg
             editor = AceEditorWdg(width="100%", language="xml", code=html, show_options=False, editor_id='custom_layout_html')
             my.editor_id = editor.get_editor_id()
@@ -888,11 +895,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             shelf_wdg.add_style("overflow-x: hidden")
             shelf_wdg.add_style("overflow-y: hidden")
-           
-
-
-
-            #right_div.add("<br/>"*2)
            
 
             view_wdg = DivWdg()
@@ -916,7 +918,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 select.set_value(widget_type)
             view_wdg.add("<b>Type: &nbsp;</b>")
             view_wdg.add(select)
-            select.set_option("values", "widget|column|chart|report|dashboard")
+            select.set_option("values", "widget|theme|column|chart|report|dashboard")
             select.add_empty_option("-- None ---")
 
  
@@ -1325,24 +1327,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         #shelf_wdg.add(help_button)
         #help_button.add_style("float: left")
 
-        search = Search("config/url")
-        search.add_filter("url", "/index")
-        url = search.get_sobject()
-        if url:
-            widget = url.get_xml_value("widget")
-            view = widget.get_value("element/display/view")
+        button = ButtonNewWdg(title="Link Actions", icon=IconWdg.LINK, show_arrow=True)
+        button_row.add(button)
 
-            button = ButtonNewWdg(title="View Index [%s]" % view, icon=IconWdg.LINK)
-            button_row.add(button)
-            project_code = Project.get_project_code()
-            url_str = "/tactic/%s/" % project_code
-            button.add_behavior( {
-                'type': 'click_up',
-                'url': url_str,
-                'cbjs_action': '''
-                window.open(bvr.url);
-                '''
-            } )
+        menu = my.get_link_menu()
+        menus = [menu.get_data()]
+        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
+        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
+
+
 
 
 
@@ -1496,30 +1489,40 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         menu_item = MenuItem(type='action', label='Delete View')
         menu.add(menu_item)
-        menu_item.add_behavior({
-            'type': 'click_up',
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_custom_layout_top");
+        if False:
+            # Disabled for now
+            menu_item.add_behavior({
+                'type': 'click_up',
+                'plugin': my.plugin.get_value("code"),
+                'cbjs_action': '''
+                alert("View belongs to plugin ["+bvr.plugin+"]");
+                '''
+            } )
+        else:
+            menu_item.add_behavior({
+                'type': 'click_up',
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_custom_layout_top");
 
-            var view = activator.getAttribute("spt_view");
-            var search_key = activator.getAttribute("spt_search_key");
+                var view = activator.getAttribute("spt_view");
+                var search_key = activator.getAttribute("spt_search_key");
 
-            if (!confirm("Are you sure you wish to delete view["+view+"]?")) {
-                return;
-            }
+                if (!confirm("Are you sure you wish to delete view["+view+"]?")) {
+                    return;
+                }
 
-            spt.app_busy.show("Deleting view ["+view+"]");
-            var server = TacticServerStub.get();
-            server.delete_sobject(search_key);
+                spt.app_busy.show("Deleting view ["+view+"]");
+                var server = TacticServerStub.get();
+                server.delete_sobject(search_key);
 
-            top.setAttribute("spt_view", "");
-            top.setAttribute("spt_widget_type", "");
+                top.setAttribute("spt_view", "");
+                top.setAttribute("spt_widget_type", "");
 
-            var top = activator.getParent(".spt_custom_layout_top");
-            spt.panel.refresh(top);
-            spt.app_busy.hide();
-        ''' } )
+                var top = activator.getParent(".spt_custom_layout_top");
+                spt.panel.refresh(top);
+                spt.app_busy.hide();
+            ''' } )
 
 
 
@@ -1629,6 +1632,269 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         return menu
 
 
+
+
+
+    def get_link_menu(my):
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        search = Search("config/url")
+        search.add_filter("url", "/index")
+        url = search.get_sobject()
+        if url:
+            widget = url.get_xml_value("widget")
+            view = widget.get_value("element/display/view")
+
+            project_code = Project.get_project_code()
+            url_str = "/tactic/%s/" % project_code
+
+            menu_item = MenuItem(type='action', label='Open Index URL')
+            menu.add(menu_item)
+
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'url': url_str,
+                'cbjs_action': '''
+                window.open(bvr.url);
+                '''
+            } )
+
+
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+
+
+        if my.plugin:
+
+            menu_item = MenuItem(type='action', label='Edit Plugin')
+            menu.add(menu_item)
+
+            plugin_dir = Environment.get_plugin_dir()
+
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'dirname': my.plugin.get('rel_dir'),
+                'plugin_dir': plugin_dir,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.PluginEditWdg';
+                var kwargs = {
+                    plugin_dir: bvr.plugin_dir + "/" + bvr.dirname
+                };
+                //spt.tab.set_main_body_tab();
+                //spt.tab.add_new("Plugin Manager", "Plugin Manager", class_name, kwargs);
+                spt.panel.load_popup("Plugin Manager", class_name, kwargs);
+                '''
+            } )
+
+
+        else:
+
+
+            menu_item = MenuItem(type='action', label='Create Plugin')
+            menu.add(menu_item)
+
+            plugin_dir = Environment.get_plugin_dir()
+
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'plugin_dir': plugin_dir,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.PluginEditWdg';
+                var kwargs = {
+                    mode: "insert"
+                };
+                //spt.tab.set_main_body_tab();
+                //spt.tab.add_new("Plugin Manager", "Plugin Manager", class_name, kwargs);
+                spt.panel.load_popup("Plugin Manager", class_name, kwargs);
+                '''
+            } )
+
+
+
+        menu_item = MenuItem(type='action', label='Open Plugin Manager')
+        menu.add(menu_item)
+
+        plugin_dir = Environment.get_plugin_dir()
+
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.app.PluginWdg';
+            var kwargs = {};
+            spt.tab.set_main_body_tab();
+            spt.tab.add_new("Plugin Manager", "Plugin Manager", class_name, kwargs);
+            '''
+        } )
+
+
+
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+
+
+
+
+
+
+
+
+        menu_item = MenuItem(type='action', label='Add to Side Bar', icon=IconWdg.LINK)
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': r'''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_custom_layout_top");
+            var values = spt.api.Utility.get_input_values(top, null, false);
+
+            var view = values.view;
+
+            var element_name = view.replace(/\//g, "_");
+            var kwargs = {
+                class_name: 'LinkWdg',
+                display_options: {
+                    widget_key: 'custom_layout',
+                    view: view
+                }
+            }
+
+            var server = TacticServerStub.get();
+            var info = server.add_config_element("SideBarWdg", "definition", element_name, kwargs);
+            var info = server.add_config_element("SideBarWdg", "project_view", element_name, kwargs);
+
+            spt.panel.refresh("side_bar");
+
+
+            '''
+            } )
+
+
+
+        menu_item = MenuItem(type='action', label='Set as Project URL', icon=IconWdg.LINK)
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': r'''
+
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_custom_layout_top");
+            var values = spt.api.Utility.get_input_values(top, null, false);
+
+            var view = values.view;
+
+            if (!view) {
+                spt.alert("No view selected");
+                return;
+            }
+
+            spt.app_busy.show("Saving index URL")
+
+            var widget = [];
+            widget.push( "<element name='index'>" );
+            widget.push( "  <display class='tactic.ui.panel.CustomLayoutWdg'>" );
+            widget.push( "      <view>"+view+"</view>" );
+            widget.push( "  </display>" );
+            widget.push( "</element>");
+            widget = widget.join("\n");
+
+            var server = TacticServerStub.get();
+            var data = {
+                url: '/index',
+                widget: widget,
+                description: 'Index Page'
+            };
+
+            var config = server.query("config/url", {filters:[['url','/index']], single:true})
+            if (!config) {
+                if (!confirm("Index already exists.  Do you wish to replace?")) {
+                    return;
+                }
+                server.update(config, data);
+            }
+            else {
+                server.insert("config/url", data);
+            }
+
+            spt.app_busy.hide();
+
+            ''' } )
+
+
+
+
+
+        menu_item = MenuItem(type='action', label='Add as Custom URL', icon=IconWdg.LINK)
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': r'''
+
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_custom_layout_top");
+            var values = spt.api.Utility.get_input_values(top, null, false);
+
+            var html = values.html;
+            var style = values.style;
+            var view = values.view;
+            var behavior = values.behavior;
+
+            if (!view) {
+                spt.alert("No view selected");
+                return;
+            }
+
+            var widget = [];
+            widget.push( "<element name='"+view+"'>" );
+            widget.push( "  <display class='tactic.ui.panel.CustomLayoutWdg'>" );
+            widget.push( "      <view>"+view+"</view>" );
+            widget.push( "  </display>" );
+            widget.push( "</element>");
+            widget = widget.join("\n");
+
+
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_type: "config/url",
+                default: {
+                    url: "/" + view,
+                    widget: widget
+                }
+            }
+            spt.panel.load_popup("Create URL", class_name, kwargs);
+            '''
+        } )
+
+
+        menu_item = MenuItem(type='action', label='Show Custom URLs', icon=IconWdg.LINK)
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': r'''
+
+            spt.tab.set_main_body_tab();
+
+            var class_name = 'tactic.ui.panel.ViewPanelWdg';
+            var kwargs = {
+                search_type: 'config/url',
+                view: 'table'
+            };
+
+            spt.app_busy.show("Loading Custom URLs");
+            spt.tab.add_new("custom_url", "Custom URL", class_name, kwargs);
+            spt.app_busy.hide();
+
+            ''' } )
+
+ 
+
+        return menu
+
+
+         
 
     def get_inject_menu(my):
         menu = Menu(width=180)
@@ -1903,161 +2169,33 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
-        menu_item = MenuItem(type='separator')
-        menu.add(menu_item)
 
-
-
-        menu_item = MenuItem(type='action', label='Add to Side Bar', icon=IconWdg.LINK)
+        menu_item = MenuItem(type='action', label='Inject Search')
         menu.add(menu_item)
         menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_custom_layout_top");
-            var values = spt.api.Utility.get_input_values(top, null, false);
+        'type': 'click_up',
+        'editor_id': my.editor_id,
+        'cbjs_action': '''
+        var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
-            var view = values.view;
-
-            var element_name = view.replace(/\//g, "_");
-            var kwargs = {
-                class_name: 'LinkWdg',
-                display_options: {
-                    widget_key: 'custom_layout',
-                    view: view
-                }
+        var kwargs = {
+            'editor_id': bvr.editor_id,
+            'display_handler': 'tactic.ui.input.GlobalSearchWdg',
+            'name': '',
+            'display_options': {
             }
-
-            var server = TacticServerStub.get();
-            var info = server.add_config_element("SideBarWdg", "definition", element_name, kwargs);
-            var info = server.add_config_element("SideBarWdg", "project_view", element_name, kwargs);
-
-            spt.panel.refresh("side_bar");
-
-
-            '''
-            } )
-
-
-
-        menu_item = MenuItem(type='action', label='Set as Project Url', icon=IconWdg.LINK)
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_custom_layout_top");
-            var values = spt.api.Utility.get_input_values(top, null, false);
-
-            var view = values.view;
-
-            if (!view) {
-                spt.alert("No view selected");
-                return;
-            }
-
-            spt.app_busy.show("Saving index URL")
-
-            var widget = [];
-            widget.push( "<element name='index'>" );
-            widget.push( "  <display class='tactic.ui.panel.CustomLayoutWdg'>" );
-            widget.push( "      <view>"+view+"</view>" );
-            widget.push( "  </display>" );
-            widget.push( "</element>");
-            widget = widget.join("\n");
-
-            var server = TacticServerStub.get();
-            var data = {
-                url: '/index',
-                widget: widget,
-                description: 'Index Page'
-            };
-
-            var config = server.query("config/url", {filters:[['url','/index']], single:true})
-            if (!config) {
-                if (!confirm("Index already exists.  Do you wish to replace?")) {
-                    return;
-                }
-                server.update(config, data);
-            }
-            else {
-                server.insert("config/url", data);
-            }
-
-            spt.app_busy.hide();
-
-            ''' } )
-
-
-
-
-
-        menu_item = MenuItem(type='action', label='Add as Custom Url', icon=IconWdg.LINK)
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
-
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_custom_layout_top");
-            var values = spt.api.Utility.get_input_values(top, null, false);
-
-            var html = values.html;
-            var style = values.style;
-            var view = values.view;
-            var behavior = values.behavior;
-
-            if (!view) {
-                spt.alert("No view selected");
-                return;
-            }
-
-            var widget = [];
-            widget.push( "<element name='"+view+"'>" );
-            widget.push( "  <display class='tactic.ui.panel.CustomLayoutWdg'>" );
-            widget.push( "      <view>"+view+"</view>" );
-            widget.push( "  </display>" );
-            widget.push( "</element>");
-            widget = widget.join("\n");
-
-
-            var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                search_type: "config/url",
-                default: {
-                    url: "/" + view,
-                    widget: widget
-                }
-            }
-            spt.panel.load_popup("Create URL", class_name, kwargs);
-            '''
+        };
+        spt.panel.load_popup("Widget Editor", class_name, kwargs);
+        '''
         } )
 
 
-        menu_item = MenuItem(type='action', label='Show Custom URLs', icon=IconWdg.LINK)
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': r'''
 
-            spt.tab.set_main_body_tab();
 
-            var class_name = 'tactic.ui.panel.ViewPanelWdg';
-            var kwargs = {
-                search_type: 'config/url',
-                view: 'table'
-            };
-
-            spt.app_busy.show("Loading Custom URLs");
-            spt.tab.add_new("custom_url", "Custom URL", class_name, kwargs);
-            spt.app_busy.hide();
-
-            ''' } )
-
- 
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
+
+
 
 
         menu_item = MenuItem(type='action', label='Repeat Last Test')
@@ -2187,6 +2325,11 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
         kwargs = my.kwargs.get("kwargs")
         is_test = my.kwargs.get("is_test")
 
+        # find out if there is a plugin associated with this
+        code = my.kwargs.get("code")
+        plugin = Search.eval("@SOBJECT(config/plugin_content['search_code','%s'].config/plugin)" % code, single=True)
+
+
 
         from tactic.ui.panel import CustomLayoutWdg
         top = my.top
@@ -2196,14 +2339,14 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
         top.add_color("background", "background")
 
         if not html:
-            layout = CustomLayoutWdg(view=view, include_mako=True, is_test=is_test, kwargs=kwargs)
+            layout = CustomLayoutWdg(view=view, include_mako=True, is_test=is_test, kwargs=kwargs, plugin=plugin)
             top.add(layout)
             return top
 
 
 
         config_xml = CustomLayoutEditSaveCmd.build_xml(view, html, style, behavior, mako=mako, kwargs=kwargs)
-        layout = CustomLayoutWdg(config_xml=config_xml, view=view, include_mako=True, is_test=is_test, kwargs=kwargs)
+        layout = CustomLayoutWdg(config_xml=config_xml, view=view, include_mako=True, is_test=is_test, kwargs=kwargs, plugin=plugin)
         top.add(layout)
 
 
@@ -2254,9 +2397,6 @@ class CustomLayoutEditSaveCmd(Command):
             #mako = mako.replace("<%", "<![CDATA[\n<%")
             #mako = mako.replace("%>", "%>]]>")
             mako = "\n".join( ["<![CDATA[", mako, "]]>"] )
-
-            print "mako: ", mako
-
 
 
 

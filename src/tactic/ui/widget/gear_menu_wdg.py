@@ -231,7 +231,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 },
 
                 { "type": "action", "label": "Delete Selected Items",
-                        "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);"}
+                        "bvr_cb": {'cbjs_action': '''
+                spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);
+                '''}
                 },
 
                 {"type": "separator"}

@@ -1826,6 +1826,7 @@ class MethodMode(ExpressionParser):
             related_types_filters[related_type] = filters
             related_types_paths[related_type] = path
 
+
         # handle some absolute sobjects
         if len(related_types) == 1:
             # support some shorthand here?
@@ -1963,7 +1964,6 @@ class MethodMode(ExpressionParser):
         else:
             # start of with the current sobject list
             related_sobjects = my.sobjects
-
 
         # go through each of the related types
         cur_search_type = ''

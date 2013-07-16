@@ -235,9 +235,6 @@ class MainWdg(BaseRefreshWdg):
         search_wdg.add("&nbsp;"*3)
 
 
-
-
-
         custom_cbk = {}
         custom_cbk['enter'] = '''
             var top = bvr.src_el.getParent(".spt_main_top");
@@ -595,17 +592,17 @@ class MainWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
-        title = "Examples"
-        image = IconWdg("Examples", IconWdg.SHARE_32)
+        title = "Tools"
+        image = IconWdg("Tools", IconWdg.SHARE_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
         description = '''A collection of example views.'''
 
         behavior = {
         'type': 'click_up',
         'cbjs_action': '''
-        var class_name = 'tactic.ui.startup.content_creator_wdg.ContentCreatorWdg';
+        var class_name = 'tactic.ui.startup.ToolsWdg';
         spt.tab.set_main_body_tab();
-        spt.tab.add_new("examples", "Examples", class_name, kwargs);
+        spt.tab.add_new("tools", "Tools", class_name, kwargs);
         '''
         }
         share_wdg = my.get_small_section_wdg(title, description, image, behavior)
