@@ -82,6 +82,17 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     
+    def upgrade_v4_0_0_rc02_002(my):
+        my.run_sql('''
+        ALTER TABLE sobject_log ADD "code" VARCHAR(256);
+        ''')   
+
+
+    def upgrade_v4_0_0_rc02_001(my):
+        my.run_sql('''
+        ALTER TABLE debug_log ADD "code" VARCHAR(256);
+        ''')   
+
     def upgrade_v4_0_0_rc01_001(my):
         my.run_sql('''
         ALTER TABLE trigger add "code" VARCHAR(256);

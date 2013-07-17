@@ -32,7 +32,7 @@
          <p>This document discusses security layers that can be implemented on top of the TACTIC
                     service. 
          </p>
-         <h4><a name="d0e4091"></a>Services covered
+         <h4><a name="d0e4114"></a>Services covered
          </h4>
          <div class="itemizedlist">
             <ul class="itemizedlist">
@@ -54,7 +54,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4106"></a>Disclaimer
+                     <h4 class="title"><a name="d0e4129"></a>Disclaimer
                      </h4>
                   </div>
                </div>
@@ -73,7 +73,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4113"></a>Functionality and effectiveness of remote access
+                     <h4 class="title"><a name="d0e4136"></a>Functionality and effectiveness of remote access
                      </h4>
                   </div>
                </div>
@@ -86,12 +86,12 @@
                            TACTIC will produce unexpected behavior when utilized in a fashion that was not intended
                            for the product, such as use in remote applications.
             </p>
-            <h4><a name="d0e4120"></a>TACTIC on public networks
+            <h4><a name="d0e4143"></a>TACTIC on public networks
             </h4>
             <p>HTTP transport co-services can be configured to provide authentication services to
                            TACTIC.
             </p>
-            <h4><a name="d0e4124"></a>HTTP zone access
+            <h4><a name="d0e4147"></a>HTTP zone access
             </h4>
             <p>The simplest form of HTTP security authentication zone access. To enable different
                            security scenarios, the HTTP service must be configured for use of these scenarios.
@@ -102,14 +102,14 @@
             <p>When enabling password zone access, the password is transmitted to the server in
                            cleartext, unless TLS is enabled.
             </p>
-            <h4><a name="d0e4130"></a>Apache
+            <h4><a name="d0e4153"></a>Apache
             </h4>
             <p>Apache uses either directives for directory access in the httpd.conf file, or can be
                            enabled on a per-directory basis, with the use of a .htaccess file. Either way can be
                            used. Apache provides modules for LDAP, MySQL, flat-file, ADS, and many other
                            authentication mechanisms.
             </p>
-            <h4><a name="d0e4134"></a>IIS
+            <h4><a name="d0e4157"></a>IIS
             </h4>
             <p>IIS can be configured at the top level through the IIS snap-in, or by individual
                            configuration file. IIS 7 uses a file called Web.config to hold settings for integration
@@ -122,12 +122,12 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4138"></a>SSL(TLS) support
+                     <h4 class="title"><a name="d0e4161"></a>SSL(TLS) support
                      </h4>
                   </div>
                </div>
             </div>
-            <h4><a name="d0e4141"></a>Overview
+            <h4><a name="d0e4164"></a>Overview
             </h4>
             <p>TACTIC can be configured to use the SSL transport layer. This layer is independent of
                            the TACTIC service, and can be tailored to the needs of the deployment without major
@@ -146,7 +146,7 @@
                            enough set directives or steps to properly complete the SSL process. They are given as
                            guides.
             </p>
-            <h4><a name="d0e4151"></a>Steps
+            <h4><a name="d0e4174"></a>Steps
             </h4>
             <p>The major steps to utilizing SSL in with TACTIC are</p>
             <div class="itemizedlist">
@@ -159,9 +159,9 @@
                   <li class="listitem">Providing CA certificates</li>
                </ul>
             </div>
-            <h4><a name="d0e4164"></a>Configuration
+            <h4><a name="d0e4187"></a>Configuration
             </h4>
-            <h4><a name="d0e4166"></a>TACTIC configuration
+            <h4><a name="d0e4189"></a>TACTIC configuration
             </h4>
             <p>The SSL HTTP layer is kept separate from TACTIC via a proxy, so the only configuration
                            change required of TACTIC is in the tactic_(OS).conf file. The
@@ -171,7 +171,7 @@
     &lt;protocol&gt;https&lt;/protocol&gt;
 &lt;/security&gt; 
 </pre><p>The setting can be set to either &#8220;http&#65533;? or &#8220;https&#65533;?. </p>
-            <h4><a name="d0e4174"></a>Apache
+            <h4><a name="d0e4197"></a>Apache
             </h4>
             <p>The apache project uses mod_ssl as a modular way of inserting SSL capabilities into
                            the HTTP service.
@@ -205,7 +205,7 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
 </pre><p>As soon as its added and the server is restarted, the SSL service becomes available on
                            the network interface that apache is running on.
             </p>
-            <h4><a name="d0e4188"></a>IIS
+            <h4><a name="d0e4211"></a>IIS
             </h4>
             <p>IIS can be configured at the top level through the IIS snap-in, or by individual
                            configuration file.
@@ -224,7 +224,7 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
                            client certificate mapping check box, click Edit, add the 1-to-1 or many-to-1 mappings
                            you need, and then click OK three times. 
             </p>
-            <h4><a name="d0e4196"></a>Secure transaction processing
+            <h4><a name="d0e4219"></a>Secure transaction processing
             </h4>
             <p>Processing transactions securely on the web means that there is a need to be able to
                            transmit information between the web site and the customer in a manner that makes it
@@ -233,7 +233,7 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
                            routines that exist on the web services host, and in browser programs (like Firefox and
                            Internet Explorer)
             </p>
-            <h4><a name="d0e4200"></a>Performance
+            <h4><a name="d0e4223"></a>Performance
             </h4>
             <p>TLS has encryption/decryption routines as part of its security. These routines can be
                            bandwidth/CPU intensive. Any usage of TLS can compromise TACTIC, if the routines are
@@ -245,19 +245,19 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4204"></a>VPN support
+                     <h4 class="title"><a name="d0e4227"></a>VPN support
                      </h4>
                   </div>
                </div>
             </div>
-            <h4><a name="d0e4207"></a>Overview
+            <h4><a name="d0e4230"></a>Overview
             </h4>
             <p>A VPN will provide the most trouble-free access to TACTIC remotely. In this scenario,
                            the authentication/encryption routines are completely removed from the realm of TACTIC
                            configuration. This not only helps to isolate TACTIC from complex configuration issues,
                            but also allows for isolated troubleshooting of remote access issues.
             </p>
-            <h4><a name="d0e4211"></a>PPTP
+            <h4><a name="d0e4234"></a>PPTP
             </h4>
             <p>PPTP is Microsoft supplied product. If an enterprise deployment of TACTIC includes ADS
                            authentication, then PPTP can be used as the VPN transport layer. Usually, deployment is
@@ -265,27 +265,27 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
                            PPTP can be considered the &#8220;road-warrior&#65533;? VPN, meaning that it is easily deployed to
                            users.
             </p>
-            <h4><a name="d0e4215"></a>IPsec
+            <h4><a name="d0e4238"></a>IPsec
             </h4>
             <p>Ipsec is a suite of protocols used to secure data between hosts. A VPN can be
                            transported on top of this protocol. Typically, two remote hosts are configured to
                            communicate with each other, such as routers. This type of VPN is typically used to
                            connect two offices together.
             </p>
-            <h4><a name="d0e4219"></a>Hardware VPNs
+            <h4><a name="d0e4242"></a>Hardware VPNs
             </h4>
             <p>Hardware VPNs such as offerings provided by companies like Cisco, can be easily
                            implemented. These Systems are designed for minimal ramp-up, and can be implemented
                            quickly.
             </p>
-            <h4><a name="d0e4223"></a>Security Terms
+            <h4><a name="d0e4246"></a>Security Terms
             </h4>
          </div>
          <div class="simplesect" title="Man-in-the-middle Attack (Wikipedia)">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4225"></a>Man-in-the-middle Attack (Wikipedia)
+                     <h4 class="title"><a name="d0e4248"></a>Man-in-the-middle Attack (Wikipedia)
                      </h4>
                   </div>
                </div>
@@ -298,21 +298,21 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
                            many circumstances (for example, an attacker within reception range of an unencrypted
                            Wi-Fi wireless access point, can insert himself as a man-in-the-middle).&#65533;?
             </p>
-            <h4><a name="d0e4230"></a>SSL (Wikipedia)
+            <h4><a name="d0e4253"></a>SSL (Wikipedia)
             </h4>
             <p>&#8220;Transport Layer Security (TLS) and its predecessor, Secure Sockets Layer (SSL), are
                            cryptographic protocols that provide security for communications over networks such as
                            the Internet. TLS and SSL encrypt the segments of network connections at the Transport
                            Layer end-to-end.&#65533;?
             </p>
-            <h4><a name="d0e4234"></a>Cleartext (Wikipedia)
+            <h4><a name="d0e4257"></a>Cleartext (Wikipedia)
             </h4>
             <p>Cleartext is transmitted, unencrypted text.</p>
             <p>&#8220;In a cryptosystem, weaknesses can be introduced through insecure handling of
                            plaintext, allowing an attacker to bypass the cryptography altogether. Plaintext is
                            vulnerable in use and in storage, whether in electronic or paper format. &#8220;
             </p>
-            <h4><a name="d0e4240"></a>PPTP (wikipedia)
+            <h4><a name="d0e4263"></a>PPTP (wikipedia)
             </h4>
             <p>The Point-to-Point Tunneling Protocol (PPTP) is a method for implementing virtual
                            private networks. PPTP uses a control channel over TCP and a GRE tunnel operating to
@@ -325,7 +325,7 @@ SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
                            standard features of the Windows PPTP stack. The intended use of this protocol is to
                            provide similar levels of security and remote access as typical VPN products.
             </p>
-            <h4><a name="d0e4246"></a>IPSEC (Wikipedia)
+            <h4><a name="d0e4269"></a>IPSEC (Wikipedia)
             </h4>
             <p>Internet Protocol Security (IPsec) is a protocol suite for securing Internet Protocol
                            (IP) communications by authenticating and encrypting each IP packet of a data stream.

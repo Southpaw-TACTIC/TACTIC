@@ -307,7 +307,6 @@ class Project(SObject):
 
 
     def has_table(my, search_type):
-
         if isinstance(search_type, basestring):
             search_type = SearchType.get(search_type)
 
@@ -336,7 +335,7 @@ class Project(SObject):
         return has_table
 
 
-    def get_search_types(my, include_sthpw=False, include_config=False):
+    def get_search_types(my, include_sthpw=False, include_config=False, include_multi_project=False):
         '''get all the search types in this project'''
         if my.search_types != None:
             return my.search_types
@@ -353,15 +352,28 @@ class Project(SObject):
             namespaces.append("sthpw")
         if include_config:
             namespaces.append("config")
+        if include_multi_project:
+            if not include_config:
+                search.add_filter('namespace','config',op='!=')
+            if not include_sthpw:
+                search.add_filter('namespace','sthpw',op='!=')
+            search.add_op('begin')
+            search.add_filter('database','{project}')
+            
 
         search.add_filters("namespace", namespaces)
-        search.add_order_by("search_type")
 
+        if include_multi_project:
+            search.add_op('or')
+
+        search.add_order_by("search_type")
         search_type_objs = search.get_sobjects()
 
         search_types = []
         for x in search_type_objs:
-            if x.get_value('namespace') == 'sthpw' or my.has_table(x):
+            # to avoid the old ill-defined prod/custom_property defined in sthpw namespace
+            if (x.get_value('namespace') == 'sthpw' and x.get_value('search_type').find('custom_property') == -1)\
+                or my.has_table(x):
                 search_types.append(x)
         return search_types
 

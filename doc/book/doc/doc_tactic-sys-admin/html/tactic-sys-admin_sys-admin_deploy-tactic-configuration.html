@@ -29,9 +29,9 @@
                </div>
             </div>
          </div>
-         <h4><a name="d0e3349"></a>TACTIC Service Configuration
+         <h4><a name="d0e3372"></a>TACTIC Service Configuration
          </h4>
-         <h4><a name="d0e3351"></a>Overview
+         <h4><a name="d0e3374"></a>Overview
          </h4>
          <p>Multiple TACTIC servers can be leveraged in environments where there is heavy report
             analysis, and where custom TACTIC environments are making heavy use of API and GUI calls. To
@@ -40,7 +40,7 @@
                  consideration then with multiple TACTIC machines will be where the database and the asset
                     directories.
          </p>
-         <h4><a name="d0e3355"></a>Database
+         <h4><a name="d0e3378"></a>Database
          </h4>
          <p>TACTIC needs to know where to find assets and asset metadata. To do this, each
                     installation of TACTIC must be able to have direct file system access to assets storage, and
@@ -53,14 +53,14 @@
 </pre><p>All other settings, covered previously, can be set according to individual requirements of
                     the host machine and environment.
          </p>
-         <h4><a name="d0e3367"></a>Assets Storage
+         <h4><a name="d0e3390"></a>Assets Storage
          </h4>
          <p>TACTIC needs to know where to find assets. To do this, each installation of TACTIC must be
                     able to have direct file system access to assets storage. The details of file system
                     management are beyond the scope of this document, but typically are within the realm of the
                     system administrator.
          </p>
-         <h4><a name="d0e3371"></a>Processes
+         <h4><a name="d0e3394"></a>Processes
          </h4>
          <p>If the TACTIC server has no other services attached, there is probably room to increase
                     the number of processes running on each machine.
@@ -72,14 +72,14 @@
          <p>Refer to Reference: TACTIC Service Configuration Directives for configuration
                     directives.
          </p>
-         <h4><a name="d0e3381"></a>HTTP Co-service Configuration
+         <h4><a name="d0e3404"></a>HTTP Co-service Configuration
          </h4>
-         <h4><a name="d0e3383"></a>Apache
+         <h4><a name="d0e3406"></a>Apache
          </h4>
          <p>Apache is used for the following sample HTTP configuration for TACTIC. Some configuration
                     knowledge of apache is required.
          </p>
-         <h4><a name="d0e3387"></a>Permissions &#8211; Allowing TACTIC to store and manipulate assets
+         <h4><a name="d0e3410"></a>Permissions &#8211; Allowing TACTIC to store and manipulate assets
          </h4>
          <p>This section defines the location and availability of the assets directory, which is the
                     primary source of data for the apache server. There is also the declaration of an alias to
@@ -100,7 +100,7 @@ Alias /doc/  		  /home/apache/tactic/doc/ </pre><p>The section with &lt;Director
     AllowOverride None 
     Order Allow,Deny 
     Allow from All 
-&lt;/Directory&gt; </pre><h4><a name="d0e3397"></a>Proxying/Rewriting a single process &#8211; Redirecting requests to TACTIC
+&lt;/Directory&gt; </pre><h4><a name="d0e3420"></a>Proxying/Rewriting a single process &#8211; Redirecting requests to TACTIC
          </h4>
          <p>Apache needs to know where to find the proxied TACTIC service in the httpd.conf file. The
                     below configuration takes advantage of only one process being served from port 8081 on the
@@ -114,7 +114,7 @@ Alias /doc/  		  /home/apache/tactic/doc/ </pre><p>The section with &lt;Director
 RewriteRule   ^/tactic http://localhost:8081/tactic/ [P,L]
 RewriteRule   ^/projects/(.+)$ http://localhost:8081/tactic/$1 [P,L]
 RewriteRule   ^/projects http://localhost:8081/tactic/ [P,L]
-</pre><h4><a name="d0e3405"></a>Proxying/Rewriting multiple processes &#8211; Redirecting requests to TACTIC
+</pre><h4><a name="d0e3428"></a>Proxying/Rewriting multiple processes &#8211; Redirecting requests to TACTIC
          </h4>
          <p>The proxy configuration can be enhanced with a load balancing scheme for one or more
                     machines. Apache has the ability to randomly select from a list of locations via a rewrite
@@ -140,15 +140,15 @@ RewriteRule   ^/projects http://${lb:dynamic}/tactic/          [P,L]</pre><p>The
 # and so on, until all machines/ports are covered</pre><p>Refer to Reference: Apache Configuration for TACTIC for the complete sample configuration
                     file.
          </p>
-         <h4><a name="d0e3429"></a>Database Co-service Configuration
+         <h4><a name="d0e3452"></a>Database Co-service Configuration
          </h4>
-         <h4><a name="d0e3431"></a>PostgreSQL
+         <h4><a name="d0e3454"></a>PostgreSQL
          </h4>
          <p>PostgreSQL is used as the database co-service in the following sample configuration.
                     PostgreSQL has only two configuration files that are required to be examined in order to
                     function with TACTIC; pg_hba.conf and postgresql.conf
          </p>
-         <h4><a name="d0e3435"></a>Network trust - pg_hba.conf
+         <h4><a name="d0e3458"></a>Network trust - pg_hba.conf
          </h4>
          <p>The pg_hba.conf configuration file contains a list of users and hosts with clearance
                     levels. In the default pg_hba.conf file that comes with TACTIC, the network trust level is
@@ -161,7 +161,7 @@ host    all         all         127.0.0.1/32          trust
 host    all         all         ::1/128               trust 
 </pre><p>In this example, all local connections to PostgreSQL are trusted. This configuration
                     matches the correct configuration required by a single machine.
-         </p><pre class="screen">host   all     all  &lt;TACTIC_HOST_IP_ADDR&gt;     trust</pre><h4><a name="d0e3445"></a>Network interface - postgresql.conf. 
+         </p><pre class="screen">host   all     all  &lt;TACTIC_HOST_IP_ADDR&gt;     trust</pre><h4><a name="d0e3468"></a>Network interface - postgresql.conf. 
          </h4>
          <p>The postgresql.conf configuration file has a setting that will allow the PostgreSQL
                     service to bind to the particular interface required.

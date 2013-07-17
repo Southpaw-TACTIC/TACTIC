@@ -146,7 +146,7 @@ class Note(SObject):
 
         note = Note.create_new()
         note.set_user()
-        project = Project.get_project_code()
+        project = sobject.get_project_code()
         note.set_value("project_code", project)
         if context:
             note.set_value("context", context)

@@ -245,15 +245,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         color: gold;
 }
 '''
-        elif title == "kwargs":
+        elif title == "Options":
             hint = ButtonNewWdg(title="Show Example", icon=IconWdg.HELP)
             data = '''
-    This is where you can define keyword arguments (options) for your Custom Layout:
+    This is where you can define options for your Custom Layout with Type set to column:
 
     {
     'basic_option': 'You can describe your option here',
     'advanced_option': { 'descriptiom' : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
-                         'category': 'kwargs',
+                         'category': 'Display',
                          'type': 'TextWdg'
                     }
 }
@@ -954,7 +954,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             mako_div = DivWdg()
             tab.add(mako_div)
             mako_div.set_name("python")
-
             # replace the placeholder
             
             text = TextAreaWdg("mako")
@@ -1074,13 +1073,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             # kwargs
             kwargs_div = DivWdg()
             tab.add(kwargs_div)
-            kwargs_div.set_name("kwargs")
+            kwargs_div.set_name("Options")
 
             text = TextAreaWdg("kwargs")
             text.add_class("spt_kwargs")
             content_id = text.set_unique_id()
 
-            title_wdg = my.get_title_wdg("kwargs", content_id, is_on=True)
+            title_wdg = my.get_title_wdg("Options", content_id, is_on=True)
             kwargs_div.add(title_wdg)
 
             kwargs_div.add(text)

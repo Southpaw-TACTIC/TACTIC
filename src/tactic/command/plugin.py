@@ -232,6 +232,7 @@ class PluginBase(Command):
 
 
             # have some specific attributes for specific search types
+            # can use wildcards like % and *
             if search_type == 'config/widget_config':
                 view = Xml.get_attribute(node, "view")
                 if view:
@@ -975,7 +976,25 @@ class PluginInstaller(PluginBase):
         '''
 
 
+    def get_unique_sobject(my, sobject):
+        '''get unique sobject in the existing table when installing plugin'''
+        base_st = sobject.get_base_search_type()
+        if base_st == 'config/widget_config':
+            cols = ['view','search_type','category','widget_type']
+        elif base_st == 'config/naming':
+            cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
+        elif base_st == 'config/url':
+            cols = ['url']
+        else:
+            cols = ['code']
 
+        search = Search( sobject.get_base_search_type() )
+        for col in cols:
+            value = sobject.get_value(col)
+            if value:
+                search.add_filter(col, value)   
+        unique_sobject = search.get_sobject()
+        return unique_sobject
 
 
     def import_data(my, path, commit=True, unique=False):
@@ -1061,13 +1080,7 @@ class PluginInstaller(PluginBase):
                         sobject = filter_sobject_handler(sobject)
                     
                     if unique:
-                        search = Search( sobject.get_base_search_type() )
-                        column = 'code'
-                        #if sobject.get_base_search_type() == 'sthpw/login_group':
-                        #    column = 'login_group'
-                        code = sobject.get_value(column)
-                        search.add_filter(column, code)
-                        unique_sobject = search.get_sobject()
+                        unique_sobject = my.get_unique_sobject(sobject)
                         
                         if unique_sobject:
                             sobject.set_value("id", unique_sobject.get_id() )

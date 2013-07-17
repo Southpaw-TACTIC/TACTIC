@@ -1213,7 +1213,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
     def add_context_menu(my, header_div):
 
-        from tactic.ui.widget import Menu, MenuItem
+        from menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         #menu.set_allow_icons(False)
         #menu.set_setup_cbfn( 'spt.tab.smenu_ctx.setup_cbk' )

@@ -68,6 +68,12 @@ class DatabaseAction(Command):
         no_action = my.get_option('save') == 'false'
         if no_action:
             return False
+        # default for empty is True.
+        no_empty = my.get_option('empty') == 'false'
+        if no_empty:
+            if value == '':
+                name = my._get_name()
+                raise UserException("The input for [%s] cannot be empty" %name.capitalize())
 
 
         # a match or search can be used. Match if for pattern, Search is for invalid chars.

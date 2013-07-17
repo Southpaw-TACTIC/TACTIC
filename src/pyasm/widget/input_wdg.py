@@ -859,6 +859,7 @@ class CheckboxWdg(BaseInputWdg):
         else:
             cb = BaseInputWdg.get_class_display(my)
             span = SpanWdg(cb, css=my.css)
+            span.add_style("vertical-align: center")
             span.add(my.label)
             return span
 
@@ -1444,8 +1445,10 @@ class ItemsNavigatorWdg(HtmlElement):
     LESS_DETAIL = "less_detail_style"
 
     def __init__(my, label, max_length, step, refresh=True, max_items=100):
-        my.max_length = max_length
         assert isinstance(max_length, int) and step > 0
+        if max_length < 0:
+            max_length = 0
+        my.max_length = max_length
         my.step = step
         my.label = label
         my.show_label = True

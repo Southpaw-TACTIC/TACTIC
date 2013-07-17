@@ -959,7 +959,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
         else:
             values = Common.extract_keywords(value)
             # allow words with speical characters stripped out by Common.extract_keywords to be searched
-            if value.lower() != " ".join(values):
+            #if value.lower() != " ".join(values):
+            if value.lower() not in values:
                 values.append(value.lower())
         # why is this done?
         # so the auto suggestion list the items in the same order as they are typed in
@@ -1089,23 +1090,23 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     if my.is_number(value): 
                         value = str(value)
                     keywords.append(value)
-
-                # commented out the join and then split. Looks redundant
-                # just use comprehension to handle the lower() function
-                #keywords = " ".join(keywords)
+               
                 
-                keywords = [x.lower() for x in keywords]
-
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
-
+                # keywords can be a long space delimited string in global mode
+                # join and then split after
+                # use comprehension to handle the lower() function
+                keywords = " ".join(keywords)
 
                 # show the keyword that matched first
-                #keywords = keywords.split(" ")
+                keywords = keywords.split(" ")
+                keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
-                keywords = filter(None, keywords)
+                # if x in the comprehension above already does None filtering
+                #keywords = filter(None, keywords)
                 matches = []
                 for i, value in enumerate(values):
                     for keyword in keywords:
@@ -1118,7 +1119,15 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         if compare:
                             matches.append(keyword)
                             break
-
+                # if nothing matches, 2nd guess by loosening the rule to find something broader
+                # this only runs most likely in global mode and sometimes in keyword mode
+                # Just take the first value to maintain performance
+                if not matches and values[0].strip():
+                    for keyword in keywords:
+                        compare = values[0] in keyword
+                        if compare:
+                            matches.append(keyword)
+                            break
                 # the length don't necessarily match since we could add the value the user types in as is
                 #if len(matches) != len(values):
                 if len(matches) < 1:

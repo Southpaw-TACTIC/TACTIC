@@ -502,6 +502,7 @@ CREATE TABLE transaction_state (
 
 CREATE TABLE sobject_log (
     id INT IDENTITY PRIMARY KEY,
+    code varchar(256),
     search_type character varying(100) NOT NULL,
     search_id integer NOT NULL,
     data VARCHAR(MAX),
@@ -525,6 +526,7 @@ CREATE TABLE status_log (
 
 CREATE TABLE debug_log (
     id INT IDENTITY PRIMARY KEY,
+    code varchar(256),
     category character varying(256),
     "level" character varying(256),
     message VARCHAR(MAX),

@@ -612,7 +612,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             else:
                 search2.add_keyword_filter(column, keywords)
-
+            
             refs = search2.get_sobjects()
             overall_search.add_filters("id", [x.get_value("search_id") for x in refs])
 
@@ -1237,47 +1237,58 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
 
 
     def get_display(my):
+        # mode "text" uses a textbox to search, while "select" uses a select dropdown.
+        mode = my.get_option("mode")
+        if not mode:
+            mode = "text"
+        if mode not in ["select", "text"]:
+            class_name = my.__class__.__name__
+            raise TacticException("%s mode option can only be 'select' or 'text'." %class_name)
 
         field_size = my.get_option("field_size")
         #if not field_size:
         #    field_size = "32"
         #else:
         #    field_size = "%s" % field_size
-
-        field_label = my.get_option("field_label")
-        if not field_label:
-            field_label = ""
-
+        
         div = SpanWdg()
-        div.add(" %s " % field_label)
 
+        if mode == "text":
+            kwargs = {
+                "name": "field",
+                "search_type": my.get_option("search_type"),
+                "column": my.get_option("display_column"),
+                "value_column": my.get_option("value_column"),
+            }
+            if my.get_option("search_type"):
+                text = LookAheadTextInputWdg(**kwargs)
+                text.set_name("field")
+            else:
+                text = TextInputWdg(name="field")
+    
+            if field_size:
+                text.add_attr("size", field_size)
+            div.add(text)
 
-        kwargs = {
-            "name": "field",
-            "search_type": my.get_option("search_type"),
-            "column": my.get_option("display_column"),
-            "value_column": my.get_option("value_column"),
-        }
-        if my.get_option("search_type"):
-            text = LookAheadTextInputWdg(**kwargs)
-            text.set_name("field")
-        else:
-            text = TextInputWdg(name="field")
+            text.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+            var key = evt.key;
+            if (key == 'enter') {
+                spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+            }
+            ''' } )
 
-        if field_size:
-            text.add_attr("size", field_size)
-        div.add(text)
+        elif mode == "select":
+            values = my.get_option("select_values")
+            labels = my.get_option("select_labels")
+            select = SelectWdg("field")
+            select.add_style("width: 150px")
 
-        text.add_behavior( {
-        'type': 'keyup',
-        'cbjs_action': '''
-        var key = evt.key;
-        if (key == 'enter') {
-            spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-        }
-        ''' } )
-
-
+            select.add_empty_option("-- Select --")
+            select.set_option("values", values)
+            select.set_option("labels", labels)
+            div.add(select)
 
         return div
 
@@ -1285,11 +1296,23 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
 __all__.append("TaskConnectFilterElementWdg")
 class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
     def alter_search(my, search):
-
         field_value = my.values.get("field")
-        if not field_value:
-            return
 
+        
+        search_type = my.get_option("search_type")
+        if search_type:
+            search_type = Project.get_full_search_type(search_type)
+        # This controls what to filter at the end other than id
+        filter_column = my.get_option("filter_column")
+
+        do_search = my.get_option("do_search")
+        
+        if not field_value:
+            if do_search =='true':
+                pass
+            else:
+                return
+        
         column = my.get_option("column")
         assert column
 
@@ -1305,8 +1328,9 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
         prefix = "src_"
         prefix2 = "dst_"
         search2.add_filter("%ssearch_type" % prefix, "sthpw/task")
-
-        search_type = search.get_search_type()
+        # one can supply a search type for searching in the connection table
+        if not search_type:
+            search_type = search.get_search_type()
         search2.add_filter("%ssearch_type" % prefix2, search_type)
 
         search2.add_column("%ssearch_id" % prefix2)
@@ -1325,7 +1349,9 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
         values = sql.do_query(statement)
         values = [x[0] for x in values]
 
-        search.add_filters("id", values)
+        if not filter_column:
+            filter_column = 'id'
+        search.add_filters(filter_column, values)
 
 
 

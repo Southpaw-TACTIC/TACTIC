@@ -235,8 +235,9 @@ class Trigger(Command):
 
 
                 # append all notifications
-                notification_sobjs = cls.get_notifications_by_event()
-                trigger_sobjs.extend(notification_sobjs)
+                
+                #notification_sobjs = cls.get_notifications_by_event()
+                #trigger_sobjs.extend(notification_sobjs)
 
 
             for trigger_sobj in trigger_sobjs:
@@ -356,7 +357,7 @@ class Trigger(Command):
     def call_by_key(cls, key, caller, output={}, forced_mode='', integral_only=False ):
         event = key.get("event")
 
-
+        
         #call_event_key = jsondumps(key)
         triggers_sobjs = cls._get_triggers(key, integral_only)
 
@@ -416,7 +417,7 @@ class Trigger(Command):
             mode = trigger_sobj.get_value("mode", no_exception=True)
             if not mode:
                 mode = 'same process,new transaction'
-
+            
             if trigger_sobj.get_base_search_type() == "sthpw/notification":
                 if forced_mode:
                     trigger_class = "pyasm.command.EmailTriggerTest"

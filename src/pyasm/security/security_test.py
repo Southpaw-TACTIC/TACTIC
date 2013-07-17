@@ -54,7 +54,16 @@ class SecurityTest(unittest.TestCase):
         login.set_value("password", my.encrypted)
         login.set_value("login_groups", "test")
         login.commit()
-        
+       
+        s = Search('sthpw/login_group')
+        s.add_filter('login_group','user')
+        group = s.get_sobject()
+        if not group:
+            group = SObjectFactory.create("sthpw/login_group")
+            group.set_value("login_group", 'user')
+            group.set_value('access_level','min')
+            group.commit()
+
         s = Search('sthpw/login_in_group')
         s.add_filter('login',my.user)
         s.add_filter('login_group', 'user')
@@ -106,17 +115,45 @@ class SecurityTest(unittest.TestCase):
     def test_all(my):
         batch = Batch()
 
-        from pyasm.unittest import UnittestEnvironment
+        from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
         test_env = UnittestEnvironment()
         test_env.create()
+
+        sample3d_env = Sample3dEnvironment(project_code='sample3d')
+        sample3d_env.create()
 
         Project.set_project("unittest")
         try:
             my._test_all()
 
         finally:
-            Project.set_project("unittest")
+            #Project.set_project("unittest")
+            my._tear_down()
             test_env.delete()
+            sample3d_env.delete()
+
+    def _test_initial_access_level(my):
+        # before adding process unittest_guy in user group is in MIN access_level
+        # so no access to process, but access to search_types
+        my.security.set_admin(False)
+        security = Environment.get_security()
+
+
+        process_keys = [{'process': 'anim'}]
+        proc_access = security.check_access("process", process_keys, "allow") 
+        my.assertEquals(proc_access, False)
+
+        stype_keys = [{'code':'*'}, {'code':'unittest/city'}]
+        stype_access = security.check_access("search_type", stype_keys, "allow") 
+        a = security.get_access_manager()
+        my.assertEquals(stype_access, True)
+
+        # we don't have this sType specified explicitly, should be False
+        stype_keys = [{'code':'unittest/city'}]
+        stype_access = security.check_access("search_type", stype_keys, "allow") 
+        a = security.get_access_manager()
+        my.assertEquals(stype_access, False)
+
 
 
     def _test_all(my):
@@ -128,17 +165,17 @@ class SecurityTest(unittest.TestCase):
             my._test_security_fail()
             my._test_security_pass()
 
+            my._test_initial_access_level()
             my._test_sobject_access_manager()
-
-            my._test_access_manager()
+    
+            # order matters here
             my._test_search_filter()
             my._test_access_level()
+            my._test_access_manager()
         except Exception, e:
             print "Error: ", e
             raise
 
-        finally:
-            my._tear_down()
 
 
 
@@ -269,13 +306,17 @@ class SecurityTest(unittest.TestCase):
             Project.set_project('unittest')
 
 
+      
+
         # project specific rule
         proj_rules = """
         <rules>
-        <rule group="project" code='art' access='allow'/>
+        <rule group="project" code='sample3d' access='allow'/>
         <rule group="project" code='unittest' access='allow'/>
         <rule value='$PROJECT' search_type='sthpw/task' column='project_code' group='search_filter'/>
         <rule value='@GET(login.login)' search_type='sthpw/task' column='assigned' group='search_filter' project='unittest'/>
+        <rule group="process" process="anim" access="allow"/>
+        <rule group="process" process="comp" access="allow"/>
         </rules>
         """
         xml = Xml()
@@ -286,9 +327,9 @@ class SecurityTest(unittest.TestCase):
         access_manager = Environment.get_security().get_access_manager()
         access_manager.add_xml_rules(xml)
 
-        project = Project.get_by_code('art')
+        project = Project.get_by_code('sample3d')
         if project:
-            Project.set_project('art')
+            Project.set_project('sample3d')
             search = Search('sthpw/task')
             tasks = search.get_sobjects()
 
@@ -296,7 +337,7 @@ class SecurityTest(unittest.TestCase):
             project_codes = SObject.get_values(tasks,'project_code', unique=True)
             # should fail since project is switched to sample3d.. and it should have more than just unittest
             my.assertEquals(False, ['unittest'] == assigned_codes)
-            my.assertEquals(True, ['art'] == project_codes)
+            my.assertEquals(True, ['sample3d'] == project_codes)
 
 
 
@@ -304,8 +345,10 @@ class SecurityTest(unittest.TestCase):
             # unittest specific rule that uses negation !=, this takes care of NULL value automatically
             rules = """
             <rules>
-                <rule group="project" code='art' access='allow'/>
-                <rule value='5' search_type='sthpw/task' column='priority' op='!=' group='search_filter' project='art'/>
+                <rule group="project" code='sample3d' access='allow'/>
+                <rule value='5' search_type='sthpw/task' column='priority' op='!=' group='search_filter' project='sample3d'/>
+                 <rule group="process" process="anim" access="allow"/>
+                <rule group="process" process="comp" access="allow"/>
             </rules>
             """
             xml = Xml()
@@ -316,7 +359,7 @@ class SecurityTest(unittest.TestCase):
             access_manager = Environment.get_security().get_access_manager()
             access_manager.add_xml_rules(xml)
 
-            Project.set_project('art')
+            Project.set_project('sample3d')
             search = Search('sthpw/task')
             tasks = search.get_sobjects()
 
@@ -329,6 +372,7 @@ class SecurityTest(unittest.TestCase):
         try: 
             Project.set_project('unittest')
         except SecurityException, e:
+            # should get an SecurityException
             my.assertEquals('User [unittest_guy] is not permitted to view project [unittest]', e.__str__())
             xml = Xml()
             xml.read_string(proj_rules)
@@ -341,8 +385,7 @@ class SecurityTest(unittest.TestCase):
         except Exception, e:
             print "Error : %s", str(e)
         else:
-            access_manager = Environment.get_security().get_access_manager()
-            print "Allowed projects in dict form: ", access_manager.groups.get('project')
+            # this should not happen
             raise Exception('unittest_guy should not be allowed to use Project unittest here.')
 
         # One should be able to insert a task that is outside the query restriction of the above rule
@@ -433,44 +476,53 @@ class SecurityTest(unittest.TestCase):
 
 
     def _test_access_manager(my):
+        # reset it
+        Environment.get_security().reset_access_manager()
 
         access_manager = AccessManager()
 
         xml = Xml()
         xml.read_string('''
         <rules>
-          <group type='sobject' default='edit'>
-            <rule key='corporate/budget' access='deny'/>
-            <rule key='corporate/salary' access='deny'/>
-          </group>
-
-          <group type='sobject_column' default='view'>
-            <rule key='prod/asset|director_notes' access='deny'/>
-            <rule key='prod/asset|sensitive_data' access='deny'/>
-          </group>
-
+          
+       
+          <rule group='sobject' key='corporate/budget' access='allow'/>
+          <rule group='sobject'  key='corporate/salary' access='allow'/>
+          <rule group='sobject'  key='prod/asset' access='edit'/>
+          <rule group='sobject' search_type='sthpw/note'  project='sample3d' access='edit'/>
           <group type='url' default='deny'>
             <rule key='/tactic/bar/Partner' access='view'/>
             <rule key='/tactic/bar/External' access='view'/>
           </group>
 
-            <rule group='sobject' search_type='sthpw/note'  project='sample3d' access='deny'/>
+
+          
             <rule group='sobject' search_type='prod/layer'  project='sample3d' access='view'/>
             <rule column='description'  search_type='prod/shot' access='view' group='sobject_column'/>
+           
+          <group type='sobject_column' default='view'>
+            <rule key='prod/asset|director_notes' access='deny'/>
+            <rule key='prod/asset|sensitive_data' access='deny'/>
+          </group>
+
+        
            </rules>
         ''')
+
+        
+    
 
         access_manager.add_xml_rules(xml)
 
         # test sensitive sobject
         test = access_manager.get_access('sobject', 'corporate/budget')
-        my.assertEquals(test, "deny")
+        my.assertEquals(test, "allow")
 
         # test allowed sobject
         test = access_manager.get_access('sobject', 'prod/asset')
         my.assertEquals(test, "edit")
 
-        test = access_manager.get_access('sobject', 'sthpw/note')
+        test = access_manager.get_access('sobject', [{'search_type':'sthpw/note', 'project':'sample3d'}])
         my.assertEquals(test, "edit")
         # test url
         test = access_manager.get_access('url', '/tactic/bar/Partner')
@@ -481,7 +533,7 @@ class SecurityTest(unittest.TestCase):
         my.assertEquals(test, True)
 
         test = access_manager.check_access('sobject','corporate/budget','edit')
-        my.assertEquals(test, False)
+        my.assertEquals(test, True)
 
         test = access_manager.check_access('sobject_column', 'prod/asset|director_notes','deny')
         my.assertEquals(test, True)
@@ -493,15 +545,16 @@ class SecurityTest(unittest.TestCase):
         my.assertEquals(test, True)
 
 
-        test = access_manager.get_access('sobject', 'sthpw/note')
+        test = access_manager.get_access('sobject',  {'search_type':'sthpw/note', 'project':'sample3d'} )
         my.assertEquals(test, "edit")
-        test = access_manager.get_access('sobject', {'search_type':'sthpw/note', 'project':'sample3d'} )
-        my.assertEquals(test, "deny")
+        test = access_manager.get_access('sobject', {'search_type':'sthpw/note'} )
+        my.assertEquals(test, None)
 
         test = access_manager.get_access('sobject', {'search_type':'prod/layer', 'project':'sample3d'} )
         my.assertEquals(test, "view")
         test = access_manager.get_access('sobject', 'prod/layer' )
-        my.assertEquals(test, "edit")
+        my.assertEquals(test, None)
+
 
 
     def _test_crypto(my):
@@ -546,10 +599,13 @@ class SecurityTest(unittest.TestCase):
                 key2 = { "code": "*" }
                 keys = [key, key2]
                 default = "deny"
-                # other than art, unittest as allowed above, a default low access level user 
+                # other than sample3d, unittest as allowed above, a default low access level user 
                 # should not see other projects
                 access = security.check_access("project", keys, "allow", default=default)
-                if project.get_code() in ['art','unittest']:
+                process_keys = [{'process': 'anim'}]
+                proc_access = security.check_access("process", process_keys, "allow")
+                my.assertEquals(proc_access, True)
+                if project.get_code() in ['sample3d','unittest']:
                     my.assertEquals(access, True)
                 else:
                     my.assertEquals(access, False)

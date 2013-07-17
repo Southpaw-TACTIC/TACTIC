@@ -802,7 +802,7 @@
       try {
           var server = TacticServerStub.get()
           // Get the top elements
-	  var tab_el = bvr.src_el.getParent(".spt_tab_top")
+	        var tab_el = bvr.src_el.getParent(".spt_tab_top")
           var title = bvr.src_el.getAttribute("stype_title")
           var stype = bvr.src_el.getAttribute("stype")
 	  var view = "table"
@@ -827,8 +827,8 @@
 
           // Reload the panel
           spt.app_busy.show("Loading...", title);
-          spt.tab.set_main_body_top();
-	  spt.tab.add_new(tab_el, title, class_name, kwargs);
+          spt.tab.set_tab_top(tab_el);
+	        spt.tab.add_new(tab_el, title, class_name, kwargs);
           spt.app_busy.hide();
 
         }
@@ -1002,7 +1002,7 @@
 
           // Reload the panel
           spt.app_busy.show("Loading...", title);
-          spt.tab.set_main_body_top();
+          spt.tab.set_tab_top(tab_el);
           spt.tab.add_new(tab_el, title, class_name, kwargs);
           spt.app_busy.hide();
 

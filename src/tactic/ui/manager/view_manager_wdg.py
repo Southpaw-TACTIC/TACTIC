@@ -425,7 +425,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         top = DivWdg()
 
         # FIXME: the gear menu widget should be here
-        from tactic.ui.widget import GearMenuWdg, Menu, MenuItem
+        from tactic.ui.container import GearMenuWdg, Menu, MenuItem
         menu = Menu(width=180)
 
         menu_item = MenuItem(type='title', label='Actions')

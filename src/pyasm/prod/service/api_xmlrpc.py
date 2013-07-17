@@ -1730,7 +1730,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         if my.get_language() == 'python':
-            return str(results)
+            if isinstance(results, unicode):
+                return results.encode('utf-8')
+            elif isinstance(results, basestring):
+                return unicode(results, errors='ignore').encode('utf-8')
+            else: 
+                # could be a list or dictionary
+                return str(results)
+            
         else:
             return results
 

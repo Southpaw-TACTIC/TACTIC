@@ -32,7 +32,7 @@
          <p>While there may be some slight variations in the steps in different versions of CentOS 6,
                     this guide can be used for CentOS 6.x as a reference.
          </p>
-         <h3><a name="d0e1263"></a>Requirements
+         <h3><a name="d0e1274"></a>Requirements
          </h3>
          <p>TACTIC requires the following software to be installed:</p>
          <div class="itemizedlist">
@@ -67,7 +67,7 @@
          <p>It should be noted that while there may be newer versions of these Python modules, TACTIC
                     3.9.0.rc04 has been tested with these particular versions.
          </p>
-         <h3><a name="d0e1292"></a>Disabling Security for Testing
+         <h3><a name="d0e1303"></a>Disabling Security for Testing
          </h3>
          <p>To get TACTIC up quickly without fiddling with OS security, it is prudent to disable
                     firewalling and SELinux. This is by no means an endorsement to run your server without these
@@ -86,7 +86,7 @@
          </p><pre class="screen">SELINUX=disabled</pre><p>Since getting this setting to take effect requires a reboot, you can also issue the
                     following command for it to take effect immediately.
          </p><pre class="screen">echo 0 &gt; /selinux/enforce</pre><p></p>
-         <h3><a name="d0e1313"></a>Installing Apache HTTP server
+         <h3><a name="d0e1324"></a>Installing Apache HTTP server
          </h3>
          <p>In case Apache 2.2  is not already pre-installed on CentOS 6.2, issue the following
                     command as root:
@@ -97,7 +97,7 @@
          <p>
                     
          </p>
-         <table frame="void" id="d0e1325">
+         <table frame="void" id="d0e1336">
             <caption>Table&nbsp;1.&nbsp;Common Paths in Apache 2.2</caption>
             <col width="180.0px">
             <col width="310.0px">
@@ -164,7 +164,7 @@
                     the test page properly. Later in the install,  the Apache server will be configured to
                     interact with TACTIC properly.
          </p>
-         <h3><a name="d0e1386"></a>Installing Postgres Database Server
+         <h3><a name="d0e1397"></a>Installing Postgres Database Server
          </h3>
          <p>TACTIC requires PostgreSQL version 8.4 or higher. First we must make sure that we didn't
                     include the default version Postgres in our base install. As root please issue the following
@@ -201,7 +201,7 @@
          <p>
                     
          </p>
-         <table frame="void" id="d0e1419">
+         <table frame="void" id="d0e1430">
             <caption>Table&nbsp;2.&nbsp;Common Paths in Postgres 9.2 on CentOS 6.2</caption>
             <col width="180px">
             <col width="310px">
@@ -248,7 +248,7 @@
          <p>Lastly, to make sure the Postgres service persist through reboots. you will issue the
                     following command:
          </p><pre class="screen">chkconfig --levels 235 postgresql-9.2 on</pre><p>Reboot your server to ensure the service comes up appropriately.</p>
-         <h3><a name="d0e1474"></a>Installing Python Devel for the preinstalled Python
+         <h3><a name="d0e1485"></a>Installing Python Devel for the preinstalled Python
          </h3>
          <p>As noted above TACTIC requires version 2.6 or 2.7 of Python.  In CentOS 5.x, we used to
                     recommend installing Python 2.7 along side the built-in Python 2.4. In CentOS 6.2, the
@@ -261,12 +261,12 @@
 yum install python-devel</pre><p>This will install the Python Devel and all the other relevant libraries to install the
                     various Python modules.
          </p>
-         <h3><a name="d0e1484"></a>Installing Python Modules
+         <h3><a name="d0e1495"></a>Installing Python Modules
          </h3>
          <p>
                     
          </p>
-         <h5><a name="d0e1488"></a>Installing lxml 2.3.5
+         <h5><a name="d0e1499"></a>Installing lxml 2.3.5
          </h5>
          <p>
                 
@@ -292,7 +292,7 @@ Type "help", "copyright", "credits" or "license" for more information.
          <p>
                     
          </p>
-         <h5><a name="d0e1511"></a>Installing Python Imaging Library 1.1.7
+         <h5><a name="d0e1522"></a>Installing Python Imaging Library 1.1.7
          </h5>
          <p>
                 
@@ -306,7 +306,7 @@ tar -zxvf Imaging-1.1.7.tar.gz
 cd Imaging-1.1.7
 /opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
                     at the python prompt: 
-         </p><pre class="screen">import PIL</pre><h5><a name="d0e1522"></a>Installing Pycrypto 2.3
+         </p><pre class="screen">import PIL</pre><h5><a name="d0e1533"></a>Installing Pycrypto 2.3
          </h5>
          <p>The installation of Pycrypto also follows this template. As root issue the following
                     commands:
@@ -316,7 +316,7 @@ tar -zxvf pycrypto-2.3.tar.gz
 cd pycrypto-2.3
 python setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
                     at the Python prompt:
-         </p><pre class="screen">import Crypto</pre><h5><a name="d0e1532"></a>Installing Psycopg2 2.4.6
+         </p><pre class="screen">import Crypto</pre><h5><a name="d0e1543"></a>Installing Psycopg2 2.4.6
          </h5>
          <p>Psycopg2 is a Postgres database adapter for Python. The install is akin to the previous 3
                     except that since we've customized our Postgres install, we have to let Psycopg2 know that
@@ -340,7 +340,7 @@ cd psycopg2-2.4.6</pre><p>
          </p><pre class="screen">import psycopg2</pre><p>Now that all the TACTIC components are installed, we can begin running the TACTIC
                         installer.
          </p>
-         <h3><a name="d0e1557"></a>Installing Tactic 3.9.0.rc04
+         <h3><a name="d0e1568"></a>Installing Tactic 3.9.0.rc04
          </h3>
          <p>First we have to download the TACTIC source from the Southpaw Community website. Using a
                     web browser navigate to http://community.southpawtech.com. After you have logged in, please
@@ -358,7 +358,7 @@ unzip tactic-3.9.0.rc04.zip</pre><p>Once the TACTIC source is unpacked, you shou
          <p>
                     
          </p>
-         <table id="d0e1569">
+         <table id="d0e1580">
             <caption>Table&nbsp;3.&nbsp;Common Paths in Tactic 3.9.0.rc04</caption>
             <col width="180px">
             <col width="310px">
@@ -394,7 +394,7 @@ unzip tactic-3.9.0.rc04.zip</pre><p>Once the TACTIC source is unpacked, you shou
          <p>Before we run the Tactic installer, we must further configure Postgres to ensure proper
                     installation of Tactic.
          </p>
-         <h5><a name="d0e1602"></a>Configuring Postgres
+         <h5><a name="d0e1613"></a>Configuring Postgres
          </h5>
          <p>Tactic supplies a custom host based authentication file for Postgres. After stopping the
                     Postgres service we will install the file in question, restart the service and verify that
@@ -411,7 +411,7 @@ service postgresql-9.2 start</pre><p>If the service starts successfully we can t
          </p><pre class="screen">psql -U postgres template1</pre><p>This command should fire up a prompt like this:</p><pre class="screen">template1=# </pre><p>If  you can see this prompt without being asked for a password, the configuration changes
                     have been successful. Type \q to exit.
          </p>
-         <h5><a name="d0e1618"></a>Installing Tactic
+         <h5><a name="d0e1629"></a>Installing Tactic
          </h5>
          <p>
                     
@@ -437,13 +437,13 @@ service postgresql-9.2 start</pre><p>If the service starts successfully we can t
          <p>The installer will then install the Tactic databases, configure Tactic and copy the source
                     code into the Tactic base directory.
          </p>
-         <h5><a name="d0e1641"></a>Configuring
+         <h5><a name="d0e1652"></a>Configuring
                         Apache
          </h5>
          <p>Lastly Tactic requires us to install the custom Apache configuration file it has created
-                    during the installation process.  As root issue the following
+                    during the installation process. As root issue the following
                     commands:
-         </p><pre class="screen">cp /opt/tactic/projects/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an included module path in
+         </p><pre class="screen">cp /opt/tactic/tactic_data/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an included module path in
                     the main Apache configuration file.  As root issue the following
                     command:
          </p><pre class="screen">cat /etc/httpd/conf/httpd.conf | grep conf.d</pre><p>If you receive the following as output we have installed the Tactic Apache configuration
@@ -470,7 +470,7 @@ proxy_balancer_module (shared)
 deflate_module (shared)</pre><p>The CentOS 6.2 install of Apache includes a large array of modules enabled by default,
                     including the ones required by Tactic.
          </p>
-         <h3><a name="d0e1675"></a>Starting Tactic in
+         <h3><a name="d0e1686"></a>Starting Tactic in
                         Development Mode
          </h3>
          <p>We are now prepared to start the Tactic service for the first time.   Tactic must be run
@@ -506,7 +506,7 @@ Starting Scheduler ....
          <p>In 3.9, the login screen requires you to change the password immediately. You will have to
                     type it in twice to confirm.  
          </p>
-         <h3><a name="d0e1697"></a>Installing TACTIC as a
+         <h3><a name="d0e1708"></a>Installing TACTIC as a
                         Service
          </h3>
          <p>The TACTIC service file is simple to install</p>
@@ -530,7 +530,7 @@ chmod 755 /etc/init.d/tactic
          <p>
                     
          </p>
-         <table id="d0e1721">
+         <table id="d0e1732">
             <caption>Table&nbsp;4.&nbsp;Common Error Logs </caption>
             <col width="180px">
             <col width="310px">

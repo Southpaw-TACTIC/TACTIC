@@ -807,7 +807,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
     def get_gear_menu(my, view):
 
         # FIXME: the gear menu widget should be here
-        from tactic.ui.widget import GearMenuWdg, Menu, MenuItem
+        from tactic.ui.container import GearMenuWdg, Menu, MenuItem
         menu = Menu(width=200)
 
         menu_item = MenuItem(type='title', label='Actions')

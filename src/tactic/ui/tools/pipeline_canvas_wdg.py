@@ -18,7 +18,7 @@ from pyasm.web import DivWdg, WebContainer, Table, Widget
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
-from tactic.ui.widget import GearMenuWdg, Menu, MenuItem
+from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 
 
 

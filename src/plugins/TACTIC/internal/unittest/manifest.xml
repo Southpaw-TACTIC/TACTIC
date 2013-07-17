@@ -1,12 +1,11 @@
 <manifest>
   <data>
-    <code>TACTIC/unittest</code>
+    <code>unittest</code>
     <title>Unittest Project</title>
     <description>This contains sTypes definitions needed to run the unit tests.</description>
   </data>
   <search_type code="unittest/person"/>
   <search_type code="unittest/city"/>
   <search_type code="unittest/country"/>
-  <search_type code="unittest/job"/>
-  <search_type code="unittest/request"/>
+  <sobject search_type="sthpw/pipeline" path="sthpw_pipeline.spt" ignore_columns="timestamp" expression="@SOBJECT(sthpw/pipeline['project_code','unittest'])" unique="true"/>
 </manifest>

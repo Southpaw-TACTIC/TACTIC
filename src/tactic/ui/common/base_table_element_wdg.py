@@ -45,8 +45,12 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     def handle_th(my, th, wdg_idx=None):
 
         order_by = my.get_option("order_by")
+
         if order_by:
-            th.set_attr("spt_order_by", order_by)
+            # backward-compatible with true or false, don't set this
+            # it will retrieve the element name instead thru js 
+            if order_by not in ['true', 'false']:
+                th.set_attr("spt_order_by", order_by)
 
 
 

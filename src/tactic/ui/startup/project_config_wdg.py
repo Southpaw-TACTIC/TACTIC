@@ -14,8 +14,8 @@ __all__ = ["ProjectConfigWdg", "UserConfigWdg"]
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.biz import Project
-from pyasm.web import DivWdg, Table
-from pyasm.widget import ThumbWdg, IconWdg
+from pyasm.web import DivWdg, Table, WebContainer, SpanWdg
+from pyasm.widget import ThumbWdg, IconWdg, CheckboxWdg
 from tactic.ui.container import SmartMenu
 
 from tactic.ui.common import BaseRefreshWdg
@@ -94,7 +94,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
 
         panel = {
             'widget': search_type_panel,
-            'title': 'List of Searchable Types',
+            'title': 'List of Searchable Types (sTypes)',
             'width': '50%'
         }
         panels.append(panel)
@@ -208,7 +208,7 @@ class UserConfigWdg(ProjectConfigWdg):
         user_panel.add_style("overflow-y: auto")
         user_panel.add( UserPanel() )
         user_panel.add_style("min-height: 100px")
-        user_panel.add_style("height: 300px")
+        user_panel.add_style("height: 400px")
         user_panel.add_class("spt_resizable")
 
         panel = {
@@ -254,8 +254,10 @@ class SearchTypePanel(BaseRefreshWdg):
 
     def get_display(my):
 
+        web = WebContainer.get_web()
+        show_multi_project = web.get_form_value('show_multi_project')
         project = Project.get()
-        search_type_objs = project.get_search_types()
+        search_type_objs = project.get_search_types(include_multi_project=show_multi_project)
 
         top = my.top
         top.add_class("spt_panel_stype_list_top")
@@ -280,11 +282,10 @@ class SearchTypePanel(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type", icon=IconWdg.ADD)
+        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon=IconWdg.ADD)
         top.add(button)
         button.add_style("float: left")
         button.add_style("margin-top: -8px")
-        top.add("<br clear='all'/>")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -302,7 +303,20 @@ class SearchTypePanel(BaseRefreshWdg):
             '''
         } )
 
-
+        cb = CheckboxWdg('show_multi_project', label=' show multi-project')
+        if show_multi_project:
+            cb.set_checked()
+        cb.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+                var panel = bvr.src_el.getParent('.spt_panel_stype_list_top')
+                spt.panel.refresh(panel, {show_multi_project: bvr.src_el.checked});
+            '''
+            })
+        span = SpanWdg(css='small')
+        top.add(span)
+        top.add(cb)
+        top.add("<br clear='all'/>")
         #search_type_objs = []
         if not search_type_objs:
             arrow_div = DivWdg()
@@ -425,7 +439,6 @@ class SearchTypePanel(BaseRefreshWdg):
             title = search_type_obj.get_title()
 
             table.add_cell(title)
-
             search = Search(search_type)
             count = search.get_count()
             if count:
@@ -897,6 +910,8 @@ class UserPanel(BaseRefreshWdg):
         th.add_style("text-align: left")
         th = table.add_header("Last Name")
         th.add_style("text-align: left")
+        th = table.add_header("Display Name")
+        th.add_style("text-align: left")
         th = table.add_header("Activity")
         th.add_style("text-align: left")
         th = table.add_header("Groups")
@@ -930,6 +945,9 @@ class UserPanel(BaseRefreshWdg):
             td.add_style("padding: 3px")
             td = table.add_cell(login.get_value("last_name"))
             td.add_style("padding: 3px")
+
+            td = table.add_cell(login.get_value("display_name"))
+            td.add_style("padding: 3px")           
 
             search_key = login.get_search_key()
             login_code = login.get_code()

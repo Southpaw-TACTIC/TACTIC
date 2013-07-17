@@ -459,13 +459,7 @@ class Search(Base):
 
                 if name.startswith("@"):
                     if name == '@ORDER_BY':
-                        parts = filter[1].split(" ")
-                        column = parts[0]
-                        if len(parts) == 2:
-                            direction = parts[1]
-                        else:
-                            direction = "asc"
-                        my.add_order_by(column, direction)
+                        my.add_order_by(filter[1])
                     elif name == '@LIMIT':
                         my.set_limit(filter[1])
                     elif name == '@OFFSET':
@@ -1328,7 +1322,8 @@ class Search(Base):
                 # do not call return in the loop so that all items are looped through
                
                 my.add_order_by(order_by, direction)
-            return    
+            return
+    
         order_str = order_str.strip()
         # extract the column: in case of: "code desc"
         strs = order_str.split(' ', 1)
@@ -1342,9 +1337,10 @@ class Search(Base):
 
 
         parts = column.split(".")
+        parts = [x for x in parts if x]
+        
         if "connect" in parts:
             return
-
         my.order_bys.append(column)
 
 

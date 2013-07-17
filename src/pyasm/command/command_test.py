@@ -226,6 +226,7 @@ class CommandTest(unittest.TestCase):
             my._test_copy_project()
             # clear again for subsequent Client API test
             trigger_key = "triggers:cache"
+
             Container.put(trigger_key, None)
             trigger_key2 = Trigger.KEY
             Container.put(trigger_key2, None)
@@ -309,13 +310,11 @@ class CommandTest(unittest.TestCase):
             # confirm by notification log
             log_msgs = Search.eval("@GET(sthpw/notification_log['subject', 'NEQ', 'Note']['@ORDER_BY', 'timestamp desc']['@LIMIT','4'].subject)")
             my.assertEquals(log_msgs[0] , 'Sub: Unittest a task is created for john')
-            # FIXME: assume duplicated emails until the duplicated email is fixed
-            my.assertEquals(log_msgs[1] , 'Sub: Unittest a task is created for john')
-            my.assertEquals(log_msgs[2] , 'Sub: Unittest a task is created for zoe')
+          
+            my.assertEquals(log_msgs[1] , 'Sub: Unittest a task is created for zoe')
             # random check against duplicates
 
-            # FIXME: comment out until the duplicated email is fixed
-            #my.assertEquals(log_msgs[3] != 'Sub: Unittest a task is created for zoe', True)
+            my.assertEquals(log_msgs[2] != 'Sub: Unittest a task is created for zoe', True)
             value = Container.get("TestTrigger")
             my.assertEquals("test_trigger", value)
             value = Container.get("TestTaskTrigger")

@@ -12,7 +12,7 @@
 __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, TacticException
-from pyasm.search import SearchType, Search, SqlException, SearchKey
+from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser
@@ -77,8 +77,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.show_search_limit = kwargs.get('show_search_limit')
         if my.show_search_limit == "false":
             my.show_search_limit = False
-        elif my.kwargs.get('expression'):
-            my.show_search_limit = False
+        #elif my.kwargs.get('expression'):
+            #my.show_search_limit = False
         else:
             my.show_search_limit = True
 
@@ -247,7 +247,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
-
         if not my.show_search_limit:
             my.search_limit = None
         else:
@@ -365,9 +364,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             filter_data.set_data(state_filter)
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
-        # user-override order has top priority
+      
+        # user-chosen order has top priority
         if order:
-            search.add_order_by(order)
+            my.order_element = order
+            if not values:
+                direction = 'asc' 
+                if my.order_element.find(" desc") != -1:
+                    tmp_order_element = my.order_element.replace(" desc", "")
+                    direction = 'desc'
+                else:
+                    tmp_order_element = my.order_element
+
+                widget = my.get_widget(tmp_order_element)
+                try:
+                    widget.alter_order_by(search, direction)
+                except AttributeError:
+                    search.add_order_by(my.order_element, direction)
 
         if values:
             # Outdated: This is to maintain grouping .... filter_xml must be completely
@@ -425,30 +438,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
-            
                     search.add_order_by(tmp_order_element, direction)
 
             my.show_retired_element = group_values.get("show_retired")
             if my.show_retired_element == "true":
                 search.set_show_retired(True)
 
-        
-        # user chosen order is top priority
-        if order:
-            my.order_element = order
-            if not values:
-                direction = 'asc' 
-                if my.order_element.find(" desc") != -1:
-                    tmp_order_element = my.order_element.replace(" desc", "")
-                    direction = 'desc'
-                else:
-                    tmp_order_element = my.order_element
-
-                widget = my.get_widget(tmp_order_element)
-                try:
-                    widget.alter_order_by(search, direction)
-                except AttributeError:
-                    search.add_order_by(my.order_element, direction)
 
         order_by = my.kwargs.get('order_by')
         if order_by:
@@ -472,6 +467,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 stated_limit = my.search_limit.get_stated_limit()
                 if stated_limit:
                     limit = stated_limit
+                if not limit:
+                    limit = 100
+
             my.chunk_num = my.kwargs.get("chunk_num")
 
             #print "init count: ", count
@@ -493,6 +491,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             my.search_limit.set_search(search)
             my.search_limit.alter_search(search)
+
 
 
 
@@ -635,7 +634,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # it's not efficient though, could be improved if Search.eval
         # returns a search instead
         
-
         # only do this alter_search if search_limit is visible
         if my.search_limit:
             search = Search(my.search_type)

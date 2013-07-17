@@ -76,8 +76,12 @@ class ExpressionTest(unittest.TestCase):
 
             Task.create(my.country, "p1", "Task 1", context='p1')
             Task.create(my.country, "p2", "Task 2", context='p2')
+
+            desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
             my.country_task = Task.create(my.country, "p3", "Task 3", context='p3')
             my.country_task.set_value('priority', '4')
+            my.country_task.set_value('description', desc)
+
             my.country_task.commit()
 
             # city task
@@ -114,7 +118,7 @@ class ExpressionTest(unittest.TestCase):
                 
                 my.persons.append(person)
 
-            
+            my._test_utf8()
             my._test_palette()
             my._test_related_sobject()
 
@@ -148,8 +152,19 @@ class ExpressionTest(unittest.TestCase):
 
             test_env.delete()
 
+    def _test_utf8(my):
+        desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
+        expr3 = "@GET(.description)"
+        actual_desc = my.parser.eval(expr3, sobjects=my.country_task, single=True)
+        
+        my.assertEquals(True, isinstance(actual_desc, unicode))
+        # the returned unicode needs to be encoded as str
+        actual_desc = actual_desc.encode('utf-8')
+        my.assertEquals(desc, actual_desc)
 
 
+        
+        
     def _test_simple(my):
 
         # do some precalculateion

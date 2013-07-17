@@ -68,11 +68,80 @@ class BizTest(unittest.TestCase):
             my._test_naming_util()
             my._test_sobject_hierarchy()
 
+            my._test_add_tasks()
         finally:
             my.transaction.rollback()
             Project.set_project('unittest')
 
             test_env.delete()
+
+    def _test_add_tasks(my):
+        # add bunch of dummy initial tasks to the person
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', processes=['design1','design2'], mode='simple process', skip_duplicate=True)
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1','design2:design2'])
+
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', processes=['design1','design2'], mode='simple process', skip_duplicate=False)
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1/001','design2:design2/001'])
+
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=False)
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1/hi','design2:design2/low'])
+
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=False)
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1/hi/001','design2:design2/low/001'])
+
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=True)
+        # these are duplicated, so nothing should be created
+        my.assertEquals(initial_tasks, [])
+
+
+        
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1/hi','design2:design2/low','design3:design3','design3:design3'], mode='context', skip_duplicate=False)
+      
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1/hi/002','design2:design2/low/002', 'design3:design3','design3:design3/001'])
+
+        
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', contexts=['design1:design1','design3:design3'], mode='context', skip_duplicate=False)
+      
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design1:design1/002','design3:design3/002'])
+
+        initial_tasks = Task.add_initial_tasks(my.person, 'person', processes=['design2','design3'], mode='standard', skip_duplicate=False)
+        context_list = []
+        for task in initial_tasks:
+            full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
+            context_list.append(full_context)
+
+        my.assertEquals(context_list, ['design2:design2/002','design3:design3/003'])
+
 
 
 

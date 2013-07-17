@@ -994,11 +994,14 @@ spt.edit.edit_form_cbk = function( evt, bvr )
             // for fast table
             var tmps = spt.split_search_key(bvr.search_key)
             var tmps2 = tmps[0].split('?');
+            var update_row_event = "update_row|" + tmps2[0];
             var update_st_event = "update|" + tmps2[0];
             var bvr_fire = {};
-            var input = {'search_key': bvr.search_key };
+            var kwargs = {'update_data': values};
+            var input = {'search_key': bvr.search_key, 'kwargs': kwargs};
             bvr_fire.options = input;
             spt.named_events.fire_event(update_st_event, bvr_fire);
+            spt.named_events.fire_event(update_row_event, bvr_fire);
 
 
         }

@@ -66,7 +66,7 @@
                   </div>
                </div>
             </div>
-            <p>TACTIC Custom Layout introduces a new html tag &lt;element&gt; which allows for TACTIC
+            <p>TACTIC Custom Layout introduces a new html tag &lt;element&gt; which lets TACTIC
                            widgets to be embedded into HTML.
             </p>
             <p>There are two formats for a TACTIC element: a short form and a long form:</p>
@@ -195,11 +195,55 @@ cells.setStyle('background', 'red'); </pre><p>TACTIC&#8217;s powerful framework 
             </p>
             <p>Once the file is checked in, you use the web path as the URL of the image.</p>
          </div>
+         <div class="simplesect" title="Python">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1152"></a>Python
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC integrates the efficiency of Python in a Custom Layout Editor tab, functioning
+                           together seamlessly with HTML, CSS and JavaScript. As can be seen in the example below,
+                           Python works in connection with these other languages to produce a desired output. 
+            </p>
+            <p><span class="underline">Example</span></p>
+            <p>HTML code in Custom Layout Editor HTML
+                           tab:
+            </p><pre class="screen">&lt;div class="hello_world"&gt;
+    Hello World
+&lt;/div&gt;</pre><p>CSS code in Custom Layout Editor Styles
+                           tab:
+            </p><pre class="screen">.hello_world {
+    font-size: 2em;
+    padding: 1px;
+    border: solid 1px black;
+    background: ${background};
+}</pre><p>Python code in Custom Layout Editor Python
+                           tab:
+            </p><pre class="screen">background = "#F00"</pre><p>Custom Layout Editor Test Output:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_python_example.png"></div>
+            <p>
+                       
+            </p>
+            <p>The example demonstrates the use of Python in the creation of a title block.
+                           Essentially, the Python coding is only setting the background color of the title block.
+                           However, it can be used for more complicated applications, as in the Testing Interface
+                           section.
+            </p>
+            <p>The Python tab provides the user with the opportunity to use the Python language in
+                           the editor without the restriction of having to use embedded Mako.
+            </p>
+         </div>
          <div class="simplesect" title="Mako">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1152"></a>Mako
+                     <h4 class="title"><a name="d0e1184"></a>Mako
                      </h4>
                   </div>
                </div>
@@ -248,7 +292,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1182"></a>Injecting Widgets
+                     <h4 class="title"><a name="d0e1214"></a>Injecting Widgets
                      </h4>
                   </div>
                </div>
@@ -282,7 +326,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1210"></a>Adding View to sidebar
+                     <h4 class="title"><a name="d0e1242"></a>Adding View to sidebar
                      </h4>
                   </div>
                </div>
@@ -301,7 +345,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1218"></a>Creating URLs
+                     <h4 class="title"><a name="d0e1250"></a>Creating URLs
                      </h4>
                   </div>
                </div>
@@ -328,7 +372,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1225"></a>Creating Forms
+                     <h4 class="title"><a name="d0e1257"></a>Creating Forms
                      </h4>
                   </div>
                </div>
@@ -401,7 +445,7 @@ JavaScript:
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1267"></a>Testing Interface
+                     <h4 class="title"><a name="d0e1299"></a>Testing Interface
                      </h4>
                   </div>
                </div>
@@ -414,12 +458,69 @@ JavaScript:
                            test button in the top menu.
             </p>
             <div class="mediaobject"><img src="media/custom_layout_editor_testing.png"></div>
+            <p>In addition, these custom views can also be defined to take the form of a specific
+                           view type: widget or column.
+            </p>
+            <p>Widget is a free form view type. It is designed to allow your view to be versatile in
+                           its presentation in TACTIC. These widget type views can appear in
+                           stand-alone pop-up windows, tab view layouts, forms, tables, text inputs, menus, or
+                           even buttons. An extension of this versatility lies in their ability to be injected into
+                           other custom views as well, much like what was described in the Injecting Widgets
+                           section.
+            </p>
+            <p>Column allows for the customization of a table column. This column is available to be
+                           added to any table through the Column Manager under Plugin Widgets. The ability to
+                           modify the aesthetics and data presentation of a column will allow the user to display
+                           the data they want in a specific format. For example, if metadata for a particular
+                           asset, such as an image, needs to be shown in a table, a column can be formatted to list
+                           the metadata information through the use of an embedded table, as shown below. Other
+                           formatting techniques, like alternating row colors, can be added as well.
+            </p>
+            <p><span class="underline">Example</span></p>
+            <p>HTML code in HTML Custom Layout
+                           tab:
+            </p><pre class="screen">&lt;div&gt;
+&lt;%
+table = []
+table.append("&lt;table cellpadding='4px'&gt;")
+i = 0
+for name, value in data.items():
+    i = i + 1
+    if (i % 2 == 0):
+        table.append("&lt;tr style='background: #BBB'&gt;")
+    else:
+        table.append("&lt;tr style='background: #DDD'&gt;")
+    
+    table.append("&lt;td style='width: 100px'&gt;%s&lt;/td&gt;" % name)
+    table.append("&lt;td&gt;%s&lt;/td&gt;" % value)    
+    table.append("&lt;/tr&gt;")
+
+table.append("&lt;/table&gt;")
+table = "".join(table)
+
+context.write(table)
+%&gt;
+&lt;/div&gt;</pre><p>Python code in Custom Layout Python
+                           tab:
+            </p><pre class="screen">data = {
+    'Frame Size:': "768 x 512",
+    'Colorspace:': "yuvj420p",
+    'Location:': "C:\...\",
+    'File Type:': "MJPEG (Motion JPEG)",
+}</pre><p>Output Column in Table:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/custom_layout_editor_column_view_type.png"></div>
+            <p>
+                       
+            </p>
          </div>
          <div class="simplesect" title="Tips and Techniques">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1279"></a>Tips and Techniques
+                     <h4 class="title"><a name="d0e1336"></a>Tips and Techniques
                      </h4>
                   </div>
                </div>

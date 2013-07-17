@@ -26,7 +26,7 @@
 </element>
 
 <element name="recipients">
-     <display class="pyasm.admin.site.notification_tab_wdg.RecipientElementWdg"/>
+     <display class="tactic.ui.table.RecipientElementWdg"/>
 </element>
 
 <element name="notification_panel" title="Notification">
@@ -63,7 +63,7 @@
 <element name="timestamp" width="75"/>
 
 <element name="recipients" width="100">
-     <display class="pyasm.admin.site.notification_tab_wdg.RecipientElementWdg"/>
+
 </element>
 
 <element name="subject" width="200"/>

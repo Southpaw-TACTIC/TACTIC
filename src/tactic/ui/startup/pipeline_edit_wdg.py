@@ -58,16 +58,16 @@ class PipelineEditWdg(BaseRefreshWdg):
             div.add_border()
             div.add_color("color", "color3")
             div.add_color("background", "background3")
-            div.add_style("width: 350px")
+            div.add_style("width: 400px")
             div.add_style("height: 100px")
             div.add_style("padding: 30px")
            
             icon = IconWdg("WARNING", IconWdg.WARNING)
             div.add(icon)
-            div.add("<b>This Searchable Type has not pipelines defined</b>")
+            div.add("<b>This Searchable Type does not have pipelines defined.</b>")
             div.add("<br/>"*2)
 
-            div.add("<b style='padding-left: 30px'>If you want to add a pipeline click create...</b>")
+            div.add("<b style='padding-left: 35px'>Click Create to add one...</b>")
             div.add("<br/>"*2)
  
             button_div = DivWdg()

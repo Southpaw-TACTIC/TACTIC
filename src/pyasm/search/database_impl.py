@@ -301,17 +301,20 @@ class DatabaseImpl(object):
         '''default impl works with Postgres'''
         if isinstance(keywords, basestring):
             if keywords.find("|") != -1 or keywords.find("&") != -1:
+                # prevent syntax error from multiple | or &
+                keywords = re.sub( r'\|+', r'|', keywords)
+                keywords = re.sub( r'\&+', r'&', keywords)
                 value = keywords
             else:
                 keywords = keywords.strip()
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
-                value = '" | "'.join(parts)
+                value = ' | '.join(parts)
 
         elif type(keywords) == types.ListType:
             # remove empty strings from the list
             keywords = filter(None, keywords)
-            value = '" & "'.join(keywords)
+            value = ' & '.join(keywords)
         else:
             value = str(keywords)
 

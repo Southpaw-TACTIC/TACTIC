@@ -113,8 +113,15 @@
                         <ul class="itemizedlist">
                            <li class="listitem"><span class="bold"><strong>PIL 1.1.7</strong></span> (Python Image Library)
                            </li>
-                           <li class="listitem"><span class="bold"><strong>ImageMagick 6.7.8</strong></span> (A command line program which complements PIL)
-                                              - <a class="link" href="www.imagemagick.org" target="_top">http://www.imagemagick.org</a></li>
+                           <li class="listitem"><span class="bold"><strong>ImageMagick 6.7.8</strong></span> (A command line program
+                                                      which complements PIL) - <a class="link" href="www.imagemagick.org" target="_top">http://www.imagemagick.org</a></li>
+                           <li class="listitem">
+                              <p><span class="bold"><strong>FFmpeg</strong></span>
+                                                             <span class="bold"><strong>version 0.6</strong></span>(Solution to record, convert
+                                                             and stream audio and video and metadata parsing) - <a class="link" href="www.imagemagick.org" target="_top">http://www.ffmpeg.org</a>
+                                                         
+                              </p>
+                           </li>
                            <li class="listitem"><span class="bold"><strong>psycopg2 2.3.1</strong></span> (Database
                                               connectivity)
                            </li>
@@ -157,7 +164,7 @@
             
        
 Next, please install the Apache Web Server and then copy the Apache config extension
-[/home/apache/projects/config/tactic.conf] to the Apache web server config area. e.g.
+[/home/apache/tactic_data/config/tactic.conf] to the Apache web server config area. e.g.
 /etc/httpd/conf.d/ </pre></li>
                </ol>
             </div>
@@ -188,8 +195,9 @@ Next, please install the Apache Web Server and then copy the Apache config exten
                                                            
                            <p>Default
                                                                   contents:
-                           </p><pre class="screen">TACTIC_INSTALL_DIR="/home/apache/tactic"
-TACTIC_SITE_DIR="/home/apache/projects"
+                           </p><pre class="screen">TACTIC_INSTALL_DIR='/home/apache/tactic'
+TACTIC_SITE_DIR=''
+TACTIC_DATA_DIR='/home/apache/tactic_data'
                         </pre>
                                                        </td>
                      </tr>
@@ -211,7 +219,7 @@ TACTIC_SITE_DIR="/home/apache/projects"
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e326"></a>Install the Web Server
+                     <h4 class="title"><a name="d0e337"></a>Install the Web Server
                      </h4>
                   </div>
                </div>
@@ -289,7 +297,7 @@ BalancerMember http://localhost:8082/tactic
 BalancerMember http://localhost:8083/tactic
 &lt;/Proxy&gt;
 ProxyPass /tactic balancer://tactic
-ProxyPass /projects balancer://tactic</pre><p>
+ProxyPass /tactic_data balancer://tactic</pre><p>
                            
             </p>
             <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
@@ -337,7 +345,7 @@ ProxyPass /projects balancer://tactic</pre><p>
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e423"></a>Run TACTIC in development mode
+                     <h4 class="title"><a name="d0e434"></a>Run TACTIC in development mode
                      </h4>
                   </div>
                </div>
@@ -407,7 +415,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e476"></a>Run TACTIC in service mode
+                     <h4 class="title"><a name="d0e487"></a>Run TACTIC in service mode
                      </h4>
                   </div>
                </div>
@@ -456,7 +464,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e511"></a>System Info Page
+                     <h4 class="title"><a name="d0e522"></a>System Info Page
                      </h4>
                   </div>
                </div>
@@ -471,7 +479,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e517"></a>Troubleshooting
+                     <h4 class="title"><a name="d0e528"></a>Troubleshooting
                      </h4>
                   </div>
                </div>

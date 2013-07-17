@@ -172,7 +172,7 @@ class Login(SObject):
             groups.append(default_group)
         """
 
-        (NONE, LOW, MED, HI) = range(4)
+        (NONE, MIN, LOW, MED, HI) = range(5)
         access_level = NONE
         project_codes = set()
         for group in groups:
@@ -187,6 +187,8 @@ class Login(SObject):
                 group_access_level = MED
             elif group_access_level == 'low':
                 group_access_level = LOW
+            elif group_access_level == 'min':
+                group_access_level = MIN
             elif group_access_level == 'none':
                 group_access_level = NONE
             else:
@@ -206,8 +208,8 @@ class Login(SObject):
 
 
     def get_security_level_group(access_level, project_codes=[]):
-        (NONE, LOW, MED, HI) = range(4)
-        assert access_level in [NONE, LOW, MED, HI]
+        (NONE, MIN, LOW, MED, HI) = range(5)
+        assert access_level in [NONE, MIN, LOW, MED, HI]
 
         xml = []
         xml.append('''<rules>''')
@@ -240,6 +242,11 @@ class Login(SObject):
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" access="allow"/>''')
 
+        elif access_level == MIN:
+            if project_codes:
+                for project_code in project_codes:
+                    xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
+            xml.append('''<rule group="search_type" code="*" access="allow"/>''')
 
         else: # no security access
             if project_codes:

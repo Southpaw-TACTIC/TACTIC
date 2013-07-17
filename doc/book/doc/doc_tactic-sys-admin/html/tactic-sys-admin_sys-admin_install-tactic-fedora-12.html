@@ -33,7 +33,7 @@
          <p>
                     
          </p>
-         <h3><a name="d0e2209"></a>Fedora 12
+         <h3><a name="d0e2232"></a>Fedora 12
          </h3>
          <p>
                 
@@ -75,26 +75,26 @@ chmod a+rx /home/apache</pre></li>
                </li>
                <li class="listitem">
                   <p>Download the TACTIC source code and setup the service.</p>
-                  <p>Open the following link in a web browser</p><pre class="screen">http://support.southpawtech.com/downloads</pre><p>Setup the TACTIC service.</p><pre class="screen">cd unzip tactic-3.5.0.rc03.zip
-ln -s tactic-3.5.0.rc03 tactic
-sudo cp /home/apache/tactic/src/install/service/tactic /etc/init.d
+                  <p>Open the following link in a web browser</p><pre class="screen">http://support.southpawtech.com/downloads</pre><p>Setup the TACTIC service.</p><pre class="screen">cd /tmp
+unzip tactic_#.#.#.#.zip
+sudo cp /tmp/tactic_#.#.#.#/src/install/service/tactic /etc/init.d
 sudo chmod 775 /etc/init.d/tactic
 sudo /sbin/chkconfig tactic on</pre></li>
                <li class="listitem">
                   <p>Setup Postgres.</p><pre class="screen">sudo /etc/init.d/postgresql start
-sudo cp /home/apache/tactic/src/install/postgresql/pg_hba.conf /var/lib/pgsql/data
+sudo cp /tmp/tactic_#.#.#.#/src/install/postgresql/pg_hba.conf /var/lib/pgsql/data
 sudo chown postgres:postgres /var/lib/pgsql/data/pg_hba.conf
 sudo /sbin/chkconfig postgresql on
 sudo /etc/init.d/postgresql restart </pre></li>
                <li class="listitem">
-                  <p>Setup Apache.</p><pre class="screen">sudo cp /home/apache/tactic/src/install/apache/tactic.conf /etc/httpd/conf.d/
+                  <p>Setup Apache.</p><pre class="screen">sudo cp /home/apache/tactic_data/config/tactic.conf /etc/httpd/conf.d/
 sudo /sbin/chkconfig httpd on
 sudo /etc/init.d/httpd start </pre></li>
                <li class="listitem">
-                  <p>Install TACTIC.</p><pre class="screen">cd /home/apache/tactic/src/install
+                  <p>Install TACTIC.</p><pre class="screen">cd /tmp/tactic_#.#.#.#/src/install
 sudo python install.py
 sudo /sbin/chkconfig tactic on
-sudo chown -R apache:apache /home/apache/tactic /home/apache/assets /home/apache/projects /home/apache/tacticTemp</pre></li>
+sudo chown -R apache:apache /home/apache/tactic /home/apache/assets /home/apache/tactic_data /home/apache/tacticTemp</pre></li>
                <li class="listitem">
                   <p>Upgrade the database.</p><pre class="screen">python /home/apache/tactic/src/bin/upgrade_db.py</pre></li>
                <li class="listitem">

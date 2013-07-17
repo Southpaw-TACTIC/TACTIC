@@ -37,7 +37,7 @@
                     Step-by-step instructions for Tactic 3.6.0.v01 are provided below. 
          </p>
          <p></p>
-         <h3><a name="d0e753"></a>Requirements
+         <h3><a name="d0e764"></a>Requirements
          </h3>
          <p>Tactic requires the following software to be installed:</p>
          <div class="itemizedlist">
@@ -73,7 +73,7 @@
                     3.6.0.v01 is built with these particular versions and may not work as intended should you
                     use later versions. 
          </p>
-         <h3><a name="d0e782"></a>Disabling Security for Testing
+         <h3><a name="d0e793"></a>Disabling Security for Testing
          </h3>
          <p>For the sake of getting Tactic up quickly without a large amount of fuss, it is prudent to
                     disable firewalling and SELinux. This is by no means an endorsement to run your server
@@ -90,7 +90,7 @@
          </p><pre class="screen">/sbin/chkconfig iptables off</pre><p>To disable SELinux, edit the file /etc/selinux/config as root with your favourite editor
                     and set the SELINUX variable to 'disabled'. 
          </p><pre class="screen">SELINUX=disabled</pre><p>Getting this setting to take effect requires a reboot.</p>
-         <h3><a name="d0e800"></a>Installing Apache HTTP server
+         <h3><a name="d0e811"></a>Installing Apache HTTP server
          </h3>
          <p>To install Apache 2.2 on CentOS 5.7 issue the following command as
                     root:
@@ -101,7 +101,7 @@
          <p>
                     
          </p>
-         <h6><a name="d0e812"></a>Apache 2.2 paths
+         <h6><a name="d0e823"></a>Apache 2.2 paths
          </h6>
          <p>
                     
@@ -164,7 +164,7 @@
                     the test page properly.  Later in the install we will configure the Apache server to
                     interact with Tactic properly.
          </p>
-         <h3><a name="d0e863"></a>Installing Postgres Database Server
+         <h3><a name="d0e874"></a>Installing Postgres Database Server
          </h3>
          <p>CentOS 5.7 repositories use Postgres version  8.1.23-1.  However Tactic requires version
                     8.4 or higher.  First we must make sure that we didn't include the default version Postgres
@@ -207,7 +207,7 @@ rpm -Uvh pgdg-centos-91-9.1-4.noarch.rpm</pre><p>At the time of writing the curr
          <p>
                     
          </p>
-         <h6><a name="d0e896"></a>Common Paths in Postgres 9.1 on CentOS 5.7
+         <h6><a name="d0e907"></a>Common Paths in Postgres 9.1 on CentOS 5.7
          </h6>
          <p>
                     
@@ -254,7 +254,7 @@ rpm -Uvh pgdg-centos-91-9.1-4.noarch.rpm</pre><p>At the time of writing the curr
          <p>Lastly we will want to make sure the Postgres service persists through reboots.  As root
                     issue the following command:
          </p><pre class="screen">/sbin/chkconfig postgresql-91 on</pre><p>Reboot your server to ensure the service comes up appropriately.</p>
-         <h3><a name="d0e941"></a>Installing Python 2.7
+         <h3><a name="d0e952"></a>Installing Python 2.7
          </h3>
          <p>As noted above Tactic requires version 2.7 of Python.  CentOS comes with, and depends on
                     an earlier version of Python.  This means we simply can't remove Python from the system as
@@ -273,7 +273,7 @@ cd Python-2.7.1
 make &amp;&amp; make install</pre><p>This will install Python 2.7 in the custom path /opt/python2.7.  You can choose a
                     different custom install directory should you choose. 
          </p>
-         <h3><a name="d0e955"></a>Installing Python 2.7 Modules
+         <h3><a name="d0e966"></a>Installing Python 2.7 Modules
          </h3>
          <p>Next we will install the necessary Python 2.7 modules.  These provide extended
                     functionality to the Python environment.   Before we begin however we will have to set an
@@ -289,7 +289,7 @@ make &amp;&amp; make install</pre><p>This will install Python 2.7 in the custom 
          <p>
                     
          </p>
-         <h5><a name="d0e965"></a>Installing lxml 2.2.8
+         <h5><a name="d0e976"></a>Installing lxml 2.2.8
          </h5>
          <p>
                 
@@ -321,7 +321,7 @@ Type "help", "copyright", "credits" or "license" for more information.
          <p>
                     
          </p>
-         <h5><a name="d0e989"></a>Installing Python Imaging Library 1.1.7
+         <h5><a name="d0e1000"></a>Installing Python Imaging Library 1.1.7
          </h5>
          <p>
                 
@@ -335,7 +335,7 @@ tar -zxvf Imaging-1.1.7.tar.gz
 cd Imaging-1.1.7
 /opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
                     at the python prompt. 
-         </p><pre class="screen">import PIL</pre><h5><a name="d0e1000"></a>Installing Pycrypto 2.3
+         </p><pre class="screen">import PIL</pre><h5><a name="d0e1011"></a>Installing Pycrypto 2.3
          </h5>
          <p>The installation of Pycrypto also follows this template.  As root issue the following
                     commands:
@@ -345,7 +345,7 @@ tar -zxvf pycrypto-2.3.tar.gz
 cd pycrypto-2.3
 /opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the following command
                     at the python prompt.
-         </p><pre class="screen">import Crypto</pre><h5><a name="d0e1010"></a>Installing Psycopg2 2.3.2
+         </p><pre class="screen">import Crypto</pre><h5><a name="d0e1021"></a>Installing Psycopg2 2.3.2
          </h5>
          <p>Psycopg2 is a Postgres database adapter for Python.  The install is akin to the previous 3
                     except that since we've customized our Postgres install, we have to let Psycopg2 know that
@@ -364,7 +364,7 @@ cd psycopg2-2.3.2</pre><p>Now we have to modify the pg_config variable in the fi
          </p><pre class="screen">import psycopg2</pre><p>Now that all the Tactic components are installed, we can begin installing Tactic
                         itself.
          </p>
-         <h4><a name="d0e1030"></a>Installing Tactic 3.6.0.v01
+         <h4><a name="d0e1041"></a>Installing Tactic 3.6.0.v01
          </h4>
          <p>First we have to download the Tactic source from the Southpaw Community website. Using a
                     web browser navigate to http://community.southpawtech.com and login using the support
@@ -381,7 +381,7 @@ unzip tactic-3.6.0.v01.zip</pre><p>Once the Tactic source is unpacked, you shoul
                     directory structure will remain the same.
                     
          </p>
-         <h6><a name="d0e1040"></a>Common Paths in Tactic 3.6.0.v01
+         <h6><a name="d0e1051"></a>Common Paths in Tactic 3.6.0.v01
          </h6>
          <p>
                     
@@ -415,7 +415,7 @@ unzip tactic-3.6.0.v01.zip</pre><p>Once the Tactic source is unpacked, you shoul
          <p>Before we run the Tactic installer, we must further configure Postgres to ensure proper
                     installation of Tactic.
          </p>
-         <h5><a name="d0e1067"></a>Configuring Postgres
+         <h5><a name="d0e1078"></a>Configuring Postgres
          </h5>
          <p>Tactic supplies a custom host based authentication file for Postgres.  After stopping the
                     Postgres service we will install the file in question, restart the service and verify that
@@ -434,7 +434,7 @@ chown postgres:postgres /var/lib/pgsql/9.1/data/pg_hba.conf
          </p><pre class="screen">template1=#</pre><p>If you are not prompted for a password and, see this prompt, then the configuration
                     changes have been successful.   Type \q to exit.
          </p>
-         <h5><a name="d0e1083"></a>Installing Tactic
+         <h5><a name="d0e1094"></a>Installing Tactic
          </h5>
          <p>We are now ready to run the Tactic installer.  The installer doesn't know about our custom
                     Python installation location though, so we have edit the install.py file.  Using your
@@ -472,13 +472,13 @@ chown postgres:postgres /var/lib/pgsql/9.1/data/pg_hba.conf
          <p>The installer will then install the Tactic databases, configure Tactic and copy the source
                     code into the Tactic base directory.
          </p>
-         <h5><a name="d0e1118"></a>Configuring
+         <h5><a name="d0e1129"></a>Configuring
                         Apache
          </h5>
          <p>Lastly Tactic requires us to install the custom Apache configuration file it has created
-                    during the installation process.  As root issue the following
+                    during the installation process. As root issue the following
                     commands:
-         </p><pre class="screen">cp /opt/tactic/projects/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an included module path in
+         </p><pre class="screen">cp /opt/tactic/tactic_data/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an included module path in
                     the main Apache configuration file.  As root issue the following
                     command:
          </p><pre class="screen">cat /etc/httpd/conf/httpd.conf | grep conf.d</pre><p>If you receive the following as output we have installed the Tactic Apache configuration
@@ -505,7 +505,7 @@ proxy_balancer_module (shared)
 deflate_module (shared)</pre><p>The CentOS 5.7 install of Apache includes a large array of modules enabled by default,
                     including the ones required by Tactic.
          </p>
-         <h3><a name="d0e1152"></a>Starting Tactic in
+         <h3><a name="d0e1163"></a>Starting Tactic in
                         Development Mode
          </h3>
          <p>We are now prepared to start the Tactic service for the first time.   Tactic must be run
@@ -550,7 +550,7 @@ Starting Scheduler ....
          <p>
                     
          </p>
-         <h3><a name="d0e1179"></a>Installing Tactic as a Service
+         <h3><a name="d0e1190"></a>Installing Tactic as a Service
          </h3>
          <p>
                 
@@ -579,7 +579,7 @@ export LD_LIBRARY_PATH</pre><p>Lastly, Tactic startup uses the same mechanism as
          </p><pre class="screen">su $TACTIC_USER -s /bin/bash -m -c "$LAUNCH" &gt;&gt; $LOG 2&gt;&amp;1 &amp;</pre><p>Save the file.</p>
          <p>One last Python path must be corrected before we install the Tactic service. During
                     installation Tactic created a file that you will become more familiar with throughout your
-                    use of Tactic. That file is /opt/tactic/projects/config/tactic_linux-conf.xml. Using your
+                    use of Tactic. That file is /opt/tactic/tactic_data/config/tactic_linux-conf.xml. Using your
                     favourite editor as root edit this file. Find the following
                     line:
          </p><pre class="screen">&lt;python&gt;python&lt;/python&gt;</pre><p>And replace it
@@ -597,7 +597,7 @@ chmod 755 /etc/init.d/tactic
          <p>
                     
          </p>
-         <h6><a name="d0e1225"></a>Common Error Logs 
+         <h6><a name="d0e1236"></a>Common Error Logs 
          </h6>
          <p>
                     

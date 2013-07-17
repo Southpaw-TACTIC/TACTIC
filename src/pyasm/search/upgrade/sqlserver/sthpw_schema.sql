@@ -503,6 +503,7 @@ CREATE TABLE transaction_state (
 
 CREATE TABLE sobject_log (
     id integer IDENTITY PRIMARY KEY,
+    code nvarchar(256),
     search_type nvarchar(100) NOT NULL,
     search_id integer NOT NULL,
     data nvarchar(max),
@@ -526,6 +527,7 @@ CREATE TABLE status_log (
 
 CREATE TABLE debug_log (
     id integer IDENTITY PRIMARY KEY,
+    code nvarchar(256),
     category nvarchar(256),
     "level" nvarchar(256),
     message nvarchar(max),

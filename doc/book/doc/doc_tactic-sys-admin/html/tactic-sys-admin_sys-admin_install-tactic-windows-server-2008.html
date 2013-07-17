@@ -43,7 +43,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1776"></a>Install the Database
+                     <h4 class="title"><a name="d0e1787"></a>Install the Database
                      </h4>
                   </div>
                </div>
@@ -119,7 +119,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1827"></a>Install TACTIC
+                     <h4 class="title"><a name="d0e1838"></a>Install TACTIC
                      </h4>
                   </div>
                </div>
@@ -166,8 +166,15 @@ Type "help", "copyright", "credits" or "license" for more information.
                         <ul class="itemizedlist">
                            <li class="listitem"><span class="bold"><strong>PIL 1.1.7</strong></span> (Python Image Library)
                            </li>
-                           <li class="listitem"><span class="bold"><strong>ImageMagick 6.7.8</strong></span> (A command line program which complements PIL)
-                                              - <a class="link" href="www.imagemagick.org" target="_top">http://www.imagemagick.org</a></li>
+                           <li class="listitem"><span class="bold"><strong>ImageMagick 6.7.8</strong></span> (A command line program
+                                                      which complements PIL) - <a class="link" href="www.imagemagick.org" target="_top">http://www.imagemagick.org</a></li>
+                           <li class="listitem">
+                              <p><span class="bold"><strong>FFmpeg</strong></span>
+                                                             <span class="bold"><strong>version 0.6</strong></span>(Solution to record, convert
+                                                             and stream audio and video and metadata parsing) - <a class="link" href="www.imagemagick.org" target="_top">http://www.ffmpeg.org</a>
+                                                         
+                              </p>
+                           </li>
                            <li class="listitem"><span class="bold"><strong>psycopg2 2.3.1</strong></span> (Database
                                               connectivity)
                            </li>
@@ -213,7 +220,7 @@ Service updated
             
        
 Next, please install the Apache Web Server and then copy the Apache config extension
-[C:/Program Files/Southpaw/projects/config/tactic_win32.conf] to the Apache web server config area. e.g.
+[C:/Program Files/Southpaw/tactic_data/config/tactic_win32.conf] to the Apache web server config area. e.g.
 C:/Program Files/Apache Software Foundation/Apache2.2/conf </pre></li>
                </ol>
             </div>
@@ -242,12 +249,14 @@ C:/Program Files/Apache Software Foundation/Apache2.2/conf </pre></li>
                                                               
                            </p>
                                                            
-                           <p>Default
-                                                                  contents:
-                           </p><pre class="screen">TACTIC_INSTALL_DIR="C:/Program Files/Southpaw/tactic"
-TACTIC_SITE_DIR="C:/Program Files/Southpaw/projects"
-                        </pre>
-                                                       </td>
+                           <p>Default contents:</p>
+                                                           
+                           <p> TACTIC_INSTALL_DIR='C:/Program Files/Southpaw/tactic'
+                                                                  TACTIC_SITE_DIR='' TACTIC_DATA_DIR='C:/Program
+                                                                  Files/Southpaw/tactic_data'                         
+                           </p>
+                                                       
+                        </td>
                      </tr>
                   </tbody>
                </table>
@@ -267,7 +276,7 @@ TACTIC_SITE_DIR="C:/Program Files/Southpaw/projects"
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1972"></a>Install the Web Server
+                     <h4 class="title"><a name="d0e1995"></a>Install the Web Server
                      </h4>
                   </div>
                </div>
@@ -338,7 +347,7 @@ BalancerMember http://localhost:8082/tactic
 BalancerMember http://localhost:8083/tactic
 &lt;/Proxy&gt;
 ProxyPass /tactic balancer://tactic
-ProxyPass /projects balancer://tactic</pre><p>
+ProxyPass /tactic_data balancer://tactic</pre><p>
                            
             </p>
             <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
@@ -391,7 +400,7 @@ You can do it in the Windows Services UI or through the task tray and right clic
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e2070"></a>Run TACTIC in development mode
+                     <h4 class="title"><a name="d0e2093"></a>Run TACTIC in development mode
                      </h4>
                   </div>
                </div>
@@ -459,7 +468,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e2119"></a>Run TACTIC in service mode
+                     <h4 class="title"><a name="d0e2142"></a>Run TACTIC in service mode
                      </h4>
                   </div>
                </div>
@@ -510,7 +519,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e2157"></a>System Info Page
+                     <h4 class="title"><a name="d0e2180"></a>System Info Page
                      </h4>
                   </div>
                </div>
@@ -525,7 +534,7 @@ Starting TACTIC ...
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e2163"></a>Troubleshooting
+                     <h4 class="title"><a name="d0e2186"></a>Troubleshooting
                      </h4>
                   </div>
                </div>

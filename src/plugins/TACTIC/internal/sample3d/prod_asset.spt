@@ -1,0 +1,25 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """prod/asset""")
+insert.set_value('database', """sample3d""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Asset""")
+insert.set_value('namespace', """prod""")
+insert.set_value('search_type', """prod/asset""")
+insert.set_value('table_name', """asset""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('prod/asset')
+table.add('code',                     'varchar', length='256' )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('keywords',                 'text' )
+table.add('login',                    'varchar', length='256' )
+table.add('name',                     'varchar', length='256' )
+table.add('pipeline_code',            'varchar', length='256' )
+table.add('s_status',                 'varchar', length='256' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

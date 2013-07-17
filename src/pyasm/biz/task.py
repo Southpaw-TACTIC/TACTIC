@@ -13,7 +13,7 @@
 __all__ = ["Task", "Timecard", "Milestone"]
 
 import types
-
+import re
 from pyasm.common import Xml, Environment
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
 
@@ -56,8 +56,6 @@ OTHER_COLORS = {
     "Ready":    "#34def2",
     "In-Progress":"#34def2",
 }
-
-
 
 
 
@@ -141,6 +139,39 @@ class Task(SObject):
 
         # in case it's a subpipeline
         context = task_process
+        context=my._add_context_suffix(context,task_process,parent)
+
+        # then use the project as a parent
+        project = Project.get()
+        search_type = "sthpw/project"
+        search_id = project.get_id()
+
+
+        defaults = {
+            "pipeline_code": pipeline_code,
+            "project_code": Project.get_project_code(), 
+            "context": context,
+            "search_type": search_type,
+            "search_id": search_id
+        }
+
+        if SearchType.column_exists("sthpw/task", "search_code"):
+            search_code = project.get_code()
+            defaults['search_code'] = search_code
+
+        return defaults
+
+
+
+    # Not sure why we need to have this restriction.  This restriction
+    # could be put on a specific UI, but not at the lowest level.
+    #def validate(my):
+    #    for column in ['search_type', 'context']:
+    #        if not my.get_value(column):
+    #            raise SObjectValueException('%s cannot be empty for task.'%column)
+
+    def _add_context_suffix(my,context,task_process,parent):
+
         if '/' in task_process:
             context = task_process.split('/')[1]
 
@@ -160,7 +191,6 @@ class Task(SObject):
                     continue
 
                 subcontext = parts[1]
-
             try:
                 if subcontext == None:
                     num = 1
@@ -172,37 +202,8 @@ class Task(SObject):
 
             if num:
                 context = "%s/%0.3d" % (context, num)
+        return context
 
-
-        # then use the project as a parent
-        project = Project.get()
-        search_type = "sthpw/project"
-        search_id = project.get_id()
-
-
-        defaults = {
-            "pipeline_code": pipeline_code,
-            "project_code": Project.get_project_code(), 
-            "context": context,
-            "search_type": search_type,
-            "search_id": search_id
-        }
-
-
-        if SearchType.column_exists("sthpw/task", "search_code"):
-            search_code = project.get_code()
-            defaults['search_code'] = search_code
-
-        return defaults
-
-
-
-    # Not sure why we need to have this restriction.  This restriction
-    # could be put on a specific UI, but not at the lowest level.
-    #def validate(my):
-    #    for column in ['search_type', 'context']:
-    #        if not my.get_value(column):
-    #            raise SObjectValueException('%s cannot be empty for task.'%column)
 
     def get_pipeline(my):
         # for now assume the "task" pipeline if none found
@@ -500,7 +501,8 @@ class Task(SObject):
             task.set_value("supervisor", supervisor)
 
         if not project_code:
-            project_code = Project.get_project_code()
+            project_code = sobject.get_project_code()
+            #project_code = Project.get_project_code()
         task.set_value("project_code", project_code )
         task.set_value("pipeline_code", pipeline_code) 
 
@@ -509,6 +511,7 @@ class Task(SObject):
             process_names = pipeline.get_process_names()
             if process_names:
                 status = process_names[0]
+
         if status:
             task.set_value("status", status)
 
@@ -618,6 +621,40 @@ class Task(SObject):
         '''add initial tasks based on the pipeline of the sobject'''
         from pipeline import Pipeline
 
+        def _get_context(existing_task_dict, process_name, context=None):
+            existed = False
+            if not existing_task_dict:
+                if context:
+                    context = context
+                else:
+                    context = process_name
+            else:
+
+                compare_key = "%s:%s" %(process_name, context)
+                max_num = 0
+                for item in existing_task_dict.keys():
+                    item_stripped = re.sub('/\d+$', '', item)
+                    
+                    #if item.startswith(compare_key):
+                    if item_stripped == compare_key:
+                        existing_context = item.replace('%s:'%process_name,'')
+                        suffix = existing_context.split('/')[-1]
+                        try:    
+                            num = int(suffix)
+                        except:
+                            num = 0
+                          
+                        if num > max_num:
+                            max_num = num
+
+                        existed = True
+            
+         
+                if existed:
+                    context = "%s/%0.3d" % (context, max_num+1)
+            
+
+            return context
         # get pipeline
         if not pipeline_code:
             pipeline_code = sobject.get_value("pipeline_code")
@@ -647,12 +684,13 @@ class Task(SObject):
         else:
             process_names = pipeline.get_process_names(recurse=True)
 
+
         # remember which ones already exist
         existing_tasks = Task.get_by_sobject(sobject)
     
         existing_task_dict = {}
         for x in existing_tasks:
-            key1 = '%s:%s' %(x.get_value('process'),x.get_value("context") )
+            key1 = '%s:%s' %(x.get_value('process'),x.get_value("context"))
             existing_task_dict[key1] = True
             # for backward compatibility, if the process has been created, we will skip later below
             # we may remove this in the future
@@ -661,7 +699,6 @@ class Task(SObject):
 
         # create all of the tasks
         description = ""
-
         tasks = []
 
         start_date = Date()
@@ -674,19 +711,25 @@ class Task(SObject):
         # this is the explicit mode for creating task for a specific process:context combo
         if mode=='context':
             for context_combo in contexts:
-                process_name, context = context_combo.split(':')
+                process_name, context = context_combo.split(':')               
 
                 # depend_id is None since these are arbitrary tasks
                 depend_id = None
 
                 # first check if it already exists when skip_duplicate is True
                 key1 = '%s:%s' %(process_name, context)
-                if skip_duplicate and (existing_task_dict.get(key1) ):
+                task_existed = False
+                for item in existing_task_dict:
+                    if item.startswith(key1):
+                        task_existed = True
+                        break
+                if skip_duplicate and task_existed:
                     continue
-
                 process_obj = pipeline.get_process(process_name)
                 if not process_obj:
                     continue
+
+                context=_get_context(existing_task_dict,process_name, context)
                 pipe_code = process_obj.get_task_pipeline()
 
                 attrs = process_obj.get_attributes()
@@ -710,7 +753,9 @@ class Task(SObject):
                 
                 start_date_str = start_date.get_db_date()
                 end_date_str = end_date.get_db_date()
-                
+
+                # Create the task
+
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
                 
                 # this avoids duplicated tasks for process connecting to multiple processes 
@@ -719,7 +764,6 @@ class Task(SObject):
                 # for backward compatibility, if the process has been created, we will skip later below
 
                 tasks.append(last_task)
-
                 start_date = end_date.copy()
                 # start the day after
                 start_date.add_days(1)
@@ -728,7 +772,6 @@ class Task(SObject):
 
         
         for process_name in process_names:
-
             if last_task:
                 depend_id = last_task.get_id()
             else:
@@ -757,21 +800,24 @@ class Task(SObject):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-
             pipe_code = process_obj.get_task_pipeline()
 
             start_date_str = start_date.get_db_date()
             end_date_str = end_date.get_db_date()
             for context in output_contexts:
-                
+
                 # first check if it already exists when skip_duplicate is True
                 key1 = '%s:%s' %(process_name, context)
-                key2 = '%s' %(process_name)
-                if skip_duplicate and (existing_task_dict.get(key1) or existing_task_dict.get(key2)):
+                task_existed = False
+                for item in existing_task_dict:
+                    if item.startswith(key1):
+                        task_existed = True
+                        break
+                if skip_duplicate and task_existed:
                     continue
                 if contexts and context not in contexts:
                     continue
-
+                context = _get_context(existing_task_dict, process_name, context)
                 last_task = Task.create(sobject, process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 

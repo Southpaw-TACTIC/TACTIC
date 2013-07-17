@@ -33,7 +33,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4959"></a>Overview
+                     <h4 class="title"><a name="d0e4982"></a>Overview
                      </h4>
                   </div>
                </div>
@@ -99,7 +99,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5003"></a>Procedure
+                     <h4 class="title"><a name="d0e5026"></a>Procedure
                      </h4>
                   </div>
                </div>
@@ -124,7 +124,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5023"></a>Back up the 'assets' directory
+                     <h4 class="title"><a name="d0e5046"></a>Back up the 'assets' directory
                      </h4>
                   </div>
                </div>
@@ -139,7 +139,7 @@
                                   directory has been redirected to another location.
                </p>
             </div>
-            <h5><a name="d0e5031"></a>For backup:
+            <h5><a name="d0e5054"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span></p>
             <p>The 'assets' directory on a Windows install is located by default in:</p>
@@ -147,7 +147,7 @@
             <p><span class="bold"><strong>Linux</strong></span></p>
             <p>The 'assets' directory on a Linux install is located by default in:</p>
             <p><span class="command"><strong>/home/apache/assets</strong></span></p>
-            <h5><a name="d0e5049"></a>For restore:
+            <h5><a name="d0e5072"></a>For restore:
             </h5>
             <p>To restore the TACTIC 'assets' directory, you have to restore your backup to the
                            current 'assets' location.
@@ -157,7 +157,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5053"></a>Dump the TACTIC database
+                     <h4 class="title"><a name="d0e5076"></a>Dump the TACTIC database
                      </h4>
                   </div>
                </div>
@@ -174,14 +174,14 @@
                                   tag.
                </p>
             </div>
-            <h5><a name="d0e5064"></a>For backup:
+            <h5><a name="d0e5087"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span></p>
             <p><span class="command"><strong>pg_dumpall -U postgres -c &gt; c:\assets\tacticDatabase.sql</strong></span></p>
             <p><span class="bold"><strong>Linux</strong></span></p>
             <p><span class="command"><strong>pg_dumpall -U postgres -c &gt;
                                  /home/apache/assets/tacticDatabase.sql</strong></span></p>
-            <h5><a name="d0e5078"></a>For restore:
+            <h5><a name="d0e5101"></a>For restore:
             </h5>
             <p>To restore the TACTIC database run the command:</p>
             <p><span class="command"><strong>psql -U postgres &lt; tacticDatabase.sql</strong></span></p>
@@ -190,7 +190,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5085"></a>Back up the TACTIC program directory
+                     <h4 class="title"><a name="d0e5108"></a>Back up the TACTIC program directory
                      </h4>
                   </div>
                </div>
@@ -198,7 +198,7 @@
             <p>This last step, although not completely necessary, is recommended because it takes a
                            snapshot of your TACTIC source code and project settings at the time of backup.
             </p>
-            <h5><a name="d0e5090"></a>For backup:
+            <h5><a name="d0e5113"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span>
                        
@@ -210,7 +210,7 @@
             <p>The folders to back up are:</p>
             <p><span class="command"><strong>/home/apache/tactic</strong></span></p>
             <p><span class="command"><strong>/home/apache/projects</strong></span></p>
-            <h5><a name="d0e5115"></a>For restore:
+            <h5><a name="d0e5138"></a>For restore:
             </h5>
             <p>To restore the TACTIC program files, you have to restore the <span class="command"><strong>tactic</strong></span>
                            and <span class="command"><strong>projects</strong></span> directories to their original locations.

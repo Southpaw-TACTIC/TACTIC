@@ -26,9 +26,9 @@ except:
     HAS_PIL = False
 
 if Common.which("convert"):
-    HAS_IMAGE_MAGICK = True
+    HAS_IMAGEMAGICK = True
 else:
-    HAS_IMAGE_MAGICK = False
+    HAS_IMAGEMAGICK = False
 
 if Common.which("ffprobe"):
     HAS_FFMPEG = True
@@ -166,13 +166,15 @@ class CheckinMetadataHandler():
             name = name.lower()
             name = name.replace(" ", "_")
             name = name.replace(":", "_")
-            value = value.lower()
-            value = value.replace("(", "")
-            value = value.replace(")", "")
-
-
-
-            keys = value.split(" ")
+      
+            # otherwise it could an int or float
+            if isinstance(value, basestring):
+                value = value.lower()
+                value = value.replace("(", "")
+                value = value.replace(")", "")
+                value = value.replace(" ", "_")
+                keys = value.split(" ")
+            
             if len(keys) > 1:
                 for key in keys:
                     pair = "%s=%s" % (name, key)
@@ -181,7 +183,7 @@ class CheckinMetadataHandler():
                     pairs.append(pair)
                     pairs_set.add(pair)
 
-            value = value.replace(" ", "_")
+            
             pair = "%s=%s" % (name, value)
             pairs.append(pair)
 

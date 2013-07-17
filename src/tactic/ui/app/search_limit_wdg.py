@@ -350,6 +350,11 @@ class SearchLimitWdg(Widget):
         # set of range numbers too big
         
         left_bound = my.current_offset+1
+        if not limit:
+            # prevent error in ItemsNavigatorWdg if a search encounters query error
+            limit = 50
+            my.search_limit = limit
+
         right_bound = min(my.current_offset+limit, my.count)
         if left_bound > right_bound:
             left_bound = 1

@@ -42,6 +42,7 @@ class ProcessInputWdg(BaseInputWdg):
 
         my.pipeline_codes = []
         my.pipelines = []
+        my.in_edit_wdg = False
 
         parent_key = my.get_option("parent_key")
         if not parent_key:
@@ -66,7 +67,7 @@ class ProcessInputWdg(BaseInputWdg):
 
         # This is only executed for the popup edit widget
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-
+            my.in_edit_wdg = True
             sobject = my.get_current_sobject()
             parent = sobject.get_parent()
             if not parent:
@@ -130,10 +131,12 @@ class ProcessInputWdg(BaseInputWdg):
             select = SelectWdg(name)
             select.add_empty_option("-- Select a %s --" % my.get_name() )
 
-
-            select.add_behavior( { 'type': 'click',
-               'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'
-            } )
+            # TODO: make spt.dg_table.select_wdg_clicked keyboard action free so it won't interfere with
+            # normal usage of the select
+            if not my.in_edit_wdg:
+                select.add_behavior( { 'type': 'click',
+                   'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'
+                } )
             
 
             # get the sub-pipeline processes as well

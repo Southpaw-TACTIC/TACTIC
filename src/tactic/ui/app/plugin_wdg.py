@@ -415,7 +415,6 @@ class PluginWdg(BaseRefreshWdg):
 
             last_title = title
 
-
             plugin_div.add_behavior( {
             'type': 'click_up',
             'plugin_dir': plugin_dir,
@@ -474,7 +473,9 @@ class PluginWdg(BaseRefreshWdg):
             if os.path.exists("%s/manifest.xml" % root):
                 del dirnames[:]
                 reldir = root.replace(base_dir+"/", "")
-
+              
+                if reldir.startswith('TACTIC/internal/'):
+                    continue
                 plugin_dirnames.append( reldir )
 
         plugin_dirnames.sort()

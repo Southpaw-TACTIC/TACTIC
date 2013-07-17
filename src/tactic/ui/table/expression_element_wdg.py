@@ -105,8 +105,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
     },
     'order_by': {
         'description': 'Turn on Order by',
-        'type': 'SelectWdg',
-        'values': 'true|false',
+        'type': 'TextWdg',
+        
         'order': 7,
         'category': 'Options'
     },
@@ -150,18 +150,22 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.alt_result = None
 
         my.cache_results = None
-
-
+  
     def preprocess(my):
         order_by = my.get_option("order_by")
-        if not order_by:
+        # for backward compatibility when order_by used to be true/false
+        if not order_by or order_by =='true':
             expression = my.get_option("expression")
             if expression.startswith("@GET(") and expression.endswith(")") and expression.count("@") == 1:
                 template = expression.lstrip("@GET(")
                 template = template.rstrip(")")
+                # remove white spaces
+                template= template.strip()
+                # if it's a simple local sType expression e.g. @GET(.id), strip the .
+                if template.startswith("."):
+                    template = template.lstrip('.')
 
-                if not template.startswith("."):
-                    my.set_option("order_by", template)
+                my.set_option("order_by", template)
 
 
 
@@ -230,7 +234,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return True
 
         order_by = my.get_option("order_by")
-        if order_by:
+
+        # false is the word to prevent the auto-adoption (preprocess) of the expression to order-by
+        if order_by and order_by !='false':
             parts = order_by.split(".")
             if "connect" in parts:
                 return False

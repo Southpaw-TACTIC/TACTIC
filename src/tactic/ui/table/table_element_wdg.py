@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['TypeTableElementWdg', 'TemplateElementWdg', 'GeneralPublishElementWdg','NotificationTriggerElementWdg','CheckinButtonElementWdg','CheckoutButtonElementWdg']
+__all__ = ['TypeTableElementWdg', 'TemplateElementWdg', 'GeneralPublishElementWdg','NotificationTriggerElementWdg','CheckinButtonElementWdg','CheckoutButtonElementWdg','RecipientElementWdg']
 
 import types, re
 
@@ -812,3 +812,39 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         icon.add_behavior(my.behavior)
 
         return top
+
+class RecipientElementWdg(BaseTableElementWdg):
+
+    def get_logins(my):
+        sobject = my.get_current_sobject()
+        id = sobject.get_id()
+
+        search = Search("sthpw/notification_login")
+        search.add_filter('notification_log_id', id)
+        notification_logins = search.get_sobjects()
+        return notification_logins
+    
+    def get_display(my):
+        notification_logins = my.get_logins()
+
+        table = Table()
+        table.add_color("color", "color")
+
+        for notification_login in notification_logins:
+            type = notification_login.get_value("type")
+            user = notification_login.get_value("login")
+            table.add_row()
+            table.add_cell(type)
+            table.add_cell(user)
+
+        return table
+
+    def get_text_value(my):
+        name_list = []
+        notification_logins = my.get_logins()
+        for notification_login in notification_logins:
+            type = notification_login.get_value("type")
+            user = notification_login.get_value("login")
+            name_list.append('%s: %s' %(type, user))
+
+        return '\n'.join(name_list)

@@ -22,10 +22,14 @@ from tactic.ui.tools import DeleteProjectCmd
 
 class UnittestEnvironment(object):
 
+    def __init__(my, **kwargs):
+        my.project_code = kwargs.get('project_code')
+        if not my.project_code:
+            my.project_code = 'unittest'
+
     def create(my):
 
-
-        project = Project.get_by_code("unittest")
+        project = Project.get_by_code(my.project_code)
         if project:
 
             my.delete()
@@ -33,11 +37,11 @@ class UnittestEnvironment(object):
         print "Setting up clean Unittest project"
 
         # create the project
-        create_cmd = CreateProjectCmd(project_code="unittest", project_title="Unittest") #, project_type="unittest")
+        create_cmd = CreateProjectCmd(project_code=my.project_code, project_title="Unittest") #, project_type="unittest")
         create_cmd.execute()
 
         # install the unittest plugin
-        installer = PluginInstaller(relative_dir="TACTIC/unittest", verbose=False)
+        installer = PluginInstaller(relative_dir="TACTIC/internal/unittest", verbose=False)
         installer.execute()
 
 
@@ -45,10 +49,27 @@ class UnittestEnvironment(object):
     def delete(my):
         print "Deleting existing Unittest project"
         related_types = ["sthpw/schema"]
-        delete_cmd = DeleteProjectCmd(project_code="unittest", related_types=related_types)
+        delete_cmd = DeleteProjectCmd(project_code=my.project_code, related_types=related_types)
         delete_cmd.execute()
 
+class Sample3dEnvironment(UnittestEnvironment):
 
+    def create(my):
+
+        project = Project.get_by_code(my.project_code)
+        if project:
+
+            my.delete()
+
+        print "Setting up a basic Sample3d project"
+
+        # create the project
+        create_cmd = CreateProjectCmd(project_code=my.project_code, project_title="Sample 3D") #, project_type="unittest")
+        create_cmd.execute()
+
+        # install the unittest plugin
+        installer = PluginInstaller(relative_dir="TACTIC/internal/sample3d", verbose=False)
+        installer.execute()
 
 
 if __name__ == '__main__':

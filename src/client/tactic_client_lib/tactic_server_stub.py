@@ -1263,7 +1263,6 @@ class TacticServerStub(object):
         '''API Function: get_by_search_key(search_key)
         Get the info on an sobject based on search key
         @param:
-            ticket - authentication ticket
             search_key - the key identifying a type of sobject as registered in
                           the search_type table.
 
@@ -1392,11 +1391,10 @@ class TacticServerStub(object):
 
 
     def get_all_children(my, search_key, child_type, filters=[], columns=[]):
-        '''API Function: get_all_children(search_key, child_type, columns=[])
+        '''API Function: get_all_children(search_key, child_type, filters=[], columns=[])
         Get all children of a particular child type of an sobject
 
         @param:
-            ticket - authentication ticket
             search_key - a unique identifier key representing an sobject
             child_type - the search_type of the children to search for
 
@@ -2566,8 +2564,7 @@ class TacticServerStub(object):
         Retrieve the latest dependent snapshots of the given snapshot
         
         @param:
-        search_key - unique identifier of sobject whose snapshot we are
-                looking for
+        snapshot_code - the unique code of the snapshot
 
         @keyparam:
         mode - explicit (get version as defined in snapshot)
@@ -2928,7 +2925,7 @@ class TacticServerStub(object):
         return my.server.get_client_dir(my.ticket, snapshot_code, file_type, mode)
 
     def get_path_from_snapshot(my, snapshot_code, file_type='main', mode='client_repo'):
-        '''API Function: get_path_from_snapshot(snapshot_code, file_type='main')
+        '''API Function: get_path_from_snapshot(snapshot_code, file_type='main', mode='client_repo')
         
         Get a full path from a snapshot
        
@@ -3232,7 +3229,7 @@ class TacticServerStub(object):
     # Widget Config methods
     #
     def get_config_definition(my, search_type, view, element_name, personal=False):
-        '''API Function: get_config_definition(search_type, view, element_name)
+        '''API Function: get_config_definition(search_type, view, element_name, personal=False)
         Get the widget configuration definition for an element
 
         @param:

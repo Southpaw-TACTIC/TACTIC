@@ -764,6 +764,29 @@ class SecurityWdg(BaseRefreshWdg):
         process_security_wdg = my.get_section_wdg(title, description, image, behavior)
         td.add(process_security_wdg)
 
+        # Adding Task Security Wdg
+        td = table.add_cell()
+        td.add_style("padding: 3px")
+        td.add_style("vertical-align: top")
+        title = "Task Security"
+        #image = "<img src='/context/icons/64x64/report_64.png'/>"
+        image = IconWdg('', IconWdg.SECURITY_32_20)
+        description = '''Customize the security of each process's tasks.'''
+
+        behavior = {
+        'type': 'click_up',
+        'cbjs_action': '''
+        var class_name = 'tactic.ui.startup.TaskSecurityWdg';
+        var kwargs = {};
+
+        var top = bvr.src_el.getParent(".spt_dashboard_top");
+        spt.tab.set_tab_top(top);
+        spt.tab.add_new("task_security", "Task Security", class_name, kwargs);
+        '''
+        }
+
+        process_security_wdg = my.get_section_wdg(title, description, image, behavior)
+        td.add(process_security_wdg)
 
         #
         td = table.add_cell()
@@ -1094,6 +1117,7 @@ __all__.append("UserSecurityWdg")
 __all__.append("LinkSecurityWdg")
 __all__.append("SearchTypeSecurityWdg")
 __all__.append("ProcessSecurityWdg")
+__all__.append("TaskSecurityWdg") 
 class ProjectSecurityWdg(BaseRefreshWdg):
 
     def get_security_type(my):
@@ -1671,7 +1695,16 @@ class ProcessSecurityWdg(ProjectSecurityWdg):
 
     def get_sobjects(my, group_names):
 
+        pre_search = Search("sthpw/pipeline")
+        sobjects = pre_search.get_sobjects()
+
+        code_list = []
+        for sobject in sobjects:
+            if sobject.get("search_type") == "sthpw/task":
+                code_list.append(sobject.get("code"))
+
         search = Search("config/process")
+        search.add_filters("pipeline_code", code_list, op="not in")
         search.add_order_by('pipeline_code')
         search.add_order_by('process')
 
@@ -1718,6 +1751,77 @@ class ProcessSecurityWdg(ProjectSecurityWdg):
 
         return sobjects
 
+
+
+class TaskSecurityWdg(ProjectSecurityWdg):
+
+    def get_security_type(my):
+        return "process"
+
+
+    def get_save_cbk(my):
+        return 'tactic.ui.startup.ProcessSecurityCbk'
+
+
+    def get_display_columns(my):
+        return ['pipeline_code', 'process']
+
+    def get_sobjects(my, group_names):
+        pre_search = Search("sthpw/pipeline")
+        sobjects = pre_search.get_sobjects()
+
+        code_list = []
+        for sobject in sobjects:
+            if sobject.get("search_type") == "sthpw/task":
+                code_list.append(sobject.get("code"))
+
+        search = Search("config/process")
+        search.add_filters("pipeline_code", code_list)
+        search.add_order_by('pipeline_code')
+        search.add_order_by('process')
+
+        #search2 = Search("sthpw/pipeline")
+        #search2.add_filter("search_type", "sthpw/task")
+        #search.add_relationship_search_filter(search, op='not in')
+        sobjects = search.get_sobjects()
+        
+        #for sobj in sobjects:
+        #    st = Search.eval('@GET(sthpw/pipeline.search_type)', sobjects=[sobj])
+        #    sobj.set_value("_extra_data", {'search_type': st})
+
+        sobject = SearchType.create("sthpw/virtual")
+        sobject.set_value("process", "*")
+        sobject.set_value("pipeline_code", "ALL")
+        sobject.set_value("_extra_data", {"is_all": True})
+        sobject.set_value("id", 1)
+        sobject.set_value("code", "*")
+        sobjects.insert(0, sobject)
+
+    
+        # process all of the groups and find out which sobjects
+        security = Environment.get_security()
+
+        rules_dict = {}
+
+        for sobject in sobjects:
+            for group_name in group_names:
+
+                access_rules = rules_dict.get(group_name)
+                if access_rules == None:
+                    group = LoginGroup.get_by_group_name(group_name)
+                    access_rules = group.get_xml_value("access_rules")
+                    rules_dict[group_name] = access_rules
+
+                xpath = "rules/rule[@group='process' and @process='%s']" % sobject.get_value("process")
+
+                node = access_rules.get_node(xpath)
+
+                if node is not None:
+                    sobject.set_value("_%s" % group_name, True)
+                else:
+                    sobject.set_value("_%s" % group_name, False)
+
+        return sobjects
 
 
 
