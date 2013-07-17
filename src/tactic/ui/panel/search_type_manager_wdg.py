@@ -34,7 +34,8 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
 
     def init(my):
         my.search_type = my.kwargs.get('search_type')
-
+        if not my.search_type:
+            my.search_type = WebContainer.get_web().get_form_value('search_type')
         my.view = my.kwargs.get('view')
         if not my.view:
             my.view = "database_definition"
@@ -80,7 +81,6 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         top_div.add(HtmlElement.br())
 
         div.add(HtmlElement.br())
-        
         if not my.search_type:
             return div
 
@@ -150,6 +150,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
             definition_view.add( my.get_section_wdg("definition", title='Widget Column', editable=False, default=True) )
             td.add(definition_view)
 
+        td.add("<br/>")
 
         # add the db_column
         definition_view = DivWdg()
@@ -289,9 +290,9 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         section_div.add(section_wdg)
         return section_div
 
-
-from manage_view_panel_wdg import ManageSideBarBookmarkMenuWdg
-class ManageSearchTypeMenuWdg(ManageSideBarBookmarkMenuWdg):
+from tactic.ui.manager import BaseSectionWdg
+#from manage_view_panel_wdg import ManageSideBarBookmarkMenuWdg
+class ManageSearchTypeMenuWdg(BaseSectionWdg):
 
     def get_detail_class_name(my):
         return "tactic.ui.panel.ManageSearchTypeDetailWdg"
@@ -317,7 +318,6 @@ class ManageSearchTypeMenuWdg(ManageSideBarBookmarkMenuWdg):
 
         # get all the configs relevant to this search_type
         configs = []
-
        
         from pyasm.widget import WidgetConfigView
         if view == "definition":
@@ -490,6 +490,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         my.config_string = ""
         my.data_type_string = ""
         my.name_string = ""
+        my.title_string = ""
         my.nullable_string = ""
         my.has_column = True
 
@@ -510,10 +511,16 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
                     
 
                     my.config_string = config_xml.to_string(node)
+                    my.title_string = config_xml.get_attribute(node, 'title')
             schema_config = SearchType.get_schema_config(my.search_type)
             
             attributes = schema_config.get_element_attributes(element_name)
             my.data_type_string = attributes.get("data_type")
+            
+            # double_precision is float
+            if my.data_type_string == 'double precision':
+                my.data_type_string = 'float'
+
             my.name_string = attributes.get("name")
             my.nullable_string = attributes.get("nullable")
             my.is_new_column = attributes.get("new") == 'True'
@@ -804,7 +811,8 @@ spt.manage_search_type = {};
 spt.manage_search_type.change_column_cbk = function(bvr) {
     var class_name = 'tactic.ui.panel.AlterSearchTypeCbk';
     var options ={
-        'alter_mode': bvr.alter_mode
+        'alter_mode': bvr.alter_mode,
+        'title': bvr.title
     };
 
     try {
@@ -816,10 +824,12 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
         var values = spt.api.Utility.get_input_values(panel);
         rtn = server.execute_cmd(class_name, options, values);
         if (bvr.alter_mode == 'Remove Column')
-            alert('Column Deleted')
+            spt.info("Column [" + bvr.column + "] has been deleted.");
+        else if (bvr.alter_mode == 'Modify Column')
+            spt.notify.show_message("Column [" + bvr.column + "] has been modified.");
     }
     catch (e) {
-        alert(spt.exception.handler(e));
+        spt.alert(spt.exception.handler(e));
     }
     var view = 'db_column';
     spt.panel.refresh("ManageSearchTypeMenuWdg_" + view);
@@ -852,8 +862,12 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
             button = ActionButtonWdg(title="Modify") 
             #button = ProdIconButtonWdg("Modify Column")
             button.add_behavior({"type": "click_up", 
-            "cbjs_action": "spt.manage_search_type.change_column_cbk(bvr)",\
-                    "alter_mode": my.MODIFY_COLUMN})
+            "cbjs_action": '''spt.manage_search_type.change_column_cbk(bvr);
+                           ''',
+                    "alter_mode": my.MODIFY_COLUMN,
+                    "column": my.name_string,
+                    "title": my.title_string
+                    })
             table.add_cell(button)
 
             button = ActionButtonWdg(title="Delete") 
@@ -861,12 +875,16 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
             #button.add_style('background-color: #BF462E')
             button.add_behavior({"type": "click_up", 
                 "cbjs_action": '''
-                if (!confirm("Are you sure you wish to delete this column?") ) {
-                    return;
+                
+                var yes = function() {
+                    spt.manage_search_type.change_column_cbk(bvr);
+                    
                 }
-                spt.manage_search_type.change_column_cbk(bvr)
+                spt.confirm("Are you sure you wish to delete this column?", yes) 
                 ''',
-                "alter_mode": my.REMOVE_COLUMN
+                "alter_mode": my.REMOVE_COLUMN,
+                "column": my.name_string
+                
                 })
             table.add_cell(button)
             button_div.add(HiddenWdg('delete_column'))
@@ -1099,12 +1117,15 @@ class WidgetDetailSimpleModeWdg(BaseRefreshWdg):
 
 class AlterSearchTypeCbk(Command):
 
+    DEFAULT_VIEW = "definition"
+
     def check(my):
         return True
 
     def execute(my):
         web = WebContainer.get_web()
         alter_mode = my.kwargs.get("alter_mode")
+        title = my.kwargs.get("title")
         config_mode = web.get_form_value("config_mode")
         view = web.get_form_value('view')
         constraint = web.get_form_value("config_constraint")
@@ -1157,6 +1178,21 @@ class AlterSearchTypeCbk(Command):
         elif alter_mode == ManageSearchTypeDetailWdg.MODIFY_COLUMN:
             cmd = ColumnAlterCmd(search_type, column_name, data_type, nullable)
             Command.execute_cmd(cmd)
+            element_options = {}
+            element_options['type'] = data_type
+			if title:
+            	element_options['title'] = title
+        
+
+            # handle the "default" view
+            # update the widget config data type in the xml
+            view = my.DEFAULT_VIEW
+            config = WidgetDbConfig.get_by_search_type(search_type, view)
+            if config:
+                config.append_display_element(column_name, options={}, \
+                    element_attrs=element_options)
+                config.commit_config()
+
         elif alter_mode == ManageSearchTypeDetailWdg.ADD_COLUMN:
             cmd = ColumnAddCmd(search_type, column_name, data_type, nullable)
             Command.execute_cmd(cmd)
