@@ -32,7 +32,8 @@ from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg, RadioWdg
 from tactic.ui.container import ResizableTableWdg
-from tactic.ui.widget import GearMenuWdg, Menu, MenuItem, ActionButtonWdg
+from tactic.ui.container import GearMenuWdg, Menu, MenuItem
+from tactic.ui.widget import ActionButtonWdg
 
 import os
 

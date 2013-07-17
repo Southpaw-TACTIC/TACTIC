@@ -4492,8 +4492,6 @@ class CustomCheckinInfoPanelWdg(CheckinInfoPanelWdg):
 
 
 
-__all__.extend(['GearMenuWdg','Menu','MenuItem'])
-from tactic.ui.container import SmartMenu
 class GearMenuWdg(BaseRefreshWdg):
 
     def init(my):
