@@ -21,7 +21,7 @@ from pyasm.widget import ButtonWdg, TextWdg, SelectWdg, TextAreaWdg, HiddenWdg, 
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
-from tactic.ui.container import Menu, MenuItem, GearMenuWdg
+from tactic.ui.container import Menu, MenuItem, GearMenuWdg, SmartMenu
 
 from swap_display_wdg import SwapDisplayWdg as NewSwapDisplayWdg
 from button_wdg import TextBtnWdg, TextBtnSetWdg
