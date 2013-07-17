@@ -1180,7 +1180,7 @@ class AlterSearchTypeCbk(Command):
             Command.execute_cmd(cmd)
             element_options = {}
             element_options['type'] = data_type
-			if title:
+            if title:
             	element_options['title'] = title
         
 
