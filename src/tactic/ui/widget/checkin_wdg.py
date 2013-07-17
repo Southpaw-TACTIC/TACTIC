@@ -21,7 +21,7 @@ from pyasm.widget import ButtonWdg, TextWdg, SelectWdg, TextAreaWdg, HiddenWdg, 
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
-from tactic.ui.container import Menu, MenuItem
+from tactic.ui.container import Menu, MenuItem, GearMenuWdg
 
 from swap_display_wdg import SwapDisplayWdg as NewSwapDisplayWdg
 from button_wdg import TextBtnWdg, TextBtnSetWdg
@@ -4489,46 +4489,6 @@ class CustomCheckinInfoPanelWdg(CheckinInfoPanelWdg):
 
 
 
-
-
-
-class GearMenuWdg(BaseRefreshWdg):
-
-    def init(my):
-        my.btn_dd = DivWdg()
-        my.menus = []
-
-    def add_style(my, name, value=None):
-        my.btn_dd.add_style(name, value)
-
-
-    def add(my, menu):
-        my.menus.append(menu.get_data())
-
-
-    def get_display(my):
-
-
-        # create the gear menu
-        btn_dd = my.btn_dd
-        btn_dd.add_styles("width: 36px; height: 18px; padding: none; padding-top: 1px;")
-
-        btn_dd.add( "<img src='/context/icons/common/transparent_pixel.gif' alt='' " \
-                    "title='TACTIC Actions Menu' class='tactic_tip' " \
-                    "style='text-decoration: none; padding: none; margin: none; width: 4px;' />" )
-        btn_dd.add( "<img src='/context/icons/silk/cog.png' alt='' " \
-                    "title='TACTIC Actions Menu' class='tactic_tip' " \
-                    "style='text-decoration: none; padding: none; margin: none;' />" )
-        btn_dd.add( "<img src='/context/icons/silk/bullet_arrow_down.png' alt='' " \
-                    "title='TACTIC Actions Menu' class='tactic_tip' " \
-                    "style='text-decoration: none; padding: none; margin: none;' />" )
-
-        btn_dd.add_behavior( { 'type': 'hover',
-                    'mod_styles': 'background-image: url(/context/icons/common/gear_menu_btn_bkg_hilite.png); ' \
-                                    'background-repeat: no-repeat;' } )
-        smenu_set = SmartMenu.add_smart_menu_set( btn_dd, { 'DG_TABLE_GEAR_MENU': my.menus } )
-        SmartMenu.assign_as_local_activator( btn_dd, "DG_TABLE_GEAR_MENU", True )
-        return btn_dd
 
 
 
