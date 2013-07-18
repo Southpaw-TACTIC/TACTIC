@@ -676,6 +676,9 @@ spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
     spt.tab.header_pos = bvr.src_el.getPosition();
     spt.tab.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+    var header = bvr.src_el;
+    var element_name = header.getAttribute("spt_element_name");
+    spt.tab.select(element_name);
 }
 
 spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
@@ -686,9 +689,6 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
     if (Math.abs(dx) < 20) {
         return;
     }
-
-    var element_name = header.getAttribute("spt_element_name");
-    spt.tab.select(element_name);
 
     header.setStyle("position", "absolute");
     header.setStyle("z-index", "100");
