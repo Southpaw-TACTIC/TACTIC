@@ -12,13 +12,14 @@
 
 
 from pyasm.web import DivWdg
-from pyasm.widget import IconWdg
+from pyasm.widget import IconWdg, TextWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
 
-from tactic.ui.input import UploadButtonWdg
+from tactic.ui.input import UploadButtonWdg, TextInputWdg
 from tactic.ui.widget import ActionButtonWdg
 
 from tactic_client_lib import TacticServerStub
@@ -232,7 +233,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-
+        # template for each file item
         file_template = DivWdg()
         file_template.add_class("spt_upload_file_template")
         files_div.add(file_template)
@@ -251,12 +252,25 @@ class IngestUploadWdg(BaseRefreshWdg):
         thumb_div.add_class("spt_thumb")
 
 
+        info_div = DivWdg()
+        file_template.add(info_div)
+        info_div.add_style("float: left")
+
         name_div = DivWdg()
         name_div.add_class("spt_name")
-        file_template.add(name_div)
+        info_div.add(name_div)
         name_div.add("image001.jpg")
-        name_div.add_style("float: left")
         name_div.add_style("width: 150px")
+
+
+        dialog = DialogWdg(display="false", show_title=False)
+        info_div.add(dialog)
+        dialog.set_as_activator(info_div)
+
+        text = TextInputWdg(name="category")
+        dialog.add(text)
+        text.add_class("spt_category")
+        text.add_style("padding: 1px")
 
         size_div = DivWdg()
         size_div.add_class("spt_size")
@@ -278,6 +292,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
+
+        info = DivWdg()
+        div.add(info)
+        info.add_class("spt_upload_info")
 
 
         progress_div = DivWdg()
@@ -325,9 +343,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
-        progress_el = top.getElement(".spt_upload_progress");
+        var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
+
+        var info_el = top.getElement(".spt_upload_info");
         
         var search_type = bvr.kwargs.search_type;
 
@@ -338,14 +358,19 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         var key = spt.message.generate_key();
+        var values = spt.api.get_input_values(top);
+        var categories = values.category;
+        categories.shift();
+
 
         var kwargs = {
             search_type: search_type,
             filenames: filenames,
             key: key,
+            categories: categories,
         }
         on_complete = function() {
-            spt.alert("Ingest complete");
+            spt.info("Ingest complete");
             server.finish();
         };
 
@@ -358,7 +383,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var percent = msg.progress;
             var description = msg.description;
 
-            console.log(description)
+            info_el.innerHTML = description;
 
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
@@ -448,10 +473,27 @@ class IngestUploadCmd(Command):
 
         server = TacticServerStub.get()
 
+        categories = my.kwargs.get("categories")
+        if not categories:
+            categories = []
+
         for count, filename in enumerate(filenames):
+
 
             sobject = SearchType.create(search_type)
             sobject.set_value("name", filename)
+
+            if len(categories) >= count:
+                category = categories[count]
+                if category:
+
+                    if SearchType.column_exists(search_type, "category"):
+                        sobject.set_value("category", category)
+
+                    if SearchType.column_exists(search_type, "keywords"):
+                        sobject.set_value("keywords", category)
+
+
             sobject.commit()
 
             search_key = sobject.get_search_key()

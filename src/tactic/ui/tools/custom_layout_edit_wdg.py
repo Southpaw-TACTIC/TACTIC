@@ -563,11 +563,25 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         content_div.add_color("color", "color3")
 
 
+        plugin_code = my.kwargs.get("plugin_code")
+        #plugin_code = "SPT/sample_form"
+
+
         last_folder = None
         folder_wdgs = {}
         folder_wdgs["/"] = left_div
         my.num_views = len(configs)
         for config in configs:
+
+            # find out if this custom layout belongs to a plugin
+            if plugin_code:
+                expr = "@SOBJECT(config/plugin_content.config/plugin['code','%s'])" % plugin_code
+                plugin = Search.eval(expr, config, single=True)
+                if not plugin:
+                    continue
+
+
+
 
             folder = config.get_value("folder", no_exception=True)
             config_view = config.get_value("view")
@@ -920,6 +934,19 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view_wdg.add(select)
             select.set_option("values", "widget|theme|column|chart|report|dashboard")
             select.add_empty_option("-- None ---")
+
+
+            """
+            plugin_code = ""
+            select = SelectWdg(name="plugin_code")
+            if widget_type:
+                select.set_value(plugin_code)
+            view_wdg.add("<b>Plugin: &nbsp;</b>")
+            view_wdg.add(select)
+            plugin_codes = Search.eval("@GET(config/plugin.code)")
+            select.set_option("values", plugin_codes)
+            select.add_empty_option("-- None ---")
+            """
 
  
 
@@ -2599,7 +2626,7 @@ class RawMenuTemplate(object):
       <display class="tactic.ui.panel.SimpleSideBarWdg">
         <use_href>true</use_href>
         <view>project_view</view>
-        <target>spt_custom</target>
+        <target>web_content</target>
       </display>
     </element>
   </div>
@@ -2659,7 +2686,7 @@ class SimpleMenuTemplate(object):
       <display class="tactic.ui.panel.SimpleSideBarWdg">
         <use_href>true</use_href>
         <view>project_view</view>
-        <target>spt_custom</target>
+        <target>web_content</target>
       </display>
     </element>
   </div>
@@ -2720,7 +2747,7 @@ menu_width = 150;
     margin-left: -1px;
     height: 19px;
 
-    width: 150px;
+    width: ${menu_width}px;
 }
 
 .web_menu_wdg .sub_ul {
@@ -2743,7 +2770,7 @@ menu_width = 150;
     overflow-y: auto;
     overflow-x: hidden;
 
-    width: 155px;
+    width: ${menu_width+5}px;
 }
 
 .web_menu_wdg .sub_ul li {

@@ -342,6 +342,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 html = "<%%\n%s\n%%>\n%s" % (mako_str, html)
 
 
+
+        from pyasm.web import Palette
+        num_palettes = Palette.num_palettes()
+
+
         #if include_mako in ['true', True]:
         if include_mako not in ['false', False]:
             html = html.replace("&lt;", "<")
@@ -417,6 +422,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         if xml:
             my.add_behaviors(content, xml)
+
+
+        # remove all the extra palettes created
+        while True:
+            extra_palettes = Palette.num_palettes() - num_palettes
+            if extra_palettes > 0:
+                Palette.pop_palette()
+            else:
+                break
+
 
         if my.kwargs.get("is_refresh"):
             return content
@@ -591,9 +606,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
             plugin_dir = ""
         my.kwargs['plugin_dir'] = plugin_dir
 
-
         try:
             html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)
+
 
             # we have to replace all & signs to &amp; for it be proper html
             html = html.replace("&", "&amp;")
@@ -607,7 +622,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
                 return html
-
 
     def handle_layout_behaviors(my, layout):
         '''required for BaseTableElementWdg used by fast table'''

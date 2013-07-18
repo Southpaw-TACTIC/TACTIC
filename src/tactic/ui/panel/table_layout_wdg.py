@@ -2137,20 +2137,11 @@ spt.table.get_layout = function() {
 
 
 
-
-
-
-
-
 // Search methods
 spt.table.run_search = function() {
     var table = spt.table.get_table();
     spt.dg_table.search_cbk( {}, {src_el: table} );
 }
-
-
-
-
 
 
 
@@ -4559,7 +4550,6 @@ spt.table.delete_selected = function()
 
     spt.table.delete_rows(selected_rows);
 
-
     return;
 
     /*
@@ -4648,6 +4638,22 @@ spt.table.operate_selected = function(action)
     }
     spt.confirm(msg, ok, cancel);
 }
+
+
+// Tools
+
+
+spt.table.open_ingest_tool = function(search_type) {
+    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+    var kwargs = {
+        search_type: search_type
+    };
+    spt.panel.load_popup("Ingest "+search_type, class_name, kwargs);
+}
+
+
+
+
 
             '''
         if my.kwargs.get('temp') != True:

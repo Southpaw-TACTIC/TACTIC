@@ -230,6 +230,13 @@ class PluginWdg(BaseRefreshWdg):
             content_div.add_style("font-style: italic")
 
 
+        show_active_only = my.kwargs.get("show_active_only")
+        if show_active_only in [True, 'true']:
+            show_active_only = True
+        else:
+            show_active_only = False
+
+
         for dirname in plugin_dirnames:
 
             parts = dirname.split("/")
@@ -276,8 +283,7 @@ class PluginWdg(BaseRefreshWdg):
 
                     # fill it in
                     icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
-                    icon.add_style("margin-top: -2px")
-                    icon.add_style("margin-left: -8px")
+                    icon.add_style("margin-left: -5px")
 
                     folder_header = DivWdg()
                     folder_content = DivWdg()
@@ -373,11 +379,27 @@ class PluginWdg(BaseRefreshWdg):
             icon.add_style("float: left")
             plugin_div.add(icon)
 
+
+
             if is_active:
                 icon = IconWdg("Active in project", IconWdg.CHECK)
+
+                if show_active_only:
+                    swap.set_on(True)
+                    folder_content.add_style("display", "")
+                    #folder_header.add_style("display: none")
+                    folder_header.add_style("opacity: 0.3")
+
+
             else:
                 icon = IconWdg("Not Active in project", IconWdg.DELETE)
                 icon.add_style("opacity: 0.2")
+
+                if show_active_only:
+                    plugin_div.add_style("display: none")
+                    folder_header.add_style("opacity: 0.3")
+
+
             icon.add_style("margin-right: -3px")
 
             plugin_div.add_attr("title", description)

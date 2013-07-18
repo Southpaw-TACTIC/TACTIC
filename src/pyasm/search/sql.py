@@ -1848,6 +1848,10 @@ class Select(object):
             my.add_where(where)
             return
 
+        if quoted == "column":
+            value = '"%s"' % value
+            quoted = False
+
 
         # [MIKE-FIX]
         if type(value) == types.ListType and len(value) == 0:

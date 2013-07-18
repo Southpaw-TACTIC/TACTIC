@@ -15,7 +15,6 @@
 spt.behavior = {};
 
 // ----------------------------------------------------------------------------------------------------------------
-// TESTING!!!
 
 spt.cb = {};
 
@@ -578,6 +577,10 @@ spt.behavior.replace_inner_html = function( el, new_inner_html, mode )
     */
     if( ! el ) {
         spt.js_log.warning( "WARNING: spt.behavior.replace_inner_html() called with a null element." );
+        return;
+    }
+
+    if ( new_inner_html == null ) {
         return;
     }
 

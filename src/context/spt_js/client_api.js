@@ -1016,8 +1016,14 @@ TacticServerStub = function() {
      * Widget methods
      */
     this.get_widget = function(class_name, kwargs) {
-        var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
-        return ret_val;
+        try {
+            var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
+            return ret_val;
+        }
+        catch(e) {
+            alert(e);
+            return;
+        }
     }
 
     this.class_exists = function(class_path) {
@@ -1265,13 +1271,16 @@ TacticServerStub = function() {
 
         
     this._handle_ret_val = function(func_name, ret_val, ret_type) {
+        if (ret_val.status != 200) {
+            throw(ret_val.status);
+        }
+
         if (ret_type == "raw") {
             return ret_val.responseText;
         }
         if (ret_type == "string") {
             // manually extract the value returned
            
-            // FIXME: is this slow??
             var value = ret_val.responseText;
             value = value.replace(/^<\?xml version='1.0'\?>\n<methodResponse>\n<params>\n<param>\n<value><string>/, '');
             value = value.replace(/<\/string><\/value>\n<\/param>\n<\/params>\n<\/methodResponse>/, '');
@@ -1284,7 +1293,15 @@ TacticServerStub = function() {
             value = value.replace(/&spt_lt;/g, "&lt;");
             value = value.replace(/&spt_gt;/g, "&gt;");
 
-            //return ret_val.responseText;
+            if (value.match("<name>faultCode</name>")) {
+                var el = document.createElement("div");
+                el.innerHTML = value;
+                el = el.getElementsByTagName("value")[2];
+                el = el.childNodes[0];
+                value = el.innerHTML;
+                throw("Server Error: " + value);
+            }
+
             return value;
         }
         else {

@@ -907,7 +907,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def log_message(my, ticket, key, message=None, status=None, category="default"):
-        print "message: ", message
         if type(message) == types.DictType:
             message = jsondumps(message)
 
@@ -944,8 +943,26 @@ class ApiXMLRPC(BaseApiXMLRPC):
         update.set_value("timestamp", "NOW")
 
         statement = update.get_statement()
-
         sql.do_update(statement)
+
+
+        # repeat with update the message log
+        update = Insert()
+        update.set_database(sql)
+        update.set_table("message_log")
+        update.set_value("message_code", key)
+        if message != None:
+            update.set_value("message", message)
+        if status != None:
+            update.set_value("status", status)
+
+        login = Environment.get_user_name()
+        update.set_value("login", login)
+        update.set_value("timestamp", "NOW")
+
+        statement = update.get_statement()
+        sql.do_update(statement)
+
         sql.close()
 
         #return last_message

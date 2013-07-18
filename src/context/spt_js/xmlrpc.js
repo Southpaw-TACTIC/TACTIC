@@ -22,7 +22,7 @@
     distribution (which was all in Java).
 
     We have made a number of enhancements including reworking the serialization
-    so that it does not affect change the prototype of base types
+    so that it does not change the prototype of base types
 */
 
 
@@ -113,7 +113,7 @@ function Connection()
 
 
         self.xmlHttpRequest.open( 'POST', url, async );
-        
+
         if ( typeof self.xmlHttpRequest.setRequestHeader == 'function' )
         {
             self.xmlHttpRequest.setRequestHeader(
@@ -129,7 +129,8 @@ function Connection()
             spt.app_busy.hide();
             throw(e);
         }
-        
+
+
         //return self.xmlHttpRequest.responseText;
         //return self.xmlHttpRequest.responseXML;
         // only send the request back now

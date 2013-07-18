@@ -96,7 +96,8 @@ class Palette(object):
     'background3':  '#CCCCCC',      # tertiary background color
     'border':       '#888888',         # main border color
     'table_border': '#FFF',
-    'theme':        'default'
+    'theme':        'default',
+    'shadow':       'rgba(0,0,0,0.6)',
     }
 
 
@@ -403,9 +404,21 @@ class Palette(object):
         if palettes == None:
             palettes = []
             Container.put("Palette:palettes", palettes)
+        if len(palettes) == 0:
+            return palettes[0]
         return palettes.pop()
     pop_palette = classmethod(pop_palette)
+  
+    def num_palettes(cls):
+        palettes = Container.get("Palette:palettes")
+        if palettes == None:
+            palettes = []
+            Container.put("Palette:palettes", palettes)
+        return len(palettes)
+    num_palettes = classmethod(num_palettes)
         
+       
+       
        
 
     def get(cls):

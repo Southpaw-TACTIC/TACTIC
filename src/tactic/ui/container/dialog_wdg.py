@@ -379,6 +379,11 @@ class DialogWdg(BaseRefreshWdg):
         title_wdg = my.title_wdg
         if not title_wdg:
             title_wdg = "No Title"
+            # if the title is empty, just don't show
+        if my.kwargs.get("show_title") in [False, 'false']:
+            drag_div.add_style("display: none")
+
+
         drag_handle_div.add(title_wdg)
         drag_handle_div.add_class("spt_popup_title")
         drag_handle_div.add_style("font-weight: bold")

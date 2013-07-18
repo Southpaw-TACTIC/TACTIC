@@ -1197,6 +1197,12 @@ class GlobalSearchWdg(BaseRefreshWdg):
         'order': 1,
         'category': 'Options'
     },
+    'hint_text': {
+        'description': 'initial hint text',
+        'type': 'TextWdg',
+        'order': 3,
+        'category': 'Options'
+    },
     }
  
 
@@ -1243,10 +1249,13 @@ class GlobalSearchWdg(BaseRefreshWdg):
             }
          ''' % layout
 
+        hint_text = my.kwargs.get("hint_text")
+        if not hint_text:
+            hint_text = "Search"
 
         from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
         #text = TextInputWdg(name="search")
-        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk)
+        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk, hint_text=hint_text)
         #text = TextWdg("search")
         text.add_class("spt_main_search")
         search_wdg.add(text)

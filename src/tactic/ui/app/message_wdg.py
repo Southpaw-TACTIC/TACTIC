@@ -10,18 +10,19 @@
 #
 #
 
-from pyasm.common import jsonloads
+from pyasm.common import jsonloads, Environment
 
 from pyasm.web import DivWdg, SpanWdg
 
 from tactic.ui.common import BaseRefreshWdg
-from pyasm.search import Search
+from pyasm.search import Search, SearchType
+from pyasm.command import Command
 from pyasm.web import Table
 from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 
-__all__ = ['ChatWdg', 'SubscriptionWdg', 'MessageWdg']
+__all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'SubscriptionBarWdg', 'MessageWdg']
 
 
 
@@ -39,7 +40,6 @@ class ChatWdg(BaseRefreshWdg):
         } )
 
 
-        top.add( my.get_add_chat_wdg() )
 
         search = Search("sthpw/subscription")
         search.add_filter("category", "chat")
@@ -47,11 +47,50 @@ class ChatWdg(BaseRefreshWdg):
         chats = search.get_sobjects()
         keys = [x.get_value("message_code") for x in chats]
 
-        table = Table()
-        top.add(table)
-        table.add_row()
+        chat_list_div = DivWdg()
+        top.add(chat_list_div)
+        for chat in chats:
+            chat_div = DivWdg()
+            chat_list_div.add(chat_div)
+
+            # find all the users with the same chat
+            key = chat.get_value("message_code")
+            chat_div.add(key)
+
+            search = Search("sthpw/subscription")
+            search.add_filter("message_code", key)
+            subscriptions = search.get_sobjects()
+            users = [x.get_value("login") for x in subscriptions]
+            chat_div.add(" : ")
+            chat_div.add(users)
+
+            chat_div.add_behavior( {
+                'type': 'click_up',
+                'key': key,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.ChatSessionWdg';
+                var kwargs = {
+                    'key': bvr.key,
+                }
+                spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
+
+                '''
+            } )
+
+
+
+        #keys = my.kwargs.get("keys")
+        #if not keys:
+        #    return
+
+        top.add( my.get_add_chat_wdg() )
+
         for key in keys:
-            table.add_cell( my.get_chat_wdg(key, interval=True) )
+            session = ChatSessionWdg(key=key)
+            session.add_style("float: left")
+            top.add(session)
+
+        top.add("<br clear='all'/>")
 
         return top
 
@@ -82,9 +121,18 @@ class ChatWdg(BaseRefreshWdg):
             }
 
 
+
             // new chat
             var server = TacticServerStub.get();
             var category = "chat";
+
+            var class_name = 'tactic.ui.app.ChatCmd';
+            var kwargs = {
+                users: [user]
+            }
+            server.execute_cmd(class_name, kwargs);
+
+            /*
             var key = spt.message.generate_key();
             var login = "admin";
             server.insert("sthpw/subscription", {'message_code':key, login: login, category: category} );
@@ -93,6 +141,7 @@ class ChatWdg(BaseRefreshWdg):
             var message = "";
             var category = "chat";
             server.log_message(key, message, {category:category, status:"start"});
+            */
 
             '''
         } )
@@ -100,20 +149,96 @@ class ChatWdg(BaseRefreshWdg):
         return div
 
 
+class ChatCmd(Command):
+
+    def execute(my):
+
+        login = Environment.get_user_name()
+        users = my.kwargs.get("users")
+
+        everyone = [login]
+        everyone.extend(users)
+
+        # find out if there already is a subscription between this user
+        # and others
+        search = Search("sthpw/subscription")
+        search.add_filters("login", login)
+        search.add_filters("category", "chat")
+        login_subscriptions = search.get_sobjects()
+        keys = [x.get_value("message_code") for x in login_subscriptions]
+
+        create = True
+
+        # find the subscriptions for each user with the same keys
+        for user in users:
+            search = Search("sthpw/subscription")
+            search.add_filters("message_code", keys)
+            user_subscriptions = search.get_sobjects()
+            if user_subscriptions:
+                create = False
+
+
+        # create a new subscription
+        if create:
+            key = "whatever"
+            message = SearchType.create("sthpw/message")
+            message.set_value("code", key)
+            message.set_value("login", login)
+            message.set_value("category", "chat")
+            message.set_value("message", "Welcome!!!")
+            message.commit()
+
+            # create a subscription for each person
+            for person in everyone:
+                subscription = SearchType.create("sthpw/subscription")
+                subscription.set_value("message_code", key)
+                subscription.set_value("login", person)
+                subscription.set_value("category", "chat")
+                subscription.commit()
+
+
+
+
+
+class ChatSessionWdg(BaseRefreshWdg):
+
+    def get_display(my):
+        top = my.top
+        my.set_as_panel(top)
+
+        key = my.kwargs.get("key")
+        interval = True
+        
+        top.add( my.get_chat_wdg(key, interval) )
+        return top
+
 
     def get_chat_wdg(my, key, interval=False):
 
         div = DivWdg()
-        div.add_class("spt_chat_left_top")
+        div.add_class("spt_chat_session_top")
         div.add_style("margin: 20px")
 
         title_wdg = DivWdg()
         div.add(title_wdg)
-        title_wdg.add(key)
         title_wdg.add_color("background", "background3")
         title_wdg.add_style("padding: 5px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_border()
+
+        icon = IconButtonWdg(title="Remove Chat", icon=IconWdg.DELETE)
+        icon.add_style("float: right")
+        icon.add_style("margin-top: -5px")
+        title_wdg.add(icon)
+        icon.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_chat_session_top");
+            spt.behavior.destroy_element(top);
+            '''
+        } )
+
+        title_wdg.add(key)
 
         history_div = DivWdg()
         div.add(history_div)
@@ -164,7 +289,7 @@ class ChatWdg(BaseRefreshWdg):
                 // remember last message
                 history_el.last_msg = msg;
             }
-            spt.message.set_interval(bvr.key, callback, 3000);
+            spt.message.set_interval(bvr.key, callback, 3000, bvr.src_el);
             '''
             } )
 
@@ -212,7 +337,7 @@ class ChatWdg(BaseRefreshWdg):
         'key': key,
         'cbjs_action': '''
 
-        var top = bvr.src_el.getParent(".spt_chat_left_top");
+        var top = bvr.src_el.getParent(".spt_chat_session_top");
         var text_el = top.getElement(".spt_chat_text");
         var message = text_el.value;
         if (!message) {
@@ -240,23 +365,10 @@ class ChatWdg(BaseRefreshWdg):
 
 
 
+
 class SubscriptionWdg(BaseRefreshWdg):
-    def get_display(my):
 
-        div = DivWdg()
-
-        sobject_subscription = SObjectSubscriptionWdg()
-        div.add(sobject_subscription)
-
-        return div
-
-
-
-
-class SObjectSubscriptionWdg(BaseRefreshWdg):
-
-
-    def get_subscriptions(my, category):
+    def get_subscriptions(my, category, mode="new"):
 
         search = Search("sthpw/subscription")
         search.add_user_filter()
@@ -264,31 +376,30 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
             search.add_filter("category", category)
 
 
-        #search.add_join("sthpw/message")
-
         search.add_order_by("message.timestamp", direction="desc")
 
+        if mode == "new":
+            search.add_join("sthpw/message")
+            search.add_op("begin")
+            search.add_filter("last_cleared", '"message"."timestamp"', quoted=False, op="<")
+            search.add_filter("last_cleared", "NULL", quoted=False, op="is")
+            search.add_op("or")
+
         subscriptions = search.get_sobjects()
+
 
         return subscriptions
 
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
-        top.add_class("spt_subscription_top")
+    def set_refresh(my, inner, interval):
 
-        interval = 10 * 1000
-
-        inner = DivWdg()
-        top.add(inner)
         inner.add_behavior( {
             'type': 'load',
             'interval': interval,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_subscription_top");
             timeout_id = setTimeout( function() {
-                spt.panel.refresh(top);
+                spt.panel.refresh(top, {async: true});
             }, bvr.interval );
             bvr.src_el.timeout_id = timeout_id;
             '''
@@ -302,6 +413,22 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
                 clearTimeout(bvr.src_el.timeout_id);
             '''
         } )
+
+
+
+
+
+    def get_display(my):
+        top = my.top
+        my.set_as_panel(top)
+        top.add_class("spt_subscription_top")
+
+        interval = 30 * 1000
+
+        inner = DivWdg()
+        top.add(inner)
+        my.set_refresh(inner,interval)
+
 
         #mode = "all"
         mode = "new"
@@ -387,7 +514,7 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
 
     def get_category_wdg(my, category, mode="new"):
 
-        subscriptions = my.get_subscriptions(category)
+        subscriptions = my.get_subscriptions(category, mode)
         if not subscriptions:
             return
 
@@ -420,6 +547,7 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
             for (var i = 0; i < bvr.search_keys.length; i++) {
                 var search_key = bvr.search_keys[i];
                 server.update(search_key, {'last_cleared':'NOW'});
+            spt.panel.refresh(bvr.src_el);
             }
             '''
         } )
@@ -454,14 +582,6 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
                     td = table.add_cell()
                     td.add("No Messages")
                 continue
-
-            # FIXME: this should be done in the query
-            if mode != "all":
-                message_timestamp = message.get_value("timestamp")
-                subscription_cleared = subscription.get_value("last_cleared")
-                if subscription_cleared > message_timestamp:
-                    continue
-
 
             size = 60
 
@@ -500,6 +620,31 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
             else:
                 description = message_value
 
+
+            td = table.add_cell()
+            icon = IconButtonWdg(title="Subscription History", icon=IconWdg.ZOOM)
+            td.add(icon)
+            subscription_key = subscription.get_search_key()
+            message_code = subscription.get_value("message_code")
+            print "message_code: ", message_code
+            icon.add_behavior( {
+                'type': 'click_up',
+                'message_code': message_code,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
+                var message_code = bvr.message_code;
+                alert(message_code);
+                var kwargs = {
+                    search_type: 'sthpw/message_log',
+                    show_shelf: false,
+                    expression: "@SOBJECT(sthpw/message_log['message_code','"+message_code+"'])",
+                };
+                spt.tab.set_main_body_tab();
+                spt.tab.add_new("Message History", "Message History", class_name, kwargs);
+                '''
+            } )
+ 
+
             td = table.add_cell()
             td.add(description)
             td = table.add_cell()
@@ -518,6 +663,23 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
             td = table.add_cell()
             icon = IconButtonWdg(title="Remove Subscription", icon=IconWdg.DELETE)
             td.add(icon)
+            subscription_key = subscription.get_search_key()
+            icon.add_behavior( {
+                'type': 'click_up',
+                'search_key': subscription_key,
+                'cbjs_action': '''
+                    if (!confirm("Confirm subscription delete?")) {
+                        return;
+                    }
+                    var top = bvr.src_el.getParent(".spt_subscription_top");
+                    var server = TacticServerStub.get();
+                    server.delete_sobject(bvr.search_key);
+                    spt.panel.refresh(top);
+                '''
+            } )
+
+
+
 
 
 
@@ -534,10 +696,91 @@ class SObjectSubscriptionWdg(BaseRefreshWdg):
         #table.set_sobjects(ss)
 
 
-
-
-
         return div
+
+
+
+class SubscriptionBarWdg(SubscriptionWdg):
+
+    ARGS_KEYS = {
+    }
+
+    def get_display(my):
+        top = my.top
+        top.add_class("spt_subscription_top")
+        my.set_as_panel(top)
+
+        top.add_style("width: 100px")
+        top.add_style("height: 20px")
+
+        inner = DivWdg()
+        top.add(inner)
+        top.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+            var class_name = 'tactic.ui.app.SubscriptionWdg';
+            var kwargs = {};
+            spt.tab.add_new("Subscriptions", "Subscriptions", class_name, kwargs);
+            '''
+        } )
+        top.add_class("hand")
+
+
+        interval = 10 * 1000
+        inner = DivWdg()
+        top.add(inner)
+        my.set_refresh(inner,interval)
+
+        color = inner.get_color("border") 
+        inner.add_style("border-style: solid")
+        inner.add_style("border-size: 1px")
+        inner.add_style("border-color: transparent")
+        inner.set_round_corners(5)
+        inner.add_style("padding: 2px")
+
+        inner.add_behavior( {
+            'type': 'mouseenter',
+            'color': color,
+            'cbjs_action': '''
+            bvr.src_el.setStyle("border", "solid 1px "+bvr.color);
+            '''
+        } )
+        inner.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("border-color", "transparent");
+            '''
+        } )
+
+
+
+
+
+
+        category = None
+        subscriptions = my.get_subscriptions(category)
+
+
+
+        if not subscriptions:
+            inner.add_style("display: none")
+
+
+        num = len(subscriptions)
+        if num == 1:
+            msg = "%s Message" % num
+        else:
+            msg = "%s Messages" % num
+
+        icon = IconWdg(msg, IconWdg.STAR)
+        inner.add(icon)
+        inner.add(msg)
+
+        if my.kwargs.get("is_refresh") == 'true':
+            return inner
+        else:
+            return top
 
 
 
@@ -607,7 +850,7 @@ class MessageWdg(BaseRefreshWdg):
                 }
                 progress_el.setStyle("width", width+"%");
             }
-            spt.message.set_interval(key, callback, 1000);
+            spt.message.set_interval(key, callback, 1000, bvr.src_el);
             '''
         } )
 
@@ -636,9 +879,10 @@ if (spt.message) {
 spt.message = {}
 
 spt.message.intervals = {};
+spt.message.elements = {};
 
 
-spt.message.set_interval = function(key, callback, interval) {
+spt.message.set_interval = function(key, callback, interval, element) {
 
     var f = function(message) {
         try {
@@ -666,6 +910,11 @@ spt.message.set_interval = function(key, callback, interval) {
         spt.message.async_poll(key, f);
     } , interval );
     spt.message.intervals[key] = interval_id;
+
+    if (element)
+        spt.message.elements[key] = element;
+    else
+        spt.message.elements[key] = null;
 } 
 
 spt.message.stop_interval = function(key) {
@@ -703,6 +952,14 @@ spt.message.poll = function(key) {
 
 
 spt.message.async_poll = function(key, callback) {
+    // before polling, check that the element still exists
+    var el = spt.message.elements[key];
+    if (el.parentNode == null) {
+        spt.message.stop_interval(key);
+        delete spt.message.elements[key];
+        return;
+    }
+
     var server = TacticServerStub.get();
     var expr = "@SOBJECT(sthpw/message['code','"+key+"'])";
 

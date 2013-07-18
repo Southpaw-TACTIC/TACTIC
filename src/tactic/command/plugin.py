@@ -316,12 +316,14 @@ class PluginCreator(PluginBase):
 
 
         has_info = False
+        sobjects = []
 
         # handle all of the nodes in the manifest
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                my.handle_sobject(node)
+                dumped_sobjects = my.handle_sobject(node)
+                sobjects.extend(dumped_sobjects)
             elif name == 'search_type':
                 my.handle_search_type(node)
             elif name == 'include':
@@ -402,7 +404,6 @@ class PluginCreator(PluginBase):
         """
 
 
-
         # register the plugin into the current project
         if my.kwargs.get("register") in [True, 'true']:
 
@@ -418,6 +419,7 @@ class PluginCreator(PluginBase):
             if version:
                 plugin.set_value("version", version)
 
+            # NOTE: not sure if this is desirable
             plugin.set_value("manifest", my.manifest)
 
             if my.plugin_dir.startswith(my.base_dir):
@@ -426,6 +428,16 @@ class PluginCreator(PluginBase):
                 plugin.set_value("rel_dir", rel_dir)
 
             plugin.commit()
+
+
+
+        # record all of the sobject exported
+        for sobject in sobjects:                    
+            plugin_content = SearchType.create("config/plugin_content")
+            plugin_content.set_value("search_type", sobject.get_search_type())
+            plugin_content.set_value("search_code", sobject.get_code())
+            plugin_content.set_value("plugin_code", my.code)
+            plugin_content.commit()
 
 
 
@@ -586,6 +598,8 @@ class PluginCreator(PluginBase):
 
         print "\t....dumped [%s] entries" % (len(sobjects))
 
+        return sobjects
+
 
 
     def handle_search_type(my, node):
@@ -651,7 +665,8 @@ class PluginCreator(PluginBase):
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
-                my.handle_sobject(node)
+                dumped_sobjects = my.handle_sobject(node)
+                sobjects.extend(dumped_sobjects)
             elif name == 'search_type':
                 my.handle_search_type(node)
             elif name == 'include':

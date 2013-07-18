@@ -3672,6 +3672,19 @@ class SObject(object):
         message.set_value("status", "complete")
         message.commit()
 
+
+        # repeat with the log
+        message = SearchType.create("sthpw/message_log")
+        message.set_value("message_code", message_code)
+        message.set_value("category", "sobject")
+        message.set_value("message", json_data )
+        message.set_value("timestamp", "NOW")
+        message.set_value("status", "complete")
+        message.commit()
+
+
+
+
         return message
         
 
