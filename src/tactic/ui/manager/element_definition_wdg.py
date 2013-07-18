@@ -153,7 +153,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
             inner_div.add(wizard)
         else:
-            tab = TabWdg(config_xml=config_xml, show_add=False, tab_offset=5, show_remove=False )
+            tab = TabWdg(config_xml=config_xml, show_add=False, tab_offset=5, show_remove=False , allow_drag=False)
             inner_div.add(tab) 
             tab.add_style("margin: 0 -6 0 -6")
 
