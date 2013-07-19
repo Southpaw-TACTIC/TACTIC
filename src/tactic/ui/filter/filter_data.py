@@ -48,9 +48,13 @@ class FilterData(object):
             except ValueError, e:
                 if e.__str__().find('No JSON object') != -1:
                     raise SetupException('Data is not decodable as JSON.')
-
                 # try a straight eval
                 my.data = eval(data)
+            except Exception, e:
+                 if e.__str__().find('cannot parse JSON description') != -1:
+                    raise SetupException('Data is not valid JSON.')
+
+        
         elif type(data) == types.DictType:
             my.data = [data]
 

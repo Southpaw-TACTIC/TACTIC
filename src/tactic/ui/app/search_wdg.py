@@ -13,7 +13,7 @@ __all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk"]
 
 import os, types
 
-from pyasm.common import Xml, Common, Environment, XmlException, UserException, Container
+from pyasm.common import Xml, Common, Environment, XmlException, UserException, Container, SetupException
 from pyasm.command import Command
 from pyasm.search import Search, SearchType, SObject, SearchInputException, DbContainer, SearchException
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, WebContainer, WidgetSettings
@@ -924,8 +924,14 @@ class SearchWdg(BaseRefreshWdg):
             key = SearchWdg._get_key(search_type, view)
             data = WidgetSettings.get_value_by_key(key)
             if data:
-                filter_data = FilterData(data)
-                filter_data.set_to_cgi()
+              
+                try:
+                    filter_data = FilterData(data)
+                    filter_data.set_to_cgi()
+                except SetupException, e:
+                    print "This filter data is causing error:", data
+                    print e
+
 
     set_filter_data = staticmethod(set_filter_data)
 

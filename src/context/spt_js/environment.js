@@ -155,11 +155,14 @@ spt.Environment = function() {
             return this.ticket;
         }
 
-        //var cookie = new Cookie('login_ticket');
-        var ticket = Cookie.read('login_ticket');
-        return ticket
+        var ticket = this.read_cookie('login_ticket');
+        return ticket;
     }
 
+    this.read_cookie = function(key) {
+        var value = document.cookie.match('(?:^|;)\\s*' + key.escapeRegExp() + '=([^;]*)');
+		return (value) ? decodeURIComponent(value[1]) : null;
+    }
 
 }
 
