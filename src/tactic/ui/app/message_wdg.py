@@ -10,7 +10,7 @@
 #
 #
 
-from pyasm.common import jsonloads, Environment
+from pyasm.common import jsonloads, Environment, Common
 
 from pyasm.web import DivWdg, SpanWdg
 
@@ -34,7 +34,10 @@ class ChatWdg(BaseRefreshWdg):
         my.set_as_panel(top)
         top.add_class("spt_chat_top")
 
-        top.add_behavior( {
+
+        inner = DivWdg()
+        top.add(inner)
+        inner.add_behavior( {
             'type': 'load',
             'cbjs_action': MessageWdg.get_onload_js()
         } )
@@ -48,7 +51,8 @@ class ChatWdg(BaseRefreshWdg):
         keys = [x.get_value("message_code") for x in chats]
 
         chat_list_div = DivWdg()
-        top.add(chat_list_div)
+        chat_list_div.add("<b>Chat Sessions</b><br/>")
+        inner.add(chat_list_div)
         for chat in chats:
             chat_div = DivWdg()
             chat_list_div.add(chat_div)
@@ -83,16 +87,19 @@ class ChatWdg(BaseRefreshWdg):
         #if not keys:
         #    return
 
-        top.add( my.get_add_chat_wdg() )
+        inner.add( my.get_add_chat_wdg() )
 
         for key in keys:
             session = ChatSessionWdg(key=key)
             session.add_style("float: left")
-            top.add(session)
+            inner.add(session)
 
-        top.add("<br clear='all'/>")
+        inner.add("<br clear='all'/>")
 
-        return top
+        if my.kwargs.get("is_refresh") == 'true':
+            return inner
+        else:
+            return top
 
 
     def get_add_chat_wdg(my):
@@ -120,8 +127,6 @@ class ChatWdg(BaseRefreshWdg):
                 return;
             }
 
-
-
             // new chat
             var server = TacticServerStub.get();
             var category = "chat";
@@ -132,17 +137,7 @@ class ChatWdg(BaseRefreshWdg):
             }
             server.execute_cmd(class_name, kwargs);
 
-            /*
-            var key = spt.message.generate_key();
-            var login = "admin";
-            server.insert("sthpw/subscription", {'message_code':key, login: login, category: category} );
-            server.insert("sthpw/subscription", {'message_code':key, login: user, category: category} );
-
-            var message = "";
-            var category = "chat";
-            server.log_message(key, message, {category:category, status:"start"});
-            */
-
+            spt.panel.refresh(bvr.src_el);
             '''
         } )
 
@@ -162,8 +157,8 @@ class ChatCmd(Command):
         # find out if there already is a subscription between this user
         # and others
         search = Search("sthpw/subscription")
-        search.add_filters("login", login)
-        search.add_filters("category", "chat")
+        search.add_filter("login", login)
+        search.add_filter("category", "chat")
         login_subscriptions = search.get_sobjects()
         keys = [x.get_value("message_code") for x in login_subscriptions]
 
@@ -173,6 +168,7 @@ class ChatCmd(Command):
         for user in users:
             search = Search("sthpw/subscription")
             search.add_filters("message_code", keys)
+            search.add_filter("login", user)
             user_subscriptions = search.get_sobjects()
             if user_subscriptions:
                 create = False
@@ -180,7 +176,7 @@ class ChatCmd(Command):
 
         # create a new subscription
         if create:
-            key = "whatever"
+            key = Common.generate_random_key()
             message = SearchType.create("sthpw/message")
             message.set_value("code", key)
             message.set_value("login", login)
@@ -217,7 +213,7 @@ class ChatSessionWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_chat_session_top")
-        div.add_style("margin: 20px")
+        div.add_style("margin: 15px")
 
         title_wdg = DivWdg()
         div.add(title_wdg)
@@ -232,23 +228,87 @@ class ChatSessionWdg(BaseRefreshWdg):
         title_wdg.add(icon)
         icon.add_behavior( {
             'type': 'click_up',
+            'key': key,
             'cbjs_action': '''
+            var server = TacticServerStub.get();
+
             var top = bvr.src_el.getParent(".spt_chat_session_top");
             spt.behavior.destroy_element(top);
             '''
         } )
 
-        title_wdg.add(key)
+
+        current_user = Environment.get_user_name()
+        logins = Search.eval("@SOBJECT(sthpw/subscription['message_code','%s'].sthpw/login)" % key)
+        for login in logins:
+            if login.get_value("login") == current_user:
+                continue
+
+            thumb = ThumbWdg()
+            thumb.set_icon_size(45)
+            thumb.set_sobject(login)
+            thumb.add_style("float: left")
+            thumb.add_style("margin: -5px 10px 0px -5px")
+            title_wdg.add(thumb)
+            title_wdg.add(login.get_value("display_name"))
+
+        title_wdg.add("<br clear='all'/>")
+
 
         history_div = DivWdg()
         div.add(history_div)
         history_div.add_class("spt_chat_history")
         history_div.add_style("width: 400px")
-        history_div.add_style("height: 200px")
+        history_div.add_style("height: 400px")
         history_div.add_style("padding: 5px")
         history_div.add_border()
         history_div.add_style("overflow-y: auto")
         #history_div.add_style("font-size: 0.9em")
+
+
+        search = Search("sthpw/message_log")
+        search.add_filter("message_code", key)
+        message_logs = search.get_sobjects()
+        last_login = None;
+        last_date = None;
+        for message_log in message_logs:
+
+            login = message_log.get("login")
+            message = message_log.get("message")
+            timestamp = message_log.get_datetime_value("timestamp")
+            #timestamp = timestamp.strftime("%b %d, %Y - %H:%M")
+            timestamp_str = timestamp.strftime("%H:%M")
+            date_str = timestamp.strftime("%b %d, %Y")
+        
+            msg = "";
+            msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
+
+            if date_str != last_date:
+                msg += "<hr/><b>"+date_str+"</b><hr/></td></tr>";
+                msg += "<tr><td>";
+                last_login = None
+
+            if login != last_login:
+                msg += "<b>"+login+"</b><br/>";
+            msg += message.replace("\n",'<br/>');
+            msg += "</td><td style='text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top'>";
+            msg += timestamp_str;
+            msg += "</td></tr></table>";
+
+            history_div.add(msg)
+
+            last_login = login
+            last_date = date_str
+
+        history_div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.scrollTop = bvr.src_el.scrollHeight;
+            '''
+        } )
+
+
+
 
         if interval:
 
@@ -277,8 +337,8 @@ class ChatSessionWdg(BaseRefreshWdg):
                 msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
                 msg += "<b>"+login+"</b><br/>";
                 msg += tmp.replace(/\n/g,'<br/>');
-                msg += "</td><td style='width: 75px; vertical-align: top'>";
-                msg += "<br/>"+ timestamp;
+                msg += "</td><td style='text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top'>";
+                msg += timestamp;
                 msg += "</td></tr></table>";
 
                 if (msg == history_el.last_msg) {
@@ -288,6 +348,9 @@ class ChatSessionWdg(BaseRefreshWdg):
 
                 // remember last message
                 history_el.last_msg = msg;
+
+
+                history_el.scrollTop = history_el.scrollHeight;
             }
             spt.message.set_interval(bvr.key, callback, 3000, bvr.src_el);
             '''
@@ -507,6 +570,20 @@ class SubscriptionWdg(BaseRefreshWdg):
             thumb.add("<br/>")
             thumb.add(category)
             thumb.add_style('text-align: center')
+            thumb.add_class("hand")
+
+            key = subscription.get_value("message_code")
+            thumb.add_behavior( {
+                'type': 'click_up',
+                'key': key,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.ChatSessionWdg';
+                var kwargs = {
+                    'key': bvr.key,
+                }
+                spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
+                '''
+            } )
 
         thumb.add_style("margin: 3px")
         return thumb
@@ -622,11 +699,10 @@ class SubscriptionWdg(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            icon = IconButtonWdg(title="Subscription History", icon=IconWdg.ZOOM)
+            icon = IconButtonWdg(title="Subscription History", icon=IconWdg.HISTORY)
             td.add(icon)
             subscription_key = subscription.get_search_key()
             message_code = subscription.get_value("message_code")
-            print "message_code: ", message_code
             icon.add_behavior( {
                 'type': 'click_up',
                 'message_code': message_code,
@@ -919,6 +995,7 @@ spt.message.set_interval = function(key, callback, interval, element) {
 
 spt.message.stop_interval = function(key) {
     clearInterval(spt.message.intervals[key]);
+    delete spt.message.elements[key];
 } 
 
 spt.message.stop_all_intervals = function() {
@@ -934,8 +1011,9 @@ spt.message.generate_key = function(length) {
 
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for( var i=0; i < length; i++ )
+    for( var i=0; i < length; i++ ) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
 
     return text;
 
@@ -956,7 +1034,6 @@ spt.message.async_poll = function(key, callback) {
     var el = spt.message.elements[key];
     if (el.parentNode == null) {
         spt.message.stop_interval(key);
-        delete spt.message.elements[key];
         return;
     }
 

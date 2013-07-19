@@ -192,7 +192,14 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <connect from="sthpw/sync_job" to="sthpw/sync_server" relationship="code" from_col="server_code" to_col="code"/>
 
 
+   <connect from="sthpw/message_log" to="sthpw/message" relationship="code" from_col="message_code" to_col="code"/>
+
    <connect from="sthpw/subscription" to="sthpw/message" relationship="code" from_col="message_code" to_col="code"/>
+
+   <connect from="sthpw/subscription" to="sthpw/message" relationship="code" from_col="message_code" to_col="code"/>
+
+   <connect from="sthpw/subscription" to="sthpw/login" relationship="code" from_col="login" to_col="login"/>
+
 
 
 </schema>
