@@ -1749,7 +1749,10 @@ class NotificationTriggerEditCbk(Command):
         search_key = my.kwargs.get("search_key")
         if search_key:
             notification = Search.get_by_search_key(search_key) 
-
+            # verify if this is a trigger search_key or notification search_key
+            # it could be a trigger search_key when editing an existing trigger
+            if not isinstance(notification, Notification):
+                notification = None
         process = my.kwargs.get("process")
         listen_process = my.kwargs.get("listen_process")
         search_type = my.kwargs.get("search_type")
