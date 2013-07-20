@@ -160,7 +160,7 @@ spt.Environment = function() {
     }
 
     this.read_cookie = function(key) {
-        var value = document.cookie.match('(?:^|;)\\s*' + key.escapeRegExp() + '=([^;]*)');
+        var value = document.cookie.match('(?:^|;)\\s*' + key.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1') + '=([^;]*)');
 		return (value) ? decodeURIComponent(value[1]) : null;
     }
 
