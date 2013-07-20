@@ -639,6 +639,7 @@ class NamingTest(unittest.TestCase):
         naming5.set_value('search_type', 'unittest/person')
         naming5.set_value('context', 'light/sub1')
         naming5.set_value('dir_naming', '{project.code}/light/sub1')
+        naming5.set_value('sandbox_dir_naming','{$PROJECT}/{@GET(.id)}//')
         naming5.commit()
 
         sobject = SearchType.create('unittest/person')
@@ -717,6 +718,7 @@ class NamingTest(unittest.TestCase):
 
         virtual_snapshot.set_value('context', 'light/sub1')
         name = Naming.get(sobject, virtual_snapshot)
+        my.assertEquals(name.get_value('sandbox_dir_naming'), '{$PROJECT}/{@GET(.id)}')
         my.assertEquals(name.get_value('dir_naming'), '{project.code}/light/sub1')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
         my.assertEquals(has, False)
