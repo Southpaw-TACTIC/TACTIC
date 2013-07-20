@@ -25,6 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 from tactic.ui.container import PopupWdg, DynamicListWdg
 from tactic.ui.widget import SearchTypeSelectWdg, ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 class SearchTypeToolWdg(BaseRefreshWdg):
 
@@ -380,6 +381,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         table.add_header("Description: ").set_attr('align','left')
         table.add_cell(description)
 
+        create_div.add( my.get_preview_wdg() )
+
 
 
         # Page 2
@@ -456,21 +459,174 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         #pipeline_div.add("<br/>"*2)
 
 
+        # Page 4
+        column_div = DivWdg()
+        wizard.add(column_div, "Columns")
+
+        # determines whether sobject shows a preview by default
+        preview_checkbox = CheckboxWdg("sobject_preview")
+        preview_checkbox.set_checked()
+
+        column_div.add("All sTypes can have icons associated with them.")
+        column_div.add("<br/>"*2)
+        column_div.add("&nbsp;&nbsp;&nbsp;<b>Include Preview Image?</b> ")
+        column_div.add(preview_checkbox)
+        column_div.add("<br/>"*2)
+
+
+        column_div.add( my.get_columns_wdg() )
+
 
         # Page 3
-        
+        # DEPRECATED: this is not needed because layout switcher replaces this
+        #wizard.add(my.get_view_wdg(), "Side Bar")
+        # Page 3
+        naming_wdg = my.get_naming_wdg()
+        wizard.add(naming_wdg, "Naming")
+
+
+        # Page 4
+        finish_wdg = DivWdg()
+        wizard.add(finish_wdg, "Finish")
+        finish_wdg.add("<br/>"*5)
+        finish_wdg.add("Click 'Register' button below to complete")
+
+
+        # submit button
+        submit_input = my.get_submit_input()
+        wizard.add_submit_button(submit_input)
+
+        return top
+
+
+
+    def get_naming_wdg(my):
+
+        div = DivWdg()
+
+        div.add("Choose a directory naming convention for this sType:")
+        div.add("<br/>")
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
+        div.add( my.get_naming_item_wdg(expr, "Default") )
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.category}/{sobject.code}"
+        div.add( my.get_naming_item_wdg(expr, "Library Asset") )
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
+        div.add( my.get_naming_item_wdg(expr, "Asset with Workflow") )
+
+        div.add("<br/>")
+
+        from pyasm.widget import RadioWdg
+        radio = RadioWdg("naming")
+        div.add(radio)
+        radio.add_style("margin-top: -5px")
+        div.add("<b>Custom</b>")
+        radio.add_attr("value", "_CUSTOM")
+
+        div.add("<br/>")
+        text = TextAreaWdg(name="custom_naming")
+        #text.add_style("display: none")
+        text.add_style("width: 400px")
+        text.add_style("margin-left: 30px")
+        div.add(text)
+        text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': r'''
+            var value = bvr.src_el.value;
+            value = value.replace(/\/([ \t])+/g, "/");
+            value = value.replace(/([ \t])+\//g, "/");
+            bvr.src_el.value = value;
+            '''
+        } )
+
+        return div
+
+
+    def _example(my, expr):
+        project_code = Project.get_project_code()
+
+        sample_data = {
+            "project.code": project_code,
+            "search_type.table_name": "asset",
+            "sobject.category": "cars!sports",
+            "snapshot.process": "delivery",
+            "sobject.code": "CAR00586",
+        }
+
+        sample_expr = expr
+        for name, value in sample_data.items():
+            sample_expr = sample_expr.replace("{%s}" % name, value)
+
+        return sample_expr
+
+    def get_naming_item_wdg(my, expr, title):
+
+        new_expr = my._example(expr)
+
+        div = DivWdg()
+        div.add_style("margin-top: 10px")
+
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+
+        from pyasm.widget import RadioWdg
+        radio = RadioWdg("naming")
+        title_wdg.add(radio)
+        if title == "Default":
+            radio.set_checked()
+            radio.add_attr("value", "_DEFAULT")
+        else:
+            radio.add_attr("value", expr)
+        radio.add_style("margin-top: -5px")
+
+        title_wdg.add(title)
+        title_wdg.add_style("padding: 3px")
+        title_wdg.add_style("font-weight: bold")
+
+        table = Table()
+        table.add_style("font-size: 0.85em")
+        table.add_style("margin-left: 15px")
+        div.add(table)
+        parts = expr.split("/")
+        table.add_row()
+
+
+
+        for item in parts:
+            td = table.add_cell(item)
+            td.add_style("text-align: left")
+            td.add_style("padding-right: 15px")
+            table.add_cell("/")
+
+        tr = table.add_row()
+        tr.add_style("opacity: 0.5")
+        parts = new_expr.split("/")
+        for item in parts:
+            item = item.replace("!", "/")
+            td = table.add_cell(item)
+            td.add_style("text-align: left")
+            td.add_style("padding-right: 15px")
+            table.add_cell("/")
+
+        return div
+
+
+
+    def get_preview_wdg(my):
 
         # add an icon for this project
         image_div = DivWdg()
-        wizard.add(image_div, 'Preview Image')
+        #wizard.add(image_div, 'Preview Image')
+        #create_div.add(image_div, 'Preview Image')
         image_div.add_class("spt_image_top")
         image_div.add_color("background", "background")
         image_div.add_color("color", "color")
-        image_div.add_style("padding: 20px")
+        image_div.add_style("padding: 20px 0px 10px 0px")
 
 
         image_div.add("<b>Preview Image: </b>")
-        image_div.add("<br/>"*3)
         button = ActionButtonWdg(title="Browse")
         image_div.add(button)
         button.add_style("margin-left: auto")
@@ -544,50 +700,20 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         image_div.add(path_div)
         path_div.add_class("spt_path_display")
 
-        image_div.add(HtmlElement.br(3))
+        image_div.add(HtmlElement.br())
         span = DivWdg()
         image_div.add(span)
-        span.add_style("padding: 20px 20px 20px 20px")
+        span.add_style("padding: 10px 20px 10px 20px")
         span.add_color("background", "background3")
         span.add(IconWdg("INFO", IconWdg.CREATE))
         span.add("The preview image is a small image that will be used in verious places as a visual representation of this searchable type.")
 
+        return image_div
 
 
 
-        # Page 4
-        column_div = DivWdg()
-        wizard.add(column_div, "Columns")
-
-        # determines whether sobject shows a preview by default
-        preview_checkbox = CheckboxWdg("sobject_preview")
-        preview_checkbox.set_checked()
-
-        column_div.add("All sTypes can have icons associated with them.")
-        column_div.add("<br/>"*2)
-        column_div.add("&nbsp;&nbsp;&nbsp;<b>Include Preview Image?</b> ")
-        column_div.add(preview_checkbox)
-        column_div.add("<br/>"*2)
 
 
-        column_div.add( my.get_columns_wdg() )
-
-
-        # Page 3
-        # DEPRECATED: this is not needed because layout switcher replaces this
-        #wizard.add(my.get_view_wdg(), "Side Bar")
-
-        submit_input = my.get_submit_input()
-        wizard.add_submit_button(submit_input)
-
-
-        # Page 4
-        finish_wdg = DivWdg()
-        wizard.add(finish_wdg, "Finish")
-        finish_wdg.add("<br/>"*5)
-        finish_wdg.add("Click 'Register' button below to complete")
-
-        return top
 
 
 
@@ -1184,6 +1310,8 @@ class SearchTypeCreatorCmd(Command):
         my.add_sidebar_views()
 
         my.checkin_preview()
+
+        my.add_naming()
         
 
 
@@ -1738,6 +1866,27 @@ class SearchTypeCreatorCmd(Command):
             from pyasm.checkin import FileCheckin
             checkin = FileCheckin(my.search_type_obj, context='icon', file_paths=file_paths, file_types=file_types)
             checkin.execute()
+
+
+
+    def add_naming(my):
+
+        naming_expr = my.get_value("naming")
+
+        if naming_expr == "_CUSTOM":
+            naming_expr = my.get_value("custom_naming")
+
+        if not naming_expr or naming_expr == "_DEFAULT":
+            naming_expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
+
+        naming = SearchType.create("config/naming")
+        naming.set_value("dir_naming", naming_expr)
+
+        search_type = my.search_type_obj.get_base_key()
+        naming.set_value("search_type", search_type)
+        naming.commit()
+
+
 
 
 

@@ -68,6 +68,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         file_objects = search.get_sobjects()
 
         paths = []
+        my.file_codes = {}
         base_dir = Environment.get_asset_dir()
         for file_object in file_objects:
             relative_dir = file_object.get_value("relative_dir")
@@ -80,6 +81,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
             paths.append(path)
+
+            my.file_codes[path] = file_object.get("code")
 
         return paths
 
@@ -166,6 +169,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         search_div.add("<hr/")
 
         paths = my.get_files()
+        file_codes = my.file_codes
 
         stats_div = DivWdg()
         left_wdg.add(stats_div)
@@ -182,7 +186,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left_wdg.add(content_div)
 
         search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, search_type=search_type)
+        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, search_type=search_type, file_codes=file_codes)
         content_div.add(dir_list)
 
 
@@ -269,6 +273,7 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_file_icon(my, dir, item):
         import os
         path = "%s/%s" % (dir, item)
+        print "code: ", my.kwargs.get("file_codes").get(path)
         if not os.path.exists(path):
             return IconWdg.ERROR
         return IconWdg.DETAILS

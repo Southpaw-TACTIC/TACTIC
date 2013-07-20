@@ -650,7 +650,9 @@ class NamingUtil(object):
 
 
             if not sobject.is_insert() and not value:
-                raise NamingException("Naming convention error: Value for part [%s] is empty" % part)
+                value = ""
+                #raise NamingException("Naming convention error: Value for part [%s] is empty" % part)
+
           
             if isinstance(value, int):
                 value = str(value)

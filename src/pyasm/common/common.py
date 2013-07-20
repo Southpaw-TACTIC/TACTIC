@@ -547,6 +547,8 @@ class Common(Base):
 
         filename = "".join(processed)
 
+        filename = filename.replace("//", "/")
+
 
         return filename
 
