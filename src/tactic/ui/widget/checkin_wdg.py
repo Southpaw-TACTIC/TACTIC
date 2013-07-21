@@ -1701,6 +1701,9 @@ spt.app_busy.hide();
 
         # checkin_mode is true if context_options are set
         # main check-in
+        if my.sandbox_dir.rstrip('/') != my.sandbox_dir:
+            my.sandbox_dir = my.sandbox_dir.rstrip('/') 
+
         behavior = {
             'type': 'click_up',
             'search_key': search_key,

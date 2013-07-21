@@ -36,13 +36,14 @@ class Naming(SObject):
     def validate(my):
 
         sandbox_dir_name = my.get_value('sandbox_dir_naming')
-        
+        dir_naming = my.get_value('dir_naming')
+
         if sandbox_dir_name.rstrip('/') != sandbox_dir_name:
-            sandbox_dir_name = sandbox_dir_name.rstrip('/') 
-            my.set_value('sandbox_dir_naming',sandbox_dir_name)
-            #raise TacticException('sandbox_dir_name has not to end with /')
+            raise TacticException('sandbox_dir_naming should not end with /')
 
-
+        if dir_naming.rstrip('/') != dir_naming:
+            raise TacticException('dir_naming should not end with /')
+            
         #file_name = my.get_value('file_naming')
         #p = re.compile('.*\.({ext}|\w+)$')
         #if not p.match(file_name):

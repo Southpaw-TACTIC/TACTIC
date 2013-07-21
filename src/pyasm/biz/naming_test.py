@@ -718,7 +718,14 @@ class NamingTest(unittest.TestCase):
 
         virtual_snapshot.set_value('context', 'light/sub1')
         name = Naming.get(sobject, virtual_snapshot)
-        my.assertEquals(name.get_value('sandbox_dir_naming'), '{$PROJECT}/{@GET(.id)}')
+        try:
+            name.get_value('sandbox_dir_naming')
+        except TacticException, e:
+            message = 'sandbox_dir_name should not end with /'
+        else:
+            message = 'Wrong'
+
+        my.assertEquals(message, 'sandbox_dir_name should not end with /')
         my.assertEquals(name.get_value('dir_naming'), '{project.code}/light/sub1')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
         my.assertEquals(has, False)
