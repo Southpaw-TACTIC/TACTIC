@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk']
 
 import tacticenv
 
@@ -771,7 +771,7 @@ class SecurityWdg(BaseRefreshWdg):
         title = "Task Security"
         #image = "<img src='/context/icons/64x64/report_64.png'/>"
         image = IconWdg('', IconWdg.SECURITY_32_20)
-        description = '''Customize the security of each process's tasks.'''
+        description = '''Task security customizes the visibility of task status.'''
 
         behavior = {
         'type': 'click_up',
@@ -1760,7 +1760,7 @@ class TaskSecurityWdg(ProjectSecurityWdg):
 
 
     def get_save_cbk(my):
-        return 'tactic.ui.startup.ProcessSecurityCbk'
+        return 'tactic.ui.startup.TaskSecurityCbk'
 
 
     def get_display_columns(my):
@@ -2027,8 +2027,13 @@ class LinkSecurityCbk(Command):
             group.commit()
 
 
+    
 
 class ProcessSecurityCbk(Command):
+
+    def use_project(my):
+        return True
+
     def execute(my):
 
         search_keys = my.kwargs.get("search_keys")
@@ -2041,7 +2046,10 @@ class ProcessSecurityCbk(Command):
             extra_data = jsonloads(extra_data)
 
         project = Project.get()
-        project_code = project.get_code()
+        if my.use_project():
+            project_code = project.get_code()
+        else:
+            project_code = None
 
         builders = {}
         for search_key,data,extra in zip(search_keys, update_data, extra_data):
@@ -2082,6 +2090,12 @@ class ProcessSecurityCbk(Command):
             group.commit()
 
 
+
+class TaskSecurityCbk(ProcessSecurityCbk):
+
+    def use_project(my):
+        return False
+    
 
 
 

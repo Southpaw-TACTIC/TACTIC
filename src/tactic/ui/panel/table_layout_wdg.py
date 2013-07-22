@@ -122,6 +122,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '6'
         },
 
+        'show_keyword_search': {
+            'description': 'Flag to determine whether or not to show the Keyword Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '7'
+        },
+
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
             'category' : 'internal'
@@ -723,6 +731,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             timestamp = datetime(timestamp.year,timestamp.month,1)
             
             group_value = timestamp.strftime("%Y %m")
+        else: # the default group by a regular timestamp
+            group_value = timestamp = parser.parse(group_value)
+            group_value = timestamp.strftime("%Y-%m-%d")
 
         return group_value
 
@@ -818,7 +829,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     sobject.set_value("%s%s"%(my.GROUP_COLUMN_PREFIX, i), group_value, temp=True)
                     my.grouping_data = True 
                 
-                elif my.group_interval and my.group_by_time:
+                elif my.group_by_time:  # my.group_interval 
                     group_value = sobject.get_value(group_column, no_exception=True)
                     group_value = my._get_simplified_time(group_value)
                 else:
@@ -1531,7 +1542,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             
             group_value = sobject.get_value(group_column, no_exception=True)
             
-            if my.group_interval and my.group_by_time:
+            if my.group_by_time: #my.group_interval:
                 #group_value = sobject.get_value(group_column, no_exception=True)
                 group_value = my._get_simplified_time(group_value)
             if not group_value:
@@ -2927,7 +2938,6 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
     }
 
     var edit_wdg_options = edit_wdg_template.getElements('.spt_input_option');
-
     if (edit_wdg_options.length == 0) {
         //var type = cell_to_edit.getAttribute("spt_input_type");
         //if (type == 'inline')
@@ -3008,6 +3018,21 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     // this assumes there is an input that needs to altered
     var type = edit_cell.getAttribute("spt_input_type");
     var input = edit_wdg.getElement(".spt_input");
+     /*
+    var inputs = edit_wdg.getElements(".spt_input");
+    var input = inputs[0];
+    var hidden_input;
+
+   
+    inputs.each(function(el) { if (el.type == 'hidden') 
+                                hidden_input = el;
+                                else
+                                input = el;});
+   
+
+    //this could be a hidden input
+   
+     */
     var value = edit_cell.getAttribute("spt_input_value");
     var parse_selected_text = function(input)
     {
@@ -3034,8 +3059,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (input == null) {
         return;
     }
-
-
+    
     if (input.hasClass("SPT_NO_RESIZE") ) {
         // do nothing
     }
@@ -3605,7 +3629,7 @@ spt.table.save_changes = function(kwargs) {
         if (info) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
-            if (do_refresh) {
+            if (do_refresh ) {
                 var kw = {refresh_bottom : true};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
@@ -3618,25 +3642,26 @@ spt.table.save_changes = function(kwargs) {
     spt.app_busy.hide();
 
     // fire an event
-    var search_key = search_keys[0];
-    var parts = server.split_search_key(search_key);
-    var tmps = parts[0].split('?');
-    var search_type = tmps[0];
-    var event = "update|" + search_type;
-    
-    var input = {
-        kwargs: kwargs,
-        web_data: web_data
-    }
-    bvr.options = input;
+    if (search_keys) {
+        var search_key = search_keys[0];
+        var parts = server.split_search_key(search_key);
+        var tmps = parts[0].split('?');
+        var search_type = tmps[0];
+        var event = "update|" + search_type;
+        
+        var input = {
+            kwargs: kwargs,
+            web_data: web_data
+        }
+        bvr.options = input;
 
-    try {
-        spt.named_events.fire_event(event, bvr);
+        try {
+            spt.named_events.fire_event(event, bvr);
+        }
+        catch(e) {
+            spt.alert("Error firing event: " + event);
+        }
     }
-    catch(e) {
-        spt.alert("Error firing event: " + event);
-    }
-    
     // reset all the edits
     spt.table.last_cell = null;
     spt.table.last_data_wdg = null;

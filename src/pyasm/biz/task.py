@@ -92,7 +92,11 @@ class Task(SObject):
     get_default_color = staticmethod(get_default_color)
 
 
-
+    def get_default_processes():
+        nodes = default_xml.get_nodes("pipeline/process")
+        process_names = [ Xml.get_attribute(x, 'name') for x in nodes ]
+        return process_names
+    get_default_processes = staticmethod(get_default_processes)
 
     def add_static_triggers(cls):
         # event sthpw/trigger
