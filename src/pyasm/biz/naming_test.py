@@ -27,7 +27,7 @@ from pyasm.prod.biz import Asset
 from file_naming import FileNaming
 from dir_naming import DirNaming
 from naming import NamingUtil, Naming
-from pyasm.unittest import UnittestEnvironment
+from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 class TestFileNaming(FileNaming):
 
@@ -84,8 +84,13 @@ class NamingTest(unittest.TestCase):
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
+        my.sample3d_env = Sample3dEnvironment(project_code='sample3d')
+        my.sample3d_env.create()
+
         my.test_env = UnittestEnvironment()
         my.test_env.create()
+
+    
 
         # set up the proper project_type, with the use the ProdDirNaming and ProdFileNaming
         search = Search('sthpw/project')
@@ -178,6 +183,7 @@ class NamingTest(unittest.TestCase):
             Project.set_project('unittest')
 
             my.test_env.delete()
+            my.sample3d_env.delete()
 
         # reset the unittest project type to whatever it was
         """
@@ -657,18 +663,37 @@ class NamingTest(unittest.TestCase):
         sobject.set_value('name_first', 'chip')
         sobject.commit()
   
-        """
-        sobject = SearchType.create('unittest/person')
-        sobject.set_value('name_last', 'test_sandbox_dir_naming')
-        sobject.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}///////')
+       
+        naming6 = SearchType.create('config/naming')
+        naming6.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}/')
         try:
-            sobject.commit()
+            naming6.commit()
         except TacticException, e:
             message = 'sandbox_dir_name should not end with /'
         else:
-            message = 'Wrong'
+            message = 'Pass'
         my.assertEquals(message, 'sandbox_dir_name should not end with /')
-        """
+
+        naming7 = SearchType.create('config/naming')
+        naming7.set_value('dir_naming', '{$PROJECT}/{@GET(.id)}/')
+        try:
+            naming7.commit()
+        except TacticException, e:
+            message = 'dir_name should not end with /'
+        else:
+            message = 'Pass'
+        my.assertEquals(message, 'dir_name should not end with /')
+
+        naming8 = SearchType.create('config/naming')
+        naming8.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}')
+        try:
+            naming8.commit()
+        except TacticException, e:
+            message = 'sandbox_dir_name should not end with /'
+        else:
+            message = 'Pass'
+        my.assertEquals(message, 'Pass')
+        
         process= 'lgt'
         context = 'light'
         type = 'ma'
