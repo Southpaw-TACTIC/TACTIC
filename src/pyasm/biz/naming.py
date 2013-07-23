@@ -41,7 +41,7 @@ class Naming(SObject):
         if sandbox_dir_name.endswith('/'):
             raise TacticException('sandbox_dir_naming should not end with /')
             
-        if sandbox_dir_name.endswith('/'):
+        if dir_naming.endswith('/'):
             raise TacticException('dir_naming should not end with /')
             
         #file_name = my.get_value('file_naming')
