@@ -778,7 +778,7 @@ class SObjectCalendarWdg(CalendarWdg):
                 'type': "click_up",
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
-                var title = '%s';
+                var title = 'Tasks: %s';
                 var kwargs = {
                     'search_type': '%s',
                     'view': 'table',
@@ -787,9 +787,11 @@ class SObjectCalendarWdg(CalendarWdg):
                 };
                 spt.app_busy.show("Loading...")
                 setTimeout(function() {
-                    spt.panel.load_popup( title, class_name, kwargs );
+                    //spt.panel.load_popup( title, class_name, kwargs );
+                    spt.tab.set_main_body_tab();
+                    spt.tab.add_new(title, title, class_name, kwargs);
                     spt.app_busy.hide();
-                }, 100)
+                }, 200)
 
                 ''' % (str(day),my.search_type, expression ),
             } )

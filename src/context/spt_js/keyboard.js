@@ -266,19 +266,6 @@ spt.kbd._handler = function( evt )
     key_info.meta = evt.meta;
 
 
-    // -- DEBUG ... uncomment code below to see what keyboard events are happening and the its MooTools attribute values
-    //
-    // spt.js_log.debug(">>> evt.key is [" + evt.key + "] ... evt.code is [" + evt.code + "]" +
-    //                  " ... ctrl-key=" + evt.control + " ... alt-key=" + evt.alt + " ... shift-key=" + evt.shift );
-
-    // -- DEBUG ... uncomment code below to see what keyboard event values are ...
-    //
-    // spt.js_log.debug(">>> key_info.key_code is [" + key_info.key_code + "] ... key_info.char_code is [" +
-    //                  key_info.char_code + "]" +
-    //                  " ... ctrl-key=" + key_info.ctrl + " ... alt-key=" + key_info.alt + " ... shift-key=" +
-    //                  key_info.shift );
-
-
     // Here check to see if we have anything in the keyboard_handler stack, if so process the top element ...
     if( spt.kbd.has_handler() )
     {

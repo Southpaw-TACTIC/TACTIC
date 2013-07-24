@@ -605,6 +605,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             plugin = {}
             plugin_dir = ""
         my.kwargs['plugin_dir'] = plugin_dir
+        my.kwargs['plugin'] = plugin
 
         try:
             html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)

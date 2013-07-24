@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserDirContentWdg']
+__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserCbk', 'RepoBrowserDirContentWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -20,12 +20,16 @@ from pyasm.web import DivWdg, WebContainer, Table
 from pyasm.biz import Snapshot, Project
 from pyasm.search import Search, SearchType, SearchKey
 from pyasm.widget import IconWdg
+from pyasm.command import Command
 
 from tactic.ui.panel import FastTableLayoutWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
 from tactic.ui.widget import DirListWdg
+from tactic.ui.container import Menu, MenuItem, SmartMenu
+
+import os
 
 
 class RepoBrowserWdg(BaseRefreshWdg):
@@ -65,10 +69,15 @@ class RepoBrowserWdg(BaseRefreshWdg):
             search.add_filters("search_id", parent_ids)
         if keywords:
             search.add_text_search_filter("metadata_search", keywords)
+
+        if my.mode == 'main':
+            search.add_filter("type", "main")
+
         file_objects = search.get_sobjects()
 
         paths = []
         my.file_codes = {}
+        my.snapshot_codes = {}
         base_dir = Environment.get_asset_dir()
         for file_object in file_objects:
             relative_dir = file_object.get_value("relative_dir")
@@ -83,6 +92,24 @@ class RepoBrowserWdg(BaseRefreshWdg):
             paths.append(path)
 
             my.file_codes[path] = file_object.get("code")
+            my.snapshot_codes[path] = file_object.get("snapshot_code")
+
+
+        project_code = Project.get_project_code()
+        search_type_obj = SearchType.get(search_type)
+        parts = search_type_obj.get_base_key().split("/")
+        if len(parts) == 2:
+            table = parts[1]
+        else:
+            table = parts[0]
+        start_dir = "%s/%s/%s" % (base_dir, project_code, table)
+        paths.append("%s/" % start_dir)
+
+        for root, dirnames, filenames in os.walk(start_dir):
+            for dirname in dirnames:
+                # need to put a / and the end to signify a directory
+                full = "%s/%s/" % (root, dirname)
+                paths.append(full)
 
         return paths
 
@@ -97,7 +124,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_class("spt_repo_browser_top")
 
+        my.mode = 'main'
+        #my.mode = 'all'
 
+        """
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_border()
@@ -106,11 +136,14 @@ class RepoBrowserWdg(BaseRefreshWdg):
         title_wdg.add("Repository Browser")
         title_wdg.add_style("font-size: 14px")
         title_wdg.add_style("font-weight: bold")
+        """
 
         #table = ResizableTableWdg()
         table = Table()
         top.add(table)
         table.add_color("color", "color")
+        table.add_style("margin: -1px -1px -1px -1px")
+        table.add_style("width: 100%")
 
 
         base_dir = Environment.get_asset_dir()
@@ -120,14 +153,15 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
+        left.add_style("width: 1px")
         left.add_border()
         left_inner = DivWdg()
         left.add(left_inner)
         left_inner.add_style("padding: 10px")
-        left_inner.add_style("width: 400px")
+        left_inner.add_style("width: 350px")
         #left_inner.add_style("max-height: 600px")
-        left_inner.add_style("min-height: 300px")
-        left_inner.add_style("min-height: 300px")
+        left_inner.add_style("min-height: 500px")
+        left_inner.add_style("min-height: 500px")
         left_inner.add_style("min-width: 300px")
         left_inner.add_class("spt_resizable")
         left_inner.add_class("spt_repo_browser_list")
@@ -162,7 +196,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         from tactic.ui.input import LookAheadTextInputWdg
         text = LookAheadTextInputWdg(search_type='sthpw/file',column='metadata_search', custom_cbk=custom_cbk)
         text.add_class("spt_main_search")
-        text.add_style("width: 300px")
+        text.add_style("width: 250px")
         if keywords:
             text.set_value(keywords)
         search_div.add(text)
@@ -186,7 +220,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left_wdg.add(content_div)
 
         search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, search_type=search_type, file_codes=file_codes)
+        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, search_type=search_type, file_codes=file_codes, snapshot_codes=my.snapshot_codes)
         content_div.add(dir_list)
 
 
@@ -194,13 +228,18 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content = table.add_cell()
         content.add_style("vertical-align: top")
         content.add_border()
-        content.add_style("padding: 10px")
-        content.add_style("width: 600px")
-        content.add_class("spt_repo_browser_content")
+        #content.add_style("padding: 10px")
+        #content.add_style("width: 600px")
+
+        outer_div = DivWdg()
+        content.add(outer_div)
+        outer_div.add_style("margin: -2px")
+        outer_div.add_class("spt_repo_browser_content")
 
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
-        content.add(content_div)
+        outer_div.add(content_div)
+
 
 
         table.add_row()
@@ -217,8 +256,238 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 class RepoBrowserDirListWdg(DirListWdg):
 
+    def add_top_behaviors(my, top):
+
+        top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            spt.repo_browser = {};
+            spt.repo_browser.start_y = null;
+            spt.repo_browser.start_pos = null;
+
+            spt.repo_browser.drag_file_setup = function(evt, bvr, mouse_411) {
+                spt.repo_browser.start_y = mouse_411.curr_y
+                spt.repo_browser.start_pos = bvr.src_el.getPosition();
+            }
+            spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
+                var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
+                if (diff_y < 1 && diff_y > -1) {
+                    return;
+                }
+
+                bvr.src_el.setStyle("border", "solid 1px black");
+                bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
+                bvr.src_el.setStyle("position", "absolute");
+                bvr.src_el.position({x:mouse_411.curr_x+5, y:mouse_411.curr_y+5});
+            }
+            spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
+ 
+                //bvr.src_el.position(spt.repo_browser.start_pos);
+
+
+                bvr.src_el.setStyle("border", "");
+                bvr.src_el.setStyle("box-shadow", "");
+                bvr.src_el.setStyle("position", "relative");
+                bvr.src_el.position( spt.repo_browser.start_pos);
+
+                var pos = spt.repo_browser.start_pos;
+                new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
+                new Fx.Tween(bvr.src_el,{duration:"short"}).start('left', pos.x);
+                bvr.src_el.setStyle("position", "");
+
+                var drop_on_el = spt.get_event_target(evt);
+
+                if (!drop_on_el.hasClass("spt_dir_item")) {
+                    drop_on_el = drop_on_el.getParent(".spt_dir_item");
+                }
+
+                if (! drop_on_el) {
+                    return;
+                }
+
+
+                bvr.src_el.inject(drop_on_el, 'after');
+                var padding = drop_on_el.getStyle("padding-left");
+                padding = parseInt(padding.replace("px", ""));
+                padding += 25;
+                bvr.src_el.setStyle("padding-left", padding);
+
+
+                var server = TacticServerStub.get(); 
+
+                var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
+                // get the new relative_dir
+                var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+
+                var cmd = 'tactic.ui.tools.RepoBrowserCbk';
+                var kwargs = {
+                    snapshot_code: snapshot_code,
+                    relative_dir: relative_dir
+                }
+                server.execute_cmd(cmd, kwargs); 
+
+            }
+
+            '''
+        } )
+
+
+        """
+        top.add_behavior( {
+            'type': 'smart_drag',
+            "drag_el": '@',
+            'bvr_match_class': 'spt_drag_file_item',
+            'cbjs_setup': 'spt.repo_browser.drag_file_setup(evt, bvr, mouse_411)',
+            'cbjs_motion': 'spt.repo_browser.drag_file_motion(evt, bvr, mouse_411)',
+            'cbjs_action': 'spt.repo_browser.drag_file_action(evt, bvr, mouse_411)',
+        } )
+        """
+
+        # add in a context menu
+        menu = my.get_dir_context_menu()
+        menus = [menu.get_data()]
+        menus_in = {
+            'DIR_ITEM_CTX': menus,
+        }
+        SmartMenu.attach_smart_context_menu( top, menus_in, False )
+
+
+        """
+        # add in template UIs
+        template_div = DivWdg()
+        top.add(template_div)
+        
+        new_folder_div = DivWdg()
+        template_div.add(new_folder_div)
+        """
+
+         
+
+
+
+
+
+    def get_dir_context_menu(my):
+
+        search_type = my.kwargs.get("search_type")
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='New Folder')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'search_type': search_type,
+            'cbjs_action': r'''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+
+            var div = document.createElement("div");
+            div = $(div);
+            div.setStyle("margin-top: 3px")
+
+            var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
+            var icon = "/context/icons/silk/folder.png";
+            var html = "";
+            html += '<img src="'+arrow+'"/>';
+            html += '<img src="'+icon+'"/>';
+            html += '<input type="text" value="New Folder"/>';
+
+            div.innerHTML = html;
+            div.inject(activator, "after");
+            div.setStyle("margin-left", "25px");
+
+            var input = div.childNodes[2];
+            input.onblur = function() {
+                var value = this.value;
+                div.innerHTML = value;
+                var new_relative_dir = relative_dir + "/" + value;
+                div.setAttribute("spt_relative_dir", new_relative_dir);
+                div.addClass("spt_dir_item");
+
+                // TODO: actually create the folder on the server
+            };
+            input.onfocus = function() {
+                this.select();
+            };
+            input.select();
+
+
+
+            '''
+        } )
+
+
+        menu_item = MenuItem(type='action', label='Rename Folder')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+            '''
+        } )
+
+
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label='Check-in Files')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'search_type': search_type,
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+            var class_name = 'tactic.ui.tools.IngestUploadWdg';
+            var kwargs = {
+                search_type: bvr.search_type,
+                relative_dir: relative_dir
+            };
+            spt.panel.load_popup("Check-in", class_name, kwargs);
+            '''
+        } )
+
+
+
+
+
+
+
+        return menu
+
+
+
+
+
+
     def add_file_behaviors(my, item_div, dirname, basename):
         search_type = my.kwargs.get("search_type")
+        item_div.add_class("spt_drag_file_item")
+
+        path = "%s/%s" % (dirname, basename)
+        file_code = my.kwargs.get("file_codes").get(path)
+        snapshot_code = my.kwargs.get("snapshot_codes").get(path)
+        item_div.add_attr("spt_file_code", file_code)
+        item_div.add_attr("spt_snapshot_code", snapshot_code)
+
+
+        item_div.add_behavior( {
+            'type': 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.repo_browser.drag_file'
+
+        } )
+
+
 
         item_div.add_behavior( {
         'type': 'click_up',
@@ -242,6 +511,13 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def add_dir_behaviors(my, item_div, dirname, basename):
+
+        SmartMenu.assign_as_local_activator( item_div, 'DIR_ITEM_CTX' )
+
+        path = "%s/%s" % (dirname, basename)
+        relative_dir = path.replace(my.base_dir, "")
+        relative_dir = relative_dir.strip("/")
+        item_div.add_attr("spt_relative_dir", relative_dir)
 
         search_type = my.kwargs.get("search_type")
 
@@ -270,16 +546,74 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+
+
     def get_file_icon(my, dir, item):
         import os
         path = "%s/%s" % (dir, item)
-        print "code: ", my.kwargs.get("file_codes").get(path)
+        #print "code: ", my.kwargs.get("file_codes").get(path)
         if not os.path.exists(path):
             return IconWdg.ERROR
         return IconWdg.DETAILS
 
     def get_dir_icon(my, dir, item):
         return IconWdg.LOAD
+
+
+
+
+class RepoBrowserCbk(Command):
+
+    def execute(my):
+        relative_dir = my.kwargs.get("relative_dir")
+        snapshot_code = my.kwargs.get("snapshot_code")
+
+        snapshot = Search.get_by_code("sthpw/snapshot", snapshot_code)
+        version  = snapshot.get_value("version")
+
+        parent = snapshot.get_parent()
+
+        #if version == 1:
+        if False:
+            snapshots = [snapshot]
+        else:
+            context = snapshot.get_value("context")
+
+            search = Search("sthpw/snapshot")
+            search.add_parent_filter(parent)
+            search.add_filter("context", context)
+            snapshots = search.get_sobjects()
+
+        all_files = []
+        for snapshot in snapshots:
+            # move all of the files from this snapshot
+            files = snapshot.get_all_file_objects()
+            for file in files:
+                file.set_value("relative_dir", relative_dir)
+                file.commit()
+            all_files.extend(files)
+
+
+        mode = "relative_dir"
+        if mode == "relative_dir":
+            # Some assumed behavior for this mode:
+            # 1) all snapshots exist in the same folder
+            # 2) all sobjects have a column called {relative_dir}
+            # This should all fail cleanly if these assumptions are not the
+            # case unless the sobject has a column called "relative_dir"
+            # used for some other purpose
+            if parent.column_exists("relative_dir"):
+                parent.set_value("relative_dir", relative_dir)
+                parent.commit()
+
+        search_keys = [x.get_search_key() for x in all_files]
+
+        from tactic.command import NamingMigratorCmd
+        cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
+        cmd.execute()
+
+
+
 
 
 
@@ -415,7 +749,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         selected = None
 
         from tactic.ui.container import TabWdg
-        tab = TabWdg(config_xml=config, selected=selected, show_remove=False, show_add=False)
+        tab = TabWdg(config_xml=config, selected=selected, show_remove=False, show_add=False, tab_offset=10)
         div.add(tab)
 
 
@@ -452,24 +786,41 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         search = Search("sthpw/file")
         search.add_filter("relative_dir", "%s%%" % reldir, op='like')
         search.add_filter("search_type", search_type)
-        print search.get_statement()
 
         search2 = Search(search_type)
         search2.add_relationship_search_filter(search)
         sobjects = search2.get_sobjects()
 
+        top = my.top
+
+
+        path = my.kwargs.get("dirname")
+        path_div = DivWdg()
+        top.add(path_div)
+        path_div.add("<b>Path:</b> %s" % path)
+        path_div.add_color("color", "color")
+        path_div.add_color("background", "background", -5)
+        path_div.add_style("padding: 15px")
+        path_div.add_style("margin: -1 -1 0 -1")
+        path_div.add_border()
+
+
+        layout_mode = 'default'
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
                 search_type=search_type,
                 view="table",
                 element_names=['preview','code','name','description','history','file_list'],
-                show_shelf=False
+                show_shelf=False,
+                layout=layout_mode,
+                scale='50'
+
 
         )
         layout.set_sobjects(sobjects)
 
 
-        top = my.top
+        top.add_border(size="1px 1px 0px 1px")
         top.add(layout)
 
         return top

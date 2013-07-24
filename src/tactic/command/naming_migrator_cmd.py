@@ -21,28 +21,38 @@ from pyasm.biz import Snapshot, Project
 from pyasm.command import Command
 
 
-import os, shutil
+import os, shutil, sys
 
 
 class NamingMigratorCmd(Command):
 
     def execute(my):
-        search_type = my.kwargs.get("search_type")
-        assert search_type
 
-        sobjects = Search.eval("@SOBJECT(%s)" % search_type)
-        print "@SOBJECT(%s)" % search_type
+        mode = my.kwargs.get("mode")
+        # modes are either naming based or file object based
+        #mode = "naming"
+        #mode = "file"
+        assert mode in ['naming', 'file']
+
+        search_type = my.kwargs.get("search_type")
+        search_keys = my.kwargs.get("search_keys")
+        assert search_type or search_keys
+
+        if search_type:
+            print "@SOBJECT(%s)" % search_type
+            sobjects = Search.eval("@SOBJECT(%s)" % search_type)
+        else:
+            sobjects = Search.get_by_search_keys(search_keys)
+
         if not sobjects:
             print "No sobjects to process"
             return
-        print "sobjects: ", len(sobjects)
         snapshots = Search.eval("@SOBJECT(sthpw/snapshot)", sobjects)
 
-        limit = 100
-
+        # set an arbitrary limit for now
+        limit = 1000
 
         base_dir = Config.get_value("checkin", "asset_base_dir")
-        #base_dir = "/home/apache/assets/"
 
         num_found = 0
         errors = []
@@ -55,18 +65,34 @@ class NamingMigratorCmd(Command):
             for file_type in file_types:
                 files = snapshot.get_files_by_type(file_type)
 
+                # FIXME: not sure why we have this limitation, although it is
+                # a pretty rare occurance
                 if len(files) > 1:
-                    ffsadfsd
+                    raise Exception("More than one file with type [%s] in snapshot [%s]" % (file_type, snapshot.get_code()) )
 
                 file = files[0]
-
                 file_name = file.get_value("file_name")
-                checkin_dir = file.get_value("checkin_dir")
 
+
+                # check-in dir is not subject to changes in asset_dir
+                checkin_dir = file.get_value("checkin_dir")
                 old_path = "%s/%s" % ( checkin_dir, file_name )
 
+
                 try:
-                    path = snapshot.get_preallocated_path(file_type, file_name)
+
+                    if mode == "naming":
+                        # preallocated path is used to align a file to the
+                        # current naming convention
+                        path = snapshot.get_preallocated_path(file_type, file_name)
+                    elif mode == "file":
+                        # relative_dir is used to align a file to the current
+                        # place pointed to by the "file" object
+                        relative_dir = file.get_value("relative_dir")
+                        path = "%s/%s/%s" % ( base_dir, relative_dir, file_name )
+                    else:
+                        raise Exception("Invalid mode [%s]" % mode)
+
                 except Exception, e:
                     error = "Snapshot [%s] has an error getting preallocated path: [%s]" % (snapshot.get_code(), e.message )
                     errors.append(error)
@@ -92,6 +118,7 @@ class NamingMigratorCmd(Command):
                 new_dir = os.path.dirname(path)
                 new_filename = os.path.basename(path)
                 new_relative_dir = new_dir.replace(base_dir, '')
+                new_relative_dir = new_relative_dir.strip("/")
 
                 xml = snapshot.get_xml_value("snapshot")
                 node = xml.get_node("snapshot/file[@type='%s']" % file_type)
@@ -104,6 +131,10 @@ class NamingMigratorCmd(Command):
                 file.set_value("checkin_dir", new_dir)
                 file.set_value("relative_dir", new_relative_dir)
                 snapshot.set_value("snapshot", xml.to_string() )
+
+                dirname = os.path.dirname(path)
+                if not os.path.exists(dirname):
+                    FileUndo.mkdir(dirname)
 
                 FileUndo.move(old_path, path)
                 file.commit()
@@ -121,6 +152,12 @@ class NamingMigratorCmd(Command):
 
 if __name__ == '__main__':
 
-    Batch(project_code='pg')
-    cmd = NamingMigratorCmd(search_type='pg/photos')
+    args = sys.argv[1:]
+    project_code = args[0]
+    search_type = args[1]
+
+    Batch(project_code=project_code)
+    cmd = NamingMigratorCmd(search_type=search_type, mode="naming")
     Command.execute_cmd(cmd)
+
+

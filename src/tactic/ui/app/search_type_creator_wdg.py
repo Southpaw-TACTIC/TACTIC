@@ -395,7 +395,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         pipeline_checkbox = CheckboxWdg("sobject_pipeline")
 
-        pipeline_div.add("All sTypes can have pipelines which dictate the workflow of an sType. ")
+        pipeline_div.add("All sType items can have pipelines which dictate the workflow of an sType. ")
         pipeline_div.add("Pipelines contain processes that dictate the workflow of an sType.  Add proccess that need to be tracked for this sType.")
         pipeline_div.add("<br/>"*2)
         pipeline_div.add("&nbsp;&nbsp;&nbsp;<b>Items have a Pipeline?</b> ")
@@ -467,7 +467,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         preview_checkbox = CheckboxWdg("sobject_preview")
         preview_checkbox.set_checked()
 
-        column_div.add("All sTypes can have icons associated with them.")
+        column_div.add("All sType items can have preview images associated with them.")
         column_div.add("<br/>"*2)
         column_div.add("&nbsp;&nbsp;&nbsp;<b>Include Preview Image?</b> ")
         column_div.add(preview_checkbox)
@@ -516,6 +516,10 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
         div.add( my.get_naming_item_wdg(expr, "Asset with Workflow") )
 
+        expr = "/{sobject.relative_dir}"
+        div.add( my.get_naming_item_wdg(expr, "Free Form") )
+
+
         div.add("<br/>")
 
         from pyasm.widget import RadioWdg
@@ -553,6 +557,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             "sobject.category": "cars!sports",
             "snapshot.process": "delivery",
             "sobject.code": "CAR00586",
+            "sobject.relative_dir": "%s!asset!vehicles!cars!sports" % project_code,
         }
 
         sample_expr = expr
@@ -1877,7 +1882,10 @@ class SearchTypeCreatorCmd(Command):
             naming_expr = my.get_value("custom_naming")
 
         if not naming_expr or naming_expr == "_DEFAULT":
-            naming_expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
+            naming_expr = "{project.code}/{search_type.table_name}/{sobject.code}"
+
+        # fix the slashes
+        naming_expr = naming_expr.strip("/")
 
         naming = SearchType.create("config/naming")
         naming.set_value("dir_naming", naming_expr)

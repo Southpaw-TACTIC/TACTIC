@@ -507,7 +507,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
 
         if diff < 0:
-            if status in ["Approved"]:
+            if status.lower() in ["approved", "complete", "done"]:
                 mode = "done"
             else:
                 mode = "critical"

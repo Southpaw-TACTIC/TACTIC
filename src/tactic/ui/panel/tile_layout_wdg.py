@@ -48,6 +48,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             data = {}
         my.scale = data.get("scale")
+        if my.scale == None:
+            my.scale = my.kwargs.get("scale")
 
         
         inner.add_style("margin-left: 20px")

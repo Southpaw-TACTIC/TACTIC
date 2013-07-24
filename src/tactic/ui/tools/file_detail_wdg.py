@@ -39,6 +39,7 @@ class FileDetailWdg(BaseRefreshWdg):
         table = ResizableTableWdg()
         top.add(table)
         table.add_row()
+        table.add_style("width: 100%")
 
         #td = table.add_cell()
         #thumb_div = DivWdg()

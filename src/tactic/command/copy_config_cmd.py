@@ -11,6 +11,11 @@
 #
 __all__ = ['CopyConfigCmd']
 
+
+# DEPRECATED
+# This was only a test ... should remove
+
+
 import tacticenv
 
 from pyasm.common import Common, Xml

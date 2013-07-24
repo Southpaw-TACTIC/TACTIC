@@ -265,10 +265,16 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         dialog = DialogWdg(display="false", show_title=False)
         info_div.add(dialog)
-        dialog.set_as_activator(info_div)
+        dialog.set_as_activator(info_div, offset={'x':0,'y':10})
 
+        dialog_data_div = DivWdg()
+        dialog_data_div.add_color("background", "background")
+        dialog_data_div.add_style("padding", "10px")
+
+        dialog.add(dialog_data_div)
+        dialog_data_div.add("Category:")
         text = TextInputWdg(name="category")
-        dialog.add(text)
+        dialog_data_div.add(text)
         text.add_class("spt_category")
         text.add_style("padding: 1px")
 
@@ -330,6 +336,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_init = '''
         var server = TacticServerStub.get();
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
+        var info_el = top.getElement(".spt_upload_info");
+        info_el.innerHTML = "Uploading ...";
         '''
 
         upload_progress = '''
@@ -338,6 +346,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         var percent = Math.round(evt.loaded * 100 / evt.total);
         progress_el.setStyle("width", percent + "%");
         progress_el.innerHTML = String(percent) + "%";
+
+
         '''
 
 
@@ -350,6 +360,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var info_el = top.getElement(".spt_upload_info");
         
         var search_type = bvr.kwargs.search_type;
+        var relative_dir = bvr.kwargs.relative_dir;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -365,6 +376,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var kwargs = {
             search_type: search_type,
+            relative_dir: relative_dir,
             filenames: filenames,
             key: key,
             categories: categories,
@@ -372,6 +384,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         on_complete = function() {
             spt.info("Ingest complete");
             server.finish();
+            spt.message.stop_interval(key);
         };
 
         var class_name = 'tactic.ui.tools.IngestUploadCmd';
@@ -382,7 +395,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             msg = JSON.parse(message.message);
             var percent = msg.progress;
             var description = msg.description;
-
             info_el.innerHTML = description;
 
             progress_el.setStyle("width", percent+"%");
@@ -402,11 +414,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add_style("margin-bottom: 15px")
         upload_div.add("<br clear='all'/>")
 
+        relative_dir = my.kwargs.get("relative_dir")
 
         button.add_behavior( {
             'type': 'click_up',
             'kwargs': {
-                'search_type': search_type
+                'search_type': search_type,
+                'relative_dir': relative_dir
             },
             'cbjs_action': '''
 
@@ -470,6 +484,7 @@ class IngestUploadCmd(Command):
         filenames = my.kwargs.get("filenames")
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
+        relative_dir = my.kwargs.get("relative_dir")
 
         server = TacticServerStub.get()
 
@@ -482,6 +497,10 @@ class IngestUploadCmd(Command):
 
             sobject = SearchType.create(search_type)
             sobject.set_value("name", filename)
+
+            if relative_dir and sobject.column_exists("relative_dir"):
+                sobject.set_value("relative_dir", relative_dir)
+
 
             if len(categories) >= count:
                 category = categories[count]
@@ -512,8 +531,9 @@ class IngestUploadCmd(Command):
 
         msg = {
             'progress': '100',
-            'description': ''
+            'description': 'Check-ins complete'
         }
         server.log_message(key, msg, status="complete")
+
 
 

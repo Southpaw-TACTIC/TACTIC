@@ -1032,7 +1032,7 @@ spt.message.poll = function(key) {
 spt.message.async_poll = function(key, callback) {
     // before polling, check that the element still exists
     var el = spt.message.elements[key];
-    if (el.parentNode == null) {
+    if (el && el.parentNode == null) {
         spt.message.stop_interval(key);
         return;
     }

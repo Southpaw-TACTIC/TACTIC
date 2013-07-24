@@ -408,16 +408,16 @@ class FileCheckin(BaseCheckin):
                 if my.repo_type == 'perforce':
                     relative_dir = os.path.dirname(source_path)
                     relative_dir = relative_dir.replace(my.base_dir, "")
-                    relative_dir = relative_dir.lstrip("/")
 
                 elif my.base_dir and file_dir.startswith(my.base_dir):
                     relative_dir = file_dir.replace(my.base_dir, "")
                     # strip any leading /
-                    relative_dir = relative_dir.lstrip("/")
                 else:
                       
                     # otherwise relative_dir is empty??
                     relative_dir = ''
+
+                relative_dir = relative_dir.strip("/")
                 file_object.set_value("relative_dir", relative_dir)
                 if my.base_dir_alias:
                     file_object.set_value("base_dir_alias", my.base_dir_alias)
@@ -434,6 +434,7 @@ class FileCheckin(BaseCheckin):
 
                 # set the relative dir
                 relative_dir = my.snapshot.get_relative_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
+                relative_dir = relative_dir.strip("/")
                 file_object.set_value("relative_dir", relative_dir)
 
                 relative_dir = file_object.get_value("relative_dir")
@@ -578,7 +579,8 @@ class FileCheckin(BaseCheckin):
         else:
             client_lib_dir = snapshot.get_lib_dir(file_type=file_type, create=True, file_object=file_object)
 
-        
+        # put some protection in for ending slash
+        client_lib_dir = client_lib_dir.rstrip("/")
         path = "%s/%s" % (client_lib_dir, file_name)
         return path
 

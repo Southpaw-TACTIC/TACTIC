@@ -366,7 +366,6 @@ class DirListWdg(BaseRefreshWdg):
             spt.drag = {}
 
             spt.drag.noop = function(evt, el) {
-              console.log("test");
               evt.stopPropagation();
               evt.preventDefault();
               evt.dataTransfer.dropEffect = 'copy';
