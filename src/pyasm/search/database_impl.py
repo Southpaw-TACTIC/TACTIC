@@ -2309,7 +2309,9 @@ class SqliteImpl(PostgresImpl):
     #
     def process_value(my, name, value, column_type="varchar"):
         quoted = True
-        if column_type == 'boolean':
+        if value == "NULL":
+            quoted = False
+        elif column_type == 'boolean':
             quoted = False
             if value in ['true', 'True', 1 ,'1', True]:
                 value = 1
