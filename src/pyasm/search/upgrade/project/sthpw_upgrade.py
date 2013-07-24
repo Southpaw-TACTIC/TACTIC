@@ -22,7 +22,7 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.0.0.a01
     #
 
-    def upgrade_v4_1_0_a01_002(my):
+    def upgrade_v4_1_0_a01_008(my):
         my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message_log', 'sthpw', 'Message Log', 'sthpw', 'message_log', 'pyasm.search.SObject', 'Message Log', 'public');
         ''')
 
