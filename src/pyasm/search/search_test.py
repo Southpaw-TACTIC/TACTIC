@@ -65,6 +65,7 @@ class SearchTest(unittest.TestCase):
             my._test_add_column_search()
             my._test_commit()
             my._test_set_value()
+            my._test_search_set_value()
             my._test_get_by_statement()
         finally:
             my.transaction.rollback()
@@ -748,19 +749,54 @@ class SearchTest(unittest.TestCase):
         update.set_database('sthpw')
         update.set_table('task')
         update.set_value('timestamp','2012-12-12')
-        update.set_value('timestamp','2012-12-12')
         my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = '2012-12-12'""")
 
         update.set_value('timestamp','NOW')
         my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = 'now()'""")
 
+        update = Update()
+        update.set_database('sthpw')
+        update.set_table('task')
         sql_impl = DatabaseImpl.get('SQLServer')
         update.impl = sql_impl
         update.set_value('timestamp','2012-12-12')
-        update.set_value('timestamp','2012-12-12')
-        my.assertEquals( update.get_statement(), """UPDATE [task] SET "timestamp" = convert(datetime2, \'2012-12-12\', 0)""")
+        my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = convert(datetime2, \'2012-12-12\', 0)""")
         update.set_value('timestamp','NOW')
-        my.assertEquals( update.get_statement(), """UPDATE [task] SET "timestamp" = getdate()""")
+        my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = getdate()""")
+
+
+        
+        time_dict = {'SQLServer': "convert(datetime2, '2012-12-25', 0)", 
+                    'Sqlite':"'2012-12-25'", 
+                    'PostgreSQL':"'2012-12-25'",
+                    'MySQL': "'2012-12-25'"}
+                    #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
+
+        #TODO: test with cx_Oracle installed
+        for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
+            sql_impl = DatabaseImpl.get(db_type)
+            update = Update()
+            update.set_database('sthpw')
+            update.set_table('task')
+            update.impl = sql_impl
+            update.set_value('timestamp','2012-12-25')
+            update.set_value('description','')
+
+            my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = %s, "description" = \'\'"""%time_dict.get(db_type))
+
+            update.set_value('description',None)
+            my.assertEquals( update.get_statement(), """UPDATE "task" SET "timestamp" = %s, "description" = NULL"""%time_dict.get(db_type))
+
+
+    def _test_search_set_value(my):
+        #TODO, test other db impl
+        sobject = Search.eval("@SOBJECT(sthpw/task['@LIMIT','1'])", single=True)
+        sobject.set_value('timestamp','2012-12-12')
+        sobject.set_value('description', '')
+        sobject.commit(triggers=False)
+        my.assertEquals( sobject.data.get('description'), None)
+        my.assertEquals( sobject.get_value('description'), '')
+
 
 
 

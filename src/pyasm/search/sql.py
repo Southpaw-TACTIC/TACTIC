@@ -2440,15 +2440,7 @@ class Insert(object):
             column_types = my.impl.get_column_types(my.db_resource, my.table)
             column_type = column_types.get(column)
 
-
-            if my.impl.get_database_type() == 'Sqlite':
-                if column_type == 'boolean':
-                    if value == True:
-                        value = 'true'
-                    else:
-                        value = 'false'
-                    quoted = True
-
+          
             info = my.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
@@ -2485,8 +2477,8 @@ class Insert(object):
 
         if my.database and database_type == "Oracle":
             statement.append('INSERT INTO %s."%s"' % (my.database, my.table))
-        elif database_type == "SQLServer":
-            statement.append('INSERT INTO [%s]' % my.table)
+        #elif database_type == "SQLServer":
+        #    statement.append('INSERT INTO [%s]' % my.table)
         else:
             statement.append('INSERT INTO "%s"' % my.table)
 
@@ -2621,9 +2613,7 @@ class Update(object):
             if info:
                 value = info.get("value")
                 quoted = info.get("quoted")
-
         my.data[column] = value;
-
         if escape_quoted == True:
             my.escape_quoted_cols.append(column)
         elif quoted == False:
@@ -2679,8 +2669,8 @@ class Update(object):
         statement = []
         if my.database and database_type == "Oracle":
             statement.append('UPDATE %s."%s" SET' % (my.db_resource, my.table))
-        elif my.database and database_type == "SQLServer":
-            statement.append('UPDATE [%s] SET' % my.table)
+        #elif my.database and database_type == "SQLServer":
+        #    statement.append('UPDATE [%s] SET' % my.table)
         else:
             statement.append('UPDATE "%s" SET' % my.table)
 
