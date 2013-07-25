@@ -143,9 +143,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-        for name, value in search_codes.items():
-            print value, name
-
         print "---"               
 
         for name, value in num_sobjects.items():
@@ -188,7 +185,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         base_dir = Environment.get_asset_dir()
         project_code = Project.get_project_code()
-        base_dir = "%s/%s" % (base_dir, project_code)
+        project_dir = "%s/%s" % (base_dir, project_code)
 
         table.add_row()
 
@@ -265,7 +262,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
         search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, open_depth=1, search_type=search_type, file_codes=file_codes, snapshot_codes=my.snapshot_codes)
+        dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=1, search_type=search_type, file_codes=file_codes, snapshot_codes=my.snapshot_codes)
         content_div.add(dir_list)
 
 
@@ -670,6 +667,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         path = "%s/%s" % (dirname, basename)
         relative_dir = path.replace(my.base_dir, "")
         relative_dir = relative_dir.strip("/")
+        # my.base_dir contains the project, so it will be removed.  Add this
+        # back
+        project_code = Project.get_project_code()
+        relative_dir = "%s/%s" % (project_code, relative_dir)
         item_div.add_attr("spt_relative_dir", relative_dir)
 
         search_type = my.kwargs.get("search_type")
