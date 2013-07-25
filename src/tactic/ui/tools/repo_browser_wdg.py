@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserCbk', 'RepoBrowserDirContentWdg']
+__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserCbk', 'RepoBrowserDirContentWdg', 'RepoBrowserActionCmd']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -63,38 +63,60 @@ class RepoBrowserWdg(BaseRefreshWdg):
         keywords = my.kwargs.get("keywords")
 
 
-        search = Search("sthpw/file")
-        search.add_filter("search_type", search_type)
-        if parent_ids:
-            search.add_filters("search_id", parent_ids)
-        if keywords:
-            search.add_text_search_filter("metadata_search", keywords)
-
-        if my.mode == 'main':
-            search.add_filter("type", "main")
-
-        file_objects = search.get_sobjects()
-
         paths = []
         my.file_codes = {}
         my.snapshot_codes = {}
         base_dir = Environment.get_asset_dir()
-        for file_object in file_objects:
-            relative_dir = file_object.get_value("relative_dir")
-            file_name = file_object.get_value("file_name")
 
-            repo_type = file_object.get_value("repo_type")
-            if repo_type == 'perforce':
-                print "PERFORCE: ", file_object.get_code(), file_name
-                #continue
+        search_codes = {}
 
-            path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
-            paths.append(path)
+        # Not this shold be used sparingly because it can find lots of
+        # sobjects
+        if my.mode != "folder":
 
-            my.file_codes[path] = file_object.get("code")
-            my.snapshot_codes[path] = file_object.get("snapshot_code")
+            search = Search("sthpw/file")
+            search.add_filter("search_type", search_type)
+            if parent_ids:
+                search.add_filters("search_id", parent_ids)
+            if keywords:
+                search.add_text_search_filter("metadata_search", keywords)
+
+            if my.mode == 'main':
+                search.add_filter("type", "main")
+
+            file_objects = search.get_sobjects()
 
 
+
+            for file_object in file_objects:
+                relative_dir = file_object.get_value("relative_dir")
+                file_name = file_object.get_value("file_name")
+
+                repo_type = file_object.get_value("repo_type")
+                if repo_type == 'perforce':
+                    print "PERFORCE: ", file_object.get_code(), file_name
+                    #continue
+
+                path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
+                paths.append(path)
+
+                my.file_codes[path] = file_object.get("code")
+                my.snapshot_codes[path] = file_object.get("snapshot_code")
+
+                # store search codes per directory
+                dirname = "%s/%s/" % (base_dir, relative_dir)
+                search_code = file_object.get("search_code")
+                search_codes_list = search_codes.get(dirname)
+                if search_codes_list == None:
+                    search_codes[dirname] = set([search_code])
+                else:
+                    search_codes[dirname].add(search_code)
+
+
+
+
+
+        # get all the directories
         project_code = Project.get_project_code()
         search_type_obj = SearchType.get(search_type)
         parts = search_type_obj.get_base_key().split("/")
@@ -105,11 +127,29 @@ class RepoBrowserWdg(BaseRefreshWdg):
         start_dir = "%s/%s/%s" % (base_dir, project_code, table)
         paths.append("%s/" % start_dir)
 
+        num_sobjects = {}
         for root, dirnames, filenames in os.walk(start_dir):
+
             for dirname in dirnames:
                 # need to put a / and the end to signify a directory
                 full = "%s/%s/" % (root, dirname)
                 paths.append(full)
+
+                search_codes_list = search_codes.get(full)
+                if not search_codes_list:
+                    num_sobjects[full] = 0
+                else:
+                    num_sobjects[full] = len(search_codes_list)
+
+
+
+        for name, value in search_codes.items():
+            print value, name
+
+        print "---"               
+
+        for name, value in num_sobjects.items():
+            print value, name
 
         return paths
 
@@ -126,6 +166,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         my.mode = 'main'
         #my.mode = 'all'
+        #my.mode = 'folder'
 
         """
         title_wdg = DivWdg()
@@ -145,9 +186,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
         table.add_style("margin: -1px -1px -1px -1px")
         table.add_style("width: 100%")
 
-
         base_dir = Environment.get_asset_dir()
-
+        project_code = Project.get_project_code()
+        base_dir = "%s/%s" % (base_dir, project_code)
 
         table.add_row()
 
@@ -189,6 +230,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         ''' % search_type
         }
 
+
+
         search_div = DivWdg()
         left_wdg.add(search_div)
         search_div.add("<b>File Filter: </b>")
@@ -219,8 +262,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content_div.add_style("min-width: 400px")
         left_wdg.add(content_div)
 
+
+
         search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, all_open=True, search_type=search_type, file_codes=file_codes, snapshot_codes=my.snapshot_codes)
+        dir_list = RepoBrowserDirListWdg(base_dir=base_dir, location="server", show_base_dir=True,paths=paths, open_depth=1, search_type=search_type, file_codes=file_codes, snapshot_codes=my.snapshot_codes)
         content_div.add(dir_list)
 
 
@@ -353,16 +398,21 @@ class RepoBrowserDirListWdg(DirListWdg):
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
 
 
-        """
         # add in template UIs
         template_div = DivWdg()
-        top.add(template_div)
+        #top.add(template_div)
         
         new_folder_div = DivWdg()
         template_div.add(new_folder_div)
-        """
+        arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
+        icon = "/context/icons/silk/folder.png";
+        html = "";
+        html += '<img src="'+arrow+'"/>';
+        html += '<img src="'+icon+'"/>';
+        html += '<input type="text" value="New Folder"/>';
+        new_folder_div.add(html)
 
-         
+        
 
 
 
@@ -397,42 +447,147 @@ class RepoBrowserDirListWdg(DirListWdg):
             var html = "";
             html += '<img src="'+arrow+'"/>';
             html += '<img src="'+icon+'"/>';
-            html += '<input type="text" value="New Folder"/>';
-
+            html += '<input class="new_folder_input" type="text" value="New Folder"/>';
             div.innerHTML = html;
-            div.inject(activator, "after");
-            div.setStyle("margin-left", "25px");
 
-            var input = div.childNodes[2];
+            var content = activator.getNext(".spt_dir_content");
+            if (content.childNodes.length)
+                div.inject(content.childNodes[0], "before");
+            else
+                div.inject(content);
+
+
+            var padding = activator.getStyle("padding-left");
+            padding = parseInt( padding.replace("px", "") ) + 11;
+            div.setStyle("padding-left", padding);
+
+            var input = div.getElement(".new_folder_input");
             input.onblur = function() {
                 var value = this.value;
-                div.innerHTML = value;
+                if (!value) {
+                    div.destroy();
+                }
+
+                var span = $(document.createElement("span"));
+                span.innerHTML = " " +value;
+                span.replaces(input);
+                span.addClass("spt_dir_value");
+
                 var new_relative_dir = relative_dir + "/" + value;
                 div.setAttribute("spt_relative_dir", new_relative_dir);
                 div.addClass("spt_dir_item");
 
-                // TODO: actually create the folder on the server
+                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    action: 'create_folder',
+                    relative_dir: new_relative_dir
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(class_name, kwargs);
             };
             input.onfocus = function() {
                 this.select();
             };
+            input.addEvent( "keyup", function(evt) {
+                var key = evt.key;
+                if (key == 'enter') {
+                    evt.stop();
+                    this.blur();
+                }
+                else if (key == 'esc') {
+                    div.destroy();
+                }
+            } );
+
             input.select();
-
-
 
             '''
         } )
 
 
-        menu_item = MenuItem(type='action', label='Rename Folder')
+        menu_item = MenuItem(type='action', label='Rename Folder (TODO)')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var relative_dir = activator.getAttribute("spt_relative_dir");
+
+            var input = $(document.createElement("input"));
+            input.setAttribute("type", "text");
+
+            var el = activator.getElement(".spt_dir_value");
+            input.replaces(el);
+
+            var parts = relative_dir.split("/");
+            input.value = parts[parts.length-1];
+            input.select();
+
+            input.onblur = function() {
+                var value = this.value;
+                if (!value) {
+                    div.destroy();
+                }
+
+                var span = $(document.createElement("span"));
+                span.innerHTML = " " +value;
+                span.replaces(input);
+                span.addClass("spt_dir_value");
+
+                var new_relative_dir = relative_dir + "/" + value;
+                div.setAttribute("spt_relative_dir", new_relative_dir);
+                div.addClass("spt_dir_item");
+
+                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    action: 'create_folder',
+                    relative_dir: new_relative_dir
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(class_name, kwargs);
+            };
+
+
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                search_type: bvr.search_type,
+                action: 'rename_folder',
+                relative_dir: relative_dir
+            }
+            var server = TacticServerStub.get();
+            server.execute_cmd(class_name, kwargs);
+
             '''
         } )
+
+        menu_item = MenuItem(type='action', label='Delete Folder')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+            if (!confirm("Delete folder ["+relative_dir+"]?")) {
+                return;
+            }
+
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                search_type: bvr.search_type,
+                action: 'delete_folder',
+                relative_dir: relative_dir
+            }
+            var server = TacticServerStub.get();
+            server.execute_cmd(class_name, kwargs);
+
+            activator.destroy();
+
+
+            '''
+        } )
+
 
 
         menu_item = MenuItem(type='separator')
@@ -454,10 +609,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load_popup("Check-in", class_name, kwargs);
             '''
         } )
-
-
-
-
 
 
 
@@ -510,6 +661,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
 
 
+
+
     def add_dir_behaviors(my, item_div, dirname, basename):
 
         SmartMenu.assign_as_local_activator( item_div, 'DIR_ITEM_CTX' )
@@ -530,7 +683,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
         var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
-        spt.app_busy.show("Loading information");
+        spt.app_busy.show("Loading ...");
         var kwargs = {
             search_type: bvr.search_type,
             view: 'table',
@@ -558,6 +711,55 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def get_dir_icon(my, dir, item):
         return IconWdg.LOAD
+
+
+
+class RepoBrowserActionCmd(Command):
+
+    def execute(my):
+
+        search_type = my.kwargs.get("search_type")
+        action = my.kwargs.get("action")
+
+        base_dir = Environment.get_asset_dir()
+        project_code = Project.get_project_code()
+        base_dir = "%s/%s" % (base_dir, project_code)
+
+        if action == 'create_folder':
+
+            relative_dir = my.kwargs.get("relative_dir")
+            if not relative_dir:
+                return
+
+            full_dir = "%s/%s" % (base_dir, relative_dir)
+
+            if os.path.exists(full_dir):
+                raise Exception("Directory [%s] already exists" % relative_dir)
+
+            os.makedirs(full_dir)
+
+        elif action == "delete_folder":
+
+            relative_dir = my.kwargs.get("relative_dir")
+            if not relative_dir:
+                return
+
+            full_dir = "%s/%s" % (base_dir, relative_dir)
+            os.rmdir(full_dir)
+
+
+        elif action == "rename_folder":
+
+            relative_dir = my.kwargs.get("relative_dir")
+            if not relative_dir:
+                return
+
+            print "OMG!!!"
+
+            
+
+
+
 
 
 
@@ -804,20 +1006,23 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_style("margin: -1 -1 0 -1")
         path_div.add_border()
 
+        search_codes = [x.get_value("code") for x in sobjects]
+        search_codes_str = "|".join(search_codes)
+        expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
 
         layout_mode = 'default'
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
-                search_type=search_type,
-                view="table",
-                element_names=['preview','code','name','description','history','file_list'],
-                show_shelf=False,
-                layout=layout_mode,
-                scale='50'
-
-
+            search_type=search_type,
+            expression=expression,
+            #search_keys=search_keys,
+            view="table",
+            element_names=['preview','code','name','description','history','file_list'],
+            show_shelf=True,
+            layout=layout_mode,
+            scale='50'
         )
-        layout.set_sobjects(sobjects)
+        #layout.set_sobjects(sobjects)
 
 
         top.add_border(size="1px 1px 0px 1px")

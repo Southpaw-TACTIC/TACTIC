@@ -16,7 +16,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Common, Config, jsonloads, Environment
 from pyasm.command import Command, DatabaseAction
-from pyasm.web import DivWdg, Table, SpanWdg, FloatDivWdg, WebContainer, HtmlElement
+from pyasm.web import DivWdg, Table, SpanWdg, FloatDivWdg, WebContainer, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType, WidgetDbConfig
 #from tactic.ui.panel import TableLayoutWdg
 from pyasm.widget import ProdIconButtonWdg, TextWdg, IconWdg, SelectWdg, SwapDisplayWdg, HiddenWdg, CheckboxWdg
@@ -345,9 +345,12 @@ class DirListWdg(BaseRefreshWdg):
             all_open = True
         else:
             all_open = False
+        open_depth = my.kwargs.get("open_depth")
+        if not open_depth:
+            open_depth = -1
 
 
-        my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open)
+        my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
         #location = my.kwargs.get("location")
         #my.paths = my.kwargs.get("paths")
         #base_dir = my.kwargs.get("base_dir")
@@ -407,7 +410,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def handle_paths(my, paths, base_path, div, depth=-1, all_open=False ):
+    def handle_paths(my, paths, base_path, div, depth=-1, all_open=False, open_depth=-1 ):
         '''assume path ending with / is a directory'''
         new_paths = []
         last_parts = []
@@ -420,10 +423,6 @@ class DirListWdg(BaseRefreshWdg):
             dirname = dirname.strip("/")
             basename = os.path.basename(extra)
 
-            if all_open:
-                is_open = True
-            else:
-                is_open = False
 
             if not dirname:
                 parts = []
@@ -482,6 +481,7 @@ class DirListWdg(BaseRefreshWdg):
             # other methods
             my.level = level
 
+
             # check if this is a directory, which ends in a /
             if path.endswith("/"):
                 dirname = os.path.dirname(path.rstrip("/"))
@@ -502,9 +502,14 @@ class DirListWdg(BaseRefreshWdg):
                     else:
                         folder_state = []
 
+
+
                     rel_dir = path.replace(my.base_dir + "/", "").rstrip("/")
                     if not folder_state:
-                        xis_open = all_open
+                        if open_depth != -1 and level < open_depth:
+                            xis_open = True
+                        else:
+                            xis_open = all_open
                     elif rel_dir in folder_state:
                         xis_open = True
                     else:
@@ -783,7 +788,10 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def handle_dir_div(my, dir_div, dirname, basename):
-        dir_div.add(basename)
+        span = SpanWdg()
+        span.add(basename)
+        span.add_class("spt_dir_value")
+        dir_div.add(span)
 
 
     def handle_item_div(my, item_div, dirname, basename):

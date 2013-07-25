@@ -504,11 +504,31 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
             return
 
-        # if an expression exists, then this rules the search
+
+        expr_search = None
         expression = my.kwargs.get('expression')
-        if expression:
-            my.handle_expression_search(expression)
+        if my.expr_sobjects:
+            if isinstance(my.expr_sobjects[0], Search):
+                expr_search = my.expr_sobjects[0]
+            else:
+                # this is not so efficient: better to use @SEARCH,
+                # but we support in anyway, just in case
+                expr_search = Search(my.search_type)
+                ids = SObject.get_values(my.expr_sobjects, 'id')
+                expr_search.add_filters('id', ids)
+
+        elif expression:
+            # if the expr_sobjects is empty and there is an expression, this
+            # means that the expression evaluated to no sobjects
+            # which means the entire search is empty
+            my.sobjects = []
             return
+
+        # DEPRECATED: handled by the above code
+        # if an expression exists, then this rules the search
+        #if expression:
+        #    my.handle_expression_search(expression)
+        #    return
 
 
         # don't set the view here, it affects the logic in SearchWdg
@@ -528,6 +548,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         search = my.search_wdg.get_search()
         if my.no_results:
             search.set_null_filter()
+
+        if expr_search:
+            search.add_relationship_search_filter(expr_search)
 
 
         if my.connect_key == "__NONE__":
@@ -600,23 +623,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.search_wdg.clear_search_data(search.get_base_search_type())
 
 
-        # This really hasn't been needed
-        # allow widgets to alter the search
-        #for widget in my.widgets:
-        #    widget.alter_search(search)
-
-
-        """
-        # MMS -
-        # FIXME: provide an opportunity to process the sobjects
-        if my.view == "terminal_report":
-            my.process_sobjects()
-        """
-
     	my.element_process_sobjects(search)
 
 
 
+
+    # DEPRECATED
+    """
     def handle_expression_search(my, expression):
 
         if my.expr_sobjects:
@@ -651,10 +664,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.element_process_sobjects(None)
 
         return
-
-
-
-
+    """
 
 
 
