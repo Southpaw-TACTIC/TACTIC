@@ -5491,7 +5491,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         if configs:
             element_names = [x.get_value("view") for x in configs]
 
-            title = "Plugin Widgets"
+            title = "Custom Layout Columns"
             context_menu.add( my.get_columns_wdg(title, element_names) )
 
 
