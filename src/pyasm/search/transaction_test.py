@@ -24,6 +24,7 @@ from transaction_log import *
 from search import *
 from sql import *
 from pyasm.biz import Project
+from pyasm.unittest import UnittestEnvironment
 
 import unittest,os
 
@@ -32,19 +33,29 @@ class TransactionTest(unittest.TestCase):
 
 
     def setUp(my):
-
         # intialiaze the framework as a batch process
         batch = Batch()
-        from pyasm.biz import Project
-        Project.set_project("unittest")
+        from pyasm.web.web_init import WebInit
+        WebInit().execute()
+
+        my.test_env = UnittestEnvironment()
+        my.test_env.create()
+        #from pyasm.biz import Project
+        #Project.set_project("unittest")
 
 
     def test_all(my):
-        my._test_transaction()
-        my._test_undo()
-        my._test_file_undo()
-        my._test_debug_log()
+        #my.transaction = Transaction.get(create=True)
+        try:
+            my._test_transaction()
+            my._test_undo()
+            my._test_file_undo()
+            my._test_debug_log()
+        finally:
+            #my.transaction.rollback()
+            Project.set_project('unittest')
 
+            my.test_env.delete()
 
     def _test_transaction(my):
         # initiate a global transaction
