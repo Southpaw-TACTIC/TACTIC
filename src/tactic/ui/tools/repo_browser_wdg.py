@@ -723,8 +723,6 @@ class RepoBrowserActionCmd(Command):
         action = my.kwargs.get("action")
 
         base_dir = Environment.get_asset_dir()
-        project_code = Project.get_project_code()
-        base_dir = "%s/%s" % (base_dir, project_code)
 
         if action == 'create_folder':
 
@@ -733,6 +731,7 @@ class RepoBrowserActionCmd(Command):
                 return
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
+            print "full: ", full_dir
 
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
