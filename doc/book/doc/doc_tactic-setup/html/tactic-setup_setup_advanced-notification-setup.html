@@ -41,7 +41,7 @@
                     updates.
          </p>
          <div class="mediaobject"><img src="media/1_advanced_notification_setup_overview.png"></div>
-         <h3><a name="d0e5941"></a>Insert Notifications
+         <h3><a name="d0e5936"></a>Insert Notifications
          </h3>
          <p>To insert a new notification, select from the sidebar:</p>
          <p>
@@ -245,7 +245,7 @@ support@southpawtech.com</pre><p>
                     task under the same context. A built-in email handler is called
                     "pyasm.command.NoteEmailHandler". Instead of entering it into an expression for <span class="italic">mail_to</span>, enter it into the <span class="italic">email_handler_class</span> field. 
          </p>
-         <h3><a name="d0e6141"></a>Email Test
+         <h3><a name="d0e6136"></a>Email Test
          </h3>
          <p>
                     
@@ -258,7 +258,7 @@ support@southpawtech.com</pre><p>
                     has not been properly filled in. Settings like firewall and TLS settings may also block an
                     email from being sent out. 
          </p>
-         <h4><a name="d0e6161"></a>Example 1:
+         <h4><a name="d0e6156"></a>Example 1:
          </h4>
          <p>In this example, the notification will be sent out each time a ticket is updated. It will
                     also only send to users in the 'admin' and 'moderator' groups.
@@ -331,7 +331,7 @@ http://tickets.southpawtech.com/tactic</pre>
                </tbody>
             </table>
          </div>
-         <h4><a name="d0e6234"></a>Example 2:
+         <h4><a name="d0e6229"></a>Example 2:
          </h4>
          <p>In this example, the notification will be sent out each time a shot-based note is updated.
                     It will send to manager's group and everyone assigned to the tasks of the shot. Since
@@ -398,7 +398,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
          <p>The following sections explain each configuration aspect of Notifications in greater
                     detail
          </p>
-         <h3><a name="d0e6306"></a>Notification Expressions
+         <h3><a name="d0e6301"></a>Notification Expressions
          </h3>
          <p>TACTIC uses the TACTIC Expression Language to build dynamic Notification Subject and
                     Message contents. This allows for each notification to be sent based on properties from the
@@ -408,7 +408,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
                     object.
          </p><pre class="screen">TACTIC Ticket {$GET(.id)} has been updated</pre><p>The expected results of this would be similar to the following:</p>
          <p>"TACTIC Ticket 14 has been updated"</p>
-         <h6><a name="d0e6318"></a>Example 1
+         <h6><a name="d0e6313"></a>Example 1
          </h6>
          <p>In essence, anything between the curly brackets "{}" is evaluated as an expression by
                     TACTIC.
@@ -419,7 +419,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
                                <span class="bold"><strong>TACTIC Expression Language</strong></span> docs
             </p>
          </div>
-         <h3><a name="d0e6328"></a>Filtering Notifications
+         <h3><a name="d0e6323"></a>Filtering Notifications
          </h3>
          <p>TACTIC's notification architecture is a rules-based system built using the trigger
                     architecture. Every time a command is executed, TACTIC looks through the list of defined
@@ -447,7 +447,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
                </li>
             </ul>
          </div>
-         <h3><a name="d0e6353"></a>Groups
+         <h3><a name="d0e6348"></a>Groups
          </h3>
          <p>By planning groups to send notifications to, it allows for simple connections for
                     deciphering which groups of users will receive notifications when the conditions of a
@@ -460,12 +460,12 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
                     <span class="bold"><strong>Admin-&gt;Site Admin -&gt;Groups </strong></span></p>
          <p>To specify a group to send a notification to, specify the group in the <span class="bold"><strong>mail_to</strong></span> column.
          </p>
-         <h6><a name="d0e6368"></a>Project
+         <h6><a name="d0e6363"></a>Project
          </h6>
          <p>By setting the project in the project column of a Notification, TACTIC will only use the
                     notification trigger for the chosen project.
          </p>
-         <h6><a name="d0e6372"></a>Access Rules 
+         <h6><a name="d0e6367"></a>Access Rules 
          </h6>
          <p>When a notification rule has passed all of the criteria, a message is constructed. Most
                     email events occur after a command has been completed. The email handler then takes the
@@ -475,14 +475,14 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
          <p>All rules are contained in groups. For notifications, there are a few predefined
                     groups:
          </p>
-         <h6><a name="d0e6378"></a>Example 1 
+         <h6><a name="d0e6373"></a>Example 1 
          </h6>
          <p>This rule group only allows tasks for prod/asset for the project sample3d to send out
                     notification. Otherwise, it would send out notifications for tasks of all search
                     types
          </p><pre class="screen">&lt;rules&gt;
    &lt;rule&gt;@GET(.search_type)=='prod/asset?project=sample3d'&lt;/rule&gt;
-&lt;/rules&gt;</pre><h6><a name="d0e6384"></a>Example 2
+&lt;/rules&gt;</pre><h6><a name="d0e6379"></a>Example 2
          </h6>
          <p>This rule group makes use of a key/value pair of attributes: that is, when the attribute
                     with the value of "key" is equal to "value", the rule is passed. In the example below, all
@@ -493,7 +493,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
     &lt;rule group="SObject" key="context" value="client"/&gt;
 &lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
     &lt;rule&gt;@GET(.context)=='client'&lt;/rule&gt;
-&lt;/rules&gt;</pre><h6><a name="d0e6392"></a>Example 3
+&lt;/rules&gt;</pre><h6><a name="d0e6387"></a>Example 3
          </h6>
          <p>For certain SObjects in TACTIC (like tasks), parent attributes can be used for
                     constructing rules. The concept behind this is the same as group="sObject", but now we are
@@ -504,7 +504,7 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
     &lt;rule group='parent' key='asset_library' value='prp'/&gt;
 &lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
     &lt;rule&gt;@GET(prod/asset.asset_library)=='prp'&lt;rule&gt;
-&lt;/rules&gt;</pre><h6><a name="d0e6401"></a>Example 4
+&lt;/rules&gt;</pre><h6><a name="d0e6396"></a>Example 4
          </h6>
          <p>For notes in TACTIC, we may have 2 processes for notes (e.g. anim, anim_2) We can check if
                     the process partially contains the word <span class="bold"><strong>anim</strong></span> by the
@@ -512,13 +512,13 @@ To reply or make further comments: please go to http://&lt;some IP&gt;/tactic/{$
          </p><pre class="screen">&lt;rules&gt;
     &lt;rule&gt;'anim' in @GET(.process)&lt;rule&gt;
 &lt;/rules&gt;</pre><p>Note: list comparisons like @GET(.process) in ['anim','anim_2'] are not supported</p>
-         <h6><a name="d0e6412"></a>Example 5
+         <h6><a name="d0e6407"></a>Example 5
          </h6>
          <p>For a check-in notification in TACTIC, we can choose to send only if the is_current
                     attribute is True for the event insert|sthpw/snapshot by the following:
          </p><pre class="screen">&lt;rules&gt;
     &lt;rule&gt;@GET(.is_current)==True&lt;rule&gt;
-&lt;/rules&gt;</pre><h5><a name="d0e6418"></a>Email Handler Class
+&lt;/rules&gt;</pre><h5><a name="d0e6413"></a>Email Handler Class
          </h5>
          <p>Each time a notification is executed, TACITC uses either the default email handler or it
                     uses and email handler override defined by the Email Handler Class property for the

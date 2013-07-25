@@ -198,15 +198,16 @@
                            high) to make it easier to start setting up what a group can see. Associating a group
                            with an access levels presets all the security settings. After that, the administrator
                            can return the Managing Security tool to allow further access in addition to the
-                           presets. The presets are outlined in the table below.
+                           presets. The presets are outlined in the table below. By default, when an access level
+                           is not manually provided for a group, a low access level is assigned.
             </p>
+            <p><span class="underline">Description of Access Privileges</span></p>
             <div class="informaltable">
                <table border="1">
                   <colgroup>
                      <col width="126.75pt">
                      <col width="179.25pt">
                      <col width="49.5pt">
-                     <col width="26.25pt">
                   </colgroup>
                   <tbody>
                      <tr>
@@ -217,10 +218,7 @@
                         </td>
                         <td>
                                                        
-                           <p><span class="underline">Description of access
-                                                                     privilege:</span></p>
-                                                       
-                           <p>Can see the project?</p>
+                           <p>Can see some projects?</p>
                                                        
                            <p>Can see all the links in the sidebar?</p>
                                                        
@@ -231,28 +229,42 @@
                         </td>
                         <td>
                                                        
-                           <p></p>
+                           <p>No</p>
                                                        
-                           <p></p>
+                           <p>No</p>
                                                        
-                           <p></p>
+                           <p>No</p>
                                                        
-                           <p></p>
+                           <p>No</p>
+                                                   
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
                                                        
-                           <p></p>
+                           <p>access level: <span class="bold"><strong>min</strong></span></p>
                                                    
                         </td>
                         <td>
                                                        
-                           <p></p>
+                           <p>Can see some projects?</p>
                                                        
-                           <p>[No]</p>
+                           <p>Can see all the links in the sidebar?</p>
                                                        
-                           <p>[No]</p>
+                           <p>Can see all the processes?</p>
                                                        
-                           <p>[No]</p>
+                           <p>Can see all search types?</p>
+                                                   
+                        </td>
+                        <td>
                                                        
-                           <p>[No]</p>
+                           <p>Yes</p>
+                                                       
+                           <p>No</p>
+                                                       
+                           <p>No</p>
+                                                       
+                           <p>Yes</p>
                                                    
                         </td>
                      </tr>
@@ -264,7 +276,7 @@
                         </td>
                         <td>
                                                        
-                           <p>Can see the project?</p>
+                           <p>Can see some projects?</p>
                                                        
                            <p>Can see all the links in the sidebar?</p>
                                                        
@@ -275,24 +287,13 @@
                         </td>
                         <td>
                                                        
-                           <p></p>
+                           <p>Yes</p>
                                                        
-                           <p></p>
+                           <p>No</p>
                                                        
-                           <p>[Yes]</p>
+                           <p>Yes</p>
                                                        
-                           <p>[Yes]</p>
-                                                   
-                        </td>
-                        <td>
-                                                       
-                           <p>[No]</p>
-                                                       
-                           <p>[No]</p>
-                                                       
-                           <p></p>
-                                                       
-                           <p></p>
+                           <p>Yes</p>
                                                    
                         </td>
                      </tr>
@@ -304,7 +305,7 @@
                         </td>
                         <td>
                                                        
-                           <p>Can see the project?</p>
+                           <p>Can see all projects?</p>
                                                        
                            <p>Can see all the links in the sidebar?</p>
                                                        
@@ -313,27 +314,10 @@
                            <p>Can see all search types?</p>
                                                    
                         </td>
-                        <td>
-                                                       
-                           <p>[Yes]</p>
-                                                       
-                           <p></p>
-                                                       
-                           <p>[Yes]</p>
-                                                       
-                           <p>[Yes]</p>
-                                                   
-                        </td>
-                        <td>
-                                                       
-                           <p></p>
-                                                       
-                           <p>[No]</p>
-                                                       
-                           <p></p>
-                                                       
-                           <p></p>
-                                                   
+                        <td>Yes
+                           <p>No</p>
+                           <p>Yes</p>
+                           <p>Yes</p>
                         </td>
                      </tr>
                      <tr>
@@ -344,7 +328,7 @@
                         </td>
                         <td>
                                                        
-                           <p>Can see the project?</p>
+                           <p>Can see all projects?</p>
                                                        
                            <p>Can see all the links in the sidebar?</p>
                                                        
@@ -355,24 +339,13 @@
                         </td>
                         <td>
                                                        
-                           <p>[Yes]</p>
+                           <p>Yes</p>
                                                        
-                           <p>[Yes]</p>
+                           <p>Yes</p>
                                                        
-                           <p>[Yes]</p>
+                           <p>Yes</p>
                                                        
-                           <p>[Yes]</p>
-                                                   
-                        </td>
-                        <td>
-                                                       
-                           <p></p>
-                                                       
-                           <p></p>
-                                                       
-                           <p></p>
-                                                       
-                           <p></p>
+                           <p>Yes</p>
                                                    
                         </td>
                      </tr>
@@ -394,7 +367,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e1658"></a>How the Access Levels are Built Up
+                     <h5 class="title"><a name="d0e1642"></a>How the Access Levels are Built Up
                      </h5>
                   </div>
                </div>
@@ -402,20 +375,26 @@
             <p>To better understand the differences between the Access Levels, the following is an
                            explanation of how the levels were built up:
             </p>
-            <p>Access Level <span class="bold"><strong>None</strong></span>: cannot see anything.
+            <p>Access Level <span class="bold"><strong>None</strong></span>: cannot see anything. Need to use
+                           Security tools, as shown in the "What the Manage Security View Provides" section, to
+                           define fully customized group security i.e. Project, Link, sType and Process Security
+                           tools
             </p>
-            <p>Access Level <span class="bold"><strong>Low</strong></span>: can see all <span class="italic">search types</span> and <span class="italic">processes</span>.
+            <p>Access Level <span class="bold"><strong>Min</strong></span>: Can see some <span class="italic">projects</span> and <span class="italic">sTypes</span>.
             </p>
-            <p>Access Level <span class="bold"><strong>Medium</strong></span>: can see what <span class="bold"><strong>low</strong></span> sees and all the <span class="italic">projects</span>.
+            <p>Access Level <span class="bold"><strong>Low</strong></span>: Default Access Level. Can see what
+                               <span class="bold"><strong>min</strong></span> sees and all the <span class="italic">processes</span>. 
             </p>
-            <p>Access Level <span class="bold"><strong>High</strong></span>: can see what <span class="bold"><strong>medium</strong></span> sees and all the <span class="italic">links</span>.
+            <p>Access Level <span class="bold"><strong>Medium</strong></span>: Can see what <span class="bold"><strong>low</strong></span> sees and all the <span class="italic">projects</span>.
+            </p>
+            <p>Access Level <span class="bold"><strong>High</strong></span>: Can see what <span class="bold"><strong>medium</strong></span> sees and all the <span class="italic">links</span>.
             </p>
          </div>
          <div class="simplesect" title="Where To Find the Access Levels">
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e1701"></a>Where To Find the Access Levels
+                     <h5 class="title"><a name="d0e1696"></a>Where To Find the Access Levels
                      </h5>
                   </div>
                </div>
@@ -429,7 +408,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e1710"></a>The Different Check Mark Indicators
+                     <h5 class="title"><a name="d0e1705"></a>The Different Check Mark Indicators
                      </h5>
                   </div>
                </div>
