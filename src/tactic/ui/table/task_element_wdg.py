@@ -459,24 +459,22 @@ class TaskElementWdg(BaseTableElementWdg):
                 for process in processes:
                     process_dict = my.status_colors.get(pipeline_code)
                     color = process.get_color()
-                    if color:
-                        process_dict[process.get_name()] = color
+                    #if color:
+                    process_dict[process.get_name()] = color
 
-                        
-        existing_statuses = process_dict.keys()
-
-        
         security = Environment.get_security()
-        # check security access
-        project_code = Project.get_project_code()
-
         my.allowed_statuses = []
-        for status in existing_statuses:
-            access_key = {'process': status }
+        for color_dict in my.status_colors.values():
+            existing_statuses = color_dict.keys()
+            # check security access
 
-            if security.check_access('process', access_key, "view", default="deny"):
-               my.allowed_statuses.append(status)
-        
+            for status in existing_statuses:
+                access_key = {'process': status }
+                if status in my.allowed_statuses:
+                    continue
+                if security.check_access('process', access_key, "view", default="deny"):
+                    my.allowed_statuses.append(status)
+
         if my.sobjects:
             search_type = my.sobjects[0].get_base_search_type()
             if search_type:
