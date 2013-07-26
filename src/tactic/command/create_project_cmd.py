@@ -47,7 +47,8 @@ class CopyFileToAssetTempCmd(Command):
         shutil.copy(icon_path, to_path)
 
         my.info = {
-            "path": "/assets/temp/%s/%s" % (ticket, filename)
+            "web_path": "/assets/temp/%s/%s" % (ticket, filename),
+            "lib_path": to_path
         }
 
         
@@ -163,12 +164,8 @@ class CreateProjectCmd(Command):
  
 
         # if there is an image, check it in
-        image_path = my.kwargs.get("project_image_path")
-        if image_path:
-            image_path = image_path.replace("\\", "/")
-            basename = os.path.basename(image_path)
-            upload_dir = Environment.get_upload_dir()
-            upload_path = "%s/%s" % (upload_dir, basename)
+        upload_path = my.kwargs.get("project_image_path")
+        if upload_path:
             if not os.path.exists(upload_path):
                 raise TacticException("Cannot find upload image for project [%s]" % upload_path)
             file_type = 'main'
