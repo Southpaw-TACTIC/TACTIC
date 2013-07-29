@@ -22,7 +22,7 @@
     distribution (which was all in Java).
 
     We have made a number of enhancements including reworking the serialization
-    so that it does not change the prototype of base types
+    so that it does not affect change the prototype of base types
 */
 
 
@@ -113,7 +113,7 @@ function Connection()
 
 
         self.xmlHttpRequest.open( 'POST', url, async );
-
+        
         if ( typeof self.xmlHttpRequest.setRequestHeader == 'function' )
         {
             self.xmlHttpRequest.setRequestHeader(
@@ -129,8 +129,7 @@ function Connection()
             spt.app_busy.hide();
             throw(e);
         }
-
-
+        
         //return self.xmlHttpRequest.responseText;
         //return self.xmlHttpRequest.responseXML;
         // only send the request back now
@@ -224,13 +223,16 @@ spt.xmlrpc = {};
 //
 spt.xmlrpc.serialize = function(element) {
     //var type = $type(element);
-    // Use Mootools type to handle their base types as well
-    var type = typeOf(element);
+    // Avoid using Mootools type to handle their base types as well
+    //var type = typeOf(element)
+    var type = typeof element
+    /*
     if (type == 'element') {
         spt.alert('Illegal attempt to serialize an html element. Please use a hash as arguments of a JS Client API call.'); 
         return;
     }
-
+    */
+    
     if (type == 'array') {
         return spt.xmlrpc.array(element);
     }
@@ -249,9 +251,13 @@ spt.xmlrpc.serialize = function(element) {
     else if (type == 'date') {
         return spt.xmlrpc.boolean(element);
     }
-    //if (type == 'object') {
     else {
-        //alert("type: " + type + " in serializer");
+        if (type == 'object') {
+            // TODO, when js 1.8 is more common, use Array.isArray()
+            if (Object.prototype.toString.call( element ) === '[object Array]') {
+                return spt.xmlrpc.array(element);
+            }
+        }
         return spt.xmlrpc.object(element);
     }
 

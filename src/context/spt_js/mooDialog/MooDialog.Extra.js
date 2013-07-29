@@ -219,11 +219,7 @@ MooDialog.implement('options', {
 
 	onInitialize: function(wrapper){
 		/*tactic: with error, it slides in */
-                if (this.options.textPClass == 'MooDialogInfo')
-                    	this.morph = new Fx.Morph(wrapper, {
-				duration: 400,
-				transition: Fx.Transitions.Bounce.easeOut
-			});
+
                 this.fx = new Fx.Tween(wrapper, {
 			property: 'opacity',
 			duration: this.options.duration
@@ -238,20 +234,10 @@ MooDialog.implement('options', {
 
 	onBeforeOpen: function(wrapper){
                 this.overlay.open();
-                var width = this.overlay.container.getScrollSize().x;
-                var dialog_width = wrapper.getWidth();
-                if (this.options.textPClass == 'MooDialogInfo'){
-                    var offset = 130; 
-                    effect =  {'left': [(width - dialog_width)/2 + offset - 30, (width-dialog_width)/2 + offset],
-				    opacity: [0.5, 1]
-		    };
-                    this.morph.start(effect).chain(function(){
-			this.fireEvent('show');
-	        	}.bind(this));
-                }
-                else
+                //var width = this.overlay.container.getScrollSize().x;
+                // var dialog_width = wrapper.getSize().x;
                     
-                    this.fx.start(1).chain(function(){
+                this.fx.start(1).chain(function(){
 			this.fireEvent('show');
 		}.bind(this));
 	},

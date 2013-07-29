@@ -32,11 +32,22 @@ class Naming(SObject):
     # Commenting this out.  File names can be anything.  We cannot and should
     # not enforce what people think are correct file names for whatever
     # purpose they happen to need it for.
-    #def validate(my):
-    #    file_name = my.get_value('file_naming')
-    #    p = re.compile('.*\.({ext}|\w+)$')
-    #    if not p.match(file_name):
-    #        raise TacticException('file_naming has to end with .{ext} or .xxx')
+
+    def validate(my):
+
+        sandbox_dir_naming = my.get_value('sandbox_dir_naming')
+        dir_naming = my.get_value('dir_naming')
+
+        if sandbox_dir_naming and sandbox_dir_naming.endswith('/'):
+            raise TacticException('sandbox_dir_naming should not end with /')
+            
+        if dir_naming and dir_naming.endswith('/'):
+            raise TacticException('dir_naming should not end with /')
+            
+        #file_name = my.get_value('file_naming')
+        #p = re.compile('.*\.({ext}|\w+)$')
+        #if not p.match(file_name):
+        #    raise TacticException('file_naming has to end with .{ext} or .xxx')
 
     def get_by_search_type(search_type):
 

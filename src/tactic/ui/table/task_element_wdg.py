@@ -459,8 +459,21 @@ class TaskElementWdg(BaseTableElementWdg):
                 for process in processes:
                     process_dict = my.status_colors.get(pipeline_code)
                     color = process.get_color()
-                    if color:
-                        process_dict[process.get_name()] = color
+                    #if color:
+                    process_dict[process.get_name()] = color
+
+        security = Environment.get_security()
+        my.allowed_statuses = []
+        for color_dict in my.status_colors.values():
+            existing_statuses = color_dict.keys()
+            # check security access
+
+            for status in existing_statuses:
+                access_key = {'process': status }
+                if status in my.allowed_statuses:
+                    continue
+                if security.check_access('process', access_key, "view", default="deny"):
+                    my.allowed_statuses.append(status)
 
         if my.sobjects:
             search_type = my.sobjects[0].get_base_search_type()
@@ -964,7 +977,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 		
         parent_key =  SearchKey.get_by_sobject(sobject, use_id=True)
-
+        from pyasm.common import Environment
         security = Environment.get_security()
         
         if sobject.is_insert():
@@ -1045,7 +1058,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 td.add_style("vertical-align: top")
                 last_one = False
                 if idx == last:
-
                     last_one = True
                     # have to push all the blocks to the left in case the number of tasks vary
                     # these numbers can handle 
@@ -1053,7 +1065,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         td.add_style("width: 2500px")
                     elif my.layout == 'horizontal':
                         td.add_style("width: 8500px")
-
+                    
                 task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
                 td.add(task_wdg)
 
@@ -1342,6 +1354,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if not pipeline:
                 pipeline = Pipeline.get_by_code("task")
             processes = pipeline.get_process_names()
+           
+            filtered_statuses = [x for x in processes if x in my.allowed_statuses]
 
             context = task.get_value("context")
             search_key = task.get_search_key()
@@ -1396,7 +1410,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_style("width", my.width)
                 div.add(select)
 
-            select.set_option("values", processes)
+            select.set_option("values", filtered_statuses)
             select.set_value(status)
 
 

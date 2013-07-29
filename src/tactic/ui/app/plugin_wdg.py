@@ -637,7 +637,7 @@ class PluginEditWdg(BaseRefreshWdg):
         if not selected:
             selected = "info"
 
-        tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px")
+        tab = TabWdg(selected=selected, show_add=False, show_remove=False, allow_drag=False, tab_offset="10px")
         top.add(tab)
         tab.add_style("margin: 0px -6px 0px -6px")
 

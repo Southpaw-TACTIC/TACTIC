@@ -158,6 +158,9 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
         }
         var st_view = "definition";
         spt.panel.refresh("ManageSearchTypeMenuWdg_" + st_view);
+
+        var st_view = 'db_column';
+        spt.panel.refresh("ManageSearchTypeMenuWdg_" + st_view);
     }
     catch (e) {
         server.abort();
@@ -187,6 +190,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
     def get_new_custom_widget(my, search_type, view):
 
         div = DivWdg()
+        div.add_style('width: 500px')
         
         mode_select = SelectWdg("custom_mode")
         mode_select.add_class("spt_custom_mode")
@@ -711,13 +715,14 @@ class CustomPropertyAdderCbk(Command):
             config.commit_config()
 
 
-        # create the sobject for now
+        """
+        # this sType has been deprecated
         sobject = SearchType.create("prod/custom_property")
         sobject.set_value("search_type", search_type)
         sobject.set_value("name", name)
         sobject.set_value("description", description)
         sobject.commit()
-
+        """
 
         # set some information
         my.description = "Added Property [%s] of type [%s] to [%s]" % \

@@ -24,6 +24,7 @@ from transaction_log import *
 from search import *
 from sql import *
 from pyasm.biz import Project
+from pyasm.unittest import UnittestEnvironment
 
 import unittest,os
 
@@ -32,23 +33,25 @@ class TransactionTest(unittest.TestCase):
 
 
     def test_all(my):
-
         # intialiaze the framework as a batch process
         batch = Batch()
-        from pyasm.biz import Project
-        Project.set_project("unittest")
+        from pyasm.web.web_init import WebInit
+        WebInit().execute()
 
-        test_env = UnittestEnvironment()
-        test_env.create()
+
+        my.test_env = UnittestEnvironment()
+        my.test_env.create()
+        #from pyasm.biz import Project
+        #Project.set_project("unittest")
 
         try:
             my._test_transaction()
             my._test_undo()
             my._test_file_undo()
             my._test_debug_log()
-        finally:
-            test_env.delete()
-
+            
+            Project.set_project('unittest')
+            my.test_env.delete()
 
     def _test_transaction(my):
         # initiate a global transaction
@@ -57,7 +60,6 @@ class TransactionTest(unittest.TestCase):
         count_sql = 'select count(*) from "person"'
 
         transaction = Transaction.get(create=True)
-
         # adding these 2 lines 
         project = Project.get_by_code(database)
         db_resource= project.get_project_db_resource()
@@ -116,14 +118,13 @@ class TransactionTest(unittest.TestCase):
             person.delete()
 
         # initiate a global transaction
-        transaction = Transaction.get(create=True)
-
+        transaction = Transaction.get(create=True, force=True)
+        
         person = Person.create("Mr", "Potato Head", "PotatoLand", "Pretty much looks like a potato")
         person2 = Person.create("Mrs", "Potato Head", "PotatoLand", "Pretty much looks like a potato")
 
         person2.set_value("nationality", "PotatoCountry")
         person2.commit()
-
         transaction.commit()
 
         search = Search("unittest/person")
@@ -131,6 +132,13 @@ class TransactionTest(unittest.TestCase):
         search.add_filter("name_last", "Potato Head")
         person = search.get_sobject()
         my.assertEquals( False, person == None )
+
+        search = Search("unittest/person")
+        search.add_filter("name_first", "Mr")
+        search.add_filter("name_last", "Potato Head")
+        rtn_person = search.get_sobject()
+        my.assertEquals( True, rtn_person != None )
+        
 
         # make sure we are no longer in transaction
         my.assertEquals( False, transaction.is_in_transaction() )

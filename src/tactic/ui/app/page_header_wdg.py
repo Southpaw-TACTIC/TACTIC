@@ -23,7 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg, RoundedCornerDivWdg, SmartMenu
 #from tactic.ui.popups import HelpPopupWdg, ActionBarWdg
 from tactic.ui.widget import PageHeaderGearMenuWdg, TextBtnWdg, ActionButtonWdg
-
+from tactic.ui.input import UploadButtonWdg
 
 class PageHeaderWdg(Widget):
 
@@ -766,65 +766,52 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         image_div.add("<b>Project Image: </b>")
         image_div.add("<br/>"*3)
-        button = ActionButtonWdg(title="Browse")
-        image_div.add(button)
+        on_complete = '''var server = TacticServerStub.get();
+        var file = spt.html5upload.get_file(); 
+        if (file) { 
+
+            var top = bvr.src_el.getParent(".spt_image_top");
+            var text = top.getElement(".spt_image_path");
+            var display = top.getElement(".spt_path_display");
+            var check_icon = top.getElement(".spt_check_icon");
+
+            var server = TacticServerStub.get();
+            var ticket = spt.Environment.get().get_ticket();
+
+
+            display.innerHTML = "Uploaded: " + file.name;
+            display.setStyle("padding", "10px");
+            check_icon.setStyle("display", "");
+          
+          
+            var filename = file.name;
+            filename = spt.path.get_filesystem_name(filename);
+            var kwargs = {
+                ticket: ticket,
+                filename: filename
+            }
+            try {
+                var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
+                var info = ret_val.info;
+                var path = info.web_path;
+                text.value = info.lib_path;
+                display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
+            }
+            catch(e) {
+                spt.alert(spt.exception.handler(e));
+            }
+            spt.app_busy.hide();
+            }
+        else {
+            spt.alert('Error: file object cannot be found.') 
+        }
+            spt.app_busy.hide();
+        '''
+        button = UploadButtonWdg(title="Browse", on_complete=on_complete) 
         button.add_style("margin-left: auto")
         button.add_style("margin-right: auto")
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var applet = spt.Applet.get();
-        spt.app_busy.show("Browsing for project image");
-        var path = applet.open_file_browser();
-        
-        if (path.length == 0) {
-            spt.alert('Please select an image.');
-            spt.app_busy.hide();
-            return;
-        }
-        path = path[0];
+        image_div.add(button)
 
-        var top = bvr.src_el.getParent(".spt_image_top");
-        var text = top.getElement(".spt_image_path");
-        var display = top.getElement(".spt_path_display");
-        var check_icon = top.getElement(".spt_check_icon");
-
-        text.value = path;
-
-        var server = TacticServerStub.get();
-        var ticket = spt.Environment.get().get_ticket();
-        server.upload_file(path, ticket);
-
-
-        display.innerHTML = "Uploaded: " + path;
-        display.setStyle("padding", "10px");
-        check_icon.setStyle("display", "");
-
-
-        path = path + "";
-      
-      
-        var filename = spt.path.get_basename(path);
-        filename = spt.path.get_filesystem_name(filename);
-        var kwargs = {
-            ticket: ticket,
-            filename: filename
-        }
-        try {
-            var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
-            var info = ret_val.info;
-            var path = info.path;
-
-            display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
-
-        }
-        catch(e) {
-            spt.alert(spt.exception.handler(e));
-        }
-        spt.app_busy.hide();
-
-        '''
-        } )
 
         text = HiddenWdg("project_image_path")
         text.add_class("spt_image_path")
@@ -1204,11 +1191,6 @@ class ProjectCreateWdg(BaseRefreshWdg):
         var project_source = values.project_source[0];
 
         var project_image_path = values['project_image_path'][0];
-        if (project_image_path) {
-            var applet = spt.Applet.get();
-            spt.app_busy.show("Uploading image file");
-            applet.upload_file(project_image_path);
-        }
 
         var project_theme = values['project_theme'][0];
 

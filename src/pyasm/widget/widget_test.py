@@ -13,7 +13,8 @@
 
 import tacticenv
 from pyasm.security import *
-
+from pyasm.unittest import UnittestEnvironment
+from pyasm.biz import Project
 import unittest
 
 class WidgetTest(unittest.TestCase):

@@ -416,6 +416,7 @@ class CommandTest(unittest.TestCase):
 
         #transaction = Transaction.get(create=True)
         try:
+            os.system('dropdb -U postgres "game_copy"')
             from tactic.command import ProjectTemplateInstallerCmd
             cmd =  ProjectTemplateInstallerCmd(project_code='game_copy', template_code='game', mode='copy')
             cmd.execute()

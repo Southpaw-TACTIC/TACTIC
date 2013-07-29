@@ -152,6 +152,7 @@ class SubMenuWdg(BaseRefreshWdg):
             td.add_style("height", ("%spx" % icon_col_width))
             td.add_style( "padding-left: 4px" )
             td.add_style( "padding-top: 2px" )
+            td.add_style( "cursor: default" )
 
             label_str = ''
             if opt.has_key( 'label' ):

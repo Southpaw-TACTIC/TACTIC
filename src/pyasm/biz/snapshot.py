@@ -1749,7 +1749,6 @@ class Snapshot(SObject):
             level_type=None, level_id=None, commit=True, is_latest=True,
             is_synced=True, process=None, version=None, triggers=True):
 
-
         # Provide a default empty snapshot definition
         if snapshot_data == None:
             if sobject.has_value(column):
@@ -1778,7 +1777,6 @@ class Snapshot(SObject):
         # to find the version number, we have to find the highest number
         # of a particular snapshot
         old_snapshot = Snapshot._get_by_version(search_type, search_code, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
-        
         # have to clear the cache here, because after it is created
         # it shouldn't be None anymore
         if not old_snapshot:
@@ -1805,6 +1803,9 @@ class Snapshot(SObject):
                 pass
             elif old_snapshot:
                 old_version = old_snapshot.get_value("version")
+                # in case only the versionless snapshot is left behind
+                if old_version == -1:
+                    old_version = 0
                 version = int(old_version) + 1
             else:
                 version = 1

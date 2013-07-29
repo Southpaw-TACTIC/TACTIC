@@ -189,7 +189,7 @@
   <element name="access_level">
       <display class="SelectWdg">
           <empty>true</empty>
-          <values>none|low|medium|high</values>
+          <values>none|min|low|medium|high</values>
       </display>
   </element>
 

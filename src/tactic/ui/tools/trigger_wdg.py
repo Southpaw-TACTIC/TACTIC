@@ -598,10 +598,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
         var content = top.getElement(".spt_trigger_event_top");
 
         var event = bvr.src_el.value;
+        if (!event) {
+            spt.info('Please choose an event.');
+            return;
+        }
         bvr.kwargs.event = event;
         var trigger_wdg = 'tactic.ui.tools.EventTriggerEditWdg';
 
         spt.panel.load(content, trigger_wdg, bvr.kwargs)
+        var action_area = top.getElement('.spt_trigger_add_top')
+       
+        spt.panel.refresh(action_area, {'event': event});
         '''
         } )
 
@@ -715,12 +722,15 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
             select.add_empty_option("-- Choose action --")
             td.add(select)
-            
+            trigger_sk = ''
+            if trigger:
+                trigger_sk = trigger.get_search_key()
             select.add_behavior( {
             'type': 'change',
             'kwargs': {
                 'pipeline_code': my.pipeline_code,
                 'process': my.process,
+                'search_key': trigger_sk
             },
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_trigger_detail_top");
@@ -729,7 +739,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
             var event = event_el.value;
             bvr.kwargs['event'] = event;
-            
+             
             var trigger_type = bvr.src_el.value;
             var trigger_wdg;
             var trigger_cbk;
@@ -818,6 +828,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_cbk = ''
 
         trigger_div.add_attr("spt_trigger_add_cbk", trigger_cbk)
+        trigger_div.add_attr("spt_class_name", Common.get_full_class_name(trigger_wdg))
+        if trigger:
+            trigger_div.add_attr("spt_search_key", trigger.get_search_key())
         trigger_div.add(trigger_wdg)
 
 
@@ -1513,7 +1526,7 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
             if search_key:
                 trigger = Search.get_by_search_key(search_key)
 
-        if trigger:
+        if trigger and isinstance(trigger, Notification):
             event = trigger.get_value("event")
             subject = trigger.get_value("subject")
             message = trigger.get_value("message")
@@ -1736,7 +1749,10 @@ class NotificationTriggerEditCbk(Command):
         search_key = my.kwargs.get("search_key")
         if search_key:
             notification = Search.get_by_search_key(search_key) 
-
+            # verify if this is a trigger search_key or notification search_key
+            # it could be a trigger search_key when editing an existing trigger
+            if not isinstance(notification, Notification):
+                notification = None
         process = my.kwargs.get("process")
         listen_process = my.kwargs.get("listen_process")
         search_type = my.kwargs.get("search_type")
@@ -1812,20 +1828,28 @@ class NotificationTriggerEditCbk(Command):
 class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
-        event = my.kwargs.get('event')
-            
-        is_task_status_changed = event =='change|sthpw/task|status'
 
+        web = WebContainer.get_web()
         div = DivWdg()
         div.add_class("spt_python_script_trigger_top")
-
         trigger = my.kwargs.get("trigger")
+
+        event = None
         if not trigger:
             search_key = my.kwargs.get("search_key")
-            if search_key:
+            # event from web takes precedence
+            event = web.get_form_value('event')
+            if not event:
+                event = my.kwargs.get("event")
+
+            if search_key and search_key !='null':
                 trigger = Search.get_by_search_key(search_key)
 
         if trigger:
+            # event could be switched by the user before saving
+            # only get it from the trigger sobj as a last resort
+            if not event:
+                event = trigger.get_value("event")
             script_path = trigger.get_value("script_path")
             script_sobj = CustomScript.get_by_path(script_path)
             if not script_sobj:
@@ -1838,7 +1862,8 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script_sobj = None
             script = ''
 
-
+        is_task_status_changed = event == 'change|sthpw/task|status'
+        
         div.add("Script Path (Optional): <br/>")
         script_path_text = TextWdg("script_path")
         div.add(script_path_text)
@@ -1862,9 +1887,8 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         div.add(HtmlElement.br(2))
 
-        if not script and is_task_status_changed:
-            script='''
-############################################################
+        # add the pre_script only when pre_script doesn's exist and the event is 'change|sthpw/task|status'
+        pre_script = '''#pre-generated########################################################
 from pyasm.common import jsondumps, jsonloads
 tsobj = input.get('trigger_sobject')
 task = input.get('update_data')
@@ -1874,10 +1898,20 @@ data = jsonloads(data)
 src_status = data.get("src_status")
 if task_status != src_status:
     return
-###################### Add the script below: ######################
-'''
+###################### Add the script below: ############################
+'''         
+        if is_task_status_changed:
+            if not script.startswith('#pre'):
+                
+                # add the script that user write below
+                script = "%s\n%s" %(pre_script, script)
+        elif script.startswith('#pre'):
+            script = script.replace(pre_script, '')
 
-
+        #if the event is not change|sthpw/task|status, then should not have pre_script. (ex: event is empty)
+        if not is_task_status_changed:
+            if script.startswith('#pre'):
+                script = ''
 
         div.add("Code: <br/>")
         script_text = TextAreaWdg("script")

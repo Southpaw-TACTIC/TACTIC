@@ -1667,7 +1667,8 @@ spt.app_busy.show = function( title, msg)
     spt.app_busy.set_msg_title_and_text( title, msg );
 
     app_busy_container.setStyle("display","");
-    app_busy_msg_block.setStyle("display","");
+    if (app_busy_msg_block) 
+        app_busy_msg_block.setStyle("display","");
 
     /*
     if( options && ('use_for_touch_drag' in options) && options.use_for_touch_drag ) {
@@ -1704,7 +1705,8 @@ spt.app_busy.hide = function(func)
         var app_busy_container = spt.app_busy.get_app_busy_container();
         var app_busy_msg_block = $("app_busy_msg_block");
 
-        app_busy_msg_block.setStyle("display","none");
+        if (app_busy_msg_block) 
+            app_busy_msg_block.setStyle("display","none");
         app_busy_container.setStyle("display","none");
     }
 

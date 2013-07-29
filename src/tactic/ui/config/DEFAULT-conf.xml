@@ -476,14 +476,11 @@
 
 
 
-  <!--
-       DEPRECATED
   <element name="manage_search_types" title="Manage sTypes" icon="db_gear" help='stype-register'>
     <display class="LinkWdg">
       <class_name>tactic.ui.app.SearchTypeToolWdg</class_name>
     </display>
   </element>
-  -->
 
   <element name="project_settings" title="Project Settings" icon="edit_settings" help='modify-project-settings'>
     <display class="LinkWdg">

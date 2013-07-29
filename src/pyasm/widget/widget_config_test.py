@@ -16,6 +16,8 @@ import tacticenv
 from pyasm.security import *
 from pyasm.search import Search, SearchType, Transaction
 from widget_config import WidgetConfigView
+from pyasm.unittest import UnittestEnvironment
+from pyasm.biz import Project
 
 import unittest
 
@@ -23,7 +25,13 @@ class WidgetConfigTest(unittest.TestCase):
 
     def setUp(my):
         # intitialize the framework as a batch process
-        my.batch = Batch(project_code='unittest')
+        my.batch = Batch()
+
+        from pyasm.web.web_init import WebInit
+        WebInit().execute()
+
+        my.test_env = UnittestEnvironment()
+        my.test_env.create()
 
         # remove any existing widget config entries left over
         old_wdg_configs = Search.eval("@SOBJECT(config/widget_config)")
@@ -154,6 +162,9 @@ class WidgetConfigTest(unittest.TestCase):
 
         finally:
             my.transaction.rollback()
+            Project.set_project('unittest')
+
+            my.test_env.delete()
 
 
     def _test_get_action_handler(my):

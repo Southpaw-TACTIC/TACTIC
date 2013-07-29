@@ -14,7 +14,7 @@
 __all__ = ['BaseTableElementWdg', 'RawTableElementWdg', 'SimpleTableElementWdg', 'WidgetTableElementWdg']
 
 import types
-
+import locale
 from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
 from pyasm.common import SPTDate
@@ -448,8 +448,12 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 date = parser.parse(value)
                 # convert to local
                 date = SPTDate.convert_to_local(date)
+		try:
+		   encoding = locale.getlocale()[1]		
+		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+		except:
+		   value = date.strftime("%b %d, %Y - %H:%M")
 
-		value = date.strftime("%b %d, %Y - %H:%M")
             else:
                 value = ''
         else:

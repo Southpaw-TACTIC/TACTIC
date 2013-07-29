@@ -3228,6 +3228,23 @@ class TacticServerStub(object):
     #
     # Widget Config methods
     #
+    def set_config_definition(my, search_type, element_name, config_xml="", login=None):
+        '''API Function: set_config_definition(search_type, element_name, config_xml="", login=None)
+        Set the widget configuration definition for an element
+
+        @param:
+            search_type - search type that this config relates to
+            element_name - name of the element
+
+        @keyparam:
+            config_xml - The configuration xml to be set
+            login - A user's login name, if specifically choosing one
+
+        @return:
+            True on success, exception message on failure
+        '''
+        return my.server.set_config_definition(my.ticket, search_type, element_name, config_xml, login)
+
     def get_config_definition(my, search_type, view, element_name, personal=False):
         '''API Function: get_config_definition(search_type, view, element_name, personal=False)
         Get the widget configuration definition for an element

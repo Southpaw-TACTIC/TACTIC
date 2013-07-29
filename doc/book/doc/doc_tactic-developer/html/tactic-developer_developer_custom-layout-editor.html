@@ -174,11 +174,72 @@ cells.setStyle('background', 'red'); </pre><p>TACTIC&#8217;s powerful framework 
                        
             </p>
             <p>Load an element: </p><pre class="screen">spt.panel.load(element_name, class_name, kwargs) </pre><p>Load an element into a popup: </p><pre class="screen">spt.panel.load_popup(element_name, class_name, kwargs) </pre><p>Close a popup: </p><pre class="screen">spt.popup.close(popup_element) </pre></div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1139"></a>Options
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The Custom Layout Editor's Options tab incorporates the administrative ability of
+                           modifying column, theme, view and table definitions with the ability of creating these
+                           widgets. Various views, themes, columns and tables can be created in the Custom Layout
+                           Editor with the desired content and appearance.
+            </p>
+            <p>Options of these custom features can be defined in the Options tab, similar to how a
+                           predefined column or Column Manager custom column is modified through the Edit Column
+                           Definition window. These options can be set to change widget appearances, functions and
+                           behaviours, often in addition to any options established in the HTML and Python tabs.
+                           Many of the same options provided in the Edit Definition window are available and can be
+                           used to customize created features.
+            </p>
+            <p>The custom feature options are set through the use of Python in the Options tab. A
+                           variety of different examples written in Python have been shown below. They are
+                           structured exactly as they would need to be defined in the Options tab with all possible
+                           subsets to refine a particular option. 
+            </p>
+            <p><span class="underline">Option Tab
+                              Examples</span></p><pre class="screen">    "mode": {
+        'description': "Determines whether to draw with widgets or just use the raw data",
+        'type': 'SelectWdg',
+        'values': 'widget|raw',
+        'order': 00,
+        'category': 'Required'
+    },
+    "search_type": {
+        'description': "search type that this panels works with",
+        'type': 'TextWdg',
+        'order': 01,
+        'category': 'Required'
+    },
+    'expression': {
+        'description': 'Use an expression to drive the search.  The expression must return sObjects e.g. @SOBJECT(sthpw/task)',
+         'category': 'Display',
+         'type': 'TextAreaWdg',
+         'order': '01'
+    },
+    "element_names": {
+        'description': "Comma delimited list of elemnent to view",
+        'type': 'TextWdg',
+        'order': 0,
+        'category': 'Optional'
+    }</pre><p>Customized options are also available to the user which offer additional flexibility
+                           when modifying custom features. Some examples have been provided below.
+            </p>
+            <p><span class="underline">Option Tab Custom Option
+                              Examples</span></p><pre class="screen">    {
+    'basic_option': 'You can describe your option here',
+    'advanced_option': { 'description' : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
+                         'category': 'Display',
+                         'type': 'TextWdg'
+    }</pre></div>
          <div class="simplesect" title="Images">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1139"></a>Images
+                     <h4 class="title"><a name="d0e1160"></a>Images
                      </h4>
                   </div>
                </div>
@@ -199,7 +260,7 @@ cells.setStyle('background', 'red'); </pre><p>TACTIC&#8217;s powerful framework 
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1152"></a>Python
+                     <h4 class="title"><a name="d0e1173"></a>Python
                      </h4>
                   </div>
                </div>
@@ -236,21 +297,25 @@ cells.setStyle('background', 'red'); </pre><p>TACTIC&#8217;s powerful framework 
                            section.
             </p>
             <p>The Python tab provides the user with the opportunity to use the Python language in
-                           the editor without the restriction of having to use embedded Mako.
+                           the editor without the restriction of having to explicitly use embedded Mako, which is
+                           another TACTIC feature that is described in the following section. The dedicated Python
+                           tab is an implicit integration of Mako. Both Mako and the Python tab essentially use
+                           Mako templating, while both providing equivalent Python utility and efficiency. 
             </p>
          </div>
          <div class="simplesect" title="Mako">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1184"></a>Mako
+                     <h4 class="title"><a name="d0e1205"></a>Mako
                      </h4>
                   </div>
                </div>
             </div>
             <p>The custom layout engine embeds the Mako, a powerful templating engine which allows
-                           you to embed Python scripts and logic within HTML. Here is a simple example for its
-                           usage.
+                           you to embed Python scripts and logic within HTML. In order to embed Python coding
+                           within the HTML, the code must be surrounded by the special Mako tag:    &lt;% {Python
+                           Code} %&gt;. Here is a simple example of its usage:
             </p><pre class="screen">&lt;div&gt; 
 &lt;% 
 my_car = 'A ferrari'
@@ -292,7 +357,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1214"></a>Injecting Widgets
+                     <h4 class="title"><a name="d0e1235"></a>Injecting Widgets
                      </h4>
                   </div>
                </div>
@@ -326,7 +391,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1242"></a>Adding View to sidebar
+                     <h4 class="title"><a name="d0e1263"></a>Adding View to sidebar
                      </h4>
                   </div>
                </div>
@@ -345,7 +410,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1250"></a>Creating URLs
+                     <h4 class="title"><a name="d0e1271"></a>Creating URLs
                      </h4>
                   </div>
                </div>
@@ -372,7 +437,7 @@ my_car = 'A ferrari'
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1257"></a>Creating Forms
+                     <h4 class="title"><a name="d0e1278"></a>Creating Forms
                      </h4>
                   </div>
                </div>
@@ -445,7 +510,7 @@ JavaScript:
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1299"></a>Testing Interface
+                     <h4 class="title"><a name="d0e1320"></a>Testing Interface
                      </h4>
                   </div>
                </div>
@@ -459,7 +524,7 @@ JavaScript:
             </p>
             <div class="mediaobject"><img src="media/custom_layout_editor_testing.png"></div>
             <p>In addition, these custom views can also be defined to take the form of a specific
-                           view type: widget or column.
+                           view type: widget, column, chart, report or dashboard.
             </p>
             <p>Widget is a free form view type. It is designed to allow your view to be versatile in
                            its presentation in TACTIC. These widget type views can appear in
@@ -515,12 +580,36 @@ context.write(table)
             <p>
                        
             </p>
+            <p>Chart, report and dashboard view types present the ability to create customized charts,
+                           reports and dashboards that are easily  accessible to users. Custom views can be defined
+                           to present data in the form of line charts, budgeting reports or department specific
+                           dashboards that display tables or views that are commonly used by that department. 
+            </p>
+            <p>However, only by specifying the view type do these views become easily accessible to
+                           users. For example, by setting a custom layout view to Chart, in the Examples section
+                           under Project Configuration, this custom view will be added to the list of charts that
+                           are already available. By selecting the drop down arrow menu on the created chart icon,
+                           there is an option to "Add to Side Bar". This will add this chart view to the side bar
+                           for easy accessibility, under a defined "Chart" section. 
+            </p>
+            <p>In addition, if a custom theme is created and utilizes sidebar views and associated
+                           links in the menu, this new chart view will be automatically added in the menu of
+                           theme.
+            </p>
+            <p>To begin a custom chart, report or dashboard, going to the Examples section under the
+                           Project Configuration is a good place to establish a base to build one of these
+                           customized tools. For example, by selecting Dashboards in the Examples section, a
+                           selection of different sample dashboards will be displayed. If one of the dashboards is
+                           of particular interest, but requires some modification, by going to the arrow drop down
+                           menu on the dashboard icon and selecting "Show Definition", the definition can be copied
+                           and pasted in the Custom Layout Editor and modified to the desired appearance.
+            </p>
          </div>
          <div class="simplesect" title="Tips and Techniques">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e1336"></a>Tips and Techniques
+                     <h4 class="title"><a name="d0e1365"></a>Tips and Techniques
                      </h4>
                   </div>
                </div>

@@ -24,7 +24,18 @@
     <element name="update"/>
 
     <element name="create">
-        <display class="pyasm.admin.creator.PipelineCreatorElementWdg"/>
+
+     <display class="tactic.ui.table.ButtonElementWdg">
+            <cbjs_action>
+             var server = TacticServerStub.get();
+             var kwargs = {};
+             var class_name = 'tactic.ui.tools.SchemaToolWdg';
+             spt.tab.add_new("project_schema", "Project Schema",  class_name, kwargs );
+
+
+           </cbjs_action>
+        <icon>JUMP</icon>
+      </display>
     </element>
 </definition>
 

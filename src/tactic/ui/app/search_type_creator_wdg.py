@@ -31,8 +31,8 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
     def get_args_keys(my):
         return {
-        'database': 'the database???',
-        'schema': 'the schema???'
+        'database': 'the database',
+        'schema': 'the schema'
         }
 
     def init(my):
@@ -66,6 +66,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         div.add(subtitle)
         
         div.set_id('SearchTypeToolWdg')
+        div.add_class('spt_stype_tool_top')
         div.set_attr('spt_class_name','tactic.ui.app.SearchTypeToolWdg')
         div.add_style("padding: 10px")
         div.add_style("max-width: 800px")
@@ -96,7 +97,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
         wizard = SearchTypeCreatorWdg(namespace=my.namespace, database=my.database, schema=my.schema)
         popup = PopupWdg(id='create_search_type_wizard')
-        popup.add_title('Register New Searchable Type')
+        popup.add_title('Register New sType')
         popup.add(wizard)
         div.add(popup)
         project = Project.get()
@@ -107,17 +108,23 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
         # add a search_type filter
         search_type_span = SpanWdg()
-        search_type_span.add("Searchable Type: " )
+        search_type_span.add("sType: " )
         select = SelectWdg("search_type")
         search_type = my.kwargs.get("search_type")
         if search_type:
             select.set_value(search_type)
         select.set_option("query", "sthpw/search_object|search_type|search_type")
         select.set_option("query_filter", "\"namespace\" in ('%s', '%s', '%s')" % (project_code, project_type, project_schema_type))
-        select.set_persistence()
+        #select.set_persistence()
         select.add_empty_option("-- Select --")
-        select.add_event("onchange", "var values = spt.api.Utility.get_input_values('SearchTypeManagerContainer');\
-                spt.panel.refresh('SearchTypeManager', values)")
+        select.add_behavior({'type': "change", 
+            'cbjs_action': '''var values = spt.api.Utility.get_input_values('SearchTypeManagerContainer');
+
+                var top = bvr.src_el.getParent('.spt_stype_tool_top')
+                var target;
+                if (top)
+                    target = top.getElement('.spt_view_manager_top');
+                spt.panel.refresh(target, values)'''})
         search_type = select.get_value()
         search_type_span.add(select)
         

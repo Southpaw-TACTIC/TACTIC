@@ -27,7 +27,7 @@ from pyasm.prod.biz import Asset
 from file_naming import FileNaming
 from dir_naming import DirNaming
 from naming import NamingUtil, Naming
-
+from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 class TestFileNaming(FileNaming):
 
@@ -81,9 +81,16 @@ class NamingTest(unittest.TestCase):
     def setUp(my):
         # start batch environment
         Batch()
+        from pyasm.web.web_init import WebInit
+        WebInit().execute()
 
-        from pyasm.biz import Project
-        Project.set_project("unittest")
+        my.sample3d_env = Sample3dEnvironment(project_code='sample3d')
+        my.sample3d_env.create()
+
+        my.test_env = UnittestEnvironment()
+        my.test_env.create()
+
+    
 
         # set up the proper project_type, with the use the ProdDirNaming and ProdFileNaming
         search = Search('sthpw/project')
@@ -105,6 +112,8 @@ class NamingTest(unittest.TestCase):
             my.sobj.set_value('file_naming_cls', 'pyasm.prod.biz.ProdFileNaming')
             my.sobj.set_value('code', 'unittest')
             my.sobj.commit()
+
+      
 
 
     def create_snapshot(my):
@@ -171,6 +180,11 @@ class NamingTest(unittest.TestCase):
             my._test_checkin_type()
         finally:
             my.transaction.rollback()
+            Project.set_project('unittest')
+
+            my.test_env.delete()
+            my.sample3d_env.delete()
+
         # reset the unittest project type to whatever it was
         """
         for key, value in my.original_proj_type_dict.items():
@@ -181,7 +195,10 @@ class NamingTest(unittest.TestCase):
     def clear_naming(my):
         Container.put("Naming:cache", None)
         Container.put("Naming:cache:latest", None)
+        Container.put("Naming:cache:unittest:latest", None)
         Container.put("Naming:cache:current", None)
+        Container.put("Naming:cache:unittest:current", None)
+        Container.put("Naming:cache:unittest", None)
         Container.put("Naming:namings", None)
 
     def _test_file_naming_manual_version(my):
@@ -253,7 +270,6 @@ class NamingTest(unittest.TestCase):
 
     def _test_file_naming_base(my):
        
-        my.clear_naming()
 
         naming = SearchType.create('config/naming')
         naming.set_value('search_type','unittest/person')
@@ -261,6 +277,8 @@ class NamingTest(unittest.TestCase):
         naming.set_value('dir_naming', '{project.code}/cut/{sobject.code}')
         naming.set_value('file_naming', '{sobject.code}_v{snapshot.version}_{basefile}.{ext}')
         naming.commit()
+        
+        my.clear_naming()
 
         # auto_snapshot is at v2
         preallocated = my.auto_snapshot.get_preallocated_path(file_type='some_dir', file_name='racoon',ext=None)
@@ -644,7 +662,38 @@ class NamingTest(unittest.TestCase):
         sobject = SearchType.create('unittest/person')
         sobject.set_value('name_first', 'chip')
         sobject.commit()
+  
+       
+        naming6 = SearchType.create('config/naming')
+        naming6.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}/')
+        try:
+            naming6.commit()
+        except TacticException, e:
+            message = 'sandbox_dir_name should not end with /'
+        else:
+            message = 'Pass'
+        my.assertEquals(message, 'sandbox_dir_name should not end with /')
 
+        naming7 = SearchType.create('config/naming')
+        naming7.set_value('dir_naming', '{$PROJECT}/{@GET(.id)}/')
+        try:
+            naming7.commit()
+        except TacticException, e:
+            message = 'dir_name should not end with /'
+        else:
+            message = 'Pass'
+        my.assertEquals(message, 'dir_name should not end with /')
+
+        naming8 = SearchType.create('config/naming')
+        naming8.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}')
+        try:
+            naming8.commit()
+        except TacticException, e:
+            message = 'sandbox_dir_name should not end with /'
+        else:
+            message = 'Pass'
+        my.assertEquals(message, 'Pass')
+        
         process= 'lgt'
         context = 'light'
         type = 'ma'
@@ -717,6 +766,7 @@ class NamingTest(unittest.TestCase):
 
         virtual_snapshot.set_value('context', 'light/sub1')
         name = Naming.get(sobject, virtual_snapshot)
+
         my.assertEquals(name.get_value('dir_naming'), '{project.code}/light/sub1')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
         my.assertEquals(has, False)
