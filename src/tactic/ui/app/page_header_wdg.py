@@ -803,7 +803,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             }
         else {
-            alert('Error: file object cannot be found.') 
+            spt.alert('Error: file object cannot be found.') 
         }
             spt.app_busy.hide();
         '''
