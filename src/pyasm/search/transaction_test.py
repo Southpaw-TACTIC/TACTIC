@@ -64,7 +64,6 @@ class TransactionTest(unittest.TestCase):
         count_sql = 'select count(*) from "person"'
 
         transaction = Transaction.get(create=True)
-
         # adding these 2 lines 
         project = Project.get_by_code(database)
         db_resource= project.get_project_db_resource()
@@ -123,14 +122,13 @@ class TransactionTest(unittest.TestCase):
             person.delete()
 
         # initiate a global transaction
-        transaction = Transaction.get(create=True)
-
+        transaction = Transaction.get(create=True, force=True)
+        
         person = Person.create("Mr", "Potato Head", "PotatoLand", "Pretty much looks like a potato")
         person2 = Person.create("Mrs", "Potato Head", "PotatoLand", "Pretty much looks like a potato")
 
         person2.set_value("nationality", "PotatoCountry")
         person2.commit()
-
         transaction.commit()
 
         search = Search("unittest/person")
@@ -138,6 +136,13 @@ class TransactionTest(unittest.TestCase):
         search.add_filter("name_last", "Potato Head")
         person = search.get_sobject()
         my.assertEquals( False, person == None )
+
+        search = Search("unittest/person")
+        search.add_filter("name_first", "Mr")
+        search.add_filter("name_last", "Potato Head")
+        rtn_person = search.get_sobject()
+        my.assertEquals( True, rtn_person != None )
+        
 
         # make sure we are no longer in transaction
         my.assertEquals( False, transaction.is_in_transaction() )
