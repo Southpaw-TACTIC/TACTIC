@@ -55,13 +55,17 @@ class WizardWdg(BaseRefreshWdg):
 
         inner.add("<hr/>")
 
-        my.height = "300px"
+        my.height = my.kwargs.get("height")
 
         for i, widget in enumerate(my.widgets):
             page_div = DivWdg()
             page_div.add_style("padding: 10px")
+
             page_div.add_style("min-height: 300px")
-            #page_div.add_style("height: %s" % my.height)
+            if my.height:
+                page_div.add_style("height: %s" % my.height)
+
+            page_div.add_style("overflow-y: auto")
 
             if i != 0:
                 page_div.add_style("display: none")

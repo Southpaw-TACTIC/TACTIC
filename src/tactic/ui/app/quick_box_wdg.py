@@ -374,6 +374,29 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
+        image = "CONFIGURE_03"
+        image = eval("IconWdg('', IconWdg.%s)" % image)
+        behavior = {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+
+            var class_name = 'tactic.ui.tools.RepoBrowserWdg';
+            var args = {
+            };
+            spt.tab.add_new("File Browser", "File Browser", class_name, args);
+            spt.named_events.fire_event("hotbox|close");
+            '''
+        }
+        section = my.get_section_wdg("File Browser", "Browser.", image, behavior)
+        section.add_style("float: left")
+        content_wdg.add(section)
+
+
+
+
+
+
 
 
 

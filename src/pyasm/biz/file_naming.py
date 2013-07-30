@@ -81,6 +81,11 @@ class FileNaming(object):
         elif version == -1:
             version = "LATEST"
         else:
+
+            if version == "":
+                version = 1
+
+
             # pad the version by by the global setting
             padding = Config.get_value("checkin", "version_padding")
             if not padding:
@@ -88,7 +93,6 @@ class FileNaming(object):
             else:
                 padding = int(padding)
             expr = "v%%0.%sd" % padding
-
             version = expr % version
 
         revision = my.snapshot.get_value("revision", no_exception=True)

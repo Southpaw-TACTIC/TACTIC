@@ -404,6 +404,24 @@ class ProjectSelectWdg(BaseRefreshWdg):
             } )
 
 
+            search = Search("config/url")
+            search.add_filter("url", "/index")
+            url = search.get_sobject()
+            if url:
+                menu_item = MenuItem(type='action', label='Open Index')
+                menu.add(menu_item)
+                menu_item.add_behavior( {
+                'cbjs_action': '''
+                var env = spt.Environment.get();
+                var project = env.get_project();
+                //document.location = "/tactic/" + project + "/";
+                window.open('/tactic/'+project+'/');
+                '''
+                } )
+
+
+
+
         menu_item = MenuItem(type='title', label='Open Project')
         menu.add(menu_item)
 
@@ -421,7 +439,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'project_code': project_code,
                 'cbjs_action': '''
-                window.open('/projects/%s/');
+                window.open('/tactic/%s/');
                 ''' % project_code
                 } )
 
@@ -430,7 +448,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 'project_code': project_code,
                 'cbjs_action': '''
                 spt.app_busy.show("Jumping to Project ["+bvr.project_code+"]", "");
-                document.location = '/projects/%s/';
+                document.location = '/tactic/%s/';
                 ''' % project_code
                 } )
 

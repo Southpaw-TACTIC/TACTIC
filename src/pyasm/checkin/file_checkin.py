@@ -543,6 +543,7 @@ class FileCheckin(BaseCheckin):
         #    file_range = "1-30"
 
         parent = snapshot.get_parent()
+        assert parent
         if not file_name:
             file_name = parent.get_code()
             if not file_name:

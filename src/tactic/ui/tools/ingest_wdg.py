@@ -494,12 +494,19 @@ class IngestUploadCmd(Command):
 
         for count, filename in enumerate(filenames):
 
+            # first see if this sobjects still exists
+            search = Search(search_type)
+            search.add_filter("name", filename)
+            if relative_dir and search.column_exists("relative_dir"):
+                search.add_filter("relative_dir", relative_dir)
+            sobject = search.get_sobject()
 
-            sobject = SearchType.create(search_type)
-            sobject.set_value("name", filename)
-
-            if relative_dir and sobject.column_exists("relative_dir"):
-                sobject.set_value("relative_dir", relative_dir)
+            # else create a new one
+            if not sobject:
+                sobject = SearchType.create(search_type)
+                sobject.set_value("name", filename)
+                if relative_dir and sobject.column_exists("relative_dir"):
+                    sobject.set_value("relative_dir", relative_dir)
 
 
             if len(categories) >= count:

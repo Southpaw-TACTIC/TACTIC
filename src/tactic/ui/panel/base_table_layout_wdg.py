@@ -33,6 +33,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     GROUP_MONTHLY = "monthly"
 
 
+    def can_inline_insert(my):
+        return True
+
+
     def __init__(my, **kwargs):
 
         # get the them from cgi
@@ -1213,25 +1217,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             menu = Menu(width=180)
             menu_item = MenuItem(type='title', label='Actions')
             menu.add(menu_item)
-            menu_item = MenuItem(type='action', label='Add New Item (in Page)')
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_layout");
-                var version = top.getAttribute("spt_version");
-                if (version == "2") {
-                    spt.table.set_layout(top);
-                    spt.table.add_new_item();
-                }
-                else {
-                    var new_bvr = {
-                        src_el: activator
+
+            if my.can_inline_insert():
+                menu_item = MenuItem(type='action', label='Add New Item (in Page)')
+                menu_item.add_behavior( {
+                    'cbjs_action': '''
+                    var activator = spt.smenu.get_activator(bvr);
+                    var top = activator.getParent(".spt_layout");
+                    var version = top.getAttribute("spt_version");
+                    if (version == "2") {
+                        spt.table.set_layout(top);
+                        spt.table.add_new_item();
                     }
-                    spt.dg_table.add_item_cbk(evt, new_bvr);
-                }
-                '''
-            } )
-            menu.add(menu_item)
+                    else {
+                        var new_bvr = {
+                            src_el: activator
+                        }
+                        spt.dg_table.add_item_cbk(evt, new_bvr);
+                    }
+                    '''
+                } )
+                menu.add(menu_item)
 
             menu_item = MenuItem(type='action', label='Add New Item (Form)')
             menu_item.add_behavior( {

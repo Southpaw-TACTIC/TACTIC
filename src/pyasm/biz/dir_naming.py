@@ -160,6 +160,8 @@ class DirNaming(object):
         if db_dir_name:
             dirs.append(db_dir_name)
             return '/'.join(dirs)
+        elif db_dir_name == "":
+            return '/'.join(dirs)
 
 
         # otherwise look for an overriding python method
@@ -491,7 +493,7 @@ class DirNaming(object):
     def get_from_db_naming(my, protocol):
         project_code = Project.get_project_code()
         if project_code in ["admin", "sthpw"]:
-            return ""
+            return None
 
         # get the naming object
         naming = Naming.get(my.sobject, my.snapshot)

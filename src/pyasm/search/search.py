@@ -2277,7 +2277,7 @@ class SObject(object):
 
 
     def column_exists(my, column):
-        return SearchType.column_exists(my.full_search_type, "code")
+        return SearchType.column_exists(my.full_search_type, column)
 
 
     def get_code_key(my):
@@ -3056,14 +3056,14 @@ class SObject(object):
 
 
 
-    def set_sobject_value(my, sobject):
+    def set_sobject_value(my, sobject, type=None):
         # makes a relation to this input sobject
         from pyasm.biz import Schema
         schema = Schema.get()
         attrs = schema.get_relationship_attrs(
             my.get_base_search_type(),
             sobject.get_base_search_type(),
-            type='hierarchy'
+            type=None,
         )
         relationship = attrs.get("relationship")
         #relationship = schema.get_relationship(
@@ -3113,6 +3113,9 @@ class SObject(object):
 
         if not relationship:
             relationship = schema.get_relationship(search_type, search_type2)
+
+
+        # DEPRECATED
         if relationship == "instance":
             # need the search_type instance
             instance_type = "prod/shot_instance"
@@ -3141,7 +3144,7 @@ class SObject(object):
 
 
         if relationship in ["search_type", "search_code", "search_id"]:
-            my.set_sobject_value(sobject)
+            my.set_sobject_value(sobject, type="hierarchy")
         elif relationship in ["foreign_key", "code", "id"]:
             #foreign_key = sobject.get_foreign_key()
             #code = sobject.get_code()
@@ -3858,6 +3861,13 @@ class SObject(object):
                 pipelines = Pipeline.get_by_search_type(base_search_type)
                 if len(pipelines) >= 1:
                     defaults['pipeline_code'] = pipelines[0].get_code()
+
+
+
+        if my.column_exists("relative_dir"):
+            base_search_type = my.get_base_search_type() 
+            defaults['relative_dir'] = 'test2/photos'
+
 
         return defaults
 
@@ -5233,6 +5243,21 @@ class SearchType(SObject):
                 trigger.set_value("class_name", "tactic.command.GlobalSearchTrigger")
                 Trigger.append_static_trigger(trigger)
                 base_triggers["global_search"] = True
+
+            if not base_triggers.get('folder_trigger'): 
+                event = "insert|%s" % base
+                trigger = SearchType.create("sthpw/trigger")
+                trigger.set_value("event", event)
+                trigger.set_value("mode", "same process,same transaction")
+                trigger.set_value("class_name", "tactic.command.FolderTrigger")
+
+                Trigger.append_static_trigger(trigger)
+                base_triggers["folder_trigger"] = True
+
+
+
+
+
 
         elif base == 'sthpw/login_group':
             if not base_triggers.get('login_group_sync'): 

@@ -32,6 +32,11 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     } 
 
 
+    def can_inline_insert(my):
+        return False
+
+
+
     def get_display(my):
 
         my.view_editable = True
@@ -52,7 +57,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
         # extraneous variables inherited from TableLayoutWdg
-        my.edit_permission = False
+        my.edit_permission = True
 
         top = DivWdg()
         my.set_as_panel(top)

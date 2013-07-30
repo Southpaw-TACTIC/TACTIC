@@ -1838,6 +1838,10 @@ class Select(object):
 
     def add_filter(my, column, value, column_type="", op='=', quoted=None, table=''):
         assert my.tables
+
+        if not table:
+            table = my.tables[0]
+
         if column == 'id' and value == None:
             where = "\"%s\" is NULL" % column
             my.add_where(where)
@@ -1873,26 +1877,6 @@ class Select(object):
             column_type = column_types.get(column)
 
 
-        # NOTE: This is probably already handled in DatabaseImpl
-        # FIXME: not sure which is better here ... in either case, this should
-        # be put into databsae impl
-        #value = my._convert_to_database_boolean(value)
-        """
-        if my.impl.get_database_type() == 'Sqlite':
-            if not column_type:
-                column_types = my.impl.get_column_types(my.database, my.tables[0])
-                column_type = column_types.get(column)
-            if column_type == "boolean":
-                if value == True:
-                    quoted = False
-                    value = 1
-                elif value == False:
-                    quoted = False
-                    value = 0
-        """
-
-
-
         # if quoted is not explicitly set
         if quoted == None:
             quoted = True
@@ -1919,6 +1903,7 @@ class Select(object):
             where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
             where = "\"%s\" %s %s" % (column, op, value)
+            print "where: ", where
 
         my.add_where(where)
 

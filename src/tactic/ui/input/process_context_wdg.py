@@ -18,7 +18,6 @@ from pyasm.biz import Pipeline
 from pyasm.web import WebContainer, Widget, DivWdg
 from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWdg
 from pyasm.command import DatabaseAction
-from tactic.ui.panel import EditWdg
 from pyasm.common import UserException, TacticException
 
 
@@ -31,6 +30,10 @@ class ProcessInputWdg(BaseInputWdg):
 
 
     def get_display(my):
+
+        # Need to import this dynamically
+        from tactic.ui.panel import EditWdg
+
         show_context = my.get_option('context') == 'true'
 
         top = DivWdg()

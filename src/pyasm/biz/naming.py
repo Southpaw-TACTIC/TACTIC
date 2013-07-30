@@ -483,9 +483,9 @@ class NamingUtil(object):
         result = result.replace("/", "_")
         # post process result so that it looks good
         result = Common.get_filesystem_name(result)
-                
 
         return result
+
              
     def _get_timestamp(my, sobject):
         '''get the portion yyyy-mm-dd'''
@@ -673,6 +673,8 @@ class NamingUtil(object):
         result = Common.get_filesystem_name(result)
 
         return result
+
+
  
     def build_naming(my, sample_name):
         separators = ['/','\\','.', '_', '-']

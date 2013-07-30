@@ -213,7 +213,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             my.search_type = "%s/%s" % (namespace, my.search_type)
 
 
-        from tactic.ui.container import WizardWdg
         top = DivWdg()
         top.add_color("background", "background")
         top.add_color("color", "color")
@@ -228,13 +227,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         help_button.add_style("float: right")
 
         
-        wizard = WizardWdg(title="Register a new sType")
+        from tactic.ui.container import WizardWdg
+        wizard = WizardWdg(title="Register a new sType", height="400px")
         top.add(wizard)
 
 
         create_div = HtmlElement.div()
         wizard.add(create_div, "Information")
-
         my.set_as_panel(create_div)
 
         
@@ -392,7 +391,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-        # Page 2
+        # Layout page 
+        layout_wdg = my.get_layout_wdg()
+        wizard.add(layout_wdg, "Layout")
+
+
+
+        # Workflow page
         pipeline_div = DivWdg()
         wizard.add(pipeline_div, "Workflow")
 
@@ -485,9 +490,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         # Page 3
-        # DEPRECATED: this is not needed because layout switcher replaces this
-        #wizard.add(my.get_view_wdg(), "Side Bar")
-        # Page 3
         naming_wdg = my.get_naming_wdg()
         wizard.add(naming_wdg, "Naming")
 
@@ -504,6 +506,63 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         wizard.add_submit_button(submit_input)
 
         return top
+
+
+    def get_layout_wdg(my):
+        div = DivWdg()
+        div.add_class("spt_choose_layout_top")
+
+        div.add("Choose a default layout for this sType")
+        div.add("<br/>")
+
+
+        titles = ['Tile', 'Workflow', 'File Browser', 'Check-in', 'Card']
+        values = ['tile', 'table', 'browser', 'check-in', 'card']
+        images = [
+            "/context/images/tile_layout.jpg",
+            "",
+            "",
+            "",
+            "/context/images/card_layout.jpg",
+        ]
+
+
+        for title, value, image in zip(titles,values, images):
+            option_div = DivWdg()
+            div.add(option_div)
+            radio = RadioWdg("layout")
+            option_div.add(radio)
+            radio.add_style("margin-top: -5px")
+            option_div.add("%s" % title)
+            radio.add_attr("value", value)
+            option_div.add_style("margin-top: 5px")
+            option_div.add_style("margin-bottom: 5px")
+            radio.add_attr("spt_image", image)
+            radio.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_choose_layout_top");
+            var img_el = top.getElement(".spt_image");
+
+            var path = bvr.src_el.getAttribute("spt_image");
+            img_el.setAttribute("src", path);
+            '''
+            } )
+
+
+        div.add("<br/>")
+
+        img_div = DivWdg()
+        div.add(img_div)
+        img_div.add_style("text-align: center")
+
+        img = HtmlElement.img(src=images[0])
+        img_div.add(img)
+        img.add_class("spt_image")
+
+
+
+        return div
 
 
 
@@ -529,7 +588,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         div.add("<br/>")
 
-        from pyasm.widget import RadioWdg
         radio = RadioWdg("naming")
         div.add(radio)
         radio.add_style("margin-top: -5px")
@@ -875,62 +933,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         return div
 
-
-
-
-    def get_view_wdg(my):
-        '''widget to create predefined view'''
-
-        div = DivWdg()
-        div.add('''These predefined views for the newly registered search type will be added to the side bar.  They can be modified under "Manage Side Bar"''')
-        div.add("<br/><br/>")
-
-        title = DivWdg()
-        div.add(title)
-        title.add("<b>Add Predefined Links in Side Bar:</b><br/><br/>")
-
-
-        predefined = [
-        {
-            'name': 'Content List',
-            'description': 'View to manage the items in the list',
-            'checked': True,
-            'folder': 'manage'
-        },
-        {
-            'name': 'Add Content Form',
-            'description': 'Form to add to the list',
-            'checked': False,
-            'folder': 'forms',
-        },
-        {
-            'name': 'Task Schedule',
-            'description': 'View to manage schedules using a Gantt charts',
-            'checked': False,
-            'folder': 'schedules'
-        },
-        {
-            'name': 'Tracking',
-            'description': 'Generic View to track checkins and tasks.',
-            'checked': False,
-            'folder': ''
-        },
-        ]
-        for view in predefined:
-            view_wdg = DivWdg()
-            div.add(view_wdg)
-            view_wdg.add_style("margin-left: 5px")
-            checkbox = CheckboxWdg("predefined_links")
-            name = view.get("name")
-            checkbox.set_option("value", name)
-            view_wdg.add(checkbox)
-
-            if view.get("checked"):
-                checkbox.set_checked()
-
-            view_wdg.add( "&nbsp;&nbsp;%s" % name )
-
-        return div
 
 
 
@@ -1591,6 +1593,12 @@ class SearchTypeCreatorCmd(Command):
             create.add(column_name, data_type)
  
 
+        naming_expr = my.get_value("naming")
+        if naming_expr.find("{sobject.relative_dir}") != -1:
+            create.add("relative_dir", "text")
+        elif naming_expr.find("{sobject.category}") != -1:
+            create.add("category", "text")
+
 
 
         # DEPRECATED
@@ -1619,52 +1627,43 @@ class SearchTypeCreatorCmd(Command):
         
 
     def add_sidebar_views(my):
-        #search = Search("config/widget_config")
-        #search.add_filter("search_type", "SideBarWdg")
-        #search.add_filter("view", "project_view")
-        #config_sobj = search.get_sobject()
-
-        predefined_links = my.get_values("predefined_links")
-
-
-        # only need this now that it has been removed from the creator widget
-        predefined_links = ['Content List']
 
         search_type = my.search_type_obj.get_base_key()
         namespace, table = search_type.split("/")
         title = my.search_type_obj.get_title()
 
+        # _list view
 
-        # get the various configs
-        # NOT USED, commented out
-        """
-        if "Add Content Form" in predefined_links:
-            # _edit view
-            class_name = "tactic.ui.panel.EditWdg"
+        layout = my.get_value("layout")
+
+        if layout == "tile":
+            class_name = "tactic.ui.panel.ViewPanelWdg"
             display_options = {
                 "class_name": class_name,
                 "search_type": search_type,
-                "view": "edit"
+                "layout": "tile"
             }
-            element_attrs = {
-                'title': 'Add %s' % title
+
+
+        elif layout == "card":
+            class_name = "tactic.ui.panel.ViewPanelWdg"
+            display_options = {
+                "class_name": class_name,
+                "search_type": search_type,
+                "layout": "card"
             }
-            action_options = {}
-            action_class_name = {}
 
-            view = "definition"
-            element_name = "%s_add" % table
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name, class_name="LinkWdg", display_options=display_options, element_attrs=element_attrs)
-
-            view = "project_view"
-            element_name = "%s_add" % table
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name)
-        """
+        elif layout == "browser":
+            class_name = "tactic.ui.panel.ViewPanelWdg"
+            display_options = {
+                "class_name": class_name,
+                "search_type": search_type,
+                "layout": "browser"
+            }
 
 
-        if "Content List" in predefined_links:
 
-            # _list view
+        else:
             class_name = "tactic.ui.panel.ViewPanelWdg"
             display_options = {
                 "class_name": class_name,
@@ -1672,94 +1671,23 @@ class SearchTypeCreatorCmd(Command):
                 "view": "table",
                 "layout": "fast_table"
             }
-            element_attrs = {
-                #'title': '%s List' % title
-                'title': title
-            }
-            action_options = {}
-            action_class_name = {}
 
-            view = "definition"
-            element_name = "%s_list" % table
+        action_options = {}
+        action_class_name = {}
 
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name, class_name="LinkWdg", display_options=display_options, element_attrs=element_attrs)
+        element_attrs = {
+            'title': title
+        }
 
-            view = "project_view"
-            element_name = "%s_list" % table
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name)
+        view = "definition"
+        element_name = "%s_list" % table
 
-        """
-        if "Task Schedule" in predefined_links:
+        config = WidgetDbConfig.append( "SideBarWdg", view, element_name, class_name="LinkWdg", display_options=display_options, element_attrs=element_attrs)
 
-            # this is rather complicated
-            view = 'project_view'
-            element_name = '%s_tasks' % table
+        view = "project_view"
+        element_name = "%s_list" % table
+        config = WidgetDbConfig.append( "SideBarWdg", view, element_name)
 
-            element_attrs = {
-                'title': '%s Tasks' % title,
-                'icon': 'DATE'
-            }
-
-            display_options = {
-                'search_type': 'sthpw/task',
-                'view': 'table',
-                'state': '<search_type>%s</search_type>' % search_type,
-                'filter': '''[{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},{"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"starts with","main_body_value":"%s?"}, {"prefix": "group", "group": "true", "order": "parent"}]''' % search_type
-
-            }
-
-
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name, class_name="LinkWdg", display_options=display_options, element_attrs=element_attrs)
-        """
-
-
-        """
-        if "Tracking" in predefined_links:
-
-            class_name = "tactic.ui.panel.ViewPanelWdg"
-            display_options = {
-                "class_name": class_name,
-                "search_type": search_type,
-                "view": "tracking"
-            }
-            element_attrs = {
-                'title': '%s Tracking' % title
-            }
-            action_options = {}
-            action_class_name = {}
-
-            view = "definition"
-            element_name = "%s_tracking" % table
-
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name, class_name="LinkWdg", display_options=display_options, element_attrs=element_attrs)
-
-            xml = '''
-<config>
-  <tracking layout="TableLayoutWdg" >
-    <element name="preview"/>
-    <element name="code"/>
-    <element name="explorer"/>
-    <element name="general_checkin"/>
-    <element name="history"/>
-    <element name="task_edit"/>
-    <element name="task_status_edit"/>
-  </tracking>
-</config>
-'''
-            config = SearchType.create("config/widget_config")
-            config.set_value("config", xml)
-            config.set_value("search_type", search_type)
-            config.set_value("view", "tracking")
-            config.commit()
-
-
-
-
-            view = "project_view"
-            element_name = "%s_tracking" % table
-            config = WidgetDbConfig.append( "SideBarWdg", view, element_name)
-
-        """
 
 
     def create_pipeline(my):

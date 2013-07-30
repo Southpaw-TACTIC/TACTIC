@@ -9,11 +9,11 @@
 #
 #
 #
-__all__ = ['GlobalSearchTrigger']
+__all__ = ['GlobalSearchTrigger', 'FolderTrigger']
 
 import tacticenv
 
-from pyasm.common import Common
+from pyasm.common import Common, Environment
 from pyasm.biz import Project
 from pyasm.search import SearchType, Search, SearchKey
 from pyasm.command import Command, Trigger
@@ -21,8 +21,6 @@ from pyasm.command import Command, Trigger
 import os
 
 class GlobalSearchTrigger(Trigger):
-
-   
 
     def execute(my):
 
@@ -89,6 +87,80 @@ class GlobalSearchTrigger(Trigger):
         #is_ascii = my.is_ascii(data)
         return Common.extract_keywords(data)
      
+
+
+
+class FolderTrigger(Trigger):
+
+    def execute(my):
+        from pyasm.biz import Snapshot, Naming
+
+        input = my.get_input()
+        search_key = input.get("search_key")
+        search_type = input.get('search_type')
+        sobject = my.get_caller()
+        assert search_type
+
+        search_type_obj = SearchType.get(search_type)
+
+        # FIXME: this should be in SearchType
+        base_dir = Environment.get_asset_dir()
+
+        root_dir = search_type_obj.get_value("root_dir", no_exception=True)
+        if not root_dir:
+            base_type = search_type_obj.get_base_key()
+            parts = base_type.split("/")
+            relative_dir = parts[1]
+
+
+        # FIXME: need to use naming here
+        file_type = 'main'
+        snapshot_type = "file"
+        process = "publish"
+        virtual_snapshot = Snapshot.create_new()
+        virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(file_type)
+        virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
+        virtual_snapshot.set_value("snapshot_type", snapshot_type)
+
+        virtual_snapshot.set_value("process", process)
+        # since it is a a file name based context coming in, use process
+        virtual_snapshot.set_value("context", process)
+
+        # ???? Which is the correct one?
+        virtual_snapshot.set_sobject(sobject)
+        virtual_snapshot.set_parent(sobject)
+        
+        #naming = Naming.get(sobject, virtual_snapshot)
+        #print "naming: ", naming.get_data()
+
+        # Need to have a fake file because preallocated path also looks at
+        # the file
+        file_name = 'test.jpg'
+        mkdirs = False
+        ext = 'jpg'
+
+        path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext)
+        dirname = os.path.dirname(path)
+
+        #dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
+
+        base_dir = Environment.get_asset_dir()
+        relative_dir = dirname.replace(base_dir, "")
+        relative_dir = relative_dir.strip("/")
+
+        # create a file object
+        file_obj = SearchType.create("sthpw/file")
+        file_obj.set_sobject_value(sobject)
+        file_obj.set_value("file_name", "")
+        file_obj.set_value("relative_dir", relative_dir)
+        file_obj.set_value("type", "main")
+        file_obj.commit()
+
+
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+
 
 
 
