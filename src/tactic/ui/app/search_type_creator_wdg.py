@@ -724,7 +724,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                 filename: filename
             }
             try {
+                
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
+
                 var info = ret_val.info;
                 var path = info.web_path;
                 text.value = info.lib_path;
@@ -740,7 +742,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         }
             spt.app_busy.hide();
         '''
-        button = UploadButtonWdg(title="Browse", on_complete=on_complete) 
+        ticket = Environment.get_ticket()
+        button = UploadButtonWdg(title="Browse", on_complete=on_complete, ticket=ticket) 
         button.add_style("margin-left: auto")
         button.add_style("margin-right: auto")
         image_div.add(button)
@@ -1604,20 +1607,25 @@ class SearchTypeCreatorCmd(Command):
         database = sql.get_database_name()
         impl = sql.get_database_impl()
         exists = impl.table_exists(my.db_resource, table)
+        print "STEP 1", database, exists
         if exists:
             #raise TacticException('This table [%s] already exists.'%table)
             pass
         else:
+            print "STEP 2 commit"
             create.commit(sql)
+            print "STEP 3 log"
             TableUndo.log(my.search_type_obj.get_base_key(), database, table)
 
-        # add columns 
-        db_resource = Project.get_db_resource_by_search_type(search_type)
-        sql = DbContainer.get(db_resource)
+            # add columns 
+            db_resource = Project.get_db_resource_by_search_type(search_type)
+            sql = DbContainer.get(db_resource)
 
-        # put an index on code
-        statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
-        sql.do_update(statement)
+            
+            # put an index on code
+            statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
+            sql.do_update(statement)
+            print "STEP 4", statement
         
 
     def add_sidebar_views(my):
