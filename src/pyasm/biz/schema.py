@@ -458,11 +458,11 @@ class Schema(SObject):
 
 
         if my.parent_schema:
-            search_types = my.parent_schema.get_related_search_types(search_type)
+            search_types = my.parent_schema.get_related_search_types(search_type, direction=direction)
             related_types.extend(search_types)
 
         if my.sthpw_schema:
-            search_types = my.sthpw_schema.get_related_search_types(search_type)
+            search_types = my.sthpw_schema.get_related_search_types(search_type, direction=direction)
             related_types.extend(search_types)
 
         return related_types 
