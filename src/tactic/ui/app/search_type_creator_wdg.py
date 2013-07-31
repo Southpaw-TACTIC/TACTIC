@@ -1377,7 +1377,6 @@ class SearchTypeCreatorCmd(Command):
 
     def create_config(my):
         search_type = my.search_type_obj.get_base_key()
-        print '111111111111111111111',search_type
         columns = SearchType.get_columns(search_type)
         #if my.has_pipeline:
         #    columns.remove("pipeline_code")
