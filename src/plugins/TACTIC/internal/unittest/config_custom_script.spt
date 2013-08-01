@@ -1,0 +1,57 @@
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00001""")
+insert.set_value('language', """javascript""")
+insert.set_value('script', """//usually ip is the host
+var ip = window.location.host;
+
+spt.CustomProject.run_script_by_path('test/setup')
+
+var server = TacticServerStub.get();
+var search_type = "unittest/person";
+var code = "joe";
+var expected_path = "C:/sthpw/sandbox/unittest/person/joe/publish/miso_ramen.0001_v001.jpg";
+var expected_client_path = "//" + ip + "/apache/assets/unittest/person/joe/publish/miso_ramen.0001_v001.jpg"
+server.start({description: 'Check-in Test 1'});
+try {
+    server.insert(search_type, {code:code, name_first: 'Joe'});
+    var sk = server.build_search_key(search_type, code);
+    var src_path = '\\\\\\\\' + ip + '/' 
+    + 'apache/tactic/src/plugins/TACTIC/internal/unittest/images/miso_ramen.0001.jpg';
+    var snapshot = server.simple_checkin(sk, 'publish', src_path, {mode: 'copy'});
+   
+    var client_path =server.get_path_from_snapshot(snapshot.code);
+    var paths = server.checkout(sk, 'publish');
+   
+    console.assert(client_path == expected_client_path, "test/checkin checkin test failed");
+    console.assert(paths[0] == expected_path, "test/checkin checkout test failed");
+
+    server.abort();
+}
+catch(e) {
+    alert('Unexpected abort.' + spt.exception.handler(e));
+    server.abort();
+}
+console.info('test/checkin finished.');""")
+insert.set_value('title', """checkin_1""")
+insert.set_value('folder', """test""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00002""")
+insert.set_value('language', """javascript""")
+insert.set_value('script', """// copy the images folder to the plugin location
+var setup = function(){
+     var ip = window.location.host;
+     var src_path = '\\\\\\\' + ip + '/' + 'apache/tactic/src/client/test/images';
+     var dst_path = '\\\\\\\' + ip + '/' + 'apache/tactic/src/plugins/TACTIC/internal/unittest/images';
+     var applet = spt.Applet.get();
+     applet.copytree(src_path, dst_path )
+}
+
+setup();""")
+insert.set_value('title', """setup""")
+insert.set_value('folder', """test""")
+#-- End Entry --#
+
