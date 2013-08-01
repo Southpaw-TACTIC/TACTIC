@@ -1607,14 +1607,11 @@ class SearchTypeCreatorCmd(Command):
         database = sql.get_database_name()
         impl = sql.get_database_impl()
         exists = impl.table_exists(my.db_resource, table)
-        print "STEP 1", database, exists
         if exists:
             #raise TacticException('This table [%s] already exists.'%table)
             pass
         else:
-            print "STEP 2 commit"
             create.commit(sql)
-            print "STEP 3 log"
             TableUndo.log(my.search_type_obj.get_base_key(), database, table)
 
             # add columns 
@@ -1625,7 +1622,6 @@ class SearchTypeCreatorCmd(Command):
             # put an index on code
             statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
             sql.do_update(statement)
-            print "STEP 4", statement
         
 
     def add_sidebar_views(my):
