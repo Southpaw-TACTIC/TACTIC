@@ -3326,7 +3326,8 @@ class OldTableLayoutWdg(BaseConfigWdg):
                     bvr.args.element_names = element_names;
 
                     var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
-                    spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    popup.activator = activator;
                     ''',
                 }
             } )
@@ -4440,7 +4441,8 @@ class OldTableLayoutWdg(BaseConfigWdg):
 
                 var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
 
-                spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                popup.activator = bvr.src_el;
                 ''',
             } )
 
@@ -5330,7 +5332,23 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_behavior({
             'type': "click_up", 
             'cbjs_action': '''
-            var panel = $('%s');
+
+            var panel;
+            var popup = bvr.src_el.getParent(".spt_popup");
+            if (popup) {
+                var panel = popup.panel;
+                if (!panel) {
+                    var activator = popup.activator;
+                    if (activator) {
+                        panel = activator.getParent(".spt_panel");
+                    }
+                }
+            }
+
+            if (!panel) {
+                panel = $('%s');
+            }
+
             if (!panel) {
                 spt.alert('Please re-open the Column Manager');
                 return;

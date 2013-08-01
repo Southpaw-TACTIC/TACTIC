@@ -190,11 +190,10 @@ class Xml(Base):
     rename_node = classmethod(rename_node)
 
 
+
     def get_parent(cls, node):
         return node.getparent()
     get_parent = classmethod(get_parent)
-
-
 
     def get_children(cls, node):
         xx = node.getchildren()
@@ -218,7 +217,8 @@ class Xml(Base):
     def append_child(cls, node, child):
         node.append(child)
     append_child = classmethod(append_child)
-   
+
+
     def remove_child(cls, node, child):
         #children = my.get_children(node)
         node.remove(child)

@@ -549,10 +549,22 @@ class FileUndo:
         if os.path.exists(src):
             return
 
-        os.mkdir(src)
+        os.makedirs(src)
         FileUndo._add_to_transaction_log("mkdir", src, "")
  
     mkdir = staticmethod(mkdir)
+
+
+    def rmdir(src):
+        if os.path.exists(src):
+            try:
+                os.rmdir(src)
+            except Exception, e:
+                print "WARNING: could not remove [%s]" % src
+        FileUndo._add_to_transaction_log("rmdir", src, "")
+ 
+    rmdir = staticmethod(rmdir)
+
 
 
     def remove(src):
@@ -790,6 +802,12 @@ class FileUndo:
                     if 'Directory not empty' in e.__str__():
                         # can consider removing the contents first and then rmdir
                         raise TransactionException(e)
+
+            elif type == "rmdir":
+                # add the directory back
+                if not os.path.exists(src):
+                    os.makedirs(src)
+
             elif type == "create":
                 # move to a temp directory
                 tmp_dir = Environment.get_tmp_dir()
@@ -914,7 +932,8 @@ class FileUndo:
             shutil.move(src,dst)
         elif type == "mkdir":
             # recreate directory
-            os.mkdir(src)
+            if not os.path.exists(src):
+                os.mkdir(src)
         elif type == "create":
 
             security = Environment.get_security()

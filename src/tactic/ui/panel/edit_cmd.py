@@ -99,13 +99,19 @@ class EditCmd(Command):
     def execute(my):
         last_sobject = None
         last_code = None
+        last_name = None
         for index in range(0,my.multiplier):
             if last_code:
                 code = Common.get_next_code(last_code)
             else:
                 code = None
-            last_sobject = my._execute_single(code)
-            last_code = last_sobject.get_code()
+            if last_name:
+                name = Common.get_next_code(last_name)
+            else:
+                name = None
+            last_sobject = my._execute_single(code, name=name)
+            last_code = last_sobject.get_value("code", no_exception=True)
+            last_name = last_sobject.get_value("name", no_exception=True)
 
 
 
@@ -182,7 +188,7 @@ class EditCmd(Command):
 
 
 
-    def _execute_single(my, code):
+    def _execute_single(my, code, name=None):
         #  only do actions if the edit button has been pressed
         
         from pyasm.web import WebContainer
@@ -235,7 +241,6 @@ class EditCmd(Command):
                 action_handler.execute()
                 
 
-
         # set the parent, if there is one and it's in insert
         if sobject.is_insert() and my.parent_key:
             sobject.add_relationship(my.parent_key)
@@ -256,6 +261,11 @@ class EditCmd(Command):
 
         if code:
             sobject.set_value("code", code)
+
+        # only fill in a new with the passed in name if it has been
+        # specified
+        if name:
+            sobject.set_value("name", name)
 
 
         # commit the changes unless told not to.

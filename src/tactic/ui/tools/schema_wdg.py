@@ -866,7 +866,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         div.add_class("spt_connect_top")
         div.add_color("background", "background")
         div.add_color("color", "color")
-        div.add_style("width: 320px")
+        #div.add_style("width: 320px")
         div.add_style("padding: 10px")
 
 
@@ -973,124 +973,6 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
 
 
-
-    """
-
-    def xxget_code_options(my, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
-
-        div = DivWdg()
-        div.add_class("spt_code");
-
-        div.add("Connect the left sType to the right sType.  You can either select one of the columns displayed or type in manually.  The column does not need to exist yet.")
-
-        div.add("<hr/>")
-
-        save = ActionButtonWdg(title='OK', tip='Remember to save the whole schema at the end.')
-        div.add(save)
-        save.add_style("float: right")
-        save.add_style("margin: -6px 30px 0 0")
-
-        project_code = Project.get_project_code()
-        save.add_behavior( {
-        'type': 'click_up',
-        'project': project_code,
-        'cbjs_action': '''
-
-        spt.app_busy.show("Saving Connections");
-
-        var connect_top = bvr.src_el.getParent(".spt_connect_top");
-        var values = spt.api.get_input_values(connect_top, null, false);
-
-        var top = connect_top.getParent(".spt_schema_tool_top");
-
-        spt.pipeline.init_cbk(top);
-        var groups = spt.pipeline.get_groups();
-        var group = groups[bvr.project];
-
-        var left_search_type = values.left_search_type;
-        var left_node = spt.pipeline.get_node_by_name(left_search_type);
-        var right_search_type = values.right_search_type;
-        var right_node = spt.pipeline.get_node_by_name(right_search_type);
-
-
-        if (left_node == null) {
-            var parts = left_search_type.split("/");
-            var name = parts[1];
-            left_node = spt.pipeline.get_node_by_name(name);
-        }
-        if (right_node == null) {
-            var parts = right_search_type.split("/");
-            var name = parts[1];
-            right_node = spt.pipeline.get_node_by_name(name);
-        }
-
-
-        var server = TacticServerStub.get();
-
-        // get the selected connector
-        var connector = spt.pipeline.get_selected_connector();
-
-        connector.set_from_node(left_node);
-        connector.set_to_node(right_node);
-
-        connector.set_color("#00f");
-        spt.pipeline.redraw_canvas();
-
-        var relationship = values.relationship;
-        connector.set_attr("relationship", relationship)
-        connector.set_attr("from_col", values.left);
-        connector.set_attr("to_col", values.right);
-        if (values.register_stypes == "on") {
-
-            spt.app_busy.show("Registering sTypes using defaults");
-
-            var class_name = 'tactic.ui.tools.SchemaSaveCmd';
-            var kwargs = {
-                'from_search_type': values.left_search_type,
-                'to_search_type': values.right_search_type
-            };
-            server.execute_cmd(class_name, kwargs);
-            //spt.panel.refresh(top);
-            // just do a schema save so that new stypes are displayed properly
-            spt.named_events.fire_event('schema|save', bvr);
-        }
-
-        if (values.create_columns == "on") {
-            spt.app_busy.show("Creating columns");
-            var cmd = 'tactic.ui.tools.SchemaConnectorCbk';
-            try {
-                server.execute_cmd(cmd, values);
-            } catch (e) {
-                var msg = spt.exception.handler(e);
-                if (msg.test(/not registered/)) 
-                    msg += '. You can try to turn on the option "Register sType with defaults"';
-                spt.alert(msg);
-            }
-        }
-
-        spt.app_busy.show("Firing events");
-        var dialog = bvr.src_el.getParent(".spt_dialog_top");
-        var dialog_id = dialog.getAttribute("spt_dialog_id"); 
-        var event = dialog_id + "|dialog_close";
-        spt.named_events.fire_event(event, {});
-        spt.named_events.fire_event('schema|change', {});
-
-        spt.app_busy.hide();
-
-        '''
-        } )
-
-
-        hidden = HiddenWdg("left_search_type")
-        div.add(hidden)
-        hidden.set_value(my.left_search_type)
-
-        hidden = HiddenWdg("right_search_type")
-        div.add(hidden)
-        hidden.set_value(my.right_search_type)
-
-
-    """
 
     def get_code_options(my, left_search_type_sobj, right_search_type_sobj, left_table, right_table, left_selected, right_selected, left_columns, right_columns):
 
@@ -1783,7 +1665,6 @@ class SchemaConnectorCbk(Command):
                   </display>
                 </element>
                 ''' % (element_name2, right_search_type)
-                print "element: ", element_xml
                 config.append_xml_element(element_name2, element_xml)
             config.commit_config()
 
@@ -1834,9 +1715,8 @@ class SchemaConnectorCbk(Command):
             <element name='%s'/>
             ''' % (element_name2)
             config = WidgetDbConfig.get_by_search_type(left_search_type, "edit")
-            #config = WidgetDbConfig.create(left_search_type, "edit")
             if config:
-                config.append_xml_element(element_name2, element_xml)
+                config.insert_xml_element(element_name2, element_xml, "code")
                 config.commit_config()
 
         else:
@@ -1844,9 +1724,8 @@ class SchemaConnectorCbk(Command):
             <element name='%s'/>
             ''' % (element_name)
             config = WidgetDbConfig.get_by_search_type(left_search_type, "edit")
-            #config = WidgetDbConfig.create(left_search_type, "edit")
             if config:
-                config.append_xml_element(element_name, element_xml)
+                config.insert_xml_element(element_name, element_xml, "code")
                 config.commit_config()
 
 
@@ -2508,6 +2387,7 @@ class SchemaSaveCmd(Command):
 
         return
 
+        """
         # find edit for photo
         element_name = "%s_hidden" % from_table
         config = WidgetDbConfig.get_by_search_type(from_search_type, "definition")
@@ -2539,6 +2419,7 @@ class SchemaSaveCmd(Command):
 </element>
         ''' % ( to_table, from_search_type )
         config.append_xml_element(to_table, hidden_row_xml)
+        """
 
 
 

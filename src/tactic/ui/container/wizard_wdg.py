@@ -32,9 +32,14 @@ class WizardWdg(BaseRefreshWdg):
         top = DivWdg()
         top.add_class("spt_wizard_top")
 
+        my.height = my.kwargs.get("height")
+        width = my.kwargs.get("width")
+        if not width:
+            width = "550px"
+
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 550px")
+        inner.add_style("width: %s" % width)
 
         title = my.kwargs.get("title")
         if not title:
@@ -54,8 +59,6 @@ class WizardWdg(BaseRefreshWdg):
         inner.add("<br/>")
 
         inner.add("<hr/>")
-
-        my.height = my.kwargs.get("height")
 
         for i, widget in enumerate(my.widgets):
             page_div = DivWdg()

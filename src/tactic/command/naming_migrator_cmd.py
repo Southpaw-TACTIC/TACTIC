@@ -84,7 +84,16 @@ class NamingMigratorCmd(Command):
                     if mode == "naming":
                         # preallocated path is used to align a file to the
                         # current naming convention
-                        path = snapshot.get_preallocated_path(file_type, file_name)
+
+                        # FIXME:
+                        # there is a behavior in naming to add "_web" and
+                        # "_icon" on the file name.  In this case, we don't
+                        # want that, so ask for main
+                        if file_type in ['icon', 'web']:
+                            path = snapshot.get_preallocated_path('main', file_name)
+                        else:
+                            path = snapshot.get_preallocated_path(file_type, file_name)
+
                     elif mode == "file":
                         # relative_dir is used to align a file to the current
                         # place pointed to by the "file" object
@@ -99,6 +108,7 @@ class NamingMigratorCmd(Command):
                     continue
 
 
+
                 if old_path == path:
                     continue
 
@@ -106,6 +116,7 @@ class NamingMigratorCmd(Command):
 
                 print "old: ", old_path
                 print "new: ", path
+                ddfadad
 
 
                 if not os.path.exists(old_path):

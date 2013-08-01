@@ -26,7 +26,7 @@ from tactic.ui.panel import FastTableLayoutWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
-from tactic.ui.widget import DirListWdg, IconButtonWdg
+from tactic.ui.widget import DirListWdg, IconButtonWdg, ButtonNewWdg, ButtonRowWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
 import os
@@ -154,10 +154,13 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
                 search_codes_list = my.search_codes.get(dirname)
-                if search_codes_list == None:
-                    my.search_codes[dirname] = set([search_code])
-                else:
-                    my.search_codes[dirname].add(search_code)
+
+                # only file objects with not file are recorded
+                if not file_name:
+                    if search_codes_list == None:
+                        my.search_codes[dirname] = set([search_code])
+                    else:
+                        my.search_codes[dirname].add(search_code)
 
 
                 search_type = file_object.get("search_type")
@@ -174,6 +177,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
         # associate all of the root folders to search types
+        """
         for search_type in search_types:
             search_type_obj = SearchType.get(search_type)
             root_dir = search_type_obj.get_value("root_dir", no_exception=True)
@@ -183,13 +187,19 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 root_dir = parts[1]
 
             dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
-            my.search_types_dict[dirname] = search_type
+            if os.path.exists(dirname):
+                my.search_types_dict[dirname] = search_type
+        """
 
 
 
         # get all the directories
-
         for search_type in search_types:
+            #search = Search(search_type)
+            #count = search.get_count()
+            #if not count:
+            #    continue
+
             search_type_obj = SearchType.get(search_type)
 
             parts = search_type_obj.get_base_key().split("/")
@@ -198,6 +208,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
             else:
                 table = parts[0]
             start_dir = "%s/%s/%s" % (base_dir, project_code, table)
+            if not os.path.exists(start_dir):
+                continue
+
             paths.append("%s/" % start_dir)
 
             num_sobjects = {}
@@ -218,7 +231,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
         print "---"               
-
         for name, value in num_sobjects.items():
             print value, name
 
@@ -302,15 +314,31 @@ class RepoBrowserWdg(BaseRefreshWdg):
         search_div.add("<hr/")
 
 
+        button_row = ButtonRowWdg()
+        shelf_wdg.add(button_row)
+        button_row.add_style("float: right")
+        #button_row.add_style("margin-top: -10px")
 
-        button = IconButtonWdg(title="Options", icon=IconWdg.GEAR)
-        shelf_wdg.add( button )
-        button.add_style("float: right")
+
+        button = ButtonNewWdg(title="Options", icon=IconWdg.GEAR, show_arrow=True)
+        button_row.add( button )
         dialog = DialogWdg(show_title=False)
         dialog.add( my.get_options_wdg() )
         shelf_wdg.add( dialog )
         dialog.set_as_activator(button, offset={'x': -10, 'y': 10} )
         dialog.set_title(None)
+
+
+        button = ButtonNewWdg(title="Options", icon=IconWdg.ADD, show_arrow=True)
+        button_row.add( button )
+        menu = my.get_add_menu()
+        menus = [menu.get_data()]
+        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'ADD_BUTTON_CTX': menus } )
+        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "ADD_BUTTON_CTX", True )
+
+
+
+
 
 
 
@@ -359,9 +387,13 @@ class RepoBrowserWdg(BaseRefreshWdg):
         stats_div.add("Found: %s file/s" % len(paths) )
 
 
+        open_depth = my.kwargs.get("open_depth")
+        if open_depth == None:
+            open_depth = 1
+
         file_codes = my.file_codes
         search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=1, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
+        dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
         content_div.add(dir_list)
 
 
@@ -395,6 +427,76 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #info_div.add_style("height: 100px")
 
         return top
+
+
+    def get_add_menu(my):
+
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        from pyasm.biz import Project
+        project = Project.get()
+        search_types = project.get_search_types()
+
+
+        for search_type_obj in search_types:
+            title = search_type_obj.get_title()
+            search_type = search_type_obj.get_value("search_type")
+
+            display_title = "Add New %s" % title
+            menu_item = MenuItem(type='action', label=display_title)
+            menu.add(menu_item)
+            
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'search_type': search_type,
+                'title': title,
+                'cbjs_action': '''
+                spt.tab.set_main_body_tab();
+                //spt.tab.add_new(bvr.title, bvr.title, "tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg", { search_type: bvr.search_type, view: "table" } );
+                spt.panel.load_popup("Add New Item", "tactic.ui.panel.EditWdg", { search_type: bvr.search_type, single: 'false' } )
+                '''
+            } )
+
+
+        if search_types:
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+
+
+        menu_item = MenuItem(type='action', label='Add New sType')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.app.SearchTypeCreatorWdg';
+            spt.panel.load_popup("Create New sType", class_name);
+            '''
+        } )
+
+
+        menu_item = MenuItem(type='action', label='Manage Schema')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+            var class_name = 'tactic.ui.tools.SchemaToolWdg';
+            spt.tab.add_new("Manage Schema", "Manage Schema", class_name);
+            '''
+        } )
+
+
+        return menu
+
+
+
+
+
 
 
 
@@ -552,10 +654,12 @@ class RepoBrowserDirListWdg(DirListWdg):
         """
 
         # add in a context menu
-        menu = my.get_dir_context_menu()
-        menus = [menu.get_data()]
+        freeform_menu = my.get_dir_context_menu()
+        strict_menu = my.get_dir_context_menu(mode="strict")
+        #menus = [menu.get_data()]
         menus_in = {
-            'DIR_ITEM_CTX': menus,
+            'FREEFORM_DIR_ITEM_CTX': freeform_menu,
+            'STRICT_DIR_ITEM_CTX': strict_menu,
         }
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
 
@@ -580,7 +684,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-    def get_dir_context_menu(my):
+    def get_dir_context_menu(my, mode="freeform"):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -589,7 +693,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu.add(menu_item)
 
 
-        menu_item = MenuItem(type='action', label='New Items')
+        menu_item = MenuItem(type='action', label='Add New Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -600,18 +704,17 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             var class_name = 'tactic.ui.panel.EditWdg';
             var kwargs = {
-                'relative_dir': relative_dir,
-                'search_type': search_type
-            }
-
-            spt.panel.load_popup("New Sequence", class_name, kwargs );
+                relative_dir: relative_dir,
+                search_type: search_type,
+                mode: 'insert',
+                single: 'true',
+            };
+            spt.panel.load_popup('Add New Item', 'tactic.ui.panel.EditWdg', kwargs);
             '''
         } )
 
  
-
-
-        menu_item = MenuItem(type='action', label='New Folder')
+        menu_item = MenuItem(type='action', label='Add Multiple Items')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -620,162 +723,247 @@ class RepoBrowserDirListWdg(DirListWdg):
             var relative_dir = activator.getAttribute("spt_relative_dir");
             var search_type = activator.getAttribute("spt_search_type");
 
-            var div = document.createElement("div");
-            div = $(div);
-            div.setStyle("margin-top: 3px")
-
-            var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
-            var icon = "/context/icons/silk/folder.png";
-            var html = "";
-            html += '<img src="'+arrow+'"/>';
-            html += '<img src="'+icon+'"/>';
-            html += '<input class="new_folder_input" type="text" value="New Folder"/>';
-            div.innerHTML = html;
-
-            var content = activator.getNext(".spt_dir_content");
-            if (content.childNodes.length)
-                div.inject(content.childNodes[0], "before");
-            else
-                div.inject(content);
-
-
-            var padding = activator.getStyle("padding-left");
-            padding = parseInt( padding.replace("px", "") ) + 11;
-            div.setStyle("padding-left", padding);
-
-            var input = div.getElement(".new_folder_input");
-            input.onblur = function() {
-                var value = this.value;
-                if (!value) {
-                    div.destroy();
-                }
-
-                var span = $(document.createElement("span"));
-                span.innerHTML = " " +value;
-                span.replaces(input);
-                span.addClass("spt_dir_value");
-
-                var new_relative_dir = relative_dir + "/" + value;
-                div.setAttribute("spt_relative_dir", new_relative_dir);
-                div.addClass("spt_dir_item");
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'create_folder',
-                    relative_dir: new_relative_dir
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs);
-            };
-            input.onfocus = function() {
-                this.select();
-            };
-            input.addEvent( "keyup", function(evt) {
-                var key = evt.key;
-                if (key == 'enter') {
-                    evt.stop();
-                    this.blur();
-                }
-                else if (key == 'esc') {
-                    div.destroy();
-                }
-            } );
-
-            input.select();
-
-            '''
-        } )
-
-
-        menu_item = MenuItem(type='action', label='Rename Folder (TODO)')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-
-            var input = $(document.createElement("input"));
-            input.setAttribute("type", "text");
-
-            var el = activator.getElement(".spt_dir_value");
-            input.replaces(el);
-
-            var parts = relative_dir.split("/");
-            input.value = parts[parts.length-1];
-            input.select();
-
-            input.onblur = function() {
-                var value = this.value;
-                if (!value) {
-                    div.destroy();
-                }
-
-                var span = $(document.createElement("span"));
-                span.innerHTML = " " +value;
-                span.replaces(input);
-                span.addClass("spt_dir_value");
-
-                var new_relative_dir = relative_dir + "/" + value;
-                div.setAttribute("spt_relative_dir", new_relative_dir);
-                div.addClass("spt_dir_item");
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'create_folder',
-                    relative_dir: new_relative_dir
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs);
-            };
-
-
-            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var class_name = 'tactic.ui.panel.EditWdg';
             var kwargs = {
-                search_type: bvr.search_type,
-                action: 'rename_folder',
-                relative_dir: relative_dir
-            }
-            var server = TacticServerStub.get();
-            server.execute_cmd(class_name, kwargs);
-
+                relative_dir: relative_dir,
+                search_type: search_type,
+                mode: 'insert',
+                single: 'false',
+            };
+            spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
             '''
         } )
 
-        menu_item = MenuItem(type='action', label='Delete Folder')
+
+
+        menu_item = MenuItem(type='action', label='Delete Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
-            var relative_dir = activator.getAttribute("spt_relative_dir");
-            if (!confirm("Delete folder ["+relative_dir+"]?")) {
+            var search_type = activator.getAttribute("spt_search_type");
+            var search_codes = activator.getAttribute("spt_search_codes");
+            if (! search_codes ) {
+                alert( "No SObject associated with this folder" );
                 return;
             }
 
-            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-            var kwargs = {
-                search_type: bvr.search_type,
-                action: 'delete_folder',
-                relative_dir: relative_dir
+            search_codes = search_codes.split("|");
+            if (search_codes.length > 1) {
+                alert( "Too many sobjects associated with this folder");
+                return;
             }
-            var server = TacticServerStub.get();
-            server.execute_cmd(class_name, kwargs);
 
-            activator.destroy();
+            var search_key = search_type + "&code=" + search_codes[0];
 
-
+            var class_name = 'tactic.ui.tools.DeleteToolWdg';
+            var kwargs = {
+              search_key: search_key,
+            }
+            var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
             '''
         } )
+ 
+
+        if mode == "freeform":
+            menu_item = MenuItem(type='action', label='New Folder')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': r'''
+                var activator = spt.smenu.get_activator(bvr);
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                var search_type = activator.getAttribute("spt_search_type");
+
+                var div = document.createElement("div");
+                div = $(div);
+                div.setStyle("margin-top: 3px")
+
+                var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
+                var icon = "/context/icons/silk/folder.png";
+                var html = "";
+                html += '<img src="'+arrow+'"/>';
+                html += '<img src="'+icon+'"/>';
+                html += '<input class="new_folder_input" type="text" value="New Folder"/>';
+                div.innerHTML = html;
+
+                var content = activator.getNext(".spt_dir_content");
+                if (content.childNodes.length)
+                    div.inject(content.childNodes[0], "before");
+                else
+                    div.inject(content);
+
+
+                var padding = activator.getStyle("padding-left");
+                padding = parseInt( padding.replace("px", "") ) + 11;
+                div.setStyle("padding-left", padding);
+
+                var input = div.getElement(".new_folder_input");
+                input.onblur = function() {
+                    var value = this.value;
+                    if (!value) {
+                        div.destroy();
+                    }
+
+                    var span = $(document.createElement("span"));
+                    span.innerHTML = " " +value;
+                    span.replaces(input);
+                    span.addClass("spt_dir_value");
+
+                    var new_relative_dir = relative_dir + "/" + value;
+                    div.setAttribute("spt_relative_dir", new_relative_dir);
+                    div.addClass("spt_dir_item");
+
+                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                    var kwargs = {
+                        search_type: bvr.search_type,
+                        action: 'create_folder',
+                        relative_dir: new_relative_dir
+                    }
+                    var server = TacticServerStub.get();
+                    server.execute_cmd(class_name, kwargs);
+                };
+                input.onfocus = function() {
+                    this.select();
+                };
+                input.addEvent( "keyup", function(evt) {
+                    var key = evt.key;
+                    if (key == 'enter') {
+                        evt.stop();
+                        this.blur();
+                    }
+                    else if (key == 'esc') {
+                        div.destroy();
+                    }
+                } );
+
+                input.select();
+
+                '''
+            } )
+
+
+            menu_item = MenuItem(type='action', label='Rename Folder (TODO)')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+
+                var input = $(document.createElement("input"));
+                input.setAttribute("type", "text");
+
+                var el = activator.getElement(".spt_dir_value");
+                input.replaces(el);
+
+                var parts = relative_dir.split("/");
+                input.value = parts[parts.length-1];
+                input.select();
+
+                input.onblur = function() {
+                    var value = this.value;
+                    if (!value) {
+                        div.destroy();
+                    }
+
+                    var span = $(document.createElement("span"));
+                    span.innerHTML = " " +value;
+                    span.replaces(input);
+                    span.addClass("spt_dir_value");
+
+                    var new_relative_dir = relative_dir + "/" + value;
+                    div.setAttribute("spt_relative_dir", new_relative_dir);
+                    div.addClass("spt_dir_item");
+
+                    var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                    var kwargs = {
+                        search_type: bvr.search_type,
+                        action: 'create_folder',
+                        relative_dir: new_relative_dir
+                    }
+                    var server = TacticServerStub.get();
+                    server.execute_cmd(class_name, kwargs);
+                };
+
+
+                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    action: 'rename_folder',
+                    relative_dir: relative_dir
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(class_name, kwargs);
+
+                '''
+            } )
+
+            menu_item = MenuItem(type='action', label='Delete Folder')
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var relative_dir = activator.getAttribute("spt_relative_dir");
+                if (!confirm("Delete folder ["+relative_dir+"]?")) {
+                    return;
+                }
+
+                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    action: 'delete_folder',
+                    relative_dir: relative_dir
+                }
+                var server = TacticServerStub.get();
+                server.execute_cmd(class_name, kwargs);
+
+                activator.destroy();
+
+
+                '''
+            } )
 
 
 
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
 
+
         menu_item = MenuItem(type='action', label='Check-in Files')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var search_type = activator.getAttribute("spt_search_type");
+            var search_codes = activator.getAttribute("spt_search_codes");
+            if (! search_codes ) {
+                alert( "No SObject associated with this folder" );
+                return;
+            }
+
+            search_codes = search_codes.split("|");
+            if (search_codes.length > 1) {
+                alert( "Too many sobjects associated with this folder");
+                return;
+            }
+
+            var search_key = search_type + "&code=" + search_codes[0];
+            var class_name = 'tactic.ui.widget.CheckinWdg';
+            var kwargs = {
+                search_key: search_key
+            };
+            spt.panel.load_popup("Check-in", class_name, kwargs);
+            '''
+        } )
+
+
+
+
+        menu_item = MenuItem(type='action', label='Ingest Files')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -855,7 +1043,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_dir_behaviors(my, item_div, dirname, basename):
 
-        SmartMenu.assign_as_local_activator( item_div, 'DIR_ITEM_CTX' )
 
         path = "%s/%s" % (dirname, basename)
         relative_dir = path.replace(my.base_dir, "")
@@ -870,8 +1057,14 @@ class RepoBrowserDirListWdg(DirListWdg):
                 tmp_dir = "%s/%s" % (my.base_dir, tmp_rel_dir)
                 search_type = search_types.get("%s/" % tmp_dir)
 
+        if not search_type:
+            return
 
-        assert(search_type)
+        if search_type.startswith("test2/sequence"):
+            SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
+        else:
+            SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
+
         item_div.add_attr("spt_search_type", search_type)
 
         search_codes = my.kwargs.get("search_codes")
@@ -912,7 +1105,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         var search_codes = bvr.src_el.getAttribute("spt_search_codes");
-        alert(search_codes);
+        //alert(search_codes);
         search_codes = search_codes.split("|");
 
         spt.app_busy.show("Loading ...");
@@ -932,7 +1125,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
     def get_file_icon(my, dir, item):
-        import os
         path = "%s/%s" % (dir, item)
         #print "code: ", my.kwargs.get("file_codes").get(path)
         if not os.path.exists(path):
@@ -940,7 +1132,53 @@ class RepoBrowserDirListWdg(DirListWdg):
         return IconWdg.DETAILS
 
     def get_dir_icon(my, dir, item):
+
+        path = "%s/%s" % (dir, item)
+        search_types = my.kwargs.get("search_types")
+        search_type = search_types.get("%s/" % path)
+
+        search_codes = my.kwargs.get("search_codes")
+        search_code_list = search_codes.get("%s/" % path)
+
+        if search_code_list:
+            return IconWdg.FILM
+
         return IconWdg.LOAD
+
+
+    def get_dir_icon_wdg(my, dirname, basename):
+
+        path = "%s/%s" % (dirname, basename)
+        search_types = my.kwargs.get("search_types")
+        search_type = search_types.get("%s/" % path)
+
+        search_codes = my.kwargs.get("search_codes")
+        search_code_list = search_codes.get("%s/" % path)
+
+
+        if not search_type:
+            icon_string = IconWdg.HELP
+        elif search_code_list and len(search_code_list) == 1:
+            icon_string = IconWdg.CHECK
+        else:
+            icon_string = None
+
+        div = DivWdg()
+        div.add_style("position: relative")
+
+        icon = IconWdg(path, IconWdg.LOAD)
+        div.add(icon)
+
+        if icon_string:
+            icon = IconWdg(path, icon_string, width=12)
+            icon.add_style("position: absolute")
+            icon.add_style("top: 6px")
+            icon.add_style("left: -1px")
+            div.add(icon)
+
+        return div
+
+
 
 
 
@@ -1240,17 +1478,32 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         search_codes_str = "|".join(search_codes)
         expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
 
-        layout_mode = 'default'
+        #layout_mode = 'default'
+
+        search_type_obj = SearchType.get(search_type)
+        layout_mode = search_type_obj.get_value("default_layout", no_exception=True)
+        if layout_mode == "default":
+            layout_mode = ''
+        elif not layout_mode:
+            layout_mode = 'tile'
+        print "layyout: ", layout_mode
+
+        element_names = None
+        if layout_mode == "checkin":
+            element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
+
+
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
             expression=expression,
             #search_keys=search_keys,
             view="table",
-            element_names=['preview','code','name','description','history','file_list'],
+            element_names=element_names,
             show_shelf=True,
             layout=layout_mode,
-            scale='50'
+            scale='75',
+            width='100%'
         )
         #layout.set_sobjects(sobjects)
 

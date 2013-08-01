@@ -2587,7 +2587,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         "layout": {
             'description': 'Determine the layout to use',
             'type': 'SelectWdg',
-            'values': 'default|tile|static_table|raw_table|fast_table|card|old_table|custom|custom_item',
+            'values': 'default|tile|static_table|raw_table|fast_table|tool|browser|card|old_table|custom|custom_item',
             'category': 'Layout',
             'order': 0,
         },

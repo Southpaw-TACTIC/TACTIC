@@ -117,14 +117,16 @@ class FolderTrigger(Trigger):
         file_type = 'main'
         snapshot_type = "file"
         process = "publish"
+
         virtual_snapshot = Snapshot.create_new()
         virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(file_type)
         virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
         virtual_snapshot.set_value("snapshot_type", snapshot_type)
 
-        virtual_snapshot.set_value("process", process)
+
         # since it is a a file name based context coming in, use process
-        virtual_snapshot.set_value("context", process)
+        #virtual_snapshot.set_value("process", process)
+        #virtual_snapshot.set_value("context", process)
 
         # ???? Which is the correct one?
         virtual_snapshot.set_sobject(sobject)
@@ -142,6 +144,8 @@ class FolderTrigger(Trigger):
         path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext)
         dirname = os.path.dirname(path)
 
+        print "path: ", path
+
         #dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
 
         base_dir = Environment.get_asset_dir()
@@ -156,9 +160,9 @@ class FolderTrigger(Trigger):
         file_obj.set_value("type", "main")
         file_obj.commit()
 
-
+        from pyasm.search import FileUndo
         if not os.path.exists(dirname):
-            os.makedirs(dirname)
+            FileUndo.mkdir(dirname)
 
 
 

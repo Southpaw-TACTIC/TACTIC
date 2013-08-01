@@ -281,14 +281,45 @@ class WidgetDbConfig(SObject):
        
         view_node = my.get_view_node()
         if view_node is None:
-            print "View Node does not exist!!"
+            print "View Node does not exist"
             return
         node = my.get_element_node(element_name)
         if node is not None:
             xml.replace_child(view_node, node, new_root_node)
         else:
-            xml.append_child(view_node, new_root_node)
+            element = my.get_element_node("code")
+            if element is None:
+                element = my.get_element_node("name")
+            if element is not None:
+                xml.insert_before(new_root_node, element)
+            else:
+                xml.append_child(view_node, new_root_node)
         #print my.xml.to_string()
+
+
+
+    def insert_xml_element(my, element_name, config_xml, ref_element_name):
+        '''append an element with the config_xml to current doc's view'''
+        xml = Xml()
+        xml.read_string(config_xml)
+        new_root_node = xml.get_root_node()
+       
+        view_node = my.get_view_node()
+        if view_node is None:
+            print "View Node does not exist"
+            return
+        node = my.get_element_node(element_name)
+        if node is not None:
+            xml.replace_child(view_node, node, new_root_node)
+        else:
+            element = my.get_element_node(ref_element_name)
+            if element is not None:
+                xml.insert_before(view_node, new_root_node)
+            else:
+                xml.append_child(view_node, new_root_node)
+
+        #print my.xml.to_string()
+
 
 
 

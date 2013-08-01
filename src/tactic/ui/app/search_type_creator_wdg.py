@@ -229,7 +229,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         
         from tactic.ui.container import WizardWdg
-        wizard = WizardWdg(title="Register a new sType", height="400px")
+        wizard = WizardWdg(title="Register a new sType", height="400px", width="550px")
         top.add(wizard)
 
 
@@ -496,10 +496,12 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         # Page 4
+        """
         finish_wdg = DivWdg()
         wizard.add(finish_wdg, "Finish")
         finish_wdg.add("<br/>"*5)
         finish_wdg.add("Click 'Register' button below to complete")
+        """
 
 
         # submit button
@@ -1822,6 +1824,7 @@ class SearchTypeCreatorCmd(Command):
 
         naming = SearchType.create("config/naming")
         naming.set_value("dir_naming", naming_expr)
+        naming.set_value("checkin_type", "auto")
 
         search_type = my.search_type_obj.get_base_key()
         naming.set_value("search_type", search_type)

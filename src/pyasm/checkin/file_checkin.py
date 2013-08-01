@@ -226,7 +226,6 @@ class FileCheckin(BaseCheckin):
             virtual_snapshot.set_sobject(sobject)
             
             naming = Naming.get(sobject, virtual_snapshot, file_path=filepath)
-
             if naming:
                 my.file_naming = None
                 my.dir_naming = None
@@ -236,7 +235,8 @@ class FileCheckin(BaseCheckin):
                 if not my.checkin_type:
                     my.checkin_type = 'strict'
 
-                my.context = process
+                # NOTE: not sure why this is here
+                #my.context = process
 
             else:
                 my.checkin_type = 'auto'

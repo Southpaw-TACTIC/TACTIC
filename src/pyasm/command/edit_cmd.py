@@ -10,7 +10,8 @@
 #
 #
 
-__all__ = ["EditCmdException", "EditCmd", "EditAllCmd", "InsertMultiCmd"]
+#__all__ = ["EditCmdException", "EditCmd", "EditAllCmd", "InsertMultiCmd"]
+__all__ = []
 
 
 import string, sys

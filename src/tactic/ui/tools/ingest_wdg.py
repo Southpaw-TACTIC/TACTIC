@@ -12,7 +12,7 @@
 
 
 from pyasm.web import DivWdg
-from pyasm.widget import IconWdg, TextWdg
+from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from tactic.ui.common import BaseRefreshWdg
@@ -30,6 +30,10 @@ __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 class IngestUploadWdg(BaseRefreshWdg):
 
     def get_display(my):
+
+
+        relative_dir = my.kwargs.get("relative_dir")
+
         div = DivWdg()
         div.add_class("spt_ingest_top")
         div.add_style("width: 500px")
@@ -43,7 +47,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_div.add_style("font-size: 14px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 10px")
-        title_div.add_style("margin: -20px -21px 15px -21px")
         title_div.add_color("background", "background3")
         title_div.add_border()
 
@@ -52,6 +55,17 @@ class IngestUploadWdg(BaseRefreshWdg):
             div.add("No search type specfied")
             return div
 
+        if relative_dir:
+            folder_div = DivWdg()
+            div.add(folder_div)
+            folder_div.add("Folder: %s" % relative_dir)
+            folder_div.add_style("opacity: 0.5")
+            folder_div.add_style("font-style: italic")
+            folder_div.add_style("margin-bottom: 10px")
+
+            title_div.add_style("margin: -20px -21px 5px -21px")
+        else:
+            title_div.add_style("margin: -20px -21px 15px -21px")
 
 
         from tactic.ui.input import Html5UploadWdg
@@ -100,8 +114,14 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        div.add("Select files or drag/drop files to be uploaded and ingested:")
+
+        div.add("Add files or drag/drop files to be uploaded and ingested:")
         div.add("<br/>"*2)
+
+
+        data_div = my.get_data_wdg()
+        div.add(data_div)
+
 
 
 
@@ -414,7 +434,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add_style("margin-bottom: 15px")
         upload_div.add("<br clear='all'/>")
 
-        relative_dir = my.kwargs.get("relative_dir")
 
         button.add_behavior( {
             'type': 'click_up',
@@ -475,6 +494,58 @@ class IngestUploadWdg(BaseRefreshWdg):
         return div
 
 
+    def get_data_wdg(my):
+        div = DivWdg()
+
+        button = IconButtonWdg(title="Add Data", icon=IconWdg.FOLDER)
+        div.add(button)
+
+        dialog = DialogWdg(display="false", show_title=False)
+        div.add(dialog)
+        dialog.set_as_activator(button, offset={'x':0,'y':10})
+
+        dialog_data_div = DivWdg()
+        dialog_data_div.add_color("background", "background")
+        dialog_data_div.add_style("padding", "20px")
+
+        dialog.add(dialog_data_div)
+        dialog_data_div.add("Category:")
+        text = TextInputWdg(name="category")
+        dialog_data_div.add(text)
+        text.add_class("spt_category")
+        text.add_style("padding: 1px")
+
+
+        # use file name for name
+        # use base name for name
+        name_div = DivWdg()
+        dialog_data_div.add(name_div)
+        name_div.add_style("margin: 15px 0px")
+
+
+        checkbox = CheckboxWdg("use_file_name")
+        name_div.add(checkbox)
+        name_div.add(" Use name of file for name")
+
+        name_div.add("<br/>")
+
+        checkbox = CheckboxWdg("use_base_name")
+        name_div.add(checkbox)
+        name_div.add(" Remove extension")
+
+
+        name_div.add("<br/>")
+
+        checkbox = CheckboxWdg("file_keywords")
+        name_div.add(checkbox)
+        name_div.add(" Use file name for keywords")
+
+
+
+
+        return div
+
+
 
 
 class IngestUploadCmd(Command):
@@ -519,6 +590,12 @@ class IngestUploadCmd(Command):
                     if SearchType.column_exists(search_type, "keywords"):
                         sobject.set_value("keywords", category)
 
+                    if SearchType.column_exists(search_type, "relative_dir"):
+                        sobject.set_value("relative_dir", category)
+
+
+
+
 
             sobject.commit()
 
@@ -527,7 +604,7 @@ class IngestUploadCmd(Command):
             # use API
             server.simple_checkin(search_key, "publish", filename, mode='uploaded')
             percent = int((float(count)+1) / len(filenames)*100)
-            print filename, percent
+            print "checking in: ", filename, percent
 
             msg = {
                 'progress': percent,

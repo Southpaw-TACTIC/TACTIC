@@ -346,7 +346,7 @@ class DirListWdg(BaseRefreshWdg):
         else:
             all_open = False
         open_depth = my.kwargs.get("open_depth")
-        if not open_depth:
+        if open_depth == None:
             open_depth = -1
 
 
@@ -670,17 +670,18 @@ class DirListWdg(BaseRefreshWdg):
             info = {}
 
 
-        if info.get("file_type") == 'missing':
-            icon_string = IconWdg.DELETE
-        else:
-            icon_string = my.get_dir_icon(dir, item)
+        icon_div = my.get_dir_icon_wdg(dir, item)
+        if not icon_div:
+            if info.get("file_type") == 'missing':
+                icon_string = IconWdg.DELETE
+            else:
+                icon_string = my.get_dir_icon(dir, item)
 
+            icon_div = DivWdg()
+            icon = IconWdg(path, icon_string)
+            icon_div.add(icon)
 
-        icon_div = DivWdg()
         div.add(icon_div)
-        icon = IconWdg(path, icon_string)
-        icon_div.add(icon)
-
         icon_div.add_style("float: left")
         icon_div.add_style("margin-left: 3px")
         icon_div.add_style("margin-top: -1px")
@@ -961,6 +962,15 @@ class DirListWdg(BaseRefreshWdg):
 
         return
 
+
+
+
+    def get_file_icon_wdg(my, dirname, basename):
+        return
+
+
+    def get_dir_icon_wdg(my, dirname, basename):
+        return
 
 
     def get_file_icon(my, dir, item):

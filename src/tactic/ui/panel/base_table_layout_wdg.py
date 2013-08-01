@@ -1269,7 +1269,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     var top = activator.getParent(".spt_table_top");
                     var table = top.getElement(".spt_table");
                     var search_type = top.getAttribute("spt_search_type")
-                    kwargs = {
+                    var kwargs = {
                       search_type: search_type,
                       parent_key: '%s',
                       mode: 'insert',
@@ -1600,7 +1600,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
 
-                spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                popup.activator = bvr.src_el;
+                popup.panel = panel;
                 ''',
             } )
 
@@ -2064,7 +2066,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     bvr.args.element_names = element_names;
 
                     var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
-                    spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    popup.activator = activator;
+                    popup.panel = panel;
                     ''',
                 }
             } )

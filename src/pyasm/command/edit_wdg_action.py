@@ -195,14 +195,13 @@ class DatabaseAction(Command):
         if not column:
             column = my.name
 
-        value = my.get_value(column)
+        # get the value
+        # NOTE: not sure why this was "column".  The value will come
+        # through with the name of the element.  The "column" options
+        # tells the action which column to set the value to
+        #value = my.get_value(column)
+        value = my.get_value(my.name)
 
-        # DEPRECATED: this is not used
-        # HACK message leave alone (NULL).  This is here because we don't
-        # have proper introspection of database types to put in defaults
-        # for ints and timestamps
-        #if value == "__NONE__":
-        #    return
 
         # check if there is an expression on the update
         expr = my.get_option("expression")

@@ -11,7 +11,7 @@
 #
 __all__ = ["DeleteToolWdg", "DeleteCmd", "DeleteSearchTypeToolWdg", 'DeleteSearchTypeCmd', "DeleteProjectToolWdg", "DeleteProjectCmd"]
 
-from pyasm.common import Common, TacticException, Container
+from pyasm.common import Common, TacticException, Container, Environment
 from pyasm.biz import Schema, Project
 from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType, TableDropUndo, FileUndo, SqlException, SearchException
@@ -322,6 +322,22 @@ class DeleteCmd(Command):
                         related_sobject.delete()
 
 
+        # implicitly remove "directory" files associated with the sobject
+        search = Search("sthpw/file")
+        search.add_op("begin")
+        search.add_filter("file_name", "")
+        search.add_null_filter("file_name")
+        search.add_op("or")
+        search.add_parent_filter(sobject)
+        file_objects = search.get_sobjects()
+        for file_object in file_objects:
+            base_dir = Environment.get_asset_dir()
+            relative_dir = file_object.get("relative_dir")
+            lib_dir = "%s/%s" % (base_dir, relative_dir)
+            print "removing: ", lib_dir
+            FileUndo.rmdir(lib_dir)
+            file_object.delete()
+
 
         # finally delete the sobject
         print "deleting: ", sobject.get_search_key()
@@ -344,8 +360,8 @@ class DeleteCmd(Command):
 
         # remove the files from the repo
         for file_path in file_paths:
+            "removing path: ", file_path
             FileUndo.remove(file_path)
-
 
         print "deleting snapshot: ", snapshot.get_search_key()
         snapshot.delete()

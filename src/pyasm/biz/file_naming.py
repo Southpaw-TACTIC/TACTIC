@@ -56,7 +56,6 @@ class FileNaming(object):
         context = my.snapshot.get_value("context")
         filename = my.file_object.get_full_file_name()
 
-
         # make sure that the version in the file name does not yet exist
         version = my.get_version_from_file_name(filename)
         if not auto_version and version:
@@ -131,8 +130,6 @@ class FileNaming(object):
         elif ext: # dir don't need extension
             filename = "%s%s" % (filename, ext)
 
-
-        
         return filename
 
 
@@ -253,10 +250,10 @@ class FileNaming(object):
 
         try:
             file_name = eval( "my.%s()" % func_name)
-            
         except Exception, e:
             if e[0].find("object has no attribute '%s'"%func_name) != -1:
                 file_name = my.get_default()
+            
             else:
                 raise
         # ensure that the filename has no illegal characters

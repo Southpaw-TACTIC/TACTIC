@@ -383,6 +383,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
             var class_name = 'tactic.ui.tools.RepoBrowserWdg';
             var args = {
+                open_depth: 0
             };
             spt.tab.add_new("File Browser", "File Browser", class_name, args);
             spt.named_events.fire_event("hotbox|close");

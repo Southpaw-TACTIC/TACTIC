@@ -416,6 +416,10 @@ class Search(Base):
         my.select.add_where(filter)
 
 
+    def add_null_filter(my, name):
+        my.add_filter(name, "NULL", quoted=False, op="is")
+
+
     def add_search_filter(my, name, search, op='in', table=''):
         '''combines results of one search filter with another search filter
         as a subselect
@@ -3866,7 +3870,9 @@ class SObject(object):
 
         if my.column_exists("relative_dir"):
             base_search_type = my.get_base_search_type() 
-            defaults['relative_dir'] = 'test2/photos'
+            parts = base_search_type.split("/")
+            project_code = Project.get_project_code()
+            defaults['relative_dir'] = '%s/%s' % (project_code, parts[1])
 
 
         return defaults
@@ -5913,7 +5919,14 @@ class SObjectUndo:
 
 
                 if column_type == 'timestamp':
-                    value = SPTDate.convert(value)
+                    try:
+                        if value == "now()":
+                            value = SPTDate.now()
+                        else:
+                            value = SPTDate.convert(value)
+                    except:
+                        print "WARNING: could not parse timestamp [%s]" % value
+
                 elif column_type == 'boolean':
                     if value == 'true':
                         value = True
