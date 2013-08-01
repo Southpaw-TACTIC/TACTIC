@@ -84,6 +84,8 @@ class BaseTableElementWdg(HtmlElement):
         my.parent_wdg = None
         my.layout_wdg = None
 
+        my.filter_data = {}
+
 
     def handle_layout_behaviors(my, layout):
         '''This is the place where a top layout widget is added, allowing
@@ -99,6 +101,12 @@ class BaseTableElementWdg(HtmlElement):
         '''
         pass
 
+
+    def set_filter_data(my, filter_data):
+        my.filter_data = filter_data
+
+    def get_filter_data(my):
+        return my.filter_data
 
     def get_args_keys(cls):
         return {}

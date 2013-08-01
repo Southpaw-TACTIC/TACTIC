@@ -201,6 +201,16 @@ class BaseConfigWdg(BaseRefreshWdg):
             section.append(element)
 
 
+        # go through each widget and pass them the filter_data object
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get()
+        if not filter_data:
+            filter_data = {}
+        for widget in my.widgets:
+            widget.set_filter_data(filter_data)
+
+
+
         # initialize all of the child widgets
         super(BaseConfigWdg,my).init()
 

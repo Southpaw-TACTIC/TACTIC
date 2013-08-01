@@ -452,6 +452,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
+
+        # TEST TEST TEST
+        #inner.add('<br><br><br>')
+        #upload_wdg = Html5UploadWdg()
+        #inner.add(upload_wdg)
+        # TEST TEST TEST
         
         if my.kwargs.get('temp') != True:
             

@@ -97,8 +97,10 @@ class PythonElementWdg(TypeTableElementWdg):
         sobject = my.get_current_sobject()
         sobject_dict = sobject.get_sobject_dict()
 
+        filter_data = my.filter_data.get_data()
+
         try:
-            cmd = PythonCmd(code=my.code, sobject=sobject_dict)
+            cmd = PythonCmd(code=my.code, sobject=sobject_dict, filter_data=filter_data)
             result = cmd.execute()
         except Exception, e:
             top.add(str(e))

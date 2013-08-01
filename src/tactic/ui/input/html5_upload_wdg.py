@@ -59,6 +59,8 @@ class Html5UploadWdg(BaseRefreshWdg):
         #input.add_style("visibility: hidden")
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
+        #input.add_style("margin-left: 500px")
+        #input.add_style("margin-top: -50px")
 
         multiple = my.kwargs.get("multiple")
         if multiple in [True, 'true']:
