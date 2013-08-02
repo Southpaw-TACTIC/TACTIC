@@ -660,9 +660,10 @@ class DbConfigSaveCbk(Command):
 
         default_project = web.get_form_value("install/default_project")
         tmp_dir = web.get_form_value("install/tmp_dir")
-
         if tmp_dir:
             Config.set_value("install", "tmp_dir", tmp_dir)
+        else:
+            Config.set_value("install", "tmp_dir", '')
 
         if default_project:
             Config.set_value("install", "default_project", default_project)
@@ -763,23 +764,21 @@ class DbConfigSaveCbk(Command):
     def configure_asset_dir(my):
 
         web = WebContainer.get_web()
+        keys = web.get_form_keys()
+        option_list = []
+        for key in keys:
+            if key.startswith('checkin/'):
+                key = key.replace('checkin/','')
+                option_list.append(key)
+  
         asset_dir = web.get_form_value("checkin/asset_base_dir")
-
         if asset_dir != None:
             if asset_dir and not os.path.exists(asset_dir):
                 os.makedirs(asset_dir)
             Config.set_value("checkin", "asset_base_dir", asset_dir)
 
-        option_list = my.kwargs.get('checkin_options')
-        
-        my._remove_item_from_list(option_list,'asset_base_dir')
-        my._remove_item_from_list(option_list,'win32_server_handoff_dir')
-        my._remove_item_from_list(option_list,'linux_server_handoff_dir')
-
-        if os.name == "nt":
-            option_list.append('win32_server_handoff_dir')
-        else:
-            option_list.append('linux_server_handoff_dir')
+        if 'asset_base_dir' in option_list:
+            option_list.remove('asset_base_dir')
 
         for item_dir in option_list:
             item_in_list=web.get_form_value('checkin/%s'%item_dir)
@@ -787,11 +786,6 @@ class DbConfigSaveCbk(Command):
                 Config.set_value("checkin", '%s'%item_dir, item_in_list)
             else:
                 Config.set_value("checkin", '%s'%item_dir, "")
-            #Config.remove("checkin", "linux_server_handoff_dir")
-
-    def _remove_item_from_list(my,the_list,val):
-        if val in the_list:
-            the_list.remove(val)
 
     def configure_palette(my):
 
