@@ -75,16 +75,19 @@ spt.html5upload.events = {};
 
 
 spt.html5upload.set_form = function(form) {
+
     if (!form) {
         spt.alert('Cannot initialize the HTML upload. Invalid form detected.');
         return;
     }
+    console.log('set form')
     spt.html5upload.form = form;
 }
 
 // get the last one in the list since this FileList is readonly and it is additive if multiple attr is on
 spt.html5upload.get_file = function() {
     var files = spt.html5upload.get_files();
+    console.log(files)
     if (files.length == 0) {
         return null;
     }
@@ -103,7 +106,10 @@ spt.html5upload.get_files = function() {
 
 spt.html5upload.select_file = function(onchange) {
     var files = spt.html5upload.select_files(onchange);
+    console.log('select function')
+    console.log(files)
     if (!files) {
+
         spt.alert('You may need to refresh this page.');
         return null;
     }
@@ -123,10 +129,10 @@ spt.html5upload.select_files = function(onchange) {
     }
 
     var el = form.getElement(".spt_file") ;
-  
+    alert('11111111111111111')
     // ensure this listener is only added once
     if (!spt.html5upload.events['select_file']){
-        el.addEventListener("change", onchange, true);
+        //el.addEventListener("change", onchange, true);
     }
 
     // This is necessary for Qt on a Mac??
@@ -286,11 +292,13 @@ class UploadButtonWdg(BaseRefreshWdg):
         else:
             multiple = False
 
+
+        print '11111111111111111111111111111111'
         upload = Html5UploadWdg(name=name, multiple=multiple)
         top.add(upload)
         upload_id = upload.get_upload_id()
 
-
+        print '2222222222222222222222222222222222222222'
 
         from tactic.ui.widget import ActionButtonWdg
         button = ActionButtonWdg(title=title)
@@ -339,8 +347,8 @@ class UploadButtonWdg(BaseRefreshWdg):
             var percent = Math.round(evt.loaded * 100 / evt.total);
             spt.app_busy.show("Uploading ["+percent+"%% complete]");
             '''
-
-
+        print '333333333333',upload_start, upload_progress
+        print '23123', on_complete, upload_init
         button.add_behavior( {
             'type': 'click_up',
             'upload_id': upload_id,
