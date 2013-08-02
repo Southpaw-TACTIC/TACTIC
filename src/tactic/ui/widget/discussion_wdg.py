@@ -1752,7 +1752,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             if my.contexts:
                 content_div.add("Warning: You should define %s in process display option. 'publish' will override." % my.contexts)
         
-        	# context is optional, only drawn if it's different from process
+            # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
             wdg_label = "For Process:"
             span = SpanWdg(wdg_label)
@@ -1868,10 +1868,17 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         attachment_div = DivWdg()
         content_div.add(attachment_div)
         attachment_div.add_class("spt_attachment_top")
-        #browse_button = ProdIconButtonWdg("Attach")
 
-        from tactic.ui.input import UploadButtonWdg 
-        on_complete = '''var files = spt.html5upload.get_file(); 
+        #browse_button = ProdIconButtonWdg("Attach")
+        browse_button = ActionButtonWdg(title="Attach File(s)", tip='Browse for files to attach to this note')
+        attachment_div.add(browse_button)
+        browse_button.add_style("float: left")
+        browse_button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        spt.app_busy.show("Opening File Browser", "");
+        var applet = spt.Applet.get();
+        var files = applet.open_file_browser();
         var html = '';
         for (var i = 0; i < files.length; i++) {
             html += files[i] + '<br/>';
@@ -1884,10 +1891,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         spt.app_busy.hide();
         '''
-        browse_button = UploadButtonWdg(title="AttachFile(s)", tip='Browse for files to attach to this note', on_complete=on_complete) 
-        attachment_div.add(browse_button)
-        #browse_button.add_style("float: left")
-
+        } )
 
         attach_list = DivWdg()
         attach_list.add_style('margin-top: 8px')
