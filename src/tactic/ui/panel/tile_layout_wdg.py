@@ -395,13 +395,26 @@ class ThumbWdg2(BaseRefreshWdg):
 
         width = "100%"
 
-
         div = DivWdg()
 
-        path = my.get_path()
+        sobject = my.get_current_sobject()
+        path = my.get_path_from_sobject(sobject)
         if path:
             img = HtmlElement.img(src=path)
         else:
+            search_type = sobject.get_search_type_obj()
+            path = my.get_path_from_sobject(search_type)
+            if path:
+                img = DivWdg()
+                img.add_style("opacity: 0.2")
+
+                img_inner = HtmlElement.img(src=path)
+                img.add(img_inner)
+                img_inner.add_style("width: %s" % width)
+
+
+
+        if not path:
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
@@ -410,10 +423,10 @@ class ThumbWdg2(BaseRefreshWdg):
         return div
 
 
-    def get_path(my):
+    def get_path_from_sobject(my, sobject):
+
         icon_path = None
         path = None
-        sobject = my.get_current_sobject()
 
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code", no_exception=True)

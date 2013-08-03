@@ -33,6 +33,11 @@ class DirListWdg(BaseRefreshWdg):
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
 
+
+    def get_relative_paths(my, base_dir):
+        return []
+
+
     def init(my):
 
         #if os.path.exists("/tmp/scan"):
@@ -42,6 +47,10 @@ class DirListWdg(BaseRefreshWdg):
         #else:
         #    my.data = {}
         my.data = {}
+
+        my.level = my.kwargs.get("level")
+        if not my.level:
+            my.level = 0
 
 
         # put a maximum for now
@@ -106,6 +115,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_paths(my):
+        raise Exception("What runs this??")
         return my.paths
 
 
@@ -340,24 +350,9 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-        all_open = my.kwargs.get("all_open")
-        if all_open in [True, 'true']:
-            all_open = True
-        else:
-            all_open = False
-        open_depth = my.kwargs.get("open_depth")
-        if open_depth == None:
-            open_depth = -1
-
-
-        my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
-        #location = my.kwargs.get("location")
-        #my.paths = my.kwargs.get("paths")
-        #base_dir = my.kwargs.get("base_dir")
-
-
 
         # Test drag and drop files
+        """
         top.add_attr("ondragenter", "return false")
         top.add_attr("ondragover", "return false")
         top.add_attr("ondrop", "spt.drag.noop(event, this)")
@@ -399,6 +394,79 @@ class DirListWdg(BaseRefreshWdg):
             }
             '''
         } )
+        """
+
+
+        all_open = my.kwargs.get("all_open")
+        if all_open in [True, 'true']:
+            all_open = True
+        else:
+            all_open = False
+        open_depth = my.kwargs.get("open_depth")
+        if open_depth == None:
+            open_depth = -1
+
+
+        #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
+
+
+        # Test
+        dir_list = DirListPathHandler(
+            handler=my,
+            base_dir=my.base_dir,
+            level=0,
+            depth=0,
+            all_open=all_open,
+            open_depth=open_depth,
+            paths=my.paths,
+        )
+        top.add(dir_list)
+
+        """
+        top.add("<hr/>")
+        dir_list = DirListPathHandler(
+            handler=my,
+            base_dir="%s/photos" % my.base_dir,
+            level=1,
+            depth=1,
+            all_open=False,
+            open_depth=open_depth,
+        )
+        top.add(dir_list)
+
+
+        print "---"
+        print "---"
+        print "---"
+        print "---"
+        print "---"
+        top.add("<hr/>")
+        div = DivWdg()
+        top.add(div)
+        print "base_dir: ", my.base_dir
+        div.add_behavior( {
+            'type': 'load',
+            'base_dir': my.base_dir,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.widget.DirListPathHandler';
+            var kwargs = {
+                level: 4,
+                base_dir: bvr.base_dir,
+                handler_class: 'tactic.ui.tools.RepoBrowserDirListWdg',
+                handler_kwargs: {
+                    base_dir: bvr.base_dir,
+                    search_types:  ['test2/photos']
+                }
+
+            }
+
+            spt.panel.load(bvr.src_el, class_name, kwargs);
+            '''
+        } )
+        """
+
+
+
 
         return top
 
@@ -409,157 +477,6 @@ class DirListWdg(BaseRefreshWdg):
         pass
 
 
-
-    def handle_paths(my, paths, base_path, div, depth=-1, all_open=False, open_depth=-1 ):
-        '''assume path ending with / is a directory'''
-        new_paths = []
-        last_parts = []
-        for path in paths:
-
-            extra = path.replace(base_path, "")
-
-            dirname = os.path.dirname(extra)
-            # strip both ends
-            dirname = dirname.strip("/")
-            basename = os.path.basename(extra)
-
-
-            if not dirname:
-                parts = []
-            else:
-                parts = dirname.split("/")
-
-                for i, part in enumerate(parts):
-
-                    # skip any parts that are already accounted for
-                    new_dir = base_path + "/" + "/".join(parts[:i+1]) + "/"
-
-                    # slow but it works
-                    if new_dir in new_paths:
-                        continue
-
-                    new_paths.append(new_dir)
-
-            if basename:
-                new_paths.append(path)
-
-            last_parts = parts
-
-
-        base_length = len( base_path.split("/") )
-
-        current_dir = base_path
-        level = 0
-
-
-        # remember the levels
-        level_divs = []
-        level_divs.append(div)
-        level_dirs = []
-
-        count = 0
-        my.file_count = 0
-
-        my.max_level = depth
-        for path in new_paths:
-
-            level = len(path.rstrip("/").split("/")) - base_length - 1
-
-            if my.max_level != -1 and level > my.max_level:
-                continue
-
-            # put an artificial maximum
-            if my.max_level == -1:
-                count += 1
-                if count > 1000:
-                    print "Hitting maximum of 1000 entries"
-                    break
-
-
-
-            # This use of my.level is the old one and is still needed in
-            # other methods
-            my.level = level
-
-
-            # check if this is a directory, which ends in a /
-            if path.endswith("/"):
-                dirname = os.path.dirname(path.rstrip("/"))
-                basename = os.path.basename(path.rstrip("/"))
-
-                #print " "*level, level, path, basename
-
-                # FIXME: hard coded
-                if basename == '.versions':
-                    xis_open = False
-                else:
-                    web = WebContainer.get_web()
-                    folder_state = web.get_form_value("folder_state")
-                    if not folder_state:
-                        folder_state = my.kwargs.get("folder_state")
-                    if folder_state:
-                        folder_state = folder_state.split("|")
-                    else:
-                        folder_state = []
-
-
-
-                    rel_dir = path.replace(my.base_dir + "/", "").rstrip("/")
-                    if not folder_state:
-                        if open_depth != -1 and level < open_depth:
-                            xis_open = True
-                        else:
-                            xis_open = all_open
-                    elif rel_dir in folder_state:
-                        xis_open = True
-                    else:
-                        xis_open = False
-
-
-                # get the level_div and add the directory to it
-
-                level_divs = level_divs[:level+1]
-                # put some protection here so that there is minimum level
-                if not level_divs:
-                    level_divs = [div]
-                level_div = level_divs[-1]
-
-                dir_item_div = my._get_dir_item(dirname, basename, is_open=xis_open)
-                dir_item_div.add_style("padding-left: %spx" % ((level)*11))
-                level_div.add( dir_item_div )
-
-                # create a new items div
-                items_div = DivWdg()
-                items_div.add_class("spt_dir_content")
-                level_div.add( items_div )
-                level_divs.append(items_div)
-
-                if not xis_open:
-                    items_div.add_style("display: none")
-
-                current_dir = path
-
-            else:
-
-
-                dirname = os.path.dirname(path)
-                # windows server needs this since os.path.dirname() is different in windows
-                dirname = dirname.rstrip("/")
-                basename = os.path.basename(path)
-
-                xpath = path.replace(current_dir, "")
-
-                # get the level_div and add the directory to it
-                level_divs = level_divs[:level+1]
-
-                if not level_divs:
-                    level_div = div
-                else:
-                    level_div = level_divs[-1]
-
-                level_div.add( my._get_file_item(dirname, basename))
-
-                my.file_count += 1
 
 
     def _get_dir_item(my, dir, item, is_open=False):
@@ -601,11 +518,38 @@ class DirListWdg(BaseRefreshWdg):
             reldir = item
         div.add_attr("spt_reldir", reldir)
 
+        div.add_attr("spt_base_dir", my.base_dir)
+        div.add_attr("spt_dir", path)
+
 
         swap_action = '''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext();
-        spt.toggle_show_hide(sibling);
+        //spt.toggle_show_hide(sibling);
+
+
+        var base_dir = item_top.getAttribute("spt_dir");
+
+
+        var class_name = 'tactic.ui.widget.DirListPathHandler';
+        var kwargs = {
+            level: 1,
+            base_dir: base_dir,
+            depth: 1,
+            all_open: false,
+            handler_class: 'tactic.ui.tools.RepoBrowserDirListWdg',
+            handler_kwargs: {
+                base_dir: base_dir,
+                //search_types:  ['test2/photos']
+            }
+
+        }
+
+        div = $(document.createElement("div"))
+        div.inject(sibling, "after")
+        spt.panel.load(div, class_name, kwargs);
+
+
 
         var top = item_top.getParent(".spt_dir_list_top");
         var folder_state_el = top.getElement(".spt_folder_state");
@@ -1038,6 +982,231 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
+
+__all__.append("DirListPathHandler")
+class DirListPathHandler(BaseRefreshWdg):
+
+    def get_display(my):
+        top = my.top
+        my.set_as_panel(top)
+        top.add_class("spt_repo_browser_dir_top")
+
+        inner = DivWdg()
+        top.add(inner)
+
+        my.level = my.kwargs.get("level")
+        if not my.level:
+            my.level = 0
+        padding = my.level * 11
+        top.add_style("padding-left: %spx" % padding)
+
+        my.handler = my.kwargs.get("handler")
+        if not my.handler:
+            handler_class = my.kwargs.get("handler_class")
+            handler_kwargs = my.kwargs.get("handler_kwargs")
+            print "handler_class: ", handler_class
+            print "handler_kwargs: ", handler_kwargs
+            if not handler_kwargs:
+                handler_kwargs = {}
+            my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
+
+
+
+        base_dir = my.kwargs.get("base_dir")
+        assert(base_dir)
+
+        print "handler: ", my.handler
+        my.paths = my.kwargs.get("paths")
+        if not my.paths: 
+            my.paths = my.handler.get_relative_paths(base_dir)
+        my.paths.sort()
+
+        """
+        paths = []
+        for root, dirnames, basenames in os.walk(base_dir):
+            for dirname in dirnames:
+                path = "%s/%s/" % (root, dirname)
+                paths.append(path)
+            for basename in basenames:
+                path = "%s/%s" % (root, basename)
+                paths.append(path)
+
+        paths.sort()
+        """
+
+
+        depth = my.kwargs.get("depth")
+        if depth == None:
+            depth = -1
+
+        all_open = my.kwargs.get("all_open")
+        if all_open == None:
+            all_open = False
+
+        open_depth = my.kwargs.get("open_depth")
+        if open_depth == None:
+            open_depth = -1
+
+
+        my.handle_paths(my.paths, base_dir, top, depth=depth, all_open=all_open, open_depth=open_depth)
+
+        if my.kwargs.get("is_refresh") == 'true':
+            return inner
+        else:
+            return top
+
+
+
+    def handle_paths(my, paths, base_dir, div, depth=-1, all_open=False, open_depth=-1 ):
+        '''assume path ending with / is a directory'''
+        new_paths = []
+        last_parts = []
+        for path in paths:
+
+            extra = path.replace(base_dir, "")
+
+            dirname = os.path.dirname(extra)
+            # strip both ends
+            dirname = dirname.strip("/")
+            basename = os.path.basename(extra)
+
+            if not dirname:
+                parts = []
+            else:
+                parts = dirname.split("/")
+
+                for i, part in enumerate(parts):
+
+                    # skip any parts that are already accounted for
+                    new_dir = base_dir + "/" + "/".join(parts[:i+1]) + "/"
+
+                    # slow but it works
+                    if new_dir in new_paths:
+                        continue
+
+                    new_paths.append(new_dir)
+
+            if basename:
+                new_paths.append(path)
+
+            last_parts = parts
+
+
+        base_length = len( base_dir.split("/") )
+
+        current_dir = base_dir
+        level = 0
+
+
+        # remember the levels
+        level_divs = []
+        level_divs.append(div)
+        level_dirs = []
+
+
+        count = 0
+        my.file_count = 0
+
+        my.max_level = depth
+        for path in new_paths:
+
+            level = len(path.rstrip("/").split("/")) - base_length - 1
+
+            if my.max_level != -1 and level > my.max_level:
+                continue
+
+            # put an artificial maximum
+            if my.max_level == -1:
+                count += 1
+                if count > 1000:
+                    print "Hitting maximum of 1000 entries"
+                    break
+
+
+
+            # This use of my.level is the old one and is still needed in
+            # other methods
+            my.level = level
+
+
+            # check if this is a directory, which ends in a /
+            if path.endswith("/"):
+                dirname = os.path.dirname(path.rstrip("/"))
+                basename = os.path.basename(path.rstrip("/"))
+
+                #print " "*level, level, path, basename
+
+                # FIXME: hard coded
+                if basename == '.versions':
+                    xis_open = False
+                else:
+                    web = WebContainer.get_web()
+                    folder_state = web.get_form_value("folder_state")
+                    if not folder_state:
+                        folder_state = my.kwargs.get("folder_state")
+                    if folder_state:
+                        folder_state = folder_state.split("|")
+                    else:
+                        folder_state = []
+
+
+
+                    rel_dir = path.replace(base_dir + "/", "").rstrip("/")
+                    if not folder_state:
+                        if open_depth != -1 and level < open_depth:
+                            xis_open = True
+                        else:
+                            xis_open = all_open
+                    elif rel_dir in folder_state:
+                        xis_open = True
+                    else:
+                        xis_open = False
+
+
+                # get the level_div and add the directory to it
+
+                level_divs = level_divs[:level+1]
+                # put some protection here so that there is minimum level
+                if not level_divs:
+                    level_divs = [div]
+                level_div = level_divs[-1]
+
+                dir_item_div = my.handler._get_dir_item(dirname, basename, is_open=xis_open)
+                dir_item_div.add_style("padding-left: %spx" % ((level)*11))
+                level_div.add( dir_item_div )
+
+                # create a new items div
+                items_div = DivWdg()
+                items_div.add_class("spt_dir_content")
+                level_div.add( items_div )
+                level_divs.append(items_div)
+
+                if not xis_open:
+                    items_div.add_style("display: none")
+
+                current_dir = path
+
+            else:
+
+
+                dirname = os.path.dirname(path)
+                # windows server needs this since os.path.dirname() is different in windows
+                dirname = dirname.rstrip("/")
+                basename = os.path.basename(path)
+
+                xpath = path.replace(current_dir, "")
+
+                # get the level_div and add the directory to it
+                level_divs = level_divs[:level+1]
+
+                if not level_divs:
+                    level_div = div
+                else:
+                    level_div = level_divs[-1]
+
+                level_div.add( my.handler._get_file_item(dirname, basename))
+
+                my.file_count += 1
 
 
 
@@ -1882,6 +2051,7 @@ class FileBrowserWdg(BaseRefreshWdg):
         dir_wdg = DirListWdg(base_dir=base_dir, location=location, paths=paths)
         td.add(dir_wdg)
         td.add("<hr/")
+
 
         #td = table.add_blank_cell()
         td = table.add_cell("&nbsp;")

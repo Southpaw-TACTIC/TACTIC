@@ -116,7 +116,6 @@ class NamingMigratorCmd(Command):
 
                 print "old: ", old_path
                 print "new: ", path
-                ddfadad
 
 
                 if not os.path.exists(old_path):

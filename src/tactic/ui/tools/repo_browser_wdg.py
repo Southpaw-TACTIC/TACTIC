@@ -35,209 +35,6 @@ import os
 class RepoBrowserWdg(BaseRefreshWdg):
 
 
-    def get_files(my):
-
-        # options to get files
-        # show latest version only
-        # show files
-        # show all files types
-        # show totals?
-        show_files = True
-        show_latest_only = True
-        show_main_only = True
-        show_empty_folders = True
-        my.mode = ""
-
-
-        sobjects = my.sobjects
-        search_types = my.kwargs.get("search_types")
-
-        if not my.sobjects:
-
-            search_key = my.kwargs.get("search_key")
-            search_type = my.kwargs.get("search_type")
-
-            if search_types:
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
-                parent_ids = []
-
-
-            elif search_key:
-                sobject = Search.get_by_search_key(search_key)
-                search_types = [sobject.get_search_type()]
-                parent_ids = [x.get_id() for x in sobjects]
-
-            elif search_type:
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (search_type, project_code)]
-
-                my.sobjects = []
-                parent_ids = []
-
-            else:
-                search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
-                search_types = [x.get_base_key() for x in search_type_objs]
-
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
-                my.sobjects = []
-                parent_ids = []
-
-
-        else:
-            search_types = [sobjects[0].get_search_type()]
-            parent_ids = [x.get_id() for x in sobjects]
-
-
-        keywords = my.kwargs.get("keywords")
-
-
-        paths = []
-        my.file_codes = {}
-        my.snapshot_codes = {}
-        base_dir = Environment.get_asset_dir()
-        my.search_types_dict = {}
-
-        my.search_codes = {}
-
-        # Not this shold be used sparingly because it can find lots of
-        # sobjects
-        if my.mode not in ["", "main","all"] or show_files:
-
-            search = Search("sthpw/file")
-
-
-            search.add_filters("search_type", search_types)
-
-
-            if parent_ids:
-                search.add_filters("search_id", parent_ids)
-            if keywords:
-                search.add_text_search_filter("metadata_search", keywords)
-
-            if show_latest_only:
-                search.add_join("sthpw/snapshot")
-                search.add_op("begin")
-                search.add_filter("is_latest", True, table="snapshot")
-                search.add_filter("file_name", "")
-                search.add_filter("file_name", "NULL", quoted=False, op="is")
-                search.add_op("or")
-
-            if my.mode == 'main' or show_main_only:
-                search.add_filter("type", "main")
-
-            file_objects = search.get_sobjects()
-
-
-
-            for file_object in file_objects:
-                relative_dir = file_object.get_value("relative_dir")
-                file_name = file_object.get_value("file_name")
-
-                repo_type = file_object.get_value("repo_type")
-                if repo_type == 'perforce':
-                    print "PERFORCE: ", file_object.get_code(), file_name
-                    #continue
-
-
-                path = "%s/%s/%s" % (base_dir, relative_dir, file_name)
-                #print "path: ", path
-                paths.append(path)
-
-                my.file_codes[path] = file_object.get("code")
-                my.snapshot_codes[path] = file_object.get("snapshot_code")
-
-                # store search codes per directory
-                dirname = "%s/%s/" % (base_dir, relative_dir)
-                search_code = file_object.get("search_code")
-
-
-                search_codes_list = my.search_codes.get(dirname)
-
-                # only file objects with not file are recorded
-                if not file_name:
-                    if search_codes_list == None:
-                        my.search_codes[dirname] = set([search_code])
-                    else:
-                        my.search_codes[dirname].add(search_code)
-
-
-                search_type = file_object.get("search_type")
-                my.search_types_dict[path] = search_type
-
-                parts = relative_dir.split("/")
-                for i in range (0, len(parts)+1):
-                    tmp_dir = "/".join(parts[:i])
-                    tmp_dir = "%s/%s/" % (base_dir, tmp_dir)
-                    my.search_types_dict[tmp_dir] = search_type
-
-
-        project_code = Project.get_project_code()
-
-
-        # associate all of the root folders to search types
-        """
-        for search_type in search_types:
-            search_type_obj = SearchType.get(search_type)
-            root_dir = search_type_obj.get_value("root_dir", no_exception=True)
-            if not root_dir:
-                base_type = search_type_obj.get_base_key()
-                parts = base_type.split("/")
-                root_dir = parts[1]
-
-            dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
-            if os.path.exists(dirname):
-                my.search_types_dict[dirname] = search_type
-        """
-
-
-
-        # get all the directories
-        for search_type in search_types:
-            #search = Search(search_type)
-            #count = search.get_count()
-            #if not count:
-            #    continue
-
-            search_type_obj = SearchType.get(search_type)
-
-            parts = search_type_obj.get_base_key().split("/")
-            if len(parts) == 2:
-                table = parts[1]
-            else:
-                table = parts[0]
-            start_dir = "%s/%s/%s" % (base_dir, project_code, table)
-            if not os.path.exists(start_dir):
-                continue
-
-            paths.append("%s/" % start_dir)
-
-            num_sobjects = {}
-            for root, dirnames, filenames in os.walk(start_dir):
-
-                for dirname in dirnames:
-                    full = "%s/%s/" % (root, dirname)
-
-                    search_codes_list = my.search_codes.get(full)
-                    if not search_codes_list:
-                        num_sobjects[full] = 0
-                    else:
-                        num_sobjects[full] = len(search_codes_list)
-
-                    # need to put a / and the end to signify a directory
-                    if show_empty_folders:
-                        paths.append(full)
-
-
-        print "---"               
-        for name, value in num_sobjects.items():
-            print value, name
-
-        return paths
-
-
-
     def get_display(my):
 
         search_type = my.kwargs.get("search_type")
@@ -246,6 +43,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         top = my.top
         top.add_color("background", "background")
         top.add_class("spt_repo_browser_top")
+        my.set_as_panel(top)
 
         my.mode = 'main'
         #my.mode = 'all'
@@ -314,10 +112,24 @@ class RepoBrowserWdg(BaseRefreshWdg):
         search_div.add("<hr/")
 
 
+
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: right")
         #button_row.add_style("margin-top: -10px")
+
+        button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
+        button_row.add( button )
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_repo_browser_top");
+            spt.app_busy.show("Refreshing ...");
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+            '''
+        } )
+
 
 
         button = ButtonNewWdg(title="Options", icon=IconWdg.GEAR, show_arrow=True)
@@ -379,21 +191,32 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-        #search_type = my.kwargs.get("search_type")
-        #my.kwargs["search_types"] = [search_type, "test3/test3"]
 
 
-        paths = my.get_files()
-        stats_div.add("Found: %s file/s" % len(paths) )
+        #stats_div.add("Found: %s file/s" % len(paths) )
 
 
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
             open_depth = 1
+        else:
+            open_depth = int(open_depth)
 
-        file_codes = my.file_codes
-        search_type = my.kwargs.get("search_type")
-        dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
+        #file_codes = my.file_codes
+
+        if search_type:
+            search_types = [search_type]
+        else:
+            search_types = None
+
+        #dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
+        dir_list = RepoBrowserDirListWdg(
+                base_dir=project_dir,
+                location="server",
+                show_base_dir=True,
+                open_depth=open_depth,
+                search_types=search_types
+        )
         content_div.add(dir_list)
 
 
@@ -548,6 +371,240 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 class RepoBrowserDirListWdg(DirListWdg):
+
+    def init(my):
+        my.file_codes = {}
+        my.snapshot_codes = {}
+        my.search_types_dict = {}
+        my.search_codes = {}
+        super(RepoBrowserDirListWdg, my).init()
+
+
+
+    def get_relative_paths(my, base_dir):
+
+        # options to get files
+        # show latest version only
+        # show files
+        # show all files types
+        # show totals?
+        show_files = True
+        show_latest_only = True
+        show_main_only = True
+        show_empty_folders = True
+        my.mode = ""
+
+
+        asset_base_dir = Environment.get_asset_dir()
+        relative_dir = base_dir.replace(asset_base_dir, "")
+        relative_dir = relative_dir.strip("/")
+        print "relative_dir: ", relative_dir
+
+        keywords = my.kwargs.get("keywords")
+
+        sobjects = my.sobjects
+        search_types = my.kwargs.get("search_types")
+
+
+        if not my.sobjects:
+
+            search_key = my.kwargs.get("search_key")
+            search_type = my.kwargs.get("search_type")
+
+            if search_types:
+                project_code = Project.get_project_code()
+                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
+                parent_ids = []
+
+
+            elif search_key:
+                sobject = Search.get_by_search_key(search_key)
+                search_types = [sobject.get_search_type()]
+                parent_ids = [x.get_id() for x in sobjects]
+
+            elif search_type:
+                project_code = Project.get_project_code()
+                search_types = ["%s?project=%s" % (search_type, project_code)]
+
+                my.sobjects = []
+                parent_ids = []
+
+            else:
+                search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
+                search_types = [x.get_base_key() for x in search_type_objs]
+
+                project_code = Project.get_project_code()
+                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
+                my.sobjects = []
+                parent_ids = []
+
+
+        else:
+            search_types = [sobjects[0].get_search_type()]
+            parent_ids = [x.get_id() for x in sobjects]
+
+
+
+
+
+        paths = []
+        my.file_codes = {}
+        my.snapshot_codes = {}
+        my.search_types_dict = {}
+        my.search_codes = {}
+
+        # Not this shold be used sparingly because it can find lots of
+        # sobjects
+        if my.mode not in ["", "main","all"] or show_files:
+
+            search = Search("sthpw/file")
+
+            search.add_filters("search_type", search_types)
+
+            if relative_dir:
+                search.add_filter("relative_dir", "%s%%" % relative_dir, op="like")
+
+
+            if parent_ids:
+                search.add_filters("search_id", parent_ids)
+            if keywords:
+                search.add_text_search_filter("metadata_search", keywords)
+
+            if show_latest_only:
+                search.add_join("sthpw/snapshot")
+                search.add_op("begin")
+                search.add_filter("is_latest", True, table="snapshot")
+                search.add_filter("file_name", "")
+                search.add_filter("file_name", "NULL", quoted=False, op="is")
+                search.add_op("or")
+
+            if my.mode == 'main' or show_main_only:
+                search.add_filter("type", "main")
+
+            file_objects = search.get_sobjects()
+
+
+
+            for file_object in file_objects:
+                relative_dir = file_object.get_value("relative_dir")
+                file_name = file_object.get_value("file_name")
+
+                repo_type = file_object.get_value("repo_type")
+                if repo_type == 'perforce':
+                    print "PERFORCE: ", file_object.get_code(), file_name
+                    #continue
+
+
+                path = "%s/%s/%s" % (asset_base_dir, relative_dir, file_name)
+                #print "path: ", path
+                paths.append(path)
+
+                my.file_codes[path] = file_object.get("code")
+                my.snapshot_codes[path] = file_object.get("snapshot_code")
+
+                # store search codes per directory
+                dirname = "%s/%s/" % (asset_base_dir, relative_dir)
+                search_code = file_object.get("search_code")
+
+
+                search_codes_list = my.search_codes.get(dirname)
+
+                # only file objects with not file are recorded
+                if not file_name:
+                    if search_codes_list == None:
+                        my.search_codes[dirname] = set([search_code])
+                    else:
+                        my.search_codes[dirname].add(search_code)
+
+
+                search_type = file_object.get("search_type")
+                my.search_types_dict[path] = search_type
+
+                if not file_name:
+                    #print search_type, relative_dir
+                    continue
+
+                parts = relative_dir.split("/")
+                for i in range (0, len(parts)+1):
+                    tmp_dir = "/".join(parts[:i])
+                    tmp_dir = "%s/%s/" % (asset_base_dir, tmp_dir)
+                    my.search_types_dict[tmp_dir] = search_type
+
+
+        project_code = Project.get_project_code()
+
+
+        # associate all of the root folders to search types
+        """
+        for search_type in search_types:
+            search_type_obj = SearchType.get(search_type)
+            root_dir = search_type_obj.get_value("root_dir", no_exception=True)
+            if not root_dir:
+                base_type = search_type_obj.get_base_key()
+                parts = base_type.split("/")
+                root_dir = parts[1]
+
+            dirname = "%s/%s/%s/" % (asset_base_dir, project_code, root_dir)
+            if os.path.exists(dirname):
+                my.search_types_dict[dirname] = search_type
+        """
+
+
+        num_sobjects = {}
+
+        # get all the directories
+        for search_type in search_types:
+            #search = Search(search_type)
+            #count = search.get_count()
+            #if not count:
+            #    continue
+
+            search_type_obj = SearchType.get(search_type)
+
+            parts = search_type_obj.get_base_key().split("/")
+            if len(parts) == 2:
+                table = parts[1]
+            else:
+                table = parts[0]
+
+
+            start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
+            if not start_dir.startswith(base_dir):
+                continue
+
+
+
+            if not os.path.exists(start_dir):
+                continue
+
+            paths.append("%s/" % start_dir)
+
+            for root, dirnames, filenames in os.walk(start_dir):
+
+                for dirname in dirnames:
+                    full = "%s/%s/" % (root, dirname)
+
+                    search_codes_list = my.search_codes.get(full)
+                    if not search_codes_list:
+                        num_sobjects[full] = 0
+                    else:
+                        num_sobjects[full] = len(search_codes_list)
+
+                    # need to put a / and the end to signify a directory
+                    if show_empty_folders:
+                        paths.append(full)
+
+
+
+        #print "---"
+        #for name, value in num_sobjects.items():
+        #    print value, name
+
+        return paths
+
+
+
+
 
     def add_top_behaviors(my, top):
 
@@ -995,12 +1052,34 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_class("spt_drag_file_item")
 
         path = "%s/%s" % (dirname, basename)
-        search_types = my.kwargs.get("search_types")
-        search_type = search_types.get(path)
-        assert(search_type)
+        relative_dir = path.replace(my.base_dir, "")
+        relative_dir = relative_dir.strip("/")
 
-        file_code = my.kwargs.get("file_codes").get(path)
-        snapshot_code = my.kwargs.get("snapshot_codes").get(path)
+        #search_types = my.kwargs.get("search_types")
+        search_types = my.search_types_dict
+
+
+        #file_codes = my.kwargs.get("file_codes")
+        file_codes = my.file_codes
+
+        #snapshot_codes = my.kwargs.get("snapshot_codes")
+        snapshot_codes = my.snapshot_codes
+
+        search_type = search_types.get(path)
+        if not search_type:
+            parts = relative_dir.split("/")
+            for i in range(len(parts)+1, 0, -1):
+                tmp_rel_dir = "/".join(parts[:i])
+                tmp_dir = "%s/%s" % (my.base_dir, tmp_rel_dir)
+                search_type = search_types.get("%s/" % tmp_dir)
+
+        if not search_type:
+            return
+
+
+        file_code = file_codes.get(path)
+
+        snapshot_code = snapshot_codes.get(path)
         item_div.add_attr("spt_file_code", file_code)
         item_div.add_attr("spt_snapshot_code", snapshot_code)
 
@@ -1048,8 +1127,18 @@ class RepoBrowserDirListWdg(DirListWdg):
         relative_dir = path.replace(my.base_dir, "")
         relative_dir = relative_dir.strip("/")
 
-        search_types = my.kwargs.get("search_types")
+        #search_types = my.kwargs.get("search_types")
+        search_types = my.search_types_dict
+
+        #search_codes = my.kwargs.get("search_codes")
+        search_codes = my.search_codes
+
+
+
         search_type = search_types.get("%s/" % path)
+
+
+
         if not search_type:
             parts = relative_dir.split("/")
             for i in range(len(parts)+1, 0, -1):
@@ -1067,7 +1156,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         item_div.add_attr("spt_search_type", search_type)
 
-        search_codes = my.kwargs.get("search_codes")
+
         search_code_list = search_codes.get("%s/" % path)
         if not search_code_list:
             search_code_list = []
@@ -1134,7 +1223,10 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_dir_icon(my, dir, item):
 
         path = "%s/%s" % (dir, item)
-        search_types = my.kwargs.get("search_types")
+
+        #search_types = my.kwargs.get("search_types")
+        search_types = my.search_types_dict
+
         search_type = search_types.get("%s/" % path)
 
         search_codes = my.kwargs.get("search_codes")
@@ -1149,10 +1241,16 @@ class RepoBrowserDirListWdg(DirListWdg):
     def get_dir_icon_wdg(my, dirname, basename):
 
         path = "%s/%s" % (dirname, basename)
-        search_types = my.kwargs.get("search_types")
+
+        #search_types = my.kwargs.get("search_types")
+        search_types = my.search_types_dict
+
+        #search_codes = my.kwargs.get("search_codes")
+        search_codes = my.search_codes
+
+
         search_type = search_types.get("%s/" % path)
 
-        search_codes = my.kwargs.get("search_codes")
         search_code_list = search_codes.get("%s/" % path)
 
 

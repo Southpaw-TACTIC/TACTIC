@@ -123,6 +123,10 @@ class FolderTrigger(Trigger):
         virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
         virtual_snapshot.set_value("snapshot_type", snapshot_type)
 
+        # NOTE: keep these empty to produce a folder without process
+        # or context ...
+        # Another approach would be to find all the possible processes
+        # and create folders for them
 
         # since it is a a file name based context coming in, use process
         #virtual_snapshot.set_value("process", process)

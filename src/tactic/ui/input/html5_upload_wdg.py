@@ -46,9 +46,8 @@ class Html5UploadWdg(BaseRefreshWdg):
         form = my.form
         form.add_style("margin: 0px")
         form.add_style("padding: 0px")
-
-
         top.add(form)
+
 
         input = HtmlElement.input()
         form.add(input)

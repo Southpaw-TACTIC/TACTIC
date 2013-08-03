@@ -1875,7 +1875,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         browse_button.add_style("float: left")
         browse_button.add_behavior( {
         'type': 'click_up',
+        'upload_id': upload_id,
         'cbjs_action': '''
+
         spt.app_busy.show("Opening File Browser", "");
         var applet = spt.Applet.get();
         var files = applet.open_file_browser();
