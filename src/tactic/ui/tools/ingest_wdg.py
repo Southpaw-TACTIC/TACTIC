@@ -12,7 +12,7 @@
 
 
 from pyasm.web import DivWdg
-from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg
+from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from tactic.ui.common import BaseRefreshWdg
@@ -33,6 +33,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         relative_dir = my.kwargs.get("relative_dir")
+        my.relative_dir = relative_dir
 
         div = DivWdg()
         div.add_class("spt_ingest_top")
@@ -283,6 +284,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         name_div.add_style("width: 150px")
 
 
+
         dialog = DialogWdg(display="false", show_title=False)
         info_div.add(dialog)
         dialog.set_as_activator(info_div, offset={'x':0,'y':10})
@@ -292,11 +294,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         dialog_data_div.add_style("padding", "10px")
 
         dialog.add(dialog_data_div)
-        dialog_data_div.add("Category:")
+        dialog_data_div.add("Category: ")
         text = TextInputWdg(name="category")
         dialog_data_div.add(text)
         text.add_class("spt_category")
         text.add_style("padding: 1px")
+
+
+
 
         size_div = DivWdg()
         size_div.add_class("spt_size")
@@ -502,18 +507,32 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
-        dialog.set_as_activator(button, offset={'x':0,'y':10})
+        dialog.set_as_activator(button, offset={'x':-10,'y':10})
 
         dialog_data_div = DivWdg()
         dialog_data_div.add_color("background", "background")
         dialog_data_div.add_style("padding", "20px")
 
         dialog.add(dialog_data_div)
-        dialog_data_div.add("Category:")
-        text = TextInputWdg(name="category")
+        dialog_data_div.add("Folder: &nbsp; ")
+        text = TextInputWdg(name="folder")
+        if my.relative_dir:
+            text.set_value(my.relative_dir)
         dialog_data_div.add(text)
-        text.add_class("spt_category")
+        text.add_class("spt_folder")
         text.add_style("padding: 1px")
+
+
+        dialog_data_div.add("<br/>"*2)
+
+        dialog_data_div.add("Keywords:<br/>")
+        dialog.add(dialog_data_div)
+        text = TextAreaWdg(name="keywords")
+        dialog_data_div.add(text)
+        text.add_class("spt_keywords")
+        text.add_style("padding: 1px")
+
+
 
 
         # use file name for name

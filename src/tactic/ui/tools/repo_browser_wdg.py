@@ -82,6 +82,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left.add(shelf_wdg)
         shelf_wdg.add_style("padding: 10px")
 
+
         custom_cbk = {
         'enter': '''
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
@@ -90,12 +91,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
             var class_name = 'tactic.ui.tools.RepoBrowserWdg';
             var kwargs = {
-                'search_type': '%s',
                 'keywords': keywords,
             }
             content = top.getElement(".spt_repo_browser_content")
             spt.panel.load(top, class_name, kwargs);
-        ''' % search_type
+        '''
         }
 
         search_div = DivWdg()
@@ -112,41 +112,42 @@ class RepoBrowserWdg(BaseRefreshWdg):
         search_div.add("<hr/")
 
 
+        if not search_type:
+            button_row = ButtonRowWdg()
+            shelf_wdg.add(button_row)
+            button_row.add_style("float: right")
+            #button_row.add_style("margin-top: -10px")
 
-        button_row = ButtonRowWdg()
-        shelf_wdg.add(button_row)
-        button_row.add_style("float: right")
-        #button_row.add_style("margin-top: -10px")
-
-        button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
-        button_row.add( button )
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_repo_browser_top");
-            spt.app_busy.show("Refreshing ...");
-            spt.panel.refresh(top);
-            spt.app_busy.hide();
-            '''
-        } )
-
-
-
-        button = ButtonNewWdg(title="Options", icon=IconWdg.GEAR, show_arrow=True)
-        button_row.add( button )
-        dialog = DialogWdg(show_title=False)
-        dialog.add( my.get_options_wdg() )
-        shelf_wdg.add( dialog )
-        dialog.set_as_activator(button, offset={'x': -10, 'y': 10} )
-        dialog.set_title(None)
+            button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
+            button_row.add( button )
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_repo_browser_top");
+                spt.app_busy.show("Refreshing ...");
+                spt.panel.refresh(top);
+                spt.app_busy.hide();
+                '''
+            } )
 
 
-        button = ButtonNewWdg(title="Options", icon=IconWdg.ADD, show_arrow=True)
-        button_row.add( button )
-        menu = my.get_add_menu()
-        menus = [menu.get_data()]
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'ADD_BUTTON_CTX': menus } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "ADD_BUTTON_CTX", True )
+            """
+            button = ButtonNewWdg(title="Options", icon=IconWdg.GEAR, show_arrow=True)
+            button_row.add( button )
+            dialog = DialogWdg(show_title=False)
+            dialog.add( my.get_options_wdg() )
+            shelf_wdg.add( dialog )
+            dialog.set_as_activator(button, offset={'x': -10, 'y': 10} )
+            dialog.set_title(None)
+            """
+
+
+            button = ButtonNewWdg(title="Options", icon=IconWdg.ADD, show_arrow=True)
+            button_row.add( button )
+            menu = my.get_add_menu()
+            menus = [menu.get_data()]
+            SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'ADD_BUTTON_CTX': menus } )
+            SmartMenu.assign_as_local_activator( button.get_button_wdg(), "ADD_BUTTON_CTX", True )
 
 
 
@@ -209,13 +210,17 @@ class RepoBrowserWdg(BaseRefreshWdg):
         else:
             search_types = None
 
+        keywords = my.kwargs.get("keywords")
+
         #dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
                 show_base_dir=True,
                 open_depth=open_depth,
-                search_types=search_types
+                search_types=search_types,
+                dynamic=True,
+                keywords=keywords,
         )
         content_div.add(dir_list)
 
@@ -398,7 +403,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
-        print "relative_dir: ", relative_dir
 
         keywords = my.kwargs.get("keywords")
 
@@ -462,6 +466,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_filters("search_type", search_types)
 
             if relative_dir:
+                # FIXME: this still gets a lot of sobjects for "dyanmica" mode
+                # although this gets filtered in Python
                 search.add_filter("relative_dir", "%s%%" % relative_dir, op="like")
 
 
@@ -482,7 +488,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search.add_filter("type", "main")
 
             file_objects = search.get_sobjects()
-
 
 
             for file_object in file_objects:
@@ -524,6 +529,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     #print search_type, relative_dir
                     continue
 
+                # go up the path and set the search type
                 parts = relative_dir.split("/")
                 for i in range (0, len(parts)+1):
                     tmp_dir = "/".join(parts[:i])
@@ -608,8 +614,11 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_top_behaviors(my, top):
 
+        border = top.get_color("shadow")
+
         top.add_behavior( {
         'type': 'load',
+        'border': border,
         'cbjs_action': '''
 
         spt.repo_browser = {};
@@ -626,7 +635,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 return;
             }
 
-            bvr.src_el.setStyle("border", "solid 1px black");
+            bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
             bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
             bvr.src_el.setStyle("position", "absolute");
             bvr.src_el.position({x:mouse_411.curr_x+5, y:mouse_411.curr_y+5});
@@ -736,6 +745,52 @@ class RepoBrowserDirListWdg(DirListWdg):
         new_folder_div.add(html)
 
         
+
+        # directory click up
+        # FIXME: this does not work well with the swap display
+        """
+        top.add_relay_behavior( {
+        'type': 'mouseup',
+        'bvr_match_class': 'spt_dir_item',
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_repo_browser_top");
+        var content = top.getElement(".spt_repo_browser_content");
+        var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
+
+        var dirname = bvr.src_el.getAttribute("spt_dirname");
+        var basename = "";
+
+        var search_type = null;
+        var parent = bvr.src_el;
+        while (search_type == null) {
+            search_type = parent.getAttribute("spt_search_type");
+            if (search_type) break;
+            parent = parent.getParent();
+            parent = parent.getPrevious();
+            if (!parent) {
+                break;
+            }
+        }
+        if (search_type) {
+            var search_codes = bvr.src_el.getAttribute("spt_search_codes");
+            //alert(search_codes);
+            search_codes = search_codes.split("|");
+
+            spt.app_busy.show("Loading ...");
+            var kwargs = {
+                search_type: search_type,
+                view: 'table',
+                dirname: dirname,
+                basename: basename
+            };
+            spt.panel.load(content, class_name, kwargs);
+            spt.app_busy.hide();
+        }
+
+        '''
+        } )
+        """
+
 
 
 
@@ -1035,7 +1090,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search_type: search_type,
                 relative_dir: relative_dir
             };
-            spt.panel.load_popup("Check-in", class_name, kwargs);
+            spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+search_type+")</i>", class_name, kwargs);
             '''
         } )
 
@@ -1149,7 +1204,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         if not search_type:
             return
 
-        if search_type.startswith("test2/sequence"):
+        if search_type.startswith("test2/sequence") or search_type.startswith("test2/shot"):
             SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
         else:
             SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
@@ -1169,6 +1224,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         project_code = Project.get_project_code()
         relative_dir = "%s/%s" % (project_code, relative_dir)
         item_div.add_attr("spt_relative_dir", relative_dir)
+        item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
         item_div.add_behavior( {
         'type': 'click_up',
@@ -1220,22 +1276,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             return IconWdg.ERROR
         return IconWdg.DETAILS
 
-    def get_dir_icon(my, dir, item):
-
-        path = "%s/%s" % (dir, item)
-
-        #search_types = my.kwargs.get("search_types")
-        search_types = my.search_types_dict
-
-        search_type = search_types.get("%s/" % path)
-
-        search_codes = my.kwargs.get("search_codes")
-        search_code_list = search_codes.get("%s/" % path)
-
-        if search_code_list:
-            return IconWdg.FILM
-
-        return IconWdg.LOAD
 
 
     def get_dir_icon_wdg(my, dirname, basename):

@@ -994,6 +994,8 @@ class Search(Base):
 
         my.add_filter(column, user, table=table)
 
+
+
     def add_project_filter(my, project_code=None, show_unset=True):
         from pyasm.biz import Project
         filter = Project.get_project_filter(project_code, show_unset=show_unset)
@@ -1243,7 +1245,7 @@ class Search(Base):
 
 
 
-    def add_join(my, to_search_type, from_search_type=None, path=None):
+    def add_join(my, to_search_type, from_search_type=None, path=None, join=None):
 
         to_search_type_obj = SearchType.get(to_search_type)
         to_search_type = to_search_type_obj.get_base_key()
@@ -1310,14 +1312,17 @@ class Search(Base):
                 to_col = attrs.get("from_col")
 
 
+        if not join:
+            join = "LEFT OUTER"
+
         if from_table:
-            my.select.add_join(from_table, to_table, from_col, to_col, join="LEFT OUTER", database=from_database, database2=to_database)
+            my.select.add_join(from_table, to_table, from_col, to_col, join=join, database=from_database, database2=to_database)
         else:
-            my.select.add_join(to_table, join="LEFT OUTER")
+            my.select.add_join(to_table, join=join)
 
 
 
-    def add_order_by(my, order_str, direction=''):
+    def add_order_by(my, order_str, direction='', join="LEFT OUTER"):
          
         # check if it is valid
         if ',' in order_str:
@@ -1370,7 +1375,7 @@ class Search(Base):
                 if search_type == prev_search_type:
                     continue
 
-                my.add_join(search_type, prev_search_type)
+                my.add_join(search_type, prev_search_type, join=join)
 
                 prev_search_type = search_type
 
@@ -3644,7 +3649,6 @@ class SObject(object):
 
 
 
-    # TEST TEST TEST
     def _add_message(my, sobject, data):
 
         search_type = sobject.get_base_search_type()
@@ -3677,7 +3681,9 @@ class SObject(object):
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
         message.set_value("status", "complete")
+        message.set_user()
         message.commit()
+
 
 
         # repeat with the log
@@ -3686,6 +3692,7 @@ class SObject(object):
         message.set_value("category", "sobject")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
+        message.set_user()
         message.set_value("status", "complete")
         message.commit()
 

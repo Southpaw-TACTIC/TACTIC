@@ -21,6 +21,12 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.1.0.a01
     #
+    def upgrade_v4_1_0_a01_003(my):
+        my.run_sql('''
+        ALTER TABLE spt_url add CONSTRAINT url_unique UNIQUE (url);
+        ''')
+
+
 
     def upgrade_v4_1_0_a01_002(my):
         my.run_sql('''

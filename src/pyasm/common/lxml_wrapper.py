@@ -158,7 +158,7 @@ class Xml(Base):
     def create_text_element(my, name, text, node=None):
         '''create an element with a text node embedded'''
         element = my.create_element(name)
-        element.text = text
+        element.text = str(text)
 
         if node is not None:
             node.append(element)

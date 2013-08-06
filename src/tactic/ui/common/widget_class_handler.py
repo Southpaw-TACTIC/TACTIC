@@ -158,7 +158,9 @@ class WidgetClassHandler(object):
             <display class="tactic.ui.table.SObjectFilesElementWdg"/>
         </element>
 
-
+        <element name='metadata'>
+            <display class="tactic.ui.table.MetadataElementWdg"/>
+        </element>
 
 
         </widget_definition>

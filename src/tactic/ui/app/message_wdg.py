@@ -439,14 +439,20 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_filter("category", category)
 
 
-        search.add_order_by("message.timestamp", direction="desc")
 
         if mode == "new":
-            search.add_join("sthpw/message")
             search.add_op("begin")
             search.add_filter("last_cleared", '"message"."timestamp"', quoted=False, op="<")
             search.add_filter("last_cleared", "NULL", quoted=False, op="is")
             search.add_op("or")
+
+            # use an inner join because if there are no messages, we don't
+            # want the subscription
+            search.add_order_by("message.timestamp", direction="desc", join="INNER")
+            user = Environment.get_user_name()
+            search.add_filter("login", user, op="!=", table="message")
+        else:
+            search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
 
@@ -690,12 +696,26 @@ class SubscriptionWdg(BaseRefreshWdg):
                     else:
                         description = "<b>Data modified:</b><br/>%s" % update_data
 
+
                 else:
                     description = message_value.get("description")
 
 
             else:
-                description = message_value
+
+                if category == "chat":
+                    login = message.get("login")
+                    timestamp = message.get("timestamp")
+
+                    message_value = message.get("message")
+                    message_value = message_value.replace("\n", "<br/>")
+
+                    description = '''
+                    <b>%s</b><br/>
+                    %s
+                    ''' % (login, message_value)
+                else:
+                    description = message_value
 
 
             td = table.add_cell()
@@ -722,7 +742,13 @@ class SubscriptionWdg(BaseRefreshWdg):
  
 
             td = table.add_cell()
-            td.add(description)
+
+            desc_div = DivWdg()
+            td.add(desc_div)
+            desc_div.add(description)
+            desc_div.add_style("padding: 0px 20px")
+            desc_div.add_style("max-width: 600px")
+
             td = table.add_cell()
             #td.add(message.get_value("status"))
             #td = table.add_cell()

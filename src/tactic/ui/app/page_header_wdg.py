@@ -590,17 +590,17 @@ class ProjectCreateWdg(BaseRefreshWdg):
         } )
         top.add_style("width: 100%")
         top.add_color("background", "background", -10)
-        top.add_style("padding-top: 30px")
+        top.add_style("padding-top: 10px")
         top.add_style("padding-bottom: 50px")
         top.add_class("spt_project_top")
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 600px")
+        inner.add_style("width: 700px")
         inner.add_style("float: center")
         inner.add_border()
         inner.center()
-        inner.add_style("padding: 20px")
+        inner.add_style("padding: 30px")
         inner.add_color("background", "background")
 
 
@@ -610,7 +610,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         title = DivWdg()
         title.add("Create A New Project")
 
-        wizard = WizardWdg(title=title)
+        wizard = WizardWdg(title=title, width="100%")
         inner.add(wizard)
 
 
@@ -1059,13 +1059,18 @@ class ProjectCreateWdg(BaseRefreshWdg):
             if theme != default_theme:
                 theme_item.add_style("display: none")
 
+            table = Table()
+            theme_item.add(table)
+            table.add_row()
+
             if Environment.is_builtin_plugin(theme):
                 theme_img = HtmlElement.img(src="/tactic/builtin_plugins/%s/media/screenshot.jpg" % theme)
             else:
                 theme_img = HtmlElement.img(src="/tactic/plugins/%s/media/screenshot.jpg" % theme)
             theme_img.add_border()
             theme_img.set_box_shadow("1px 1px 1px 1px")
-            theme_img.add_style("margin: 20px")
+            theme_img.add_style("margin: 20px 10px")
+            theme_img.add_style("width: 240px")
 
             plugin_data = data.get(theme)
 
@@ -1073,9 +1078,11 @@ class ProjectCreateWdg(BaseRefreshWdg):
             if not description:
                 description = "No Description"
 
-            theme_item.add(theme_img)
-            theme_img.add_style("width: 120px")
-            theme_item.add( description )
+            table.add_cell(theme_img)
+            table.add_cell( description )
+
+
+
         theme_img_div.add_style("text-align: center")
         theme_img_div.add_style("margin: 10px")
 

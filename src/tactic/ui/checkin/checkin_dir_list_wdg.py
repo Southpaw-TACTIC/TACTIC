@@ -117,6 +117,9 @@ class CheckinDirListWdg(DirListWdg):
         #    my.subcontext_options = ["(auto)"]
 
 
+        my.preselected = my.kwargs.get("preselected")
+
+
 
     def add_base_dir_behaviors(my, div, base_dir):
 

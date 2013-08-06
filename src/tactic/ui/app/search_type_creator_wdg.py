@@ -409,7 +409,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         pipeline_checkbox = CheckboxWdg("sobject_pipeline")
 
         pipeline_div.add("All sType items can have pipelines which dictate the workflow of an sType. ")
-        pipeline_div.add("Pipelines contain processes that dictate the workflow of an sType.  Add proccess that need to be tracked for this sType.")
+        pipeline_div.add("Pipelines contain processes that dictate the workflow of an sType.  Add proccess that need to be tracked.")
         pipeline_div.add("<br/>"*2)
         pipeline_div.add("&nbsp;&nbsp;&nbsp;<b>Items have a Pipeline?</b> ")
         pipeline_div.add(pipeline_checkbox)
@@ -515,7 +515,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("spt_choose_layout_top")
 
-        div.add("Choose a default layout for this sType")
+        div.add("Choose a default layout: ")
         div.add("<br/>")
 
 
@@ -524,8 +524,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         images = [
             "/context/images/tile_layout.jpg",
             "",
-            "",
-            "",
+            "/context/images/browser_layout.jpg",
+            "/context/images/checkin_layout.jpg",
             "/context/images/card_layout.jpg",
         ]
 
@@ -535,6 +535,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             div.add(option_div)
             radio = RadioWdg("layout")
             option_div.add(radio)
+            if value == "tile":
+                radio.set_checked()
             radio.add_style("margin-top: -5px")
             option_div.add("%s" % title)
             radio.add_attr("value", value)
@@ -562,6 +564,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         img = HtmlElement.img(src=images[0])
         img_div.add(img)
         img.add_class("spt_image")
+        img.add_border()
+        img.set_box_shadow("0px 0px 5px")
 
 
 
@@ -573,7 +577,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
-        div.add("Choose a directory naming convention for this sType:")
+        div.add("Choose a directory naming convention: ")
         div.add("<br/>")
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
@@ -662,22 +666,21 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         table.add_style("font-size: 0.85em")
         table.add_style("margin-left: 15px")
         div.add(table)
-        parts = expr.split("/")
-        table.add_row()
 
 
-
+        tr = table.add_row()
+        parts = new_expr.split("/")
         for item in parts:
+            item = item.replace("!", "/")
             td = table.add_cell(item)
             td.add_style("text-align: left")
             td.add_style("padding-right: 15px")
             table.add_cell("/")
 
+        parts = expr.split("/")
         tr = table.add_row()
         tr.add_style("opacity: 0.5")
-        parts = new_expr.split("/")
         for item in parts:
-            item = item.replace("!", "/")
             td = table.add_cell(item)
             td.add_style("text-align: left")
             td.add_style("padding-right: 15px")
@@ -1361,6 +1364,9 @@ class SearchTypeCreatorCmd(Command):
             else:
                 sobject.set_value("database", "{project}")
 
+        layout = my.get_value("layout")
+        if layout:
+            sobject.set_value("default_layout", layout)
 
         sobject.set_value("schema", my.schema)
 

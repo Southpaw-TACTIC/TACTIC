@@ -374,8 +374,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "CONFIGURE_03"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "CONFIGURE_03"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+	image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -383,7 +384,8 @@ class QuickBoxWdg(BaseRefreshWdg):
 
             var class_name = 'tactic.ui.tools.RepoBrowserWdg';
             var args = {
-                open_depth: 0
+                open_depth: 0,
+                depth: 0,
             };
             spt.tab.add_new("File Browser", "File Browser", class_name, args);
             spt.named_events.fire_event("hotbox|close");

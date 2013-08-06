@@ -90,7 +90,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         mode = my.kwargs.get("mode")
         if not mode:
             mode = 'normal'
-        assert mode in ['normal', 'line']
+        assert mode in ['normal', 'line', 'square']
 
         # check if it is the first day of the week and then try to cascade
         # the indexes up
@@ -131,6 +131,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                     if mode == "line":
                         content_wdg.add_style("height: 1px")
                         content_wdg.add_style("overflow: hidden")
+                    elif mode == "square":
+                        content_wdg.add_style("display: none")
                     else:
                         content_wdg.add_style("margin: 4px -1px 4px -1px")
                     content_wdg.add("&nbsp;")
@@ -139,8 +141,11 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                     if mode == "line":
                         content_wdg.add_style("height: 1px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
-                        #content_wdg.add("&nbsp;")
-
+                    elif mode == "square":
+                        content_wdg.add_style("height: 1px")
+                        content_wdg.add_style("width: 1px")
+                        content_wdg.add_style("margin: 1px 1px 1px 1px")
+                        content_wdg.add_style("float: left")
                     else:
                         content_wdg.add_border()
                         #content_wdg.set_box_shadow("0px 0px 5px")
@@ -751,7 +756,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         mode = my.kwargs.get("mode")
-        if mode == "line":
+        if mode in ["line","square"]:
             day_div.add_style("font-size: 0.6em")
             day_div.add_style("padding: 1px 0px 2px 2px")
         else:
@@ -897,7 +902,7 @@ class TaskCalendarWdg(SObjectCalendarWdg):
             color_div.add_style("background: %s" % color)
             color_div.add_style("margin: 2px 5px 0px 15px")
             color_div.add_border()
-            color_div.set_box_shadow("0px 0px 5px")
+            #color_div.set_box_shadow("0px 0px 5px")
 
             td.add(process_name)
             #td.add(color)

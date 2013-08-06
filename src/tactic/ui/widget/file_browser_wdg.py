@@ -35,42 +35,20 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_relative_paths(my, base_dir):
-        return []
-
-
-    def init(my):
-
-        #if os.path.exists("/tmp/scan"):
-        #    f = open('/tmp/scan', 'r')
-        #    my.data = jsonloads( f.read() )
-        #    f.close()
-        #else:
-        #    my.data = {}
-        my.data = {}
-
-        my.level = my.kwargs.get("level")
-        if not my.level:
-            my.level = 0
-
 
         # put a maximum for now
-        max_count = 100000
-        count = 0
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
         location = my.kwargs.get("location")
         my.paths = my.kwargs.get("paths")
-        base_dir = my.kwargs.get("base_dir")
-        my.base_dir = base_dir
 
         # a little hacky
         if isinstance(my.paths, basestring):
             my.paths = my.paths.replace("'", '"');
             my.paths = jsonloads(my.paths)
+            return my.paths
 
-        # checkbox pre-checked on drawing, default to False
-        my.preselected = my.kwargs.get("preselected")
 
         from pyasm.common.directory import Directory
         if my.paths == []:
@@ -78,6 +56,7 @@ class DirListWdg(BaseRefreshWdg):
         elif my.paths is None and location == 'server':
             my.directory = Directory(base_dir=base_dir, depth=depth)
             my.paths = my.directory.get_all_paths()
+            my.paths = []
         elif location == 'scm':
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
         else:
@@ -90,19 +69,23 @@ class DirListWdg(BaseRefreshWdg):
         my.paths = [path.replace("\\","/") for path in my.paths]
         my.paths.sort()
 
+        return my.paths
 
-        """
-        # handle ignore list
-        ignore = my.kwargs.get("ignore")
-        ignore = {}
-        if ignore:
-            new_paths = []
-            for path in my.paths:
-                if ignore.get(path):
-                    new_paths.append(path)
 
-            my.paths = new_paths
-        """
+
+    def init(my):
+
+        my.data = {}
+
+        my.level = my.kwargs.get("level")
+        if not my.level:
+            my.level = 0
+
+
+        my.base_dir = my.kwargs.get("base_dir")
+        my.paths = my.kwargs.get("paths")
+        if not my.paths:
+            my.paths = []
 
         my.preprocess()
 
@@ -268,6 +251,29 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
+    def get_no_paths_wdg(my):
+        no_files_wdg = DivWdg()
+        no_files_wdg.add("&nbsp;"*5)
+        no_files_wdg.add("<i>-- No files found --</i>")
+        #no_files_wdg.add_style("opacity: 0.5")
+        no_files_wdg.add_style("margin: 30px auto")
+        no_files_wdg.add_color("color", "color3")
+        no_files_wdg.add_color("background", "background3")
+        no_files_wdg.add_style("text-align", "center")
+        no_files_wdg.add_style("padding-top: 20px")
+        no_files_wdg.add_style("padding-bottom: 20px")
+        no_files_wdg.add_style("width: 250px")
+        no_files_wdg.add_border()
+        return no_files_wdg
+
+
+
+
+
+
+
+
+
     def get_display(my):
 
         top = my.top
@@ -277,6 +283,44 @@ class DirListWdg(BaseRefreshWdg):
 
         my.add_load_behavior()
         my.add_top_behaviors(top)
+
+
+        hover = top.get_color("background", -8)
+        top.add_relay_behavior( {
+            'type': 'mouseover',
+            'bgcolor': hover,
+            'bvr_match_class': "spt_dir_item",
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.bgcolor);
+            '''
+        } )
+        top.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': "spt_dir_item",
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+        top.add_relay_behavior( {
+            'type': 'mouseover',
+            'bgcolor': hover,
+            'bvr_match_class': "spt_file_item",
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.bgcolor);
+            '''
+        } )
+        top.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': "spt_file_item",
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+
+
+
 
         base_dir = my.kwargs.get("base_dir")
 
@@ -328,27 +372,6 @@ class DirListWdg(BaseRefreshWdg):
                 top.add(HtmlElement.br(2))
             else:
                 dir_title.add(HtmlElement.br())
-
-
-
-        if my.paths == []:
-            no_files_wdg = DivWdg()
-            top.add(no_files_wdg)
-            no_files_wdg.add("&nbsp;"*5)
-            no_files_wdg.add("<i>-- No files found --</i>")
-            #no_files_wdg.add_style("opacity: 0.5")
-            no_files_wdg.add_style("margin: 30px auto")
-            no_files_wdg.add_color("color", "color3")
-            no_files_wdg.add_color("background", "background3")
-            no_files_wdg.add_style("text-align", "center")
-            no_files_wdg.add_style("padding-top: 20px")
-            no_files_wdg.add_style("padding-bottom: 20px")
-            no_files_wdg.add_style("width: 250px")
-            no_files_wdg.add_border()
-            return top
-
-
-
 
 
         # Test drag and drop files
@@ -406,6 +429,9 @@ class DirListWdg(BaseRefreshWdg):
         if open_depth == None:
             open_depth = -1
 
+        depth = my.kwargs.get("depth")
+        if depth == None:
+            depth = -1
 
         #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
 
@@ -415,7 +441,7 @@ class DirListWdg(BaseRefreshWdg):
             handler=my,
             base_dir=my.base_dir,
             level=0,
-            depth=0,
+            depth=depth,
             all_open=all_open,
             open_depth=open_depth,
             paths=my.paths,
@@ -464,7 +490,6 @@ class DirListWdg(BaseRefreshWdg):
             '''
         } )
         """
-
 
 
 
@@ -518,37 +543,61 @@ class DirListWdg(BaseRefreshWdg):
             reldir = item
         div.add_attr("spt_reldir", reldir)
 
-        div.add_attr("spt_base_dir", my.base_dir)
         div.add_attr("spt_dir", path)
+
+        #is_dynamic = my.kwargs.get("dynamic")
+        #if is_dynamic in ['true', True]:
+        #    div.add_class("spt_dynamic")
+        div.add_class("spt_dynamic")
+        
+
+
+        class_path = Common.get_full_class_name(my)
+        div.add_attr("spt_handler_class", class_path)
+        div.add_attr("spt_level", my.level+1)
 
 
         swap_action = '''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
-        var sibling = item_top.getNext();
-        //spt.toggle_show_hide(sibling);
+        var sibling = item_top.getNext(".spt_dir_content");
 
+        if (item_top.hasClass("spt_dynamic")) {
 
-        var base_dir = item_top.getAttribute("spt_dir");
-
-
-        var class_name = 'tactic.ui.widget.DirListPathHandler';
-        var kwargs = {
-            level: 1,
-            base_dir: base_dir,
-            depth: 1,
-            all_open: false,
-            handler_class: 'tactic.ui.tools.RepoBrowserDirListWdg',
-            handler_kwargs: {
-                base_dir: base_dir,
-                //search_types:  ['test2/photos']
+            if (item_top.hasClass("spt_open")) {
+                //spt.hide(sibling);
+                var children = sibling.getChildren()
+                for (var i = 0; i < children.length; i++) {
+                    spt.behavior.destroy_element(children[i]);
+                }
+                item_top.removeClass("spt_open");
+                sibling.setStyle("display", "none");
             }
+            else {
+                item_top.addClass("spt_open");
+                sibling.setStyle("display", "");
 
+                var base_dir = item_top.getAttribute("spt_dir");
+
+
+                var class_name = 'tactic.ui.widget.DirListPathHandler';
+                var kwargs = {
+                    level: item_top.getAttribute("spt_level"),
+                    base_dir: base_dir,
+                    depth: 1,
+                    all_open: false,
+                    handler_class: item_top.getAttribute("spt_handler_class"),
+                    handler_kwargs: {
+                        base_dir: base_dir,
+                    }
+
+                }
+
+                spt.panel.load(sibling, class_name, kwargs);
+            }
         }
-
-        div = $(document.createElement("div"))
-        div.inject(sibling, "after")
-        spt.panel.load(div, class_name, kwargs);
-
+        else {
+            spt.toggle_show_hide(sibling);
+        }
 
 
         var top = item_top.getParent(".spt_dir_list_top");
@@ -591,10 +640,10 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_action_script(swap_action)
 
 
-        hover = div.get_color("background", -5)
-        div.add_color("background", "background")
-        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+        #hover = div.get_color("background", -5)
+        #div.add_color("background", "background")
+        #div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        #div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
      
  
 
@@ -651,7 +700,6 @@ class DirListWdg(BaseRefreshWdg):
         return div
 
 
-    #count = 0
 
     def _get_file_item(my, dirname, basename):
 
@@ -663,9 +711,9 @@ class DirListWdg(BaseRefreshWdg):
 
         item_div.add_styles("margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px")
 
-        item_div.add_color("background", "background")
-        item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+        #item_div.add_color("background", "background")
+        #item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        #item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
      
 
      
@@ -997,6 +1045,9 @@ class DirListPathHandler(BaseRefreshWdg):
         my.level = my.kwargs.get("level")
         if not my.level:
             my.level = 0
+        else:
+            my.level = int(my.level)
+
         padding = my.level * 11
         top.add_style("padding-left: %spx" % padding)
 
@@ -1015,7 +1066,6 @@ class DirListPathHandler(BaseRefreshWdg):
         base_dir = my.kwargs.get("base_dir")
         assert(base_dir)
 
-        print "handler: ", my.handler
         my.paths = my.kwargs.get("paths")
         if not my.paths: 
             my.paths = my.handler.get_relative_paths(base_dir)
@@ -1187,7 +1237,6 @@ class DirListPathHandler(BaseRefreshWdg):
                 current_dir = path
 
             else:
-
 
                 dirname = os.path.dirname(path)
                 # windows server needs this since os.path.dirname() is different in windows

@@ -163,6 +163,11 @@ display class, it will adopt the one defined here-->
     </element>
 
 
+    <element name="metadata" edit="false">
+        <display class="tactic.ui.table.MetadataElementWdg"/>
+    </element>
+
+
 
 
     <element name="notes">

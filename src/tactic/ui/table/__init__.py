@@ -40,4 +40,5 @@ from sobject_summary_wdg import *
 from preference_wdg import *
 from project_wdg import *
 
+from metadata_element_wdg import *
 

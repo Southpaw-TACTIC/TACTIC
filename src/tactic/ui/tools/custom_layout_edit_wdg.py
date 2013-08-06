@@ -2217,6 +2217,27 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
+        menu_item = MenuItem(type='action', label='Inject Subscriptions')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+        'type': 'click_up',
+        'editor_id': my.editor_id,
+        'cbjs_action': '''
+        var class_name = 'tactic.ui.tools.WidgetEditorWdg';
+
+        var kwargs = {
+            'editor_id': bvr.editor_id,
+            'display_handler': 'tactic.ui.app.SubscriptionBarWdg',
+            'name': '',
+            'display_options': {
+            }
+        };
+        spt.panel.load_popup("Widget Editor", class_name, kwargs);
+        '''
+        } )
+
+
+
 
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
