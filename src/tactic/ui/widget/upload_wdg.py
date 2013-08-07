@@ -18,7 +18,6 @@ from pyasm.common import Container
 from pyasm.web import HtmlElement, DivWdg, SpanWdg, WebContainer, Widget, Table, WebContainer, StringWdg
 from pyasm.widget import BaseInputWdg, HiddenWdg, TextWdg, SwapDisplayWdg, HintWdg, CheckboxWdg, TextAreaWdg, ProdIconButtonWdg, SelectWdg
 from pyasm.search import SearchKey
-
 from tactic.ui.common import BaseRefreshWdg
 
 # DEPRECATED
@@ -147,46 +146,25 @@ class SimpleUploadWdg(BaseInputWdg):
 
     def init(my):
 
-        from button_new_wdg import ActionButtonWdg
-        my.browse = ActionButtonWdg(title='Browse')
-        my.browse.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-
-        var js_files = ['upload.js'];
-        spt.dom.load_js(js_files, function() {spt.Upload;}); 
-    
-        var applet = spt.Applet.get();
-        var files = applet.open_file_browser();
-        var top = bvr.src_el.getParent(".spt_upload_top");
+        from tactic.ui.input import UploadButtonWdg 
+        on_complete = '''
+        var files = spt.html5upload.get_file();
+        var top = bvr.src_el.getParent(".spt_simple_upload_top");
         var hidden = top.getElement(".spt_upload_hidden");
         var ticket_hidden = top.getElement(".spt_upload_ticket");
-
         var files_el = top.getElement(".spt_upload_files");
 
         ticket = spt.Environment.get().get_ticket();
-
         var html = "";
-        for (var i = 0; i < files.length; i++ ) {
-            html += "Uploading: " + files[i] + "<br/>";
-            files_el.innerHTML = html;
-            if (files[i].test(/,/)) {
-                spt.alert('Comma , is not allowed in file names');
-                return;
-            }
-            applet.upload_file(files[i]);
-        }
-        if (files.length != 0) {
-            html += "<hr/><span style='color: #404927'>Completed</span>";
-            files_el.innerHTML = html;
-        }
-        if (files[0]) {
-            hidden.value = files[0];
+        html += "Uploading: " + files.name;
+        files_el.innerHTML = html;
+        
+        if (files) {
+            hidden.value = files.name;
             ticket_hidden.value = ticket;
         }
-
         '''
-        } )
+        my.browse = UploadButtonWdg(title="Browse", on_complete=on_complete)
 
     def add_behavior(my, bvr):
         '''add extra bvr to the Browse button post upload'''
@@ -256,7 +234,7 @@ class SimpleUploadWdg(BaseInputWdg):
         top = DivWdg()
         top.add_color("color", "color")
         #top.add_color("background", "background")
-        top.add_class("spt_upload_top")
+        top.add_class("spt_simple_upload_top")
         
         top.add(my.browse)
        
