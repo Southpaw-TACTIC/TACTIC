@@ -548,13 +548,13 @@ class DirListWdg(BaseRefreshWdg):
         #is_dynamic = my.kwargs.get("dynamic")
         #if is_dynamic in ['true', True]:
         #    div.add_class("spt_dynamic")
-        div.add_class("spt_dynamic")
+        #div.add_class("spt_dynamic")
         
 
 
         class_path = Common.get_full_class_name(my)
         div.add_attr("spt_handler_class", class_path)
-        div.add_attr("spt_level", my.level+1)
+        div.add_attr("spt_level", my.level)
 
 
         swap_action = '''
@@ -711,23 +711,9 @@ class DirListWdg(BaseRefreshWdg):
 
         item_div.add_styles("margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px")
 
-        #item_div.add_color("background", "background")
-        #item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        #item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-     
-
-     
-        # this is too slow in js    
-        #item_div.add_behavior( {
-        #    'type': 'hover',
-        #    'cbjs_action_over': 'spt.mouse.table_layout_hover_over(evt,bvr)',
-        #    'cbjs_action_out': 'spt.mouse.table_layout_hover_out(evt,bvr)',
-        #    'add_color_modifier': -5,
-        #} )
 
 
-
-        left_padding = my.level*11+15
+        left_padding = my.level*11+15+(11+11)
         item_div.add_style("padding-left: %spx" % left_padding)
         item_div.add_attr("spt_padding_left", left_padding)
         item_div.add_class("hand")
@@ -1112,8 +1098,10 @@ class DirListPathHandler(BaseRefreshWdg):
         new_paths = []
         last_parts = []
         for path in paths:
+            if not path.startswith("%s/" % base_dir):
+                continue
 
-            extra = path.replace(base_dir, "")
+            extra = path.replace("%s/" % base_dir, "")
 
             dirname = os.path.dirname(extra)
             # strip both ends

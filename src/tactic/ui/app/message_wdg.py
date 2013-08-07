@@ -90,9 +90,14 @@ class ChatWdg(BaseRefreshWdg):
         inner.add( my.get_add_chat_wdg() )
 
         for key in keys:
+            session_div = DivWdg()
+            session_div.add_style("width: 400px")
+            inner.add(session_div)
+            session_div.add_style("float: left")
+            session_div.add_style("margin: 15px")
+
             session = ChatSessionWdg(key=key)
-            session.add_style("float: left")
-            inner.add(session)
+            session_div.add(session)
 
         inner.add("<br clear='all'/>")
 
@@ -202,6 +207,16 @@ class ChatSessionWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
 
+        inner = DivWdg()
+        top.add(inner)
+        inner.add_behavior( {
+            'type': 'load',
+            'cbjs_action': MessageWdg.get_onload_js()
+        } )
+
+        inner.add_style("min-width: 400px")
+
+
         key = my.kwargs.get("key")
         interval = True
         
@@ -213,7 +228,7 @@ class ChatSessionWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_chat_session_top")
-        div.add_style("margin: 15px")
+        div.add_color("background", "background")
 
         title_wdg = DivWdg()
         div.add(title_wdg)
@@ -258,9 +273,12 @@ class ChatSessionWdg(BaseRefreshWdg):
         history_div = DivWdg()
         div.add(history_div)
         history_div.add_class("spt_chat_history")
-        history_div.add_style("width: 400px")
-        history_div.add_style("height: 400px")
+        history_div.add_style("width: auto")
+        history_div.add_style("height: auto")
+        history_div.add_style("max-height: 400px")
         history_div.add_style("padding: 5px")
+        history_div.add_class("spt_resizable")
+
         history_div.add_border()
         history_div.add_style("overflow-y: auto")
         #history_div.add_style("font-size: 0.9em")
@@ -359,7 +377,7 @@ class ChatSessionWdg(BaseRefreshWdg):
         text = TextAreaWdg("chat")
         div.add(text)
         text.add_class("spt_chat_text")
-        text.add_style("width: 412px")
+        text.add_style("width: 100%")
         text.add_style("padding: 5px")
         text.add_style("margin-top: -1px")
         
@@ -536,8 +554,9 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         size = 60
 
+        message_code = subscription.get_value("message_code")
+
         if category == 'sobject':
-            message_code = subscription.get_value("message_code")
             sobject = Search.get_by_search_key(message_code)
             thumb = DivWdg()
 
@@ -567,16 +586,23 @@ class SubscriptionWdg(BaseRefreshWdg):
 
 
 
-        else:
+        elif category == 'chat':
             thumb = DivWdg()
             thumb.add_style("width: %s" % size)
             thumb.add_style("height: %s" % (size*3/4))
             thumb.add_border()
-            thumb.add_color("background", "background")
-            thumb.add("<br/>")
-            thumb.add(category)
             thumb.add_style('text-align: center')
             thumb.add_class("hand")
+
+            message = Search.get_by_code("sthpw/message", message_code)
+            login_code = message.get_value("login")
+
+            login = Search.get_by_code("sthpw/login", login_code)
+            thumb_wdg = ThumbWdg()
+            thumb.add(thumb_wdg)
+            thumb_wdg.set_sobject(login)
+            thumb_wdg.set_icon_size(size)
+
 
             key = subscription.get_value("message_code")
             thumb.add_behavior( {
@@ -590,6 +616,21 @@ class SubscriptionWdg(BaseRefreshWdg):
                 spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
                 '''
             } )
+
+        else:
+            thumb = DivWdg()
+            thumb.add_style("width: %s" % size)
+            thumb.add_style("height: %s" % (size*3/4))
+            thumb.add_border()
+            thumb.add_color("background", "background")
+            thumb.add("<br/>")
+            thumb.add(category)
+            thumb.add_style('text-align: center')
+            thumb.add_class("hand")
+
+
+
+
 
         thumb.add_style("margin: 3px")
         return thumb
@@ -763,7 +804,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             #td.add(subscription.get_value("last_cleared"))
 
             td = table.add_cell()
-            icon = IconButtonWdg(title="Remove Subscription", icon=IconWdg.DELETE)
+            icon = IconButtonWdg(title="Unsubscribe", icon=IconWdg.DELETE)
             td.add(icon)
             subscription_key = subscription.get_search_key()
             icon.add_behavior( {
@@ -829,7 +870,12 @@ class SubscriptionBarWdg(SubscriptionWdg):
         top.add_class("hand")
 
 
-        interval = 10 * 1000
+        interval = my.kwargs.get("interval")
+        if not interval:
+            interval = 10 * 1000
+        else:
+            interval = int(interval) * 1000
+
         inner = DivWdg()
         top.add(inner)
         my.set_refresh(inner,interval)
@@ -1008,19 +1054,37 @@ spt.message.set_interval = function(key, callback, interval, element) {
     }
 
 
+    // stop this interval if it already started/registered
+    spt.message.stop_interval(key);
+
+
     var interval_id = setInterval( function() {
         spt.message.async_poll(key, f);
     } , interval );
     spt.message.intervals[key] = interval_id;
 
-    if (element)
-        spt.message.elements[key] = element;
+    if (element) {
+        var id = element.getAttribute("id");
+        if (!id) {
+            element.setAttribute("id", key);
+            spt.message.elements[key] = key;
+        }
+        else {
+            spt.message.elements[key] = id;
+        }
+        element.addClass("spt_notify_destroyed");
+    }
     else
         spt.message.elements[key] = null;
 } 
 
 spt.message.stop_interval = function(key) {
+    if (!spt.message.intervals[key]) {
+        return;
+    }
+
     clearInterval(spt.message.intervals[key]);
+    delete spt.message.intervals[key];
     delete spt.message.elements[key];
 } 
 
@@ -1057,8 +1121,9 @@ spt.message.poll = function(key) {
 
 spt.message.async_poll = function(key, callback) {
     // before polling, check that the element still exists
-    var el = spt.message.elements[key];
-    if (el && el.parentNode == null) {
+    var el_id = spt.message.elements[key];
+    var el = $(el_id);
+    if (!el || el.hasClass("spt_destroyed")) {
         spt.message.stop_interval(key);
         return;
     }
@@ -1067,6 +1132,34 @@ spt.message.async_poll = function(key, callback) {
     var expr = "@SOBJECT(sthpw/message['code','"+key+"'])";
 
     server.async_eval(expr, {single:true,cbjs_action:callback});
+}
+
+
+
+// TEST pooling of queries from different "apps"
+
+spt.message.keys = {};
+
+spt.message.register_key = function() {
+    spt.message.results[keys] = true;
+}
+
+spt.message.async_polls = function(keys, callback) {
+    // before polling, check that the element still exists
+    /*
+    var el = spt.message.elements[key];
+    if (el && el.parentNode == null) {
+        spt.message.stop_interval(key);
+        return;
+    }
+    */
+
+    var keys_string = keys.join("|");
+
+    var server = TacticServerStub.get();
+    var expr = "@SOBJECT(sthpw/message['code','in','"+keys_string+"'])";
+
+    server.async_eval(expr, {single:false,cbjs_action:callback});
 }
 
 

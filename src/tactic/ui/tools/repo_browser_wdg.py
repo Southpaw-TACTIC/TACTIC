@@ -466,9 +466,10 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_filters("search_type", search_types)
 
             if relative_dir:
-                # FIXME: this still gets a lot of sobjects for "dyanmica" mode
-                # although this gets filtered in Python
-                search.add_filter("relative_dir", "%s%%" % relative_dir, op="like")
+                search.add_op("begin")
+                search.add_filter("relative_dir", "%s" % relative_dir)
+                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+                search.add_op("or")
 
 
             if parent_ids:
@@ -558,6 +559,28 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         num_sobjects = {}
 
+  
+        # look for folders in the base dir
+        if show_empty_folders and os.path.isdir(base_dir):
+            dirnames = os.listdir(base_dir)
+            for dirname in dirnames:
+                full = "%s/%s/" % (base_dir, dirname)
+                if not os.path.isdir(full):
+                    continue
+
+                paths.append(full)
+
+
+
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+        # FIXME: The logic here makes huge assumptions
+
+
         # get all the directories
         for search_type in search_types:
             #search = Search(search_type)
@@ -574,16 +597,25 @@ class RepoBrowserDirListWdg(DirListWdg):
                 table = parts[0]
 
 
+            # FIXME: this is **EXTREMELY** tenuous
             start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
             if not start_dir.startswith(base_dir):
                 continue
 
 
-
             if not os.path.exists(start_dir):
                 continue
 
-            paths.append("%s/" % start_dir)
+            full = "%s/" % start_dir
+            paths.append(full)
+
+            search_type = search_type_obj.get_value("search_type")
+            project_code = Project.get_project_code()
+            search_type = "%s?project=%s" % (search_type, project_code)
+            my.search_types_dict[full] = search_type
+
+
+            # This walks up the folder structure and sets search codes
 
             for root, dirnames, filenames in os.walk(start_dir):
 
@@ -601,7 +633,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                         paths.append(full)
 
 
-
+        #for path in paths:
+        #    print "path: ", path
         #print "---"
         #for name, value in num_sobjects.items():
         #    print value, name
@@ -631,7 +664,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
         spt.repo_browser.drag_file_motion = function(evt, bvr, mouse_411) {
             var diff_y = mouse_411.curr_y - spt.repo_browser.start_y;
-            if (diff_y < 1 && diff_y > -1) {
+            if (diff_y < 3 && diff_y > -3) {
                 return;
             }
 

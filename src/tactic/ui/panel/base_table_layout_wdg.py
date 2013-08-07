@@ -2494,7 +2494,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
-                { "type": "action", "label": "Subscript to Item", "icon": IconWdg.CONTENTS,
+                { "type": "action", "label": "Subscribe to Item", "icon": IconWdg.CONTENTS,
                     "bvr_cb": { 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
@@ -2516,6 +2516,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     // search_key here is "id" based: need code based
                     var sobject = server.get_by_search_key(search_key);
                     search_key = sobject.__search_key__;
+
+                    // see if this subscription already exists
+                    var expr = "@SOBJECT(sthpw/subscription['login','"+login+"']['message_code','"+search_key+"'])";
+                    var subscription = server.eval(expr, {single:true});
+                    if (subscription) {
+                        alert("You are already subscribed to this item");
+                        return;
+                    }
 
                     login = spt.Environment.get().get_user();
 

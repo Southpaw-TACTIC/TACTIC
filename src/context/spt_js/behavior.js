@@ -483,6 +483,16 @@ spt.behavior.destroy_element = function( el )
     if( el.parentNode ) {
         el.parentNode.removeChild( el );
     }
+
+    // Mark all children elements that want notification as being destroyed
+    // This is for instances when an array is holding the object
+    // and needs to know if it is destroyed or not.
+    var children = el.getElements(".spt_notify_destroyed");
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        el.addClass("spt_destroyed");
+    }
+
     el.destroy();
     el = null;
 }
