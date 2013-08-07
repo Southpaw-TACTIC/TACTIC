@@ -452,7 +452,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
-        
+        inner.add_attr('upload_id',my.upload_id)
+
         if my.kwargs.get('temp') != True:
             
             # get all client triggers
@@ -2679,7 +2680,26 @@ spt.table.set_connect_key = function(connect_key) {
 }
 
 
+// regular visible data 
 
+spt.table.set_data = function(row, data) {
+    var changed = false;
+    for (a in data) {
+        if (data.hasOwnProperty(a)) {
+            var cell = row.getElement('td[spt_element_name=' + a + ']');
+          
+            var value = data[a];
+            cell.innerHTML = value;
+            cell.setAttribute('spt_input_value', value);
+            spt.add_class(cell, 'spt_cell_changed');
+            changed = true;
+            spt.table.set_changed_color(row, cell);
+        }
+    }
+    if (changed) 
+        spt.add_class(row, "spt_row_changed");
+}
+    
 
 // Extra data functions
 
@@ -3403,6 +3423,26 @@ spt.table.set_display = function( el, value, input_type ) {
     }
 }
 
+spt.table.set_changed_color = function(row, cell) {
+    
+    cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
+    row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
+
+    // so we don't have to search for the colors
+    var colors = spt.Environment.get().get_colors();
+    var theme = colors.theme;
+
+    if (theme == "dark") {
+        row.setStyle("background-color", "#204411");
+        cell.setStyle("background-color", "#305511");
+        row.setAttribute("spt_background", "#204411");
+    } 
+    else {
+        row.setStyle("background-color", "#C0CC99");
+        cell.setStyle("background-color", "#909977");
+        row.setAttribute("spt_background", "#C0CC99");
+    }
+}
 
 spt.table._accept_single_edit = function(cell, new_value) {
     var old_value = cell.getAttribute("spt_input_value");
@@ -3432,23 +3472,7 @@ spt.table._accept_single_edit = function(cell, new_value) {
         else {
             cell.addClass("spt_cell_changed");
             row.addClass("spt_row_changed");
-            cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
-            row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
-
-            // so we don't have to search for the colors
-            var colors = spt.Environment.get().get_colors();
-            var theme = colors.theme;
-
-            if (theme == "dark") {
-                row.setStyle("background-color", "#204411");
-                cell.setStyle("background-color", "#305511");
-                row.setAttribute("spt_background", "#204411");
-            } 
-            else {
-                row.setStyle("background-color", "#C0CC99");
-                cell.setStyle("background-color", "#909977");
-                row.setAttribute("spt_background", "#C0CC99");
-            }
+            spt.table.set_changed_color(row, cell);
         }
 
         // fire an event
