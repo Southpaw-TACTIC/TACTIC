@@ -16,7 +16,7 @@ __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg']
 from pyasm.common import Date, Common, Environment, FormatValue, TacticException
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.biz import Project, Schema
-from pyasm.search import Search, SearchType, SObject
+from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 
@@ -454,6 +454,8 @@ class PasswordInputWdg(TextInputWdg):
 
 class LookAheadTextInputWdg(TextInputWdg):
 
+    RESULT_CLICK_EVENT = 'lookahead_click'
+
     def set_name(my, name):
         my.name = name
         my.text.set_name(name)
@@ -796,7 +798,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             bvr.src_el.setStyle("background", "");
             '''
         } )
+
+        base_st = SearchKey.extract_base_search_type(filter_search_type)
+        event_name = '%s|%s'%(my.RESULT_CLICK_EVENT, base_st) 
         # this is when the user clicks on a result item
+        # it doesn't do a search right away, it fires the lookahead_click event
         results_div.add_relay_behavior( {
             'type': "mouseup",
             'bvr_match_class': 'spt_input_text_result',
@@ -818,11 +824,39 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             var hidden_el = top.getElement(".spt_text_value");
             hidden_el.value = value
 
+            // run client trigger
+            try {
+                var e_name = '%s';
+                bvr.options = {'value': value, 'display': display};
+                spt.named_events.fire_event(e_name, bvr);
+            }
+            catch(e) {
+                spt.alert("Error firing event: " + e_name);
+            }
 
-            '''
+          
+
+            '''%event_name
         } )
 
+        
+        exp = "@SOBJECT(config/client_trigger['event','%s'])" %event_name 
+        client_triggers = Search.eval(exp)
+        for client_trigger in client_triggers:
+            results_div.add_behavior( {
+                'type': 'listen',
+                'unique' : True,
+                'event_name': event_name,
+                'script_path': client_trigger.get_value('callback'),
+                'cbjs_action': '''
 
+                var input = bvr.firing_data;
+                
+                // 2nd arg is the args for this script
+                spt.CustomProject.run_script_by_path(bvr.script_path, input);
+                '''
+                })
+        
 
     def fill_data(my):
 
