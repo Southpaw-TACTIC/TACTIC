@@ -3276,20 +3276,10 @@ spt.table.set_changed_color = function(row, cell) {
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
-    // so we don't have to search for the colors
-    var colors = spt.Environment.get().get_colors();
-    var theme = colors.theme;
-
-    if (theme == "dark") {
-        row.setStyle("background-color", "#204411");
-        cell.setStyle("background-color", "#305511");
-        row.setAttribute("spt_background", "#204411");
-    } 
-    else {
-        row.setStyle("background-color", "#C0CC99");
-        cell.setStyle("background-color", "#909977");
-        row.setAttribute("spt_background", "#C0CC99");
-    }
+  
+    row.setStyle("background-color", "#C0CC99");
+    cell.setStyle("background-color", "#909977");
+    row.setAttribute("spt_background", "#C0CC99");
 }
 
 spt.table._accept_single_edit = function(cell, new_value) {
