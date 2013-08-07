@@ -253,6 +253,13 @@ class BaseTableElementWdg(HtmlElement):
         return my.parent_wdg
 
 
+    def get_parent_view(my):
+        '''gets which table widget this widget belongs to'''
+        if my.parent_wdg:
+            return my.parent_wdg.get_view()
+        else:
+            return ''
+
     def get_name(my):
         return my.name
 
