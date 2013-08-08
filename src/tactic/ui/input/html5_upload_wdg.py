@@ -68,6 +68,9 @@ class Html5UploadWdg(BaseRefreshWdg):
         form.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
+
+if (spt.html5upload)
+    return;
 spt.html5upload = {};
 spt.html5upload.form = null;
 spt.html5upload.files = [];
@@ -121,9 +124,15 @@ spt.html5upload.select_files = function(onchange) {
         spt.alert('Cannot locate the upload form. Refresh this page/tab and try again');
         return; 
     }
-
     var el = form.getElement(".spt_file") ;
   
+    /*
+    if (replace) {
+        spt.html5upload.events['select_file'] = null;
+        el.removeEventListener("change", onchange);
+        alert('remove')
+    }
+    */
     // ensure this listener is only added once
     if (!spt.html5upload.events['select_file']){
         el.addEventListener("change", onchange, true);
@@ -196,7 +205,6 @@ spt.html5upload.upload_file = function(kwargs) {
 
 
   var el = form.getElement(".spt_file");
-  //console.log(el.files);
   //var fd = form.getFormData();
 
   var fd = new FormData();
@@ -222,7 +230,7 @@ spt.html5upload.upload_file = function(kwargs) {
       xhr.addEventListener("error", upload_failed, false);
   }
   //xhr.addEventListener("abort", uploadCanceled, false);
-  xhr.addEventListener("abort", function() {console.log("abort")}, false);
+  xhr.addEventListener("abort", function() {log.critical("abort")}, false);
   xhr.open("POST", "/tactic/default/UploadServer/", true);
   xhr.send(fd);
 
@@ -247,6 +255,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         my.on_complete_kwargs = my.kwargs.get("on_complete_kwargs")
         if not my.on_complete:
             my.on_complete_kwargs = {}
+        my.upload_id = my.kwargs.get("upload_id")
         super(UploadButtonWdg,my).init()
 
 
@@ -286,9 +295,13 @@ class UploadButtonWdg(BaseRefreshWdg):
         else:
             multiple = False
 
-        upload = Html5UploadWdg(name=name, multiple=multiple)
-        top.add(upload)
-        upload_id = upload.get_upload_id()
+       
+        if my.upload_id:
+            upload_id = my.upload_id
+        else:
+            upload = Html5UploadWdg(name=name, multiple=multiple)
+            top.add(upload)
+            upload_id = upload.get_upload_id()
 
 
 
@@ -346,6 +359,7 @@ class UploadButtonWdg(BaseRefreshWdg):
             'upload_id': upload_id,
             'search_key': search_key,
             'ticket': my.ticket,
+            'multiple': multiple,
             'kwargs': my.on_complete_kwargs,
             'cbjs_action': '''
             var search_key = bvr.search_key;
@@ -354,6 +368,11 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.html5upload.form = $(bvr.upload_id);
 
             spt.html5upload.kwargs = bvr.kwargs;
+
+            var file_obj = spt.html5upload.form.getElement(".spt_file");
+           
+            var is_multiple = bvr.multiple == true;
+        
 
 
             var upload_start = function(evt) {
@@ -370,7 +389,6 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             }
 
-
             var upload_file_kwargs =  {
                   upload_start: upload_start,
                   upload_complete: upload_complete,
@@ -383,9 +401,14 @@ class UploadButtonWdg(BaseRefreshWdg):
       var onchange = function () {
                 %s;
                 spt.html5upload.upload_file(upload_file_kwargs);
-      }
-     
-            spt.html5upload.select_file( onchange);
+	    }
+	    if (is_multiple) {
+                file_obj.setAttribute('multiple','multiple');
+
+                spt.html5upload.select_files(onchange);
+            }
+            else
+                spt.html5upload.select_file(onchange);
 
             ''' % (upload_start, upload_progress, on_complete, upload_init)
         } )

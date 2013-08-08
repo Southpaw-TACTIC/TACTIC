@@ -25,6 +25,7 @@ from pyasm.prod.biz import ProdSetting
 from tactic.ui.container import DialogWdg, MenuWdg, MenuItem
 from pyasm.security import Login
 from pyasm.widget import ThumbWdg
+
 import dateutil, os
 
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
@@ -111,7 +112,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         my.menu  = edit_wdg.get_menu()
 
         th.add(edit_wdg)
-        
+       
        
    
 
@@ -138,7 +139,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
-       
+      
 
         DiscussionWdg.add_layout_behaviors(layout, my.hidden)
         
@@ -147,7 +148,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     def init(my):
        
         my.hidden = False
-        my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,  **my.kwargs)
+        my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
         
 
     def get_required_columns(my):
@@ -470,6 +471,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 var kwargs = container.getAttribute("spt_kwargs");
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
+
+                var layout = spt.table.get_layout();
+                var upload_id = layout.getAttribute('upload_id')
+                kwargs.upload_id = upload_id; 
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {}, {fade: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -547,15 +552,19 @@ class DiscussionWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_discussion_add_note");
             var attach_top = top.getElement(".spt_attachment_top");
+            var ticket_key = attach_top.getAttribute('ticket_key');
             var files = attach_top.files;
             var server = TacticServerStub.get();
-            var ticket_key = server.start({title: 'New Note'})
+            if (!ticket_key)
+                server.start({title: 'New Note', transaction_ticket: ticket_key});
+
             if (typeof(files) != 'undefined') {
+                /*
                 for (var i = 0; i < files.length; i++) {
                     spt.app_busy.show("Uploading ...", files[i]);
                     server.upload_file(files[i], ticket_key);
                 }
-
+                */
                 spt.app_busy.hide()
 
                 values['files'] = files;
@@ -830,7 +839,6 @@ class DiscussionWdg(BaseRefreshWdg):
     def get_display(my):
        
         my.is_refresh = my.kwargs.get("is_refresh")
-        
 
         my.hidden = my.kwargs.get('hidden') == True 
         
@@ -1655,6 +1663,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             # remove any spaces
             my.append_processes = [x.strip() for x in my.append_processes if x]
 
+        my.upload_id = my.kwargs.get("upload_id")
+
     def get_display(my):
 
         my.use_parent = my.kwargs.get("use_parent")
@@ -1868,30 +1878,49 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         attachment_div = DivWdg()
         content_div.add(attachment_div)
         attachment_div.add_class("spt_attachment_top")
-
-        #browse_button = ProdIconButtonWdg("Attach")
-        browse_button = ActionButtonWdg(title="Attach File(s)", tip='Browse for files to attach to this note')
-        attachment_div.add(browse_button)
-        browse_button.add_style("float: left")
-        browse_button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.app_busy.show("Opening File Browser", "");
-        var applet = spt.Applet.get();
-        var files = applet.open_file_browser();
+       
+        from tactic.ui.input import UploadButtonWdg 
+        on_complete = '''
+       
+        var files = spt.html5upload.get_files(); 
+      
+       
         var html = '';
+        var file_names = [];
         for (var i = 0; i < files.length; i++) {
-            html += files[i] + '<br/>';
+            file_names.push(files[i].name);
+            html += files[i].name + '<br/>';
         }
         var top = bvr.src_el.getParent(".spt_attachment_top")
         var list = top.getElement(".spt_attachment_list");
 
         list.innerHTML = html;
-        top.files = files;
+      
+        top.files = file_names;
 
+       
         spt.app_busy.hide();
         '''
-        } )
+        table_upload_id = my.upload_id
+      
+
+        upload_init = ''' 
+        var server = TacticServerStub.get();
+        var ticket_key = server.start({title: 'New Note'});
+        var top = bvr.src_el.getParent(".spt_attachment_top");
+        top.setAttribute('ticket_key', ticket_key);
+        upload_file_kwargs['ticket'] = ticket_key;
+      
+       
+        '''
+
+      
+
+        browse_button = UploadButtonWdg(title="Attach File(s)", tip='Browse for files to attach to this note', on_complete=on_complete,\
+                upload_init=upload_init, multiple='true', upload_id=table_upload_id) 
+        attachment_div.add(browse_button)
+        #browse_button.add_style("float: left")
+
 
         attach_list = DivWdg()
         attach_list.add_style('margin-top: 8px')
