@@ -265,7 +265,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         title = "Mail Server "
         category = "services"
-        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled']
+        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled', 'mail_sender_disabled']
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
@@ -803,7 +803,7 @@ class DbConfigSaveCbk(Command):
 
         web = WebContainer.get_web()
 
-        options = ['server', '_user', '_password', '_port', '_tls_enabled']
+        options = ['server', '_user', '_password', '_port', '_tls_enabled','_sender_disabled']
         for option in options:
             server = web.get_form_value("services/mail%s" %option)
 
