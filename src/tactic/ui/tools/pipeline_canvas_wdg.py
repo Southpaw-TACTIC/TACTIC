@@ -3267,9 +3267,15 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
         var to_node = group.get_node(to);
         var from_node = group.get_node(from);
         var is_dangling = false;
+
+       
         if (!from_node || !to_node) {
             // dangling one
             var connector = new spt.pipeline.Connector();
+            if (to_node)
+                connector.set_to_node(to_node);
+            else
+                connector.set_from_node(from_node);
             is_dangling = true;
         }
         else {
@@ -3335,6 +3341,8 @@ spt.pipeline.export_group = function(group_name) {
     }
 
     var sort_connector_func = function(a,b) {
+        if (!a.get_from_node() || !b.get_from_node())
+            return -1
         var a = a.get_from_node().spt_name;
         var b = b.get_from_node().spt_name;
         return a < b ? -1 : a > b ? 1 : 0;
@@ -3423,6 +3431,7 @@ spt.pipeline.export_group = function(group_name) {
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {
         var connector = connectors[i];
+       
         var from_node_name = connector.get_from_node().spt_name;
         var to_node_name = connector.get_to_node().spt_name;
 

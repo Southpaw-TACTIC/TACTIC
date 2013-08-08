@@ -262,20 +262,21 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         var parts = search_type.split("/");
         var prefix = parts[0];
         var name = parts[1];
-        var node = spt.pipeline.get_node_by_name(name);
-        if (!node) {
-            node = spt.pipeline.get_node_by_name(search_type);
+        if ( top ){
+            var node = spt.pipeline.get_node_by_name(name);
+            if (!node) {
+                node = spt.pipeline.get_node_by_name(search_type);
+            }
+            if (!node) {
+                spt.info("Node [" + search_type + "] does not exist on canvas");
+                // this happens if we are in Manage Search Types page
+                return
+            }
+            else {
+                node.setAttribute("spt_prefix", prefix);
+                spt.pipeline.select_node(node);
+            }
         }
-        if (!node) {
-            spt.info("Node [" + search_type + "] does not exist on canvas");
-            // this happens if we are in Manage Search Types page
-            return
-        }
-        else {
-            node.setAttribute("spt_prefix", prefix);
-            spt.pipeline.select_node(node);
-        }
-
         
         var xml = ''
         try {
@@ -379,7 +380,6 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         var group_name = spt.pipeline.get_current_group();
         var server = TacticServerStub.get();
         var project_code = server.get_project();
-        
         spt.app_busy.show("Saving schema ["+group_name+"]",null);
         var xml = '';
         try {
