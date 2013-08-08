@@ -399,6 +399,9 @@ class RepoBrowserDirListWdg(DirListWdg):
         show_empty_folders = True
         my.mode = ""
 
+        #dynamic = True
+        dynamic = False
+
 
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
@@ -468,7 +471,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             if relative_dir:
                 search.add_op("begin")
                 search.add_filter("relative_dir", "%s" % relative_dir)
-                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+                if not dynamic:
+                    search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
                 search.add_op("or")
 
 
@@ -560,8 +564,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         num_sobjects = {}
 
   
-        # look for folders in the base dir
-        if show_empty_folders and os.path.isdir(base_dir):
+        # show all folders, except the base folder of the project
+        project_code = Project.get_project_code()
+        project_base_dir = "%s/%s" % (asset_base_dir, project_code)
+        if show_empty_folders and os.path.isdir(base_dir) and base_dir != project_base_dir:
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
                 full = "%s/%s/" % (base_dir, dirname)
@@ -609,10 +615,15 @@ class RepoBrowserDirListWdg(DirListWdg):
             full = "%s/" % start_dir
             paths.append(full)
 
+
             search_type = search_type_obj.get_value("search_type")
             project_code = Project.get_project_code()
             search_type = "%s?project=%s" % (search_type, project_code)
             my.search_types_dict[full] = search_type
+
+            if dynamic:
+                continue
+
 
 
             # This walks up the folder structure and sets search codes

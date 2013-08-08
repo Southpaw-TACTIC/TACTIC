@@ -505,6 +505,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def _get_dir_item(my, dir, item, is_open=False):
+
         div = DivWdg()
         div.add_class("hand")
         div.add_class("SPT_DTS")
@@ -554,7 +555,7 @@ class DirListWdg(BaseRefreshWdg):
 
         class_path = Common.get_full_class_name(my)
         div.add_attr("spt_handler_class", class_path)
-        div.add_attr("spt_level", my.level)
+        div.add_attr("spt_level", my.level+1)
 
 
         swap_action = '''
@@ -651,8 +652,6 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_path", "%s/%s" % (dir, item) )
         my.add_dir_behaviors(div, dir, item)
 
-        div.add_style("padding-left: %spx" % (my.level*11))
-
         location = my.kwargs.get("location")
         if location == 'server':
             # to improve speed, skip collecting dir info for each sub dir
@@ -711,9 +710,7 @@ class DirListWdg(BaseRefreshWdg):
 
         item_div.add_styles("margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px")
 
-
-
-        left_padding = my.level*11+15+(11+11)
+        left_padding = my.level*11+15
         item_div.add_style("padding-left: %spx" % left_padding)
         item_div.add_attr("spt_padding_left", left_padding)
         item_div.add_class("hand")
@@ -1162,9 +1159,9 @@ class DirListPathHandler(BaseRefreshWdg):
 
 
 
-            # This use of my.level is the old one and is still needed in
-            # other methods
+            # set the current level
             my.level = level
+            my.handler.level = level
 
 
             # check if this is a directory, which ends in a /
