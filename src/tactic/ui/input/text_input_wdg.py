@@ -454,7 +454,19 @@ class PasswordInputWdg(TextInputWdg):
 
 class LookAheadTextInputWdg(TextInputWdg):
 
-    RESULT_CLICK_EVENT = 'lookahead_click'
+    RESULT_SELECT_EVENT = 'lookahead'
+
+    ARGS_KEYS = TextInputWdg.ARGS_KEYS.copy()
+    ARGS_KEYS.update({
+          'validate': {
+        'description': 'whether to activate the validate action, which defaults to true with value_column set',
+        'type': 'SelectWdg',
+        'order': 10,
+        'values': 'true|false',
+        'category': 'Options'
+    }
+    })
+    
 
     def set_name(my, name):
         my.name = name
@@ -466,6 +478,12 @@ class LookAheadTextInputWdg(TextInputWdg):
 
         my.search_type = my.kwargs.get("search_type")
         filter_search_type = my.kwargs.get("filter_search_type")
+
+        event_name = ''
+        if filter_search_type:
+            base_st = SearchKey.extract_base_search_type(filter_search_type)
+            event_name = '%s|%s'%(my.RESULT_SELECT_EVENT, base_st) 
+
         if not my.search_type:
             my.search_type = 'sthpw/sobject_list'
         column = my.kwargs.get("column")
@@ -474,6 +492,7 @@ class LookAheadTextInputWdg(TextInputWdg):
             column = 'keywords'
 
         value_column = my.kwargs.get("value_column")
+        validate = my.kwargs.get("validate")
         
         my.add_behavior( {
             'type': 'load',
@@ -485,21 +504,37 @@ spt.text_input.index = -1;
 spt.text_input.last_index = 0;
 
 // async validate when value_column is defined
-spt.text_input.async_validate = function(src_el, search_type, column, value, value_column) {
+spt.text_input.async_validate = function(src_el, search_type, column, value, value_column, kwargs) {
     if (!value) 
         return;
-
+    if (!kwargs)  kwargs = {};
+       
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
         if (!data) {
-            src_el.setStyle("background", "#A99");
             hidden_el.value = '';
-            src_el.addClass("spt_invalid");
+            if (kwargs.validate != false) {
+                src_el.setStyle("background", "#A99");
+                src_el.addClass("spt_invalid");
+            }
         }
         else {
             hidden_el.value = data;
-            src_el.removeClass("spt_invalid");
+            if (kwargs.validate != false)
+                src_el.removeClass("spt_invalid");
+        }
+
+       // run client trigger
+       try {
+            var e_name = kwargs.event_name;
+            if (e_name) {
+                bvr.options = {'value': data, 'display': src_el.value};
+                spt.named_events.fire_event(e_name, bvr);
+            }
+        }
+        catch(e) {
+            spt.alert("Error firing event: " + e_name);
         }
 
     }
@@ -516,14 +551,14 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         
     var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
    
-    var kwargs = {
+    var kw = {
         single: true,
         cbjs_action: cbk
     };
     
     var server = TacticServerStub.get();
     try {
-        server.async_eval(expr, kwargs);
+        server.async_eval(expr, kw);
     } catch(e) {
         log.critical(spt.exception.handler(e));
         return;
@@ -540,6 +575,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             'search_type': my.search_type,
             'column': column,
             'value_column': value_column,
+            'event_name': event_name,
+            'validate': validate,
             'cbjs_action': '''
           
             
@@ -558,7 +595,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                 if (bvr.value_column) {
                     if (bvr.src_el.value) {
                         var value = bvr.src_el.value;
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column);
+                        var kwargs = {'validate': bvr.validate, 'event_name': bvr.event_name};
+                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column, kwargs);
                     } else {
                         var hidden_el = top.getElement(".spt_text_value");
                         hidden_el.value ='';
@@ -799,8 +837,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             '''
         } )
 
-        base_st = SearchKey.extract_base_search_type(filter_search_type)
-        event_name = '%s|%s'%(my.RESULT_CLICK_EVENT, base_st) 
+        
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead_click event
         results_div.add_relay_behavior( {
@@ -824,19 +861,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             var hidden_el = top.getElement(".spt_text_value");
             hidden_el.value = value
 
-            // run client trigger
-            try {
-                var e_name = '%s';
-                bvr.options = {'value': value, 'display': display};
-                spt.named_events.fire_event(e_name, bvr);
-            }
-            catch(e) {
-                spt.alert("Error firing event: " + e_name);
-            }
+          
 
           
 
-            '''%event_name
+            '''
         } )
 
         
