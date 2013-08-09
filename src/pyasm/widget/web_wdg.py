@@ -1161,7 +1161,7 @@ class SwapDisplayWdg(HtmlElement):
     def create_swap_title(title, swap, div=None, is_open=False, action_script=None):
         '''creates a title bar with an arrow that toggles display
            @title - the HtmlElement holding the title
-           @swap - the SwapDisplayWdg
+           @swap - the S#wapDisplayWdg
            @div - the container of the content'''
 
 

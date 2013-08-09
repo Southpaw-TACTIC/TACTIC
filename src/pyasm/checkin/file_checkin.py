@@ -214,6 +214,9 @@ class FileCheckin(BaseCheckin):
         '''determine the checkin_type if it is specified to be empty'''
 
         if not my.checkin_type:
+
+            # if checkin_type is not provided, then create a virtual
+            # snapshot to get the naming to getermine the checkin_type
             file_type = 'main'
             virtual_snapshot = Snapshot.create_new()
             virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(file_type)

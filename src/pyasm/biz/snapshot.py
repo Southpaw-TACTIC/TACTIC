@@ -1920,7 +1920,7 @@ class Snapshot(SObject):
         if not sobject:
             return
 
-        # check to see if there is a versionless defined
+        # check to see if there is already versionless defined
         from pyasm.biz import Naming
         has_versionless = Naming.has_versionless(sobject, my, versionless=snapshot_mode)
 
@@ -2083,8 +2083,6 @@ class Snapshot(SObject):
                 file_name = file_naming.get_file_name()
 
 
-
-
                 # this expects the naming expr
                 has_code = sobject.get_value("code", no_exception=True)
 
@@ -2113,7 +2111,6 @@ class Snapshot(SObject):
                     parts.append(subdir)
 
                 dir_naming = "/".join(parts)
-
 
 
             

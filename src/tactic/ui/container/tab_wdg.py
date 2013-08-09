@@ -179,6 +179,13 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
         values = {};
     }
 
+    var top = spt.tab.top;
+
+    var mode = top.getAttribute("spt_tab_mode");
+    if (mode == "hidden") {
+        element_name = "__default__";
+    }
+
     var unique = false;
     if (unique) {
         var header = spt.tab.get_header(element_name);
@@ -190,7 +197,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
     }
 
 
-    var top = spt.tab.top;
     var top_id = top.getAttribute("spt_tab_id");
 
    
@@ -757,6 +763,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         config = my.kwargs.get("config")
 
 
+        my.mode = my.kwargs.get('mode')
+        if not my.mode:
+            my.mode = "default"
+
+
         if my.view and my.view != 'tab' and not config_xml:
             config = None
 
@@ -825,6 +836,8 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         my.unique_id = top.set_unique_id()
         top.set_attr("spt_tab_id", my.unique_id)
 
+        top.set_attr("spt_tab_mode", my.mode)
+
         #top.add_behavior( {
         #'type': 'load',
         #'cbjs_action': my.get_onload_js()
@@ -876,6 +889,10 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             header_div.add_style("padding-left: %s" % offset)
 
 
+        if my.mode == "hidden":
+            header_div.add_style("display: none")
+
+
         header_defs = {}
 
         title_dict = {}
@@ -883,7 +900,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         loaded_dict = {}
         for element_name in element_names:
             attrs = config.get_element_attributes(element_name)
-            # TODO: make the proper title
             title = attrs.get("title")
             if not title:
                 title = Common.get_display_title(element_name)
@@ -975,16 +991,19 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
 
         content_top = DivWdg()
-        # add a div so that it breaks correctly
-        content_top.add("<div style='height:5px'></div>")
 
-        content_top.set_round_corners(5, corners=['TR','BR','BL'])
+
+        # add a div so that it breaks correctly
+        if my.mode == 'default':
+            content_top.add("<div style='height:5px'></div>")
+            content_top.set_round_corners(5, corners=['TR','BR','BL'])
+            palette = content_top.get_palette()
+            border = palette.color("border")
+            content_top.add_style("border: 1px solid %s" % border)
+            content_top.add_style("margin-top: -5px")
 
         inner.add(content_top)
         content_top.add_class("spt_tab_content_top")
-        palette = content_top.get_palette()
-        border = palette.color("border")
-        content_top.add_style("border: 1px solid %s" % border)
         content_top.add_style("min-height: 500px")
 
         width = my.kwargs.get("width")
@@ -993,13 +1012,8 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         else:
             content_top.add_style("min-width: %s" % width)
 
-        content_top.add_style("margin-top: -5px")
-
         content_top.add_class("tab_content_top")
         content_top.add_color("color", "color")
-
-        #bgcolor = my.kwargs.get("background")
-        #content_top.add_gradient("background", "background", -10, 5)
         content_top.add_color("background", "background")
 
         # put in a content box for each element

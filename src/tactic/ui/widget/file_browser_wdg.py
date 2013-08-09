@@ -49,7 +49,7 @@ class DirListWdg(BaseRefreshWdg):
             my.paths = jsonloads(my.paths)
             return my.paths
 
-
+        my.diretory = None
         from pyasm.common.directory import Directory
         if my.paths == []:
             pass
@@ -61,6 +61,9 @@ class DirListWdg(BaseRefreshWdg):
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
         else:
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
+
+        if my.directory:
+            my.paths = my.directory.get_all_paths()
 
         if not my.paths:
             my.paths = []
@@ -285,6 +288,8 @@ class DirListWdg(BaseRefreshWdg):
         my.add_top_behaviors(top)
 
 
+        # FIXME: these break selection in Check-in widget
+        """
         hover = top.get_color("background", -8)
         top.add_relay_behavior( {
             'type': 'mouseover',
@@ -316,6 +321,7 @@ class DirListWdg(BaseRefreshWdg):
             bvr.src_el.setStyle("background", "");
             '''
         } )
+        """
 
 
 
@@ -436,9 +442,24 @@ class DirListWdg(BaseRefreshWdg):
         #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
 
 
+        handler_class = Common.get_full_class_name(my)
+
+        """
+        handler_kwargs = {
+            'base_dir':my.base_dir,
+            'evel':0,
+            'epth':depth,
+            'll_open':all_open,
+            'pen_depth':open_depth,
+            'paths':my.paths
+        }
+        """
+
+
         # Test
         dir_list = DirListPathHandler(
             handler=my,
+            handler_class=handler_class,
             base_dir=my.base_dir,
             level=0,
             depth=depth,
@@ -641,10 +662,10 @@ class DirListWdg(BaseRefreshWdg):
         swap.add_action_script(swap_action)
 
 
-        #hover = div.get_color("background", -5)
-        #div.add_color("background", "background")
-        #div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        #div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+        hover = div.get_color("background", -5)
+        div.add_color("background", "background")
+        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
      
  
 
@@ -718,6 +739,13 @@ class DirListWdg(BaseRefreshWdg):
 
         my.add_file_behaviors(item_div, dirname, basename)
 
+
+        hover = item_div.get_color("background", -5)
+        item_div.add_color("background", "background")
+        item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+     
+ 
 
      
         # my.info is used in SnapshotDirLIstWdg also
@@ -1035,13 +1063,21 @@ class DirListPathHandler(BaseRefreshWdg):
         top.add_style("padding-left: %spx" % padding)
 
         my.handler = my.kwargs.get("handler")
-        if not my.handler:
+        if not my.handler or isinstance(my.handler, basestring):
             handler_class = my.kwargs.get("handler_class")
             handler_kwargs = my.kwargs.get("handler_kwargs")
             print "handler_class: ", handler_class
-            print "handler_kwargs: ", handler_kwargs
             if not handler_kwargs:
                 handler_kwargs = {}
+            if isinstance(handler_kwargs, basestring):
+                handler_kwargs = eval(handler_kwargs)
+
+            base_dir = my.kwargs.get("base_dir")
+            search_types = my.kwargs.get("search_types")
+            handler_kwargs['base_dir'] = base_dir
+            handler_kwargs['search_types'] = search_types
+            
+
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
 
@@ -1050,6 +1086,8 @@ class DirListPathHandler(BaseRefreshWdg):
         assert(base_dir)
 
         my.paths = my.kwargs.get("paths")
+        if isinstance(my.paths, basestring):
+            my.paths = []
         if not my.paths: 
             my.paths = my.handler.get_relative_paths(base_dir)
         my.paths.sort()

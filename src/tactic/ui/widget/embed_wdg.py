@@ -70,6 +70,17 @@ class EmbedWdg(BaseRefreshWdg):
             embed = HtmlElement.embed(src)
         div.add(embed)
 
+        embed.add_behavior( {
+            'type': 'click_up',
+            'src': src,
+            'cbjs_action': '''
+            window.open(bvr.src);
+            '''
+        } )
+        embed.add_class("hand")
+
+
+
 
         #embed.set_box_shadow("1px 1px 1px 1px")
         embed.add_style("height", "100%")

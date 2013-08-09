@@ -78,6 +78,11 @@ class BaseRefreshWdg(Widget):
     def add_behavior(my, behavior):
         my.top.add_behavior(behavior)
 
+
+    def add_color(my, name, palette_key, modifier=0, default=None):
+        my.top.add_color(name, palette_key, modifier=modifier, default=default)
+
+
             
     def get_kwargs(my):
         return my.kwargs

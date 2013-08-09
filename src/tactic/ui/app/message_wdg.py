@@ -516,6 +516,9 @@ class SubscriptionWdg(BaseRefreshWdg):
         top.add(inner)
         my.set_refresh(inner,interval)
 
+        inner.add_style("min-width: 400px")
+        inner.add_style("min-height: 300px")
+
 
         #mode = "all"
         mode = "new"
@@ -846,6 +849,11 @@ class SubscriptionWdg(BaseRefreshWdg):
 class SubscriptionBarWdg(SubscriptionWdg):
 
     ARGS_KEYS = {
+        'mode': {
+            'description': "tab|dialog|popup - determines how the details should open",
+            'type': 'SelectWdg',
+            'values': 'tab|dialog|popup'
+        }
     }
 
     def get_display(my):
@@ -856,18 +864,9 @@ class SubscriptionBarWdg(SubscriptionWdg):
         top.add_style("width: 100px")
         top.add_style("height: 20px")
 
-        inner = DivWdg()
-        top.add(inner)
-        top.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.tab.set_main_body_tab();
-            var class_name = 'tactic.ui.app.SubscriptionWdg';
-            var kwargs = {};
-            spt.tab.add_new("Subscriptions", "Subscriptions", class_name, kwargs);
-            '''
-        } )
         top.add_class("hand")
+
+
 
 
         interval = my.kwargs.get("interval")
@@ -878,7 +877,45 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
         inner = DivWdg()
         top.add(inner)
+
         my.set_refresh(inner,interval)
+
+        mode = my.kwargs.get("mode")
+        if not mode:
+            mode = "tab"
+
+        mode = "dialog"
+        if mode == "dialog":
+            from tactic.ui.container import DialogWdg
+            dialog = DialogWdg(display=False, show_title=False)
+            inner.add(dialog)
+            dialog.set_as_activator(inner)
+            subscription_wdg = SubscriptionWdg()
+            dialog.add(subscription_wdg)
+            subscription_wdg.add_style("width: 400px")
+            subscription_wdg.add_color("background", "background")
+            subscription_wdg.add_style("height: 400px")
+
+        elif mode == "popup":
+            top.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.SubscriptionWdg';
+                var kwargs = {};
+                spt.panel.load_popup("Subscriptions", class_name, kwargs);
+                '''
+            } )
+        else:
+            top.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.tab.set_main_body_tab();
+                var class_name = 'tactic.ui.app.SubscriptionWdg';
+                var kwargs = {};
+                spt.tab.add_new("Subscriptions", "Subscriptions", class_name, kwargs);
+                '''
+            } )
+
 
         color = inner.get_color("border") 
         inner.add_style("border-style: solid")

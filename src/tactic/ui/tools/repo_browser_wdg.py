@@ -80,9 +80,10 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         shelf_wdg = DivWdg()
         left.add(shelf_wdg)
-        shelf_wdg.add_style("padding: 10px")
 
-
+        # TODO: this doesn't work very well. Disabling for now until a
+        # better solution can be found.
+        """
         custom_cbk = {
         'enter': '''
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
@@ -110,9 +111,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
             text.set_value(keywords)
         search_div.add(text)
         search_div.add("<hr/")
+        """
 
 
         if not search_type:
+            shelf_wdg.add_style("padding: 10px")
             button_row = ButtonRowWdg()
             shelf_wdg.add(button_row)
             button_row.add_style("float: right")
@@ -163,15 +166,13 @@ class RepoBrowserWdg(BaseRefreshWdg):
         stats_div.add_style("margin-bottom: 5px")
 
 
-
-
-
         left_inner = DivWdg()
         left.add(left_inner)
         left_inner.add_style("width: 350px")
+        left_inner.add_style("padding: 5px")
         #left_inner.add_style("max-height: 600px")
         left_inner.add_style("min-height: 500px")
-        left_inner.add_style("min-height: 500px")
+        left_inner.add_style("max-height: 1000px")
         left_inner.add_style("min-width: 300px")
         left_inner.add_class("spt_resizable")
         left_inner.add_class("spt_repo_browser_list")
@@ -419,8 +420,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_type = my.kwargs.get("search_type")
 
             if search_types:
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
+                search_types = [SearchType.build_search_type(x) for x in search_types]
                 parent_ids = []
 
 
@@ -430,8 +430,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 parent_ids = [x.get_id() for x in sobjects]
 
             elif search_type:
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (search_type, project_code)]
+                search_types = [SearchType.build_search_type(x) for x in search_types]
 
                 my.sobjects = []
                 parent_ids = []
@@ -440,8 +439,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
                 search_types = [x.get_base_key() for x in search_type_objs]
 
-                project_code = Project.get_project_code()
-                search_types = ["%s?project=%s" % (x, project_code) for x in search_types]
+                search_types = [SearchType.build_search_type(x) for x in search_types]
                 my.sobjects = []
                 parent_ids = []
 
@@ -449,8 +447,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         else:
             search_types = [sobjects[0].get_search_type()]
             parent_ids = [x.get_id() for x in sobjects]
-
-
 
 
 
@@ -485,6 +481,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search.add_join("sthpw/snapshot")
                 search.add_op("begin")
                 search.add_filter("is_latest", True, table="snapshot")
+                #search.add_filter("version", -1, table="snapshot")
                 search.add_filter("file_name", "")
                 search.add_filter("file_name", "NULL", quoted=False, op="is")
                 search.add_op("or")
@@ -493,7 +490,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search.add_filter("type", "main")
 
             file_objects = search.get_sobjects()
-
 
             for file_object in file_objects:
                 relative_dir = file_object.get_value("relative_dir")
@@ -735,7 +731,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         spt.repo_browser.selected = [];
         spt.repo_browser.select = function(file_item) {
             spt.repo_browser.selected.push(file_item);
-            file_item.setStyle("background", "#F00");
+            //file_item.setStyle("background", "#F00");
         }
         spt.repo_browser.clear_selected = function() {
             var selected = spt.repo_browser.selected();
@@ -979,6 +975,9 @@ class RepoBrowserDirListWdg(DirListWdg):
                     }
                     var server = TacticServerStub.get();
                     server.execute_cmd(class_name, kwargs);
+
+                    var dir_top = span.getParent(".spt_repo_browser_dir_top");
+                    //spt.panel.refresh(dir_top);
                 };
                 input.onfocus = function() {
                     this.select();

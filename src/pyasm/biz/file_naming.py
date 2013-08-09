@@ -323,11 +323,26 @@ class FileNaming(object):
 
 
         naming_value = naming.get_value("file_naming")
-        #if my.snapshot.get_value("version") == -1:
-        #    naming_value = "{basefile}.{ext}"
 
         if not naming_value:
-            return ""
+            is_versionless = naming.get_value("latest_versionless") or naming.get_value("current_versionless")
+            if not is_versionless:
+                return ""
+
+            # FIXME:
+            # if this is a versionless naming, then empty uses a default
+            # This is put here because the check-in type is determined by the
+            # naming here.  Normally, this is passed through with "naming_expr"
+            # but in snapshot.py, it is not yet known that this is an "auto"
+            # checkin_type because it is defined in the naming and not the
+            # process
+
+            server = Config.get_value("install", "server")
+            if server:
+                naming_value= "{basefile}_{snapshot.process}_%s.{ext}" % server
+            else:
+                naming_value = "{basefile}_{snapshot.process}.{ext}"
+
         
         # check for manual_version
         manual_version = naming.get_value('manual_version')

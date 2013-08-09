@@ -3875,11 +3875,12 @@ class SObject(object):
 
 
 
-        if my.column_exists("relative_dir"):
-            base_search_type = my.get_base_search_type() 
-            parts = base_search_type.split("/")
-            project_code = Project.get_project_code()
-            defaults['relative_dir'] = '%s/%s' % (project_code, parts[1])
+        base_search_type = my.get_base_search_type() 
+        if base_search_type != "sthpw/file":
+            if my.column_exists("relative_dir"):
+                parts = base_search_type.split("/")
+                project_code = Project.get_project_code()
+                defaults['relative_dir'] = '%s/%s' % (project_code, parts[1])
 
 
         return defaults
@@ -5107,15 +5108,20 @@ class SearchType(SObject):
         return my.base_key
 
 
-    def get_project_code(my):
-        database = my.get_value("database")
-        #database = my.get_data().get("database")
-        if database == "{project}":
-            my.database = Project.get().get_database_name()
-        else:
-            my.database = database
 
-        return my.database
+    def get_project_code(my):
+        # first look at how the search type points to the database
+        database = my.get_value("database")
+        if database == "{project}":
+            # if it is variable, then get the project
+            project_code = Project.get_project_code()
+
+        else:
+            project_code = database
+
+        return project_code
+
+
 
 
 
@@ -5495,8 +5501,20 @@ class SearchType(SObject):
 
     def build_search_type(search_type, project_code=None):
         # do not append project for sthpw/* search_type
-        if search_type.startswith('sthpw/') or not project_code:
+        if search_type.startswith('sthpw/'):
             return search_type
+
+        if search_type.find("?") != -1:
+            if project_code:
+                # Note: should maybe chnage project
+                return search_type
+            else:
+                return search_type
+
+        if not project_code:
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
+
         return "%s?project=%s" % (search_type, project_code)
 
     build_search_type = staticmethod(build_search_type)

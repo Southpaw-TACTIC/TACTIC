@@ -88,9 +88,6 @@ class FileDetailWdg(BaseRefreshWdg):
             embed_wdg.add_style("height: 200px")
 
 
-
-
-
         table.add_row()
 
 
