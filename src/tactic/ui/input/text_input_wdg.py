@@ -492,7 +492,8 @@ class LookAheadTextInputWdg(TextInputWdg):
             column = 'keywords'
 
         value_column = my.kwargs.get("value_column")
-        validate = my.kwargs.get("validate")
+        validate = my.kwargs.get("validate") in ['true', None]
+
         
         my.add_behavior( {
             'type': 'load',
@@ -568,7 +569,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 };
             '''
         } )
-       
         if not my.readonly:
             my.text.add_behavior( {
             'type': 'blur',
@@ -576,13 +576,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             'column': column,
             'value_column': value_column,
             'event_name': event_name,
-            'validate': validate,
+            'validate': str(validate),
             'cbjs_action': '''
           
-            
             // put a delay in here so that a click in the results
             // has time to register
-            
+            var validate = bvr.validate == 'True';
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
@@ -595,7 +594,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                 if (bvr.value_column) {
                     if (bvr.src_el.value) {
                         var value = bvr.src_el.value;
-                        var kwargs = {'validate': bvr.validate, 'event_name': bvr.event_name};
+                        var kwargs = {'validate': validate, 'event_name': bvr.event_name};
                         spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column, kwargs);
                     } else {
                         var hidden_el = top.getElement(".spt_text_value");
