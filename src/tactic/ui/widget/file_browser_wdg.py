@@ -49,7 +49,7 @@ class DirListWdg(BaseRefreshWdg):
             my.paths = jsonloads(my.paths)
             return my.paths
 
-        my.diretory = None
+        my.directory = None
         from pyasm.common.directory import Directory
         if my.paths == []:
             pass

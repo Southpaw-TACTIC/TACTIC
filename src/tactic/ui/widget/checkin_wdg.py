@@ -2650,6 +2650,7 @@ var md5s = {};
 var sizes = {};
 if (js_paths != null) {
     for (var i = 0; i < js_paths.length; i++) {
+
         var js_path = js_paths[i];
         var cache_info = cached_data[js_path];
 
@@ -2675,8 +2676,16 @@ if (js_paths != null) {
 
         // only calculate md5 if the file has been checkedin
         var is_checked_in = false;
+        var js_parts = js_path.split("/");
+        var js_name = js_parts[js_parts.length-1];
         for (var j = 0; j < bvr.source_paths.length; j++) {
-            if (bvr.source_paths[j] == js_path) {
+            // since the source path is often not available, just use
+            // the file name
+            var source_parts = bvr.source_paths[j].split("/");
+            var source_name = source_parts[source_parts.length-1];
+
+            //if (bvr.source_paths[j] == js_path) {
+            if (source_name == js_name) {
                 is_checked_in = true;
                 break;
             }
@@ -2698,10 +2707,8 @@ if (js_paths != null) {
         }
 
         sizes[js_path] = path_info.size;
+
         cache_info['md5'] = md5;
-
-
-
         cache_info['mtime'] = mtime;
         cache_info['size'] = path_info.size;
     }

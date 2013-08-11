@@ -1327,14 +1327,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         #search_types = my.kwargs.get("search_types")
         search_types = my.search_types_dict
-
-        #search_codes = my.kwargs.get("search_codes")
         search_codes = my.search_codes
 
-
-        search_type = search_types.get("%s/" % path)
-
         search_code_list = search_codes.get("%s/" % path)
+        search_type = search_types.get("%s/" % path)
 
 
         if not search_type:
@@ -1663,11 +1659,14 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
         search_type_obj = SearchType.get(search_type)
         layout_mode = search_type_obj.get_value("default_layout", no_exception=True)
-        if layout_mode == "default":
-            layout_mode = ''
-        elif not layout_mode:
+        if layout_mode == '':
+            layout_mode = 'default'
+
+        if layout_mode == 'default' or layout_mode == 'browser':
+            # if browser default is browser, then like we don't want to see
+            # a browser again.
             layout_mode = 'tile'
-        print "layyout: ", layout_mode
+
 
         element_names = None
         if layout_mode == "checkin":

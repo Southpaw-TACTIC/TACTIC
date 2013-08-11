@@ -54,6 +54,19 @@ String.prototype.contains_word = function( word_str )
 var spt = {};  // establish name-space for all new Southpaw Tech TACTIC javascript
 
 
+
+spt.container = {};
+spt.container.container = {};
+
+spt.container.set_value = function(name, value) {
+    spt.container.container[name] = value;
+}
+
+
+spt.container.get_value = function(name) {
+    return spt.container.container[name];
+}
+
 // -------------------------------------------------------------------------------------------------------------------
 //  Browser Information tools ...
 // -------------------------------------------------------------------------------------------------------------------

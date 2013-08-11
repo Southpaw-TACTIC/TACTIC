@@ -2975,6 +2975,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         layout = my.kwargs.get("layout")
+        if not layout or layout == "default":
+            layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
 

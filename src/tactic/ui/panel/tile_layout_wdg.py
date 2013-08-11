@@ -233,6 +233,8 @@ spt.tile_layout.set_scale = function(scale) {
         el.setStyle( "height", size_y);
     }
 
+    spt.container.set_value("tile_layout::scale", scale);
+
 }
 
 
@@ -277,6 +279,16 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
 
 
 
+        div.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+        spt.tile_layout.set_layout(bvr.src_el);
+        var scale = spt.container.get_value("tile_layout::scale");
+        if (scale) {
+            spt.tile_layout.set_scale(scale);
+        }
+        '''
+        } )
 
 
         table = Table()
@@ -435,6 +447,8 @@ class ThumbWdg2(BaseRefreshWdg):
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
+        if not snapshot:
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
         if snapshot:
             file_type = "web"
             icon_path = snapshot.get_web_path_by_type(file_type)

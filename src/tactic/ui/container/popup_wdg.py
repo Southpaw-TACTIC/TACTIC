@@ -99,8 +99,6 @@ class PopupWdg(BaseRefreshWdg):
         else:
             cbjs_action = '%s; spt.popup.close( spt.popup.get_popup( popup ) );'% cbjs_action
 
-        print "cbjs_action: ", cbjs_action
-        
         return cbjs_action
 
     def get_show_script(my):

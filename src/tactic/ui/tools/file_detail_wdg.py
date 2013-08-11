@@ -79,13 +79,34 @@ class FileDetailWdg(BaseRefreshWdg):
                 '''
             } )
             href.add_class("hand")
+
         else:
             embed_wdg = EmbedWdg(src=src)
             td.add(embed_wdg)
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
             embed_wdg.add_style("width: 100%")
-            embed_wdg.add_style("height: 200px")
+            embed_wdg.add_style("height: 240px")
+
+            embed_wdg.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var last_height = spt.container.get_value("last_img_height");
+                if (last_height) {
+                    bvr.src_el.setStyle("height", last_height);
+                }
+                '''
+            } )
+
+
+            embed_wdg.add_behavior( {
+                'type': 'unload',
+                'cbjs_action': '''
+                var last_height = bvr.src_el.getStyle("height");
+                spt.container.set_value("last_img_height", last_height);
+                '''
+            } )
+
 
 
         table.add_row()

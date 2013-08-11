@@ -621,7 +621,8 @@ class IngestUploadCmd(Command):
             search_key = sobject.get_search_key()
 
             # use API
-            server.simple_checkin(search_key, "publish", filename, mode='uploaded')
+            context = "publish/%s" % filename
+            server.simple_checkin(search_key, context, filename, mode='uploaded')
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 

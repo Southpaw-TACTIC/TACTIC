@@ -333,49 +333,32 @@ class File(SObject):
     makedirs = staticmethod(makedirs)
 
 
-    def get_filesystem_name(name):
+    def get_filesystem_name(name, strict=True):
         '''takes a name and converts it to a name that can be saved in
         the filesystem.'''
         filename = name
-        filename = filename.replace(" ", "_")
+
         filename = filename.replace("/", "__")
         filename = filename.replace("|", "__")
         filename = filename.replace(":", "__")
         filename = filename.replace("?", "__")
         filename = filename.replace("=", "__")
 
-        filename_base, ext = os.path.splitext(filename)
-        ext = string.lower(ext)
-        filename = "%s%s" % (filename_base, ext)
+        if strict:
+            filename = filename.replace(" ", "_")
+
+            filename_base, ext = os.path.splitext(filename)
+            ext = string.lower(ext)
+            filename = "%s%s" % (filename_base, ext)
 
         return filename
     get_filesystem_name = staticmethod(get_filesystem_name)
-
-
-
-
 
 
     def process_file_path(file_path):
         '''makes a file path completely kosher with the file system. Only do it on basename or it would remove the : from C:/'''
 
         return Common.get_filesystem_name(file_path)
-
-        '''
-        # change all spaces to underscores
-        file_path = string.replace(file_path, " ", "_")
-        # remove any non-ascii characters
-        s_identity=''.join([chr(i) for i in range(256)])
-        file_path = string.translate( \
-                file_path, s_identity, "!@#$%^&*(){}|<>?;:'")
-
-        # make sure the extension is lowercase
-        file_path_base, ext = os.path.splitext(file_path)
-        ext = string.lower(ext)
-        file_path = "%s%s" % (file_path_base, ext)
-        '''
-
-        return file_path
 
     process_file_path = staticmethod(process_file_path)
 

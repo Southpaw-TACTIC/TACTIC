@@ -29,6 +29,7 @@ class ThumbWdg(BaseTableElementWdg):
     and a web file in the snapshot'''
     SQL_ERROR = None
     DEFAULT_CONTEXT = 'publish'
+    DEFAULT_PROCESS = 'publish'
     ICON_SIZE = 120
     ARGS_KEYS ={
         "script_path": {
@@ -287,6 +288,16 @@ class ThumbWdg(BaseTableElementWdg):
                         if len(my.data) < len(my.sobjects):
                             publish_data =  Snapshot.get_by_sobjects(my.sobjects, my.DEFAULT_CONTEXT, is_latest=True, return_dict=True)
                             my._update_data(publish_data)
+
+                        # verify if we get icon for all
+                        if len(my.data) < len(my.sobjects):
+                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, process=my.DEFAULT_PROCESS, is_latest=True, return_dict=True)
+                            my._update_data(publish_data)
+
+
+
+
+
                     else:
                         my.data = Snapshot.get_by_sobjects(my.sobjects, icon_context, version=my.version, return_dict=True)
 
@@ -294,6 +305,13 @@ class ThumbWdg(BaseTableElementWdg):
                         if len(my.data) < len(my.sobjects):
                             publish_data =  Snapshot.get_by_sobjects(my.sobjects, my.DEFAULT_CONTEXT, version=my.version, return_dict=True)
                             my._update_data(publish_data)
+
+                        # verify if we get icon for all
+                        if len(my.data) < len(my.sobjects):
+                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, process=my.DEFAULT_PROCESS, version=my.version, return_dict=True)
+                            my._update_data(publish_data)
+ 
+
                 except SqlException, e:
                     my.SQL_ERROR = True 
                     DbContainer.abort_thread_sql()

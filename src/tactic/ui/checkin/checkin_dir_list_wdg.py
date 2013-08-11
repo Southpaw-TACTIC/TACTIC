@@ -15,7 +15,7 @@ __all__ = ['CheckinDirListWdg']
 
 from pyasm.common import Environment, Common, FormatValue
 from pyasm.search import SearchKey, Search
-from pyasm.biz import Snapshot
+from pyasm.biz import Snapshot, File
 from pyasm.web import DivWdg, SpanWdg
 from pyasm.widget import IconWdg
 
@@ -88,23 +88,14 @@ class CheckinDirListWdg(DirListWdg):
                 continue
             my.checked_in_paths[source_path] = sobject
 
-            #print "source_path: ", source_path
-            #if not source_path.startswith(my.base_dir):
-            #    basename = os.path.basename(source_path)
-            #    my.checked_in_paths[basename] = sobject
-            #else:
-            #    basename = source_path.replace(my.base_dir, "")
-            #    my.checked_in_paths[basename] = sobject
-            # get the snapshot
-            snapshot = my.snapshots_dict.get(sobject.get_value("snapshot_code"))
-            context = snapshot.get_value("context")
-            parts = context.split("/")
-            if len(parts) > 1:
-                rel = "/".join( parts[1:] )
-                if source_path.endswith(rel):
-                    my.checked_in_paths[rel] = sobject
+            relative_dir = sobject.get_value("relative_dir")
+            file_name = sobject.get_value("file_name")
+            file_name = os.path.basename(source_path)
+            relative_path = "%s/%s" % (relative_dir, file_name)
 
-
+            sandbox_dir = Environment.get_sandbox_dir()
+            sandbox_path = "%s/%s" % (sandbox_dir, relative_path)
+            my.checked_in_paths[sandbox_path] = sobject
 
 
 
@@ -255,15 +246,17 @@ class CheckinDirListWdg(DirListWdg):
 
     def handle_dir_or_item(my, item_div, dirname, basename):
         spath = "%s/%s" % (dirname, basename)
-        md5 = my.md5s.get(spath)
+        fspath = "%s/%s" % (dirname, File.get_filesystem_name(basename))
+
+        md5 = my.md5s.get(fspath)
         changed = False
         context = None
         error_msg = None
         snapshot = None
-        file_obj = my.checked_in_paths.get(spath)
+        file_obj = my.checked_in_paths.get(fspath)
         if not file_obj:
-            if spath.startswith(my.base_dir):
-                rel = spath.replace("%s/" % my.base_dir, "")
+            if fspath.startswith(my.base_dir):
+                rel = fspath.replace("%s/" % my.base_dir, "")
                 file_obj = my.checked_in_paths.get(rel)
 
 

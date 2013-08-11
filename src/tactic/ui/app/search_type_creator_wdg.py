@@ -1675,7 +1675,7 @@ class SearchTypeCreatorCmd(Command):
                 "class_name": class_name,
                 "search_type": search_type,
                 "view": "table",
-                "layout": "fast_table"
+                "layout": "default"
             }
 
         action_options = {}

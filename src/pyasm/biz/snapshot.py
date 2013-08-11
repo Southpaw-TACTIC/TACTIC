@@ -563,10 +563,11 @@ class Snapshot(SObject):
             context = my.get_value("context")
 
             # in auto mode, you can get the path from the context
-            parts = context.split("/")
-            file_name = "/".join(parts[1:])
-            #file_object = Search.get_by_code("sthpw/file", file_code)
-            #file_name = os.path.basename(file_object.get_value("source_path"))
+            #parts = context.split("/")
+            #file_name = "/".join(parts[1:])
+
+            file_object = Search.get_by_code("sthpw/file", file_code)
+            file_name = os.path.basename(file_object.get_value("source_path"))
         else:
             file_name = my._get_file_name(node)
 
@@ -1201,7 +1202,9 @@ class Snapshot(SObject):
 
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
-            level_type=None, level_id=None, level_parent_search=True):
+            level_type=None, level_id=None, level_parent_search=True,
+            process=None
+            ):
         '''General snapshot function
 
         @params
@@ -1280,7 +1283,7 @@ class Snapshot(SObject):
 
     
         # try at the top level
-        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None)
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=None)
         return snapshot
 
     get_snapshot = staticmethod(get_snapshot)
@@ -1290,16 +1293,16 @@ class Snapshot(SObject):
     # DEPRECATED: use get_snapshot()
     def get_by_version(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
-            level_type=None, level_id=None):
+            level_type=None, level_id=None, process=None):
         return Snapshot.get_snapshot(search_type, search_id, context=context,version=version, \
             revision=revision, show_retired=show_retired, use_cache=use_cache, \
-            level_type=level_type, level_id=level_id)
+            level_type=level_type, level_id=level_id, process=None)
     get_by_version = staticmethod(get_by_version)
 
 
     def _get_by_version(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
-            level_type=None, level_id=None):
+            level_type=None, level_id=None, process=None):
         '''General snapshot function
 
         @params
@@ -1354,6 +1357,9 @@ class Snapshot(SObject):
         
         if level_type and level_id:
             key = "%s:%s:%s" % (key, level_type, level_id )
+        if process != None:
+            search.add_filter("process", process)
+            key = '%s:process=%s' %(key, process)
         if context != None:
             search.add_filter("context", context)
             key = '%s:%s' %(key, context)
@@ -1491,7 +1497,7 @@ class Snapshot(SObject):
 
 
 
-    def get_by_sobjects(cls, sobjects, context=None, is_latest=False, is_current=False, show_retired=False, return_dict=False, version=None ):
+    def get_by_sobjects(cls, sobjects, context=None, is_latest=False, is_current=False, show_retired=False, return_dict=False, version=None, process=None ):
         '''NOTE: if context=None, is_latest=True, the result could be more than 1 since there can be multiple 
         is_latest per parent given several contexts. use return_dict=True in that case to get the latest for each subgroup
         of snapshots.
@@ -1545,6 +1551,12 @@ class Snapshot(SObject):
                 search.add_filters("context", context)
             else:
                 search.add_filter("context", context)
+        if process:
+            if type(process) == types.ListType:
+                search.add_filters("process", process)
+            else:
+                search.add_filter("process", process)
+
         if is_latest:
             search.add_filter("is_latest", True)
         if is_current:
