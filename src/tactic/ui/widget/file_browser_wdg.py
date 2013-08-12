@@ -431,13 +431,20 @@ class DirListWdg(BaseRefreshWdg):
             all_open = True
         else:
             all_open = False
-        open_depth = my.kwargs.get("open_depth")
-        if open_depth == None:
-            open_depth = -1
 
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
+        open_depth = my.kwargs.get("open_depth")
+        if open_depth == None:
+            open_depth = 0
+
+        dynamic = my.kwargs.get("dynamic")
+        if dynamic in ["true", True]:
+            dynamic = True
+        else:
+            dynamic = False
+
 
         #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
 
@@ -445,72 +452,50 @@ class DirListWdg(BaseRefreshWdg):
         handler_class = Common.get_full_class_name(my)
 
         """
-        handler_kwargs = {
-            'base_dir':my.base_dir,
-            'evel':0,
-            'epth':depth,
-            'll_open':all_open,
-            'pen_depth':open_depth,
-            'paths':my.paths
+        var class_name = 'tactic.ui.widget.DirListPathHandler';
+        var kwargs = {
+            level: item_top.getAttribute("spt_level"),
+            base_dir: base_dir,
+            depth: 1,
+            all_open: false,
+            handler_class: item_top.getAttribute("spt_handler_class"),
+            handler_kwargs: {
+                base_dir: base_dir,
+            }
+
         }
         """
 
+        handler_kwargs = {
+            'base_dir':my.base_dir,
+            'search_types': my.kwargs.get("search_types"),
+        }
 
         # Test
-        dir_list = DirListPathHandler(
-            handler=my,
-            handler_class=handler_class,
-            base_dir=my.base_dir,
-            level=0,
-            depth=depth,
-            all_open=all_open,
-            open_depth=open_depth,
-            paths=my.paths,
-        )
-        top.add(dir_list)
-
-        """
-        top.add("<hr/>")
-        dir_list = DirListPathHandler(
-            handler=my,
-            base_dir="%s/photos" % my.base_dir,
-            level=1,
-            depth=1,
-            all_open=False,
-            open_depth=open_depth,
-        )
-        top.add(dir_list)
-
-
-        print "---"
-        print "---"
-        print "---"
-        print "---"
-        print "---"
-        top.add("<hr/>")
-        div = DivWdg()
-        top.add(div)
-        print "base_dir: ", my.base_dir
-        div.add_behavior( {
-            'type': 'load',
-            'base_dir': my.base_dir,
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.widget.DirListPathHandler';
-            var kwargs = {
-                level: 4,
-                base_dir: bvr.base_dir,
-                handler_class: 'tactic.ui.tools.RepoBrowserDirListWdg',
-                handler_kwargs: {
-                    base_dir: bvr.base_dir,
-                    search_types:  ['test2/photos']
-                }
-
-            }
-
-            spt.panel.load(bvr.src_el, class_name, kwargs);
-            '''
-        } )
-        """
+        if dynamic:
+            dir_list = DirListPathHandler(
+                level=0,
+                base_dir=my.base_dir,
+                handler_class=handler_class,
+                handler_kwargs=handler_kwargs,
+                depth=0,
+                all_open=False,
+                dynamic=True
+            )
+            top.add(dir_list)
+        else:
+            dir_list = DirListPathHandler(
+                level=0,
+                base_dir=my.base_dir,
+                handler_class=handler_class,
+                handler_kwargs=handler_kwargs,
+                depth=depth,
+                all_open=all_open,
+                open_depth=open_depth,
+                paths=my.paths,
+                dynamic=False
+            )
+            top.add(dir_list)
 
 
 
@@ -567,10 +552,14 @@ class DirListWdg(BaseRefreshWdg):
 
         div.add_attr("spt_dir", path)
 
-        #is_dynamic = my.kwargs.get("dynamic")
-        #if is_dynamic in ['true', True]:
-        #    div.add_class("spt_dynamic")
-        #div.add_class("spt_dynamic")
+        dynamic = my.kwargs.get("dynamic")
+        if dynamic in ["true", True]:
+            dynamic = True
+        else:
+            dynamic = False
+
+        if dynamic:
+            div.add_class("spt_dynamic")
         
 
 
@@ -607,6 +596,7 @@ class DirListWdg(BaseRefreshWdg):
                     base_dir: base_dir,
                     depth: 1,
                     all_open: false,
+                    dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: {
                         base_dir: base_dir,
@@ -1048,7 +1038,7 @@ class DirListPathHandler(BaseRefreshWdg):
     def get_display(my):
         top = my.top
         my.set_as_panel(top)
-        top.add_class("spt_repo_browser_dir_top")
+        top.add_class("spt_dir_list_handler_top")
 
         inner = DivWdg()
         top.add(inner)
@@ -1066,17 +1056,16 @@ class DirListPathHandler(BaseRefreshWdg):
         if not my.handler or isinstance(my.handler, basestring):
             handler_class = my.kwargs.get("handler_class")
             handler_kwargs = my.kwargs.get("handler_kwargs")
-            print "handler_class: ", handler_class
             if not handler_kwargs:
                 handler_kwargs = {}
             if isinstance(handler_kwargs, basestring):
                 handler_kwargs = eval(handler_kwargs)
 
-            base_dir = my.kwargs.get("base_dir")
-            search_types = my.kwargs.get("search_types")
-            handler_kwargs['base_dir'] = base_dir
-            handler_kwargs['search_types'] = search_types
-            
+            handler_kwargs['all_open'] = my.kwargs.get("all_open")
+            handler_kwargs['depth'] = my.kwargs.get("depth")
+            handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
+            handler_kwargs['search_type'] = my.kwargs.get("search_type")
+            handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
 
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
@@ -1119,7 +1108,7 @@ class DirListPathHandler(BaseRefreshWdg):
             open_depth = -1
 
 
-        my.handle_paths(my.paths, base_dir, top, depth=depth, all_open=all_open, open_depth=open_depth)
+        my.handle_paths(my.paths, base_dir, inner, depth=depth, all_open=all_open, open_depth=open_depth)
 
         if my.kwargs.get("is_refresh") == 'true':
             return inner

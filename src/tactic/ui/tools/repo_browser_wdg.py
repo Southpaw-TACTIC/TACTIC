@@ -18,7 +18,7 @@ from pyasm.common import Environment
 
 from pyasm.web import DivWdg, WebContainer, Table
 from pyasm.biz import Snapshot, Project
-from pyasm.search import Search, SearchType, SearchKey
+from pyasm.search import Search, SearchType, SearchKey, FileUndo
 from pyasm.widget import IconWdg, CheckboxWdg
 from pyasm.command import Command
 
@@ -29,7 +29,7 @@ from tactic.ui.container import ResizableTableWdg
 from tactic.ui.widget import DirListWdg, IconButtonWdg, ButtonNewWdg, ButtonRowWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
-import os
+import os, shutil
 
 
 class RepoBrowserWdg(BaseRefreshWdg):
@@ -145,7 +145,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             """
 
 
-            button = ButtonNewWdg(title="Options", icon=IconWdg.ADD, show_arrow=True)
+            button = ButtonNewWdg(title="Add", icon=IconWdg.ADD, show_arrow=True)
             button_row.add( button )
             menu = my.get_add_menu()
             menus = [menu.get_data()]
@@ -200,7 +200,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
-            open_depth = 1
+            open_depth = 0
         else:
             open_depth = int(open_depth)
 
@@ -213,6 +213,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         keywords = my.kwargs.get("keywords")
 
+        dynamic = True
+
         #dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
@@ -220,7 +222,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 show_base_dir=True,
                 open_depth=open_depth,
                 search_types=search_types,
-                dynamic=True,
+                dynamic=dynamic,
                 keywords=keywords,
         )
         content_div.add(dir_list)
@@ -383,6 +385,14 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
+
+        #dynamic = True
+        my.dynamic = my.kwargs.get("dynamic")
+        if my.dynamic in ['true', True]:
+            my.dynamic = True
+        else:
+            my.dynamic = False
+
         super(RepoBrowserDirListWdg, my).init()
 
 
@@ -394,15 +404,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show files
         # show all files types
         # show totals?
-        show_files = True
+        my.show_files = True
         show_latest_only = True
         show_main_only = True
         show_empty_folders = True
-        my.mode = ""
-
-        #dynamic = True
-        dynamic = False
-
 
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
@@ -458,7 +463,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         # Not this shold be used sparingly because it can find lots of
         # sobjects
-        if my.mode not in ["", "main","all"] or show_files:
+        if my.show_files:
 
             search = Search("sthpw/file")
 
@@ -467,7 +472,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             if relative_dir:
                 search.add_op("begin")
                 search.add_filter("relative_dir", "%s" % relative_dir)
-                if not dynamic:
+                if not my.dynamic:
                     search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
                 search.add_op("or")
 
@@ -486,7 +491,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search.add_filter("file_name", "NULL", quoted=False, op="is")
                 search.add_op("or")
 
-            if my.mode == 'main' or show_main_only:
+            if show_main_only:
                 search.add_filter("type", "main")
 
             file_objects = search.get_sobjects()
@@ -574,15 +579,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-        # FIXME: The logic here makes huge assumptions
-
-
         # get all the directories
         for search_type in search_types:
             #search = Search(search_type)
@@ -617,7 +613,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_type = "%s?project=%s" % (search_type, project_code)
             my.search_types_dict[full] = search_type
 
-            if dynamic:
+            if my.dynamic:
                 continue
 
 
@@ -887,7 +883,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         } )
 
 
-
         menu_item = MenuItem(type='action', label='Delete Item')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -916,9 +911,14 @@ class RepoBrowserDirListWdg(DirListWdg):
             var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
             '''
         } )
- 
+
 
         if mode == "freeform":
+
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+
+
             menu_item = MenuItem(type='action', label='New Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
@@ -941,11 +941,15 @@ class RepoBrowserDirListWdg(DirListWdg):
                 div.innerHTML = html;
 
                 var content = activator.getNext(".spt_dir_content");
+                dyn_content = content.getElement(".spt_dir_list_handler_top");
+                if (dyn_content) {
+                    content = dyn_content;
+                }
+                var children = content.getElements(".spt_dir");
                 if (content.childNodes.length)
                     div.inject(content.childNodes[0], "before");
                 else
                     div.inject(content);
-
 
                 var padding = activator.getStyle("padding-left");
                 padding = parseInt( padding.replace("px", "") ) + 11;
@@ -976,8 +980,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     var server = TacticServerStub.get();
                     server.execute_cmd(class_name, kwargs);
 
-                    var dir_top = span.getParent(".spt_repo_browser_dir_top");
-                    //spt.panel.refresh(dir_top);
+                    var dir_top = span.getParent(".spt_dir_list_handler_top");
+                    spt.panel.refresh(dir_top);
                 };
                 input.onfocus = function() {
                     this.select();
@@ -1010,17 +1014,20 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var input = $(document.createElement("input"));
                 input.setAttribute("type", "text");
 
+                var div = activator;
+
                 var el = activator.getElement(".spt_dir_value");
                 input.replaces(el);
 
                 var parts = relative_dir.split("/");
                 input.value = parts[parts.length-1];
-                input.select();
-
+                var base_relative_dir = parts.slice(0, parts.length-1).join("/");
                 input.onblur = function() {
                     var value = this.value;
+
                     if (!value) {
-                        div.destroy();
+                        alert("no value");
+                        return;
                     }
 
                     var span = $(document.createElement("span"));
@@ -1028,29 +1035,25 @@ class RepoBrowserDirListWdg(DirListWdg):
                     span.replaces(input);
                     span.addClass("spt_dir_value");
 
-                    var new_relative_dir = relative_dir + "/" + value;
+                    var new_relative_dir = base_relative_dir + "/" + value;
                     div.setAttribute("spt_relative_dir", new_relative_dir);
-                    div.addClass("spt_dir_item");
+
 
                     var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
                     var kwargs = {
                         search_type: bvr.search_type,
-                        action: 'create_folder',
-                        relative_dir: new_relative_dir
+                        action: 'rename_folder',
+                        old_relative_dir: relative_dir,
+                        new_relative_dir: new_relative_dir
                     }
                     var server = TacticServerStub.get();
                     server.execute_cmd(class_name, kwargs);
+
+                    var dir_top = span.getParent(".spt_dir_list_handler_top");
+                    spt.panel.refresh(dir_top);
+
+
                 };
-
-
-                var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
-                var kwargs = {
-                    search_type: bvr.search_type,
-                    action: 'rename_folder',
-                    relative_dir: relative_dir
-                }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs);
 
                 '''
             } )
@@ -1247,6 +1250,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         if not search_type:
             return
 
+
+        # FIXME: TEST TEST
         if search_type.startswith("test2/sequence") or search_type.startswith("test2/shot"):
             SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
         else:
@@ -1340,6 +1345,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         else:
             icon_string = None
 
+        # TODO: for now, disable this
+        icon_string = None
+
+
         div = DivWdg()
         div.add_style("position: relative")
 
@@ -1375,12 +1384,11 @@ class RepoBrowserActionCmd(Command):
                 return
 
             full_dir = "%s/%s" % (base_dir, relative_dir)
-            print "full: ", full_dir
 
             if os.path.exists(full_dir):
                 raise Exception("Directory [%s] already exists" % relative_dir)
 
-            os.makedirs(full_dir)
+            FileUndo.mkdir(full_dir)
 
         elif action == "delete_folder":
 
@@ -1388,17 +1396,34 @@ class RepoBrowserActionCmd(Command):
             if not relative_dir:
                 return
 
+            # this will give an error if the directory is not empty
             full_dir = "%s/%s" % (base_dir, relative_dir)
             os.rmdir(full_dir)
 
 
         elif action == "rename_folder":
 
-            relative_dir = my.kwargs.get("relative_dir")
-            if not relative_dir:
+            old_relative_dir = my.kwargs.get("old_relative_dir")
+            if not old_relative_dir:
+                return
+            new_relative_dir = my.kwargs.get("new_relative_dir")
+            if not new_relative_dir:
                 return
 
-            print "OMG!!!"
+            old_dir = "%s/%s" % (base_dir, old_relative_dir)
+            new_dir = "%s/%s" % (base_dir, new_relative_dir)
+
+            search = Search("sthpw/file")
+            search.add_filter("relative_dir", old_relative_dir)
+            files = search.get_sobjects()
+
+            print "old_dir: ", old_dir
+            print "new_dir: ", new_dir
+            for file in files:
+                file.set_value("relative_dir", new_relative_dir)
+                file.commit()
+            FileUndo.move(old_dir, new_dir)
+
 
             
 
@@ -1597,9 +1622,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         from tactic.ui.container import TabWdg
         tab = TabWdg(config_xml=config, selected=selected, show_remove=False, show_add=False, tab_offset=10)
         div.add(tab)
-
-
-
 
 
         return div

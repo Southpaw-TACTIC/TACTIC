@@ -51,6 +51,9 @@ class SObjectValueException(SObjectException):
 gl = globals()
 lc = locals()
 
+
+
+
 class Search(Base):
     '''Search engine using named search types.  The search returns a list of sobjects, which are the base class for entities retrieved from the database.
 

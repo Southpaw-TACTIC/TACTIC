@@ -112,11 +112,15 @@ class ProjectConfigWdg(BaseRefreshWdg):
         </tab>
         </config>
         '''
-        tab = TabWdg(show_add=False, config_xml=config_xml)
+
+        div = DivWdg()
+        tab = TabWdg(show_add=False, config_xml=config_xml, tab_offset=5)
+        div.add(tab)
+        div.add_style("margin: 0px -6px -6px -6px")
 
 
         panel = {
-            'widget': tab,
+            'widget': div,
             #'title': 'Data',
             'title': None,
             'width': '100%',

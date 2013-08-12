@@ -580,6 +580,27 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         div.add("Choose a directory naming convention: ")
         div.add("<br/>")
 
+
+        # Freeform Folder and Freeform File name
+
+        # This is too unclear and unrelated to what people see
+        """
+        expr = "/{sobject.relative_dir}"
+        div.add( my.get_naming_item_wdg(expr, "Freeform Folder and File Name") )
+        div.add("<blockquote>Users can name folders and files freely. Examples uses would be for reference images or photos.</blockquote>")
+
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.category}/{sobject.code}"
+        div.add( my.get_naming_item_wdg(expr, "Strict Folder and Freeform File Name") )
+        div.add("<blockquote>Users can name files freely, but folders are strictly enforced.  Examples uses are work areas to manage project or job files.</blockquote>")
+
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
+        div.add( my.get_naming_item_wdg(expr, "Strict Folder and File Name") )
+        div.add("<blockquote>Both folders and files will get strictly renamed according to the naming convention up check-in.  Example uses are delieverable files.</blockquote>")
+        """
+
+
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
         div.add( my.get_naming_item_wdg(expr, "Default") )
 
@@ -669,6 +690,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         tr = table.add_row()
+        #tr.add_style("display: none")
         parts = new_expr.split("/")
         for item in parts:
             item = item.replace("!", "/")
@@ -679,6 +701,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         parts = expr.split("/")
         tr = table.add_row()
+        #tr.add_style("display: none")
         tr.add_style("opacity: 0.5")
         for item in parts:
             td = table.add_cell(item)
