@@ -152,6 +152,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         if my.mode == 'pipeline':
             search.add_filter("process", my.process)
         else:
+            search.add_op('begin')
             search.add_filter("event", "%%|%s" % my.search_type, op='like')
             search.add_filter("search_type", my.search_type)
             search.add_op("or")
@@ -179,7 +180,10 @@ class TriggerToolWdg(BaseRefreshWdg):
         if my.mode == 'pipeline':
             search.add_filter("process", my.process)
         else:
+            search.add_op('begin')
+            search.add_filter("event", "%%|%s" % my.search_type, op='like')
             search.add_filter("search_type", my.search_type)
+            search.add_op("or")
         search.add_project_filter()
         triggers = search.get_sobjects()
         for trigger in triggers:
@@ -1762,11 +1766,10 @@ class NotificationTriggerEditCbk(Command):
         description = my.kwargs.get('description')
 
         event = my.kwargs.get("event")
+
         if event == '__custom__':
             event = my.kwargs.get("custom_event")
         assert event
-
-
         subject = my.kwargs.get("subject")
         message = my.kwargs.get("body")
         mail_to = my.kwargs.get("mail_to")

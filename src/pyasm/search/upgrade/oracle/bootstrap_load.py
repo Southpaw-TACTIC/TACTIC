@@ -82,6 +82,18 @@ def import_schema(plugin_code):
     installer = PluginInstaller(base_dir=base_dir, manifest=xml.to_string() )
     installer.execute()
 
+def upgrade():
+    print "Running upgrade on 'sthpw' database"
+
+    install_dir = Environment.get_install_dir()
+    python = Config.get_value("services", "python")
+    if not python:
+        python = "python"
+
+    cmd = "%s \"%s/src/bin/upgrade_db.py\" -f -y -p sthpw" % (python, install_dir)
+    print cmd
+
+    os.system(cmd)
 
 if __name__ == '__main__':
 
@@ -91,6 +103,6 @@ if __name__ == '__main__':
     #import_schema("config_schema")
 
     # upgrade the database using the upgrade script
-
+    upgrade()
 
 

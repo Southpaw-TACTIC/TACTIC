@@ -650,12 +650,11 @@ TacticServerStub = function() {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
         if (!kwargs) {
-            kwargs = {version: -1, file_type: 'main', to_dir: null, to_sandbox_dir: true, mode: 'download'};
+            kwargs = {version: -1, file_type: 'main', to_dir: null, to_sandbox_dir: true, mode: 'download', __empty__:true};
         }
         else if (!kwargs.to_dir && kwargs.to_sandbox_dir==null) {
             kwargs.to_sandbox_dir = true;
         }
-
 
      
         if (kwargs.mode in {'download':'', 'copy':''} == false) {
@@ -723,6 +722,7 @@ TacticServerStub = function() {
         catch(e) {
            alert(spt.exception.handler(e));
         }
+        return to_paths
    
     }
 

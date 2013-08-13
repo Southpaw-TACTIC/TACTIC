@@ -1144,6 +1144,15 @@ class ClientApiTest(unittest.TestCase):
 
         os.unlink(path)
 
+
+        paths = my.server.checkout(search_key, context, file_type=file_type, mode='download')
+        my.assertEquals(1, len(paths))
+        path = paths[0]
+        my.assertEquals('./miso_ramen_test_checkin_v004.jpg', path)
+        my.assertEquals(True, os.path.exists(path) )
+        os.unlink(path)
+
+
         return
 
 

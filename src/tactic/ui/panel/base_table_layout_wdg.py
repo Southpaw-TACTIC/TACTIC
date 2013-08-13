@@ -304,6 +304,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_table(my):
         return my.table
 
+    def get_view(my):
+        return my.view
+
     def set_items_found(my, number):
         my.items_found = number
 

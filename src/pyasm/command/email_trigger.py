@@ -623,12 +623,12 @@ class EmailTriggerTestCmd(Command):
         
         my.kwargs = kwargs
         my.sender_email = my.kwargs.get('sender_email')
-        
+
         if not my.sender_email:
             raise TacticException("Sender's email is empty.")
         my.recipient_emails = my.kwargs.get('recipient_emails')
         message = my.kwargs.get('msg')
-       
+
         is_uni = False
         st = 'plain'
         charset = 'us-ascii'
@@ -637,13 +637,13 @@ class EmailTriggerTestCmd(Command):
         if new_subject:
             subject = new_subject
 
-        msg = MIMEText(message, _subtype=st, _charset=charset)
         if type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
             is_uni = True
-        
+
+        msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
         msg.add_header('From', my.sender_email)
         msg.add_header('Reply-To', my.sender_email)
@@ -790,7 +790,7 @@ class EmailTriggerTest(EmailTrigger2):
                 cls.add_email(total_bcc_emails, email)
         total_cc_emails = total_cc_emails - to_emails
         total_bcc_emails = total_bcc_emails - to_emails - total_cc_emails
-
+        """
         charset = 'us-ascii'
         if type(message) == types.UnicodeType:
             message = Common.process_unicode_string(message) 
@@ -816,10 +816,10 @@ class EmailTriggerTest(EmailTrigger2):
         msg.add_header('To', ", ".join(to_emails))
         msg.add_header('Cc', ", ".join(cc_emails))
         '''
-
+        """
         recipient_emails =  total_bcc_emails|total_cc_emails|to_emails|sender
         email = EmailTriggerTestCmd(sender_email=user_email, \
-                recipient_emails=recipient_emails, msg=msg.as_string())
+                recipient_emails=recipient_emails, msg=message)
         email.execute()
 
     send = classmethod(send)

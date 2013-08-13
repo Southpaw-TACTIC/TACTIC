@@ -233,6 +233,9 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         options = ['default_project']
 
+        if 'tmp_dir' not in options:
+            options.append('tmp_dir')
+
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
@@ -254,6 +257,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         else:
             options.append('linux_server_handoff_dir')
 
+
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
@@ -261,7 +265,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         title = "Mail Server "
         category = "services"
-        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled']
+        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled', 'mail_sender_disabled']
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
@@ -655,11 +659,17 @@ class DbConfigSaveCbk(Command):
         web = WebContainer.get_web()
 
         default_project = web.get_form_value("install/default_project")
+        tmp_dir = web.get_form_value("install/tmp_dir")
+        if tmp_dir:
+            Config.set_value("install", "tmp_dir", tmp_dir)
+        else:
+            Config.set_value("install", "tmp_dir", '')
 
         if default_project:
             Config.set_value("install", "default_project", default_project)
         else:
             Config.remove("install", "default_project")
+
 
 
 
@@ -754,24 +764,28 @@ class DbConfigSaveCbk(Command):
     def configure_asset_dir(my):
 
         web = WebContainer.get_web()
+        keys = web.get_form_keys()
+        option_list = []
+        for key in keys:
+            if key.startswith('checkin/'):
+                key = key.replace('checkin/','')
+                option_list.append(key)
+  
         asset_dir = web.get_form_value("checkin/asset_base_dir")
         if asset_dir != None:
             if asset_dir and not os.path.exists(asset_dir):
                 os.makedirs(asset_dir)
             Config.set_value("checkin", "asset_base_dir", asset_dir)
 
-        option_list=my.kwargs.get('checkin_options')
         if 'asset_base_dir' in option_list:
             option_list.remove('asset_base_dir')
-            
+
         for item_dir in option_list:
             item_in_list=web.get_form_value('checkin/%s'%item_dir)
             if item_in_list:
                 Config.set_value("checkin", '%s'%item_dir, item_in_list)
             else:
                 Config.set_value("checkin", '%s'%item_dir, "")
-            #Config.remove("checkin", "linux_server_handoff_dir")
-
 
     def configure_palette(my):
 
@@ -789,7 +803,7 @@ class DbConfigSaveCbk(Command):
 
         web = WebContainer.get_web()
 
-        options = ['server', '_user', '_password', '_port', '_tls_enabled']
+        options = ['server', '_user', '_password', '_port', '_tls_enabled','_sender_disabled']
         for option in options:
             server = web.get_form_value("services/mail%s" %option)
 
