@@ -230,13 +230,6 @@ class PluginWdg(BaseRefreshWdg):
             content_div.add_style("font-style: italic")
 
 
-        show_active_only = my.kwargs.get("show_active_only")
-        if show_active_only in [True, 'true']:
-            show_active_only = True
-        else:
-            show_active_only = False
-
-
         for dirname in plugin_dirnames:
 
             parts = dirname.split("/")
@@ -283,7 +276,8 @@ class PluginWdg(BaseRefreshWdg):
 
                     # fill it in
                     icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
-                    icon.add_style("margin-left: -5px")
+                    icon.add_style("margin-top: -2px")
+                    icon.add_style("margin-left: -8px")
 
                     folder_header = DivWdg()
                     folder_content = DivWdg()
@@ -379,27 +373,11 @@ class PluginWdg(BaseRefreshWdg):
             icon.add_style("float: left")
             plugin_div.add(icon)
 
-
-
             if is_active:
                 icon = IconWdg("Active in project", IconWdg.CHECK)
-
-                if show_active_only:
-                    swap.set_on(True)
-                    folder_content.add_style("display", "")
-                    #folder_header.add_style("display: none")
-                    folder_header.add_style("opacity: 0.3")
-
-
             else:
                 icon = IconWdg("Not Active in project", IconWdg.DELETE)
                 icon.add_style("opacity: 0.2")
-
-                if show_active_only:
-                    plugin_div.add_style("display: none")
-                    folder_header.add_style("opacity: 0.3")
-
-
             icon.add_style("margin-right: -3px")
 
             plugin_div.add_attr("title", description)
@@ -527,8 +505,9 @@ class PluginWdg(BaseRefreshWdg):
 
             var dirname = activator.getAttribute("spt_plugin_dirname");
 
-            if (!confirm("Remove plugin ["+dirname+"] from installation")) {
-                return
+            if (!confirm("Uninstall plugin '"+dirname+"'?")) {
+                spt.api.app_busy_hide();
+                return;
             }
 
             var kwargs = {
@@ -539,6 +518,8 @@ class PluginWdg(BaseRefreshWdg):
 
             var server = TacticServerStub.get();
             server.execute_cmd(class_name, kwargs);
+
+            spt.notify.show_message("Plugin '" + dirname + "' uninstalled.");
 
             var top = activator.getParent(".spt_plugin_top");
             //top.setStyle("border", "solid 5px blue");
@@ -572,9 +553,6 @@ class PluginEditWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 10px 15px 10px 15px")
         title_wdg.add_gradient("background", "background", 0, -10)
 
-
-
-
         my.mode = my.kwargs.get("mode")
         if my.mode != 'insert':
 
@@ -597,7 +575,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-            top.add("<br/>")
+            #top.add("<br/>")
 
             manifest = Xml()
             manifest.read_file(manifest_path)
@@ -630,10 +608,10 @@ class PluginEditWdg(BaseRefreshWdg):
 
             title_wdg.add("Create New Plugin")
 
-
         from tactic.ui.container import TabWdg
 
         selected = my.kwargs.get("selected")
+        print "\n\n%s\n\n" %selected
         if not selected:
             selected = "info"
 
@@ -882,7 +860,8 @@ class PluginEditWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_plugin_edit");
-                spt.panel.refresh(top)
+                top.setAttribute("spt_selected", "files");
+                spt.panel.refresh(top);
 
                 '''
             } )
@@ -909,6 +888,7 @@ class PluginEditWdg(BaseRefreshWdg):
                     spt.alert(spt.exception.handler(e));
                 }
                 var top = bvr.src_el.getParent(".spt_plugin_edit");
+                top.setAttribute("spt_selected", "files");
                 spt.panel.refresh(top)
 
                 '''
@@ -921,7 +901,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'dirname': dirname, 
                 'cbjs_action': '''
-                // create a new file
+                // create a new folder
                 var class_name = 'tactic.ui.app.PluginDirListActionCbk';
                 var kwargs = {
                     'action': 'new_folder',
@@ -935,15 +915,11 @@ class PluginEditWdg(BaseRefreshWdg):
                 }
 
                 var top = bvr.src_el.getParent(".spt_plugin_edit");
+                top.setAttribute("spt_selected", "files");
                 spt.panel.refresh(top)
 
                 '''
             } )
-
-
-
-
-
 
             from tactic.ui.input import UploadButtonWdg
             upload_button = UploadButtonWdg(name="Upload")
@@ -973,14 +949,15 @@ class PluginEditWdg(BaseRefreshWdg):
                 }
                 try {
                     server.execute_cmd(class_name, kwargs);
+                    spt.notify.show_message(file_name + "added to plugin.");
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
 
                 var top = bvr.src_el.getParent(".spt_plugin_edit");
+                top.setAttribute("spt_selected", "files");
                 spt.panel.refresh(top);
 
-                spt.notify.show_message(file_name);
                 spt.app_busy.hide();
 
                 ''',
@@ -1126,6 +1103,7 @@ class PluginEditWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
+            top.setAttribute("spt_selected", "manifest");
             spt.panel.refresh(top);
 
             spt.api.app_busy_hide();
@@ -1326,6 +1304,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 }
 
                 var top = bvr.src_el.getParent(".spt_plugin_edit");
+                top.setAttribute("spt_selected", "documentation")
                 spt.panel.refresh(top)
 
                 '''
@@ -1396,10 +1375,14 @@ class PluginEditWdg(BaseRefreshWdg):
             plugin_template: plugin_template,
             register: register,
         };
-
-        server.execute_cmd(class_name, kwargs);
-
-        var top = bvr.src_el.getParent(".spt_plugin_top");
+        try {
+            server.execute_cmd(class_name, kwargs);
+            var top = bvr.src_el.getParent(".spt_plugin_top");
+            spt.notify.show_message('Plugin "' + title + '" installed.')
+        }
+        catch(err) {
+            alert(err.message);
+        }
         spt.panel.refresh(top);
 
         spt.api.app_busy_hide();
@@ -1488,9 +1471,11 @@ class PluginEditWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_plugin_top");
             top.setAttribute("spt_plugin_dir", bvr.plugin_dir);
+            top.setAttribute("spt_selected", "info")
             spt.panel.refresh(top);
 
             spt.api.app_busy_hide();
+            spt.notify.show_message('plugin "'+ bvr.plugin_dir +'" activated');
 
             '''
             })
@@ -1531,6 +1516,7 @@ class PluginEditWdg(BaseRefreshWdg):
             } 
 
             var top = bvr.src_el.getParent(".spt_plugin_top");
+            spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully removed')
             spt.panel.refresh(top);
 
             spt.api.app_busy_hide();
@@ -1931,7 +1917,7 @@ class PluginDirListWdg(DirListWdg):
                 'dirname': dirname,
                 'basename': basename
             }
-            if (!confirm("Delete [" + basename + "]") ) {
+            if (!confirm('Delete "' + basename + '"?') ) {
                 return;
             }
             var class_name = 'tactic.ui.app.PluginDirListActionCbk';
@@ -1939,6 +1925,8 @@ class PluginDirListWdg(DirListWdg):
             server.execute_cmd(class_name, kwargs);
 
             var top = activator.getParent(".spt_plugin_edit");
+            top.setAttribute("spt_selected", "files");
+
             spt.panel.refresh(top);
 
             '''
@@ -2173,7 +2161,7 @@ class PluginInstallWdg(BaseRefreshWdg):
 
         tr, td = table.add_row_cell()
         install_button = ActionButtonWdg(title="Install")
-        td.add(install_button)
+        td.add(install_button)  
         install_button.add_style("margin: 10px")
         install_button.add_style("float: right")
         install_button.add_behavior( {
@@ -2267,6 +2255,7 @@ class PluginInstallWdg(BaseRefreshWdg):
                 }
                 server.execute_cmd(class_name, kwargs);
 
+                spt.notify.show_message("Plugin successfully added.");
 
             } catch(e) {
                 alert("Cannot install plugin: " + file_name);
@@ -2275,7 +2264,6 @@ class PluginInstallWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_plugin_top");
             spt.panel.refresh(top);
 
-            spt.notify.show_message(file_name);
             spt.app_busy.hide();
 
         ''')
@@ -2396,7 +2384,7 @@ class PluginDirListActionCbk(Command):
         if action == 'new_file':
             basename = my.kwargs.get("basename")
             if not basename:
-                basename = "doc.html"
+                basename = "new_file"
 
             file_path = "%s/%s" % (plugin_dir, basename)
 
@@ -2406,17 +2394,29 @@ class PluginDirListActionCbk(Command):
             if not os.path.exists(file_path):
                 f = open(file_path, 'w')
                 f.close()
+            else:
+                i = 2
+                while os.path.exists(file_path + str(i) + ".html"):
+                    i += 1
+
+                f = open(file_path + str(i) + ".html", 'w')
+                f.close()
 
         elif action == 'new_folder':
             basename = "new_folder"
             file_path = "%s/%s" % (plugin_dir, basename)
-
 
             if not file_path.startswith(plugin_base_dir):
                 raise Exception("Cannot alter file outside of plugin")
 
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
+            else:            
+                i = 2
+                while os.path.exists(file_path + str(i)):
+                    i += 1
+
+                os.makedirs(file_path + str(i))
                 
         elif action == 'rename':
             basename = my.kwargs.get("basename")
@@ -2454,10 +2454,9 @@ class PluginDirListActionCbk(Command):
 
             shutil.move(upload_path, to_path)
 
-            if to_path.endswith(".zip"):
-                from pyasm.common import ZipUtil
-                zip_util = ZipUtil()
-                zip_util.extract(to_path)
+            from pyasm.common import ZipUtil
+            zip_util = ZipUtil()
+            zip_util.extract(cls, to_path)
 
 
 
@@ -2534,9 +2533,6 @@ class PluginRemoveCbk(Command):
         zip_path = "%s.zip" % plugin_dir
         if os.path.exists(zip_path):
             os.unlink(zip_path)
-
-
-
 
 class PluginDownloadCbk(Command):
 
