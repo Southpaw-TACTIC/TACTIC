@@ -661,8 +661,46 @@ class TacticServerStub(object):
 
 
 
-    def log_message(my, key, message=None, status=None, category="default"):
+    def log_message(my, key, message, status="", category="default"):
+        '''API Function: log_message(key, message, status=None, category="default")
+
+        Log a message which will be seen by all who are subscribed to
+        the message "key".  Messages are often JSON strings of data.
+
+        @params
+        key - unique key for this message
+        message - the message to be sent
+
+        @keyparam
+        status - arbitrary status for this message
+        category - value to categorize this message
+
+        @return
+        string - "OK"
+        '''
         return my.server.log_message(my.ticket, key, message, status, category)
+
+
+    def subscribe(my, key, category="default"):
+        '''API Function: subscribe(key, category="default")
+
+        Allow a user to subscribe to this message key.  All messages
+        belonging to the corresponding key will be available to users
+        subscribed to it.
+
+        @params
+        key - unique key for this message
+
+        @keyparam
+        category - value to categorize this message
+
+        @return
+        subscription sobject
+        '''
+        return my.server.log_message(my.ticket, key, category)
+
+
+
 
     #
     # Transaction methods

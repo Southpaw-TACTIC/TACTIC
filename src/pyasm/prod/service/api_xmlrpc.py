@@ -912,6 +912,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def log_message(my, ticket, key, message=None, status=None, category="default"):
+        '''Log a message which will be seen by all who are subscribed to
+        the message "key".
+
+        @params
+        ticket - authentication ticket
+        key - unique key for this message
+        status - arbitrary status for this message
+        category - value to categorize this message
+
+        @return
+        string - "OK"
+        '''
+
+
         if type(message) == types.DictType:
             message = jsondumps(message)
 
@@ -997,6 +1011,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def subscribe(my, ticket, key, category=None):
+        '''Allow a user to subscribe to this message key.  All messages
+        belonging to the corresponding key will be available to users
+        subscribed to it.
+
+        @params
+        ticket - authentication ticket
+        key - unique key for this message
+
+        @keyparam
+        category - value to categorize this message
+
+        @return
+        subscription sobject
+        '''
 
         search = Search("sthpw/subscription")
         search.add_user_filter()
