@@ -890,7 +890,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #
-    # Logging facilities
+    # Logging
     #
     @xmlrpc_decorator
     def log(my, ticket, level, message, category="default"):
@@ -905,6 +905,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return True
 
 
+    #
+    # Messaging and Subscriptions
+    #
+
+
     @xmlrpc_decorator
     def log_message(my, ticket, key, message=None, status=None, category="default"):
         if type(message) == types.DictType:
@@ -913,6 +918,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # go low level
         sql = Sql("sthpw")
         sql.connect()
+
+        project_code = Project.get_project_code()
 
         from pyasm.search import Update, Select, Insert
         select = Select()
@@ -926,6 +933,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             update.set_database(sql)
             update.set_table("message")
             update.set_value("code", key)
+            update.set_value("project_code", project_code)
         else:
             update = Update()
             update.set_database(sql)
@@ -958,6 +966,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         login = Environment.get_user_name()
         update.set_value("login", login)
+        update.set_value("project_code", project_code)
         update.set_value("timestamp", "NOW")
 
         statement = update.get_statement()
@@ -979,9 +988,38 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #sobject.set_value("login", user_name)
         sobject.set_value("category", category)
         sobject.set_value("message", message )
+        sobject.set_value("message", message )
+        sobject.set_value("project_code", project_code)
         sobject.commit(triggers=False)
         transaction.commit()
         transaction.remove_from_stack()
+
+
+    @xmlrpc_decorator
+    def subscribe(my, ticket, key, category=None):
+
+        search = Search("sthpw/subscription")
+        search.add_user_filter()
+        search.add_filter("message_code", key)
+        subscription  = search.get_sobject()
+
+        if subscription:
+            # nothing to do ... already subscribed
+            sobject_dict = my._get_sobject_dict(subscription)
+            return sobject_dict
+
+        project_code = Project.get_project_code()
+
+        subscription = SearchType.create("sthpw/subscription")
+        subscription.set_value("message_code", key)
+        subscription.set_value("project_code", project_code)
+        subscription.set_user()
+        if category:
+            subscription.set_value("category", category)
+        subscription.commit()
+
+        sobject_dict = my._get_sobject_dict(subscription)
+        return sobject_dict
 
 
 

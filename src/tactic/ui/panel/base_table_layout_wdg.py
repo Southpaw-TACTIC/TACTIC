@@ -2517,17 +2517,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     var sobject = server.get_by_search_key(search_key);
                     search_key = sobject.__search_key__;
 
-                    // see if this subscription already exists
-                    var expr = "@SOBJECT(sthpw/subscription['login','"+login+"']['message_code','"+search_key+"'])";
-                    var subscription = server.eval(expr, {single:true});
-                    if (subscription) {
-                        alert("You are already subscribed to this item");
-                        return;
-                    }
-
-                    login = spt.Environment.get().get_user();
-
-                    server.insert("sthpw/subscription", {message_code: search_key, login: login, category: "sobject" } )
+                    server.subscribe(search_key, {category: "sobject" } );
  
                     ''' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',

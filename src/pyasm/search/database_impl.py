@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl']
+__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'MongoDbImpl', 'TacticImpl']
 
 import os, sys, types, re
 import subprocess
@@ -49,6 +49,10 @@ class DatabaseImpl(object):
             return SQLServerImpl()
         elif vendor == "Oracle":
             return OracleImpl()
+
+        # TEST
+        elif vendor == "MongoDb":
+            return MongoDbImpl()
         elif vendor == "TACTIC":
             return TacticImpl()
         raise DatabaseImplException("Vendor [%s] not supported" % vendor)
@@ -2896,6 +2900,13 @@ class MySQLImpl(PostgresImpl):
 
 
 # NOTE: this is experimental
+
+class MongoDbImpl(PostgresImpl):
+
+    pass
+
+
+
 
 class TacticImpl(PostgresImpl):
 

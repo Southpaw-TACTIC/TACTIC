@@ -1491,7 +1491,7 @@ class Search(Base):
                 columns.extend(select_columns)
             else:
                 columns = select_columns
-            #print "column: ", columns
+
 
         # DEPRECATED:
         # add the configuration settings for this sobject
@@ -1505,7 +1505,7 @@ class Search(Base):
                     my.add_order_by(order_by)
                     print "order: ", search_type, order_by
         '''
-        # Temporary replacement.  This is done for performance reasons
+        # Hard coded replacement.  This is done for performance reasons
         if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
             my.add_order_by("timestamp", direction="desc")
         elif search_type == 'sthpw/task':
@@ -1518,8 +1518,12 @@ class Search(Base):
             my.add_order_by("login_group")
         elif search_type == 'config/process':
             my.add_order_by("pipeline_code,sort_order")
+        elif search_type == 'sthpw/message_log':
+            my.add_order_by("timestamp", direction="desc")
         elif "code" in columns:
             my.add_order_by("code")
+
+
 
         # skip retired sobject
         my.skip_retired(columns)
@@ -3379,7 +3383,7 @@ class SObject(object):
             # when trying to do an sql UPDATE
             if not is_insert and key == 'id' and sql.get_database_type() == 'SQLServer':
                 continue
-            update.set_value(key, value, quoted=quoted , escape_quoted=escape_quoted )
+            update.set_value(key, value, quoted=quoted, escape_quoted=escape_quoted )
 
         # perform the update
         statement = update.get_statement()
@@ -3683,6 +3687,7 @@ class SObject(object):
         json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
+        message.set_value("project_code", project_code)
         message.set_value("status", "complete")
         message.set_user()
         message.commit()
@@ -3694,6 +3699,7 @@ class SObject(object):
         message.set_value("message_code", message_code)
         message.set_value("category", "sobject")
         message.set_value("message", json_data )
+        message.set_value("project_code", project_code)
         message.set_value("timestamp", "NOW")
         message.set_user()
         message.set_value("status", "complete")

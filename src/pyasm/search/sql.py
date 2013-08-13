@@ -73,6 +73,17 @@ try:
 except ImportError, e:
     pass
 
+
+# MongoDb
+try:
+    import pymongo
+    DATABASE_DICT["MongoDb"] = pymongo
+except ImportError, e:
+    pass
+
+
+
+
 # TACTIC Database
 try:
     from database_impl import TacticImpl
@@ -83,7 +94,7 @@ except ImportError, e:
 
 
 
-VENDORS = ['PostgreSQL', 'SQLServer', 'Oracle', 'Sqlite', 'MySQL', 'TACTIC']
+VENDORS = ['PostgreSQL', 'SQLServer', 'Oracle', 'Sqlite', 'MySQL', 'MongoDb', 'TACTIC']
 
 
 # Get the configured Db.
@@ -507,6 +518,11 @@ class Sql(Base):
                     (sqlserver_driver, my.host, my.port, my.database_name, my.user, password_str)
                 my.conn = pyodbc.connect(auth)
 
+            elif my.vendor == "MongoDb":
+                from pymongo import MongoClient
+                client = MongoClient()
+                my.conn = client[my.database_name]
+
 
             elif my.vendor == "TACTIC":
                 from pyasm.search import TacticImpl
@@ -563,8 +579,9 @@ class Sql(Base):
 
     # FIXME: is there any reason to have this function.  This should be 
     # incorporated into do_query.
+    """
     def execute(my, query, num_attempts=0):
-        """execute a query"""
+        '''execute a query'''
 
         #raise SqlException("FIXME: Incorporate into do_query")
 
@@ -614,10 +631,11 @@ class Sql(Base):
             print "ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query)
             # don't include the error_msg in Exception to avoid decoding error 
             raise SqlException("%s: %s\n" % (my.DO_QUERY_ERR, query))
+    """
 
 
     def do_query(my, query, num_attempts=0):
-        """execute a query"""
+        '''execute a query'''
 
         my.clear_results()
 
@@ -1604,6 +1622,46 @@ class Select(object):
         my.set_statement = None
 
         my.schema = ""
+
+
+    def execute(my, sql=None):
+        '''Actually execute the statement'''
+        if not sql:
+            sql = my.sql
+        if not sql:
+            raise SqlException("No connector found to execute query")
+
+
+        conn = sql.get_connection()
+
+        db_resource = sql.get_db_resource()
+        vendor = db_resource.get_vendor()
+
+        if vendor == "MongoDb":
+            table = my.tables[0]
+            collection = conn[table]
+            my.cursor = collection.find(my.filters)
+            if my.order_bys:
+                for order_by in my.order_bys:
+                    cursor.sort(order_by)
+
+            results = []
+            for result in my.cursor:
+                results.append(result)
+
+        else:
+
+            statement = my.get_statement()
+    
+            # remember the cursor (needed for savepoints)
+            my.cursor = conn.cursor()
+            my.cursor.execute(statement)
+
+            results = my.cursor.fetchall()
+            my.cursor.close()
+
+        return results
+
 
 
 

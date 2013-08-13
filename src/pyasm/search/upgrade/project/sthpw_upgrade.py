@@ -19,7 +19,7 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
     
     #
-    # 4.0.0.a01
+    # 4.1.0.a01
     #
 
     def upgrade_v4_1_0_a01_010(my):

@@ -215,7 +215,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         dynamic = True
 
-        #dir_list = RepoBrowserDirListWdg(base_dir=project_dir, location="server", show_base_dir=True,paths=paths, open_depth=open_depth, search_types=my.search_types_dict, file_codes=file_codes, snapshot_codes=my.snapshot_codes, search_codes=my.search_codes)
         dir_list = RepoBrowserDirListWdg(
                 base_dir=project_dir,
                 location="server",
@@ -229,13 +228,9 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-
-
         content = table.add_cell()
         content.add_style("vertical-align: top")
         content.add_border()
-        #content.add_style("padding: 10px")
-        #content.add_style("width: 600px")
 
         outer_div = DivWdg()
         content.add(outer_div)
@@ -595,26 +590,47 @@ class RepoBrowserDirListWdg(DirListWdg):
                 table = parts[0]
 
 
-            # FIXME: this is **EXTREMELY** tenuous
-            start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
-            if not start_dir.startswith(base_dir):
-                continue
 
+            # TODO: this is tenuous
+            project_code = Project.get_project_code()
+            start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
+            full = "%s/" % start_dir
+            paths.append(full)
+            search_type = search_type_obj.get_value("search_type")
+            search_type = "%s?project=%s" % (search_type, project_code)
+            my.search_types_dict[full] = search_type
 
             if not os.path.exists(start_dir):
                 continue
 
-            full = "%s/" % start_dir
-            paths.append(full)
 
 
-            search_type = search_type_obj.get_value("search_type")
-            project_code = Project.get_project_code()
-            search_type = "%s?project=%s" % (search_type, project_code)
-            my.search_types_dict[full] = search_type
+            # handle the dynamic case
+            if my.dynamic and base_dir.startswith(start_dir):
+                dirnames = os.listdir(base_dir)
+                for dirname in dirnames:
+                    full = "%s/%s/" % (base_dir, dirname)
+                    if not os.path.isdir(full):
+                        continue
 
-            if my.dynamic:
+                    search_codes_list = my.search_codes.get(full)
+                    if not search_codes_list:
+                        num_sobjects[full] = 0
+                    else:
+                        num_sobjects[full] = len(search_codes_list)
+
+                    my.search_types_dict[full] = search_type
+
+                    if show_empty_folders:
+                        paths.append(full)
+
                 continue
+
+
+
+            if not start_dir.startswith(base_dir):
+                continue
+
 
 
 
@@ -631,7 +647,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                     else:
                         num_sobjects[full] = len(search_codes_list)
 
-                    # need to put a / and the end to signify a directory
+                    my.search_types_dict[full] = search_type
+
                     if show_empty_folders:
                         paths.append(full)
 
@@ -1223,9 +1240,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
     def add_dir_behaviors(my, item_div, dirname, basename):
 
+        asset_base_dir = Environment.get_asset_dir()
 
         path = "%s/%s" % (dirname, basename)
-        relative_dir = path.replace(my.base_dir, "")
+        relative_dir = path.replace(asset_base_dir, "")
         relative_dir = relative_dir.strip("/")
 
         #search_types = my.kwargs.get("search_types")
@@ -1267,10 +1285,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_search_codes", search_codes_str)
 
 
-        # my.base_dir contains the project, so it will be removed.  Add this
-        # back
-        project_code = Project.get_project_code()
-        relative_dir = "%s/%s" % (project_code, relative_dir)
         item_div.add_attr("spt_relative_dir", relative_dir)
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 

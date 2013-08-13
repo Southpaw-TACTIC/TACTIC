@@ -208,10 +208,16 @@ TacticServerStub = function() {
     }
 
 
+    /*
+     * Messaging facilities
+     */
     this.log_message = function(key, message, kwargs) {
         return this._delegate("log_message", arguments, kwargs);
     }
 
+    this.subscribe = function(key, kwargs) {
+        return this._delegate("subscribe", arguments, kwargs);
+    }
 
     /*
      * Checkin/checkout methods

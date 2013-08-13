@@ -19,6 +19,7 @@ from pyasm.search import Search, SearchType
 from pyasm.command import Command
 from pyasm.web import Table
 from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
+from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 
@@ -464,14 +465,24 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_filter("last_cleared", "NULL", quoted=False, op="is")
             search.add_op("or")
 
+
+            #project_code = Project.get_project_code()
+            #search.add_filter("project_code", project_code )
+
             # use an inner join because if there are no messages, we don't
             # want the subscription
             search.add_order_by("message.timestamp", direction="desc", join="INNER")
+
+            # don't show user message except when category is certain values
             user = Environment.get_user_name()
+            search.add_op("begin")
             search.add_filter("login", user, op="!=", table="message")
+            search.add_filters("category", ["script","default"], table="message")
+            search.add_op("or")
         else:
             search.add_order_by("message.timestamp", direction="desc")
 
+        print search.get_statement()
         subscriptions = search.get_sobjects()
 
 
@@ -621,6 +632,8 @@ class SubscriptionWdg(BaseRefreshWdg):
             } )
 
         else:
+            if not category:
+                category = "default"
             thumb = DivWdg()
             thumb.add_style("width: %s" % size)
             thumb.add_style("height: %s" % (size*3/4))
@@ -937,10 +950,6 @@ class SubscriptionBarWdg(SubscriptionWdg):
             bvr.src_el.setStyle("border-color", "transparent");
             '''
         } )
-
-
-
-
 
 
         category = None
