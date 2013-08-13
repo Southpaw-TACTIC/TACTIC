@@ -576,6 +576,22 @@ spt.convert_to_alpha_numeric = function( value ) {
 
 
 
+spt.generate_key = function(length) {
+    if (!length) {
+        length = 20;
+    }
+
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < length; i++ ) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+
+    return text;
+
+    
+}
+
 
 // spt.get_typeof
 //
