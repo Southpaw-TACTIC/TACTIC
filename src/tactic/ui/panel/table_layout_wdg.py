@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
 from pyasm.biz import Project, ExpressionParser
-from tactic.ui.table import ExpressionElementWdg
+from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 
 
@@ -362,6 +362,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 my.group_columns = [my.group_element]
         else:
             my.group_columns = my.kwargs.get("group_elements")
+            
             if not my.group_columns or my.group_columns == ['']: # Backwards compatibility
                 my.group_columns = []
             if isinstance(my.group_columns, basestring):
@@ -385,7 +386,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if values.get("group"):
                 my.group_columns = [values.get("group")]
                 my.group_interval = values.get("interval")
-
         my.is_grouped = len(my.group_columns) > 0
         my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
 
@@ -459,6 +459,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #inner.add(upload_wdg)
         # TEST TEST TEST
         
+       
+
+
         if my.kwargs.get('temp') != True:
             
             # get all client triggers
@@ -766,8 +769,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
     def order_sobjects(my):
         '''pre-order the sobjects if group_columns is defined'''
         if not my.group_columns:
-            return 
-        
+            # post ordering for PythonElementWdg only
+            if my.order_widget:
+                tmp_order_element, direction  = my.get_order_element(my.order_element)
+                if not isinstance(my.order_widget, PythonElementWdg):
+                    return
+                sobject_dict = {}
+                my.order_widget.preprocess()
+                reverse = direction == 'desc'
+                for idx, sobject in enumerate(my.sobjects):
+                    order_value = my.order_widget.get_result(sobject)
+                    sobject_dict[sobject] = order_value
+
+                my.sobjects = sorted(my.sobjects, key=sobject_dict.__getitem__, reverse=reverse)
+            return
+
         my.group_dict = {}
 
         # identify group_column
@@ -778,6 +794,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 group_col_type_dict[group_column] = 'inline_expression'
             elif my.is_expression_element(group_column):
                 widget = my.get_widget(group_column)
+                # initialize here
                 widget.init_kwargs()
                 widget.set_option('calc_mode', 'fast')
                 widget.set_sobjects(my.sobjects)
@@ -788,9 +805,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 #group_value = sobject.get_value(group_column, no_exception=True)
            
             else:
-                group_col_type_dict[group_column] = 'normal'
-
-
+                #group_col_type_dict[group_column] = 'normal'
+                widget = my.get_widget(group_column)
+                if widget:
+                    widget.preprocess()
+                    group_col_type_dict[group_column] = widget
+       
         time_test = False
         expr_parser = ExpressionParser()
         for idx, sobject in enumerate(my.sobjects):
@@ -813,9 +833,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     my.grouping_data = True 
                 elif isinstance(group_col_type_dict.get(group_column), ExpressionElementWdg):
                     widget = group_col_type_dict[group_column]
-                    widget.init_kwargs()
-                    # this is optional, but help performance
-                    widget.set_option('calc_mode', 'fast')
+                   
+                 
                     expr = widget.kwargs.get('expression')
                     group_value = widget._get_result(sobject, expr)
 
@@ -832,6 +851,25 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     if not group_value:
                         group_value = "__NONE__"
                     
+                    sobject.set_value("%s%s"%(my.GROUP_COLUMN_PREFIX, i), group_value, temp=True)
+                    my.grouping_data = True 
+                elif isinstance(group_col_type_dict.get(group_column), PythonElementWdg):
+                    widget = group_col_type_dict[group_column]
+                   
+                    group_value = widget.get_result(sobject)
+                    if not time_test: 
+                        time_test = my._time_test(group_value)
+                    else:
+                        my.group_by_time = True 
+
+                    if my.group_interval and group_value:
+                        group_value = my._get_simplified_time(group_value)
+                    else:
+                        group_value = str(group_value)
+                
+                    if not group_value:
+                        group_value = "__NONE__"
+                   
                     sobject.set_value("%s%s"%(my.GROUP_COLUMN_PREFIX, i), group_value, temp=True)
                     my.grouping_data = True 
                 
@@ -859,7 +897,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             reverse = True
         elif my.order_element.endswith(' desc'):
             reverse = True
-        
+       
         sobjects = Common.sort_dict(my.group_dict, reverse=reverse)
         for sobject in sobjects:
             sobject_sorted_list.extend(sobject)
@@ -1225,6 +1263,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #tr.add_style("display: none")
         tr.add_class("SPT_DTS")
 
+        
         autofit = my.view_attributes.get("autofit") != 'false'
 
         show_header = my.kwargs.get("show_header")
@@ -1411,6 +1450,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # sortable
             if widget.is_sortable():
                 th.set_attr("spt_widget_is_sortable","true")
+
+            if widget.get_sort_prefix():
+                th.set_attr("spt_widget_sort_prefix", widget.get_sort_prefix())
+
 
             # embed info in the TH for whether or not the column is
             # locally searchable

@@ -17,7 +17,7 @@ import tacticenv
 from pyasm.common import Environment
 
 CLIENT_FILE_PATH_LIST = (\
-        '/src/context/client/pyasm/application/common/interpreter/tactic_client_lib',\
+        #'/src/context/client/pyasm/application/common/interpreter/tactic_client_lib',\
         '/src/context',\
         '/src/client/tactic_client_lib',\
         '/src/pyasm/application/common/interpreter/tactic_client_lib'

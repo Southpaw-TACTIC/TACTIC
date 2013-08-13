@@ -353,6 +353,8 @@ class BaseTableElementWdg(HtmlElement):
     #
     # Grouping methods
     #
+    def get_sort_prefix(my):
+        return None
     def is_sortable(my):
         return True
     def is_groupable(my):

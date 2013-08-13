@@ -146,6 +146,8 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         return True
     is_editable = classmethod(is_editable)
 
+    def get_sort_prefix(my):
+        return None
 
     def is_sortable(my):
         order_by = my.get_option("order_by")
@@ -467,7 +469,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 return value_wdg
 
         return value
-
     def is_sortable(my):
         return True
 

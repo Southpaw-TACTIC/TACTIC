@@ -5722,7 +5722,7 @@ spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
         'is_sortable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_sortable") ),
         'is_searchable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_searchable") ),
         'element_name' : el_name.substr(0,1).toUpperCase() + el_name.substr(1),
-
+        'sort_prefix': activator_el.getProperty("spt_widget_sort_prefix"),
         'has_related' : spt.is_TRUE( activator_el.getProperty("spt_widget_has_related") ),
     };
 

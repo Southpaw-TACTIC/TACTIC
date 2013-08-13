@@ -90,6 +90,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.aux_info = kwargs.get('aux_info')
         my.vertical_text = kwargs.get('vertical_text') == 'true'
 
+        my.order_widget = None
         my.group_element = ""
         my.group_interval = ""
         my.group_sobjects = []
@@ -337,6 +338,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+    def get_order_element(my, order_element):
+        direction = 'asc'
+        if order_element.find(" desc") != -1:
+            tmp_order_element = order_element.replace(" desc", "")
+            direction = 'desc'
+        elif my.order_element.find(" asc") != -1:
+            tmp_order_element = order_element.replace(" asc", "")
+            direction = 'asc'
+        else:
+            tmp_order_element = order_element
+            
+        return tmp_order_element, direction
 
     def alter_search(my, search):
         '''give the table a chance to alter the search'''
@@ -373,14 +386,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if order:
             my.order_element = order
             if not values:
-                direction = 'asc' 
-                if my.order_element.find(" desc") != -1:
-                    tmp_order_element = my.order_element.replace(" desc", "")
-                    direction = 'desc'
-                else:
-                    tmp_order_element = my.order_element
-
+                tmp_order_element, direction  = my.get_order_element(my.order_element)
+                
                 widget = my.get_widget(tmp_order_element)
+                my.order_widget = widget
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
@@ -427,18 +436,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 my.group_element = False
 
             my.order_element = group_values.get("order")
-            if my.order_element:
-                direction = 'asc' 
-                if my.order_element.find(" desc") != -1:
-                    tmp_order_element = my.order_element.replace(" desc", "")
-                    direction = 'desc'
-                elif my.order_element.find(" asc") != -1:
-                    tmp_order_element = my.order_element.replace(" asc", "")
-                    direction = 'asc'
-                else:
-                    tmp_order_element = my.order_element
 
+            if my.order_element:
+                tmp_order_element, direction  = my.get_order_element(my.order_element)
                 widget = my.get_widget(tmp_order_element)
+                my.order_widget = widget
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
@@ -1672,7 +1674,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Order By (Ascending) menu item ...
         menu_data.append( {
             "type": "action",
-            "label": "Order By (Ascending)",
+            "label": '{sort_prefix} Order By (Ascending)',
             "enabled_check_setup_key" : "is_sortable",
             "bvr_cb": {
                 'cbjs_action':
@@ -1695,7 +1697,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Order By (Descending) menu item ...
         menu_data.append( {
             "type": "action",
-            "label": "Order By (Descending)",
+            "label": "{sort_prefix} Order By (Descending)",
             "enabled_check_setup_key" : "is_sortable",
             "bvr_cb": {
                 'cbjs_action':
