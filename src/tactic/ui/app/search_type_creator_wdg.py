@@ -772,9 +772,10 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         '''
         ticket = Environment.get_ticket()
         button = UploadButtonWdg(title="Browse", on_complete=on_complete, ticket=ticket) 
-        button.add_style("margin-left: auto")
-        button.add_style("margin-right: auto")
         image_div.add(button)
+        button.add_style("margin-left: 215px")
+        button.add_style("margin-right: auto")
+
 
 
         text = HiddenWdg("image_path")
