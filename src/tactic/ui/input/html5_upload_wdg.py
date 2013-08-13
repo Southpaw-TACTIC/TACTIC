@@ -401,13 +401,10 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             }
 
-<<<<<<< .working
             var reader_load = function(file) {
             %s;
             }
 
-=======
->>>>>>> .merge-right.r10134
             var upload_file_kwargs =  {
                   reader_load: reader_load,
                   upload_start: upload_start,
@@ -418,28 +415,19 @@ class UploadButtonWdg(BaseRefreshWdg):
                upload_file_kwargs['ticket'] = bvr.ticket; 
                 
 
-      var onchange = function () {
+            var onchange = function () {
                 %s;
                 spt.html5upload.upload_file(upload_file_kwargs);
 	    }
-<<<<<<< .working
-	   
-            spt.html5upload.select_file( onchange );
-=======
+
 	    if (is_multiple) {
                 file_obj.setAttribute('multiple','multiple');
->>>>>>> .merge-right.r10134
-
-<<<<<<< .working
-            ''' % (upload_start, upload_progress, on_complete, reader_load, upload_init)
-=======
                 spt.html5upload.select_files(onchange);
             }
             else
                 spt.html5upload.select_file(onchange);
 
-            ''' % (upload_start, upload_progress, on_complete, upload_init)
->>>>>>> .merge-right.r10134
+            ''' % (upload_start, upload_progress, on_complete, render_load, upload_init)
         } )
 
         return top
