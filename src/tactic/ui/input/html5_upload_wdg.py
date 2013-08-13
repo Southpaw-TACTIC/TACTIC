@@ -365,8 +365,9 @@ class UploadButtonWdg(BaseRefreshWdg):
             var search_key = bvr.search_key;
 
             // set the form
-            spt.html5upload.form = $(bvr.upload_id);
+            spt.html5upload.set_form($(bvr.upload_id));
 
+            spt.html5upload.clear();
             spt.html5upload.kwargs = bvr.kwargs;
 
             var file_obj = spt.html5upload.form.getElement(".spt_file");
