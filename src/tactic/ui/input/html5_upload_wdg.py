@@ -378,7 +378,7 @@ class UploadButtonWdg(BaseRefreshWdg):
 
             // set the form
             spt.html5upload.set_form( $(bvr.upload_id) );
-
+            spt.html5upload.clear();
             spt.html5upload.kwargs = bvr.kwargs;
 
             var file_obj = spt.html5upload.form.getElement(".spt_file");
@@ -427,7 +427,7 @@ class UploadButtonWdg(BaseRefreshWdg):
             else
                 spt.html5upload.select_file(onchange);
 
-            ''' % (upload_start, upload_progress, on_complete, render_load, upload_init)
+            ''' % (upload_start, upload_progress, on_complete, reader_load, upload_init)
         } )
 
         return top
