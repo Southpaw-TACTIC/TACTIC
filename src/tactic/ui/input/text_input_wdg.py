@@ -493,7 +493,8 @@ class LookAheadTextInputWdg(TextInputWdg):
 
         value_column = my.kwargs.get("value_column")
         validate = my.kwargs.get("validate") in ['true', None]
-
+        if not validate:
+            my.top.add_class('spt_no_validate')
         
         my.add_behavior( {
             'type': 'load',
@@ -522,8 +523,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         }
         else {
             hidden_el.value = data;
-            if (kwargs.validate != false)
-                src_el.removeClass("spt_invalid");
+            src_el.removeClass("spt_invalid");
         }
 
        // run client trigger
