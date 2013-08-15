@@ -142,6 +142,7 @@ spt.hash.onload_first = function() {
     spt.hash.first_load = false;
 
 
+
     var options = {
         'hash': decodeURI(hash),
         'first_load': true
