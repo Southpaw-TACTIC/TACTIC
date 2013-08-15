@@ -577,11 +577,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
-        div.add("Choose a directory naming convention: ")
-        div.add("<br/>")
-
-
-        # Freeform Folder and Freeform File name
 
         # This is too unclear and unrelated to what people see
         """
@@ -601,19 +596,76 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         """
 
 
+        folder_div = DivWdg()
+        div.add(folder_div)
+
+        checkbox = CheckboxWdg("folder")
+        folder_div.add(checkbox)
+        folder_div.add("<b>Should folder naming conventions be enforced?</b>")
+
+        dirname_div = DivWdg()
+        div.add(dirname_div)
+        unique_id = dirname_div.set_unique_id()
+        dirname_div.add_style("display: none")
+        dirname_div.add_style("padding: 15px 0px 15px 25px")
+
+        checkbox.add_behavior( {
+            'type': 'click_up',
+            'unique_id': unique_id,
+            'cbjs_action': '''
+            spt.toggle_show_hide( $(bvr.unique_id) )
+            '''
+        } )
+
+
+        dirname_div.add("Choose a directory naming convention: ")
+        dirname_div.add("<br/>")
+
+
+        expr = "/{project.code}/{search_type.table_name}/{sobject.name}"
+        dirname_div.add( my.get_naming_item_wdg(expr, "Default") )
+
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
-        div.add( my.get_naming_item_wdg(expr, "Default") )
+        dirname_div.add( my.get_naming_item_wdg(expr, "Project/Job") )
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.category}/{sobject.code}"
-        div.add( my.get_naming_item_wdg(expr, "Library Asset") )
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
-        div.add( my.get_naming_item_wdg(expr, "Asset with Workflow") )
+        dirname_div.add( my.get_naming_item_wdg(expr, "Asset with Workflow") )
+
+
+        div.add("<br/>")
+
+
+        # Free Form
+
+        folder_div = DivWdg()
+        div.add(folder_div)
+
+        checkbox = CheckboxWdg("folder")
+        folder_div.add(checkbox)
+        folder_div.add("<b>Should file naming conventions be enforced?</b>")
+
+        dirname_div = DivWdg()
+        div.add(dirname_div)
+        unique_id = dirname_div.set_unique_id()
+        dirname_div.add_style("display: none")
+        dirname_div.add_style("padding: 15px 0px 15px 25px")
+
+        checkbox.add_behavior( {
+            'type': 'click_up',
+            'unique_id': unique_id,
+            'cbjs_action': '''
+            spt.toggle_show_hide( $(bvr.unique_id) )
+            '''
+        } )
+
 
         expr = "/{sobject.relative_dir}"
-        div.add( my.get_naming_item_wdg(expr, "Free Form") )
+        dirname_div.add( my.get_naming_item_wdg(expr, "Free Form") )
 
 
+        """
         div.add("<br/>")
 
         radio = RadioWdg("naming")
@@ -637,6 +689,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             bvr.src_el.value = value;
             '''
         } )
+        """
 
         return div
 
@@ -648,8 +701,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             "project.code": project_code,
             "search_type.table_name": "asset",
             "sobject.category": "cars!sports",
-            "snapshot.process": "delivery",
-            "sobject.code": "CAR00586",
+            "snapshot.process": "WIP",
+            "sobject.code": "JOB00586",
+            "sobject.name": "TradeshowBrochureAug2013",
             "sobject.relative_dir": "%s!asset!vehicles!cars!sports" % project_code,
         }
 
@@ -684,7 +738,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         title_wdg.add_style("font-weight: bold")
 
         table = Table()
-        table.add_style("font-size: 0.85em")
+        table.add_style("font-size: 0.80em")
         table.add_style("margin-left: 15px")
         div.add(table)
 

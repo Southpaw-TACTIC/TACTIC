@@ -697,7 +697,7 @@ class TacticServerStub(object):
         @return
         subscription sobject
         '''
-        return my.server.log_message(my.ticket, key, category)
+        return my.server.subscribe(my.ticket, key, category)
 
 
 

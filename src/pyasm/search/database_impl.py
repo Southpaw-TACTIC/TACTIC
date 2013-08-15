@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'MongoDbImpl', 'TacticImpl']
+__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl']
 
 import os, sys, types, re
 import subprocess
@@ -22,7 +22,27 @@ class DatabaseImplException(TacticException):
     pass
 
 
-class DatabaseImpl(object):
+
+class DatabaseImplInterface(object):
+
+    def get_columns(cls, db_resource, table):
+        pass
+
+    def get_column_info(cls, db_resource, table, use_cache=True):
+        pass
+
+    def get_table_info(my, database):
+        pass
+
+    def table_exists(my, db_resource, table):
+        pass
+
+    def execute_query(my, sql, select):
+        pass
+
+
+
+class DatabaseImpl(DatabaseImplInterface):
     '''Provides an abstraction layer for the various databases'''
 
     def get_database_type(my):
@@ -52,6 +72,7 @@ class DatabaseImpl(object):
 
         # TEST
         elif vendor == "MongoDb":
+            from mongodb import MongoDbImpl
             return MongoDbImpl()
         elif vendor == "TACTIC":
             return TacticImpl()
@@ -422,6 +443,12 @@ class DatabaseImpl(object):
         return can_join
     can_search_types_join = staticmethod(can_search_types_join)
 
+
+
+    # Defines temporary column name to be used.  Only SQLServerImpl implements
+    # this
+    def get_temp_column_name(my):
+        return ""
 
 
 class SQLServerImpl(DatabaseImpl):
@@ -1067,7 +1094,6 @@ class SQLServerImpl(DatabaseImpl):
                 info_dict = {'data_type': data_type, 'nullable': is_nullable, 'size': size}
                 cache[name] = info_dict
 
-      
 
         return cache
 
@@ -1670,8 +1696,6 @@ class PostgresImpl(DatabaseImpl):
             column_dict[key] = value.get('nullable')
         return column_dict 
 
-    def get_temp_column_name(my):
-        return ""
 
 
 class OracleImpl(PostgresImpl):
@@ -2862,7 +2886,6 @@ class MySQLImpl(PostgresImpl):
             return "LOWER(\"%s\") %s '%s'" %(column, op, regex)
 
 
-
     #
     # Database methods
     # 
@@ -2897,13 +2920,6 @@ class MySQLImpl(PostgresImpl):
         cmd.close()
 
 
-
-
-# NOTE: this is experimental
-
-class MongoDbImpl(PostgresImpl):
-
-    pass
 
 
 

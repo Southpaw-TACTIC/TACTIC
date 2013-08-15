@@ -110,6 +110,8 @@ class SmartMenuWdg(BaseRefreshWdg):
         m_width = my.width - 2
         smenu_div.add_style( ("width: %spx" % m_width) )
 
+        smenu_div.add_style("overflow-x: hidden")
+
         icon_width = 16
         icon_col_width = 0
         if my.allow_icons:

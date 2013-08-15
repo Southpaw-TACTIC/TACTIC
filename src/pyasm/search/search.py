@@ -1479,9 +1479,8 @@ class Search(Base):
         db_resource = my.db_resource
         sql = DbContainer.get(db_resource)
 
-        # get the columsn
+        # get the columns
         table = my.get_table()
-
         columns = sql.get_columns(table)
         columns = my.remove_temp_column(columns, sql) 
         select_columns = my.select.get_columns()
@@ -1543,24 +1542,30 @@ class Search(Base):
             elif data_type in ['sqlserver_timestamp']:
                 skipped_cols.append(key)
 
+        vendor = db_resource.get_vendor()
+        if vendor == "MongoDb":
+            results = my.select.execute()
+            # TODO:
+            # Not really used because results is already a dictionary
+            # and the column data is dynamic
+            columns = ['_id']
+            result_is_dict = True
+        else:
+            # get the select statement and do the query
+            if not statement:
+                statement = my.select.get_statement()
+            results = sql.do_query(statement)
 
-        # get the select statement and do the query
-        if not statement:
-            statement = my.select.get_statement()
-            
+            # this gets the actual order of columns in this SQL
+            columns = sql.get_columns_from_description()
+
+            result_is_dict = False
+
+
         Container.increment('Search:sql_query') 
-
-        #import time
-        #start = time.time()
-        results = sql.do_query(statement)
-        #end = time.time() - start
-        #print "(%s)" % len(results),  statement
-        # this gets the actual order of columns in this SQL
-        columns = sql.get_columns_from_description()
 
         # create a list of objects
         my.sobjects = []
-        #len_columns = len(columns)
 
         # precalculate some information
         from pyasm.biz import Project
@@ -1592,7 +1597,10 @@ class Search(Base):
         # assemble the data dictionaries to be distributed to the sobjects
         data_list = []
         for result in results:
-            data = dict(zip(columns, result))
+            if result_is_dict:
+                data = result
+            else:
+                data = dict(zip(columns, result))
             if skipped_cols:
                 for skipped_col in skipped_cols:
                     # forcing this data empty because
@@ -1721,8 +1729,13 @@ class Search(Base):
             if not my.security_filter:
                 security.alter_search(my)
 
-            statement = my.select.get_count()
-            count = sql.get_value(statement)
+            vendor = db_resource.get_vendor()
+            if vendor == "MongoDb":
+                count = my.select.execute_count()
+            else:
+                statement = my.select.get_count()
+                count = sql.get_value(statement)
+
         except SqlException:
             if no_exception:
                 return -1
@@ -2196,14 +2209,15 @@ class SObject(object):
                 data = my.data
                 #my.data = dict(zip(columns, result))
                 for column, value in zip(columns, result):
-                    # convert all datetime objects to strings ... they are
-                    # way to much trouble.
-                    # NOTE: this needs to be changed to use date time
+                    # convert all datetime objects to strings.  This simplifies
+                    # export to various other source (such as XML)
                     if value and isinstance(value, datetimeclass):
                         date_string = str(value)
                         data[column] = date_string
                     else:
                         data[column] = value
+
+
 
         # handle attrs - made this lazy.  Will only look up if needed.  It
         # appears that the ParallelStatusWdg makes use of attributes.  Not sure
@@ -6297,7 +6311,11 @@ class SearchKey(object):
                 search_code_list.append(code)
             else:
                 id = SearchKey.extract_id(sk)
-                search_id_list.append(int(id))
+                try:
+                    id = int(id)
+                except:
+                    pass
+                search_id_list.append(id)
         
         single_search_type = False
         if len(Common.get_unique_list(search_type_list)) == 1:

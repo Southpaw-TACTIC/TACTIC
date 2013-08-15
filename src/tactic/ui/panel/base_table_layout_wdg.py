@@ -751,6 +751,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
 
         div = DivWdg() 
+        div.add_class("SPT_DTS")
         #div.add_style("overflow: hidden")
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
@@ -2258,6 +2259,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
                     spt.app_busy.show("Uploading preview image ...", file);
 
+
+                    // add the file name to the context
+                    if (context == "publish") {
+                        context = context + "/" + file;
+                    }
+
                     var server = TacticServerStub.get();
                     try {
                         spt.app_busy.show(bvr.description, file);                   
@@ -2345,6 +2352,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         }
                         
                         var has_error = false;
+
+                        // add the file name to the context
+                        if (context == "publish") {
+                            context = context + "/" + file;
+                        }
      
                         try {
                             

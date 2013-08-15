@@ -277,6 +277,10 @@ class Sql(Base):
     def get_password(my):
         return my.password
 
+    def get_vendor(my):
+        return my.vendor
+
+
 
     def get_connection(my):
         '''get the underlying database connection'''
@@ -423,10 +427,6 @@ class Sql(Base):
                 else:
                     my.conn.commit()
 
-                # DEPRECATED!
-                # once this connection has been commited, then release it back
-                # to sql_dict
-                #DbContainer.return_to_pool(my)
                 sql_dict = DbContainer._get_sql_dict()
                 database_name = my.get_database_name()
                 sql_dict[database_name] = my
@@ -519,9 +519,9 @@ class Sql(Base):
                 my.conn = pyodbc.connect(auth)
 
             elif my.vendor == "MongoDb":
-                from pymongo import MongoClient
-                client = MongoClient()
-                my.conn = client[my.database_name]
+
+                from mongodb import MongoDbConn
+                my.conn = MongoDbConn(my.database_name)
 
 
             elif my.vendor == "TACTIC":
@@ -674,6 +674,9 @@ class Sql(Base):
             my.cursor.close()
             #print time.time() - start
             return my.results
+
+        except Exception, e:
+            raise
 
         except my.pgdb.OperationalError, e:
             # A reconnect will only be attempted on the first query.
@@ -1598,6 +1601,7 @@ class Select(object):
         my.column_tables = []
         my.wheres = []
         my.filters = {}
+        my.raw_filters = []
         my.filter_mode = "AND"
         my.group_bys = []
         my.havings = []
@@ -1631,23 +1635,38 @@ class Select(object):
         if not sql:
             raise SqlException("No connector found to execute query")
 
-
         conn = sql.get_connection()
-
         db_resource = sql.get_db_resource()
         vendor = db_resource.get_vendor()
 
         if vendor == "MongoDb":
+            impl = db_resource.get_database_impl()
+            results = impl.execute_query(sql, my)
+            """
             table = my.tables[0]
-            collection = conn[table]
-            my.cursor = collection.find(my.filters)
+            collection = conn.get_collection(table)
+            my.cursor = collection.find(my.raw_filters)
             if my.order_bys:
+                sort_list = []
                 for order_by in my.order_bys:
-                    cursor.sort(order_by)
+                    parts = order_by.split(" ")
+                    order_by = parts[0]
+                    if len(parts) == 2:
+                        direction = parts[1]
+                    else:
+                        direction = "asc"
+
+                    if direction == "desc":
+                        sort_list.append( [order_by, -1] )
+                    else:
+                        sort_list.append( [order_by, 1] )
+
+                    my.cursor.sort(sort_list)
 
             results = []
             for result in my.cursor:
                 results.append(result)
+            """
 
         else:
 
@@ -1661,6 +1680,30 @@ class Select(object):
             my.cursor.close()
 
         return results
+
+
+    def execute_count(my, sql=None):
+        if not sql:
+            sql = my.sql
+        if not sql:
+            raise SqlException("No connector found to execute query")
+
+        conn = sql.get_connection()
+        db_resource = sql.get_db_resource()
+        vendor = db_resource.get_vendor()
+
+        if vendor == "MongoDb":
+            # TODO: slow
+            results = my.execute()
+            results = len(results)
+
+        else:
+            statement = my.get_count()
+            results = sql.do_query(statement)
+            results = len(results)
+
+        return results
+
 
 
 
@@ -1851,15 +1894,12 @@ class Select(object):
         assert mode in ['and', 'or']
         my.filter_mode = mode.upper()
 
+
+
     def add_where(my, where):
-        # a custom where stmt becomes the key in my.filters
-        #my.add_filter(where, where)
-
-        # test for uniqueness
-        #if where in my.wheres:
-        #    return
-
         my.wheres.append(where)
+
+
 
     def add_op(my, op, idx=None):
         assert op in ['and', 'or', 'begin']
@@ -1883,6 +1923,7 @@ class Select(object):
         except:
             pass
 
+
     def _convert_to_database_boolean(my, value):
         if not my.impl.get_database_type() == 'SQLServer':
             return value
@@ -1896,6 +1937,17 @@ class Select(object):
 
     def add_filter(my, column, value, column_type="", op='=', quoted=None, table=''):
         assert my.tables
+
+        # store all the raw filter data
+        my.raw_filters.append( {
+                'column': column,
+                'value': value,
+                'column_type': column_type,
+                'op': op,
+                'quoted': quoted,
+                'table': table
+        } )
+
 
         if not table:
             table = my.tables[0]
@@ -1915,13 +1967,11 @@ class Select(object):
             quoted = False
 
 
-        # [MIKE-FIX]
+
+        # This check added to handle cases where a list is empty,
+        # as 'value[0]' is not defined in that case. We assume in this
+        # case that the intended value is NULL
         if type(value) == types.ListType and len(value) == 0:
-            # This check added to handle cases where a list is empty, as 'value[0]' is not defined
-            # in that case. We assume in this case that the intended value is NULL
-            #
-            # TODO: review this logic and verify that this behavior is correct/desired
-            #
             where = "\"%s\" is NULL" % column
             my.add_where(where)
             return
@@ -1961,8 +2011,6 @@ class Select(object):
             where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
             where = "\"%s\" %s %s" % (column, op, value)
-            print "where: ", where
-
         my.add_where(where)
 
 

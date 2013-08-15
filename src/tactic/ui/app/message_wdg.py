@@ -482,7 +482,6 @@ class SubscriptionWdg(BaseRefreshWdg):
         else:
             search.add_order_by("message.timestamp", direction="desc")
 
-        print search.get_statement()
         subscriptions = search.get_sobjects()
 
 

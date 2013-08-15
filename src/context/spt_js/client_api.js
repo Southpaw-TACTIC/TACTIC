@@ -345,6 +345,14 @@ TacticServerStub = function() {
         //console.log("source_path: " + source_path);
         //kwargs['source_path'] = source_path;
 
+        /* Test check-in to SCM
+        if (spt.scm) {
+            var editable = true;
+            var scm_info = spt.scm.run("commit_file", [file_path, description, editable]);
+            return;
+        }
+
+        */
 
 
         // do the checkin

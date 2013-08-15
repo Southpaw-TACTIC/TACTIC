@@ -808,7 +808,6 @@ for (var path in ret_val) {
     paths.push(path);
 }
 paths = paths.sort();
-// TODO: is this slow?
 for (var i = 0; i < paths.length; i++) {
     if (applet.is_dir(paths[i])) {
         paths[i] = paths[i] + "/";
@@ -861,6 +860,8 @@ class ScmDirListWdg(CheckinDirListWdg):
 
         my.path_info = my.kwargs.get("path_info")
         my.paths = my.kwargs.get("paths")
+        if not my.paths:
+            my.paths = []
 
         sizes = my.kwargs.get("sizes")
 
@@ -1447,10 +1448,11 @@ spt.scm.checkout = function(repo_dir) {
 }
 
 
-
+/*
 spt.scm.commit = function(paths, description) {
     return spt.scm.run("commit", [paths, description]);
 }
+*/
 
 
 spt.scm.add = function(path) {

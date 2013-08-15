@@ -90,6 +90,9 @@ class DirListWdg(BaseRefreshWdg):
         if not my.paths:
             my.paths = []
 
+
+        my.preselected = {}
+
         my.preprocess()
 
 
@@ -487,8 +490,9 @@ class DirListWdg(BaseRefreshWdg):
             dir_list = DirListPathHandler(
                 level=0,
                 base_dir=my.base_dir,
-                handler_class=handler_class,
-                handler_kwargs=handler_kwargs,
+                #handler_class=handler_class,
+                #handler_kwargs=handler_kwargs,
+                handler=my,
                 depth=depth,
                 all_open=all_open,
                 open_depth=open_depth,

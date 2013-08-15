@@ -918,6 +918,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @params
         ticket - authentication ticket
         key - unique key for this message
+
+        @keyparams
         status - arbitrary status for this message
         category - value to categorize this message
 

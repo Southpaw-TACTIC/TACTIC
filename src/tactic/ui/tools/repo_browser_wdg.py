@@ -1020,7 +1020,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             } )
 
 
-            menu_item = MenuItem(type='action', label='Rename Folder (TODO)')
+            menu_item = MenuItem(type='action', label='Rename Folder')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
