@@ -1298,7 +1298,6 @@ class Search(Base):
 
 
     def add_join(my, to_search_type, from_search_type=None, path=None, join=None):
-
         to_search_type_obj = SearchType.get(to_search_type)
         to_search_type = to_search_type_obj.get_base_key()
 
@@ -1402,7 +1401,6 @@ class Search(Base):
         
         if "connect" in parts:
             return
-        my.order_bys.append(column)
 
 
         if len(parts) >= 2:
@@ -1427,16 +1425,29 @@ class Search(Base):
                 if search_type == prev_search_type:
                     continue
 
-                my.add_join(search_type, prev_search_type, join=join)
+
+                can_join = DatabaseImpl.can_search_types_join( \
+                        search_type, prev_search_type)
+                if can_join:
+                    my.add_join(search_type, prev_search_type, join=join)
+                else:
+                    return False
+
 
                 prev_search_type = search_type
 
+
+            my.order_bys.append(column)
 
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             column = parts[-1]
             my.select.add_order_by(column, direction=direction, table=table)
+
+            return True
         else:
+            my.order_bys.append(column)
+
             table = my.search_type_obj.get_table()
 
             impl = my.get_database_impl()
@@ -3532,7 +3543,6 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                #sequence = impl.get_sequence_name(table, database=database)
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
@@ -5139,7 +5149,9 @@ class SearchType(SObject):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             key2 = "%s:%s" % (db_resource, table)
-            cache_dict[key2] = None
+            #cache_dict[key2] = None
+            del(cache_dict[key2])
+
 
     clear_column_cache = classmethod(clear_column_cache)
 

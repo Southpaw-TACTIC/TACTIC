@@ -232,18 +232,23 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
     ARGS_KEYS = {
-    'type': {
-        'description': 'Determines the type it should be displayed as',
-        'type': 'SelectWdg',
-        'values': 'string|text|integer|float|boolean|timestamp',
-        'category': 'Database'
-    },
-    'total_summary': {
-        'description': 'Determines a calculation for the bottom row',
-        'type': 'SelectWdg',
-        'values': 'count|total|average',
-        'category': 'Summary'
-    }
+        'type': {
+            'description': 'Determine the type it should be displayed as',
+            'type': 'SelectWdg',
+            'values': 'string|text|integer|float|boolean|timestamp',
+            'category': 'Database'
+        },
+        'total_summary': {
+            'description': 'Determine a calculation for the bottom row',
+            'type': 'SelectWdg',
+            'values': 'count|total|average',
+            'category': 'Summary'
+        },
+        'column': {
+            'description': 'Determine the database column to display',
+            'type': 'TextWdg',
+            'category': 'Display'
+        }
     }
 
 
@@ -444,8 +449,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(my):
         sobject = my.get_current_sobject()
-        name = my.get_name()
-        value = my.get_value()
+        
+        column =  my.kwargs.get('column')
+        if column:
+            name = column
+        else:
+            name = my.get_name()
+        
+        value = my.get_value(name=name)
 
         if sobject:
             data_type = SearchType.get_column_type(sobject.get_search_type(), name)
@@ -458,7 +469,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         if name == 'id' and value == -1:
             value = ''
 
-        elif data_type == "timestamp" or my.name == "timestamp":
+        elif data_type == "timestamp" or name == "timestamp":
 	    if value == 'now':
                 value = ''
             elif value:

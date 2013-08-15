@@ -1985,12 +1985,12 @@ class Select(object):
             table = my.tables[0]
 
         if column == 'id' and value == None:
-            where = "\"%s\" is NULL" % column
+            where = "\"%s\".\"%s\" is NULL" % (table, column)
             my.add_where(where)
             return
 
         if value == None:
-            where = "\"%s\" is NULL" % column
+            where = "\"%s\".\"%s\" is NULL" % (table, column)
             my.add_where(where)
             return
 
