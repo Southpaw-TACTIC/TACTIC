@@ -229,7 +229,12 @@ class PluginWdg(BaseRefreshWdg):
             content_div.add_style("padding: 5px 5px 5px 10px")
             content_div.add_style("font-style: italic")
 
-
+        show_active_only = my.kwargs.get("show_active_only") 
+        if show_active_only in [True, 'true']: 
+            show_active_only = True 
+        else: 
+            show_active_only = False 
+      
         for dirname in plugin_dirnames:
 
             parts = dirname.split("/")
@@ -375,9 +380,20 @@ class PluginWdg(BaseRefreshWdg):
 
             if is_active:
                 icon = IconWdg("Active in project", IconWdg.CHECK)
+
+                if show_active_only: 
+                    swap.set_on(True) 
+                    folder_content.add_style("display", "") 
+                    #folder_header.add_style("display: none") 
+                    folder_header.add_style("opacity: 0.3") 
             else:
                 icon = IconWdg("Not Active in project", IconWdg.DELETE)
                 icon.add_style("opacity: 0.2")
+
+                if show_active_only: 
+                    plugin_div.add_style("display: none") 
+                    folder_header.add_style("opacity: 0.3") 
+
             icon.add_style("margin-right: -3px")
 
             plugin_div.add_attr("title", description)
@@ -2453,10 +2469,10 @@ class PluginDirListActionCbk(Command):
                 os.unlink(to_path)
 
             shutil.move(upload_path, to_path)
-
-            from pyasm.common import ZipUtil
-            zip_util = ZipUtil()
-            zip_util.extract(cls, to_path)
+            if to_path.endswith(".zip"): 
+                from pyasm.common import ZipUtil
+                zip_util = ZipUtil()
+                zip_util.extract(cls, to_path)
 
 
 
