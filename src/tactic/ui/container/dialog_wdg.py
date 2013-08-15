@@ -168,10 +168,12 @@ class DialogWdg(BaseRefreshWdg):
         'cbjs_action': '''
             var pos = bvr.src_el.getPosition();
             var size = bvr.src_el.getSize();
+            var init_offset = {x: bvr.offset.x, y: bvr.offset.y + 5};
             var offset = {
                 x: pos.x + bvr.offset.x,
                 y: pos.y + size.y + bvr.offset.y + 5
             };
+            
             var dialog = $(bvr.dialog_id);
             if (dialog) {
                 var body = $(document.body); 
@@ -182,23 +184,22 @@ class DialogWdg(BaseRefreshWdg):
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
                 spt.toggle_show_hide(dialog);
 
-                // reposition if offscreen
+                // reposition if offscreen for offset x only
                 var size = dialog.getSize();
                 var pos = dialog.getPosition();
                 var win_size = $(document.body).getSize();
-
-                if (pos.y+size.y > win_size.y+scroll_top) {
-                    dialog.setStyle("top", win_size.y - size.y+ scroll_top - 3);
-                }
-                if (pos.x+size.x > win_size.x+scroll_left) {
-                    dialog.setStyle("left", win_size.x - size.x +scroll_left- 5);
+              
+                var dx = pos.x + size.x - (win_size.x + scroll_left);
+                if (dx > 0) {
+                    offset.x -= dx
+                    dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
+                    //dialog.setStyle("left", win_size.x - size.x +scroll_left- 5);
                 }
 
                 // adjust the pointer
-                //var pointer = dialog.getElement(".spt_popup_pointer");
-                //pointer_pos = pointer.getPosition();
-                //pointer.position({position: 'upperleft', relativeTo: bvr.src_el } );
-                //pointer.setStyle("top", pointer_pos.y-);
+                var pointer = dialog.getElement(".spt_popup_pointer");
+                pointer_pos = pointer.getPosition();
+                pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
 
             }
             bvr.src_el.dialog = dialog;
