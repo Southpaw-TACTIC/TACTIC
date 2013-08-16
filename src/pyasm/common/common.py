@@ -20,7 +20,6 @@ import hashlib, StringIO, urllib
 import datetime
 import colorsys
 
-from bson import ObjectId
 
 from base import *
 
@@ -45,12 +44,16 @@ except ImportError:
             print
             raise
 
+    try:
+        from bson import ObjectId
+    except ImportError:
+        ObjectId = None
 
     class SPTJSONEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.isoformat()
-            elif isinstance(obj, ObjectId):
+            elif ObjectId and isinstance(obj, ObjectId):
                 return str(obj)
             else:
                 return json.JSONEncoder.default(self, obj)
