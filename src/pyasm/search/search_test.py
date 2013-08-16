@@ -65,6 +65,9 @@ class SearchTest(unittest.TestCase):
             my.person = Person.create( "1", "e",
                     "ComputerWorld", "5") 
 
+
+            my._test_no_id()
+
             my._test_order_by()                               
             my._test_search_key()
             my._test_search()
@@ -92,8 +95,38 @@ class SearchTest(unittest.TestCase):
 
             test_env.delete()
 
-    def _test_order_by(my):
 
+    def _test_no_id(my):
+
+        sobject = SearchType.create("unittest/no_id")
+        sobject.set_value("name", "Cindy")
+        sobject.commit()
+        first_id = sobject.get_id()
+        my.assertEquals(first_id, sobject.get_value("test_id"))
+
+        sobject = SearchType.create("unittest/no_id")
+        sobject.set_value("name", "Mike")
+        sobject.commit()
+        second_id = sobject.get_id()
+        my.assertEquals(second_id, sobject.get_value("test_id"))
+
+        # test update
+        sobject.set_value("name", "Michael")
+        sobject.commit()
+
+
+        # test search
+        search = Search("unittest/no_id")
+        sobjects = search.get_sobjects()
+        my.assertEquals( 2, len(sobjects) )
+        for sobject in sobjects:
+            my.assertEquals( True, sobject.get_id() in [first_id, second_id])
+
+
+
+
+
+    def _test_order_by(my):
 
         sobjects = Search.eval("@SOBJECT(unittest/person['@ORDER_BY','description desc, name_first desc'])")
         sobjects1 = Search.eval("@SOBJECT(unittest/person['@ORDER_BY','description, name_first'])")
@@ -915,7 +948,6 @@ class SearchTest(unittest.TestCase):
 
 
 
->>>>>>> .merge-right.r10096
 if __name__ == "__main__":
     unittest.main()
 

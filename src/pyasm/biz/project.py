@@ -280,6 +280,9 @@ class Project(SObject):
         assert not isinstance(search_type, SearchType)
 
         project_code = cls.extract_project_code(search_type)
+        assert project_code != "__NONE__"
+
+
         project = cls.get_by_code(project_code)
         return project
     get_by_search_type = classmethod(get_by_search_type)

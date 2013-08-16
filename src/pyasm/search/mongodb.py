@@ -15,9 +15,9 @@ __all__ = ['MongoDbConn', 'MongoDbImpl']
 
 from pyasm.common import Environment, SetupException, Config, Container, TacticException
 
-
 from database_impl import DatabaseImplException, DatabaseImpl
 
+import bson
 
 try:
     import pymongo
@@ -65,9 +65,8 @@ class MongoDbConn(object):
 
 
 
+
 class MongoDbImpl(DatabaseImpl):
-
-
 
 
     def get_columns(cls, db_resource, table):
@@ -118,13 +117,25 @@ class MongoDbImpl(DatabaseImpl):
         return True
 
 
-    def _build_filters(my, filters):
+    def has_savepoint(my):
+        return False
+
+
+    def has_sequences(my):
+        return False
+
+
+
+    def build_filters(cls, filters):
         # interpret the assmebled filter data
         nosql_filters = {}
         for filter in filters:
             column = filter.get("column")
             value = filter.get("value")
             op = filter.get("op")
+
+            if column == "_id" and value not in [-1, '-1']:
+                value = bson.ObjectId(value)
 
             if op == "=":
                 nosql_filters[column] = value
@@ -133,11 +144,17 @@ class MongoDbImpl(DatabaseImpl):
                     mongo_op = "$lt"
                 elif op == ">":
                     mongo_op = "$gt"
+                elif not op:
+                    pass
                 else:
-                    raise SearchException("Filter operator [%s] is not supported" % op)
-                nosql_filters[column] = {mongo_op: value}
+                    raise Exception("Filter operator [%s] is not supported" % op)
+                if not op:
+                    nosql_filters[column] = value
+                else:
+                    nosql_filters[column] = {mongo_op: value}
 
         return nosql_filters
+    build_filters = classmethod(build_filters)
 
 
 
@@ -155,7 +172,7 @@ class MongoDbImpl(DatabaseImpl):
 
         collection = conn.get_collection(table)
 
-        nosql_filters = my._build_filters(filters)
+        nosql_filters = my.build_filters(filters)
         cursor = collection.find(nosql_filters)
 
         select.cursor = cursor
@@ -182,6 +199,51 @@ class MongoDbImpl(DatabaseImpl):
             results.append(result)
 
         return results
+
+
+    def execute_update(my, sql, update):
+        conn = sql.get_connection()
+
+        # select data
+        table = update.table
+        data = update.data
+        filters = update.raw_filters
+
+        collection = conn.get_collection(table)
+        nosql_filters = my.build_filters(filters)
+        item = collection.find_one(nosql_filters)
+
+
+        result = collection.update( {'_id': item.get('_id')}, {'$set': data} )
+        print "result: ", result
+
+        err = result.get("err")
+        if err:
+            raise Exception(result)
+
+        sql.last_row_id = item.get("_id")
+
+
+
+
+
+    def execute_insert(my, sql, update):
+
+        conn = sql.get_connection()
+
+        # select data
+        table = update.table
+        data = update.data
+
+        if data.get("_id") in ["-1", -1]:
+            del(data['_id'])
+
+        collection = conn.get_collection(table)
+
+        object_id  = collection.insert(data)
+
+        sql.last_row_id = object_id
+
 
 
 

@@ -1544,7 +1544,8 @@ class Search(Base):
 
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
-            results = my.select.execute()
+            results = sql.do_query(my.select)
+            #results = query.execute(sql)
             # TODO:
             # Not really used because results is already a dictionary
             # and the column data is dynamic
@@ -1768,7 +1769,7 @@ class Search(Base):
         search.set_show_retired(True)
         if isinstance(search_id, list):
             # assuming idential search_type
-            search.add_filters('id', search_id)
+            search.add_filters(my.get_id_col(), search_id)
             return search.get_sobjects()
         else:
             # use caching
@@ -2651,7 +2652,7 @@ class SObject(object):
             pass
 
 
-        if name != "id" and my.get_id() == -1:
+        if name != my.get_id_col() and my.get_id() == -1:
             return ""
 
         if no_exception:
@@ -3284,7 +3285,7 @@ class SObject(object):
         '''commit all of the changes to the database'''
         is_insert = False 
         id = my.get_id()
-        if my.force_insert or id == -1:
+        if my.force_insert or id == -1 or id == "-1":
             is_insert = True
         impl = my.get_database_impl()
         # before we make the final statement, we allow the sobject to set
@@ -3313,8 +3314,6 @@ class SObject(object):
             update = Insert()
         else:
             update = Update()
-            where = '"%s" = %s' % (my.get_id_col(), my.get_id())
-            update.add_where(where)
 
         # to allow for the convenience of a SearchType to be used as an
         # SObject, the database and table must be hard coded in order to
@@ -3330,6 +3329,13 @@ class SObject(object):
         update.set_database(db_resource)
         # set the table to update
         update.set_table(table)
+
+        if not is_insert:
+            update.add_filter(my.get_id_col(), my.get_id() )
+            #where = '"%s" = %s' % (my.get_id_col(), my.get_id())
+            #update.add_where(where)
+
+
 
         # it is now safe to add the override id to the update data and update
         # object, since the "where" is already added to the update object
@@ -3399,46 +3405,55 @@ class SObject(object):
                 continue
             update.set_value(key, value, quoted=quoted, escape_quoted=escape_quoted )
 
-        # perform the update
-        statement = update.get_statement()
-        if not statement:
-            return
 
 
-        # SQL Server: before a redo, set IDENTITY_INSERT to ON
-        # to allow an explicit ID value to be inserted into the ID column of the table.
-        # note: At any time, only one table in a session can have
-        #       the IDENTITY_INSERT property set to ON. 
-        if id_override == True:
-            id_statement = impl.get_id_override_statement(table, True)
-            if id_statement:
-                sql.do_update(id_statement)
+        vendor = db_resource.get_vendor()
+        if vendor == "MongoDb":
+            update.execute(sql)
+            #statement = update.get_statement()
+            #print "statement: ", statement
 
-        #print "statement: ", statement
-        sql.do_update(statement)
+            # FIXME: fill in some data
+            statement = "MongoDB!!!"
 
-        # SQL Server: after a redo, set IDENTITY_INSERT to OFF
-        # to dis-allow an explicit ID value to be inserted into the ID column of the table.
-        if id_override == True:
-            id_statement = impl.get_id_override_statement(table, False)
-            if id_statement:
-                sql.do_update(id_statement)
+        else:
+            # perform the update
+            statement = update.get_statement()
+            if not statement:
+                return
+
+            # SQL Server: before a redo, set IDENTITY_INSERT to ON
+            # to allow an explicit ID value to be inserted into the ID column of the table.
+            # note: At any time, only one table in a session can have
+            #       the IDENTITY_INSERT property set to ON. 
+            if id_override == True:
+                id_statement = impl.get_id_override_statement(table, True)
+                if id_statement:
+                    sql.do_update(id_statement)
+
+            #print "statement: ", statement
+            sql.do_update(statement)
+
+            # SQL Server: after a redo, set IDENTITY_INSERT to OFF
+            # to dis-allow an explicit ID value to be inserted into the ID column of the table.
+            if id_override == True:
+                id_statement = impl.get_id_override_statement(table, False)
+                if id_statement:
+                    sql.do_update(id_statement)
 
 
-        # fill the data back in (autocreate of ids)
+
+
+
+        # Fill the data back in (autocreate of ids)
         # The only way to do this reliably is to query the database
-        # This will become a problem on a high volume site
-        # where a record is inserted between this do_update and the 
-        # selection below.  (Not necessarily because of transactions!)
-        #if is_insert == True:
         if id == -1:
             # assume that the id is constantly incrementing
-            #id = sql.get_value("SELECT currval('%s_id_seq')" % table )
-            #sequence = "%s_id_seq" % table
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                sequence = impl.get_sequence_name(table, database=database)
+                #sequence = impl.get_sequence_name(table, database=database)
+                sequence = impl.get_sequence_name(my.get_search_type_obj(), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
 
@@ -4733,7 +4748,7 @@ class SObject(object):
             if column == 'metadata':
                 value = my.get_metadata_dict()
             else:
-                value = my.get_value(column)
+                value = my.get_value(column, no_exception=True)
                 if language == 'c#':
                     if value == '':
                         value = None
@@ -4762,6 +4777,16 @@ class SearchType(SObject):
 
         if isinstance(search_type,SObject):
             search_type = search_type.SEARCH_TYPE
+
+
+        # MongoDb Test
+        if search_type.startswith("mongodb/"):
+            my.base_key = search_type
+        else:
+            my.base_key = ""
+
+
+
         super(SearchType,my).__init__(search_type,columns,result, fast_data=fast_data)
 
         # cache this value as it gets called a lot
@@ -4853,7 +4878,8 @@ class SearchType(SObject):
             return 0
 
 
-        sequence = impl.get_sequence_name(table, database=database)
+        #sequence = impl.get_sequence_name(table, database=database)
+        sequence = impl.get_sequence_name(search_type_obj, database=database)
         if mode == 'currval':
             id = sql.get_value( impl.get_currval_select(sequence))
         elif mode == 'nextval':
@@ -5119,8 +5145,17 @@ class SearchType(SObject):
 
         return title
 
+
     def get_id_col(my):
-        return "id"
+        # MongoDb Test
+        if my.base_key == "table/posts":
+            return "_id"
+        id_col = my.data.get("id_column")
+        if not id_col:
+            return "id"
+        else:
+            return id_col
+
 
     def get_retire_col(my):
         return "s_status"
@@ -5483,7 +5518,7 @@ class SearchType(SObject):
             parts = search_type.split("/")
             namespace = parts[0]
             table = parts[1]
-            project = 'db_test'
+            project = '__NONE__'
             columns = ['id', 'table_name', 'title', 'search_type','class_name', 'namespace','database']
             result = ['0', table, Common.get_display_title(table), search_type,'pyasm.search.SObject',namespace,project]
             sobject = cls.create("sthpw/search_object",columns,result)
@@ -6185,7 +6220,7 @@ class SearchKey(object):
     def get_by_search_key(search_key):
         if not search_key:
             return None
-        
+
         # fix this as a precaution ... if appears from xml occasionally
         while search_key.find("&amp;") != -1:
             search_key = search_key.replace("&amp;", "&")
@@ -6217,7 +6252,8 @@ class SearchKey(object):
             if data.get('code'):
                 search.add_filter("code", data['code'] )
             elif data.get('id'):
-                search.add_filter("id", data['id'] )
+                id_col = search.get_id_col()
+                search.add_filter(id_col, data['id'] )
             else:
                 raise SearchException("Malformed search_key [%s] in search" % search_key)
 
@@ -6235,6 +6271,7 @@ class SearchKey(object):
     def build_by_sobject(cls, sobject, use_id=False):
         return cls.get_by_sobject(sobject, use_id=use_id)
     build_by_sobject = classmethod(build_by_sobject)
+
 
     def get_by_sobject(cls, sobject, use_id=False):
         search_type = sobject.get_base_search_type()
@@ -6256,6 +6293,9 @@ class SearchKey(object):
             id = sobject.get_id()
             return cls.build_search_key(search_type, id, column='id', project_code=project_code)
     get_by_sobject = classmethod(get_by_sobject)
+
+
+
 
     def get_by_sobjects(cls, sobjects, use_id=False):
         if not sobjects:

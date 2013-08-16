@@ -20,11 +20,14 @@ import hashlib, StringIO, urllib
 import datetime
 import colorsys
 
+from bson import ObjectId
+
 from base import *
 
 try:
-    from cjson import encode as jsondumps
-    from cjson import decode as jsonloads
+    #from cjson import encode as jsondumps
+    #from cjson import decode as jsonloads
+    raise ImportError()
 except ImportError:
     try:
         # Python 2.6 ships with json
@@ -43,16 +46,17 @@ except ImportError:
             raise
 
 
-    class JSONDateTimeEncoder(json.JSONEncoder):
+    class SPTJSONEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.isoformat()
+            elif isinstance(obj, ObjectId):
+                return str(obj)
             else:
                 return json.JSONEncoder.default(self, obj)
 
-
     def jsondumps(obj):
-        return xjsondumps(obj, cls=JSONDateTimeEncoder)
+        return xjsondumps(obj, cls=SPTJSONEncoder)
 
 
 

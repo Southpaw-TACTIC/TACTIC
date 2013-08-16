@@ -40,6 +40,10 @@ class DatabaseImplInterface(object):
     def execute_query(my, sql, select):
         pass
 
+    def execute_update(my, sql, update):
+        pass
+
+
 
 
 class DatabaseImpl(DatabaseImplInterface):
@@ -497,6 +501,10 @@ class SQLServerImpl(DatabaseImpl):
     def get_sequence_name(my, table, database=None):
         # SQL Server specific implementation: use the ID column as the sequence.
         # OLD return "%s_id_seq" % table
+        from pyasm.search import SearchType
+        if isinstance(table, SearchType):
+            search_type = table
+            table = search_type.get_table()
         return table
 
 
@@ -1290,6 +1298,13 @@ class PostgresImpl(DatabaseImpl):
         return 'CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1 NO MAXVALUE CACHE 1' % name
 
     def get_sequence_name(my, table, database=None):
+        from pyasm.search import SearchType
+        if isinstance(table, SearchType):
+            search_type = table
+            table = search_type.get_table()
+            id_col = search_type.get_id_col()
+            if id_col:
+                return "%s_%s_seq" % (table, id_col)
         return "%s_id_seq" % table
 
 
@@ -1757,7 +1772,11 @@ class OracleImpl(PostgresImpl):
 
 
     def get_sequence_name(my, table, database=None):
-        #return "%s_id_seq" % table
+        from pyasm.search import SearchType
+        if isinstance(table, SearchType):
+            search_type = table
+            table = search_type.get_table()
+
         if database:
             return '''%s."%s_id_seq"''' % (database, table)
         else:
@@ -2827,7 +2846,7 @@ class MySQLImpl(PostgresImpl):
     #
     # Sequence methods
     #
-    # Sequences are not used in Sqlite
+    # Sequences are not used in MySQL
     def has_sequences(my):
         return False
 

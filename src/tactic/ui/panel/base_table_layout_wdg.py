@@ -1362,7 +1362,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             '''
             } )
 
-               
+
 
         if my.kwargs.get("show_gear") != "false":
             button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)

@@ -77,6 +77,7 @@ except ImportError, e:
 # MongoDb
 try:
     import pymongo
+    pymongo.ProgrammingError = Exception
     DATABASE_DICT["MongoDb"] = pymongo
 except ImportError, e:
     pass
@@ -195,7 +196,6 @@ class Sql(Base):
         my.transaction_count = 0
         my.description = None
 
-        my.impl = DatabaseImpl.get()
 
     def get_db_resource(my):
         db_resource = DbResource(my.database_name, host=my.host, port=my.port, vendor=my.vendor, user=my.user, password=my.password)
@@ -383,7 +383,7 @@ class Sql(Base):
 
     def set_savepoint(my, name='save_pt'):
         '''set a savepoint'''
-        stmt = my.impl.set_savepoint(name)
+        stmt = my.database_impl.set_savepoint(name)
         if stmt:
             cursor = my.conn.cursor()
             cursor.execute(stmt)
@@ -391,7 +391,7 @@ class Sql(Base):
     def rollback_savepoint(my, name='save_pt', release=True):
         '''rollback to a savepoint'''
         my.cursor = my.conn.cursor()
-        stmt = my.impl.rollback_savepoint(name)
+        stmt = my.database_impl.rollback_savepoint(name)
         if not stmt:
             return
         my.cursor.execute(stmt)
@@ -399,7 +399,7 @@ class Sql(Base):
             my.release_savepoint(name)
 
     def release_savepoint(my, name='save_pt'):
-        release_stmt = my.impl.release_savepoint(name)
+        release_stmt = my.database_impl.release_savepoint(name)
         if not release_stmt:
             return
         if release_stmt:
@@ -645,34 +645,42 @@ class Sql(Base):
                 # reconnect
                 my.connect()
 
-            #import time
-            #start = time.time()
-            #print my.database_name, query
-            my.query = query
-            my.cursor = my.conn.cursor()
-            #import time
-            #start = time.time()
-            my.cursor.execute(query)
 
-            my.description = my.cursor.description
-
-            # copy the data structure because LOBs in Oracle become stale
-            if my.get_database_type() == "Oracle":
-                import cx_Oracle
-                my.results = []
-                for x in my.cursor:
-                    result = []
-                    for y in x:
-                        if isinstance(y, cx_Oracle.LOB):
-                            result.append(str(y))
-                        else:
-                            result.append(y)
-                    my.results.append(result)
+            vendor = my.get_vendor()
+            if vendor == "MongoDb":
+                my.results = query.execute(my)
             else:
-                my.results = my.cursor.fetchall()
 
-            my.cursor.close()
-            #print time.time() - start
+                #import time
+                #start = time.time()
+                #print my.database_name, query
+                my.query = query
+                my.cursor = my.conn.cursor()
+                #import time
+                #start = time.time()
+                my.cursor.execute(query)
+
+                my.description = my.cursor.description
+
+                # copy the data structure because LOBs in Oracle become stale
+                if my.get_database_type() == "Oracle":
+                    import cx_Oracle
+                    my.results = []
+                    for x in my.cursor:
+                        result = []
+                        for y in x:
+                            if isinstance(y, cx_Oracle.LOB):
+                                result.append(str(y))
+                            else:
+                                result.append(y)
+                        my.results.append(result)
+                else:
+                    my.results = my.cursor.fetchall()
+
+                my.cursor.close()
+                #print time.time() - start
+
+
             return my.results
 
         except Exception, e:
@@ -855,10 +863,10 @@ class Sql(Base):
         # replace all single quotes with two single quotes
         value_type = type(value)
         if value_type in [types.ListType, types.TupleType]:
-            # [MIKE-FIX]
             if len(value) == 0:
-                # Previously no check if list is empty, which is an issue for trying to get 'value[0]' as it's
-                # not defined. Assuming that if the list is empty, the intended value  is NULL
+                # Previously no check if list is empty, which is an issue
+                # for trying to get 'value[0]' as it's not defined. Assuming
+                # that if the list is empty, the intended value  is NULL
                 return "NULL"
             value = value[0]
             value_type = type(value)
@@ -877,10 +885,16 @@ class Sql(Base):
             raise SqlException("Value passed in was an <instancemethod>")
         elif value_type in [types.FloatType, types.IntType]:
             pass
-        elif value_type in [types.StringTypes]:
+        elif isinstance(value, basestring) or value_type in [types.StringTypes]:
             value = value.replace("'", "''")
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
+        elif isinstance(value, object):
+            # NOTE:
+            # Keep objects as they are ... this is for NoSQL which can take
+            # objects ... however, this may need to be checked using
+            # DatabaseImpl
+            return value
         else:
             try:
                 value = value.replace("'", "''")
@@ -981,7 +995,7 @@ class Sql(Base):
 
     def table_exists(my, table):
         db_resource = my.get_db_resource()
-        return my.impl.table_exists(db_resource, table)
+        return my.database_impl.table_exists(db_resource, table)
 
 
 
@@ -2576,6 +2590,24 @@ class Insert(object):
         return my.get_statement()
 
 
+
+    def execute(my, sql=None):
+        '''Actually execute the statement'''
+        if not sql:
+            sql = my.sql
+        if not sql:
+            raise SqlException("No connector found to execute query")
+
+        conn = sql.get_connection()
+        db_resource = sql.get_db_resource()
+        vendor = db_resource.get_vendor()
+        if vendor == "MongoDb":
+            impl = db_resource.get_database_impl()
+            impl.execute_insert(sql, my)
+
+
+
+
     def set_database(my, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
@@ -2747,6 +2779,7 @@ class Update(object):
         my.table = None
         my.data = {}
         my.filters = {}
+        my.raw_filters = []
         my.wheres = []
         my.unquoted_cols = []
         my.escape_quoted_cols = []
@@ -2755,12 +2788,30 @@ class Update(object):
         my.sql = None
         my.database = None
         my.column_types = {}
+
         my.impl = DatabaseImpl.get()
 
         my.schema = ""
 
     def __str__(my):
         return my.get_statement()
+
+
+
+
+    def execute(my, sql=None):
+        '''Actually execute the statement'''
+        if not sql:
+            sql = my.sql
+        if not sql:
+            raise SqlException("No connector found to execute query")
+
+        conn = sql.get_connection()
+        db_resource = sql.get_db_resource()
+        vendor = db_resource.get_vendor()
+        if vendor == "MongoDb":
+            impl = db_resource.get_database_impl()
+            impl.execute_update(sql, my)
 
 
 
@@ -2839,6 +2890,18 @@ class Update(object):
 
     def add_filter(my, column, value, column_type="", table="", quoted=None):
         assert my.table
+
+
+        # store all the raw filter data
+        my.raw_filters.append( {
+                'column': column,
+                'value': value,
+                'column_type': column_type,
+                #'op': op,
+                #'table': table
+                'quoted': quoted,
+        } )
+
 
         if not column_type and my.sql:
             # get column type from database

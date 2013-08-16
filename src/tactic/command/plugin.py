@@ -1107,12 +1107,12 @@ class PluginInstaller(PluginBase):
                         if commit:
                             sobject.commit(triggers=False)
 
-                            
-                            plugin_content = SearchType.create("config/plugin_content")
-                            plugin_content.set_value("search_type", sobject.get_search_type())
-                            plugin_content.set_value("search_code", sobject.get_code())
-                            plugin_content.set_value("plugin_code", my.plugin.get_code())
-                            plugin_content.commit()
+                            if my.plugin: 
+                                plugin_content = SearchType.create("config/plugin_content")
+                                plugin_content.set_value("search_type", sobject.get_search_type())
+                                plugin_content.set_value("search_code", sobject.get_code())
+                                plugin_content.set_value("plugin_code", my.plugin.get_code())
+                                plugin_content.commit()
 
                     except UnicodeDecodeError, e:
                         print "Skipping due to unicode decode error: [%s]" % statement_str
