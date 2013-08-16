@@ -295,6 +295,12 @@ class ThumbWdg(BaseTableElementWdg):
                             my._update_data(publish_data)
 
 
+                        # verify if we get icon for all
+                        if len(my.data) < len(my.sobjects):
+                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, is_latest=True, return_dict=True)
+                            my._update_data(publish_data)
+
+
 
 
 
@@ -310,6 +316,15 @@ class ThumbWdg(BaseTableElementWdg):
                         if len(my.data) < len(my.sobjects):
                             publish_data =  Snapshot.get_by_sobjects(my.sobjects, process=my.DEFAULT_PROCESS, version=my.version, return_dict=True)
                             my._update_data(publish_data)
+
+                        # verify if we get icon for all
+                        if len(my.data) < len(my.sobjects):
+                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, version=my.version, return_dict=True)
+                            my._update_data(publish_data)
+
+
+
+
  
 
                 except SqlException, e:

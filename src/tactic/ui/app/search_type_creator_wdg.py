@@ -339,7 +339,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         if project_type in ['default']:
-            tr.add_style("opacity: 0.6")
+            #tr.add_style("opacity: 0.6")
+            tr.add_style("display: none")
             checkbox.set_option("disabled", "1")
             checkbox.set_checked()
 

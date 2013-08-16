@@ -51,8 +51,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_div.add_color("background", "background3")
         title_div.add_border()
 
-        search_type = my.kwargs.get("search_type")
-        if not search_type:
+        my.search_type = my.kwargs.get("search_type")
+        if not my.search_type:
             div.add("No search type specfied")
             return div
 
@@ -69,11 +69,25 @@ class IngestUploadWdg(BaseRefreshWdg):
             title_div.add_style("margin: -20px -21px 15px -21px")
 
 
+        div.add("Add files or drag/drop files to be uploaded and ingested:")
+        div.add("<br/>"*2)
+
+
+        data_div = my.get_data_wdg()
+        data_div.add_style("float: left")
+        data_div.add_style("float: left")
+        div.add(data_div)
+
+
+
+
+
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         div.add(upload)
         button = ActionButtonWdg(title="Add")
         button.add_style("float: right")
+        button.add_style("margin-top: -3px")
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
@@ -99,6 +113,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title="Clear")
         button.add_style("float: right")
+        button.add_style("margin-top: -3px")
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
@@ -116,14 +131,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        div.add("Add files or drag/drop files to be uploaded and ingested:")
-        div.add("<br/>"*2)
-
-
-        data_div = my.get_data_wdg()
-        div.add(data_div)
-
-
+        div.add("<br clear='all'/>")
 
 
         files_div = DivWdg()
@@ -398,6 +406,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         var categories = values.category;
         categories.shift();
 
+        var processes = values.process;
+        if (processes) {
+            process = processes[0];
+            if (!process) {
+                process = null;
+            }
+        }
 
         var kwargs = {
             search_type: search_type,
@@ -405,6 +420,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             filenames: filenames,
             key: key,
             categories: categories,
+            process: process,
         }
         on_complete = function() {
             spt.info("Ingest complete");
@@ -443,7 +459,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'kwargs': {
-                'search_type': search_type,
+                'search_type': my.search_type,
                 'relative_dir': relative_dir
             },
             'cbjs_action': '''
@@ -501,9 +517,35 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_data_wdg(my):
         div = DivWdg()
+        div.add_style("width: 150px")
+
+        from pyasm.biz import Pipeline
+        from pyasm.widget import SelectWdg
+        search_type_obj = SearchType.get(my.search_type)
+        base_type = search_type_obj.get_base_key()
+        search = Search("sthpw/pipeline")
+        search.add_filter("search_type", base_type)
+        print search.get_statement()
+        pipelines = search.get_sobjects()
+        if pipelines:
+            pipeline = pipelines[0]
+
+            process_names = pipeline.get_process_names()
+            if process_names:
+                process_div = DivWdg()
+                div.add(process_div)
+                process_div.add("Process: ")
+                select = SelectWdg("process")
+                process_div.add(select)
+                process_names.append("---")
+                process_names.append("icon")
+                select.set_option("values", process_names)
+        
+
+
 
         button = IconButtonWdg(title="Add Data", icon=IconWdg.FOLDER)
-        div.add(button)
+        #div.add(button)
 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
@@ -558,8 +600,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         checkbox = CheckboxWdg("file_keywords")
         name_div.add(checkbox)
         name_div.add(" Use file name for keywords")
-
-
 
 
         return div
@@ -621,7 +661,17 @@ class IngestUploadCmd(Command):
             search_key = sobject.get_search_key()
 
             # use API
-            context = "publish/%s" % filename
+
+            process = my.kwargs.get("process")
+            if not process:
+                process = "publish"
+
+            if process == "icon":
+                context = "icon"
+            else:
+                context = "%s/%s" % (process, filename)
+            
+
             server.simple_checkin(search_key, context, filename, mode='uploaded')
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent

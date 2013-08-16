@@ -44,7 +44,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if my.kwargs.get("do_search") != "false":
             my.handle_search()
 
-        my.kwargs['show_gear'] = 'false'
+        #my.kwargs['show_gear'] = 'false'
 
 
         # set the sobjects to all the widgets then preprocess
