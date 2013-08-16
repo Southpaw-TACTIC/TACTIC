@@ -577,29 +577,16 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
+        div.add("Naming convention dictate where in the repository files are placed when checked in.  TACTIC allows configuration for both directory and file naming conventions.")
 
-        # This is too unclear and unrelated to what people see
-        """
-        expr = "/{sobject.relative_dir}"
-        div.add( my.get_naming_item_wdg(expr, "Freeform Folder and File Name") )
-        div.add("<blockquote>Users can name folders and files freely. Examples uses would be for reference images or photos.</blockquote>")
-
-
-        expr = "/{project.code}/{search_type.table_name}/{sobject.category}/{sobject.code}"
-        div.add( my.get_naming_item_wdg(expr, "Strict Folder and Freeform File Name") )
-        div.add("<blockquote>Users can name files freely, but folders are strictly enforced.  Examples uses are work areas to manage project or job files.</blockquote>")
-
-
-        expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
-        div.add( my.get_naming_item_wdg(expr, "Strict Folder and File Name") )
-        div.add("<blockquote>Both folders and files will get strictly renamed according to the naming convention up check-in.  Example uses are delieverable files.</blockquote>")
-        """
+        div.add("<br/>")
+        div.add("<br/>")
 
 
         folder_div = DivWdg()
         div.add(folder_div)
 
-        checkbox = CheckboxWdg("folder")
+        checkbox = CheckboxWdg("has_folder_naming")
         folder_div.add(checkbox)
         folder_div.add("<b>Should folder naming conventions be enforced?</b>")
 
@@ -618,12 +605,12 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         } )
 
 
-        dirname_div.add("Choose a directory naming convention: ")
+        dirname_div.add("Choose where you wish files to be checked into: ")
         dirname_div.add("<br/>")
 
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.name}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Default") )
+        dirname_div.add( my.get_naming_item_wdg(expr, "Name", is_checked=True) )
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Project/Job") )
@@ -637,12 +624,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
-        # Free Form
+
+        # file naming conventions
 
         folder_div = DivWdg()
         div.add(folder_div)
 
-        checkbox = CheckboxWdg("folder")
+        checkbox = CheckboxWdg("has_file_naming")
         folder_div.add(checkbox)
         folder_div.add("<b>Should file naming conventions be enforced?</b>")
 
@@ -660,9 +648,20 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             '''
         } )
 
+        dirname_div.add("Choose how checked-in files should be named: ")
+        dirname_div.add("<br/>")
 
-        expr = "/{sobject.relative_dir}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Free Form") )
+
+        expr = "{sobject.name}_v{version}.{ext}"
+        dirname_div.add( my.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
+
+
+        expr = "{sobject.code}_v{version}.{ext}"
+        dirname_div.add( my.get_naming_item_wdg(expr, "Code", mode="file") )
+
+        expr = "{sobject.code}_{process}_v{version}.{ext}"
+        dirname_div.add( my.get_naming_item_wdg(expr, "Code with Process", mode="file") )
+
 
 
         """
@@ -703,8 +702,12 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             "sobject.category": "cars!sports",
             "snapshot.process": "WIP",
             "sobject.code": "JOB00586",
-            "sobject.name": "TradeshowBrochureAug2013",
+            "sobject.name": "Tradeshow-Brochure-Aug2013",
             "sobject.relative_dir": "%s!asset!vehicles!cars!sports" % project_code,
+            "basefile": "DSC0123",
+            "version": "003",
+            "ext": "png",
+            "process": "delivery"
         }
 
         sample_expr = expr
@@ -713,7 +716,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         return sample_expr
 
-    def get_naming_item_wdg(my, expr, title):
+    def get_naming_item_wdg(my, expr, title, mode="directory", is_checked=False):
 
         new_expr = my._example(expr)
 
@@ -724,13 +727,16 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         div.add(title_wdg)
 
         from pyasm.widget import RadioWdg
-        radio = RadioWdg("naming")
+        radio = RadioWdg("%s_naming" % mode)
         title_wdg.add(radio)
-        if title == "Default":
+        #if title == "Default":
+        if False:
             radio.set_checked()
             radio.add_attr("value", "_DEFAULT")
         else:
             radio.add_attr("value", expr)
+            if is_checked:
+                radio.set_checked()
         radio.add_style("margin-top: -5px")
 
         title_wdg.add(title)
@@ -739,29 +745,36 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         table = Table()
         table.add_style("font-size: 0.80em")
-        table.add_style("margin-left: 15px")
+        table.add_style("margin-left: 25px")
         div.add(table)
 
+        import re
+        if mode == "directory":
+            delimiter = "/"
+        else:
+            delimiter = "!!!"
 
         tr = table.add_row()
         #tr.add_style("display: none")
-        parts = new_expr.split("/")
-        for item in parts:
+        parts = re.split(re.compile("[%s]" % delimiter), new_expr)
+        for i, item in enumerate(parts):
             item = item.replace("!", "/")
             td = table.add_cell(item)
             td.add_style("text-align: left")
             td.add_style("padding-right: 15px")
-            table.add_cell("/")
+            if i < len(parts) - 1:
+                table.add_cell(delimiter)
 
-        parts = expr.split("/")
+        parts = re.split(re.compile("[%s]" % delimiter), expr)
         tr = table.add_row()
         #tr.add_style("display: none")
         tr.add_style("opacity: 0.5")
-        for item in parts:
+        for i, item in enumerate(parts):
             td = table.add_cell(item)
             td.add_style("text-align: left")
             td.add_style("padding-right: 15px")
-            table.add_cell("/")
+            if i < len(parts) - 1:
+                table.add_cell(delimiter)
 
         return div
 
@@ -1676,7 +1689,7 @@ class SearchTypeCreatorCmd(Command):
             create.add(column_name, data_type)
  
 
-        naming_expr = my.get_value("naming")
+        naming_expr = my.get_value("directory_naming")
         if naming_expr.find("{sobject.relative_dir}") != -1:
             create.add("relative_dir", "text")
         elif naming_expr.find("{sobject.category}") != -1:
@@ -1895,26 +1908,45 @@ class SearchTypeCreatorCmd(Command):
 
     def add_naming(my):
 
-        naming_expr = my.get_value("naming")
+        naming_expr = my.get_value("directory_naming")
+        file_naming_expr = my.get_value("file_naming")
+
 
         if naming_expr == "_CUSTOM":
             naming_expr = my.get_value("custom_naming")
 
         if not naming_expr or naming_expr == "_DEFAULT":
             naming_expr = "{project.code}/{search_type.table_name}/{sobject.code}"
-
         # fix the slashes
         naming_expr = naming_expr.strip("/")
 
+        if not file_naming_expr or file_naming_expr == "_DEFAULT":
+            file_naming_expr = "{sobject.name}_v{version}.{ext}"
+
+
+
+        has_folder_naming = my.get_value("has_folder_naming") == "on"
+        has_file_naming = my.get_value("has_file_naming") == "on"
+
         naming = SearchType.create("config/naming")
-        naming.set_value("dir_naming", naming_expr)
+        if has_folder_naming:
+            naming.set_value("dir_naming", naming_expr)
+        else:
+            naming.set_value("dir_naming", "{sobject.relative_dir}")
+
+        if has_file_naming:
+            naming.set_value("file_naming", file_naming_expr)
+        else:
+            naming.set_value("file_naming", "{basefile}.{ext}")
+
+
         naming.set_value("checkin_type", "auto")
 
         search_type = my.search_type_obj.get_base_key()
         naming.set_value("search_type", search_type)
+
+
+
         naming.commit()
-
-
-
 
 

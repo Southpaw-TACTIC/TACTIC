@@ -1562,14 +1562,36 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top.add(text)
 
 
+        output_processes = pipeline.get_output_processes(process)
+        if output_processes:
+            process_names = [x.get_name() for x in output_processes]
+
+            delivery_div = DivWdg()
+
+            checkbox = CheckboxWdg("deliver")
+            delivery_div.add(checkbox)
+            delivery_div.add_style("padding-top: 15px")
+            delivery_div.add("Deliver to: ")
+            top.add(delivery_div)
+
+            select = SelectWdg("deliver_process")
+            delivery_div.add(select)
+            select.set_option("values", process_names)
+            select.set_value(process_names[0])
+
+
         # add as a note
         note_div = DivWdg()
         top.add(note_div)
+        note_div.add_style("padding-top: 15px")
         note_div.add_class("spt_add_note")
         checkbox = CheckboxWdg("add_note")
         checkbox.add_class("spt_checkin_add_note")
         note_div.add(checkbox)
-        note_div.add("Also add as note")
+        note_div.add("Also add a note")
+
+
+
 
         web = WebContainer.get_web()
         browser = web.get_browser()
@@ -1776,6 +1798,23 @@ if (!transfer_mode) {
     transfer_mode = spt.Environment.get().get_transfer_mode();
 }
 
+
+
+// add in custom elements
+var custom_options_el = top.getElement(".spt_custom_options_top");
+var custom_options = spt.api.Utility.get_input_values(custom_options_el, null, false);
+bvr.custom_options = custom_options;
+
+
+
+// check to see if the check-in process is to be delivered elsewhere
+if (custom_options.deliver == "on") {
+    process = custom_options.deliver_process;
+}
+
+
+
+
 // the context variable is only used for initialization, since we use contexts
 var values = {
     'search_key': search_key,
@@ -1790,12 +1829,6 @@ var values = {
     'subcontexts': subcontexts
 };
 bvr.values = values;
-
-
-// add in custom elements
-var custom_options_el = top.getElement(".spt_custom_options_top");
-var custom_options = spt.api.Utility.get_input_values(custom_options_el, null, false);
-bvr.custom_options = custom_options;
 
 
 spt.app_busy.show("Check-in", file_paths[0]);

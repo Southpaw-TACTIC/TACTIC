@@ -1769,7 +1769,7 @@ class Search(Base):
         search.set_show_retired(True)
         if isinstance(search_id, list):
             # assuming idential search_type
-            search.add_filters(my.get_id_col(), search_id)
+            search.add_filters(search.get_id_col(), search_id)
             return search.get_sobjects()
         else:
             # use caching
@@ -3453,7 +3453,7 @@ class SObject(object):
                 id = sql.last_row_id
             else:
                 #sequence = impl.get_sequence_name(table, database=database)
-                sequence = impl.get_sequence_name(my.get_search_type_obj(), database=database)
+                sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
 

@@ -1106,7 +1106,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
 
-
+        """
         menu_item = MenuItem(type='action', label='Check-in Files')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1134,6 +1134,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load_popup("Check-in", class_name, kwargs);
             '''
         } )
+        """
 
 
 
