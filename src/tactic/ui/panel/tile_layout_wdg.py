@@ -26,6 +26,36 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
 from tool_layout_wdg import ToolLayoutWdg
 class TileLayoutWdg(ToolLayoutWdg):
 
+    def can_expand(my):
+        return True
+
+    def get_expand_behavior(my):
+        return {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var layout = spt.tile_layout.set_layout(bvr.src_el);
+
+            // get the current scale
+            var scale = spt.tile_layout.get_scale();
+            if (scale) scale = parseInt(scale);
+
+            if (scale == 100) {
+                scale = layout.getAttribute("last_scale");
+                if (scale) scale = parseInt(scale)
+                else scale = 100
+            }
+            else {
+                layout.setAttribute("last_scale", scale);
+                scale = 100;
+            }
+
+
+            spt.tile_layout.set_scale(scale);
+            '''
+
+        }
+
+
     def get_content_wdg(my):
         div = DivWdg()
         div.add_class("spt_tile_layout_top")
@@ -206,6 +236,7 @@ spt.tile_layout.set_layout = function(layout) {
         layout = layout.getParent(".spt_layout");
     }
     spt.tile_layout.layout = layout;
+    return layout;
 }
 
 spt.tile_layout.get_scale = function() {

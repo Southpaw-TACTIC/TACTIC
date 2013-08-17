@@ -36,6 +36,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def can_inline_insert(my):
         return True
 
+    def can_save(my):
+        return True
+
+    def can_expand(my):
+        return True
+    def get_expand_behavior(my):
+        return None
+
+    def can_add_columns(my):
+        return True
+
+    def can_select(my):
+        return True
+
+
+
 
     def __init__(my, **kwargs):
 
@@ -817,12 +833,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             embedded_table =  my.kwargs.get("__hidden__") == 'true'
            
             btn_dd = DgTableGearMenuWdg(
+                layout=my,
                 table_id=my.get_table_id(),
                 search_type=my.search_type, view=my.view,
                 parent_key=my.parent_key,
                 cbjs_post_delete=cbjs_post_delete, show_delete=show_delete,
                 custom_menus=custom_gear_menus,
-                show_retired=show_retired, embedded_table=embedded_table )
+                show_retired=show_retired, embedded_table=embedded_table
+            )
 
             my.gear_menus = btn_dd.get_menu_data()
             my.view_save_dialog = btn_dd.get_save_dialog()
@@ -955,7 +973,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_column_wdg = my.kwargs.get('show_column_manager') 
         show_layout_wdg = my.kwargs.get('show_layout_switcher') 
         
-        if not show_column_wdg =='false':
+        if not show_column_wdg =='false' and my.can_add_columns():
             column_wdg = my.get_column_manager_wdg()
         if not show_layout_wdg =='false':
             layout_wdg = my.get_layout_wdg()
@@ -1123,36 +1141,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_insert = False
             show_save = False
 
+        if not my.can_save():
+            show_save = False
+
         if show_insert in [ '', None ]:
             show_insert = my.kwargs.get("show_insert")
 
-        # Save button
-        save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
-
-        
-        save_button.add_behavior({
-        'type': 'click_up',
-        'update_current_only': True,
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_layout");
-        var version = top.getAttribute("spt_version");
-        if (version == "2") {
-            var dummy = top.getElement('.spt_button_row');
-            if (dummy) dummy.focus();
-
-            spt.table.set_layout(top);
-            spt.table.save_changes();
-        }
-        else {
-            spt.dg_table.update_row(evt, bvr)
-        }
-        ''',
-        })
-       
+   
         #from tactic.ui.container import Menu, MenuItem, SmartMenu
         if show_insert not in ["false", False]:
-            #button = ButtonNewWdg(title='Add New Item', icon=IconWdg.PLUS_ADD)
-
             insert_view = my.kwargs.get("insert_view")
             
             if not insert_view or insert_view == 'None':
@@ -1305,62 +1302,97 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
 
            
+        if show_save:
+
+            # Save button
+            save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+
+            
+            save_button.add_behavior({
+            'type': 'click_up',
+            'update_current_only': True,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_layout");
+            var version = top.getAttribute("spt_version");
+            if (version == "2") {
+                var dummy = top.getElement('.spt_button_row');
+                if (dummy) dummy.focus();
+
+                spt.table.set_layout(top);
+                spt.table.save_changes();
+            }
+            else {
+                spt.dg_table.update_row(evt, bvr)
+            }
+            ''',
+            })
+
+
             button_row_wdg.add(save_button)
 
 
-        elif show_save:
-            button_row_wdg.add(save_button)
+        show_expand = my.kwargs.get("show_expand")
+        if show_expand in ['false', False]:
+            show_expand = False
+        else:
+            show_expand = True
+        if not my.can_expand():
+            show_expand = False
 
-
-        if my.kwargs.get("show_expand") != "false":
+        if show_expand:
 
             button = ButtonNewWdg(title='Expand Table', icon=IconWdg.ARROW_OUT_GRAY, show_menu=False, is_disabled=False)
             button_row_wdg.add(button)
-            button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var layout = bvr.src_el.getParent(".spt_layout");
+            expand_behavior = my.get_expand_behavior()
+            if expand_behavior:
+                button.add_behavior( expand_behavior )
+            else:
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
 
-            var version = layout.getAttribute("spt_version");
-            var headers;
-            var table = null;
-            if (version == '2') {
+                var version = layout.getAttribute("spt_version");
+                var headers;
+                var table = null;
+                if (version == '2') {
 
-                spt.table.set_layout(layout);
-                table = spt.table.get_table();
-                var table_id = table.getAttribute('id');
-                headers = table.getElements(".spt_table_header_" + table_id);
-            }
-            else {
-                table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
-                headers = layout.getElements(".spt_table_th");
-            }
-
-            var width = table.getStyle("width");
-            if (width == '100%') {
-                table.setStyle("width", "");
-            }
-            else {
-                table.setStyle("width", "100%");
-            }
-
-
-            for ( var i = 1; i < headers.length; i++) {
-                var element_name = headers[i].getAttribute("spt_element_name");
-                if (element_name == 'preview') {
-                    continue;
-                }
-
-                if (width == '100%') {
-                    headers[i].setStyle("width", "1px");
+                    spt.table.set_layout(layout);
+                    table = spt.table.get_table();
+                    var table_id = table.getAttribute('id');
+                    headers = table.getElements(".spt_table_header_" + table_id);
                 }
                 else {
-                    headers[i].setStyle("width", "");
+                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+                    headers = layout.getElements(".spt_table_th");
                 }
 
-            }
-            '''
-            } )
+                var width = table.getStyle("width");
+                if (width == '100%') {
+                    table.setStyle("width", "");
+                }
+                else {
+                    table.setStyle("width", "100%");
+                }
+
+
+                for ( var i = 1; i < headers.length; i++) {
+                    var element_name = headers[i].getAttribute("spt_element_name");
+                    if (element_name == 'preview') {
+                        continue;
+                    }
+
+                    if (width == '100%') {
+                        headers[i].setStyle("width", "1px");
+                    }
+                    else {
+                        headers[i].setStyle("width", "");
+                    }
+
+                }
+                '''
+                } )
+
 
 
 
@@ -1573,10 +1605,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
 
-        #div = DivWdg()
-        #button = SingleButtonWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        #div.add(button)
-        #div.add_style("margin-top: -8px")
         button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
 
         search_type_obj = SearchType.get(my.search_type)

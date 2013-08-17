@@ -35,6 +35,20 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def can_inline_insert(my):
         return False
 
+    def can_save(my):
+        return False
+
+    def can_expand(my):
+        return False
+
+    def can_add_columns(my):
+        return False
+
+    def can_select(my):
+        return False
+
+
+
 
 
     def get_display(my):

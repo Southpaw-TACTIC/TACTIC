@@ -28,6 +28,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.view_save_dialog = my.get_save_wdg()
         my.view_save_dialog_id = my.view_save_dialog.get_id()
 
+        my.layout = my.kwargs.get("layout")
+
     def get_save_dialog(my):
         return my.view_save_dialog
 
@@ -127,8 +129,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.get_checkin_menu(),
         ]
 
-        # FIXME: what is this for???
-        # Something to do with custom menus???
+        # Something to do with custom menus
         menu_idx_map = { 'Edit': 1, 'File': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8 }
 
 
@@ -172,11 +173,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" },
         { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" },
         { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" },
-        { "type": "separator"},
-        { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" },
-        { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
-        { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
         ]
+
+
 
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
@@ -185,8 +184,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             is_admin = False
 
 
-        if is_admin:
-            opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
+        if not my.layout or my.layout.can_add_columns():
+            opt_spec_list.extend( [
+            { "type": "separator"},
+            { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" },
+            { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
+            { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
+            ] )
+
+
+            if is_admin:
+                opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
 
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
@@ -195,50 +203,27 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_edit_menu(my):
-        opt_spec_list = [
-
-            # Removing redundant "Add Multiple Items" in gear menu.
-            #
-            #   { "type": "action", "label": "Add Multiple Items",
-            #       "bvr_cb": {'cbjs_action': '''
-            #       var activator = spt.smenu.get_activator(bvr);
-            #       var top = activator.getParent(".spt_table_top");
-            #       var table = top.getElement(".spt_table");
-            #       var search_type = top.getAttribute("spt_search_type")
-            #       kwargs = {
-            #         search_type: search_type,
-            #         mode: 'insert',
-            #         single: 'false',
-            #         view: 'insert'
-            #       };
-            #       spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
-            #       ''' }
-            #   },
-
-
-            #   {"type": "separator"}
-        ]
-
-
+        opt_spec_list = []
 
 
         security = Environment.get_security()
         if security.check_access("builtin", "retire_delete", "allow"):
-            opt_spec_list.extend([
-        
-                { "type": "action", "label": "Retire Selected Items",
-                    "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
-                },
+            if not my.layout or my.layout.can_add_columns():
+                opt_spec_list.extend([
+            
+                    { "type": "action", "label": "Retire Selected Items",
+                        "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
+                    },
 
-                { "type": "action", "label": "Delete Selected Items",
-                        "bvr_cb": {'cbjs_action': '''
-                spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);
-                '''}
-                },
+                    { "type": "action", "label": "Delete Selected Items",
+                            "bvr_cb": {'cbjs_action': '''
+                    spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);
+                    '''}
+                    },
 
-                {"type": "separator"}
+                    {"type": "separator"}
 
-            ])
+                ])
 
 
 
@@ -282,11 +267,15 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
+        if not my.layout or my.layout.can_add_columns():
+            menu_items.append(
+                { "type": "action", "label": "Export Selected ...",
+                    "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
+                                'mode': 'export_selected'}
+                }
+            )
+
         menu_items.extend( [
-            { "type": "action", "label": "Export Selected ...",
-                "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
-                            'mode': 'export_selected'}
-            },
              { "type": "action", "label": "Export Matched ...",
                 "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                             'mode': 'export_matched'}
