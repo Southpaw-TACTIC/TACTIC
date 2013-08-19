@@ -293,8 +293,15 @@ class Search(Base):
     def get_base_search_type(my):
         return my.search_type_obj.get_base_key()
 
+
+
     def get_id_col(my):
-        return my.search_type_obj.get_id_col()
+        '''returns the column which stores the id of the sobject'''
+        database_impl = my.db_resource.get_database_impl()
+        search_type = my.full_search_type
+        return database_impl.get_id_col(my.db_resource, search_type)
+        #return my.search_type_obj.get_id_col()
+
 
 
     def get_statement(my):
@@ -1544,8 +1551,9 @@ class Search(Base):
 
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
+            #statement = my.select.get_statement()
+            #print 'statement: ', statement
             results = sql.do_query(my.select)
-            #results = query.execute(sql)
             # TODO:
             # Not really used because results is already a dictionary
             # and the column data is dynamic
@@ -2158,7 +2166,7 @@ class SObject(object):
         my._prev_data = None
         my._prev_update_data = None
         my.update_description = None
-        my.database_impl = None
+        #my.database_impl = None
 
         # id override
         my.new_id = -1
@@ -2384,7 +2392,10 @@ class SObject(object):
 
     def get_id_col(my):
         '''returns the column which stores the id of the sobject'''
-        return my.search_type_obj.get_id_col()
+        database_impl = my.db_resource.get_database_impl()
+        search_type = my.full_search_type
+        return database_impl.get_id_col(my.db_resource, search_type)
+        #return my.search_type_obj.get_id_col()
 
     def get_id(my):
         '''returns the id of the sobject'''
@@ -3641,6 +3652,7 @@ class SObject(object):
                 else:
                     output["mode"] = "update"
                 output["id"] = my.get_id()
+                output["search_code"] = my.get_value("code", no_exception=True)
                 output["search_type"] = my.get_search_type()
                 output["search_key"] = SearchKey.build_by_sobject(my)
                 output["update_data"] = trigger_update_data
@@ -5147,9 +5159,6 @@ class SearchType(SObject):
 
 
     def get_id_col(my):
-        # MongoDb Test
-        if my.base_key == "table/posts":
-            return "_id"
         id_col = my.data.get("id_column")
         if not id_col:
             return "id"

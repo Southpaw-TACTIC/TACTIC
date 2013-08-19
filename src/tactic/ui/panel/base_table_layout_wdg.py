@@ -934,7 +934,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog = DialogWdg()
             #limit_span.add(dialog)
             dialog.set_as_activator(num_div, offset={'x':0,'y': -2})
-            dialog.add_title("Search Limit")
+            dialog.add_title("Search Range")
             num_div.add_class("hand")
             color = num_div.get_color("background3", -5)
             num_div.add_behavior( {
@@ -998,6 +998,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else:
             wdg_list.append( { 'wdg': num_div } )
 
+        wdg_list.append( { 'wdg': spacing_divs[1] } )
 
         from tactic.ui.widget import ButtonRowWdg
         button_row_wdg = ButtonRowWdg(show_title=True)
@@ -1015,7 +1016,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if button_row_wdg.get_num_buttons() != 0:
-            wdg_list.append( { 'wdg': spacing_divs[1] } )
             wdg_list.append( { 'wdg': button_row_wdg } )
 
 

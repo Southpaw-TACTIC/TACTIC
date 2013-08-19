@@ -483,6 +483,8 @@ class DirListWdg(BaseRefreshWdg):
                 handler_kwargs=handler_kwargs,
                 depth=0,
                 all_open=False,
+                # This is not really supported on dynamic mode yet
+                #open_depth=open_depth,
                 dynamic=True
             )
             top.add(dir_list)

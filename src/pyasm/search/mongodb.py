@@ -68,6 +68,8 @@ class MongoDbConn(object):
 
 class MongoDbImpl(DatabaseImpl):
 
+    def get_id_col(my, db_resource, search_type):
+        return "_id"
 
     def get_columns(cls, db_resource, table):
         from pyasm.search import DbResource, DbContainer
@@ -75,6 +77,10 @@ class MongoDbImpl(DatabaseImpl):
         conn = sql.get_connection()
         collection = conn.get_collection(table)
 
+        # This just gets the first one to discover the columns.  This is
+        # not accurate because each item in a collection ccan contain
+        # different "attributes". The key here is to define a location
+        # for where this "schema" description is stored
         result = collection.find_one()
         if not result:
             return ['_id']
@@ -92,7 +98,12 @@ class MongoDbImpl(DatabaseImpl):
         columns = cls.get_columns(db_resource, table)
         info_dict = {}
         for column in columns:
-            info_dict[column] = {}
+            if column == "_id":
+                info = {'data_type': 'bson.objectid'}
+            else:
+                info = {}
+            info_dict[column] = info
+
         return info_dict
 
 
@@ -114,6 +125,11 @@ class MongoDbImpl(DatabaseImpl):
 
 
     def table_exists(my, db_resource, table):
+        print "db_resource: ", db_resource
+        sql = db_resource.get_sql()
+        conn = sql.get_connection()
+
+        print "foo: ", conn.collection_names()
         return True
 
 
@@ -135,7 +151,8 @@ class MongoDbImpl(DatabaseImpl):
             op = filter.get("op")
 
             if column == "_id" and value not in [-1, '-1']:
-                value = bson.ObjectId(value)
+                if not isinstance(value, bson.ObjectId):
+                    value = bson.ObjectId(value)
 
             if op == "=":
                 nosql_filters[column] = value
@@ -244,6 +261,27 @@ class MongoDbImpl(DatabaseImpl):
 
         sql.last_row_id = object_id
 
+
+    def execute_create_table(my, sql, create):
+
+        conn = sql.get_connection()
+
+        # select data
+        table = create.table
+        data = create.data
+
+
+        # data will some something like:
+        # data = {
+        #    column': 'code', 
+        #    data_type': 'integer', 
+        #    nullable': True, 
+
+        # because there is no explicit schema definition for each collection,
+        # something has to state what is inside a collection.  The current
+        # approach simply stores this info in a collection called "spt_schema"
+
+        object_id  = collection.insert(data)
 
 
 

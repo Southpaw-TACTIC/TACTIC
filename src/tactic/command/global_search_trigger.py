@@ -22,12 +22,18 @@ import os
 
 class GlobalSearchTrigger(Trigger):
 
+    def get_title(my):
+        return "Added entry to global search"
+
     def execute(my):
 
         input = my.get_input()
         search_key = input.get("search_key")
         sobj_id = input.get('id')
+        search_code = input.get('search_code')
         assert(sobj_id)
+
+        print "search_code: ", search_code
 
 
         search_type = SearchKey.extract_search_type(search_key)

@@ -25,13 +25,20 @@ class DatabaseImplException(TacticException):
 
 class DatabaseImplInterface(object):
 
+
     def get_columns(cls, db_resource, table):
         pass
 
     def get_column_info(cls, db_resource, table, use_cache=True):
         pass
 
-    def get_table_info(my, database):
+    def get_id_col(db_resource, search_type):
+        pass
+
+    def get_page(my, limit=None, offset=0):
+        pass
+
+    def get_table_info(my, db_resource):
         pass
 
     def table_exists(my, db_resource, table):
@@ -55,6 +62,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get_version(my):
         return (0,0,0)
+
 
     def get(vendor=None):
         '''Get the current database implementation'''
@@ -104,6 +112,15 @@ class DatabaseImpl(DatabaseImplInterface):
                 quoted: True|False - determines whether the value is quoted or not
         '''
         return None
+
+
+
+
+    def get_id_col(my, db_resource, search_type):
+        from pyasm.search import SearchType
+        search_type = SearchType.get(search_type)
+        id_col = search_type.get_id_col()
+        return id_col
 
 
 

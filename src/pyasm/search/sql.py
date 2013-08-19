@@ -634,6 +634,9 @@ class Sql(Base):
     """
 
 
+
+
+
     def do_query(my, query, num_attempts=0):
         '''execute a query'''
 
@@ -647,7 +650,8 @@ class Sql(Base):
 
 
             vendor = my.get_vendor()
-            if vendor == "MongoDb":
+            #if vendor == "MongoDb":
+            if isinstance(query, Select):
                 my.results = query.execute(my)
             else:
 
@@ -894,7 +898,7 @@ class Sql(Base):
             # Keep objects as they are ... this is for NoSQL which can take
             # objects ... however, this may need to be checked using
             # DatabaseImpl
-            return value
+            value = str(value)
         else:
             try:
                 value = value.replace("'", "''")

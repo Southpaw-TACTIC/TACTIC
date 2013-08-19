@@ -14,7 +14,8 @@
 import tacticenv
 
 from pyasm.security import Batch
-from pyasm.search import SearchType, SObject, Update, Insert, Search
+from pyasm.biz import Project
+from pyasm.search import SearchType, SObject, Update, Insert, Search, DbContainer
 
 
 from pyasm.unittest import UnittestEnvironment
@@ -26,15 +27,35 @@ class SqlTest(unittest.TestCase):
 
     def test_all(my):
 
-        test_env = UnittestEnvironment()
-        test_env.create()
+        #test_env = UnittestEnvironment()
+        #test_env.create()
 
         try:
-
+            my._create_table()
             my._test_search()
 
         finally:
-            test_env.delete()
+            #test_env.delete()
+            pass
+
+
+
+
+    def _create_table(my):
+
+        from pyasm.search import CreateTable
+
+        project = Project.get_by_code("mongodb")
+        #sql = project.get_sql()
+        db_resource = project.get_project_db_resource()
+        sql = db_resource.get_sql()
+    
+        create = CreateTable()
+        create.set_table("whatever")
+
+        create.commit(sql)
+
+
 
 
     def _test_search(my):
@@ -45,10 +66,8 @@ class SqlTest(unittest.TestCase):
         my.assertNotEquals(None, sobject)
 
         sobjects = search.get_sobjects()
-
-        sobjects = search.get_sobjects()
-        for sobject in sobjects:
-            print sobject.get_value("_id"), sobject.get_value("author")
+        #for sobject in sobjects:
+        #    print sobject.get_value("_id"), sobject.get_value("author")
 
 
         # test simple filter
@@ -61,8 +80,18 @@ class SqlTest(unittest.TestCase):
 
         # do an update
         sobject = sobjects[0]
-        sobject.set_value("text", "This is wonderful")
+        sobject.set_value("text", "This is wonderful!!!")
         sobject.commit()
+
+        # search by id
+        object_id = sobject.get_id()
+        updated_sobject = Search.get_by_id("table/posts?project=mongodb", object_id)
+        my.assertNotEquals(None, updated_sobject)
+        my.assertEquals("This is wonderful!!!", updated_sobject.get_value("text"))
+
+
+
+
 
 
         # search by search_key

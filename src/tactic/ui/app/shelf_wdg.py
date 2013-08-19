@@ -776,11 +776,18 @@ class AceEditorWdg(BaseRefreshWdg):
         if code:
             load_div = DivWdg()
             top.add(load_div)
+            readonly = my.kwargs.get("readonly")
+            if readonly in ['true', True]:
+                readonly = True
+            else:
+                readonly = False
+
             load_div.add_behavior( {
                 'type': 'load',
                 'code': code,
                 'language': language,
                 'editor_id': my.get_editor_id(),
+                'readonly': readonly,
                 'cbjs_action': '''
                 spt.ace_editor.set_editor(bvr.editor_id);
                 var func = function() {
@@ -788,6 +795,11 @@ class AceEditorWdg(BaseRefreshWdg):
                     var document = editor.getSession().getDocument();
                     document.setValue(bvr.code);
                     spt.ace_editor.set_language(bvr.language);
+                    editor.setReadOnly(bvr.readonly);
+
+
+                    var session = editor.getSession();
+                    session.setUseWrapMode(true);
                 };
 
                 var editor = spt.ace_editor.editor;
@@ -929,6 +941,25 @@ spt.ace_editor.get_editor = function() {
     return spt.ace_editor.editor;
 
 }
+
+
+
+spt.ace_editor.clear_selection = function() {
+    var editor = spt.ace_editor.editor;
+    editor.clearSelection();
+
+}
+
+
+
+spt.ace_editor.get_selection = function() {
+    var editor = spt.ace_editor.editor;
+    //return editor.getSelection();
+    return editor.getCopyText();
+}
+
+
+
 
 
 spt.ace_editor.get_value = function() {
