@@ -16,6 +16,7 @@ from pyasm.command import Command
 from pyasm.web import DivWdg, Table, HtmlElement
 from pyasm.widget import ButtonWdg, ProdIconButtonWdg, TextWdg, TextAreaWdg, CheckboxWdg, IconWdg, SelectWdg
 from pyasm.search import Search, SearchType
+from pyasm.biz import File
 
 import os, codecs
 import zipfile, shutil
@@ -627,7 +628,6 @@ class PluginEditWdg(BaseRefreshWdg):
         from tactic.ui.container import TabWdg
 
         selected = my.kwargs.get("selected")
-        print "\n\n%s\n\n" %selected
         if not selected:
             selected = "info"
 
@@ -2399,23 +2399,29 @@ class PluginDirListActionCbk(Command):
 
         if action == 'new_file':
             basename = my.kwargs.get("basename")
+            default_name = False
             if not basename:
                 basename = "new_file"
+                default_name = True
 
             file_path = "%s/%s" % (plugin_dir, basename)
 
             if not file_path.startswith(plugin_base_dir):
                 raise Exception("Cannot alter file outside of plugin")
 
+            
             if not os.path.exists(file_path):
+                if default_name:
+                    file_path = "%s.html" %file_path
                 f = open(file_path, 'w')
+                 
                 f.close()
             else:
                 i = 2
-                while os.path.exists(file_path + str(i) + ".html"):
+                while os.path.exists("%s%s.html"%(file_path, str(i))):
                     i += 1
 
-                f = open(file_path + str(i) + ".html", 'w')
+                f = open("%s%s.html"%(file_path, str(i)), 'w')
                 f.close()
 
         elif action == 'new_folder':
@@ -2463,7 +2469,12 @@ class PluginDirListActionCbk(Command):
         elif action == 'upload':
             upload_dir = Environment.get_upload_dir()
             basename = my.kwargs.get("upload_file_name")
+            # use the same call as in the FileUpload class
+            basename = File.get_filesystem_name(basename)
+            
             upload_path = "%s/%s" % (upload_dir, basename)
+
+
             to_path = "%s/%s" % (plugin_dir, basename)
             if os.path.exists(to_path):
                 os.unlink(to_path)
