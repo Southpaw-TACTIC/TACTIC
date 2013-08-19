@@ -783,13 +783,21 @@ class Sql(Base):
         except my.pgdb.ProgrammingError, e:
             if str(e).find("already exists") != -1:
                 return
+            if isinstance(query, unicode):
+                wrong_query = query.encode('utf-8')
+            else:
+                wrong_query = unicode(query, errors='ignore').encode('utf-8')
 
-            print "Error with query (ProgrammingError): ", my.database_name, query
+            print "Error with query (ProgrammingError): ", my.database_name, wrong_query
             print str(e)
             raise SqlException(str(e))
         except my.pgdb.Error, e:
             if not quiet:
-                print "Error with query (Error): ", my.database_name, query
+                if isinstance(query, unicode):
+                    wrong_query = query.encode('utf-8')
+                else:
+                    wrong_query = unicode(query, errors='ignore').encode('utf-8')
+                print "Error with query (Error): ", my.database_name, wrong_query
             raise SqlException(e.__str__())
 
 

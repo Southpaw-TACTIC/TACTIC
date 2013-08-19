@@ -788,6 +788,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             return div
         
         csv_titles = csv_parser.get_titles()
+
+        # for 2nd guess of similar column titles
+        processed_csv_titles = [x.replace(' ', '_').lower() for x in csv_titles]
         csv_data = csv_parser.get_data()
 
         web = WebContainer.get_web()
@@ -877,16 +880,20 @@ class PreviewDataWdg(BaseRefreshWdg):
                 continue
 
             column_select = SelectWdg("column_%s" % j)
+
+            is_new_column = True
+            use_processed = False
             # only set the value if it is actually in there
             if csv_titles[j] in columns:
                 column_select.set_option("default", csv_titles[j])
-
+                is_new_column = False
+            elif processed_csv_titles[j] in columns:
+                column_select.set_option("default", processed_csv_titles[j])
+                is_new_column = False
+                use_processed = True
             sel_val = column_select.get_value()
             
-            is_new_column = False
 
-            if csv_titles[j] not in columns:
-                is_new_column = True
             table.add_row()
             cb = CheckboxWdg('column_enabled_%s' %j) 
             cb.set_default_checked()
@@ -968,7 +975,11 @@ class PreviewDataWdg(BaseRefreshWdg):
                 text.set_persist_on_submit()
 
                 if my.has_title:
-                    text.set_value(csv_titles[j])
+                    if use_processed:
+                        new_title = processed_csv_titles[j]
+                    else:
+                        new_title = csv_titles[j]
+                    text.set_value(new_title)
 
                 # prefer to use bg color instead of OR to notify which one is used
                 """

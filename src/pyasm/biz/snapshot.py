@@ -1533,7 +1533,7 @@ class Snapshot(SObject):
                 search_ids = [str(x.get_id()) for x in sobjects if x]
                 search.add_filters('search_id', search_ids)
             else:
-                search_codes = [str(x.get_value("code")) for x in sobjects if x]
+                search_codes = [x.get_value("code") for x in sobjects if x]
                 search.add_filters('search_code', search_codes)
         else:
             # FIXME: why doesn't the ops work here?
