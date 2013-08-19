@@ -651,10 +651,13 @@ class Search(Base):
         in sobject.  The schema takes care of figuring out how to relate
         the two search_types
         '''
-        #search_type = my.get_base_search_type()
+        base_search_type = my.get_base_search_type()
         #related_type = sobject.get_base_search_type()
         search_type = my.get_search_type()
         related_type = sobject.get_search_type()
+
+        print "search_type: ", search_type
+        print "related_type: ", related_type
 
         if search_type == related_type:
             print "WARNING: related type and search type are the same for [%s]" % search_type
@@ -673,7 +676,7 @@ class Search(Base):
 
 
         relationship = attrs.get('relationship')
-        my_is_from = attrs['from'] in [search_type, '*']
+        my_is_from = attrs['from'] in [base_search_type, '*']
 
         from_col = attrs.get('from_col')
         to_col = attrs.get('to_col')
