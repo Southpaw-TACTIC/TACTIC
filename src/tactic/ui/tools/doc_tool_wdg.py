@@ -13,8 +13,9 @@
 
 __all__ = ['DocToolWdg']
 
-from pyasm.web import DivWdg, Table, HtmlElement
-from pyasm.search import Search
+from pyasm.common import Xml
+from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg
+from pyasm.search import Search, SearchType
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import ViewPanelWdg
@@ -22,13 +23,149 @@ from tactic.ui.container import ResizableTableWdg
 
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
+import os
+
 
 class DocToolWdg(BaseRefreshWdg):
+
+
+    def get_diff(my, lines, lines2):
+        import difflib
+        d = difflib.Differ()
+        result = list(d.compare(lines, lines2) )
+
+        diff = []
+        for line in result:
+            print line
+            if line.startswith("-"):
+                line = line[2:]
+                line = "<span style='background: #FCC'>%s</span>" % line
+            elif line.startswith("+"):
+                line = line[2:]
+                line = "<span style='background: #CFC'>%s</span>" % line
+            elif line.startswith("?"):
+                continue
+                line = line[2:]
+                line = "<span style='background: #CFC'>%s</span>" % line
+            else:
+                line = line[2:]
+
+            diff.append(line)
+
+
+        return diff
+
+
+
+
+
+    def get_text(my, path):
+
+        if path.startswith("http"):
+            # NOTE: this is very specific to google docs
+
+            import urllib2
+            response = urllib2.urlopen(path)
+            html = response.read()
+
+            html = html.replace("&", "&amp;")
+            xml = Xml()
+            xml.read_string(html)
+
+            node = xml.get_node("html/body")
+            text = xml.to_string(node)
+            text = text.replace("<body", "<div style='margin: 0px'")
+            text = text.replace("</body>", "</div>")
+
+            text = text.replace("&amp;", "&")
+
+
+            lines2 = []
+            lines = text.split("\n")
+            for line in lines:
+                tmp_line = line.strip()
+                if tmp_line.startswith("<span"):
+                    tmp_line = tmp_line.replace("<span>", "")
+                    tmp_line = tmp_line.replace("</span>", "")
+                    tmp_line = tmp_line.replace("<span/>", "")
+                elif tmp_line.startswith("<p "):
+                    continue
+                elif tmp_line.startswith("</p>"):
+                    continue
+
+                tmp_line = tmp_line.replace("&nbsp;", "")
+                lines2.append(tmp_line)
+
+            text = "\n".join(lines2)
+
+            # clear out any remaining html tags
+            import re
+            text = re.sub('<[^<]+?>', '', text)
+
+            #print 'text', text
+
+            #out = open("/tmp/last", 'w')
+            #out.write(text)
+            #out.close()
+
+
+        else:
+            f = open(path)
+            lines = f.readlines()
+            f.close()
+
+
+
+            #f = open(path)
+            #lines2 = f.readlines()
+            #f.close()
+
+            #diff = my.get_diff(lines, lines2)
+            #text = "".join(diff)
+
+            text = "".join(lines)
+
+
+
+        # read last text if it exists
+        if os.path.exists("/tmp/last"):
+            last_file = open("/tmp/last", 'r')
+            last_text = last_file.read()
+            last_file.close()
+        else:
+            last_text = None
+
+        if last_text != None:
+            lines = text.split("\n")
+            lines2 = last_text.split("\n")
+            diff = my.get_diff(lines2, lines)
+            diff_text = "\n".join(diff)
+            print diff_text
+            text = diff_text
+
+        search_type_obj = SearchType.get(my.search_type)
+        color = search_type_obj.get_value("color")
+        if not color:
+            color = '#0F0'
+
+        search = Search(my.search_type)
+        sobjects = search.get_sobjects()
+        for sobject in sobjects:
+            search_key = sobject.get_search_key()
+            value = sobject.get_value(my.column)
+            if value:
+                text = text.replace(value, "<i style='color: %s; font-weight: bold; opacity: 1.0;' spt_search_key='%s' class='spt_document_item hand'>%s</i>" % (color, search_key, value))
+
+
+
+        return text
+
 
     def get_display(my):
 
         my.search_types = ["test3/shot", 'test3/asset']
         my.search_type = "test3/shot"
+        my.column = "description"
 
         top = my.top
         top.add_class("spt_document_top")
@@ -43,34 +180,28 @@ class DocToolWdg(BaseRefreshWdg):
         left_td = table.add_cell()
         left_td.add_style("vertical-align: top")
 
-        path = "/home/apache/pdf/star_wars.txt"
-        #path = "/home/apache/pdf/mongodb.txt"
-        f = open(path)
-        text = f.read()
-        f.close()
-
-        search = Search(my.search_type)
-        sobjects = search.get_sobjects()
-        for sobject in sobjects:
-            search_key = sobject.get_search_key()
-            description = sobject.get_value("description")
-            if description:
-                text = text.replace(description, "<i style='color: #0F0; font-weight: bold; opacity: 1.0;' spt_search_key='%s' class='spt_document_item hand'>%s</i>" % (search_key, description))
-
-
 
         title = DivWdg()
         left_td.add(title)
         title.add_style("padding: 5px")
         title.add_color("background", "background3")
 
+
+        #path = "/home/apache/pdf/mongodb.txt"
+        #path = "/home/apache/assets/google_docs.html"
+        #path = "/home/apache/pdf/star_wars.txt"
+        path = "https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"
+        text = my.get_text(path)
+
         title.add(path)
+
 
         text_wdg = DivWdg()
         text_wdg.add_class("spt_document_content")
         left_td.add(text_wdg)
 
         pre = HtmlElement.pre()
+        #pre = DivWdg()
         pre.add_style("width: 600x")
         pre.add_style("white-space: pre-wrap")
         pre.add(text)
@@ -81,7 +212,13 @@ class DocToolWdg(BaseRefreshWdg):
 
         #from tactic.ui.app import AceEditorWdg
         #editor = AceEditorWdg(code=text, show_options=False, readonly=True, height="600px")
-        #text_wdg.add(editor)
+         #text_wdg.add(editor)
+
+
+        #text_wdg.add('''
+        #<iframe class="spt_document_iframe" style="width: 100%; height: auto; min-height: 600px; font-size: 1.0em" src="https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"></iframe>
+        #''')
+        #text_wdg.add_style("overflow-x: hidden")
 
 
         # add a click on spt_item
@@ -107,14 +244,16 @@ class DocToolWdg(BaseRefreshWdg):
 
 
         # add a double click on spt_item
+        bgcolor = text_wdg.get_color("background", -10)
         text_wdg.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_document_item',
             'search_type': my.search_type,
+            'bgcolor': bgcolor,
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
-            bvr.src_el.setStyle("font-weight", "normal");
-            bvr.src_el.setStyle("background", "#333");
+            //bvr.src_el.setStyle("font-weight", "normal");
+            bvr.src_el.setStyle("background", bvr.bgcolor);
             '''
         } )
 
@@ -125,18 +264,10 @@ class DocToolWdg(BaseRefreshWdg):
             'search_type': my.search_type,
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
-            bvr.src_el.setStyle("font-weight", "bold");
+            //bvr.src_el.setStyle("font-weight", "bold");
             bvr.src_el.setStyle("background", "");
             '''
         } )
-
-
-
-
-
-
-
-
 
 
 
@@ -176,10 +307,18 @@ spt.document = {};
 
 spt.document.selected_text = null;
 
-spt.document.get_selected_text = function()
+spt.document.get_selected_text = function(frame)
 {
+
     var t = '';
-    if (window.getSelection) // FF4 with one tab open?
+
+    if (frame) {
+        var rng = frame.contentWindow.getSelection().getRangeAt(0);
+        spt.document.expandtoword(rng);
+        t = rng.toString();
+    }
+
+    else if (window.getSelection) // FF4 with one tab open?
     {
         var rng = window.getSelection().getRangeAt(0);
         spt.document.expandtoword(rng);
@@ -260,6 +399,11 @@ spt.document.expandtoword = function(range)
             'search_type': my.search_type,
             'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
+            var iframe = activator.getElement(".spt_document_iframe")
+            iframe.setStyle("border", "solid 1px red");
+            var selection = spt.document.get_selected_text(iframe);
+            console.log(selection);
+
             var selection = spt.document.selected_text;
             '''
         } )
@@ -271,6 +415,7 @@ spt.document.expandtoword = function(range)
         menu_item.add_behavior( {
             'type': 'click_up',
             'search_type': my.search_type,
+            'column': my.column,
             'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
 
@@ -283,9 +428,8 @@ spt.document.expandtoword = function(range)
             spt.app_busy.show("Adding " + bvr.search_type);
 
 
-            var data = {
-                'description': selection
-            }
+            var data = {}
+            data[bvr.column] = selection;
 
             var server = TacticServerStub.get();
             server.insert(bvr.search_type, data);
@@ -358,8 +502,6 @@ spt.document.expandtoword = function(range)
             spt.app_busy.hide();
             '''
         } )
-
-
 
 
 
