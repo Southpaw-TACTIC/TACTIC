@@ -21,7 +21,7 @@ from pyasm.common import jsonloads, jsondumps
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task
 from pyasm.command import DatabaseAction
-from pyasm.search import SearchKey, Search, SObject, SearchException
+from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
 from pyasm.common import Environment, TacticException
 from button_wdg import ButtonElementWdg
@@ -32,6 +32,42 @@ from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg
 
 from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+
+
+# sort the tasks by the processes
+def get_compare(processes):
+    def compare(a,b):
+        a_process = a.get_value('process')
+        b_process = b.get_value('process')
+        
+        try:
+            a_index = processes.index(a_process)
+        except ValueError:
+            a_index = -1
+        try:
+            b_index = processes.index(b_process)
+        except ValueError:
+            b_index = -1
+
+        if a_index > -1 and b_index > -1:
+            if a_index == b_index:
+                # compare context if process is the same
+                a_context = a.get_value('context')
+                b_context = b.get_value('context')
+                return cmp(a_context, b_context)
+            else:
+                return cmp(a_index, b_index)
+
+        # handle cases where process is not in pipeline
+        if a_index == -1 and b_index == -1:
+            return cmp(a_process, b_process)
+        elif a_index != -1:
+            return -1
+        elif b_index != -1:
+            return 1
+
+    return compare
+
 
 class TaskElementWdg(BaseTableElementWdg):
     '''simple widget which display a task value in an element'''
@@ -132,6 +168,16 @@ class TaskElementWdg(BaseTableElementWdg):
         'order': '09',
         'category': 'Display'
     },
+
+
+    'show_status': {
+        'description': 'Flag for displaying the status of the tasks',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': '10',
+        'category': 'Display'
+    },
+
 
     'show_assigned': {
         'description': 'Flag for displaying the assigned user of the tasks',
@@ -791,45 +837,14 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     filtered_tasks.append(task)
                 tasks = filtered_tasks
 
-
-            # sort the tasks by the processes
-            def compare(a,b):
-                a_process = a.get_value('process')
-                b_process = b.get_value('process')
-                
-                try:
-                    a_index = processes.index(a_process)
-                except ValueError:
-                    a_index = -1
-                try:
-                    b_index = processes.index(b_process)
-                except ValueError:
-                    b_index = -1
-
-                if a_index > -1 and b_index > -1:
-                    if a_index == b_index:
-                        # compare context if process is the same
-                        a_context = a.get_value('context')
-                        b_context = b.get_value('context')
-                        return cmp(a_context, b_context)
-                    else:
-                        return cmp(a_index, b_index)
-
-                # handle cases where process is not in pipeline
-                if a_index == -1 and b_index == -1:
-                    return cmp(a_process, b_process)
-                elif a_index != -1:
-                    return -1
-                elif b_index != -1:
-                    return 1
-
-            tasks = sorted(tasks,compare)
+            tasks = sorted(tasks,get_compare(processes))
 
         else:
             def compare(a,b):
                 a_context = a.get_value('process')
                 b_context = b.get_value('process')
                 return cmp(a_context, b_context)
+
             tasks = sorted(tasks,compare)
 
 	
@@ -862,6 +877,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if not my.show_dates:
             my.show_dates = "true"
 
+        my.show_status = my.kwargs.get("show_status")
+        if not my.show_status:
+            my.show_status = "true"
         my.show_assigned = my.kwargs.get("show_assigned")
         if not my.show_assigned:
             my.show_assigned = "true"
@@ -917,7 +935,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 else:
                     my.total_width += 75 
 
-            if my.show_assigned =='true':
+            if my.show_assigned == 'true':
                 if my.show_task_edit == 'true':
                     my.total_width += 150
                 else:
@@ -927,10 +945,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if my.show_track =='true':
                 my.total_width += 25
             # editable select takes more width
-            if my.edit_status:
-                my.total_width += 100
-            else:
-                my.total_width += 75
+            if my.show_status == 'true':
+                if my.edit_status:
+                    my.total_width += 100
+                else:
+                    my.total_width += 75
 
         my.task_filter = my.kwargs.get('task_filter')
 
@@ -975,7 +994,31 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             return div
         """
 
-		
+
+
+        # fill in any missing tasks
+        autocreate_tasks = False
+        if autocreate_tasks:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if not pipeline:
+                pipeline = Pipeline.get_by_code("task")
+            processes = pipeline.get_process_names()
+
+            missing = []
+            task_processes = [x.get_value("process") for x in my.tasks]
+            for process in processes:
+                if process not in task_processes:
+                    missing.append(process)
+
+            for process in missing:
+                task = SearchType.create("sthpw/task")
+                task.set_value("process", process)
+                task.set_value("context", process)
+                task.set_parent(sobject)
+                my.tasks.append(task)
+         
+            my.tasks = sorted(my.tasks,get_compare(processes))
+
         parent_key =  SearchKey.get_by_sobject(sobject, use_id=True)
         from pyasm.common import Environment
         security = Environment.get_security()
@@ -1050,6 +1093,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             table.add_style("border-width: 2px")
             table.add_style('border-collapse: collapse')
             table.add_row()
+
+
             last = len(items) - 1
             for idx, tasks in enumerate(items):
                 if my.layout in ['vertical']:
@@ -1327,91 +1372,92 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # follow the proper access rules defined for task
-        if (not my.edit_status or not my.permission['status']['is_editable'] ) and my.permission['status']['is_viewable']:
-            status_div = DivWdg()
-            status_div.add_color('color','color')
-            if my.layout in ['horizontal', 'vertical']:
+        if my.show_status != 'false':
+            if (not my.edit_status or not my.permission['status']['is_editable'] ) and my.permission['status']['is_viewable']:
+                status_div = DivWdg()
+                status_div.add_color('color','color')
+                if my.layout in ['horizontal', 'vertical']:
+                    #status_div.add_style("float: left")
+                    td = table.add_cell(status_div)
+                    td.add_style("width: 75px")
+                else:
+                    # don't need to set width here so it covers the whole status
+                    #status_div.add_style("width", my.width)
+                    div.add(status_div)
+
+                #status_div.add_class("hand")
                 #status_div.add_style("float: left")
-                td = table.add_cell(status_div)
-                td.add_style("width: 75px")
-            else:
-                # don't need to set width here so it covers the whole status
-                #status_div.add_style("width", my.width)
-                div.add(status_div)
+                status_div.add_style("font-size: %spx" % (my.font_size))
+                status_div.add_style("font-weight: bold")
+                status_div.add_style("background-color: %s" %bgColor)
+                status_div.add(status)
+             
+            elif my.permission['status']['is_editable']:
+                pipeline_code = task.get_value("pipeline_code")
+                if not pipeline_code:
+                    pipeline_code = 'task'
+                pipeline = Pipeline.get_by_code(pipeline_code)
+                if not pipeline:
+                    pipeline = Pipeline.get_by_code("task")
+                processes = pipeline.get_process_names()
+               
+                filtered_statuses = [x for x in processes if x in my.allowed_statuses]
 
-            #status_div.add_class("hand")
-            #status_div.add_style("float: left")
-            status_div.add_style("font-size: %spx" % (my.font_size))
-            status_div.add_style("font-weight: bold")
-            status_div.add_style("background-color: %s" %bgColor)
-            status_div.add(status)
-         
-        elif my.permission['status']['is_editable']:
-            pipeline_code = task.get_value("pipeline_code")
-            if not pipeline_code:
-                pipeline_code = 'task'
-            pipeline = Pipeline.get_by_code(pipeline_code)
-            if not pipeline:
-                pipeline = Pipeline.get_by_code("task")
-            processes = pipeline.get_process_names()
-           
-            filtered_statuses = [x for x in processes if x in my.allowed_statuses]
-
-            context = task.get_value("context")
-            search_key = task.get_search_key()
-            task_id = task.get_id()
-            select = SelectWdg('status_%s'%task_id)
-            select.add_attr("spt_context", context)
+                context = task.get_value("context")
+                search_key = task.get_search_key()
+                task_id = task.get_id()
+                select = SelectWdg('status_%s'%task_id)
+                select.add_attr("spt_context", context)
 
 
 
-            select.add_behavior( {
-                'type': 'change',
-                'cbjs_action': '''
-                var value = bvr.src_el.value;
-                var context = bvr.src_el.getAttribute("spt_context");
-                var layout = bvr.src_el.getParent(".spt_layout");
-                spt.table.set_layout(layout);
-                var rows = spt.table.get_selected_rows();
-                for (var i = 0; i < rows.length; i++) {
-                    var row = rows[i];
-                    var elements = row.getElements(".spt_task_status_select");
-                    for (var j = 0; j < elements.length; j++) {
-                        var el = elements[j];
-                        if (el == bvr.src_el) {
-                            continue;
-                        }
+                select.add_behavior( {
+                    'type': 'change',
+                    'cbjs_action': '''
+                    var value = bvr.src_el.value;
+                    var context = bvr.src_el.getAttribute("spt_context");
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    var rows = spt.table.get_selected_rows();
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i];
+                        var elements = row.getElements(".spt_task_status_select");
+                        for (var j = 0; j < elements.length; j++) {
+                            var el = elements[j];
+                            if (el == bvr.src_el) {
+                                continue;
+                            }
 
-                        var el_context = el.getAttribute("spt_context");
-                        if (el_context == context) {
-                            el.value = value;
-                            spt.task_element.status_change_cbk(evt, {src_el: el});
+                            var el_context = el.getAttribute("spt_context");
+                            if (el_context == context) {
+                                el.value = value;
+                                spt.task_element.status_change_cbk(evt, {src_el: el});
+                            }
                         }
                     }
-                }
 
-                '''
-            } )
-
+                    '''
+                } )
 
 
-            select.add_class("spt_task_status_select")
-            select.add_style("background-color: %s" %bgColor)
+
+                select.add_class("spt_task_status_select")
+                select.add_style("background-color: %s" %bgColor)
 
 
-            if my.layout in ['horizontal', 'vertical']:
-                #select.add_style("float: left")
-                select.add_style("width: 75px")
-                select.add_style("margin: 2px 0px 2px 0px")
-                td = table.add_cell(select)
-                td.add_style("width: 75px")
+                if my.layout in ['horizontal', 'vertical']:
+                    #select.add_style("float: left")
+                    select.add_style("width: 75px")
+                    select.add_style("margin: 2px 0px 2px 0px")
+                    td = table.add_cell(select)
+                    td.add_style("width: 75px")
 
-            else:
-                select.add_style("width", my.width)
-                div.add(select)
+                else:
+                    select.add_style("width", my.width)
+                    div.add(select)
 
-            select.set_option("values", filtered_statuses)
-            select.set_value(status)
+                select.set_option("values", filtered_statuses)
+                select.set_value(status)
 
 
       
@@ -1530,7 +1576,59 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             #icon_div.add_style("margin-top: -3px")
             icon_div.add_style("margin-right: -6px")
             button_table.add_cell(icon_div)
-       
+
+
+        show_duration = False
+        if show_duration:
+            bid_div = DivWdg()
+            bid_div.add_style("font-size: %spx" % (my.font_size-1))
+            bid_div.add_color('color','color')
+            if my.layout in ['horizontal', 'vertical']:
+                table.add_cell(bid_div)
+            else:
+                div.add(bid_div)
+
+
+            for subtask in tasks:
+
+                bid_duration = subtask.get_value("bid_duration")
+                process = subtask.get_value("process")
+
+                text_div = DivWdg()
+                bid_div.add(text_div)
+
+                if task.is_insert():
+                    text = TextWdg('bid_NEW_%s' % process)
+                else:
+                    text = TextWdg('bid_%s' %subtask.get_id())
+                text_div.add(text)
+                text.add_style("width: 80px")
+                text.add_style("text-align: center")
+
+                if bid_duration:
+                    text.set_value(bid_duration)
+                    text.add_color("color", "color3")
+                    text.add_color("background", "background3")
+
+                text.add_style("font-size: 1.2em")
+                if my.layout not in ['horizontal', 'vertical']:
+                    text.add_style("margin: 5px")
+                text.add_style("padding: 5px")
+
+                text.add_behavior( {
+                    'type': 'blur',
+                    'cbjs_action': '''
+                    var text = bvr.src_el;
+                    var value = text.value;
+                    if (value == "") {
+                        return;
+                    }
+                    spt.task_element.status_change_cbk(evt, {src_el: text});
+                    '''
+                } )
+
+
+
 
         return div
 
@@ -1563,11 +1661,13 @@ class TaskElementCbk(DatabaseAction):
         xx = jsonloads(xx)
         my.xx = xx
 
-        # FIXME:???? what is this for?
+
+
         #if my.xx.get("add_initial_tasks"):
         #    return
         task_status_ids = []
         task_assigned_ids = []
+        task_bid_ids = []
         clone_ids = {}
 
         for key, value in xx.items():
@@ -1585,7 +1685,7 @@ class TaskElementCbk(DatabaseAction):
                     action = "EDIT"
 
                 if action == "EDIT":
-                    task_assigned_ids.append(assigned_id);
+                    task_assigned_ids.append(assigned_id)
                 elif action.startswith('COPY'):
                     task = Search.get_by_id("sthpw/task", assigned_id)
                     status = value
@@ -1595,6 +1695,24 @@ class TaskElementCbk(DatabaseAction):
                 elif action == 'DELETE':
                     task = Search.get_by_id("sthpw/task", assigned_id)
                     task.delete()
+
+            elif key.startswith('bid_'):
+                tmps = key.split('_') 
+
+                action = tmps[1]
+                if action == 'NEW':
+                    process = tmps[2]
+                    new_bid = xx.get(key)
+                    if new_bid:
+                        task = SearchType.create("sthpw/task")
+                        task.set_value("process", process)
+                        task.set_parent(my.sobject)
+
+                        task.set_value("bid_duration", new_bid)
+                        task.commit()
+
+                else:
+                    task_bid_ids.append(tmps[1])
 
 
 
@@ -1626,6 +1744,19 @@ class TaskElementCbk(DatabaseAction):
                     continue
 
                 task.set_value("assigned", new_assigned)
+                task.commit()
+
+
+
+        if task_bid_ids: 
+            search = Search("sthpw/task")
+            search.add_filters("id", task_bid_ids)
+            tasks = search.get_sobjects()
+
+            for task in tasks:
+                new_bid = xx.get('bid_%s'%task.get_id())
+
+                task.set_value("bid_duration", new_bid)
                 task.commit()
 
 

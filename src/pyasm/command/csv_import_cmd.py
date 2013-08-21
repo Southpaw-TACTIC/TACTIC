@@ -34,7 +34,20 @@ class CsvImportCmd(Command):
         
         my.search_type = web.get_form_value("search_type_filter")
         my.file_path = web.get_form_value("file_path")
+        my.web_url = web.get_form_value("web_url")
         my.test_run = web.get_form_value("test_run")=='true'
+
+
+        if my.web_url:
+            import urllib2
+            response = urllib2.urlopen(url)
+            csv = response.read()
+            my.file_path = "/tmp/test.csv"
+            f = open(my.file_path, 'w')
+            f.write(csv)
+            f.close()
+
+
 
         # either unknown or utf-8
         my.encoder = web.get_form_value("encoder")

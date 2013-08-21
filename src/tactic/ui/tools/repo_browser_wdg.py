@@ -691,6 +691,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             bvr.src_el.setStyle("border", "solid 1px " + bvr.border);
             bvr.src_el.setStyle("box-shadow", "0px 0px 5px");
             bvr.src_el.setStyle("position", "absolute");
+            bvr.src_el.setStyle("padding", "5px");
             bvr.src_el.position({x:mouse_411.curr_x+5, y:mouse_411.curr_y+5});
         }
         spt.repo_browser.drag_file_action = function(evt, bvr, mouse_411) {
@@ -701,7 +702,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             bvr.src_el.setStyle("border", "");
             bvr.src_el.setStyle("box-shadow", "");
             bvr.src_el.setStyle("position", "relative");
-            bvr.src_el.position( spt.repo_browser.start_pos);
+            bvr.src_el.setStyle("padding", "2px 0px 2px 15px");
 
             var pos = spt.repo_browser.start_pos;
             new Fx.Tween(bvr.src_el,{duration:"short"}).start('top', pos.y);
@@ -719,18 +720,26 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
 
 
-            bvr.src_el.inject(drop_on_el, 'after');
-            var padding = drop_on_el.getStyle("padding-left");
-            padding = parseInt(padding.replace("px", ""));
-            padding += 25;
-            bvr.src_el.setStyle("padding-left", padding);
-
-
             var server = TacticServerStub.get(); 
 
             var snapshot_code = bvr.src_el.getAttribute("spt_snapshot_code");
             // get the new relative_dir
             var relative_dir = drop_on_el.getAttribute("spt_relative_dir");
+
+
+            if ( drop_on_el.hasClass("spt_open") == true) {
+                bvr.src_el.inject(drop_on_el, 'after');
+                var padding = drop_on_el.getStyle("padding-left");
+                padding = parseInt(padding.replace("px", ""));
+                padding += 25;
+                bvr.src_el.setStyle("padding-left", padding);
+            }
+            else {
+                spt.behavior.destroy_element(bvr.src_el);
+            }
+
+            return;
+
 
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
             var kwargs = {

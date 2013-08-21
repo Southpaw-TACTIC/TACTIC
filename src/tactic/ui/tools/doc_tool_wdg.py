@@ -13,7 +13,7 @@
 
 __all__ = ['DocToolWdg']
 
-from pyasm.common import Xml
+from pyasm.common import Xml, Environment
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType
 
@@ -36,7 +36,6 @@ class DocToolWdg(BaseRefreshWdg):
 
         diff = []
         for line in result:
-            print line
             if line.startswith("-"):
                 line = line[2:]
                 line = "<span style='background: #FCC'>%s</span>" % line
@@ -61,8 +60,15 @@ class DocToolWdg(BaseRefreshWdg):
 
     def get_text(my, path):
 
+
+        tmp_dir = Environment.get_tmp_dir()
+        last_path = "%s/last" % tmp_dir
+
+
         if path.startswith("http"):
             # NOTE: this is very specific to google docs
+            if not path.endswith("?embedded=true"):
+                path = "%s?embedded=true" % path
 
             import urllib2
             response = urllib2.urlopen(path)
@@ -98,13 +104,16 @@ class DocToolWdg(BaseRefreshWdg):
 
             text = "\n".join(lines2)
 
+
+            #print 'text', text
+            #import html2text
+            #text = html2text.html2text(html)
+
             # clear out any remaining html tags
             import re
             text = re.sub('<[^<]+?>', '', text)
 
-            #print 'text', text
-
-            #out = open("/tmp/last", 'w')
+            #out = open(last_path, 'w')
             #out.write(text)
             #out.close()
 
@@ -128,8 +137,8 @@ class DocToolWdg(BaseRefreshWdg):
 
 
         # read last text if it exists
-        if os.path.exists("/tmp/last"):
-            last_file = open("/tmp/last", 'r')
+        if os.path.exists(last_path):
+            last_file = open(last_path, 'r')
             last_text = last_file.read()
             last_file.close()
         else:
@@ -140,7 +149,6 @@ class DocToolWdg(BaseRefreshWdg):
             lines2 = last_text.split("\n")
             diff = my.get_diff(lines2, lines)
             diff_text = "\n".join(diff)
-            print diff_text
             text = diff_text
 
         search_type_obj = SearchType.get(my.search_type)
@@ -191,8 +199,10 @@ class DocToolWdg(BaseRefreshWdg):
         #path = "/home/apache/assets/google_docs.html"
         #path = "/home/apache/pdf/star_wars.txt"
         path = "https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"
-        text = my.get_text(path)
 
+        path = "https://docs.google.com/document/d/1WPUmXYoSkR2cz0NcyM2vqQYO6OGZW8BAiDL31YEj--M/pub"
+
+        #path = "https://docs.google.com/spreadsheet/pub?key=0Al0xl-XktnaNdExraEE4QkxVQXhaOFh1SHIxZmZMQ0E&single=true&gid=0&output=html"
         title.add(path)
 
 
@@ -200,25 +210,29 @@ class DocToolWdg(BaseRefreshWdg):
         text_wdg.add_class("spt_document_content")
         left_td.add(text_wdg)
 
-        pre = HtmlElement.pre()
-        #pre = DivWdg()
-        pre.add_style("width: 600x")
-        pre.add_style("white-space: pre-wrap")
-        pre.add(text)
-        text_wdg.add(pre)
-        text_wdg.add_style("padding: 20px")
-        text_wdg.add_style("max-height: 600px")
-        text_wdg.add_style("overflow-y: auto")
+        if path.startswith("https://docs.google.com/spreadsheet"):
+            #path = "http://www.southpawtech.com.com"
+            text_wdg.add('''
+            <iframe class="spt_document_iframe" style="width: 100%%; height: auto; min-height: 600px; font-size: 1.0em" src="%s"></iframe>
+            ''' % path)
+            text_wdg.add_style("overflow-x: hidden")
+        else:
+            text = my.get_text(path)
 
-        #from tactic.ui.app import AceEditorWdg
-        #editor = AceEditorWdg(code=text, show_options=False, readonly=True, height="600px")
-         #text_wdg.add(editor)
+            pre = HtmlElement.pre()
+            #pre = DivWdg()
+            pre.add_style("width: 600x")
+            pre.add_style("white-space: pre-wrap")
+            pre.add(text)
+            text_wdg.add(pre)
+            text_wdg.add_style("padding: 20px")
+            text_wdg.add_style("max-height: 600px")
+            text_wdg.add_style("overflow-y: auto")
 
+            #from tactic.ui.app import AceEditorWdg
+            #editor = AceEditorWdg(code=text, show_options=False, readonly=True, height="600px")
+             #text_wdg.add(editor)
 
-        #text_wdg.add('''
-        #<iframe class="spt_document_iframe" style="width: 100%; height: auto; min-height: 600px; font-size: 1.0em" src="https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"></iframe>
-        #''')
-        #text_wdg.add_style("overflow-x: hidden")
 
 
         # add a click on spt_item

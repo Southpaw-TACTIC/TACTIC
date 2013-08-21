@@ -102,7 +102,6 @@ class CsvExportWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("padding: 10px")
-        top.add_style("height: 95%")
         top.add_style("min-width: 400px")
 
         from tactic.ui.app import HelpButtonWdg
@@ -301,7 +300,21 @@ class CsvImportWdg(BaseRefreshWdg):
             my.search_type = web.get_form_value('search_type_filter')
         my.close_cbfn = my.kwargs.get('close_cbfn')
 
-        my.file_path =  web.get_form_value('file_path')
+        my.web_url = web.get_form_value("web_url")
+        my.file_path = None
+        if my.web_url:
+            import urllib2
+            response = urllib2.urlopen(my.web_url)
+            csv = response.read()
+            my.file_path = "/tmp/test.csv"
+            f = open(my.file_path, 'w')
+            f.write(csv)
+            f.close()
+
+        if not my.file_path:
+            my.file_path =  web.get_form_value('file_path')
+
+
         if not my.file_path:
             file_name =  web.get_form_value('file_name')
             ticket =  web.get_form_value('html5_ticket')
@@ -313,6 +326,8 @@ class CsvImportWdg(BaseRefreshWdg):
                 file_name = File.get_filesystem_name(str(file_name))
                 my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
 
+
+
        
 
 
@@ -320,9 +335,10 @@ class CsvImportWdg(BaseRefreshWdg):
         
         widget = DivWdg()
 
-        from tactic.ui.widget import TitleWdg
-        title = TitleWdg(name_of_title='Import CSV',help_alias='importing-csv-data')
-        widget.add(title)
+        if my.kwargs.get("is_refresh") == 'true':
+            from tactic.ui.widget import TitleWdg
+            title = TitleWdg(name_of_title='Import CSV',help_alias='importing-csv-data')
+            widget.add(title)
 
         widget.add_style('padding: 10px')
         widget.add_style('font-size: 12px')
@@ -437,7 +453,10 @@ class CsvImportWdg(BaseRefreshWdg):
                 hidden = HiddenWdg("file_path", my.file_path)
                 widget.add(hidden)
                 
-                file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                if my.web_url:
+                    file_span = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
+                else:
+                    file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
                 file_span.add_color('color','color')
                 file_span.add_style('margin: 8px 0 0 10px')
                 file_span.add_style('font-size: 14px')
@@ -449,21 +468,21 @@ class CsvImportWdg(BaseRefreshWdg):
                                    'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
                                     'search_type_filter': '%s'});" %(Common.get_full_class_name(my), my.search_type) } )
                 widget.add(button)
-                widget.add(HtmlElement.br(2))
+                widget.add("<br clear='all'/>")
+                widget.add(HtmlElement.br())
                 return widget
 
             widget.add("<br/>")
-            widget.add_style("height: 300px")
+            widget.add_style("overflow-y: auto")
 
             msg = DivWdg()
             widget.add(msg)
             msg.add( "<div style='float: left; padding-left: 100px; padding-top: 6px'><b>Upload a csv file: </b></div>")
             msg.add_border()
             msg.add_style("width: 400px")
-            msg.add_style("height: 200px")
             msg.add_color("background", "background3")
-            msg.add_style("padding-top: 20px")
-            msg.add_style("margin: auto auto")
+            msg.add_style("padding: 20px")
+            msg.add_style("margin: 30 auto")
             msg.add_style("text-align: center")
 
             ticket = Environment.get_security().get_ticket_key()
@@ -510,15 +529,22 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(upload_wdg)
           
             #widget.add(span)
+            msg.add("<br/><br/>-- OR --</br/><br/>")
+
+            msg.add("<b>Published URL: </b>") 
+            text = TextWdg("web_url")
+            msg.add(text)
+ 
+
 
             msg.add("<br/><br/>-- OR --</br/><br/>")
 
             msg.add("<b>Copy and Paste from a Spreadsheet: </b>") 
             text = TextAreaWdg("data")
-            text.add_style('width: 35em')
+            text.add_style('width: 33em')
             text.add_class("spt_import_cut_paste")
             msg.add(text)
-            button = ActionButtonWdg(title="Upload")
+            button = ActionButtonWdg(title="Parse")
             button.add_style("margin: 5px auto")
             msg.add(button)
             button.add_behavior( {
@@ -575,15 +601,6 @@ class CsvImportWdg(BaseRefreshWdg):
             } )
 
         
-
-
-
-
-
-
-        
-        
-
         return widget
 
 
