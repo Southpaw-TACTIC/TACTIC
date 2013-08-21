@@ -1163,7 +1163,7 @@ class FastTableLayoutWdg(TableLayoutWdg):
 
 
         row = my.handle_row(table, insert_sobject, row=0)
-        row.add_class("spt_table_insert_row")
+        row.add_class("spt_table_insert_row spt_clone")
         # to make focusable
         row.add_attr('tabIndex','-1')
 
@@ -2526,8 +2526,13 @@ spt.table.get_insert_row = function() {
 
 spt.table.get_insert_rows = function() {
     var layout = spt.table.get_layout();
-    var insert_row = layout.getElements(".spt_table_insert_row");
-    return insert_row;
+    var insert_rows = layout.getElements(".spt_table_insert_row");
+    var rows = []
+    for (var i=0; i < insert_rows.length; i++) {
+        if (!spt.has_class(insert_rows[i], 'spt_clone'))
+            rows.push(insert_rows[i])
+    }
+    return rows;
 }
 
 
@@ -2552,6 +2557,20 @@ spt.table.set_connect_key = function(connect_key) {
 
 
 // regular visible data 
+
+spt.table.get_data = function(row) {
+    var data = {};
+    if (row) {
+        var cells = row.getElements('td.spt_cell_edit'); 
+        for (var k = 0; k < cells.length; k++) {
+            var cell = cells[k];
+           
+            data[cell.getAttribute('spt_element_name')] = cell.getAttribute('spt_input_value');   
+        }
+    }
+    return data   
+}
+
 
 spt.table.set_data = function(row, data) {
     var changed = false;
@@ -2629,14 +2648,14 @@ spt.table.add_new_item = function(kwargs) {
 
     var clone = spt.behavior.clone(insert_row);
     clone.inject(row, "after");
-
+    spt.remove_class(clone, 'spt_clone');
 
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
     if (no_items != null) {
         no_items.destroy();
     }
-
+    
     return clone;
 }
 

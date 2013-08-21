@@ -664,7 +664,7 @@ spt.add_class = function( el, cls )
 spt.remove_class = function( el, cls )
 {
     var regex = new RegExp( "\\b" + cls + "\\b" );
-    if( el.className.match( regex ) ) {
+    if( el.className && el.className.match( regex ) ) {
         el.className = el.className.replace(regex,'').replace(/\s+/,' ').trim();
     }
 }
