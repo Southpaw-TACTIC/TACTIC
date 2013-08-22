@@ -31,6 +31,7 @@ class SqlTest(unittest.TestCase):
         #test_env.create()
 
         try:
+            my._test_relationship()
             my._create_table()
             my._test_search()
 
@@ -38,6 +39,26 @@ class SqlTest(unittest.TestCase):
             #test_env.delete()
             pass
 
+
+
+    def _test_relationship(my):
+
+        search_type = "table/posts?project=mongodb"
+        search_type2 = "table/posts2?project=mongodb"
+
+        from pyasm.biz import Schema
+        schema = Schema.get()
+
+        relationship = schema.get_relationship(search_type, search_type2)
+        my.assertEquals(None, relationship)
+
+        search_type2 = "sthpw/task"
+        relationship = schema.get_relationship(search_type, search_type2)
+        my.assertEquals("search_code", relationship)
+
+        attrs = schema.get_relationship_attrs(search_type, search_type2)
+        my.assertEquals("*", attrs.get("to") )
+        my.assertEquals("search_type", attrs.get("relationship") )
 
 
 

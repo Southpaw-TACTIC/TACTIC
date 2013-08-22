@@ -44,6 +44,9 @@ class MongoDbConn(object):
     def get_collection(my, table):
         return my.conn[table]
 
+    def collection_names(my):
+        return my.conn.collection_names()
+
 
     def cursor(my):
         return {}
@@ -71,6 +74,13 @@ class MongoDbImpl(DatabaseImpl):
     def get_id_col(my, db_resource, search_type):
         return "_id"
 
+
+    def get_code_col(my, db_resource, search_type):
+        return "code"
+
+
+
+
     def get_columns(cls, db_resource, table):
         from pyasm.search import DbResource, DbContainer
         sql = DbContainer.get(db_resource)
@@ -86,20 +96,32 @@ class MongoDbImpl(DatabaseImpl):
             return ['_id']
         else:
             columns = result.keys()
-            columns.remove("_id")
+
+            if "code" in columns:
+                columns.remove("code")
+            columns.insert(0, "code")
+
+            if "_id" in columns:
+                columns.remove("_id")
             columns.insert(0, "_id")
+
+
             return columns
 
 
     def get_column_info(cls, db_resource, table, use_cache=True):
 
         #info_dict = {'data_type': data_type, 'nullable': is_nullable, 'size': size}
+        # TODO: use a collection spt_schema
+
 
         columns = cls.get_columns(db_resource, table)
         info_dict = {}
         for column in columns:
             if column == "_id":
                 info = {'data_type': 'bson.objectid'}
+            elif column == "code":
+                info = {'data_type': 'varchar'}
             else:
                 info = {}
             info_dict[column] = info
@@ -108,8 +130,6 @@ class MongoDbImpl(DatabaseImpl):
 
 
     def get_table_info(my, database):
-
-        print "database: ", database
 
         from pyasm.search import DbResource, DbContainer
         sql = DbContainer.get(database)
@@ -125,12 +145,13 @@ class MongoDbImpl(DatabaseImpl):
 
 
     def table_exists(my, db_resource, table):
-        print "db_resource: ", db_resource
         sql = db_resource.get_sql()
         conn = sql.get_connection()
-
-        print "foo: ", conn.collection_names()
-        return True
+        collections = conn.collection_names()
+        if table in collections:
+            return True
+        else:
+            return False
 
 
     def has_savepoint(my):
@@ -232,7 +253,6 @@ class MongoDbImpl(DatabaseImpl):
 
 
         result = collection.update( {'_id': item.get('_id')}, {'$set': data} )
-        print "result: ", result
 
         err = result.get("err")
         if err:
@@ -270,7 +290,6 @@ class MongoDbImpl(DatabaseImpl):
         table = create.table
         data = create.data
 
-
         # data will some something like:
         # data = {
         #    column': 'code', 
@@ -281,7 +300,24 @@ class MongoDbImpl(DatabaseImpl):
         # something has to state what is inside a collection.  The current
         # approach simply stores this info in a collection called "spt_schema"
 
+        collection = conn.get_collection("spt_schema")
+
+        item = collection.find_one({ 'table': table })
+        if item:
+            print "Entry for [%s] already exists" % table
+            return
+
+        item_data = {
+            'table': table,
+            'data': data
+        }
+
         object_id  = collection.insert(data)
+
+        print "object_id: ", object_id
+
+
+
 
 
 

@@ -712,6 +712,22 @@ spt.behavior._CB_blur = function( evt )
 }
 
 
+spt.behavior._CB_focus = function( evt )
+{
+    if( ! evt ) { evt = window.event; }
+
+    var focus_el = spt.behavior.find_bvr_target( "focus", spt.get_event_target(evt) );
+    if( 'focus' in focus_el.spt_bvrs ) {
+        var oc_bvrs = focus_el.spt_bvrs['focus'];
+        for( var c=0; c < oc_bvrs.length; c++ ) {
+            var bvr = oc_bvrs[c];
+            if( bvr ) {
+                spt.behavior.run_preaction_action_postaction( bvr, evt, null );
+            }
+        }
+    }
+}
+
 
 
 spt.behavior._mark_bvr_event_registered = function( el, bvr_type )
@@ -819,6 +835,12 @@ spt.behavior._register_bvr_event = function( el, bvr )
         else if( bvr.type == 'blur' ) {
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
                 el.addEvent( "blur", spt.behavior._CB_blur );
+                spt.behavior._mark_bvr_event_registered( el, bvr.type );
+            }
+        }
+        else if( bvr.type == 'focus' ) {
+            if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
+                el.addEvent( "focus", spt.behavior._CB_focus );
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
         }

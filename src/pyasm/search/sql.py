@@ -3201,13 +3201,21 @@ class CreateTable(Base):
 
         if sql:
             my.database = sql.get_database_name()
+            db_resource = sql.get_db_resource()
+
         else:
             sql = DbContainer.get(my.db_resource)
+            db_resource = my.db_resource
+
         impl = sql.get_database_impl()
-        exists = impl.table_exists(my.db_resource, my.table)
+        exists = impl.table_exists(db_resource, my.table)
         if not exists:
-            statement = my.get_statement()
-            sql.do_update(statement)
+
+            if sql.get_vendor() == "MongoDb":
+                impl.execute_create_table(sql, my)
+            else:
+                statement = my.get_statement()
+                sql.do_update(statement)
 
             sql.clear_table_cache(my.database)
 

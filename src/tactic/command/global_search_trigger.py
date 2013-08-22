@@ -33,8 +33,11 @@ class GlobalSearchTrigger(Trigger):
         search_code = input.get('search_code')
         assert(sobj_id)
 
-        print "search_code: ", search_code
-
+        # it is possible that the id is not an integer (ie MongoDb)
+        # In this case, search_id cannot be used and this id is considered
+        # a code
+        if not search_code and not isinstance(sobj_id, int):
+            search_code = sobj_id
 
         search_type = SearchKey.extract_search_type(search_key)
         
@@ -42,7 +45,10 @@ class GlobalSearchTrigger(Trigger):
         if sobj_id != -1:
             search = Search("sthpw/sobject_list")
             search.add_filter( "search_type", search_type )
-            search.add_filter( "search_id", sobj_id )
+            if search_code:
+                search.add_filter( "search_code", search_code )
+            else:
+                search.add_filter( "search_id", sobj_id )
             sobject = search.get_sobject()
         else:
             sobject = None

@@ -461,12 +461,17 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         else:
             if isinstance(value, Widget):
                 return value
-            if not isinstance(value, basestring):
-                value_wdg = DivWdg()
-                value_wdg.add_style("float: right")
-                value_wdg.add_style("padding-right: 3px")
-                value_wdg.add( str(value) )
-                return value_wdg
+            elif not isinstance(value, basestring):
+                try:
+                    value + 1
+                except TypeError:
+                    value = str(value)
+                else:
+                    value_wdg = DivWdg()
+                    value_wdg.add_style("float: right")
+                    value_wdg.add_style("padding-right: 3px")
+                    value_wdg.add( str(value) )
+                    return value_wdg
 
         return value
     def is_sortable(my):

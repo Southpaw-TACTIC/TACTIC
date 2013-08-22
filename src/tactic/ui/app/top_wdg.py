@@ -16,7 +16,7 @@ import os
 
 import js_includes
 
-from pyasm.common import Container, Environment, jsondumps, jsonloads
+from pyasm.common import Common, Container, Environment, jsondumps, jsonloads
 from pyasm.biz import Project
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette
 from pyasm.widget import IconWdg
@@ -783,7 +783,7 @@ class SitePage(AppServer):
 
     def get_top_wdg(my):
 
-        """
+
         # NOTE: this is not the right place for this, but it allows the
         # top widget to completely be customized
 
@@ -794,7 +794,6 @@ class SitePage(AppServer):
             hash = "/%s" % hash
             my.top = CustomTopWdg(url=my.custom_url, hash=hash)
             return my.top
-        """
 
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
@@ -821,26 +820,25 @@ class CustomTopWdg(BaseRefreshWdg):
         headers = web.get_request_headers()
         accept = headers.get("Accept")
 
-        print "hash: ", hash
-        print "ticket: ", ticket
-        print "method: ", method
-        print "headers: ", headers
-        print "accept: ", accept
 
+        expression = url.get_value("url")
+        kwargs = Common.extract_dict(hash, expression)
 
         # Does the URL listen to specific Accept values?
         # or does it enforce a return content type ... and how does one
-        # know what exactly is supported?  Accept is kind of complicated
-        # easier to put in as a paramenter ... should accept both
-
-
+        # know what exactly is supported?  Accept is kind of complicated.
+        # Easier to put in as a paramenter ... but should accept both
 
         # get the widget designated for hash
+        kwargs['Accept'] = accept
+        kwargs['Method'] = method
+
         from tactic.ui.panel import HashPanelWdg 
-        hash_widget = HashPanelWdg.get_widget_from_hash(hash)
+        hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
 
 
-        # Really, the hash widget should determint what is returned, but
+
+        # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
         # class to determine what is or isn't implemented, not is it the
         # responsibility of this class to convert the data.  So, it
@@ -863,7 +861,21 @@ class CustomTopWdg(BaseRefreshWdg):
             web.set_content_type(accept)
 
         elif accept == "application/xml":
-            value = "<unkown/>"
+            from pyasm.common import Xml
+            value = hash_widget.get_display()
+            if isinstance(value, basestring):
+                xml = Xml(value)
+                value = xml.to_string()
+            elif isinstance(value, Xml):
+                value = value.to_string()
+            web.set_content_type(accept)
+
+
+        elif accept == "plain/text":
+            from pyasm.common import Xml
+            value = hash_widget.get_display()
+            value = str(value)
+
             web.set_content_type(accept)
 
         else:

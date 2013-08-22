@@ -35,6 +35,10 @@ class DatabaseImplInterface(object):
     def get_id_col(db_resource, search_type):
         pass
 
+    def get_code_col(db_resource, search_type):
+        pass
+
+
     def get_page(my, limit=None, offset=0):
         pass
 
@@ -121,6 +125,14 @@ class DatabaseImpl(DatabaseImplInterface):
         search_type = SearchType.get(search_type)
         id_col = search_type.get_id_col()
         return id_col
+
+
+    def get_code_col(my, db_resource, search_type):
+        from pyasm.search import SearchType
+        search_type = SearchType.get(search_type)
+        code_col = search_type.get_code_col()
+        return code_col
+
 
 
 

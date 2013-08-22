@@ -313,8 +313,11 @@ class HashPanelWdg(BaseRefreshWdg):
             # build the widget
             url = sobject.get_value("url")
             url = url.strip()
-            options = Common.extract_dict(hash, url)
 
+            
+            options = Common.extract_dict(hash, url)
+            for name, value in kwargs.items():
+                options[name] = value
 
             node = xml.get_node("element/display")
             options.update(xml.get_node_values_of_children(node))

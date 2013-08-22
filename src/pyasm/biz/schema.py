@@ -129,6 +129,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
                 type='hierarchy' relationship='search_type'/>
 
 
+    <connect from="sthpw/sobject_log" to="*"
+             type='hierarchy' relationship='search_type'/>
     <connect from="sthpw/sobject_log" to="sthpw/transaction_log"
              relationship='id' from_col='transaction_log_id'/>
 
@@ -524,9 +526,6 @@ class Schema(SObject):
         # determine the direction of the relationship
         my_is_from = attrs['from'] == search_type
 
-        from_col = attrs.get('from_col')
-        to_col = attrs.get('to_col')
-
         relationship = attrs.get('relationship')
         assert relationship == 'search_type'
 
@@ -549,6 +548,7 @@ class Schema(SObject):
 
 
     def get_relationship_attrs(my, search_type, search_type2, path=None, cache=True, type=None):
+
         if cache:
             key = "Schema:%s|%s|%s|%s" % (search_type, search_type2, path, type)
             attrs_dict = Container.get("Schema:relationship")
@@ -560,9 +560,18 @@ class Schema(SObject):
             if attrs != None:
                 return attrs
 
+        # Need to remove ? and get the base
+        if search_type.find("?") != -1:
+            parts = search_type.split("?")
+            search_type = parts[0]
+        if search_type2.find("?") != -1:
+            parts = search_type2.split("?")
+            search_type2 = parts[0]
 
+
+        """
         # TODO: fix this hard coding!!!!
-        xx = ["prod/render", 'sthpw/sobject_log', 'sthpw/queue']
+        xx = ['sthpw/sobject_log', 'sthpw/queue']
         if search_type == 'sthpw/sobject_log' and search_type2 == 'sthpw/transaction_log':
             pass
         elif search_type2 == 'sthpw/sobject_log' and search_type == 'sthpw/transaction_log':
@@ -589,6 +598,9 @@ class Schema(SObject):
                 'to_col': '',
             }
             return attrs
+        """
+
+
 
         direction = 'forward'
 
@@ -733,8 +745,6 @@ class Schema(SObject):
             if not SearchType.column_exists(a_search_type, from_col):
                 attrs['disabled'] = True
 
-
-        ## TODO: to_col should be id if relationship is "search_type"
 
         # store
         if cache:

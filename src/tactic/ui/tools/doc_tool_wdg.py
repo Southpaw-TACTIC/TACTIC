@@ -397,6 +397,9 @@ spt.document.expandtoword = function(range)
 
     def get_text_context_menu(my):
 
+        search_type_obj = SearchType.get(my.search_type)
+        title = search_type_obj.get_title()
+
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -406,25 +409,8 @@ spt.document.expandtoword = function(range)
 
 
 
-        menu_item = MenuItem(type='action', label='Test')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'type': 'click_up',
-            'search_type': my.search_type,
-            'cbjs_action': r'''
-            var activator = spt.smenu.get_activator(bvr);
-            var iframe = activator.getElement(".spt_document_iframe")
-            iframe.setStyle("border", "solid 1px red");
-            var selection = spt.document.get_selected_text(iframe);
-            console.log(selection);
-
-            var selection = spt.document.selected_text;
-            '''
-        } )
-
-
-
-        menu_item = MenuItem(type='action', label='Create New Shot')
+        label = 'Create New "%s"' % title
+        menu_item = MenuItem(type='action', label=label)
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -453,7 +439,8 @@ spt.document.expandtoword = function(range)
         } )
 
 
-        menu_item = MenuItem(type='action', label='Create New Shot (Detail)')
+        label = '%s (Detail)' % label
+        menu_item = MenuItem(type='action', label=label)
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',

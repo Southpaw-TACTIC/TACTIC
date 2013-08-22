@@ -111,8 +111,15 @@ class CherryPyAdapter(CherryPyAdapter20):
     def get_request_headers(my):
         return my.request.headers
 
+
+    def get_response(my):
+        return my.response
+
     def set_header(my, name, value):
         my.response.headers[name] = value
+
+    def get_response(my):
+        return my.response
 
     def set_content_type(my, content_type):
         my.response.headers['Content-Type'] = content_type

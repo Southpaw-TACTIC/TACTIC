@@ -22,6 +22,12 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.1.0.a01
     #
 
+    def upgrade_v4_1_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE "sobject_log" ALTER COLUMN "search_id" DROP NOT NULL;
+        ''')
+
+
     def upgrade_v4_1_0_a01_011(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "id_column" varchar(256);

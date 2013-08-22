@@ -303,6 +303,13 @@ class Search(Base):
         #return my.search_type_obj.get_id_col()
 
 
+    def get_code_col(my):
+        '''returns the column which stores the id of the sobject'''
+        database_impl = my.db_resource.get_database_impl()
+        search_type = my.full_search_type
+        return database_impl.get_code_col(my.db_resource, search_type)
+
+
 
     def get_statement(my):
         return my.select.get_statement()
@@ -677,7 +684,7 @@ class Search(Base):
                 my.add_filter("%ssearch_type" % prefix, sobject.get_search_type() )
                 my.add_filter("%ssearch_id" % prefix, sobject.get_id() )
             else:
-                my.add_filter("id", sobject.get_value("search_id"))
+                my.add_filter(my.get_id_col(), sobject.get_value("search_id"))
 
         elif relationship in ['search_code']:
             prefix = attrs.get("prefix")
@@ -2178,6 +2185,10 @@ class SObject(object):
             if fast_data:
                 my.data = fast_data['data'][fast_data['count']]
 
+                # MongoDb
+                if my.data.has_key("_id") and not my.data.has_key("code"):
+                    my.data["code"] = my.data["_id"]
+
                 # convert datetimes to strings
                 datetime_cols = fast_data.get("datetime_cols")
                 if datetime_cols:
@@ -2395,12 +2406,20 @@ class SObject(object):
         database_impl = my.db_resource.get_database_impl()
         search_type = my.full_search_type
         return database_impl.get_id_col(my.db_resource, search_type)
-        #return my.search_type_obj.get_id_col()
 
     def get_id(my):
         '''returns the id of the sobject'''
         id_col = my.get_id_col()
         return my.get_value(id_col, no_exception=True)
+
+
+    def get_code_col(my):
+        '''returns the column which stores the id of the sobject'''
+        database_impl = my.db_resource.get_database_impl()
+        search_type = my.full_search_type
+        return database_impl.get_code_col(my.db_resource, search_type)
+
+
 
     def get_search_type(my):
         '''returns the type of the sobject'''
@@ -2830,9 +2849,12 @@ class SObject(object):
             del xml_dict[key]
 
 
-        # explicitly test for None (empty string is ok)
+        # make sure name is defined
         if not name:
             raise SObjectException("Name is None for value [%s]" % value)
+
+
+        # explicitly test for None (empty string is ok)
         if value == None:
             raise SObjectException("Value for [%s] is None" % name)
 
@@ -2908,8 +2930,9 @@ class SObject(object):
                 except UnicodeDecodeError, e:
                     value = value.decode('iso-8859-1', 'ignore')
 
-
         my._set_value(name, value, quoted=quoted)
+
+
 
     def _set_value(my,  name, value, quoted=1):
         '''called by set_value()'''
@@ -3105,31 +3128,20 @@ class SObject(object):
         attrs = schema.get_relationship_attrs(
             my.get_base_search_type(),
             sobject.get_base_search_type(),
-            type=None,
         )
         relationship = attrs.get("relationship")
-        #relationship = schema.get_relationship(
-        #    my.get_base_search_type(),
-        #    sobject.get_base_search_type()
-        #)
 
         if relationship in ['search_type', 'search_code', 'search_id']:
 
-
-            """
-            # this doesn't do anything seemingly
-            if relationship == 'search_type':
-                relationship = schema.resolve_search_type_relationship(attrs,
-                    my.get_base_search_type(),
-                    sobject.get_base_search_type()
-                )
-
-            """
             my.set_value("search_type", sobject.get_search_type() )
 
-            # NOTE: fill in search_id even though it is deprecated
+            # fill in search_id only if it is an integer: this may not be the
+            # case, such as in MongoDb
             if SearchType.column_exists(my.full_search_type, "search_id"):
-                my.set_value("search_id", sobject.get_id() )
+                sobj_id = sobject.get_id()
+                if isinstance(sobj_id, int):
+                    my.set_value("search_id", sobject.get_id() )
+
 
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
                 my.set_value("search_code", sobject.get_value("code") )
@@ -3139,7 +3151,6 @@ class SObject(object):
 
 
     def set_parent(my, sobject, relationship=None):
-        #TODO: move these functions to add_related_sobject()
         schema = my.get_schema()
 
         search_type = my.get_base_search_type()
@@ -3154,10 +3165,14 @@ class SObject(object):
         search_type2 = sobject.get_base_search_type()
 
         if not relationship:
-            relationship = schema.get_relationship(search_type, search_type2)
+            full_search_type = my.full_search_type
+            full_search_type2 = sobject.get_search_type()
+            relationship = schema.get_relationship(full_search_type, full_search_type2)
+            #relationship = schema.get_relationship(search_type, search_type2)
 
 
         # DEPRECATED
+        """
         if relationship == "instance":
             # need the search_type instance
             instance_type = "prod/shot_instance"
@@ -3183,6 +3198,7 @@ class SObject(object):
                 instance.set_value("shot_code", shot_code)
                 instance.set_value("name", asset_code)
                 instance.commit()
+        """
 
 
         if relationship in ["search_type", "search_code", "search_id"]:
@@ -3423,8 +3439,6 @@ class SObject(object):
             update.execute(sql)
             #statement = update.get_statement()
             #print "statement: ", statement
-
-            # FIXME: fill in some data
             statement = "MongoDB!!!"
 
         else:
@@ -3502,7 +3516,7 @@ class SObject(object):
 
         # auto generate the new code
         search_code = None
-        if sobject and column_info.get("code"):
+        if sobject and column_info.get("code") != None:
             if not sobject.get_value("code", no_exception=True):
 
                 # TODO: make this configurable
@@ -5164,6 +5178,14 @@ class SearchType(SObject):
             return "id"
         else:
             return id_col
+
+
+    def get_code_col(my):
+        id_col = my.data.get("code_column")
+        if not code_col:
+            return "code"
+        else:
+            return code_col
 
 
     def get_retire_col(my):

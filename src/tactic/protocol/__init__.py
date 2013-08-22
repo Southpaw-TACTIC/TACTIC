@@ -10,4 +10,6 @@
 #
 #
 
-from python_wdg import PythonWdg
+
+from rest_handler import *
+from python_rest_handler import *

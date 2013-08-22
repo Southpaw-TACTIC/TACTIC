@@ -186,6 +186,11 @@ class ProcessConnect(Base):
     def get_from(my):
         return Xml.get_attribute(my.node, "from")
 
+
+    def get_to_pipeline(my):
+        return Xml.get_attribute(my.node, "to_pipeline")
+
+
     def get_context(my, from_xml=False):
         # if the context is not specified, use the "from" process
         context = Xml.get_attribute(my.node, "context")
@@ -537,10 +542,19 @@ class Pipeline(SObject):
         for connect in connects:
             # make sure there are no empty contexts
             to = connect.get_to()
-            process = my.get_process(to)
-            if process:
-                processes.append(process)
-        
+
+            to_pipeline = connect.get_to_pipeline()
+            if to_pipeline:
+                pipeline = Pipeline.get_by_code(to_pipeline)
+                process = pipeline.get_process(to)
+                if process:
+                    processes.append(process)
+
+            else:
+                process = my.get_process(to)
+                if process:
+                    processes.append(process)
+            
         return processes
  
 

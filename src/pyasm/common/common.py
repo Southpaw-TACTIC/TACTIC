@@ -238,7 +238,12 @@ class Common(Base):
 
 
     def extract_keywords(data):
+
+        if not isinstance(data, basestring):
+            data = str(data)
+
         is_ascii = Common.is_ascii(data)
+
         data = re.sub(r'([_|,])+', ' ', data)
         if is_ascii:
             # other non ASCII languages don't need these
@@ -257,6 +262,8 @@ class Common(Base):
             value.encode('ascii')
         except UnicodeEncodeError:
             is_ascii = False
+        except Exception, e:
+            is_acii = False
         else:
             is_ascii = True
 

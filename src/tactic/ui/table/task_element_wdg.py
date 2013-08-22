@@ -187,6 +187,18 @@ class TaskElementWdg(BaseTableElementWdg):
         'category': 'Display'
     },
 
+
+    'show_bid': {
+        'description': 'Flag for displaying the bid duration tasks',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': '10',
+        'category': 'Display'
+    },
+
+
+
+
      'assigned_label_attr': {
         'description': 'A list of | separated attributes displayed as the label of the assigned, e.g. "first_name|last_name"',
         'type': 'TextWdg',
@@ -997,7 +1009,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
-        autocreate_tasks = False
+        autocreate_tasks = True
         if autocreate_tasks:
             pipeline = Pipeline.get_by_code(pipeline_code)
             if not pipeline:
@@ -1112,6 +1124,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         td.add_style("width: 8500px")
                     
                 task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
+                if tasks[0].get_id() == -1:
+                    td.add_style("opacity: 0.5")
+
+
+
                 td.add(task_wdg)
 
 
@@ -1578,8 +1595,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             button_table.add_cell(icon_div)
 
 
-        show_duration = False
-        if show_duration:
+        show_bid = my.kwargs.get("show_bid")
+        if show_bid in [True, 'true']:
             bid_div = DivWdg()
             bid_div.add_style("font-size: %spx" % (my.font_size-1))
             bid_div.add_color('color','color')
@@ -1616,10 +1633,25 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 text.add_style("padding: 5px")
 
                 text.add_behavior( {
+                    'type': 'focus',
+                    'cbjs_action': '''
+                    var value = bvr.src_el.value;
+                    bvr.src_el.setAttribute("spt_last_value", value);
+                    bvr.src_el.select();
+                    '''
+                    } )
+
+                text.add_behavior( {
                     'type': 'blur',
                     'cbjs_action': '''
                     var text = bvr.src_el;
                     var value = text.value;
+
+                    var last_value = text.getAttribute('spt_last_value');
+                    if (value == last_value) {
+                        return;
+                    }
+
                     if (value == "") {
                         return;
                     }

@@ -1562,8 +1562,24 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top.add(text)
 
 
+        # handle deliveries to other processes
         output_processes = pipeline.get_output_processes(process)
         if output_processes:
+
+
+
+            """
+            for p in output_processes:
+                pipeline_code = p.parent_pipeline_code
+                if pipeline_code:
+                    pipeline = Pipeline.get_by_code(pipeline_code)
+                    search_type = pipeline.get_value("search_type")
+
+                    sobject = Search.get_by_search_key(search_key)
+                    related = Search.eval("@SOBJECT(%s)" % search_type, sobject)
+            """
+
+
             process_names = [x.get_name() for x in output_processes]
 
             delivery_div = DivWdg()
