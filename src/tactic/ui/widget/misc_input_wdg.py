@@ -317,9 +317,12 @@ class TaskStatusSelectWdg(SelectWdg):
                     continue
 
                 # use the new access rule process here
-                access_key = [{
-                    'process': process
-                    }]
+                access_key = [
+                    {'process': process},
+                    {'process': '*'},
+                    {'process': '*' ,'pipeline':  pipeline.get_code()},
+                    {'process': process , 'pipeline':  pipeline.get_code()}
+                    ]
 
 
                 if security.check_access('process', access_key, "view", default="deny"):
