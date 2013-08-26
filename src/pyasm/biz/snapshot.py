@@ -464,7 +464,7 @@ class Snapshot(SObject):
 
 
 
-    def get_remote_web_path_by_type(my, type):
+    def get_remote_web_path_by_type(my, type='main'):
         ''' get the lib path by specifying a file type '''
         xml = my.get_snapshot_xml()
 
@@ -481,7 +481,7 @@ class Snapshot(SObject):
 
 
 
-    def get_lib_path_by_type(my, type):
+    def get_lib_path_by_type(my, type='main'):
         ''' get the lib path by specifying a file type '''
         xml = my.get_snapshot_xml()
 

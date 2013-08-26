@@ -10,7 +10,8 @@
 #
 #
 
-__all__ = ["CheckinMetadataHandler"]
+__all__ = ['CheckinMetadataHandler', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser']
+
 
 import os, sys, re, subprocess
 
@@ -36,6 +37,11 @@ else:
     HAS_FFMPEG = False
 
 
+try:
+    import exifread
+    HAS_EXIF = True
+except:
+    HAS_EXIF = False
 
 
 
@@ -234,6 +240,28 @@ class PILMetadataParser:
 
 
         return ret
+
+
+
+
+class ExifMetadataParser:
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+
+    def get_metadata(my):
+        path = my.kwargs.get("path")
+
+        from pyasm.checkin import exifread
+        #import exifread
+
+        f = open(path)
+        tags = exifread.process_file(f)
+
+        return tags
+
+
 
 
 class ImageMagickMetadataParser:

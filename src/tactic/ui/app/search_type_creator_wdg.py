@@ -1382,6 +1382,9 @@ class SearchTypeCreatorCmd(Command):
             my.has_preview = False
 
 
+        # add naming first because create table needs it
+        my.add_naming()
+
 
         #my.parent_type = web.get_form_value("sobject_parent")
         my.parent_type = my.get_value("sobject_parent")
@@ -1419,7 +1422,6 @@ class SearchTypeCreatorCmd(Command):
 
         my.checkin_preview()
 
-        my.add_naming()
         
 
 
@@ -1602,6 +1604,9 @@ class SearchTypeCreatorCmd(Command):
             if column in ['pipeline_code'] or column in default_columns:
                 continue
 
+            if column == 'relative_dir':
+                continue
+
             element = xml.create_element("element")
             Xml.set_attribute(element, "name", column)
             #view_node.appendChild(element)
@@ -1690,10 +1695,9 @@ class SearchTypeCreatorCmd(Command):
             create.add(column_name, data_type)
  
 
-        naming_expr = my.get_value("directory_naming")
-        if naming_expr.find("{sobject.relative_dir}") != -1:
+        if my.folder_naming.find("{sobject.relative_dir}") != -1:
             create.add("relative_dir", "text")
-        elif naming_expr.find("{sobject.category}") != -1:
+        elif my.folder_naming.find("{sobject.category}") != -1:
             create.add("category", "text")
 
 
@@ -1930,15 +1934,13 @@ class SearchTypeCreatorCmd(Command):
         has_file_naming = my.get_value("has_file_naming") == "on"
 
         naming = SearchType.create("config/naming")
-        if has_folder_naming:
-            naming.set_value("dir_naming", naming_expr)
-        else:
-            naming.set_value("dir_naming", "{sobject.relative_dir}")
+        if not has_folder_naming:
+            naming_expr = "{sobject.relative_dir}"
+        naming.set_value("dir_naming", naming_expr)
 
-        if has_file_naming:
-            naming.set_value("file_naming", file_naming_expr)
-        else:
-            naming.set_value("file_naming", "{basefile}.{ext}")
+        if not has_file_naming:
+            file_naming_expr = "{basefile}.{ext}"
+        naming.set_value("file_naming", file_naming_expr)
 
 
         naming.set_value("checkin_type", "auto")
@@ -1947,7 +1949,13 @@ class SearchTypeCreatorCmd(Command):
         naming.set_value("search_type", search_type)
 
 
-
         naming.commit()
+
+
+        my.folder_naming = naming_expr
+        my.file_naming = file_naming_expr
+
+
+
 
 

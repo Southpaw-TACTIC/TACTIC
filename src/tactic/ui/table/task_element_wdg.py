@@ -83,13 +83,30 @@ class TaskElementWdg(BaseTableElementWdg):
     },
 
 
+    'autocreate_tasks': {
+        'description': 'Flag to determine tasks are created dynamically',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'category': 'Mode',
+        'order': '02'
+    },
+
+
+
 
     'edit_status': {
         'description': 'Flag to determine whether the status is editable',
         'type': 'SelectWdg',
         'values': 'true|false',
         'category': 'Mode',
-        'order': '02'
+        'order': '03'
+    },
+    'edit_assigned': {
+        'description': 'Flag for editing the assigned user of the tasks',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'category': 'Mode',
+        'order': '04',
     },
 
     'show_labels': {
@@ -206,13 +223,6 @@ class TaskElementWdg(BaseTableElementWdg):
         'category': 'Display'
     },
 
-    'edit_assigned': {
-        'description': 'Flag for editing the assigned user of the tasks',
-        'type': 'SelectWdg',
-        'values': 'true|false',
-        'order': '03',
-        'category': 'Mode'
-    },
 
     'show_dates': {
         'description': 'Flag for displaying the date range of the tasks',
@@ -387,10 +397,11 @@ class TaskElementWdg(BaseTableElementWdg):
         return search
 
 
+
+
     def preprocess(my):
-
+        print "preprocess"
         my._get_display_options()
-
 
 
         my.assignee = []
@@ -676,8 +687,36 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+
     def get_title(my):
-        return "Task Pipeline"
+        show_processes_in_title = False
+        if show_processes_in_title:
+            table = Table()
+
+            sobject = my.get_current_sobject()
+            if not sobject:
+                return "Tasks"
+
+
+            pipeline_code = sobject.get_value("pipeline_code")
+            if pipeline_code:
+                pipeline = Pipeline.get_by_code(pipeline_code)
+                if not pipeline:
+                    pipeline = Pipeline.get_by_code("task")
+
+                processes = pipeline.get_process_names()
+
+            table.add_row()
+            for process in processes:
+                td = table.add_cell(process)
+                td.add_style("width: 117px")
+                td.add_style("text-align: center")
+                td.add_style("font-weight: bold")
+
+            return table
+        else:
+            return "Tasks"
+
 
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
@@ -967,9 +1006,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_display(my):
         
-        # do it in preprocess
-        #my._get_display_options()
-
         my.tasks = my.get_tasks()
 
         sobject = my.get_current_sobject()
@@ -1009,8 +1045,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
-        autocreate_tasks = True
-        if autocreate_tasks:
+        autocreate_tasks = my.kwargs.get("autocreate_tasks")
+        if autocreate_tasks == "true":
             pipeline = Pipeline.get_by_code(pipeline_code)
             if not pipeline:
                 pipeline = Pipeline.get_by_code("task")
@@ -1307,9 +1343,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             pass
 
 
+        show_process = True
      
         process = task.get_value("process")
-        if my.show_process == 'true' and (len(my.tasks) >= 1 or process != 'publish'):
+        if my.show_process == 'true' and (len(my.tasks) >= 1 or process != 'publish') and show_process:
             process_div = DivWdg()
             if my.layout in ['horizontal', 'vertical']:
                 #process_div.add_style("float: left")

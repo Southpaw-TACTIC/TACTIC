@@ -16,10 +16,15 @@ __all__ = ['DocToolWdg']
 from pyasm.common import Xml, Environment
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType
+from pyasm.widget import IconWdg, SelectWdg, TextWdg
+from pyasm.command import Command
+from pyasm.biz import Snapshot
+from pyasm.checkin import FileCheckin
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import ViewPanelWdg
 from tactic.ui.container import ResizableTableWdg
+from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
 
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
@@ -51,18 +56,13 @@ class DocToolWdg(BaseRefreshWdg):
 
             diff.append(line)
 
-
         return diff
 
 
 
 
 
-    def get_text(my, path):
-
-
-        tmp_dir = Environment.get_tmp_dir()
-        last_path = "%s/last" % tmp_dir
+    def get_text(my, path, last_path=None, highlight=True):
 
 
         if path.startswith("http"):
@@ -74,9 +74,30 @@ class DocToolWdg(BaseRefreshWdg):
             response = urllib2.urlopen(path)
             html = response.read()
 
+            # 
+
+            fix = '''<meta content="text/html; charset=UTF-8" http-equiv="content-type">'''
+            html = html.replace(fix, "")
             html = html.replace("&", "&amp;")
+
             xml = Xml()
-            xml.read_string(html)
+            try:
+                xml.read_string(html)
+            except:
+                my.doc_mode = "formatted"
+                html = html.replace("&amp;", "&")
+                print
+                print "WARNING: cannot parse as XML"
+                print
+                return html
+
+
+            if my.doc_mode == "formatted":
+                return xml.to_string().replace("&amp;", "&")
+
+
+
+
 
             node = xml.get_node("html/body")
             text = xml.to_string(node)
@@ -99,7 +120,10 @@ class DocToolWdg(BaseRefreshWdg):
                 elif tmp_line.startswith("</p>"):
                     continue
 
+                # FIXME: there has to be a function to do this
                 tmp_line = tmp_line.replace("&nbsp;", "")
+                tmp_line = tmp_line.replace("&quot;", '"')
+                tmp_line = tmp_line.replace("&#39;", "'")
                 lines2.append(tmp_line)
 
             text = "\n".join(lines2)
@@ -112,10 +136,6 @@ class DocToolWdg(BaseRefreshWdg):
             # clear out any remaining html tags
             import re
             text = re.sub('<[^<]+?>', '', text)
-
-            #out = open(last_path, 'w')
-            #out.write(text)
-            #out.close()
 
 
         else:
@@ -135,9 +155,12 @@ class DocToolWdg(BaseRefreshWdg):
             text = "".join(lines)
 
 
+        lines = text.split("\n")
+        for line in lines:
+            print line
 
         # read last text if it exists
-        if os.path.exists(last_path):
+        if last_path and os.path.exists(last_path):
             last_file = open(last_path, 'r')
             last_text = last_file.read()
             last_file.close()
@@ -151,18 +174,37 @@ class DocToolWdg(BaseRefreshWdg):
             diff_text = "\n".join(diff)
             text = diff_text
 
-        search_type_obj = SearchType.get(my.search_type)
-        color = search_type_obj.get_value("color")
-        if not color:
-            color = '#0F0'
 
-        search = Search(my.search_type)
-        sobjects = search.get_sobjects()
-        for sobject in sobjects:
-            search_key = sobject.get_search_key()
-            value = sobject.get_value(my.column)
-            if value:
-                text = text.replace(value, "<i style='color: %s; font-weight: bold; opacity: 1.0;' spt_search_key='%s' class='spt_document_item hand'>%s</i>" % (color, search_key, value))
+        if highlight:
+            search_type_obj = SearchType.get(my.search_type)
+            color = search_type_obj.get_value("color")
+            if not color:
+                color = '#0F0'
+
+            # assemble all the lines
+            data = []
+
+            search = Search(my.search_type)
+            sobjects = search.get_sobjects()
+            for sobject in sobjects:
+                search_key = sobject.get_search_key()
+
+                value = sobject.get_value(my.column)
+                lines = value.split("\n")
+                for line in lines:
+                    line = line.strip()
+                    data.append( [line, search_key] )
+                
+
+            for line, search_key in data:
+                if not line:
+                    continue
+
+                line = line.strip()
+
+                print "line: ", line
+
+                text = text.replace(line, "<i style='color: %s; font-weight: bold; opacity: 1.0;' spt_search_key='%s' class='spt_document_item hand'>%s</i>" % (color, search_key, line))
 
 
 
@@ -171,12 +213,43 @@ class DocToolWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        my.doc_mode = my.kwargs.get("doc_mode")
+        path = my.kwargs.get("path")
+
+        my.last_path = None
+
+        doc_key = my.kwargs.get("doc_key")
+        if doc_key:
+            my.doc = Search.get_by_search_key(doc_key)
+            snapshot = Snapshot.get_latest_by_sobject(my.doc)
+            if snapshot:
+                my.last_path = snapshot.get_lib_path_by_type('main')
+
+            path = my.doc.get_value("link")
+
+
+        # TEST TEST TEST
+        if not path:
+            #path = "/home/apache/pdf/mongodb.txt"
+            #path = "/home/apache/assets/google_docs.html"
+            #path = "/home/apache/pdf/star_wars.txt"
+            path = "https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"
+
+            path = "https://docs.google.com/document/d/1WPUmXYoSkR2cz0NcyM2vqQYO6OGZW8BAiDL31YEj--M/pub"
+
+            #path = "https://docs.google.com/spreadsheet/pub?key=0Al0xl-XktnaNdExraEE4QkxVQXhaOFh1SHIxZmZMQ0E&single=true&gid=0&output=html"
+            path = "/home/apache/tactic/doc/alias.json"
+
+
+
+
         my.search_types = ["test3/shot", 'test3/asset']
         my.search_type = "test3/shot"
         my.column = "description"
 
         top = my.top
         top.add_class("spt_document_top")
+        my.set_as_panel(top)
 
         #table = Table()
         table = ResizableTableWdg()
@@ -194,15 +267,51 @@ class DocToolWdg(BaseRefreshWdg):
         title.add_style("padding: 5px")
         title.add_color("background", "background3")
 
+        button = IconButtonWdg(title="Refresh", icon=IconWdg.REFRESH)
+        title.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.app_busy.show("Reloading Document");
+            var top = bvr.src_el.getParent(".spt_document_top");
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+            '''
+        } )
+        button.add_style("float: left")
 
-        #path = "/home/apache/pdf/mongodb.txt"
-        #path = "/home/apache/assets/google_docs.html"
-        #path = "/home/apache/pdf/star_wars.txt"
-        path = "https://docs.google.com/document/d/1AC_YR8X8wbKsshkJ1h8EjZuFIr41guvqXq3_PXgaqJ0/pub?embedded=true"
 
-        path = "https://docs.google.com/document/d/1WPUmXYoSkR2cz0NcyM2vqQYO6OGZW8BAiDL31YEj--M/pub"
+        button = IconButtonWdg(title="Save", icon=IconWdg.SAVE)
+        title.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            '''
+        } )
+        button.add_style("float: left")
 
-        #path = "https://docs.google.com/spreadsheet/pub?key=0Al0xl-XktnaNdExraEE4QkxVQXhaOFh1SHIxZmZMQ0E&single=true&gid=0&output=html"
+
+        if not my.doc_mode:
+            my.doc_mode = "text"
+        select = SelectWdg("doc_mode")
+        select.set_option("values", "text|formatted")
+        title.add(select)
+        select.set_value(my.doc_mode)
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            spt.app_busy.show("Reloading Document");
+            var top = bvr.src_el.getParent(".spt_document_top");
+            var value = bvr.src_el.value;
+            top.setAttribute("spt_doc_mode", value);
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+            '''
+        } )
+
+
+        title.add("<br clear='all'/>")
+
         title.add(path)
 
 
@@ -217,17 +326,109 @@ class DocToolWdg(BaseRefreshWdg):
             ''' % path)
             text_wdg.add_style("overflow-x: hidden")
         else:
-            text = my.get_text(path)
 
-            pre = HtmlElement.pre()
-            #pre = DivWdg()
-            pre.add_style("width: 600x")
-            pre.add_style("white-space: pre-wrap")
-            pre.add(text)
+            if not my.last_path and my.doc:
+                tmp_dir = Environment.get_tmp_dir()
+                tmp_path = '%s/last_path.txt' % tmp_dir
+                f = open(tmp_path, 'w')
+
+                text = my.get_text(path, highlight=False)
+
+                f.write(text)
+                f.close()
+
+                cmd = FileCheckin(my.doc, tmp_path)
+                Command.execute_cmd(cmd)
+
+            else:
+                save = False
+                if save:
+                    # open up the last path
+                    f = open(my.last_path, 'r')
+                    last_text = f.read()
+                    text = my.get_text(path, None, highlight=False)
+
+                    if last_text != text:
+
+                        tmp_dir = Environment.get_tmp_dir()
+                        tmp_path = '%s/last_path.txt' % tmp_dir
+                        f = open(tmp_path, 'w')
+                        f.write(text)
+                        f.write(text)
+                        f.close()
+
+                        cmd = FileCheckin(my.doc, tmp_path)
+                        Command.execute_cmd(cmd)
+
+                text = my.get_text(path, my.last_path)
+
+
+            lines = text.split("\n") 
+
+            if my.doc_mode == "text":
+
+                num_lines = len(lines)
+
+                """
+                line_div = HtmlElement.pre()
+                text_wdg.add(line_div)
+                line_div.add_style("width: 20px")
+                line_div.add_style("float: left")
+                line_div.add_style("text-align: right")
+                line_div.add_style("opacity: 0.3")
+                line_div.add_style("padding-right: 10px")
+                for i in range(0, num_lines*2):
+                    line_div.add(i+1)
+                    line_div.add("<br/>")
+                """
+
+
+
+            if my.doc_mode == "text":
+                pre = HtmlElement.pre()
+                pre.add_style("white-space: pre-wrap")
+            else:
+                pre = DivWdg()
+            pre = DivWdg()
             text_wdg.add(pre)
-            text_wdg.add_style("padding: 20px")
+
+            text_wdg.add_style("padding: 10px 5px")
             text_wdg.add_style("max-height: 600px")
             text_wdg.add_style("overflow-y: auto")
+            text_wdg.add_style("width: 600px")
+            text_wdg.add_class("spt_resizable")
+
+
+            pre.add_style("font-family: courier")
+            #pre.add(text)
+
+
+
+            line_table = Table()
+            pre.add(line_table)
+            line_table.add_style("width: 100%")
+            for i, line in enumerate(lines):
+                #line = line.replace(" ", "&nbsp;")
+
+                tr = line_table.add_row()
+                if i % 2 == 0:
+                    tr.add_color("background", "background", -2)
+
+                td = line_table.add_cell()
+                td.add_style("vertical-align: top")
+                text = TextWdg()
+                text.add_style("border", "none")
+                text.add_style("text-align", "right")
+                text.add_style("width", "25px")
+                text.add_style("margin", "0 10 0 0")
+                text.add_style("opacity", "0.5")
+                text.set_value(i)
+                td.add(text)
+
+                td = line_table.add_cell()
+                td.add(line)
+
+
 
             #from tactic.ui.app import AceEditorWdg
             #editor = AceEditorWdg(code=text, show_options=False, readonly=True, height="600px")
@@ -360,13 +561,11 @@ spt.document.get_selected_text = function(frame)
 // expand FF range to enclose any word partially enclosed in it
 spt.document.expandtoword = function(range)
 {
-    if (range.collapsed)
-    {
+    if (range.collapsed) {
         return;
     }
 
-    while (range.startOffset > 0 && range.toString()[0].match(/\w/))
-    {
+    while (range.startOffset > 0 && range.toString()[0].match(/\w/)) {
         range.setStart(range.startContainer, range.startOffset - 1);
     }
 
@@ -385,6 +584,8 @@ spt.document.expandtoword = function(range)
             //spt.ace_editor.set_editor_top(bvr.src_el);
             //var text = spt.ace_editor.get_selection();
             var text = spt.document.get_selected_text();
+            text = text.replace(/\n\n/mg, "\n");
+            text = text.replace(/\n\n/mg, "\n");
             spt.document.selected_text = text + "";
             '''
         } )

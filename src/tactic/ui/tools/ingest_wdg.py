@@ -10,11 +10,12 @@
 #
 #
 
-
-from pyasm.web import DivWdg
-from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg
+from pyasm.common import Environment
+from pyasm.web import DivWdg, Table
+from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
+from pyasm.biz import File, Project
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -23,6 +24,8 @@ from tactic.ui.input import UploadButtonWdg, TextInputWdg
 from tactic.ui.widget import ActionButtonWdg
 
 from tactic_client_lib import TacticServerStub
+
+import os
 
 __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
@@ -173,6 +176,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             var size = parseInt(file.size / 1024 * 10) / 10;
 
             var thumb_el = clone.getElement(".spt_thumb");
+            var date_label_el = clone.getElement(".spt_date_label");
+            var date_el = clone.getElement(".spt_date");
 
             if (true) {
 
@@ -184,6 +189,19 @@ class IngestUploadWdg(BaseRefreshWdg):
                             thumb_el.appendChild(img);
                         },
                         {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
+                    );
+                    loadImage.parseMetaData(
+                        file,
+                        function(data) {
+                            if (data.exif) {
+                                var date = data.exif.get('DateTimeOriginal');
+                                if (date) {
+                                    date_label_el.innerHTML = date;
+                                    date_el.value = date;
+                                }
+                            }
+
+                        }
                     );
                 }, delay );
 
@@ -293,6 +311,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
+        """
         dialog = DialogWdg(display="false", show_title=False)
         info_div.add(dialog)
         dialog.set_as_activator(info_div, offset={'x':0,'y':10})
@@ -307,6 +326,20 @@ class IngestUploadWdg(BaseRefreshWdg):
         dialog_data_div.add(text)
         text.add_class("spt_category")
         text.add_style("padding: 1px")
+        """
+
+        date_div = DivWdg()
+        date_div.add_class("spt_date_label")
+        info_div.add(date_div)
+        date_div.add("")
+        date_div.add_style("opacity: 0.5")
+        date_div.add_style("font-size: 0.8em")
+        date_div.add_style("font-style: italic")
+        date_div.add_style("margin-top: 3px")
+
+        hidden_date_div = HiddenWdg("date")
+        hidden_date_div.add_class("spt_date")
+        info_div.add(date_div)
 
 
 
@@ -403,8 +436,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
-        var categories = values.category;
-        categories.shift();
+        var category = values.category[0];
+        var keywords = values.keywords[0];
 
         var processes = values.process;
         if (processes) {
@@ -413,13 +446,17 @@ class IngestUploadWdg(BaseRefreshWdg):
                 process = null;
             }
         }
+        else {
+            process = null;
+        }
 
         var kwargs = {
             search_type: search_type,
             relative_dir: relative_dir,
             filenames: filenames,
             key: key,
-            categories: categories,
+            category: category,
+            keywords: keywords,
             process: process,
         }
         on_complete = function() {
@@ -525,18 +562,18 @@ class IngestUploadWdg(BaseRefreshWdg):
         base_type = search_type_obj.get_base_key()
         search = Search("sthpw/pipeline")
         search.add_filter("search_type", base_type)
-        print search.get_statement()
         pipelines = search.get_sobjects()
         if pipelines:
             pipeline = pipelines[0]
 
             process_names = pipeline.get_process_names()
             if process_names:
-                process_div = DivWdg()
-                div.add(process_div)
-                process_div.add("Process: ")
+                table = Table()
+                div.add(table)
+                table.add_row()
+                table.add_cell("Process: ")
                 select = SelectWdg("process")
-                process_div.add(select)
+                table.add_cell(select)
                 process_names.append("---")
                 process_names.append("icon")
                 select.set_option("values", process_names)
@@ -545,7 +582,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button = IconButtonWdg(title="Add Data", icon=IconWdg.FOLDER)
-        #div.add(button)
+        div.add(button)
 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
@@ -554,18 +591,62 @@ class IngestUploadWdg(BaseRefreshWdg):
         dialog_data_div = DivWdg()
         dialog_data_div.add_color("background", "background")
         dialog_data_div.add_style("padding", "20px")
-
         dialog.add(dialog_data_div)
-        dialog_data_div.add("Folder: &nbsp; ")
-        text = TextInputWdg(name="folder")
-        if my.relative_dir:
-            text.set_value(my.relative_dir)
-        dialog_data_div.add(text)
-        text.add_class("spt_folder")
-        text.add_style("padding: 1px")
 
 
-        dialog_data_div.add("<br/>"*2)
+        # Order folders by date
+        name_div = DivWdg()
+        dialog_data_div.add(name_div)
+        name_div.add_style("margin: 15px 0px")
+
+        if SearchType.column_exists(my.search_type, "relative_dir"):
+
+            category_div = DivWdg()
+            name_div.add(category_div)
+            checkbox = RadioWdg("category")
+            checkbox.set_option("value", "none")
+            category_div.add(checkbox)
+            category_div.add(" No categories")
+            category_div.add_style("margin-bottom: 5px")
+            checkbox.set_option("checked", "true")
+
+
+            category_div = DivWdg()
+            name_div.add(category_div)
+            checkbox = RadioWdg("category")
+            checkbox.set_option("value", "by_day")
+            category_div.add(checkbox)
+            category_div.add(" Categorize files by Day")
+            category_div.add_style("margin-bottom: 5px")
+
+
+            category_div = DivWdg()
+            name_div.add(category_div)
+            checkbox = RadioWdg("category")
+            checkbox.set_option("value", "by_week")
+            category_div.add(checkbox)
+            category_div.add(" Categorize files by Week")
+            category_div.add_style("margin-bottom: 5px")
+
+
+            category_div = DivWdg()
+            name_div.add(category_div)
+            checkbox = RadioWdg("category")
+            checkbox.set_option("value", "by_year")
+            category_div.add(checkbox)
+            category_div.add(" Categorize files by Year")
+            category_div.add_style("margin-bottom: 5px")
+
+
+            """
+            checkbox = RadioWdg("category")
+            checkbox.set_option("value", "custom")
+            name_div.add(checkbox)
+            name_div.add(" Custom")
+            """
+
+            name_div.add("<br/>")
+
 
         dialog_data_div.add("Keywords:<br/>")
         dialog.add(dialog_data_div)
@@ -577,8 +658,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        # use file name for name
         # use base name for name
+        """
         name_div = DivWdg()
         dialog_data_div.add(name_div)
         name_div.add_style("margin: 15px 0px")
@@ -600,6 +681,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         checkbox = CheckboxWdg("file_keywords")
         name_div.add(checkbox)
         name_div.add(" Use file name for keywords")
+        """
 
 
         return div
@@ -615,13 +697,35 @@ class IngestUploadCmd(Command):
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
+        if not relative_dir:
+            project_code = Project.get_project_code()
+            search_type_obj = SearchType.get(search_type)
+            table = search_type_obj.get_table()
+            relative_dir = "%s/%s" % (project_code, table)
 
         server = TacticServerStub.get()
+        category = my.kwargs.get("category")
+        keywords = my.kwargs.get("keywords")
 
-        categories = my.kwargs.get("categories")
-        if not categories:
-            categories = []
 
+        # TODO: use this to generate a category
+        category_script_path = my.kwargs("category_script_path")
+        # ie:
+        # return blah/
+        """
+        ie:
+            from pyasm.checkin import ExifMetadataParser
+            parser = ExifMetadataParser(path=file_path)
+            tags = parser.get_metadata()
+
+            date = tags.get("EXIF DateTimeOriginal")
+            return date.split(" ")[0]
+        """
+ 
+    
+
+        upload_dir = Environment.get_upload_dir()
+ 
         for count, filename in enumerate(filenames):
 
             # first see if this sobjects still exists
@@ -639,28 +743,69 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", relative_dir)
 
 
-            if len(categories) >= count:
-                category = categories[count]
+
+
+
+            # extract metadata
+            file_path = "%s/%s" % (upload_dir, File.get_filesystem_name(filename))
+            if not os.path.exists(file_path):
+                raise Exception("Path [%s] does not exist" % file_path)
+
+
+            # get the metadata from this image
+            if SearchType.column_exists(search_type, "relative_dir"):
                 if category:
+                    from pyasm.checkin import ExifMetadataParser
+                    parser = ExifMetadataParser(path=file_path)
+                    tags = parser.get_metadata()
 
-                    if SearchType.column_exists(search_type, "category"):
-                        sobject.set_value("category", category)
+                    date = tags.get("EXIF DateTimeOriginal")
+                    if not date:
+                        date_str = "No-Date"
+                    else:
+                        date_str = str(date)
+                        # this can't be parsed correctly by dateutils
+                        parts = date_str.split(" ")
+                        date_str = parts[0].replace(":", "-")
+                        date_str = "%s %s" % (date_str, parts[1])
 
-                    if SearchType.column_exists(search_type, "keywords"):
-                        sobject.set_value("keywords", category)
+                        from dateutil import parser 
+                        orig_date = parser.parse(date_str)
 
-                    if SearchType.column_exists(search_type, "relative_dir"):
-                        sobject.set_value("relative_dir", category)
+                        if category == "by_day":
+                            date_str = orig_date.strftime("%Y/%Y-%m-%d")
+                        elif category == "by_month":
+                            date_str = orig_date.strftime("%Y-%m")
+                        elif category == "by_week":
+                            date_str = orig_date.strftime("%Y/Week-%U")
 
+                    full_relative_dir = "%s/%s" % (relative_dir, date_str)
+                    sobject.set_value("relative_dir", full_relative_dir)
+
+
+            if SearchType.column_exists(search_type, "keywords"):
+                if keywords:
+                    sobject.set_value("keywords", keywords)
+
+            """
+            if category:
+
+                if SearchType.column_exists(search_type, "category"):
+                    sobject.set_value("category", category)
+
+
+                if SearchType.column_exists(search_type, "relative_dir"):
+                    full_relative_dir = "%s/%s" % (relative_dir, category)
+                    sobject.set_value("relative_dir", category)
+            """
 
 
 
 
             sobject.commit()
-
             search_key = sobject.get_search_key()
 
-            # use API
+            # use API to check in file
 
             process = my.kwargs.get("process")
             if not process:

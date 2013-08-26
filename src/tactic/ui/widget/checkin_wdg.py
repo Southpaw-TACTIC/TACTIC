@@ -1563,10 +1563,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         # handle deliveries to other processes
-        output_processes = pipeline.get_output_processes(process)
+        if pipeline:
+            output_processes = pipeline.get_output_processes(process)
+        else:
+            output_processes = None
         if output_processes:
-
-
 
             """
             for p in output_processes:

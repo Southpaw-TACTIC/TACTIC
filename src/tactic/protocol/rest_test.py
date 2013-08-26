@@ -233,6 +233,20 @@ else:
         print ret_val
 
 
+    def _test_update(my):
+        # try json
+        url = "http://localhost/tactic/unittest/rest3/person/CODE0123"
+        headers = {
+            "Accept": "application/json",
+            "Method": "PUT"
+        }
+        data = {
+            'description': 'abcdefg'
+        }
+        ret_val = my.send_request(url, headears, data)
+
+
+
 
 if __name__ == "__main__":
     Batch()

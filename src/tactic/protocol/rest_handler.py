@@ -25,10 +25,10 @@ class BaseRestHandler(BaseRefreshWdg):
             ret_val = my.GET()
         elif method == "POST":
             ret_val = my.POST()
-        elif method == "UPDATE":
-            ret_val = my.UPDATE()
+        elif method == "PUT":
+            ret_val = my.PUT()
         elif method == "DELETE":
-            ret_val = my.UPDATE()
+            ret_val = my.PUT()
 
         return ret_val
 
@@ -40,7 +40,7 @@ class BaseRestHandler(BaseRefreshWdg):
     def POST(my):
         return my.GET()
 
-    def UPDATE(my):
+    def PUT(my):
         pass
 
     def DELETE(my):
@@ -71,20 +71,27 @@ class SObjectRestHandler(BaseRestHandler):
         print "expression: ", my.kwargs.get("expression")
 
 
-        # /rest/sobject/cars/CAR00009
-        if method == "sobject":
+        # /rest/get_by_code/cars/CAR00009
+
+        # /rest/query?search_type=sthpw/cars
+        if method == "query":
             code = my.kwargs.get("data")
             from pyasm.search import Search
             sobject = Search.get_by_code(search_type, code)
             sobject_dict = sobject.get_sobject_dict()
             return sobject_dict
 
+        # /rest/expression/@SOBJECT(sthpw/task)
         elif method == "expression":
             expression = my.kwargs.get("expression")
             server = TacticServerStub.get()
             return server.eval(expression)
 
-
+        # /rest/simple_checkin?search_key=dfadfdsas&data={}
+        elif method == "expression":
+            expression = my.kwargs.get("expression")
+            server = TacticServerStub.get()
+            return server.eval(expression)
 
 
         return {}

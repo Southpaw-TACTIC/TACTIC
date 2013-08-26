@@ -383,7 +383,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         #dynamic = True
         my.dynamic = my.kwargs.get("dynamic")
-        if my.dynamic in ['true', True]:
+        if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
         else:
             my.dynamic = False
@@ -607,6 +607,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             # handle the dynamic case
             if my.dynamic and base_dir.startswith(start_dir):
+
+                if not os.path.exists(base_dir):
+                    continue
                 dirnames = os.listdir(base_dir)
                 for dirname in dirnames:
                     full = "%s/%s/" % (base_dir, dirname)
@@ -737,8 +740,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             else {
                 spt.behavior.destroy_element(bvr.src_el);
             }
-
-            return;
 
 
             var cmd = 'tactic.ui.tools.RepoBrowserCbk';
@@ -978,7 +979,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     div.inject(content);
 
                 var padding = activator.getStyle("padding-left");
-                padding = parseInt( padding.replace("px", "") ) + 11;
+                padding = parseInt( padding.replace("px", "") );
                 div.setStyle("padding-left", padding);
 
                 var input = div.getElement(".new_folder_input");
