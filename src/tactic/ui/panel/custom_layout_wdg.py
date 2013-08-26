@@ -599,7 +599,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
             sobject = {}
 
         if my.plugin:
-            plugin = my.plugin.get_sobject_dict()
+            if isinstance(my.plugin, dict):
+                plugin = my.plugin
+            else:
+                plugin = my.plugin.get_sobject_dict()
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:
             plugin = {}
