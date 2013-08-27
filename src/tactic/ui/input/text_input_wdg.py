@@ -19,6 +19,7 @@ from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
+from pyasm.command import Command
 
 import random, re, string
 
@@ -660,15 +661,18 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
 
         filters = my.kwargs.get("filters")
-      
+        script_path = my.kwargs.get("script_path")
+        do_search = my.kwargs.get("do_search")
         bgcolor = my.text.get_color("background3")
        
 
         my.text.add_behavior( {
             'type': 'keyup',
             'custom': custom_cbk,
+            'do_search': do_search,
             'search_type': my.search_type,
             'filter_search_type': filter_search_type,
+            'script_path': script_path,
             'filters': filters,
             'column': column,
             'relevant': relevant,
@@ -787,6 +791,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                     column: bvr.column,
                     value_column: bvr.value_column,
                     relevant: bvr.relevant,
+                    script_path: bvr.script_path,
+                    do_search: bvr.do_search,
                     value: value
                 },
                 cbjs_action: cbk,
@@ -973,17 +979,71 @@ class TextInputResultsWdg(BaseRefreshWdg):
         else:
             return isinstance(value, int) or isinstance(value, long) or isinstance(value, float) 
 
-   
+    def init(my):
+        my.do_search = True
+        if my.kwargs.get('do_search') == 'false':
+            my.do_search = False
 
+    def draw_result(my, top, value):
+        max = 35
+        # assuming it's a list
+        results = my.kwargs.get('results')
+        if not results:
+            script_path = my.kwargs.get('script_path')
+            if not script_path:
+                return
+            try:
+                from tactic.command import PythonCmd
+                kwargs = {'value' : value}
+                cmd = PythonCmd(script_path=script_path, **kwargs)
+                Command.execute_cmd(cmd)
+        
+            except Exception, e:
+                print e
+                raise
+
+            else:
+
+                info = cmd.get_info()
+                results = info.get('spt_ret_val')
+            if not results:
+                return
+
+        for keywords in results:
+            div = DivWdg()
+            top.add(div)
+            div.add_style("padding: 3px")
+            
+            if isinstance(keywords, str):
+                keywords = unicode(keywords, errors='ignore')
+
+            if isinstance(keywords, basestring) and  len(keywords) > max:
+                display = "%s..." % keywords[:max-3]
+            else:
+                display = keywords
+
+            div.add(display)
+            div.add_class("spt_input_text_result")
+            div.add_attr("spt_value", keywords)
+            # turn off cache to prevent ascii error
+            keywords = HtmlElement.get_json_string(keywords, use_cache=False)
+            div.add_attr("spt_display", keywords)
+
+
+        
     def get_display(my):
         top = my.top
+        value = my.kwargs.get("value")
+        
+        if not my.do_search:
+            my.draw_result(top, value)
+            return top
 
         # can only support 1 right now
         relevant = my.kwargs.get("relevant") == 'true'
         connected_col = None
         rel_values = []
 
-        value = my.kwargs.get("value")
         if value.endswith(" "):
             last_word_complete = True
         else:
@@ -1258,6 +1318,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
         return top
+
 
 
 
