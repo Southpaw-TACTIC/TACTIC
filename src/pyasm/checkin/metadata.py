@@ -67,7 +67,6 @@ class CheckinMetadataHandler():
         snapshot_metadata = None
 
         for i, file in enumerate(files):
-            # first use PIL
             path = file
             base, ext = os.path.splitext(path)
             file_object = file_objects[i]

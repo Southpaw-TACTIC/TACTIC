@@ -97,6 +97,7 @@ class MongoDbImpl(DatabaseImpl):
         else:
             columns = result.keys()
 
+            # assume existence of both code and _id
             if "code" in columns:
                 columns.remove("code")
             columns.insert(0, "code")
@@ -138,8 +139,7 @@ class MongoDbImpl(DatabaseImpl):
 
         table_info = {}
         for collection in collections:
-            table_info[collection] = {
-            }
+            table_info[collection] = { }
 
         return table_info
 
@@ -172,16 +172,39 @@ class MongoDbImpl(DatabaseImpl):
             op = filter.get("op")
 
             if column == "_id" and value not in [-1, '-1']:
-                if not isinstance(value, bson.ObjectId):
-                    value = bson.ObjectId(value)
+                if isinstance(value, list):
+                    values = []
+                    for x in value:
+                        try:
+                            tmp = bson.ObjectId(str(x))
+                            values.append(tmp)
+                        except Exception, e:
+                            print "WARNING: ", e
+                    value = values
+                elif not isinstance(value, bson.ObjectId):
+                    value = bson.ObjectId(str(value))
 
             if op == "=":
                 nosql_filters[column] = value
             else:
-                if op == "<":
+                if op in ["<","$lt"]:
                     mongo_op = "$lt"
-                elif op == ">":
+                elif op in ["<=","$lte"]:
+                    mongo_op = "$lte"
+                elif op in [">=","$gte"]:
+                    mongo_op = "$gte"
+                elif op in [">" or "$gt"]:
                     mongo_op = "$gt"
+                elif op in ["!=","$ne"]:
+                    mongo_op = "$ne"
+                elif op in ["in", "$in"]:
+                    mongo_op = "$in"
+
+                elif op in ["nin", "$nin"]:
+                    mongo_op = "$nin"
+                elif op in ["all", "$all"]:
+                    mongo_op = "$all"
+
                 elif not op:
                     pass
                 else:

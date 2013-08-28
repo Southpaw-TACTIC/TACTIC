@@ -383,9 +383,10 @@ class CardLayoutWdg(ToolLayoutWdg):
         thumb_div = DivWdg()
         td.add(thumb_div)
         thumb_div.add_border()
-        thumb_div.add_color("background", "background", 5)
-        thumb_div.add_border()
+        thumb_div.set_box_shadow("0px 0px 5px")
+        thumb_div.add_color("background", "background", -5)
         thumb_div.add_class("spt_item_content")
+        thumb_div.add_style("min-height: 120px")
 
         thumb = ThumbWdg2()
         thumb_div.add(thumb)

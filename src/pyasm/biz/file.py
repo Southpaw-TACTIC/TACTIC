@@ -288,8 +288,10 @@ class File(SObject):
         if search_code:
             file.set_value("search_code", search_code)
         
-        # this is required by not null constraint
-        file.set_value("search_id", search_id)
+        # MongoDb
+        if search_id and isinstance(search_id, int):
+            file.set_value("search_id", search_id)
+
 
         if file_type:
             file.set_value("type", file_type)

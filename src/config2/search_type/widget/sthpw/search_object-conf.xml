@@ -28,6 +28,7 @@
       <display class="tactic.ui.app.SearchTypeHasTableElementWdg"/>
     </element>
     <element name="color"/>
+    <element name="default_layout"/>
 </definition>
 
 
@@ -41,6 +42,7 @@
     <element name="has_table"/>
     <element name="class_name"/>
     <element name="color"/>
+    <element name="default_layout"/>
 </table>
 
 
@@ -81,6 +83,12 @@
     <element name="color">
         <display class="tactic.ui.input.ColorInputWdg"/>
     </element>
+    <element name="default_layout">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>tile,card,browser,table</values>
+      </display>
+    </element>
 </edit_definition>
 
 
@@ -94,6 +102,7 @@
     <element name="table_name"/>
     <element name="class_name"/>
     <element name="color"/>
+    <element name="default_layout"/>
 </edit>
 
 
@@ -127,6 +136,14 @@
     <element name="color">
         <display class="tactic.ui.input.ColorInputWdg"/>
     </element>
+    <element name="default_layout">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>tile|card|browser|table</values>
+      </display>
+    </element>
+
+
 </edit_startup>
 
 

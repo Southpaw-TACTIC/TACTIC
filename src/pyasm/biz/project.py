@@ -467,7 +467,7 @@ class Project(SObject):
             full_key = base_key
             return full_key
 
-        
+
         if project_code:
             code = project_code
         elif project:
@@ -497,9 +497,14 @@ class Project(SObject):
         base_search_type, data = SearchKey._get_data(search_type)
         project_code = data.get("project")
         if project_code == None:
+            # this is specifically for project-specific sType
             search_type_obj = SearchType.get(search_type)
-            # this is more accurate specifically for project-specific sType
-            project_code = search_type_obj.get_database()
+            database = search_type_obj.get_value("database")
+            if database != "{project}":
+                project_code = database
+            else:
+                # get the global project code
+                project_code = Project.get_project_code()
 
             #project_code = cls.get_global_project_code()
         return project_code

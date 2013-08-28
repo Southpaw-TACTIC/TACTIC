@@ -315,7 +315,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.sobject_levels = []
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
-        # my.search_key is already known
 
         # if a search key has been explicitly set without expression, use that
         expression = my.kwargs.get('expression') 
@@ -338,7 +337,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if not search_keys:
                 my.sobjects = []
             else:
+                print "search_keys: ", search_keys
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+                print "sobject: ", my.sobjects
+                for s in my.sobjects:
+                    print s.get_data()
 
             my.items_found = len(my.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search

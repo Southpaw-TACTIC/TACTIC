@@ -79,12 +79,12 @@ class Snapshot(SObject):
         if not search_type:
             return None
 
-        #key = "Snapshot_get_sobj:%s:%s" % ( search_type, search_id )
-        #sobject = Container.get(key)
-        sobject = Search.get_by_id(search_type, search_id)
+        sobject = None
+        if search_code:
+            sobject = Search.get_by_code(search_type, search_code, show_retired=True)
         if sobject == None:
-            if search_code:
-                sobject = Search.get_by_code(search_type, search_code, show_retired=True)
+            if search_id:
+                sobject = Search.get_by_id(search_type, search_id)
 
             if not sobject:
                 raise SObjectNotFoundException('SObject [%s,%s] or [%s,%s]  not found for snapshot [%s]' \
@@ -915,7 +915,7 @@ class Snapshot(SObject):
         from pyasm.command import Trigger
 
         if cls.integral_trigger_added:
-            print "WARNING: snapshot.add_integral_trigger already run"
+            #print "WARNING: snapshot.add_integral_trigger already run"
             return
 
         events = ["change|sthpw/snapshot"]
@@ -1455,10 +1455,10 @@ class Snapshot(SObject):
             search = Search("sthpw/snapshot")
             search.add_filter("search_type", search_type)
 
-            if isinstance(search_id, basestring):
-                search.add_filter("search_code", search_id)
-            else:
+            if isinstance(search_id, int):
                 search.add_filter("search_id", search_id)
+            else:
+                search.add_filter("search_code", search_id)
 
             search.add_filter("context", context)
             # we can't search by this since the versionless snapshot 
@@ -1471,10 +1471,10 @@ class Snapshot(SObject):
 
         search = Search("sthpw/snapshot")
         search.add_filter("search_type", search_type)
-        if isinstance(search_id, basestring):
-            search.add_filter("search_code", search_id)
-        else:
+        if isinstance(search_id, int):
             search.add_filter("search_id", search_id)
+        else:
+            search.add_filter("search_code", search_id)
         search.add_filter("context", context)
 
 
@@ -1482,7 +1482,11 @@ class Snapshot(SObject):
         snapshot = search.get_sobject()
 
         if not snapshot:
-            sobject = Search.get_by_id(search_type, search_id)
+            if isinstance(search_id, int):
+                sobject = Search.get_by_id(search_type, search_id)
+            else:
+                sobject = Search.get_by_code(search_type, search_id)
+
             # should be passed in
             #snapshot_type = 'versionless'
             snapshot = Snapshot.create(sobject, snapshot_type, context, column="snapshot", description="Versionless", is_current=False, is_latest=False, commit=False)
@@ -1655,13 +1659,19 @@ class Snapshot(SObject):
         search = Search(Snapshot.SEARCH_TYPE)
         search.add_filter("search_type", search_type)
 
-        if isinstance(search_code, basestring):
+        code_exists = SearchType.column_exists(search_type, "code")
+
+        if code_exists:
             search.add_filter("search_code", search_code)
         else:
             search.add_filter("search_id", search_code)
 
 
-        search.add_where("(\"is_latest\" = '1' or \"is_current\" = '1')")
+        search.add_op("begin")
+        search.add_filter("is_latest", True)
+        search.add_filter("is_current", True)
+        search.add_op("or")
+        #search.add_where("(\"is_latest\" = '1' or \"is_current\" = '1')")
         snapshots = search.get_sobjects()
 
         contexts = []
@@ -1825,7 +1835,9 @@ class Snapshot(SObject):
         snapshot = Snapshot(Snapshot.SEARCH_TYPE)
         snapshot.set_value("search_type", search_type )
         if SearchType.column_exists("sthpw/snapshot", "search_id"):
-            snapshot.set_value("search_id", search_id )
+            if isinstance(search_id, int):
+                snapshot.set_value("search_id", search_id )
+
         snapshot.set_value("search_code", search_code )
         snapshot.set_value("column_name", column )
         snapshot.set_value("snapshot", snapshot_data )
@@ -1911,6 +1923,9 @@ class Snapshot(SObject):
     create = staticmethod(create)
 
 
+
+
+
     def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type=None):
 
         # NOTE: no triggers a run on this operation (for performance reasons)
@@ -1981,7 +1996,9 @@ class Snapshot(SObject):
 
         # get the versionless snapshot
         search_type = sobject.get_search_type()
-        search_id = sobject.get_id()
+        search_id = sobject.get_value("code")
+        if not search_id:
+            search_id = sobject.get_id()
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
         snapshot_type = my.get_value('snapshot_type')
@@ -1990,6 +2007,8 @@ class Snapshot(SObject):
         # the next snapshot definition. 
         versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
         v_snapshot_xml = versionless.get_xml_value("snapshot")
+
+        #assert versionless.get_id() != -1
 
 
         # compare the two snapshots to see if anything has changed
@@ -2018,6 +2037,8 @@ class Snapshot(SObject):
         
         # get all of the files from this snapshot
         lib_dir = my.get_lib_dir()
+
+        file_objects = []
 
         paths = {}
         for node in nodes:
@@ -2051,8 +2072,16 @@ class Snapshot(SObject):
 
             # create a new file object
             file_object = SearchType.create("sthpw/file")
+            file_objects.append(file_object)
             file_object.set_value("search_type", sobject.get_search_type() )
-            file_object.set_value("search_id", sobject.get_id() )
+
+            search_code = sobject.get_value("code")
+            search_id = sobject.get_id()
+            if search_code:
+                file_object.set_value("search_code", search_code )
+            if search_id and isinstance(search_id, int):
+                file_object.set_value("search_id", search_id )
+
             file_object.set_value("snapshot_code", versionless.get_code() )
             file_object.set_value("type", file_type)
             file_object.set_value("base_type", base_type)
@@ -2157,5 +2186,14 @@ class Snapshot(SObject):
         versionless.set_value("snapshot", builder.to_string())
         
         versionless.commit(triggers="none")
+
+        versionless_code = versionless.get_code()
+        # FIXME: set snapshot_code to file objects
+        for file_object in file_objects:
+            file_object.set_value("snapshot_code", versionless_code)
+            # add commit again
+            file_object.commit()
+
+
 
 

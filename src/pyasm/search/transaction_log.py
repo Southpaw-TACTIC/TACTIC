@@ -198,18 +198,20 @@ class TransactionLog(SObject):
 
 
         # list of sobjects not logged
-        not_logged = [
+        not_logged = set([
             'sthpw/transaction_log',
             'sthpw/clipboard',
             'sthpw/sobject_log',
             'sthpw/file',
-        ]
+            'sthpw/message',
+            'sthpw/message_log',
+        ])
 
-        find_parent = [
+        find_parent = set([
             'sthpw/snapshot',
             'sthpw/note',
             'sthpw/task'
-        ]
+        ])
 
 
         for node in nodes:
@@ -218,8 +220,10 @@ class TransactionLog(SObject):
                 search_type = Xml.get_attribute(node,"search_type")
                 search_type_obj = SearchType.get(search_type)
 
-                if search_type_obj.get_base_search_type() in not_logged:
+
+                if search_type_obj.get_base_key() in not_logged:
                     continue
+
 
                 search_id = Xml.get_attribute(node,"search_id")
                 search_code = Xml.get_attribute(node,"search_code")

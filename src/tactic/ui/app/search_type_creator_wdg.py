@@ -1735,7 +1735,15 @@ class SearchTypeCreatorCmd(Command):
         title = my.search_type_obj.get_title()
 
         # _list view
-
+        class_name = "tactic.ui.panel.ViewPanelWdg"
+        display_options = {
+            "class_name": class_name,
+            "search_type": search_type,
+            "layout": "default"
+        }
+        
+        # this is now handled by the "default" setting
+        """
         layout = my.get_value("layout")
 
         if layout == "tile":
@@ -1745,7 +1753,6 @@ class SearchTypeCreatorCmd(Command):
                 "search_type": search_type,
                 "layout": "tile"
             }
-
 
         elif layout == "card":
             class_name = "tactic.ui.panel.ViewPanelWdg"
@@ -1773,6 +1780,7 @@ class SearchTypeCreatorCmd(Command):
                 "view": "table",
                 "layout": "default"
             }
+        """
 
         action_options = {}
         action_class_name = {}

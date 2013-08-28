@@ -31,6 +31,7 @@ class SqlTest(unittest.TestCase):
         #test_env.create()
 
         try:
+            my._test_get_by_search_keys()
             my._test_relationship()
             my._create_table()
             my._test_search()
@@ -39,6 +40,17 @@ class SqlTest(unittest.TestCase):
             #test_env.delete()
             pass
 
+
+
+
+    def _test_get_by_search_keys(my):
+        search_keys = ['table/posts?project=mongodb&code=POSTS52086a28e138236a389e670e']
+        sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+        my.assertEquals( 1, len(sobjects) )
+
+        search_keys = ['table/posts?project=mongodb&code=5205ff37e13823265eb5b375']
+        sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+        my.assertEquals( 1, len(sobjects) )
 
 
     def _test_relationship(my):

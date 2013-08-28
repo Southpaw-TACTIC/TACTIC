@@ -177,6 +177,10 @@ class BaseCheckin(Command):
 
     def update_metadata(my, snapshot, files, file_objects):
 
+        record_metadata = True
+        if not record_metadata:
+            return
+
         # we don't need to update the metadata of secondary files, so ignore
         # icon and web
         metadata_files = []
@@ -187,7 +191,6 @@ class BaseCheckin(Command):
                 continue
             metadata_files.append(file)
             metadata_file_objects.append(file_object)
-
 
         from metadata import CheckinMetadataHandler
         handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False)
@@ -216,12 +219,13 @@ class BaseCheckin(Command):
 
         file_objects = []
 
-        for file_path in file_paths:
+        for i, file_path in enumerate(file_paths):
             if my.mode in ['local','inplace']:
                 requires_file = False
             else:
                 requires_file = True
 
+            file_type = my.file_types[i]
 
             # create file_object
             file_object = File.create(
@@ -230,7 +234,8 @@ class BaseCheckin(Command):
                 my.sobject.get_id(),
                 search_code=my.sobject.get_code(),
                 requires_file=requires_file,
-                repo_type=my.repo_type
+                repo_type=my.repo_type,
+                file_type=file_type,
             )
 
             if not file_object:

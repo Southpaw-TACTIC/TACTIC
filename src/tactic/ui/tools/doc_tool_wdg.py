@@ -66,45 +66,50 @@ class DocToolWdg(BaseRefreshWdg):
 
 
         if path.startswith("http"):
-            # NOTE: this is very specific to google docs
-            if not path.endswith("?embedded=true"):
-                path = "%s?embedded=true" % path
+            if path.startswith("https://docs.google.com/document"):
+                # NOTE: this is very specific to google docs
+                if not path.endswith("?embedded=true"):
+                    path = "%s?embedded=true" % path
+                is_html = True
+            else:
+                is_html = False
 
             import urllib2
             response = urllib2.urlopen(path)
             html = response.read()
 
-            # 
 
             fix = '''<meta content="text/html; charset=UTF-8" http-equiv="content-type">'''
             html = html.replace(fix, "")
             html = html.replace("&", "&amp;")
 
-            xml = Xml()
-            try:
-                xml.read_string(html)
-            except:
-                my.doc_mode = "formatted"
-                html = html.replace("&amp;", "&")
-                print
-                print "WARNING: cannot parse as XML"
-                print
-                return html
+            if is_html:
+
+                xml = Xml()
+                try:
+                    xml.read_string(html)
+                except:
+                    my.doc_mode = "formatted"
+                    html = html.replace("&amp;", "&")
+                    print
+                    print "WARNING: cannot parse as XML"
+                    print
+                    return html
 
 
-            if my.doc_mode == "formatted":
-                return xml.to_string().replace("&amp;", "&")
+                if my.doc_mode == "formatted":
+                    return xml.to_string().replace("&amp;", "&")
 
 
+                node = xml.get_node("html/body")
+                text = xml.to_string(node)
+                text = text.replace("<body", "<div style='margin: 0px'")
+                text = text.replace("</body>", "</div>")
 
+                text = text.replace("&amp;", "&")
 
-
-            node = xml.get_node("html/body")
-            text = xml.to_string(node)
-            text = text.replace("<body", "<div style='margin: 0px'")
-            text = text.replace("</body>", "</div>")
-
-            text = text.replace("&amp;", "&")
+            else:
+                text = html
 
 
             lines2 = []
@@ -155,10 +160,6 @@ class DocToolWdg(BaseRefreshWdg):
             text = "".join(lines)
 
 
-        lines = text.split("\n")
-        for line in lines:
-            print line
-
         # read last text if it exists
         if last_path and os.path.exists(last_path):
             last_file = open(last_path, 'r')
@@ -202,8 +203,6 @@ class DocToolWdg(BaseRefreshWdg):
 
                 line = line.strip()
 
-                print "line: ", line
-
                 text = text.replace(line, "<i style='color: %s; font-weight: bold; opacity: 1.0;' spt_search_key='%s' class='spt_document_item hand'>%s</i>" % (color, search_key, line))
 
 
@@ -215,6 +214,7 @@ class DocToolWdg(BaseRefreshWdg):
 
         my.doc_mode = my.kwargs.get("doc_mode")
         path = my.kwargs.get("path")
+        my.search_type = my.kwargs.get("search_type")
 
         my.last_path = None
 
@@ -240,11 +240,10 @@ class DocToolWdg(BaseRefreshWdg):
             #path = "https://docs.google.com/spreadsheet/pub?key=0Al0xl-XktnaNdExraEE4QkxVQXhaOFh1SHIxZmZMQ0E&single=true&gid=0&output=html"
             path = "/home/apache/tactic/doc/alias.json"
 
+        if not my.search_type:
+            my.search_type = "test3/shot"
 
 
-
-        my.search_types = ["test3/shot", 'test3/asset']
-        my.search_type = "test3/shot"
         my.column = "description"
 
         top = my.top
@@ -264,7 +263,7 @@ class DocToolWdg(BaseRefreshWdg):
 
         title = DivWdg()
         left_td.add(title)
-        title.add_style("padding: 5px")
+        title.add_style("padding: 10px")
         title.add_color("background", "background3")
 
         button = IconButtonWdg(title="Refresh", icon=IconWdg.REFRESH)
@@ -312,20 +311,20 @@ class DocToolWdg(BaseRefreshWdg):
 
         title.add("<br clear='all'/>")
 
-        title.add(path)
+        #title.add(path)
 
 
         text_wdg = DivWdg()
         text_wdg.add_class("spt_document_content")
         left_td.add(text_wdg)
 
-        if path.startswith("https://docs.google.com/spreadsheet"):
-            #path = "http://www.southpawtech.com.com"
-            text_wdg.add('''
-            <iframe class="spt_document_iframe" style="width: 100%%; height: auto; min-height: 600px; font-size: 1.0em" src="%s"></iframe>
-            ''' % path)
-            text_wdg.add_style("overflow-x: hidden")
-        else:
+        #if path.startswith("https://docs.google.com/spreadsheet"):
+        #    #path = "http://www.southpawtech.com.com"
+        #    text_wdg.add('''
+        #    <iframe class="spt_document_iframe" style="width: 100%%; height: auto; min-height: 600px; font-size: 1.0em" src="%s"></iframe>
+        #    ''' % path)
+        #    text_wdg.add_style("overflow-x: hidden")
+        if True:
 
             if not my.last_path and my.doc:
                 tmp_dir = Environment.get_tmp_dir()
@@ -400,33 +399,51 @@ class DocToolWdg(BaseRefreshWdg):
 
 
             pre.add_style("font-family: courier")
-            #pre.add(text)
 
 
+            if my.doc_mode == "formatted":
+                pre.add(text)
 
-            line_table = Table()
-            pre.add(line_table)
-            line_table.add_style("width: 100%")
-            for i, line in enumerate(lines):
-                #line = line.replace(" ", "&nbsp;")
+            else:
+                line_table = Table()
+                pre.add(line_table)
+                line_table.add_style("width: 100%")
+                count = 1
+                for line in lines:
+                    #line = line.replace(" ", "&nbsp;")
+                    tr = line_table.add_row()
+                    if count % 2 == 0:
+                        tr.add_color("background", "background", -2)
 
-                tr = line_table.add_row()
-                if i % 2 == 0:
-                    tr.add_color("background", "background", -2)
+                    td = line_table.add_cell()
 
-                td = line_table.add_cell()
-                td.add_style("vertical-align: top")
-                text = TextWdg()
-                text.add_style("border", "none")
-                text.add_style("text-align", "right")
-                text.add_style("width", "25px")
-                text.add_style("margin", "0 10 0 0")
-                text.add_style("opacity", "0.5")
-                text.set_value(i)
-                td.add(text)
+                    # FIXME: hacky
+                    if line.startswith('''<span style='background: #CFC'>'''):
+                        is_new = True
+                    else:
+                        td.add_style("vertical-align: top")
+                        text = TextWdg()
+                        text.add_style("border", "none")
+                        text.add_style("text-align", "right")
+                        text.add_style("width", "25px")
+                        text.add_style("margin", "0 10 0 0")
+                        text.add_style("opacity", "0.5")
+                        text.set_value(count)
+                        td.add(text)
+                        count += 1
+                        is_new = False
 
-                td = line_table.add_cell()
-                td.add(line)
+                    td = line_table.add_cell()
+                    if not is_new:
+                        SmartMenu.assign_as_local_activator( td,'TEXT_CTX' )
+                        tr.add_class("spt_line");
+                    else:
+                        SmartMenu.assign_as_local_activator( td,'TEXT_NEW_CTX' )
+                        tr.add_class("spt_new_line");
+
+                    td.add_class("spt_line_content");
+                    td.add(line)
+
 
 
 
@@ -491,12 +508,13 @@ class DocToolWdg(BaseRefreshWdg):
 
         # add a context menu
         ctx_menu = my.get_text_context_menu()
+        ctx_new_menu = my.get_text_new_context_menu()
         menus_in = {
             'TEXT_CTX': ctx_menu,
+            'TEXT_NEW_CTX': ctx_new_menu,
         }
         SmartMenu.attach_smart_context_menu( text_wdg, menus_in, False )
 
-        SmartMenu.assign_as_local_activator( text_wdg, 'TEXT_CTX' )
 
 
         panel = ViewPanelWdg(
@@ -594,6 +612,47 @@ spt.document.expandtoword = function(range)
 
 
         return top
+
+
+    def get_text_new_context_menu(my):
+
+        search_type_obj = SearchType.get(my.search_type)
+        title = search_type_obj.get_title()
+
+
+        menu = Menu(width=180)
+        menu.set_allow_icons(False)
+
+        menu_item = MenuItem(type='title', label='Actions')
+        menu.add(menu_item)
+
+        menu_item = MenuItem(type='action', label="Update line")
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var line_el = activator.getParent(".spt_new_line");
+            var prev_line_el = line_el.getPrevious(".spt_line");
+            prev_line_el.setStyle("border", "solid 1px red");
+
+            var content = prev_line_el.getElement(".spt_line_content");
+            alert(content.innerHTML);
+
+
+
+            var prev_line_el = prev_line_el.getPrevious(".spt_line");
+            prev_line_el.setStyle("border", "solid 1px red");
+
+            var next_line_el = line_el.getNext(".spt_line");
+            next_line_el.setStyle("border", "solid 1px red");
+
+            var next_line_el = next_line_el.getNext(".spt_line");
+            next_line_el.setStyle("border", "solid 1px red");
+            '''
+        } )
+
+        return menu
 
 
     def get_text_context_menu(my):

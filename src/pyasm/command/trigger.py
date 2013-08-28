@@ -340,8 +340,12 @@ class Trigger(Command):
         project_triggers = Container.get(key)
         if project_triggers == None:
             if project_code not in ['admin','sthpw']:
-                search = Search("config/trigger")
-                project_triggers = search.get_sobjects()
+                try:
+                    search = Search("config/trigger")
+                    project_triggers = search.get_sobjects()
+                except SearchException, e:
+                    print "WARNING: ", e
+                    project_triggers = []
             else:
                 project_triggers = []
             Container.put(key, project_triggers)
@@ -824,6 +828,9 @@ class Trigger(Command):
 __all__.append('SnapshotIsLatestTrigger')
 class SnapshotIsLatestTrigger(Trigger):
 
+    # Since this trigger is run even on undo and is outside of the transaction
+    # is should not be in the transaction log.  It is an inherent property
+    # of the check-in
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
@@ -1013,7 +1020,7 @@ class SampleTimedTrigger(TimedTrigger):
 
 __all__.extend( ['BurnDownTimedTrigger', 'BurnDownEmailHandler'] )
 
-from pyasm.search import Search, SObject
+from pyasm.search import Search, SObject, SearchException
 from email_handler import EmailHandler
 
 

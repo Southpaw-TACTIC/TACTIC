@@ -752,7 +752,6 @@ class Sql(Base):
                 my.connect()
 
             # store the last query
-            #Environment.log().debug(query)
             #print "[%s]" % my.database_name, query
 
             my.query = query
@@ -2038,6 +2037,43 @@ class Select(object):
         else:
             where = "\"%s\" %s %s" % (column, op, value)
         my.add_where(where)
+
+
+
+    def add_filters(my, column, values, table='', op='in'):
+
+        quoted = False
+        column_type = ''
+
+        # store all the raw filter data
+        my.raw_filters.append( {
+                'column': column,
+                'value': values,
+                'column_type': column_type,
+                'op': op,
+                'quoted': quoted,
+                'table': table
+        } )
+
+
+        if not table:
+            table = my.tables[0]
+
+
+        assert op in ['in', 'not in']
+        filter = ''
+        if not values or values == ['']:
+            #where = "%s is NULL" % column
+            where = "NULL"
+        else:
+            list = [ Sql.quote(value) for value in values ]
+            if table:
+                where = '"%s"."%s" %s (%s)' % ( table, column, op, ", ".join(list) )
+            else:
+                where = '"%s" %s (%s)' % ( column, op, ", ".join(list) )
+
+        my.add_where(where)
+
 
 
     def add_group_aggregate_filter(my, group_cols, column='id', aggregate='max'):

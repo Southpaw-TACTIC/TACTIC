@@ -3218,6 +3218,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
+        print "SQL Commit Count: ", Container.get('Search:sql_commit')
         return snapshot_dict
 
 
@@ -4481,7 +4482,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 html = widget.get_buffer_display()
 
-                print "SQL Count: ", Container.get('Search:sql_query')
+                print "SQL Query Count: ", Container.get('Search:sql_query')
                 print "BVR Count: ", Container.get('Widget:bvr_count')
                 print "Sending: %s KB" % (len(html)/1024)
                 print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")

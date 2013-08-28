@@ -47,10 +47,13 @@ class TacticRepo(BaseRepo):
             for i, file in enumerate(files):
                 file_object = file_objects[i]
                 to_name = file_object.get_full_file_name()
-                file_type = snapshot.get_type_by_file_name(to_name)
                 to_path = file
 
-                file_object.set_value('type', file_type)
+                # This is handled in create_file_types
+                #file_type = snapshot.get_type_by_file_name(to_name)
+                #file_object.set_value('type', file_type)
+
+
                 if not os.path.isdir(to_path):
                     md5_checksum = None
                     if md5s:

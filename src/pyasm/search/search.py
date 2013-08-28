@@ -225,7 +225,6 @@ class Search(Base):
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
-        #exists = True
         if not search_type == 'sthpw/virtual' and not exists:
             raise SearchException('This table [%s] does not exist for database [%s]' %(table, my.database))
 
@@ -386,21 +385,6 @@ class Search(Base):
             return '"%s" %s %s' % ( name, op, Sql.quote(value) )
 
 
-    # DEPRECATED
-    def get_filters(my, name, values, table='', op='in'):
-        assert op in ['in', 'not in']
-        filter = ''
-        if not values or values == ['']:
-            #filter = "%s is NULL" % name
-            filter = "NULL"
-        else:
-            list = [ Sql.quote(value) for value in values ]
-            if table:
-                filter = '"%s"."%s" %s (%s)' % ( table, name, op, ", ".join(list) )
-            else:
-                filter = '"%s" %s (%s)' % ( name, op, ", ".join(list) )
-        return filter
-
 
     def set_null_filter(my):
         my.null_filter = True
@@ -421,6 +405,7 @@ class Search(Base):
 
     def add_filters(my, name, values, table='', op='in'):
         ''' add a where name in (val1, val2, ...) '''
+        """
         if not op:
             op = 'in'
 
@@ -431,6 +416,32 @@ class Search(Base):
             my.null_filter = True
         #my.select.add_filter(name, filter)
         my.select.add_where(filter)
+        """
+        #filter = my.get_filters(name, values, table, op)
+        #print "filter: ", filter
+        my.select.add_filters(name, values, op=op, table=table)
+
+
+
+    # DEPRECATED
+    def get_filters(my, name, values, table='', op='in'):
+        assert op in ['in', 'not in']
+        filter = ''
+        if not values or values == ['']:
+            #filter = "%s is NULL" % name
+            filter = "NULL"
+        else:
+            list = [ Sql.quote(value) for value in values ]
+            if table:
+                filter = '"%s"."%s" %s (%s)' % ( table, name, op, ", ".join(list) )
+            else:
+                filter = '"%s" %s (%s)' % ( name, op, ", ".join(list) )
+        return filter
+
+
+
+
+
 
 
     def add_null_filter(my, name):
@@ -582,8 +593,11 @@ class Search(Base):
             my.add_id_filter(0)
             return
 
-        parent_search_type = parent.get_base_search_type()
-        search_type = my.get_base_search_type()
+        #parent_search_type = parent.get_base_search_type()
+        #search_type = my.get_base_search_type()
+        parent_search_type = parent.get_search_type()
+        search_type = my.get_search_type()
+
         if parent_search_type == search_type:
             print "WARNING: parent type and search type are the same for [%s]" % parent_search_type
             my.add_id_filter(parent.get_id())
@@ -3136,7 +3150,7 @@ class SObject(object):
             my.set_value("search_type", sobject.get_search_type() )
 
             # fill in search_id only if it is an integer: this may not be the
-            # case, such as in MongoDb
+            # case, such as in MongoDb, where the id is an object
             if SearchType.column_exists(my.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
                 if isinstance(sobj_id, int):
@@ -3459,6 +3473,14 @@ class SObject(object):
             #print "statement: ", statement
             sql.do_update(statement)
 
+
+            """
+            f = open("/tmp/sql_commit", 'a')
+            f.write(statement)
+            f.write('\n')
+            f.close()
+            """
+
             # SQL Server: after a redo, set IDENTITY_INSERT to OFF
             # to dis-allow an explicit ID value to be inserted into the ID column of the table.
             if id_override == True:
@@ -3467,7 +3489,7 @@ class SObject(object):
                     sql.do_update(id_statement)
 
 
-
+        Container.increment('Search:sql_commit') 
 
 
         # Fill the data back in (autocreate of ids)
@@ -3519,6 +3541,8 @@ class SObject(object):
         if sobject and column_info.get("code") != None:
             if not sobject.get_value("code", no_exception=True):
 
+                # generate the code
+
                 # TODO: make this configurable
                 search_type = my.get_base_search_type()
                 if search_type in ['sthpw/file', 'sthpw/snapshot', 'sthpw/transaction_log', 'sthpw/ticket', 'sthpw/task','sthpw/sync_job','sthpw/sync_log']:
@@ -3537,8 +3561,12 @@ class SObject(object):
                 log_key = my.get_code_key()
                 parts.append( log_key )
 
-                number_expr = "%%0.%dd" % padding
-                parts.append( number_expr % id )
+                try:
+                    int(id)
+                    number_expr = "%%0.%dd" % padding
+                    parts.append( number_expr % id )
+                except:
+                    parts.append(str(id))
 
                 delimiter = ""
                 reverse = False
@@ -3713,12 +3741,16 @@ class SObject(object):
 
     def _add_message(my, sobject, data):
 
+        record_message = True
+        if not record_message:
+            return
+
+
         search_type = sobject.get_base_search_type()
         if search_type in ['sthpw/note','sthpw/task','sthpw/snapshot']:
             search_type = sobject.get_value("search_type")
             search_code = sobject.get_value("search_code")
             message_code = "%s&code=%s" % (search_type, search_code)
-
         elif search_type.startswith("sthpw/"):
             return
         elif search_type.startswith("config/"):
@@ -6387,7 +6419,7 @@ class SearchKey(object):
                 except:
                     pass
                 search_id_list.append(id)
-        
+       
         single_search_type = False
         if len(Common.get_unique_list(search_type_list)) == 1:
             single_search_type=True

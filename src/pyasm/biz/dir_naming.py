@@ -225,22 +225,21 @@ class DirNaming(object):
             if process:
                 dirs.append(process)
 
-            #context = my.snapshot.get_value("context")
-            #if context:
-            #    dirs.append(context)
-
         return dirs
 
 
     def get_sobject_base(my, dirs):
         # add <project_code>/<table>
         search_type_obj = my.sobject.get_search_type_obj()
-        db_name = search_type_obj.get_database()
-        dirs.append( db_name )
 
-        from project import Project
+
+        project_code = my.sobject.get_project().get_code()
+        dirs.append( project_code )
+        #db_name = search_type_obj.get_database()
+        #dirs.append( db_name )
+
         from pyasm.prod.biz import ProdSetting
-        if Project.get_project_code() not in ["admin", 'sthpw']:
+        if project_code not in ["admin", 'sthpw']:
             icon_separation = ProdSetting.get_value_by_key("use_icon_separation")           
             if not icon_separation:
                 # put in a default

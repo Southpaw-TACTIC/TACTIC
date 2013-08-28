@@ -96,8 +96,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             inner.add(table)
             my.handle_no_results(table)
 
-        my.add_layout_behaviors(inner)
-
 
         inner.add("<br clear='all'/>")
         return div
@@ -145,6 +143,61 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+
+        layout_wdg.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            spt.thumb = {};
+
+            spt.thumb.noop = function(evt, el) {
+                evt.stopPropagation();
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+
+                var top = $(el);
+                var thumb_el = top.getElement(".spt_thumb_top");
+
+                for (var i = 0; i < files.length; i++) {
+                    var size = files[i].size;
+                    var file = files[i];
+
+                    setTimeout( function() {
+                        var loadingImage = loadImage(
+                            file,
+                            function (img) {
+                                thumb_el.innerHTML = "";
+                                thumb_el.appendChild(img);
+                            },
+                            {maxWidth: 240, canvas: true, contain: true}
+                        );
+                    }, 0 );
+
+
+                    var search_key = top.getAttribute("spt_search_key");
+                    var filename = file.name;
+                    var context = "publish" + "/" + filename;
+
+
+
+                    var upload_file_kwargs =  {
+                        files: files,
+                        upload_complete: function() {
+                            var server = TacticServerStub.get();
+                            var kwargs = {mode: 'uploaded'};
+                            server.simple_checkin( search_key, context, filename, kwargs);
+                        }
+                    };
+                    spt.html5upload.upload_file(upload_file_kwargs);
+         
+
+
+     
+                }
+            }
+            '''
+        } )
 
 
     def get_tile_wdg(my, sobject):
@@ -196,7 +249,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             div.add( my.get_view_wdg(sobject, bottom_view) )
 
 
+
+        div.add_attr("ondragenter", "return false")
+        div.add_attr("ondragover", "return false")
+        div.add_attr("ondrop", "spt.thumb.noop(event, this)")
+
+
         return div
+
 
 
     def get_view_wdg(my, sobject, view):
@@ -439,6 +499,7 @@ class ThumbWdg2(BaseRefreshWdg):
         width = "100%"
 
         div = DivWdg()
+        div.add_class("spt_thumb_top")
 
         sobject = my.get_current_sobject()
         path = my.get_path_from_sobject(sobject)
@@ -455,13 +516,19 @@ class ThumbWdg2(BaseRefreshWdg):
                 img.add(img_inner)
                 img_inner.add_style("width: %s" % width)
 
-
+        if path and path.startswith("/context"):
+            img.add_style("padding: 20px 0px")
+            img.add_border()
+            img.add_style("width: 100%")
 
         if not path:
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
         img.add_style("width: %s" % width)
+
+        div.add_style("height: 100%")
+
 
         return div
 
