@@ -732,8 +732,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                         bvr['modkeys'] = modkeys
 
 
-                    if not bvr.get("type"):
-                        bvr['type'] = 'click_up'
 
                     # add the kwargs to this so behaviors have access
                     bvr['kwargs'] = my.kwargs
@@ -742,10 +740,15 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
                     if relay_class:
                         bvr['bvr_match_class'] = relay_class
+                        if not bvr.get("type"):
+                            bvr['type'] = 'mouseup'
                         my.content.add_relay_behavior( bvr )
                     else:
-                        bvr_div.add_behavior( bvr )
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
+                        if not bvr.get("type"):
+                            bvr['type'] = 'click_up'
+                        bvr_div.add_behavior( bvr )
+
                 except Exception, e:
                     print "Error: ", e
                     raise TacticException("Error parsing behavior [%s]" % behavior_str)
