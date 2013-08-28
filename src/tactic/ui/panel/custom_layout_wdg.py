@@ -405,6 +405,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         content.add_class("spt_custom_content")
         content.add_style("position: relative")
         top.add(content)
+        my.content = content
 
 
         is_test = Container.get("CustomLayout::is_test")
@@ -708,6 +709,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 # if the event is specified in the xml, then use that
                 modkeys = Xml.get_attribute(behavior_node, 'modkeys')
 
+                relay_class = Xml.get_attribute(behavior_node, 'relay_class')
 
                 if not behavior_str:
                     continue
@@ -737,10 +739,15 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     bvr['kwargs'] = my.kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
-                    bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
 
-                    bvr_div.add_behavior( bvr )
-                except:
+                    if relay_class:
+                        bvr['bvr_match_class'] = relay_class
+                        my.content.add_relay_behavior( bvr )
+                    else:
+                        bvr_div.add_behavior( bvr )
+                        bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
+                except Exception, e:
+                    print "Error: ", e
                     raise TacticException("Error parsing behavior [%s]" % behavior_str)
 
 
