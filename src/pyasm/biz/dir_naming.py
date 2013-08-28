@@ -524,13 +524,15 @@ class DirNaming(object):
         # provide a mechanism for a custom client side script
         script_path = naming.get_value("script_path", no_exception=True)
         if script_path:
+            project_code = my.sobject.get_project_code()
             input = {
                 'sobject': my.sobject,
                 'snapshot': my.snapshot,
                 'file_object': my._file_object,
                 #'ext': my.get_ext(),
                 'file_type': my.file_type,
-                'mode': mode
+                'mode': mode,
+                'project': project_code
             }
             from tactic.command import PythonCmd
 
