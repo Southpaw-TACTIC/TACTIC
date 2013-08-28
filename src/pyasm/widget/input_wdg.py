@@ -1184,6 +1184,14 @@ class SelectWdg(BaseInputWdg):
         if values_expr:
             if mode_expr == 'relative':
                 sobjects = my.sobjects
+                if not sobjects:
+                    parent_wdg = my.get_parent_wdg()
+                    if parent_wdg:
+                        # use the search_key as a starting point if applicable
+                        sk = parent_wdg.kwargs.get('search_key')
+                        if sk:
+                            sobjects = [Search.get_by_search_key(sk)]
+
             else:
                 sobjects = []
             try:
