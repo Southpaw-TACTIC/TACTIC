@@ -965,7 +965,8 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         try:
             search = Search(search_type)
             if search.column_exists(element_name):
-                search.add_column(element_name, distinct=True)
+                #search.add_column(element_name, distinct=True)
+                search.add_group_aggregate_filter([element_name])
                 if search.column_exists("project_code"):
                     search.add_project_filter()
                 search.set_limit(100)
