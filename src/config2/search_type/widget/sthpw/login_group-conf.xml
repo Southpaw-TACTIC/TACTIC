@@ -95,6 +95,7 @@
     <element name="user_assign"/>
     <element name="users"/>
     <element name="global_rules"/>
+    <element name="access_rules_hidden"/>
 </startup>
 
 

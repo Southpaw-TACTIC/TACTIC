@@ -1812,14 +1812,20 @@ class TaskSecurityWdg(ProjectSecurityWdg):
                     access_rules = group.get_xml_value("access_rules")
                     rules_dict[group_name] = access_rules
 
-                xpath = "rules/rule[@group='process' and @process='%s']" % sobject.get_value("process")
-
+                old_xpath = "rules/rule[@group='process' and @process='%s']" % sobject.get_value("process")
+                xpath = "rules/rule[@group='process' and @process='%s' and @pipeline_code='%s']" % (sobject.get_value("process"), sobject.get_value("pipeline_code"))
                 node = access_rules.get_node(xpath)
-
+                old_node = access_rules.get_node(old_xpath)
+        
                 if node is not None:
                     sobject.set_value("_%s" % group_name, True)
                 else:
-                    sobject.set_value("_%s" % group_name, False)
+                    # backward compatibility
+                    old_node = access_rules.get_node(old_xpath)
+                    if old_node is not None:
+                        sobject.set_value("_%s" % group_name, True)
+                    else:
+                        sobject.set_value("_%s" % group_name, False)
 
         return sobjects
 
@@ -2034,6 +2040,9 @@ class ProcessSecurityCbk(Command):
     def use_project(my):
         return True
 
+    def use_pipeline(my):
+        return False
+
     def execute(my):
 
         search_keys = my.kwargs.get("search_keys")
@@ -2060,12 +2069,14 @@ class ProcessSecurityCbk(Command):
             else:
                 is_all = False
 
+            pipeline_code = ""
             if is_all:
                 process = "*"
             else:
                 process_sobj = Search.get_by_search_key(search_key)
                 process = process_sobj.get_value("process")
-
+                if my.use_pipeline():
+                    pipeline_code = process_sobj.get_value("pipeline_code")
 
             for group_name, is_insert in data.items():
                 group_name = group_name.lstrip("_")
@@ -2077,9 +2088,9 @@ class ProcessSecurityCbk(Command):
                     builders[group_name] = builder
 
                 if is_insert == "true":
-                    builder.add_process(process, project_code=project_code)
+                    builder.add_process(process, project_code=project_code, pipeline_code=pipeline_code)
                 else:
-                    builder.remove_process(process, project_code=project_code)
+                    builder.remove_process(process, project_code=project_code, pipeline_code=pipeline_code)
 
 
         for group_name, builder in builders.items():
@@ -2095,6 +2106,9 @@ class TaskSecurityCbk(ProcessSecurityCbk):
 
     def use_project(my):
         return False
+
+    def use_pipeline(my):
+        return True
     
 
 
@@ -2156,21 +2170,30 @@ class SecurityBuilder(object):
 
 
 
-    def add_process(my, process, access="allow", project_code=None):
+    def add_process(my, process, access="allow", project_code=None, pipeline_code=None):
         rule = my.xml.create_element("rule")
         my.xml.set_attribute(rule, "group", "process")
         my.xml.set_attribute(rule, "process", process)
         if project_code:
             my.xml.set_attribute(rule, "project", project_code)
+        if pipeline_code:
+            my.xml.set_attribute(rule, "pipeline", pipeline_code)
         my.xml.set_attribute(rule, "access", access)
         my.xml.append_child(my.root, rule)
 
 
-    def remove_process(my, process, project_code=None):
+    def remove_process(my, process, project_code=None, pipeline_code=None):
+        pipeline_code_expr = ''
+        if pipeline_code:
+            pipeline_code_expr = "and @pipeline_code='%s'"%pipeline_code
+        
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s']" % project_code)
+            nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='process']")
+            # for backward comaptibilty, || 
+            nodes = my.xml.get_nodes("rules/rule[@group='process'] | rules/rule[@group='process' %s]  " %pipeline_code_expr)
+
+        
 
         for node in nodes:
             if my.xml.get_attribute(node, 'process') == process:

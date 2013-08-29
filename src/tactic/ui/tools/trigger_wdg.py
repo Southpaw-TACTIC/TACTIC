@@ -1676,11 +1676,13 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
         '''
         } )
         """
-
-
         body_text = TextAreaWdg("body")
         body_text.add_class("spt_notification_body")
         body_text.set_value(message)
+        body_text.add_behavior({'type':'load',
+            'message': message,
+            'cbjs_action': 'bvr.src_el.value = bvr.message'})
+
         body_text.add_style("width: 500px")
         body_text.add_style("height: 250px")
         message_div.add(body_text)

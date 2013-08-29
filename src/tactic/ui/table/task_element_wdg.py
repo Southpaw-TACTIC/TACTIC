@@ -533,14 +533,20 @@ class TaskElementWdg(BaseTableElementWdg):
 
         security = Environment.get_security()
         my.allowed_statuses = []
-        for color_dict in my.status_colors.values():
+        for pipeline_code, color_dict in my.status_colors.items():
             existing_statuses = color_dict.keys()
             # check security access
 
             for status in existing_statuses:
-                access_key = {'process': status }
                 if status in my.allowed_statuses:
                     continue
+
+                access_key = [
+                    {'process': status},
+                    {'process': '*'},
+                    {'process': '*' ,'pipeline':  pipeline_code},
+                    {'process': status , 'pipeline':  pipeline_code}
+                    ]
                 if security.check_access('process', access_key, "view", default="deny"):
                     my.allowed_statuses.append(status)
 
