@@ -578,7 +578,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
-        div.add("Naming convention dictate where in the repository files are placed when checked in.  TACTIC allows configuration for both directory and file naming conventions.")
+        div.add("Naming conventions dictate where in the repository files are placed during a check-in.  TACTIC allows configuration for both directory and file naming conventions.")
 
         div.add("<br/>")
         div.add("<br/>")
@@ -589,7 +589,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg("has_folder_naming")
         folder_div.add(checkbox)
-        folder_div.add("<b>Should folder naming conventions be enforced?</b>")
+        span = SpanWdg(HtmlElement.b("enforce directory naming conventions"), css='small')
+        folder_div.add(span)
 
         dirname_div = DivWdg()
         div.add(dirname_div)
@@ -633,7 +634,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg("has_file_naming")
         folder_div.add(checkbox)
-        folder_div.add("<b>Should file naming conventions be enforced?</b>")
+        span = SpanWdg(HtmlElement.b("enforce file naming conventions"), css='small')
+        folder_div.add(span)
 
         dirname_div = DivWdg()
         div.add(dirname_div)
