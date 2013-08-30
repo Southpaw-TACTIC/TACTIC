@@ -489,7 +489,15 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 class BaseSQLDatabaseImpl(DatabaseImpl):
-    pass
+    
+    def is_column_sortable(my, db_resource, table, column):
+        from sql import DbContainer
+        sql = DbContainer.get(db_resource)
+        columns = sql.get_columns(table)
+        if column in columns:
+            return True
+        else:
+            return False
 
 
 
@@ -1147,13 +1155,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
   
 
-    def is_column_sortable(my, db_resource, table, column):
-        sql = DbContainer.get(my.db_resource)
-        columns = sql.get_columns(table)
-        if column in columns:
-            return True
-        else:
-            return False
+   
  
 
     def get_column_types(my, database, table):
