@@ -301,6 +301,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         # find out if there is a plugin associated with this
         my.plugin = my.kwargs.get("plugin")
+        if my.plugin == '{}':
+            my.plugin = {}
+        
         if not my.plugin and isinstance(my.config, SObject):
             my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
 
