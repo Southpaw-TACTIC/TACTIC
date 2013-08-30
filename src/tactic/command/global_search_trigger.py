@@ -179,7 +179,8 @@ class FolderTrigger(Trigger):
         file_obj.set_value("file_name", "")
         file_obj.set_value("relative_dir", relative_dir)
         file_obj.set_value("type", "main")
-        file_obj.commit()
+        file_obj.set_value("base_type", "sobject_directory")
+        file_obj.commit(triggers=False)
 
         from pyasm.search import FileUndo
         if not os.path.exists(dirname):
