@@ -324,7 +324,7 @@ class Search(Base):
         if not table:
             table = my.search_type_obj.get_table()
         columns = sql.get_columns(table)
-        columns = my.remove_temp_column(columns, sql) 
+        #columns = my.remove_temp_column(columns, sql) 
 
         return columns
 
@@ -343,13 +343,17 @@ class Search(Base):
         has_column = column_info.get(column) != None
         return has_column
 
+
+    # DEPRECATED: this should not be used as it assumes an SQL database
     def add_where(my, filter):
         '''add an explicit where clause'''
         my.select.add_where(filter)
 
+    # DEPRECATED: Still called in my.skip_retired()
     def remove_where(my, filter):
         '''add an explicit where clause'''
         my.select.remove_where(filter)
+
 
     def add_regex_filter(my, name, regex, op='EQI'):
         '''add a regular expression filter
@@ -378,12 +382,13 @@ class Search(Base):
 
     # FIXME: this does not take the type into account
     # DEPRECATED
+    """
     def get_filter(my, name, value, op='='):
         if value == None:
             return '"%s" is NULL' % name
         else:
             return '"%s" %s %s' % ( name, op, Sql.quote(value) )
-
+    """
 
 
     def set_null_filter(my):
@@ -424,6 +429,7 @@ class Search(Base):
 
 
     # DEPRECATED
+    """
     def get_filters(my, name, values, table='', op='in'):
         assert op in ['in', 'not in']
         filter = ''
@@ -437,6 +443,7 @@ class Search(Base):
             else:
                 filter = '"%s" %s (%s)' % ( name, op, ", ".join(list) )
         return filter
+    """
 
 
 
@@ -517,8 +524,6 @@ class Search(Base):
                     parts = name.split(".")
                     table = parts[0]
                     name = parts[1]
-
-
 
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
@@ -730,6 +735,12 @@ class Search(Base):
         if not sobjects:
             my.null_filter = True
             return
+
+        #search_type_obj = my.get_search_type_obj()
+        #related_type_obj = sobjects[0].get_search_type_obj()
+
+        sobject = sobjects[0]
+
         search_type = my.get_base_search_type()
         related_type = sobjects[0].get_base_search_type()
 
@@ -740,7 +751,7 @@ class Search(Base):
             if has_code:
                 my.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
             else:
-                my.add_filters("id", [x.get_id() for x in sobjects], op=op)
+                my.add_filters(sobject.get_id_col(), [x.get_id() for x in sobjects], op=op)
             return
 
 
@@ -777,7 +788,7 @@ class Search(Base):
                         relationship = schema.resolve_search_type_relationship(attrs, full_search_type, full_related_type)
 
                     if relationship == 'search_id':
-                        to_col = 'id'
+                        to_col = sobject.get_id_col()
                         from_col = 'search_id'
                     else:
                         to_col = 'code'
@@ -799,8 +810,14 @@ class Search(Base):
 
                 if not multi_stypes:
                     col_values  = [x.get_value(to_col) for x in sobjects]
+
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    my.add_filters(from_col, col_values, op=op )
+                    if isinstance(col_values[0], int):
+                        my.add_filters(from_col, col_values, op=op )
+                    else:
+                        # FIXME: this is HARD CODED for MongoDb to use
+                        # search_code instead of search_id
+                        my.add_filters("search_code", col_values, op=op)
                 else:
                     if op != 'in':
                         raise SearchException("For searches with multi_stypes, op = 'in' must be used.");
@@ -1418,6 +1435,13 @@ class Search(Base):
         else:
             table = my.search_type_obj.get_table()
 
+            impl = my.get_database_impl()
+            if impl.is_column_sortable(my.get_db_resource(), table, column):
+                my.select.add_order_by(order_str, direction)
+                return True
+            else:
+                return False
+            """
             # check to see if the column exists in the table
             columns = my.get_columns(table)
             if column in columns:
@@ -1426,6 +1450,7 @@ class Search(Base):
             else:
                 print "WARNING: [%s] cannot be ordered by [%s]" % (my.get_base_search_type(), order_str)
                 return False
+            """
 
     def add_enum_order_by(my, column, values, table=None):
         my.select.add_enum_order_by(column, values, table)
@@ -1510,7 +1535,7 @@ class Search(Base):
         # get the columns
         table = my.get_table()
         columns = sql.get_columns(table)
-        columns = my.remove_temp_column(columns, sql) 
+        #columns = my.remove_temp_column(columns, sql) 
         select_columns = my.select.get_columns()
         if select_columns:
             if select_columns[0] == '*':
@@ -1680,6 +1705,9 @@ class Search(Base):
         else:
             my.remove_where(filter_name)
 
+
+    # DEPRECATED: this is now in database_impl
+    """
     def remove_temp_column(my, columns, sql):
         # SQL Server temp columns are put in by ROW_NUMBER()
         # in database_impl.handle_pagination()
@@ -1689,6 +1717,7 @@ class Search(Base):
             columns.remove(temp_column_name)
 
         return columns
+    """
 
     def get_sobject_ids(my):
         '''fast way of getting sobject ids without creating them during search'''
@@ -2200,8 +2229,8 @@ class SObject(object):
                 my.data = fast_data['data'][fast_data['count']]
 
                 # MongoDb
-                if my.data.has_key("_id") and not my.data.has_key("code"):
-                    my.data["code"] = my.data["_id"]
+                #if my.data.has_key("_id") and not my.data.has_key("code"):
+                #    my.data["code"] = my.data["_id"]
 
                 # convert datetimes to strings
                 datetime_cols = fast_data.get("datetime_cols")
@@ -2267,7 +2296,6 @@ class SObject(object):
 
         # metadata cache
         my.metadata = {}
-
 
 
     def _get_my_update_data(my):
@@ -3315,8 +3343,13 @@ class SObject(object):
         return my.get_value(retired_col) == 'retired' 
 
     def is_insert(my):
-        if my.get_id() == -1:
+        search_id = my.get_id()
+        if search_id == -1:
             return True
+        elif my.get_id() in ['-1','']:
+            return True
+        return False
+
 
     def validate(my):
         '''validate entries into this sobject'''
@@ -3326,8 +3359,12 @@ class SObject(object):
         '''commit all of the changes to the database'''
         is_insert = False 
         id = my.get_id()
-        if my.force_insert or id == -1 or id == "-1":
+        if my.force_insert or id == -1:
             is_insert = True
+        if id in ['-1', '']:
+            my.set_id(-1)
+            is_insert = True
+
         impl = my.get_database_impl()
         # before we make the final statement, we allow the sobject to set
         # a minimal set of defaults so that the sql statement will always
@@ -3494,7 +3531,8 @@ class SObject(object):
 
         # Fill the data back in (autocreate of ids)
         # The only way to do this reliably is to query the database
-        if id == -1:
+        #if id == -1:
+        if is_insert:
             # assume that the id is constantly incrementing
             if not impl.has_sequences():
                 id = sql.last_row_id
@@ -3595,7 +3633,7 @@ class SObject(object):
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if transaction:
+            if search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -4838,10 +4876,10 @@ class SearchType(SObject):
 
 
         # MongoDb Test
-        if search_type.startswith("mongodb/"):
-            my.base_key = search_type
-        else:
-            my.base_key = ""
+        #if search_type.startswith("mongodb/"):
+        #    my.base_key = search_type
+        #else:
+        #    my.base_key = ""
 
 
 
@@ -4988,6 +5026,12 @@ class SearchType(SObject):
         db_resource = project.get_project_db_resource()
         return db_resource
     get_db_resource_by_search_type = classmethod(get_db_resource_by_search_type)
+
+
+    def get_database_impl_by_search_type(cls, search_type):
+        db_resource = cls.get_db_resource_by_search_type(search_type)
+        return db_resource.get_database_impl()
+    get_database_impl_by_search_type = classmethod(get_database_impl_by_search_type)
 
 
     def get_sql_by_search_type(cls, search_type):

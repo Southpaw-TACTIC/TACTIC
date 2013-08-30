@@ -32,6 +32,9 @@ class DatabaseImplInterface(object):
     def get_column_info(cls, db_resource, table, use_cache=True):
         pass
 
+    def is_column_sortable(my, db_resource, table, column):
+        pass
+
     def get_id_col(db_resource, search_type):
         pass
 
@@ -484,7 +487,13 @@ class DatabaseImpl(DatabaseImplInterface):
         return ""
 
 
-class SQLServerImpl(DatabaseImpl):
+
+class BaseSQLDatabaseImpl(DatabaseImpl):
+    pass
+
+
+
+class SQLServerImpl(BaseSQLDatabaseImpl):
     '''Implementation for Microsoft SQL Server's SQL'''
 
     def get_database_type(my):
@@ -1136,8 +1145,16 @@ class SQLServerImpl(DatabaseImpl):
 
     get_column_info = classmethod(get_column_info)
 
-   
-    
+  
+
+    def is_column_sortable(my, db_resource, table, column):
+        sql = DbContainer.get(my.db_resource)
+        columns = sql.get_columns(table)
+        if column in columns:
+            return True
+        else:
+            return False
+ 
 
     def get_column_types(my, database, table):
         ''' get column data types. Note: can potentially get 
@@ -1173,6 +1190,11 @@ class SQLServerImpl(DatabaseImpl):
                 name = results[k][3]
                 columns.append(name)
 
+
+        # remove temp columns
+        columns = my.remove_temp_column(columns, sql) 
+        
+
         return columns
 
     get_columns = classmethod(get_columns)
@@ -1200,8 +1222,19 @@ class SQLServerImpl(DatabaseImpl):
         return "_tmp_spt_rownum"
 
 
+    def remove_temp_column(my, columns, sql):
+        # SQL Server temp columns are put in by ROW_NUMBER()
+        # in database_impl.handle_pagination()
+        impl = sql.get_database_impl()
+        temp_column_name = impl.get_temp_column_name()
+        if temp_column_name and temp_column_name in columns:
+            columns.remove(temp_column_name)
 
-class PostgresImpl(DatabaseImpl):
+        return columns
+
+
+
+class PostgresImpl(BaseSQLDatabaseImpl):
     '''Implementation for PostgreSQL'''
 
     def get_database_type(my):

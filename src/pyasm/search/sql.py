@@ -687,8 +687,6 @@ class Sql(Base):
 
             return my.results
 
-        except Exception, e:
-            raise
 
         except my.pgdb.OperationalError, e:
             # A reconnect will only be attempted on the first query.

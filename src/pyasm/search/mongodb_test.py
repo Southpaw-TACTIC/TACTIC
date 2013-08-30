@@ -48,9 +48,6 @@ class SqlTest(unittest.TestCase):
         sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
         my.assertEquals( 1, len(sobjects) )
 
-        search_keys = ['table/posts?project=mongodb&code=5205ff37e13823265eb5b375']
-        sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-        my.assertEquals( 1, len(sobjects) )
 
 
     def _test_relationship(my):
@@ -66,7 +63,7 @@ class SqlTest(unittest.TestCase):
 
         search_type2 = "sthpw/task"
         relationship = schema.get_relationship(search_type, search_type2)
-        my.assertEquals("search_code", relationship)
+        my.assertEquals("search_id", relationship)
 
         attrs = schema.get_relationship_attrs(search_type, search_type2)
         my.assertEquals("*", attrs.get("to") )

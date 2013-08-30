@@ -21,6 +21,8 @@ import bson
 
 try:
     import pymongo
+    pymongo.OperationalError = Exception
+    pymongo.pgdb.Error = Exception
 except ImportError, e:
     pass
 
@@ -98,9 +100,9 @@ class MongoDbImpl(DatabaseImpl):
             columns = result.keys()
 
             # assume existence of both code and _id
-            if "code" in columns:
-                columns.remove("code")
-            columns.insert(0, "code")
+            #if "code" in columns:
+            #    columns.remove("code")
+            #columns.insert(0, "code")
 
             if "_id" in columns:
                 columns.remove("_id")
@@ -142,6 +144,13 @@ class MongoDbImpl(DatabaseImpl):
             table_info[collection] = { }
 
         return table_info
+
+
+
+    def is_column_sortable(my, db_resource, table, column):
+        # All columns are sortable in MongoDb
+        return True
+
 
 
     def table_exists(my, db_resource, table):
@@ -281,7 +290,10 @@ class MongoDbImpl(DatabaseImpl):
         if err:
             raise Exception(result)
 
+        # FIXME: Hacky ... should make use of return value below
         sql.last_row_id = item.get("_id")
+
+        return sql.last_row_id
 
 
 
@@ -295,7 +307,7 @@ class MongoDbImpl(DatabaseImpl):
         table = update.table
         data = update.data
 
-        if data.get("_id") in ["-1", -1]:
+        if data.get("_id") in ["-1", -1, '']:
             del(data['_id'])
 
         collection = conn.get_collection(table)
@@ -337,7 +349,8 @@ class MongoDbImpl(DatabaseImpl):
 
         object_id  = collection.insert(data)
 
-        print "object_id: ", object_id
+        return object_id
+
 
 
 
