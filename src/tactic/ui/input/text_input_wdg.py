@@ -497,6 +497,10 @@ class LookAheadTextInputWdg(TextInputWdg):
         if not validate:
             my.top.add_class('spt_no_validate')
         
+        do_search = my.kwargs.get("do_search")
+        if not do_search:
+            do_search = 'true'
+
         my.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -511,7 +515,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
     if (!value) 
         return;
     if (!kwargs)  kwargs = {};
-       
+    if (kwargs.do_search == false) 
+        return;
+
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
@@ -552,12 +558,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         value_expr = '"' + value + '"';
         
     var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
-   
     var kw = {
         single: true,
         cbjs_action: cbk
     };
     
+    //TODO: support other kinds of eval for validation
     var server = TacticServerStub.get();
     try {
         server.async_eval(expr, kw);
@@ -578,11 +584,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             'value_column': value_column,
             'event_name': event_name,
             'validate': str(validate),
+            'do_search': do_search,
             'cbjs_action': '''
           
             // put a delay in here so that a click in the results
             // has time to register
             var validate = bvr.validate == 'True';
+            var do_search = bvr.do_search == 'true';
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
@@ -595,7 +603,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                 if (bvr.value_column) {
                     if (bvr.src_el.value) {
                         var value = bvr.src_el.value;
-                        var kwargs = {'validate': validate, 'event_name': bvr.event_name};
+                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name};
                         spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column, kwargs);
                     } else {
                         var hidden_el = top.getElement(".spt_text_value");
@@ -662,7 +670,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
         filters = my.kwargs.get("filters")
         script_path = my.kwargs.get("script_path")
-        do_search = my.kwargs.get("do_search")
         bgcolor = my.text.get_color("background3")
        
 
@@ -1006,10 +1013,20 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
                 info = cmd.get_info()
                 results = info.get('spt_ret_val')
-            if not results:
+                
+                # expect it to return a tuple of 2 lists or a single list
+                if isinstance(results, tuple):
+                    display_results = results[0]
+                    value_results = results[1]
+                elif isinstance(results, list):
+                    display_results = value_results = results
+            if not display_results:
                 return
 
-        for keywords in results:
+            if len(display_results) != len(value_results):
+                raise TacticException("The length of value list and display list needs to match in [%s]" %script_path)
+
+        for idx, keywords in enumerate(display_results):
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")
@@ -1024,7 +1041,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             div.add(display)
             div.add_class("spt_input_text_result")
-            div.add_attr("spt_value", keywords)
+            value = value_results[idx]
+            div.add_attr("spt_value", value)
             # turn off cache to prevent ascii error
             keywords = HtmlElement.get_json_string(keywords, use_cache=False)
             div.add_attr("spt_display", keywords)
