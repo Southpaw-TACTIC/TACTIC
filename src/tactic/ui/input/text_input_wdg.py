@@ -509,14 +509,29 @@ spt.text_input = {}
 spt.text_input.is_on = false;
 spt.text_input.index = -1;
 spt.text_input.last_index = 0;
-
+spt.text_input.run_client_trigger = function(bvr, event_name, display, value) {
+    try {
+        var e_name = event_name;
+        if (e_name) {
+            bvr.options = {'value': value, 'display': display};
+            spt.named_events.fire_event(e_name, bvr);
+        }
+    }
+    catch(e) {
+        spt.alert("Error firing event: " + e_name);
+    }
+}
+    
 // async validate when value_column is defined
-spt.text_input.async_validate = function(src_el, search_type, column, value, value_column, kwargs) {
-    if (!value) 
+spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, kwargs) {
+    if (!display_value) 
         return;
     if (!kwargs)  kwargs = {};
-    if (kwargs.do_search == false) 
+    
+    if (kwargs.do_search == false){
+        spt.text_input.run_client_trigger(bvr, kwargs.event_name, display_value, kwargs.hidden_value);
         return;
+    }
 
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
@@ -534,28 +549,19 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         }
 
        // run client trigger
-       try {
-            var e_name = kwargs.event_name;
-            if (e_name) {
-                bvr.options = {'value': data, 'display': src_el.value};
-                spt.named_events.fire_event(e_name, bvr);
-            }
-        }
-        catch(e) {
-            spt.alert("Error firing event: " + e_name);
-        }
+       spt.text_input.run_client_trigger(bvr, kwargs.event_name, src_el.value, data);
 
     }
     // can support having pure ' or " in the value, not mixed
-    if (value.test(/"/) && value.test(/'/)) {
+    if (display_value.test(/"/) && display_value.test(/'/)) {
         spt.alert("Validation of a mix of ' and \\" is not supported");
         return;
     }
 
-    if (value.test(/"/))
-        value_expr = "'" + value + "'";
+    if (display_value.test(/"/))
+        value_expr = "'" + display_value + "'";
     else
-        value_expr = '"' + value + '"';
+        value_expr = '"' + display_value + '"';
         
     var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
     var kw = {
@@ -601,12 +607,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
                 // if there is value_column and something in the input, it tries to validate 
                 if (bvr.value_column) {
+                    var hidden_el = top.getElement(".spt_text_value");
                     if (bvr.src_el.value) {
-                        var value = bvr.src_el.value;
-                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column, kwargs);
+                        var display_value = bvr.src_el.value;
+                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
+                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, kwargs);
                     } else {
-                        var hidden_el = top.getElement(".spt_text_value");
                         hidden_el.value ='';
                     }
                         
@@ -873,9 +879,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             var hidden_el = top.getElement(".spt_text_value");
             hidden_el.value = value
 
-          
-
-          
 
             '''
         } )
