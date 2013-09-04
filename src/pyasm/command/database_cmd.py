@@ -277,7 +277,7 @@ class ColumnAddIndexCmd(Command):
         index_name = "%s_%s_idx" % (table, my.column)
         
         if my.constraint == "unique":
-            statement = 'CREATE UNIQUE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
+            statement = 'ALTER TABLE "%s" add constraint "%s" UNIQUE ("%s")' % (table, index_name, my.column)
         else:
             statement = 'CREATE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
 

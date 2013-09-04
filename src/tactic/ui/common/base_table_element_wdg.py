@@ -215,7 +215,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 cmd = ColumnAddCmd(search_type, column_name, data_type)
                 cmd.execute()
             except TacticException, e:
-                print "After adding" 
                 if 'already existed in this table' in e.__str__():
                     column_exist_error = e
                 else:
