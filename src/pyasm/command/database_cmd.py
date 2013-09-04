@@ -275,15 +275,13 @@ class ColumnAddIndexCmd(Command):
         sql = DbContainer.get(db_resource)
 
         index_name = "%s_%s_idx" % (table, my.column)
-
+        
         if my.constraint == "unique":
             statement = 'CREATE UNIQUE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
         else:
             statement = 'CREATE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
 
-
         sql.do_update(statement)
-
-        alter.commit()  
+        sql.commit() 
 
 

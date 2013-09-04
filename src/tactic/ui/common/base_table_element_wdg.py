@@ -17,7 +17,7 @@ import types
 
 from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
-from pyasm.common import Date, Common
+from pyasm.common import Date, Common, TacticException
 from pyasm.search import Search
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
@@ -210,12 +210,22 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         constraint = my.get_option("constraint")
 
         for column_name in columns:
-            cmd = ColumnAddCmd(search_type, column_name, data_type)
-            cmd.execute()
-
-            if constraint:
-                cmd = ColumnAddIndexCmd(search_type=search_type, column=column_name, constraint=constraint)
+            try:
+                column_exist_error = None
+                cmd = ColumnAddCmd(search_type, column_name, data_type)
                 cmd.execute()
+            except TacticException, e:
+                print "After adding" 
+                if 'already existed in this table' in e.__str__():
+                    column_exist_error = e
+                else:
+                    raise 
+            finally:
+                if constraint:
+                    cmd = ColumnAddIndexCmd(search_type=search_type, column=column_name, constraint=constraint)
+                    cmd.execute()
+                if column_exist_error:
+                    raise column_exist_error
 
 
 
