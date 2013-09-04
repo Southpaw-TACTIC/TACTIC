@@ -988,16 +988,44 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_class("spt_python")
             content_id = text.set_unique_id()
 
+
             title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
             mako_div.add(title_wdg)
 
+            #editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
+            #my.mako_editor_id = editor.get_editor_id()
+            #mako_div.add(editor)
+
+
             mako_div.add(text)
             text.add_style("width: 100%")
-            text.add_style("height: 300px")
+            text.add_style("height: 400px")
             text.add_style("min-height: 300px")
             text.add_style("font-size: 12px")
             text.add_style("font-family: courier")
+            text.add_style("margin: 0 -1 0 -1")
+            #text.add_style("padding-left: 3px")
             text.set_value(mako)
+            text.add_behavior( {
+                'type': 'mouseout',
+                'cbjs_action': '''
+                var size = bvr.src_el.getSize();
+                console.log("exit");
+                spt.container.set_value("CustomLayoutEditor::size", size);
+                '''
+            } )
+            text.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var size = spt.container.get_value("CustomLayoutEditor::size")
+                if (size) {
+                    bvr.src_el.setStyle("width", size.x);
+                    bvr.src_el.setStyle("height", size.y);
+                }
+                '''
+            } )
+
+
 
             # styles
             style_div = DivWdg()

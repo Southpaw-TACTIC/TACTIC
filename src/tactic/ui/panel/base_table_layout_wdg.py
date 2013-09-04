@@ -1198,22 +1198,51 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+            if my.can_inline_insert():
+                button.add_behavior( {
+                    'type': 'click_up',
+                    'modkeys': 'SHIFT',
+                    'cbjs_action': '''
 
-            button.add_behavior( {
-                'type': 'click_up',
-                'modkeys': 'SHIFT',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_layout");
-                var version = top.getAttribute("spt_version");
-                if (version == "2") {
-                    spt.table.set_layout(top);
-                    spt.table.add_new_item();
-                }
-                else {
-                    spt.dg_table.add_item_cbk(evt, bvr)
-                }
-                '''
-            } )
+                    //bvr.src_el.click();
+
+                    var top = bvr.src_el.getParent(".spt_layout");
+                    var version = top.getAttribute("spt_version");
+                    if (version == "2") {
+                        spt.table.set_layout(top);
+                        spt.table.add_new_item();
+                    }
+                    else {
+                        spt.dg_table.add_item_cbk(evt, bvr)
+                    }
+                    '''
+                } )
+
+            else:
+                button.add_behavior( {
+                    'type': 'click_up',
+                    'modkeys': 'SHIFT',
+                    'view': insert_view,
+                    'table_id': my.table_id,
+                    #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_table_top");
+                    var table = top.getElement(".spt_table");
+                    var search_type = top.getAttribute("spt_search_type")
+                    var kwargs = {
+                      search_type: search_type,
+                      parent_key: '%s',
+                      view: bvr.view,
+                      mode: 'insert',
+                      //num_columns: 2,
+                      save_event: 'search_table_' + bvr.table_id
+                     
+                    };
+                    spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
+                    '''%my.parent_key
+                } )
+
+
 
 
             button.set_show_arrow_menu(True)

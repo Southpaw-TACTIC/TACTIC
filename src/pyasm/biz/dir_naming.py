@@ -215,7 +215,7 @@ class DirNaming(object):
                 if code:
                     dirs.append( code )
             else: 
-                sobj_id = my.sobject.get_value("id")
+                sobj_id = my.sobject.get_id()
                 if sobj_id:
                     dirs.append( str(sobj_id) )
 

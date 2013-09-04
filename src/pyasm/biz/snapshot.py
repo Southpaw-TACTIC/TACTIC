@@ -1534,8 +1534,14 @@ class Snapshot(SObject):
             search.add_filter('search_type', search_type)
             has_code = SearchType.column_exists(search_type, "code")
             if not has_code:
-                search_ids = [str(x.get_id()) for x in sobjects if x]
-                search.add_filters('search_id', search_ids)
+                search_ids = []
+                for x in sobjects:
+                    id = x.get_id()
+                    try:
+                        id = int(id)
+                        search.add_filters('search_id', search_ids)
+                    except:
+                        search.add_filters('search_code', search_ids)
             else:
                 search_codes = [x.get_value("code") for x in sobjects if x]
                 search.add_filters('search_code', search_codes)
@@ -1544,10 +1550,13 @@ class Snapshot(SObject):
             filters = []
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
-                #search_id = sobject.get_id()
-                #filters.append("search_type = '%s' and search_id = %s" % (search_type, search_id))
-                search_code = sobject.get_value("code")
-                filters.append("search_type = '%s' and search_code = %s" % (search_type, search_code))
+                has_code = SearchType.column_exists(search_type, "code")
+                if not has_code:
+                    search_id = sobject.get_id()
+                    filters.append("search_type = '%s' and search_id = '%s'" % (search_type, search_id))
+                else:
+                    search_code = sobject.get_value("code")
+                    filters.append("search_type = '%s' and search_code = '%s'" % (search_type, search_code))
             search.add_where(" or ".join(filters))
 
         if context:

@@ -203,7 +203,6 @@ class EditCmd(Command):
             sobject = SearchKey.get_by_search_key(my.search_key)
             # this is needed for action handler below
             my.search_type = sobject.get_search_type()
-            #search_id = sobject.get_id()
 
         else:
             # get the search type and search id
@@ -214,7 +213,6 @@ class EditCmd(Command):
             if search_id == "":
                 raise EditCmdException( "Search id not found" )
      
-
             # get the search object based on these parameters
             if search_id == "" or search_id == "-1":
                 sobject = SearchType.create(my.search_type)
@@ -346,6 +344,8 @@ class EditMultipleCmd(Command):
         if web_data:
             web_data_list = jsonloads(web_data)
 
+
+
         search_types = set()
         for i, search_key in enumerate(search_keys):
 
@@ -372,7 +372,7 @@ class EditMultipleCmd(Command):
             cmd.execute()
 
             sobject = cmd.get_sobject()
-            search_key = sobject.get_search_key()
+            search_key = sobject.get_search_key(use_id=True)
 
             edit_search_keys.append(search_key)
 

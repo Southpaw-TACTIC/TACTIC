@@ -211,6 +211,12 @@ TacticServerStub = function() {
     /*
      * Messaging facilities
      */
+
+    this.get_message = function(key) {
+        return this._delegate("get_message", arguments);
+    }
+
+
     this.log_message = function(key, message, kwargs) {
         return this._delegate("log_message", arguments, kwargs);
     }

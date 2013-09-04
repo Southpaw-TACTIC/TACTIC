@@ -4765,6 +4765,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     
     var view_name = '';
     var main_panel = activator.getParent('.spt_main_panel');
+    /*
     if( main_panel ) {
         var bcrumb = main_panel.getParent('div').getElement('#breadcrumb');
         if (bcrumb.firstChild) {
@@ -4778,6 +4779,9 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     else {
         title += 'in [' + view + '] view';
     }
+    */
+
+    title += 'in [' + view + '] view';
     
     tmp_bvr.options = {
         'title': title + " to CSV",

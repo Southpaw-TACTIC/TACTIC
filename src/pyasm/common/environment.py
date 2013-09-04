@@ -49,6 +49,11 @@ class Environment(Base):
         for path in paths_list:
             sys.path.append(path)
 
+        # insert the plugin path
+        plugin_dir = Environment.get_plugin_dir()
+        sys.path.insert(0, plugin_dir)
+
+
     def initialize(my):
         '''Initializes the enviroment outside environment Tactic.  This is
         can be used for both the web environment and the batch environment'''

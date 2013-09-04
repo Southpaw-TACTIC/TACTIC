@@ -97,7 +97,7 @@ class SqlTest(unittest.TestCase):
         select.add_filter('name_last', "john's", op='!=')
         statement = select.get_statement()
 
-        expected = """SELECT %s."person".* FROM %s."person" WHERE "name_last" != 'john''s'""" % (my.prefix, my.prefix)
+        expected = """SELECT %s."person".* FROM %s."person" WHERE "person"."name_last" != 'john''s'""" % (my.prefix, my.prefix)
         my.assertEquals( expected, statement )
 
 
@@ -362,7 +362,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
 
         search.add_where("or")
         statement = search.get_statement()
-        expected = '''SELECT "person".* FROM "person" WHERE ( "login" = 'joe' AND "login" = 'mary' ) OR ( "attr" = 'tom' AND "attr" = 'peter' )'''
+        expected = '''SELECT "person".* FROM "person" WHERE ( "person"."login" = 'joe' AND "person"."login" = 'mary' ) OR ( "person"."attr" = 'tom' AND "person"."attr" = 'peter' )'''
 
         my.assertEquals(expected, statement)
 
@@ -382,7 +382,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
             search.add_startswith_keyword_filter(column, values) 
 
         statement = search.get_statement()
-        expected = '''SELECT %s."sobject_list".* FROM %s."sobject_list" WHERE "project_code" = 'unittest' AND "search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (my.sthpw_prefix, my.sthpw_prefix)
+        expected = '''SELECT %s."sobject_list".* FROM %s."sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (my.sthpw_prefix, my.sthpw_prefix)
         my.assertEquals(expected, statement)
 
     def _test_search_filter(my):
@@ -400,7 +400,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select2.add_table("request")
         select2.add_select_filter("id", select)
         statement = select2.get_statement()
-        expected = '''SELECT %s."request".* FROM %s."request" WHERE "id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
+        expected = '''SELECT %s."request".* FROM %s."request" WHERE "request"."id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
         my.assertEquals(expected, statement)
 
         select3 = Select()
@@ -410,7 +410,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select3.add_select_filter("id", select)
 
         statement = select3.get_statement()
-        expected = '''SELECT %s."request".* FROM %s."request" WHERE "id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
+        expected = '''SELECT %s."request".* FROM %s."request" WHERE "request"."id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
         my.assertEquals(expected, statement)
  
     def _test_add_drop_column(my):
@@ -459,22 +459,22 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_order_by("name_last")
 
         statement = select.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN "country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (my.prefix, my.prefix) )
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s."country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
 
 
         search = Search('unittest/person')
         search.add_join('unittest/city', 'unittest/person')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code"''' % (my.prefix,my.prefix))
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code"''' % (my.prefix,my.prefix, my.prefix))
 
         statement = search.get_statement()
         # this one has no schema connection, so will be ignored
         search.add_join('sthpw/login', 'unittest/person')
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code"''' % (my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code"''' % (my.prefix, my.prefix, my.prefix))
 
         search.add_join('unittest/country', 'unittest/city')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN "country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix) )
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s."country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
 
 
 

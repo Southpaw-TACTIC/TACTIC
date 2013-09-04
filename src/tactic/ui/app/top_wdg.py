@@ -701,10 +701,10 @@ class IndexWdg(Widget):
             'hash': my.hash,
             'cbjs_action': '''
             if (bvr.hash) {
-                spt.hash = "/" + bvr.hash;
+                spt.hash.hash = "/" + bvr.hash;
             }
             else {
-                spt.hash = "/index";
+                spt.hash.hash = "/index";
             }
             '''
         } )

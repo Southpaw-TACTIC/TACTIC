@@ -337,12 +337,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if not search_keys:
                 my.sobjects = []
             else:
-                print "search_keys: ", search_keys
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-                print "sobject: ", my.sobjects
-                for s in my.sobjects:
-                    print s.get_data()
-
             my.items_found = len(my.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
         elif my.search_key and matched_search_key and not expression:
@@ -1797,7 +1792,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
 
-
+        
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 

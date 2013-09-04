@@ -181,6 +181,17 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
     var top = spt.tab.top;
 
+    // register the hash
+    /*
+    var hash = "/element" + element_name;
+    spt.hash.add( hash, function() {
+        spt.tab.set_main_body_tab();
+        //spt.tab.add_new(element_name, title, class_name, kwargs, values);
+        spt.tab.add_new(element_name);
+    } );
+    */
+
+
     var mode = top.getAttribute("spt_tab_mode");
     if (mode == "hidden") {
         element_name = "__default__";
@@ -539,6 +550,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
 
                 if (force || ! content_box.hasClass("spt_content_loaded")) {
                     spt.panel.load(content_box, class_name, kwargs, values);
+
                     // update info on header
                     header.setAttribute("spt_class_name", class_name);
                     var kwargs_str = JSON.stringify(kwargs);
@@ -837,11 +849,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         top.set_attr("spt_tab_id", my.unique_id)
 
         top.set_attr("spt_tab_mode", my.mode)
-
-        #top.add_behavior( {
-        #'type': 'load',
-        #'cbjs_action': my.get_onload_js()
-        #} )
 
         gradient = top.get_gradient("background", -5, 5)
 

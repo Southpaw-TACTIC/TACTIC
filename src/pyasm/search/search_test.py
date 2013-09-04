@@ -151,31 +151,31 @@ class SearchTest(unittest.TestCase):
         search = Search('unittest/city')
         search.add_order_by('name')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT "city".* FROM "city" ORDER BY "city"."name"''')
+        my.assertEquals(statement, '''SELECT %s."city".* FROM %s."city" ORDER BY "city"."name"''' % (my.prefix, my.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT "person".* FROM "person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN "country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''')
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s."country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.id')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT "person".* FROM "person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id"''')
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id"''' % (my.prefix, my.prefix, my.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.id desc')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT "person".* FROM "person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc''')
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc''' % (my.prefix, my.prefix, my.prefix))
         
         
         # with the built-in order-by logic, order by code is added
         search.get_sobjects()
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT "person".* FROM "person" LEFT OUTER JOIN "city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc, "person"."code"''')
+        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc, "person"."code"''' % (my.prefix, my.prefix, my.prefix))
 
 
     def _test_get_by_statement(my):
@@ -922,7 +922,7 @@ class SearchTest(unittest.TestCase):
         search_person = Search("unittest/person")
         search_person.add_order_by("sthpw/task.status", direction="desc")
         statement = search_person.get_statement()
-        expected = '''SELECT "unittest"."person".* FROM "unittest"."person" LEFT OUTER JOIN "sthpw"."task" ON "person"."code" = "task"."search_code" WHERE "task"."search_type" = 'unittest/person?project=unittest' ORDER BY "task"."status" desc'''
+        expected = '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN "sthpw"."task" ON "person"."code" = "task"."search_code" WHERE "task"."search_type" = 'unittest/person?project=unittest' ORDER BY "task"."status" desc''' % (my.prefix, my.prefix)
         my.assertEquals(expected, statement)
         
         sobjects = search_person.get_sobjects()

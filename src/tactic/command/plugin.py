@@ -323,6 +323,8 @@ class PluginCreator(PluginBase):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
                 dumped_sobjects = my.handle_sobject(node)
+                if not dumped_sobjects:
+                    dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
             elif name == 'search_type':
                 my.handle_search_type(node)
@@ -567,7 +569,7 @@ class PluginCreator(PluginBase):
         sobjects = my.get_sobjects_by_node(node)
         if not sobjects:
             print "Skipping as no sobjects found for [%s]" %search_type
-            return
+            return []
 
 
 
@@ -585,7 +587,7 @@ class PluginCreator(PluginBase):
             #f = open(path, 'w')
             f = codecs.open(path, fmode, 'utf-8')
             f.close()
-            return
+            return []
 
         dumper = TableDataDumper()
         dumper.set_delimiter("#-- Start Entry --#", "#-- End Entry --#")
@@ -666,6 +668,8 @@ class PluginCreator(PluginBase):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
                 dumped_sobjects = my.handle_sobject(node)
+                if not dumped_sobjects:
+                    dumped_sobjects = []
                 sobjects.extend(dumped_sobjects)
             elif name == 'search_type':
                 my.handle_search_type(node)

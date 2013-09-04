@@ -101,8 +101,6 @@ class DatabaseTest(unittest.TestCase):
         # Right now, we assume local main database, but this is misleading.
         # Need to able to ensure that this does not change anywhere.
 
-        # another big problem is that SearchType was used to get the database
-        database = search_type_obj.
 
 
 

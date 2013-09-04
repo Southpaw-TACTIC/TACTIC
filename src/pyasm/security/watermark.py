@@ -12,6 +12,10 @@
 
 __all__ = ["Watermark"]
 
+
+import tacticenv
+from pyasm.common import Environment
+
 import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
 import types
 
@@ -20,7 +24,7 @@ class Watermark(object):
     # http://code.activestate.com/recipes/362879-watermark-with-pil/
 
     def reduce_opacity(my, im, opacity):
-        """Returns an image with reduced opacity."""
+        '''Returns an image with reduced opacity.'''
         assert opacity >= 0 and opacity <= 1
         if im.mode != 'RGBA':
             im = im.convert('RGBA')
@@ -32,7 +36,7 @@ class Watermark(object):
         return im
 
     def execute(my, im, mark, position, opacity=1):
-        """Adds a watermark to an image."""
+        '''Adds a watermark to an image.'''
         if opacity < 1:
             mark = my.reduce_opacity(mark, opacity)
         if im.mode != 'RGBA':
@@ -74,8 +78,11 @@ class Watermark(object):
         im = Image.new("RGBA", (width, 100))
         draw = ImageDraw.Draw(im)
 
+        install_dir = Environment.get_install_dir()
+        #/home/apache/tactic/src/pyasm/security/arial.ttf
+        font_path = "%s/src/pyasm/security/arial.ttf" % install_dir
         for i, text in enumerate(texts):
-            font = ImageFont.truetype("/tmp/arial.ttf", font_sizes[i])
+            font = ImageFont.truetype(font_path, font_sizes[i])
             interval = int(font_size)
             offset = int(font_size/2)
             draw.text((20, i*interval), text, font=font, fill='#000')
@@ -88,6 +95,43 @@ class Watermark(object):
 
 
 
+    def add_watermark(my, in_path, out_path, quality=0.5):
+
+        import Image
+        from pyasm.security.watermark import Watermark
+        from datetime import datetime
+
+        s_in = None
+        try:
+            #s_in = StringIO(filter.read())
+            s_in = open(in_path)
+            im_in = Image.open(s_in)
+            if im_in.size[0] <= 120 and im_in.size[1] <= 80:
+                return
+
+            # reduce quality by making small and scaling
+            if quality < 1:
+                sizex = im_in.size[0]
+                sizey = im_in.size[1]
+                max_res = sizex * quality
+                max_width = sizex
+                im_in = im_in.resize( (max_res, int(sizey/(sizex/float(max_res)))) )
+                im_in = im_in.resize( (max_width, int(sizey/(sizex/float(max_width)))) )
+
+            # add the watermark
+            #watermark = Watermark()
+            now = datetime.today().strftime("%Y/%m/%d, %H:%M")
+            texts = ['Do Not Copy', now]
+            sizes = [20, 10, 10, 20, 20]
+
+            mark = my.generate(texts, sizes)
+            im_out = my.execute(im_in, mark, 'tile', 0.5)
+            im_out.save(out_path)
+        finally:
+            if s_in:
+                s_in.close()
+
+ 
 
 
 def test():

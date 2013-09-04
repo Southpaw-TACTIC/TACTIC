@@ -19,6 +19,7 @@ class ZipUtil(object):
         if not zip_path:
             zip_path = "./%s.zip" % os.path.basename(dir)
 
+        print "zip_path: ", zip_path
         if os.path.exists(zip_path):
             os.unlink(zip_path)
 

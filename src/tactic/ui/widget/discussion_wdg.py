@@ -774,41 +774,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 key = ''
         else:
             key = "%s|%s" % (my.parent.get_search_type(), my.parent.get_code())
-        
+       
         notes = my.notes_dict.get(key)
         if not notes:
             notes = []
 
-        """
-        search = Search("sthpw/note")
-        search.add_order_by("process")
-        search.add_order_by("context")
-        search.add_order_by("timestamp desc")
-        if my.process:
-            # changed from context back to process
-            search.add_filter("process", my.process)
-            #search.add_filter("context", my.process)
-
-        #elif my.contexts:
-        if my.contexts:
-            search.add_filters("context", my.contexts)
-
-        search.add_parent_filter(my.parent)
-
-        notes2 = search.get_sobjects()
-
-        from pyasm.biz import Snapshot
-        snapshots = Snapshot.get_by_sobjects(notes)
-        my.attachments = {}
-        for snapshot in snapshots:
-            parent_key = snapshot.get_parent_search_key()
-            xx = my.attachments.get(parent_key)
-            if not xx:
-                xx = []
-                my.attachments[parent_key] = xx
-            xx.append(snapshot)
-
-        """
         # not very efficient, but filter notes afterwards
         security = Environment.get_security()
         project_code = Project.get_project_code()

@@ -709,7 +709,7 @@ class IngestUploadCmd(Command):
 
 
         # TODO: use this to generate a category
-        category_script_path = my.kwargs("category_script_path")
+        category_script_path = my.kwargs.get("category_script_path")
         # ie:
         # return blah/
         """
@@ -751,10 +751,9 @@ class IngestUploadCmd(Command):
             if not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
 
-
             # get the metadata from this image
             if SearchType.column_exists(search_type, "relative_dir"):
-                if category:
+                if category and category not in ['none', None]:
                     from pyasm.checkin import ExifMetadataParser
                     parser = ExifMetadataParser(path=file_path)
                     tags = parser.get_metadata()

@@ -438,6 +438,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
         # DEBREACATED
+        """
         # add a breadcrumb
         breadcrumb_wdg = DivWdg()
         # hide the breadcrumb
@@ -447,6 +448,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
         breadcrumb_wdg.add_style("text-align: left")
         breadcrumb_wdg.add_looks( "fnt_title_3" )
         main_body_inner.add(breadcrumb_wdg)
+        """
 
         main_body_panel = DivWdg()
         main_body_panel.set_id("main_body")

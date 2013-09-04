@@ -736,9 +736,6 @@ class Search(Base):
             my.null_filter = True
             return
 
-        #search_type_obj = my.get_search_type_obj()
-        #related_type_obj = sobjects[0].get_search_type_obj()
-
         sobject = sobjects[0]
 
         search_type = my.get_base_search_type()
@@ -765,12 +762,13 @@ class Search(Base):
             my.null_filter = True
             return
 
-        relationship = attrs.get('relationship')
 
+        relationship = attrs.get('relationship')
         my_is_from = attrs['from'] == search_type
 
         from_col = attrs.get('from_col')
         to_col = attrs.get('to_col')
+
         if relationship in ['id', 'code']:
             if my_is_from:
                 col_values  = [x.get_value(to_col) for x in sobjects]
@@ -782,17 +780,22 @@ class Search(Base):
 
             if my_is_from:
                 if not to_col:
-                    if relationship == 'search_type':
-                        full_search_type = my.get_search_type()
-                        full_related_type = sobjects[0].get_search_type()
-                        relationship = schema.resolve_search_type_relationship(attrs, full_search_type, full_related_type)
+                    #if relationship == 'search_type':
+                    #    full_search_type = my.get_search_type()
+                    #    full_related_type = sobjects[0].get_search_type()
+                    #    relationship = schema.resolve_search_type_relationship(attrs, full_search_type, full_related_type)
 
-                    if relationship == 'search_id':
-                        to_col = sobject.get_id_col()
-                        from_col = 'search_id'
-                    else:
-                        to_col = 'code'
-                        from_col = 'search_code'
+                    #if relationship == 'search_id':
+                    #    to_col = sobject.get_id_col()
+                    #    from_col = 'search_id'
+                    #else:
+                    #    to_col = 'code'
+                    #    from_col = 'search_code'
+
+                    attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), sobjects[0].get_search_type())
+                    to_col = attrs.get("to_col")
+
+                    from_col = attrs.get("from_col")
 
 
                 # quickly go through the sobjects to determine if the
@@ -807,7 +810,6 @@ class Search(Base):
                         multi_stypes = True
                         break
 
-
                 if not multi_stypes:
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
@@ -815,8 +817,6 @@ class Search(Base):
                     if isinstance(col_values[0], int):
                         my.add_filters(from_col, col_values, op=op )
                     else:
-                        # FIXME: this is HARD CODED for MongoDb to use
-                        # search_code instead of search_id
                         my.add_filters("search_code", col_values, op=op)
                 else:
                     if op != 'in':
@@ -833,6 +833,7 @@ class Search(Base):
                         #search.add_op("and")
                         filters.append("(search_type = '%s' and %s = '%s')" % (search_type, from_col, search_code))
                     my.add_where("( %s )" % " or ".join(filters))
+
 
             else:
                 # assume default search_type/search_id schema like task, snapshot
@@ -1609,6 +1610,7 @@ class Search(Base):
             # get the select statement and do the query
             if not statement:
                 statement = my.select.get_statement()
+            #print "statement: ", statement
             results = sql.do_query(statement)
 
             # this gets the actual order of columns in this SQL
@@ -3171,8 +3173,16 @@ class SObject(object):
             my.get_base_search_type(),
             sobject.get_base_search_type(),
         )
-        relationship = attrs.get("relationship")
 
+        attrs = schema.resolve_relationship_attrs(
+            attrs,
+            my.get_search_type(),
+            sobject.get_search_type()
+        )
+
+        # TODO: While this logic below works, it should explicitly use from_col
+        # and to_col
+        relationship = attrs.get("relationship")
         if relationship in ['search_type', 'search_code', 'search_id']:
 
             my.set_value("search_type", sobject.get_search_type() )
@@ -3182,7 +3192,9 @@ class SObject(object):
             if SearchType.column_exists(my.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
                 if isinstance(sobj_id, int):
-                    my.set_value("search_id", sobject.get_id() )
+                    my.set_value("search_id", sobj_id )
+                else:
+                    my.set_value("search_code", sobj_id )
 
 
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
@@ -3212,35 +3224,6 @@ class SObject(object):
             relationship = schema.get_relationship(full_search_type, full_search_type2)
             #relationship = schema.get_relationship(search_type, search_type2)
 
-
-        # DEPRECATED
-        """
-        if relationship == "instance":
-            # need the search_type instance
-            instance_type = "prod/shot_instance"
-
-            asset_code = sobject.get_code()
-            shot_code = my.get_code()
-
-            # check to see if the instance exists
-            many = True
-            instance = None
-            if not many:
-                search = Search(instance_type)
-                search.add_filter("asset_code", asset_code)
-                search.add_filter("shot_code", shot_code)
-                search.add_filter("name", asset_code)
-                instance = search.get_sobject()
-
-            # DEPRECATED
-            if not instance: 
-                # create a new instance
-                instance = SearchType.create(instance_type)
-                instance.set_value("asset_code", asset_code)
-                instance.set_value("shot_code", shot_code)
-                instance.set_value("name", asset_code)
-                instance.commit()
-        """
 
 
         if relationship in ["search_type", "search_code", "search_id"]:
@@ -4568,6 +4551,7 @@ class SObject(object):
 
             attrs = schema.get_relationship_attrs("*", my.get_base_search_type(), path=None)
 
+
             prefix = attrs.get("prefix")
             if prefix:
                 prefix = "%s_" % prefix
@@ -4579,9 +4563,11 @@ class SObject(object):
             if not search_type:
                 return None
 
+
+            attrs = schema.resolve_relationship_attrs(attrs, my.get_search_type(), search_type) 
             relationship = attrs.get('relationship')
-            if relationship == "search_type":
-                relationship = schema.resolve_search_type_relationship(attrs, my.get_base_search_type(), search_type)
+            #if relationship == "search_type":
+            #    relationship = schema.resolve_search_type_relationship(attrs, my.get_base_search_type(), search_type)
 
             if relationship == "search_code":
                 search_type = my.get_value("%ssearch_type" % prefix)
@@ -6459,6 +6445,7 @@ class SearchKey(object):
             else:
                 id = SearchKey.extract_id(sk)
                 try:
+                    # if possible, set as an integer
                     id = int(id)
                 except:
                     pass

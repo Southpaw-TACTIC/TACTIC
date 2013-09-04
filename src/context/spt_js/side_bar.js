@@ -73,11 +73,6 @@ spt.side_bar._display_link_action = function(target_id, title, options, values, 
     var busy_msg = 'View is now loading in a popup window ...';
 
     if( ! spt.is_TRUE(is_popup) ) {
-        /*
-        // Replaced by App Busy indicator (keeping here for reference)
-        $("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
-                                    'Loading "' + title + '" ...</div>';
-        */
         busy_msg = '"' + title + '" view is now loading ...';
     }
 
@@ -138,7 +133,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
 
         // also set the breadcrumb
         //$("breadcrumb").innerHTML = path
-        $("breadcrumb").innerHTML = title
+        //$("breadcrumb").innerHTML = title
 
         // set the url hash
         if (typeof(options.element_name) != "undefined") {
@@ -201,8 +196,8 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
         else {
             var target_element = $(this.target_id);
 
-            $("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
-                                        'Loading "' + this.title + '" ...</div>';
+            //$("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
+            //                            'Loading "' + this.title + '" ...</div>';
 
             spt.panel.load(target_element, widget_class, this.options, this.values)
 
@@ -218,7 +213,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
 
             // also set the breadcrumb
             //$("breadcrumb").innerHTML = path
-            $("breadcrumb").innerHTML = this.title
+            //$("breadcrumb").innerHTML = this.title
 
             // set the url hash
             if (typeof(this.options.element_name) != "undefined") {

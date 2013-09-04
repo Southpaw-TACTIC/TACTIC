@@ -530,6 +530,7 @@ class Schema(SObject):
         assert relationship == 'search_type'
 
         if my_is_from:
+
             has_code = SearchType.column_exists(search_type2, "code")
             if has_code:
                 relationship = 'search_code'
@@ -543,6 +544,69 @@ class Schema(SObject):
                 relationship = 'search_id'
 
         return relationship
+
+
+
+    def resolve_relationship_attrs(my, attrs, search_type, search_type2):
+
+        search_type_obj = SearchType.get(search_type)
+        search_type_obj2 = SearchType.get(search_type2)
+
+        my_is_from = attrs['from'] == search_type_obj.get_base_key()
+
+        db_resource = SearchType.get_db_resource_by_search_type(search_type)
+        db_resource2 = SearchType.get_db_resource_by_search_type(search_type2)
+        db_impl = db_resource.get_database_impl()
+        db_impl2 = db_resource2.get_database_impl()
+
+        # <connect from="sthpw/note" to="*"
+        #    type='hierarchy' relationship='search_type'/>
+
+        prefix = attrs.get("prefix")
+        if prefix:
+            prefix = "%s_" % prefix
+        else:
+            prefix = ""
+
+
+        if my_is_from:
+
+            if db_impl2.get_database_type() == "MongoDb":
+                attrs['from_col'] = '%ssearch_code' % prefix
+                attrs['to_col'] = db_impl2.get_id_col(db_resource2,search_type2)
+                attrs['relationship'] = 'search_code'
+            else:
+                has_code = SearchType.column_exists(search_type2, "code")
+                if has_code:
+                    attrs['from_col'] = '%ssearch_code' % prefix
+                    attrs['to_col'] = 'code'
+                    attrs['relationship'] = 'search_code'
+                else:
+                    attrs['from_col'] = '%ssearch_id' % prefix
+                    attrs['to_col'] = db_impl2.get_id_col(db_resource2,search_type2)
+                    attrs['relationship'] = 'search_id'
+
+        else:
+
+
+            if db_impl.get_database_type() == "MongoDb":
+                attrs['to_col'] = '%ssearch_code' % prefix
+                attrs['from_col'] = db_impl.get_id_col(db_resource,search_type)
+                attrs['relationship'] = 'search_code'
+            else:
+                has_code = SearchType.column_exists(search_type, "code")
+                if has_code:
+                    attrs['from_col'] = 'code'
+                    attrs['to_col'] = '%ssearch_code' % prefix
+                    attrs['relationship'] = 'search_code'
+                else:
+                    attrs['from_col'] = db_impl.get_id_col(db_resource,search_type)
+                    attrs['to_col'] = '%ssearch_id' % prefix
+                    attrs['relationship'] = 'search_id'
+
+        return attrs
+
+
 
 
 

@@ -745,6 +745,9 @@ class FileUndo:
 
   
         transaction = Transaction.get()
+        if not transaction:
+            return
+
         file_node = transaction.create_log_node("file")
         Xml.set_attribute(file_node,"type",type)
         Xml.set_attribute(file_node,"src",src)

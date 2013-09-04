@@ -22,7 +22,7 @@ import bson
 try:
     import pymongo
     pymongo.OperationalError = Exception
-    pymongo.pgdb.Error = Exception
+    pymongo.Error = Exception
 except ImportError, e:
     pass
 
@@ -72,6 +72,9 @@ class MongoDbConn(object):
 
 
 class MongoDbImpl(DatabaseImpl):
+
+    def get_database_type(my):
+        return "MongoDb"
 
     def get_id_col(my, db_resource, search_type):
         return "_id"

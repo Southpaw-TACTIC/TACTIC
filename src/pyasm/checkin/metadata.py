@@ -217,10 +217,10 @@ class PILMetadataParser:
         try:
             import Image
             im = Image.open(path)
-        except:
-            pass
-
-        return my.get_data(im)
+            return my.get_data(im)
+        except Exception, e:
+            print "WARNING: ", e
+            return {}
 
  
     def get_data(my, im):

@@ -400,7 +400,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
     def preprocess(my):
-        print "preprocess"
         my._get_display_options()
 
 
