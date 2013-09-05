@@ -491,8 +491,10 @@ class Sql(Base):
                 my.conn = MySQLdb.connect(  db=my.database_name,
                                             host=my.host,
                                             user=my.user,
+                                            charset='utf8',
+                                            use_unicode=True,
                                             passwd=my.password )
-                my.do_query("SET sql_mode='ANSI_QUOTES'");
+                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES utf8mb4");
 
             elif my.vendor == "Oracle":
                 # if we connect as a single user (like most databases, then
