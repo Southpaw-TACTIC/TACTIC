@@ -895,7 +895,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 'cbjs_action': '''
 
                 var input = bvr.firing_data;
-                
+                input.firing_element = bvr.firing_element; 
                 // 2nd arg is the args for this script
                 spt.CustomProject.run_script_by_path(bvr.script_path, input);
                 '''
