@@ -2832,19 +2832,27 @@ class SimpleElementDefinitionCbk(Command):
                 if config:
                     view_mode_xml = config.get_xml()
                     node = config.get_element_node(element_name)
-                    if node is not None:
-                        element_xml.set_attribute(node, "edit", "false")
-                        config.set_value('config', view_mode_xml.to_string())
-                        config.commit()
+                    # in case the element in the defintion has been removed
+                    if node is None:
+                        node = config.create_element(element_name)
+
+                    element_xml.set_attribute(node, "edit", "false")
+                    config.set_value('config', view_mode_xml.to_string())
+                    config.commit()
+
                 return
             else:
                 if config:
                     view_mode_xml = config.get_xml()
                     node = config.get_element_node(element_name)
-                    if node is not None:
-                        element_xml.set_attribute(node, "edit", "true")
-                        config.set_value('config', view_mode_xml.to_string())
-                        config.commit()
+
+                    # in case the element in the defintion has been removed
+                    if node is None:
+                        node = config.create_element(element_name)
+                    element_xml.set_attribute(node, "edit", "true")
+                    config.set_value('config', view_mode_xml.to_string())
+                    config.commit()
+            
                 
             options = my.get_options("edit")
             my.process_edit_view(search_type, element_name)

@@ -169,6 +169,24 @@ class WidgetDbConfig(SObject):
         node = my.xml.get_node(xpath)
         return node
 
+    def create_element(my, elem_name):
+        '''create a new element or replace the existing one'''
+        view_node = my.xml.get_node("config/%s" % my.view)
+        assert view_node != None
+
+        # find out if the element already exists
+        old_element_node = my.xml.get_node("config/%s/element[@name='%s']" % (my.view, elem_name))
+
+        # create the element
+        element_node = my.xml.create_element("element")
+        my.xml.set_attribute(element_node, "name", elem_name)
+        if old_element_node is not None:
+            my.xml.replace_child(view_node, old_element_node, element_node)
+        else:
+            my.xml.append_child(view_node, element_node)
+        return element_node
+    
+
     def import_element_node(my, element_name, deep=True):
         node = my.get_element_node(element_name)
         imported_node = None
