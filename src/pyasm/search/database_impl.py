@@ -647,7 +647,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
     def get_varchar(my, length=256, not_null=False):
-        assert length
+        if not length:
+            length = 256
+
         if length == -1:
             length = 'max'
         parts = []
@@ -1310,7 +1312,9 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
 
     def get_varchar(my, length=256, not_null=False):
-        assert length
+        if not length:
+            length = 256
+
         if length in [-1, 'max']:
             return my.get_text(not_null=not_null)
         parts = []
@@ -1928,7 +1932,9 @@ class OracleImpl(PostgresImpl):
 
 
     def get_varchar(my, length=256, not_null=False):
-        assert length
+        if not length:
+            length = 256
+
         if length in [-1, 'max']:
             return my.get_text(not_null=not_null)
         parts = []
@@ -2369,7 +2375,9 @@ class SqliteImpl(PostgresImpl):
 
 
     def get_varchar(my, length=256, not_null=False):
-        assert length
+        if not length:
+            length = 256
+
         if length in [-1, 'max']:
             return my.get_text(not_null=not_null)
         parts = []
@@ -2876,6 +2884,22 @@ class MySQLImpl(PostgresImpl):
        if not_null:
            parts.append("NOT NULL")
        return " ".join(parts)
+
+
+
+    def get_varchar(my, length=191, not_null=False):
+        if not length:
+            length = 191
+
+        if length in [-1, 'max']:
+            return my.get_text(not_null=not_null)
+        parts = []
+        parts.append("varchar(%s)" % length)
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
 
 
     def get_timestamp(my, default=None, not_null=False, timezone=False):
