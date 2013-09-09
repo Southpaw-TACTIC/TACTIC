@@ -529,7 +529,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     if (!kwargs)  kwargs = {};
     
     if (kwargs.do_search == false){
-        spt.text_input.run_client_trigger(bvr, kwargs.event_name, display_value, kwargs.hidden_value);
+        bvr2 = {};
+        bvr2.src_el = src_el;
+        spt.text_input.run_client_trigger(bvr2, kwargs.event_name, display_value, kwargs.hidden_value);
         return;
     }
 
