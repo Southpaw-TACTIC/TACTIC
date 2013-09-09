@@ -13,12 +13,13 @@
 
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg']
 
-from pyasm.common import Date, Common, Environment, FormatValue
+from pyasm.common import Date, Common, Environment, FormatValue, TacticException
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
+from pyasm.command import Command
 
 import random, re, string
 
@@ -167,7 +168,7 @@ class TextInputWdg(BaseInputWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 230
+            my.width = 200
         else:
             my.width = my.width.replace("px", "")
             my.width = int(my.width)
@@ -349,7 +350,11 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-       
+        default = my.kwargs.get("value")
+        if not default:
+            default = my.kwargs.get("default")
+        if default:
+            my.text.set_value(default)
         
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
@@ -498,6 +503,7 @@ class LookAheadTextInputWdg(TextInputWdg):
         if not my.search_type:
             my.search_type = 'sthpw/sobject_list'
         column = my.kwargs.get("column")
+        relevant = my.kwargs.get("relevant")
         if not column:
             column = 'keywords'
 
@@ -506,6 +512,10 @@ class LookAheadTextInputWdg(TextInputWdg):
         if not validate:
             my.top.add_class('spt_no_validate')
         
+        do_search = my.kwargs.get("do_search")
+        if not do_search:
+            do_search = 'true'
+
         my.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -514,17 +524,36 @@ spt.text_input = {}
 spt.text_input.is_on = false;
 spt.text_input.index = -1;
 spt.text_input.last_index = 0;
-
+spt.text_input.run_client_trigger = function(bvr, event_name, display, value) {
+    try {
+        var e_name = event_name;
+        if (e_name) {
+            bvr.options = {'value': value, 'display': display};
+            spt.named_events.fire_event(e_name, bvr);
+        }
+    }
+    catch(e) {
+        spt.alert("Error firing event: " + e_name);
+    }
+}
+    
 // async validate when value_column is defined
-spt.text_input.async_validate = function(src_el, search_type, column, value, value_column, kwargs) {
-    if (!value) 
+spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, kwargs) {
+    if (!display_value) 
         return;
     if (!kwargs)  kwargs = {};
-       
+    
+    if (kwargs.do_search == false){
+        bvr2 = {};
+        bvr2.src_el = src_el;
+        spt.text_input.run_client_trigger(bvr2, kwargs.event_name, display_value, kwargs.hidden_value);
+        return;
+    }
+
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
-     
+       
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
@@ -538,36 +567,27 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         }
 
        // run client trigger
-       try {
-            var e_name = kwargs.event_name;
-            if (e_name) {
-                bvr.options = {'value': data, 'display': src_el.value};
-                spt.named_events.fire_event(e_name, bvr);
-            }
-        }
-        catch(e) {
-            spt.alert("Error firing event: " + e_name);
-        }
+       spt.text_input.run_client_trigger(bvr, kwargs.event_name, src_el.value, data);
 
     }
     // can support having pure ' or " in the value, not mixed
-    if (value.test(/"/) && value.test(/'/)) {
+    if (display_value.test(/"/) && display_value.test(/'/)) {
         spt.alert("Validation of a mix of ' and \\" is not supported");
         return;
     }
 
-    if (value.test(/"/))
-        value_expr = "'" + value + "'";
+    if (display_value.test(/"/))
+        value_expr = "'" + display_value + "'";
     else
-        value_expr = '"' + value + '"';
+        value_expr = '"' + display_value + '"';
         
     var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
-   
     var kw = {
         single: true,
         cbjs_action: cbk
     };
     
+    //TODO: support other kinds of eval for validation
     var server = TacticServerStub.get();
     try {
         server.async_eval(expr, kw);
@@ -588,11 +608,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             'value_column': value_column,
             'event_name': event_name,
             'validate': str(validate),
+            'do_search': do_search,
             'cbjs_action': '''
           
             // put a delay in here so that a click in the results
             // has time to register
             var validate = bvr.validate == 'True';
+            var do_search = bvr.do_search == 'true';
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
@@ -603,12 +625,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
                 // if there is value_column and something in the input, it tries to validate 
                 if (bvr.value_column) {
+                    var hidden_el = top.getElement(".spt_text_value");
                     if (bvr.src_el.value) {
-                        var value = bvr.src_el.value;
-                        var kwargs = {'validate': validate, 'event_name': bvr.event_name};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, value, bvr.value_column, kwargs);
+                        var display_value = bvr.src_el.value;
+                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
+                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, kwargs);
                     } else {
-                        var hidden_el = top.getElement(".spt_text_value");
                         hidden_el.value ='';
                     }
                         
@@ -671,17 +693,20 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
 
         filters = my.kwargs.get("filters")
-      
+        script_path = my.kwargs.get("script_path")
         bgcolor = my.text.get_color("background3")
        
 
         my.text.add_behavior( {
             'type': 'keyup',
             'custom': custom_cbk,
+            'do_search': do_search,
             'search_type': my.search_type,
             'filter_search_type': filter_search_type,
+            'script_path': script_path,
             'filters': filters,
             'column': column,
+            'relevant': relevant,
             'value_column': value_column,
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
@@ -796,6 +821,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                     filters: bvr.filters,
                     column: bvr.column,
                     value_column: bvr.value_column,
+                    relevant: bvr.relevant,
+                    script_path: bvr.script_path,
+                    do_search: bvr.do_search,
                     value: value
                 },
                 cbjs_action: cbk,
@@ -815,8 +843,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 20px")
-        results_div.add_style("left: 0px")
+        results_div.add_style("top: 25px")
+        results_div.add_style("left: 10px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")
         results_div.add_style("padding: 5px 10px 10px 5px")
@@ -825,7 +853,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
         results_div.add_style("font-size: 16px")
         results_div.add_style("font-weight: bold")
         results_div.add_border()
-        results_div.set_box_shadow()
+        results_div.set_box_shadow('1px 2px 2px 2px')
         results_div.add_class("spt_input_text_results")
 
         bgcolor = results_div.get_color("background3")
@@ -847,7 +875,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
 
         
         # this is when the user clicks on a result item
-        # it doesn't do a search right away, it fires the lookahead|<sType> event
+        # it doesn't do a search right away, it fires the lookahead_click event
         results_div.add_relay_behavior( {
             'type': "mouseup",
             'bvr_match_class': 'spt_input_text_result',
@@ -869,9 +897,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
             var hidden_el = top.getElement(".spt_text_value");
             hidden_el.value = value
 
-          
-
-          
 
             '''
         } )
@@ -888,7 +913,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, value, val
                 'cbjs_action': '''
 
                 var input = bvr.firing_data;
-                
+                input.firing_element = bvr.firing_element; 
                 // 2nd arg is the args for this script
                 spt.CustomProject.run_script_by_path(bvr.script_path, input);
                 '''
@@ -982,17 +1007,88 @@ class TextInputResultsWdg(BaseRefreshWdg):
         else:
             return isinstance(value, int) or isinstance(value, long) or isinstance(value, float) 
 
-   
+    def init(my):
+        my.do_search = True
+        if my.kwargs.get('do_search') == 'false':
+            my.do_search = False
 
+    def draw_result(my, top, value):
+        max = 35
+        # assuming it's a list
+        results = my.kwargs.get('results')
+        if not results:
+            script_path = my.kwargs.get('script_path')
+            if not script_path:
+                return
+            try:
+                from tactic.command import PythonCmd
+                kwargs = {'value' : value}
+                cmd = PythonCmd(script_path=script_path, **kwargs)
+                Command.execute_cmd(cmd)
+        
+            except Exception, e:
+                print e
+                raise
+
+            else:
+
+                info = cmd.get_info()
+                results = info.get('spt_ret_val')
+                
+                # expect it to return a tuple of 2 lists or a single list
+                if isinstance(results, tuple):
+                    display_results = results[0]
+                    value_results = results[1]
+                elif isinstance(results, list):
+                    display_results = value_results = results
+            if not display_results:
+                return
+
+            if len(display_results) != len(value_results):
+                raise TacticException("The length of value list and display list needs to match in [%s]" %script_path)
+
+        for idx, keywords in enumerate(display_results):
+            div = DivWdg()
+            top.add(div)
+            div.add_style("padding: 3px")
+            
+            if isinstance(keywords, str):
+                keywords = unicode(keywords, errors='ignore')
+
+            if isinstance(keywords, basestring) and  len(keywords) > max:
+                display = "%s..." % keywords[:max-3]
+            else:
+                display = keywords
+
+            div.add(display)
+            div.add_class("spt_input_text_result")
+            value = value_results[idx]
+            div.add_attr("spt_value", value)
+            # turn off cache to prevent ascii error
+            keywords = HtmlElement.get_json_string(keywords, use_cache=False)
+            div.add_attr("spt_display", keywords)
+
+
+        
     def get_display(my):
         top = my.top
         value = my.kwargs.get("value")
+        
+        if not my.do_search:
+            my.draw_result(top, value)
+            return top
+
+        # can only support 1 right now
+        relevant = my.kwargs.get("relevant") == 'true'
+        connected_col = None
+        rel_values = []
+
         if value.endswith(" "):
             last_word_complete = True
         else:
             last_word_complete = False
 
-
+        # TODO: rename this as top_sType
         search_type = my.kwargs.get("search_type")
         filter_search_type = my.kwargs.get("filter_search_type")
         filters = my.kwargs.get("filters")
@@ -1055,9 +1151,19 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     col_list = [col]
                     search_dict[search_type] = {'col_list': col_list}
 
+      
+
         result_list = []
+
+        top_sType = my.kwargs.get("search_type")
+        top_sType = Project.extract_base_search_type(top_sType)
+        schema = Schema.get()
+
         for search_type, info_dict in search_dict.items():
             search = Search(search_type)
+
+            # relevant is ON, then only search for stuff that is relevant in the current table
+           
 
             #search.add_text_search_filter(column, values)
             if search_type == 'sthpw/sobject_list':
@@ -1071,19 +1177,42 @@ class TextInputResultsWdg(BaseRefreshWdg):
             search.add_op("begin")
 
             search_type_obj = SearchType.get(search_type)
-            column_info = SearchType.get_column_info(search_type)
+            #column_info = SearchType.get_column_info(search_type)
             col_list = info_dict.get('col_list')
-            for col in col_list:
+
+            if relevant:
+                plain_search_type = Project.extract_base_search_type(search_type)
+                from_col = None
+                to_col = None
+                try:
+                    #TODO: add path kwarg derived from expression here
+                    from_col, to_col = schema.get_foreign_keys(plain_search_type, top_sType)
                 
+                except TacticException:
+                    pass
+                if from_col:
+                    # While this can support multi sTypes, should use it for 1 sType for similipicity for now
+                    rel_search = Search(top_sType)
+                    rel_search.add_column(from_col)
+                    rel_search.add_group_by(from_col)
+                    rel_sobjs = rel_search.get_sobjects()
+                    rel_values = SObject.get_values(rel_sobjs, from_col)
+
+                connected_col = to_col
+            
+            for col in col_list:
                 #info = column_info.get(column)
                 #if info and info.get("data_type") == 'integer':
                 #    search.add_filter(column,values[0], op='=')
                 #else:
                 #    search.add_startswith_keyword_filter(column, values)
                 search.add_startswith_keyword_filter(col, values)
+               
             
             search.add_op("or")
-
+            if connected_col:
+                search.add_filters(connected_col, rel_values, op='in')
+            
             search.add_limit(10)
             results = search.get_sobjects()
             info_dict['results'] = results
@@ -1151,23 +1280,22 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     if my.is_number(value): 
                         value = str(value)
                     keywords.append(value)
-               
-                
+
+                keywords = " ".join(keywords)
+                keywords = keywords.lower()
+
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
-                # keywords can be a long space delimited string in global mode
-                # join and then split after
-                # use comprehension to handle the lower() function
-                keywords = " ".join(keywords)
+
 
                 # show the keyword that matched first
                 keywords = keywords.split(" ")
-                keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
-                # if x in the comprehension above already does None filtering
-                #keywords = filter(None, keywords)
+                keywords = filter(None, keywords)
+              
+
                 matches = []
                 for i, value in enumerate(values):
                     for keyword in keywords:
@@ -1244,6 +1372,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
         return top
+
 
 
 
