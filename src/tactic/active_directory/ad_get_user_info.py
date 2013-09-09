@@ -74,7 +74,7 @@ mail: remko@southpawtech.com
         except AttributeError:
             #print "Attribute [%s] does not exist" % key
 	    pass
-    if hasattr(user.memberOf,'generator'):
+    if hasattr(user,'memberOf'):
     	for memberOf in user.memberOf:
 	    memberOf = str(memberOf).replace("LDAP://", "")
 	    data.append("memberOf: %s" % (memberOf))
