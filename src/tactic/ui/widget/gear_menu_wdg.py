@@ -11,8 +11,8 @@
 #
 __all__ = ["DgTableGearMenuWdg","PageHeaderGearMenuWdg"]
 
-from pyasm.common import Environment
-from pyasm.search import SearchType
+from pyasm.common import Environment, Common
+from pyasm.search import SearchType, Search
 from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -29,6 +29,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         my.view_save_dialog_id = my.view_save_dialog.get_id()
 
         my.layout = my.kwargs.get("layout")
+
+        search = Search("config/widget_config")
+        search.add_filter("widget_type", "layout_tool")
+        my.custom_tools = search.get_sobjects()
 
     def get_save_dialog(my):
         return my.view_save_dialog
@@ -129,8 +133,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             my.get_checkin_menu(),
         ]
 
+        if my.custom_tools:
+            menus.append(my.get_custom_menu())
+
         # Something to do with custom menus
-        menu_idx_map = { 'Edit': 1, 'File': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8 }
+        menu_idx_map = { 'Edit': 1, 'File': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8, 'Custom': 9 }
 
 
         # add custom gear menu items if specified in configuration ...
@@ -195,6 +202,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
             if is_admin:
                 opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
+
+
+        if my.custom_tools:
+            opt_spec_list.append( { "type": "submenu", "label": "Custom Tools", "submenu_tag_suffix": "CUSTOM" } )
+
+
 
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
@@ -666,6 +679,48 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         ]
 
         return {'menu_tag_suffix': 'CHECKIN', 'width': 210, 'opt_spec_list': menu_items}
+
+
+
+    def get_custom_menu(my):
+
+        menu_items = []
+
+        for tool in my.custom_tools:
+            view = tool.get_value("view")
+            title = tool.get_value("title")
+            if not title:
+                title = Common.get_display_title(view)
+
+            menu_item = {
+                "type": "action", "label": title,
+                "bvr_cb": {
+                    'title': title,
+                    'view': view,
+                    'cbjs_action': '''
+                    var activator = spt.smenu.get_activator(bvr);
+                    var layout = activator.getParent(".spt_layout");
+                    var selected = spt.table.get_selected_search_keys();
+
+                    var kwargs = {
+                        view: bvr.view,
+                        search_keys: selected
+                    }
+
+                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                    try {
+                        spt.panel.load_popup(bvr.title, class_name, kwargs);
+                    } catch(e) {
+                        spt.alert(spt.exception.handler(e));
+                    }
+                    '''
+                }
+            }
+            menu_items.append(menu_item)
+
+
+        return {'menu_tag_suffix': 'CUSTOM', 'width': 210, 'opt_spec_list': menu_items}
+
 
 
 

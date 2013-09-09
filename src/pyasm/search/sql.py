@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "CreateTable", "DropTable", "AlterTable"]
+__all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable"]
 
 
 import os, types, thread, sys
@@ -3054,6 +3054,75 @@ class Update(object):
 
 
 
+class Delete(object):
+
+    def __init__(my):
+        my.impl = None
+        my.database = None
+        my.table = ""
+
+        my.raw_filters = []
+
+
+    def set_database(my, database):
+
+        assert database == "sthpw" or not isinstance(database, basestring)
+
+        if isinstance(database, basestring):
+            my.sql = DbContainer.get(database)
+            my.db_resource = DbResource.get_default(database)
+        #elif isinstance(database, DbResource):
+        elif DbResource.is_instance(database):
+            my.sql = DbContainer.get(database)
+            my.db_resource = database
+            # set to database string internally
+            database = database.get_database()
+        elif isinstance(database, Sql):
+            my.sql = database
+            database = my.sql.get_database_name()
+            my.db_resource = my.sql.get_db_resource()
+        else:
+            print "WARNING: it should be Sql instance, but it is not detected as such"
+            my.sql = database
+            database = my.sql.get_database_name()
+            my.db_resource = DbResource.get_default(database)
+            
+
+        my.database = database
+        my.impl = my.sql.get_database_impl()
+
+        #sql.do_update('DELETE from "ticket" where "code" is NULL;')
+
+
+    def set_table(my, table):
+        my.table = table
+
+
+    def add_filter(my, name, value, op='='):
+        my.raw_filters.append( {
+            'name': name,
+            'value': value,
+            'op': op
+        })
+
+
+    def get_statement(my):
+
+        parts = []
+
+        parts.append("DELETE FROM")
+        parts.append('''"%s"''' % my.table)
+        parts.append("WHERE")
+
+        for filter in my.raw_filters:
+            expr = '"%s" %s \'%s\'' % (filter.get("name"), filter.get("op"), filter.get("value"))
+            parts.append(expr)
+            parts.append("AND")
+
+        statement = " ".join(parts)
+        return statement
+
+
 
 
 class CreateTable(Base):
@@ -3102,7 +3171,7 @@ class CreateTable(Base):
         return my.db_resource.get_database()
 
 
-    def add(my, name, type, length=256, not_null=False, primary_key=False):
+    def add(my, name, type, length=None, not_null=False, primary_key=False):
         if type == "text":
             expr = my.impl.get_text(not_null=not_null)
         elif type == "char":

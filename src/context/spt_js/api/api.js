@@ -12,7 +12,6 @@
 
 
 // initialize api namspace.
-// FIXME: This should not be here
 //spt.api = {}
 
 

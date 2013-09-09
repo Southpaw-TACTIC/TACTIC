@@ -85,6 +85,17 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
+    def create_database(my, database):
+        '''create a database
+        In MongoDb, databases are dynamically created so there is no need
+        for a function to create a database to do anything
+        '''
+        #from sql import DbContainer, DbResource
+        #db_resource = DbResource.get_default("")
+        #sql = DbContainer.get(db_resource)
+        #conn = sql.get_connection()
+        pass
+
 
     def get_columns(cls, db_resource, table):
         from pyasm.search import DbResource, DbContainer
@@ -212,10 +223,12 @@ class MongoDbImpl(DatabaseImpl):
                 elif op in ["in", "$in"]:
                     mongo_op = "$in"
 
-                elif op in ["nin", "$nin"]:
+                elif op in ["not in", "nin", "$nin"]:
                     mongo_op = "$nin"
                 elif op in ["all", "$all"]:
                     mongo_op = "$all"
+                elif op in ["==", "=", "is"]:
+                    mongo_op = ""
 
                 elif not op:
                     pass
@@ -356,7 +369,9 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
+    def execute_delete(my, sql, delete):
 
+        pass
 
 
 

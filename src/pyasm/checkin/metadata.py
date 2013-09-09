@@ -206,10 +206,50 @@ class CheckinMetadataHandler():
 #from PIL import Image
 #from PIL.ExifTags import TAGS
 
-class PILMetadataParser:
+class BaseMetadataParser(object):
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+    def get_media_type(my):
+        return "image"
+
+    def get_metadata(my):
+        return {}
+
+    def get_tactic_mapping(my):
+        return {}
+
+
+    def get_initial_data(my):
+        return {
+        }
+
+    def get_tactic_metadata(my):
+
+        tactic_data = my.get_initial_data()
+
+        metadata = my.get_metadata()
+
+        mapping = my.get_tactic_mapping()
+        for name, name2 in mapping.items():
+            tactic_data[name] = metadata.get(name2)
+
+        return tactic_data
+
+
+
+
+
+class PILMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'image',
+            'parser': 'PIL'
+        }
 
     def get_metadata(my):
         path = my.kwargs.get("path")
@@ -217,13 +257,13 @@ class PILMetadataParser:
         try:
             import Image
             im = Image.open(path)
-            return my.get_data(im)
+            return my._get_data(im)
         except Exception, e:
             print "WARNING: ", e
             return {}
 
  
-    def get_data(my, im):
+    def _get_data(my, im):
         #info = im._getexif()
         ret = {}
         #if info:
@@ -237,16 +277,32 @@ class PILMetadataParser:
         ret['format'] = im.format
         ret['format_description'] = im.format_description
 
-
         return ret
 
 
+    def get_tactic_mapping(my):
+        return {
+            'width': 'width',
+            'height': 'height',
+            'format': 'format',
+            'format_description': 'format_description'
+        }
 
 
-class ExifMetadataParser:
+
+
+class ExifMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'image',
+            'parser': 'Exif'
+        }
+
 
 
     def get_metadata(my):
@@ -267,6 +323,12 @@ class ImageMagickMetadataParser:
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'image',
+            'parser': 'ImageMagick'
+        }
 
     def get_metadata(my):
         path = my.kwargs.get("path")
@@ -319,9 +381,15 @@ class ImageMagickMetadataParser:
 
 
 
-class FFProbeMetadataParser:
+class FFProbeMetadataParser(BaseMetadataParser):
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+
+    def get_initial_data(my):
+        return {
+            'media_type': 'video',
+            'parser': 'FFProbe'
+        }
 
     def get_metadata(my):
         path = my.kwargs.get("path")
@@ -379,7 +447,11 @@ class FFProbeMetadataParser:
         return flat_metadata
 
 
-
+    def get_tactic_mapping(my):
+        return {
+            'width': 'video:width',
+            'height': 'video:height'
+        }
 
 
 

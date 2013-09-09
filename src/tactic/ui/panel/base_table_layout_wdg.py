@@ -1910,10 +1910,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         } )
 
 
-        # TEST
-        # TEST
-        # TEST
-        # This assumes that the way to add an item is to use edit widget.
+        # NOTE: This assumes that the way to add an item is to use edit widget.
         # This is not true for pipeline processes, for example.
         menu_data.append( {
         "type": "action",

@@ -2488,7 +2488,7 @@ class TacticServerStub(object):
 
 
 
-    def get_snapshot(my, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False):
+    def get_snapshot(my, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''API Function:  get_snapshot(search_key, context="publish", version='-1', level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False)
 
         Method to retrieve an sobject's snapshot
@@ -2499,6 +2499,7 @@ class TacticServerStub(object):
                 looking for
 
         @keyparam:
+        process - the process of the snapshot
         context - the context of the snapshot
         version - snapshot version
         revision - snapshot revision
@@ -2532,7 +2533,7 @@ class TacticServerStub(object):
             snapshot = server.get_snapshot(search_key, context='anim', include_paths_dict=True, versionless=True)
         [/code]
         '''
-        return my.server.get_snapshot(my.ticket, search_key, context, version, revision, level_key, include_paths, include_full_xml, include_paths_dict, include_files, include_web_paths_dict, versionless)
+        return my.server.get_snapshot(my.ticket, search_key, context, version, revision, level_key, include_paths, include_full_xml, include_paths_dict, include_files, include_web_paths_dict, versionless, process)
 
 
 

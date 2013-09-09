@@ -86,7 +86,7 @@
     <element name="default_layout">
       <display class="SelectWdg">
         <empty>true</empty>
-        <values>tile,card,browser,table</values>
+        <values>tile|card|browser|table</values>
       </display>
     </element>
 </edit_definition>

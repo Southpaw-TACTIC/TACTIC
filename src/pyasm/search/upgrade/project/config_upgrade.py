@@ -19,6 +19,16 @@ from pyasm.search.upgrade.project import *
 class ConfigUpgrade(BaseUpgrade):
 
     #
+    # 4.1.0.b02
+    #
+    def upgrade_v4_1_0_b02_001(my):
+        my.run_sql('''
+        ALTER TABLE "widget_config" ADD "title" varchar(1024);
+        ''')
+
+
+
+    #
     # 4.1.0.a01
     #
     def upgrade_v4_1_0_a01_003(my):

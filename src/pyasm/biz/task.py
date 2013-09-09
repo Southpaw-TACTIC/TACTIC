@@ -445,19 +445,34 @@ class Task(SObject):
             search.add_filter("search_type", search_type)
 
         else:
+
+            from pyasm.biz import Schema
+            schema = Schema.get()
+
             # FIXME: why doesn't the ops work here?
             filters = []
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
-                search_id = sobject.get_id()
+
+
+                attrs = schema.get_relationship_attrs("sthpw/task", search_type)
+                attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
+
+                search_code = sobject.get_value(attrs.get("to_col"))
+                #search_code = sobject.get_value("code")
                 #search.add_filter('search_type', search_type)
                 #search.add_filter('search_id', search_id, quoted=False)
                 #search.add_op("and")
-                filters.append("search_type = '%s' and search_id = %s" % (search_type, search_id))
+                if attrs.get("from_col") == "search_code":
+                    filters.append("search_type = '%s' and search_code = '%s'" % (search_type, search_code))
+                else:
+                    filters.append("search_type = '%s' and search_id = %s" % (search_type, search_code))
             search.add_where(" or ".join(filters))
 
 
         search.add_order_by("search_type")
+
+        search.add_order_by("search_code")
         search.add_order_by("search_id")
 
 
@@ -495,9 +510,11 @@ class Task(SObject):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
-        task.set_value( "search_type", sobject.get_search_type() )
-        task.set_value( "search_id", sobject.get_id() )
-        task.set_value( "search_code", sobject.get_code() )
+        #task.set_value( "search_type", sobject.get_search_type() )
+        #task.set_value( "search_id", sobject.get_id() )
+        #task.set_value( "search_code", sobject.get_code() )
+        task.set_parent(sobject)
+
         task.set_value("process", process )
         task.set_value("description", description )
         task.set_value("assigned", assigned)

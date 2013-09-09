@@ -3874,13 +3874,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_snapshot(my, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False):
+    def get_snapshot(my, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''method to retrieve snapshots
         
         @params
         ticket - authentication ticket
         search_key - unique identifier of sobject whose snapshot we are
                 looking for
+        process - the process of the snapshot
         context - the context of the snapshot
         include_paths - flag to specify whether to include a __paths__ property
             containing a list of all paths in the dependent snapshots
@@ -3924,14 +3925,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_id, context, version=version, \
-                    revision=revision, level_type=level_type, level_id=level_id)
+            snapshot = Snapshot.get_snapshot(search_type, search_id, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'
             else:
                 versionless_mode = 'current'
-            snapshot = Snapshot.get_versionless(search_type, search_id, context , mode=versionless_mode, create=False)
+            snapshot = Snapshot.get_versionless(search_type, search_id, context=context , mode=versionless_mode, create=False)
 
         if not snapshot:
             return {}

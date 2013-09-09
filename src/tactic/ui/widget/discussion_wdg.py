@@ -15,7 +15,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
 from pyasm.common import Environment, TacticException, jsondumps, jsonloads
-from pyasm.biz import Pipeline, Project, File, IconCreator
+from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
 from pyasm.search import Search, SearchType, SObject, SearchKey
@@ -717,7 +717,11 @@ class DiscussionWdg(BaseRefreshWdg):
 
         notes = search.get_sobjects()
         has_process = my.sobjects[0].has_value('process')
+        schema = Schema.get()
+
         for note in notes:
+
+            """
             search_type = note.get_value("search_type")
             #search_id = note.get_value("search_id")
             search_code = note.get_value("search_code")
@@ -726,6 +730,26 @@ class DiscussionWdg(BaseRefreshWdg):
                 key = "%s|%s|%s" % (search_type, search_code, process)
             else:
                 key = "%s|%s" % (search_type, search_code)
+            """
+
+            if my.use_parent in ['true', True] and has_process:
+                process = note.get_value("process")
+            else:
+                process = "publish"
+
+            search_type = note.get_value("search_type")
+
+            attrs = schema.get_relationship_attrs("sthpw/note", search_type)
+            attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
+            from_col = attrs.get("from_col")
+            to_col = attrs.get("to_col")
+
+            search_code = note.get_value(from_col)
+            if search_code:
+                key = "%s|%s|%s" % (search_type, search_code, process)
+            else:
+                continue
+
 
             notes_list = my.notes_dict.get(key)
             if notes_list == None:
@@ -761,23 +785,79 @@ class DiscussionWdg(BaseRefreshWdg):
         if my.sobject.is_insert():
             return []
 
+
         my.parent = my.parents[idx]
         has_process = my.sobject.has_value('process')
-        if my.use_parent == 'true':
-            if my.parent:
+
+        if not my.parent:
+            key = ""
+        else:
+            search_type = my.parent.get_search_type()
+
+            from pyasm.biz import Schema
+            schema = Schema.get()
+            attrs = schema.get_relationship_attrs("sthpw/note", search_type)
+            attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
+            from_col = attrs.get("from_col")
+            to_col = attrs.get("to_col")
+            search_code = my.parent.get_value(to_col)
+
+            #database_type = my.parent.get_database_type()
+            #if database_type == "MongoDb":
+            #    search_code = my.parent.get_id()
+            #else:
+            #    search_code = my.parent.get_code()
+
+            if my.use_parent == 'true':
                 parent_process = my.parent_processes[idx]
                 if has_process:
-                    key = "%s|%s|%s" % (my.parent.get_search_type(), my.parent.get_code(), parent_process)
+                    key = "%s|%s|%s" % (search_type, search_code, parent_process)
                 else:
-                    key = "%s|%s" % (my.parent.get_search_type(), my.parent.get_code())
+                    key = "%s|%s|publish" % (search_type, search_code)
             else:
-                key = ''
+                key = "%s|%s|publish" % (search_type, search_code)
+
+
+        """
+        use_parent = my.use_parent in ['true', True]
+        has_process = my.sobject.has_value('process')
+
+        if has_process and use_parent:
+            process = my.parent_processes[idx]
         else:
-            key = "%s|%s" % (my.parent.get_search_type(), my.parent.get_code())
-       
+            process = "publish"
+
+        if my.parent:
+            search_type = my.parent.get_search_type()
+            # Note that this function falls back to id if no code exists
+            search_code = my.parent.get_code()
+
+            if process:
+                key = "%s|%s|%s" % (search_type, search_code, process)
+            else:
+                key = "%s|%s" % (search_type, search_code)
+        else:
+            key = ''
+
+
+        notes = my.notes_dict.get(key)
+        if not notes:
+            search_type = my.parent.get_search_type()
+            search_code = my.parent.get_id()
+            if process:
+                key = "%s|%s|%s" % (search_type, search_code, process)
+            else:
+                key = "%s|%s" % (search_type, search_code)
+
+        """
+
         notes = my.notes_dict.get(key)
         if not notes:
             notes = []
+
+
+
+
 
         # not very efficient, but filter notes afterwards
         security = Environment.get_security()

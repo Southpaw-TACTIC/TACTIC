@@ -19,7 +19,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
 from table_layout_wdg import FastTableLayoutWdg
-from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
+from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 
 
 
@@ -104,8 +104,8 @@ class TileLayoutWdg(ToolLayoutWdg):
     def add_layout_behaviors(my, layout_wdg):
 
         layout_wdg.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_tile_content',
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_detail',
             'cbjs_action': '''
             spt.tab.set_main_body_tab();
             var top = bvr.src_el.getParent(".spt_tile_top");
@@ -119,6 +119,26 @@ class TileLayoutWdg(ToolLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
+
+        layout_wdg.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_tile_content',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_tile_top");
+            var search_key = top.getAttribute("spt_search_key");
+            var server = TacticServerStub.get();
+            var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
+            if (snapshot) {
+                window.open(snapshot.__web_paths_dict__.main);
+            }
+            else {
+                alert("Can't find file");
+            }
+            '''
+        } )
+
+
+
 
         bg1 = layout_wdg.get_color("background3")
         bg2 = layout_wdg.get_color("background3", 5)
@@ -230,6 +250,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         thumb_div = DivWdg()
         thumb_div.add_class("spt_tile_content")
+        #thumb_div.add_class("spt_tile_detail")
         div.add(thumb_div)
 
         width =  240
@@ -475,6 +496,16 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
         div.add_style("height: 15px")
+
+
+        detail_div = DivWdg()
+        div.add(detail_div)
+        detail_div.add_class("spt_tile_detail")
+        detail_div.add_style("float: right")
+        detail_div.add_style("margin-top: -2px")
+
+        detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+        detail_div.add(detail)
 
         title = sobject.get_name()
         if not title:

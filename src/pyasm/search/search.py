@@ -651,8 +651,10 @@ class Search(Base):
         in sobject.  The schema takes care of figuring out how to relate
         the two search_types
         '''
-        search_type = my.get_base_search_type()
-        related_type = sobject.get_base_search_type()
+        #search_type = my.get_base_search_type()
+        #related_type = sobject.get_base_search_type()
+        search_type = my.get_search_type()
+        related_type = sobject.get_search_type()
 
         if search_type == related_type:
             print "WARNING: related type and search type are the same for [%s]" % search_type
@@ -2387,6 +2389,11 @@ class SObject(object):
 
     def get_db_resource(my):
         return my.db_resource
+
+    def get_database_type(my):
+        return my.db_resource.get_database_type()
+
+
 
 
     def get_sql(my):
@@ -5629,9 +5636,12 @@ class SearchType(SObject):
         select = Select()
         select.set_database(sql)
         select.add_table(table)
-        select.add_where('"search_type" = \'%s\'' % search_type)
-        query = select.get_statement()
-        results = sql.do_query(query)
+        select.add_filter("search_type", search_type)
+
+        #query = select.get_statement()
+        #results = sql.do_query(query)
+        results = select.execute(sql)
+
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template

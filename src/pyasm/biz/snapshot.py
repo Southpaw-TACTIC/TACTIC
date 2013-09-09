@@ -1229,7 +1229,8 @@ class Snapshot(SObject):
             context=context, version=version,
             revision=revision, show_retired=show_retired,
             use_cache=False,
-            level_type=level_type, level_id=level_id
+            level_type=level_type, level_id=level_id,
+            process=process
         )
         
 
@@ -1283,7 +1284,7 @@ class Snapshot(SObject):
 
     
         # try at the top level
-        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=None)
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=process)
         return snapshot
 
     get_snapshot = staticmethod(get_snapshot)
@@ -1360,7 +1361,7 @@ class Snapshot(SObject):
         if process != None:
             search.add_filter("process", process)
             key = '%s:process=%s' %(key, process)
-        if context != None:
+        if context not in [None, '']:
             search.add_filter("context", context)
             key = '%s:%s' %(key, context)
         if version not in [None, '', -1, "-1", 0, "0", "max"]:

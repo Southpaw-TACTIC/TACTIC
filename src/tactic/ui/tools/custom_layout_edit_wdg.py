@@ -932,7 +932,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 select.set_value(widget_type)
             view_wdg.add("<b>Type: &nbsp;</b>")
             view_wdg.add(select)
-            select.set_option("values", "widget|theme|column|chart|report|dashboard")
+            select.set_option("values", "widget|theme|column|chart|report|dashboard|layout_tool")
             select.add_empty_option("-- None ---")
 
 

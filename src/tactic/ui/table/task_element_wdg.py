@@ -19,7 +19,7 @@ import datetime
 
 from pyasm.common import jsonloads, jsondumps
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
-from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task
+from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
@@ -456,7 +456,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
         my.tasks_dict = {}
 
-        # TEST
         expression = my.kwargs.get("expression")
         #expression = "@SOBJECT(connect)"
         if expression:
@@ -487,13 +486,22 @@ class TaskElementWdg(BaseTableElementWdg):
             tasks = search.get_sobjects()
 
 
+            schema = Schema.get()
 
             # process the tasks
             for task in tasks:
                 search_type = task.get_value("search_type")
-                search_id = task.get_value("search_id")
+                #search_id = task.get_value("search_id")
+                #search_id = task.get_value("search_code")
                 #key = "%s|%s" % (search_type, search_id)
-                key = "%s&id=%s" % (search_type, search_id)
+                #key = "%s&id=%s" % (search_type, search_id)
+
+                attrs = schema.get_relationship_attrs("sthpw/task", search_type)
+                attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
+                from_col = attrs.get("from_col")
+
+                code = task.get_value(from_col)
+                key = "%s|%s" % (search_type, code)
 
                 tasks_list = my.tasks_dict.get(key)
                 if tasks_list == None:
@@ -833,11 +841,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         # use parent?
         #sobject = sobject.get_parent()
 
-
         search_type = sobject.get_search_type()
-        search_id = sobject.get_id()
-        #key = "%s|%s" % (search_type, search_id)
-        key = "%s&id=%s" % (search_type, search_id)
+
+        schema = Schema.get()
+        attrs = schema.get_relationship_attrs("sthpw/task", search_type)
+        attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
+        to_col = attrs.get("to_col")
+        code = sobject.get_value(to_col)
+        #search_type = sobject.get_search_type()
+        #search_id = sobject.get_id()
+        key = "%s|%s" % (search_type, code)
 
         tasks = my.tasks_dict.get(key)
         if tasks == None:

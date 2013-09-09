@@ -549,6 +549,10 @@ class Schema(SObject):
 
     def resolve_relationship_attrs(my, attrs, search_type, search_type2):
 
+        if attrs.get("relationship") != "search_type":
+            return attrs
+
+
         search_type_obj = SearchType.get(search_type)
         search_type_obj2 = SearchType.get(search_type2)
 
@@ -605,8 +609,6 @@ class Schema(SObject):
                     attrs['relationship'] = 'search_id'
 
         return attrs
-
-
 
 
 

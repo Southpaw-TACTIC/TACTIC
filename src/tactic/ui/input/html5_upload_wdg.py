@@ -147,8 +147,11 @@ spt.html5upload.select_files = function(onchange) {
         }, 100 );
     }
     else {
-        el.click();
-        spt.html5upload.events['select_file'] = onchange;
+        setTimeout( function() {
+            el.click();
+            spt.html5upload.events['select_file'] = onchange;
+        }, 100 );
+
     }
 
     // FIXME: this is not very useful as the select file is async, but

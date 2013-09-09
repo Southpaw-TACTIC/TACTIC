@@ -32,6 +32,11 @@ __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 
 class IngestUploadWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+        'search_type': 'Search Type to ingest into'
+    }
+
+
     def get_display(my):
 
 
@@ -40,7 +45,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_ingest_top")
-        div.add_style("width: 500px")
+        div.add_style("width: 100%px")
+        div.add_style("min-width: 500px")
         div.add_style("padding: 20px")
         div.add_color("background", "background")
 
@@ -121,7 +127,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var file_els = top.getElements(".spt_upload_file");
             for ( var i = 0; i < file_els.length; i++) {
@@ -138,6 +143,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         files_div = DivWdg()
+        files_div.add_style("position: relative")
         files_div.add_class("spt_upload_files")
         div.add(files_div)
         files_div.add_style("max-height: 300px")
@@ -148,6 +154,42 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_color("background", "background3")
         #files_div.add_style("display: none")
 
+        bgcolor = div.get_color("background3")
+        bgcolor2 = div.get_color("background3", -3)
+
+        files_div.add_behavior( {
+            'type': 'mouseenter',
+            'bgcolor': bgcolor2,
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.bgcolor)
+            '''
+        } )
+
+        files_div.add_behavior( {
+            'type': 'mouseout',
+            'bgcolor': bgcolor,
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", bvr.bgcolor)
+            '''
+        } )
+
+
+        background = DivWdg()
+        background.add_class("spt_files_background")
+        files_div.add(background)
+        background.add_style("font-size: 4.0em")
+        background.add_style("font-weight: bold")
+        background.add_style("opacity: 0.1")
+        background.add_style("position: absolute")
+        background.add_style("left: 50%")
+        background.add_style("top: 100px")
+        background.add_border()
+        inner_background = DivWdg("Drag Files Here")
+        background.add(inner_background)
+        inner_background.set_style("position: absolute")
+        inner_background.set_style("margin-left: -50%")
+
+
 
         # Test drag and drop files
         files_div.add_attr("ondragenter", "return false")
@@ -157,8 +199,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         'type': 'load',
         'cbjs_action': '''
         spt.drag = {}
+        var background;
 
         spt.drag.show_file = function(file, top, delay) {
+
+            if (!background) {
+                background = top.getElement(".spt_files_background");
+                background.setStyle("display", "none");
+            }
+
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
             clone.removeClass("spt_upload_file_template");
@@ -197,7 +246,9 @@ class IngestUploadWdg(BaseRefreshWdg):
                                 var date = data.exif.get('DateTimeOriginal');
                                 if (date) {
                                     date_label_el.innerHTML = date;
-                                    date_el.value = date;
+                                    if (date_el) {
+                                        date_el.value = date;
+                                    }
                                 }
                             }
 
@@ -462,6 +513,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         on_complete = function() {
             spt.info("Ingest complete");
             server.finish();
+
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
+
             spt.message.stop_interval(key);
         };
 
