@@ -168,7 +168,7 @@ class TextInputWdg(BaseInputWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 200
+            my.width = 230
         else:
             my.width = my.width.replace("px", "")
             my.width = int(my.width)
@@ -843,8 +843,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 25px")
-        results_div.add_style("left: 10px")
+        results_div.add_style("top: 20px")
+        results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")
         results_div.add_style("padding: 5px 10px 10px 5px")
@@ -853,7 +853,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         results_div.add_style("font-size: 16px")
         results_div.add_style("font-weight: bold")
         results_div.add_border()
-        results_div.set_box_shadow('1px 2px 2px 2px')
+        results_div.set_box_shadow()
         results_div.add_class("spt_input_text_results")
 
         bgcolor = results_div.get_color("background3")
@@ -875,7 +875,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
         
         # this is when the user clicks on a result item
-        # it doesn't do a search right away, it fires the lookahead_click event
+        # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
             'type': "mouseup",
             'bvr_match_class': 'spt_input_text_result',
@@ -1280,21 +1280,23 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     if my.is_number(value): 
                         value = str(value)
                     keywords.append(value)
-
-                keywords = " ".join(keywords)
-                keywords = keywords.lower()
-
+               
+                
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
-
+                # keywords can be a long space delimited string in global mode
+                # join and then split after
+                # use comprehension to handle the lower() function
+                keywords = " ".join(keywords)
 
                 # show the keyword that matched first
                 keywords = keywords.split(" ")
+                keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
-                keywords = filter(None, keywords)
-              
+                # if x in the comprehension above already does None filtering
+                #keywords = filter(None, keywords)
 
                 matches = []
                 for i, value in enumerate(values):
