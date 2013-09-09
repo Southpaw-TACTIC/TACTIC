@@ -334,9 +334,9 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 
-    def get_constraints(my, database, table):
+    def get_constraints(my, db_resource, table):
         return []
-
+      
 
 
 
@@ -1624,7 +1624,42 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         os.system(schema)
     """
 
+    def get_constraints(my, db_resource, table):
+        '''Get contraints primarily UNIQUE for PostgreSQL'''
+        from sql import Select, DbContainer
+        constraints = []
+        try:
+            db = DbContainer.get(db_resource)
+            statement = '''SELECT * from information_schema.table_constraints where table_name='%s';''' % table
+            results = db.do_query(statement)
 
+
+            # ignore Primary Key and CHECK CONSTRAINT for now
+            if len(results) > 0:
+                for k in range(len(results)):
+                    mode = results[k][6]
+                    name = results[k][2]
+                    if mode in ['PRIMARY KEY', 'CHECK']:
+                        continue
+                    constraints.append({'mode':mode, 'name': name}) 
+            
+            for constraint in constraints:
+                name = constraint.get('name')
+                statement = '''select pg_get_indexdef(oid) from pg_class where relname='%s';''' % name
+                sub_result = db.do_query(statement)
+                value = sub_result[0][0]
+                m = re.search(r'\((.*)\)', value, re.M)
+                group =  m.group()
+                columns = []
+                if group:
+                    columns = group.lstrip('(').rstrip(')')
+                    columns = columns.split(',')
+                constraint['columns'] = columns
+        except Exception, e:
+            print e
+
+
+        return constraints
 
     def get_table_info(my, db_resource):
 

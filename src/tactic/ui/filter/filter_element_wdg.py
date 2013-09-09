@@ -517,7 +517,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         if column:
             my.columns = column.split('|')
         
-
+        my.do_search = my.kwargs.get("do_search")
+        my.script_path = my.kwargs.get("script_path")
         if not my.mode:
             my.mode = "global"
 
@@ -775,6 +776,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
     def get_display(my):
         # can predefine a filter_search_type for the look ahead search
         my.filter_search_type = my.get_option("filter_search_type")
+       
 
         div = DivWdg()
         #div.add_style("width: 360px")
@@ -869,9 +871,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         if my.kwargs.get("hint_text"):
             hint_text = my.kwargs.get("hint_text")
 
+        
         # search_type is a list matching the column for potential join
         text = LookAheadTextInputWdg(
                 name="value",
+                do_search=my.do_search,
+                script_path=my.script_path,
                 custom_cbk=custom_cbk,
                 filter_search_type=my.filter_search_type,
                 search_type=search_type,

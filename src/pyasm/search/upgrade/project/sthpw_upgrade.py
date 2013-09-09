@@ -14,7 +14,7 @@ __all__ = ['SthpwUpgrade']
 
 
 from pyasm.search.upgrade.project import *
-
+from pyasm.search import Sql
 
 class SthpwUpgrade(BaseUpgrade):
     
@@ -241,9 +241,12 @@ IMPORTANT NOTICE:
     # 4.0.0.a09
     #
     def upgrade_v4_0_0_a09_002(my):
-        my.run_sql('''
-        ALTER TABLE file ALTER COLUMN search_id DROP NOT NULL;
-        ''')
+        if Sql.get_database_type() == 'MySQL':
+            my.run_sql('''ALTER TABLE file MODIFY search_id integer NULL;''')
+        else:
+            my.run_sql('''
+            ALTER TABLE file ALTER COLUMN search_id DROP NOT NULL;
+            ''')
    
   
 
@@ -419,7 +422,10 @@ IMPORTANT NOTICE:
 
 
     def upgrade_v4_0_0_a01_026(my):
-        my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name DROP not null;''')
+        if Sql.get_database_type() == 'MySQL':
+            my.run_sql('''ALTER TABLE snapshot MODIFY column_name varchar(100) NULL;''')
+        else:
+            my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name DROP NOT NULL;''')
 
 
 
@@ -1735,9 +1741,14 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v3_5_0_v01_002(my):
-        my.run_sql('''
-        ALTER table snapshot alter column lock_login DROP not null;
-        ''')
+        if Sql.get_database_type() == 'MySQL':
+            my.run_sql('''
+            ALTER table snapshot modify lock_login varchar(100) NULL;
+            ''')
+        else:
+            my.run_sql('''
+            ALTER table snapshot alter column lock_login DROP NOT NULL;
+            ''')
 
     def upgrade_v3_5_0_v01_001(my):
         my.run_sql('''
@@ -2148,7 +2159,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v2_5_0_rc18_001(my):
         my.run_sql('''
-        ALTER TABLE "file" alter column file_name drop not null; 
+        ALTER TABLE "file" alter column file_name drop NOT NULL; 
         ''')
     def upgrade_v2_5_0_rc18_002(my):
         my.run_sql('''
@@ -2306,12 +2317,12 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
    
     def upgrade_v2_5_0_a01_004(my):
         my.run_sql('''
-        alter table template alter column search_type drop not null;
+        alter table template alter column search_type drop NOT NULL;
         ''')
 
     def upgrade_v2_5_0_a01_003(my):
         my.run_sql('''
-        alter table template alter column code drop not null;
+        alter table template alter column code drop NOT NULL;
         ''')
 
 

@@ -1813,12 +1813,19 @@ class TaskSecurityWdg(ProjectSecurityWdg):
                     rules_dict[group_name] = access_rules
 
                 old_xpath = "rules/rule[@group='process' and @process='%s']" % sobject.get_value("process")
-                xpath = "rules/rule[@group='process' and @process='%s' and @pipeline_code='%s']" % (sobject.get_value("process"), sobject.get_value("pipeline_code"))
+                xpath = "rules/rule[@group='process' and @pipeline]"
                 node = access_rules.get_node(xpath)
                 old_node = access_rules.get_node(old_xpath)
-        
+                
                 if node is not None:
-                    sobject.set_value("_%s" % group_name, True)
+                    further_path = "rules/rule[@process='%s' and @pipeline='%s']" % (sobject.get_value("process"),sobject.get_value("pipeline_code"))
+                    new_node = access_rules.get_node(further_path)
+
+                    if new_node is not None:
+                        sobject.set_value("_%s" % group_name, True)
+                    else:
+                        sobject.set_value("_%s" % group_name, False)
+
                 else:
                     # backward compatibility
                     old_node = access_rules.get_node(old_xpath)
@@ -2185,16 +2192,18 @@ class SecurityBuilder(object):
     def remove_process(my, process, project_code=None, pipeline_code=None):
         pipeline_code_expr = ''
         if pipeline_code:
-            pipeline_code_expr = "and @pipeline_code='%s'"%pipeline_code
+            pipeline_code_expr = "and @pipeline='%s'"%pipeline_code
         
         if project_code:
             nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
         else:
             # for backward comaptibilty, || 
-            nodes = my.xml.get_nodes("rules/rule[@group='process'] | rules/rule[@group='process' %s]  " %pipeline_code_expr)
-
+            check_node = my.xml.get_nodes("rules/rule[@pipeline]")
+            if check_node is not None:
+                nodes = my.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
+            else:
+                nodes = my.xml.get_nodes("rules/rule[@group='process']")
         
-
         for node in nodes:
             if my.xml.get_attribute(node, 'process') == process:
                 my.xml.remove_child(my.root, node)
