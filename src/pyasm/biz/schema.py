@@ -1310,8 +1310,36 @@ class Schema(SObject):
         # find using explicit search ... too much nested caching going
         # on here.  It is confusing when changing schema
         search = Search("sthpw/schema")
+        #search.add_op("begin")
         search.add_filter("code", project_code)
-        schema = search.get_sobject()
+        #search.add_filter("project_code", project_code)
+        #search.add_op("or")
+        schemas = search.get_sobjects()
+
+        #if len(schemas) > 1:
+        if False:
+            schema = SearchType.create("sthpw/schema")
+            schema.set_value("code", project_code)
+            schema.set_value("project_code", project_code)
+
+            new_xml = []
+            new_xml.append("<schema>\n")
+
+            for schema in schemas:
+                xml = schema.get_xml_value("schema")
+                nodes = xml.get_nodes("schema/*")
+                for node in nodes:
+                    new_xml.append(xml.to_string(node))
+
+            new_xml.append("</schema>\n")
+
+            new_xml = "".join(new_xml)
+            print new_xml
+            schema.set_value("schema", new_xml)
+
+        elif schemas:
+            schema = schemas[0]
+
 
         # if the project schema does not exist, then create an empty one
         if not schema:
