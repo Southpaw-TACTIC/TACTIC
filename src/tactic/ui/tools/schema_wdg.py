@@ -102,7 +102,11 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         not_has_tables = {}
         sthpw_types = {}
         sthpw_project = Project.get_by_code('sthpw')
-        schema = Schema.get()
+
+
+        #schema = Schema.get()
+        schema = Search.get_by_code("sthpw/schema", project_code)
+
         search_types = schema.get_search_types(hierarchy=False)
         for search_type in search_types:
             project = current_project
@@ -124,6 +128,13 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
             except SearchException, e:
                 not_exists[search_type] = True
 
+
+        search = Search("sthpw/schema")
+        search.add_filter("project_code", project_code)
+        search.add_filter("code", project_code, op="!=")
+        extra_schemas = search.get_sobjects()
+        extra_schema_codes = [x.get_code() for x in extra_schemas]
+
         div = DivWdg()
         inner.add(div)
         div.add_behavior( {
@@ -133,10 +144,14 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         'not_has_tables': not_has_tables,
         'sthpw_types': sthpw_types,
         'project_code': project_code,
+        'extra_schemas': extra_schema_codes,
         'cbjs_action': '''
         var top = bvr.src_el.getParent('.spt_schema_tool_top');
         spt.pipeline.init_cbk(top);
         spt.pipeline.import_schema( bvr.project_code );
+        for (var i = 0; i < bvr.extra_schemas.length; i++) {
+            spt.pipeline.import_schema( bvr.extra_schemas[i] );
+        }
 
         for (search_type in bvr.exists) {
             var node = spt.pipeline.get_node_by_name(search_type);
@@ -151,13 +166,11 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
             node.spt_registered = false;
         }
 
-
         for (search_type in bvr.sthpw_types) {
             var node = spt.pipeline.get_node_by_name(search_type);
             spt.pipeline.set_color(node, "#AA7");
             spt.pipeline.enable_node(node);
         }
-
 
         for (search_type in bvr.not_has_tables) {
             var node = spt.pipeline.get_node_by_name(search_type);
@@ -630,7 +643,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
     def get_canvas(my):
         my.height = my.kwargs.get("height")
         if not my.height:
-            my.height = 300
+            my.height = 400
         my.width = my.kwargs.get("width")
         return SchemaToolCanvasWdg(height=my.height, width=my.width, dialog_id=my.dialog_id, nob_mode="dynamic", line_mode='line', has_prefix=True, filter_node_name=True)
 

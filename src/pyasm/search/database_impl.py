@@ -192,7 +192,8 @@ class DatabaseImpl(DatabaseImplInterface):
             schema_dir = my.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
             if not os.path.exists(schema_path):
-                Environment.add_warning("Schema does not exist", "Schema '%s' does not exist" % schema_path)
+                # This warning occurs too often in harmless places
+                #Environment.add_warning("Schema does not exist", "Schema '%s' does not exist" % schema_path)
                 continue
 
             my.import_sql_file(db_resource, schema_path)

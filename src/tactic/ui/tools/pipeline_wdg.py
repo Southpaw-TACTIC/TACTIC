@@ -1356,8 +1356,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg, IconButtonWdg, SingleButtonWdg
 
         button_row = DivWdg()
-        button_row.add_border()
-        button_row.set_round_corners(5)
+        #button_row.add_border()
+        #button_row.set_round_corners(5)
         button_row.add_style("padding: 6px 10px 9px 5px")
 
         button = SingleButtonWdg(title="Zoom In", icon=IconWdg.ZOOM_IN, show_out=False)
