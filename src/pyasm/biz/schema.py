@@ -209,6 +209,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
 
 # DEPRECATED
+"""
 SCHEMA_XML['prod'] = '''<?xml version='1.0' encoding='UTF-8'?>
  <schema parent="__NONE__">
    <search_type name='prod/art_reference'/>
@@ -273,7 +274,9 @@ SCHEMA_XML['prod'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
  </schema>
 '''
+"""
 
+"""
 SCHEMA_XML['flash'] = '''<?xml version='1.0' encoding='UTF-8'?>
  <schema parent="__NONE__">
    <search_type name='prod/art_reference'/>
@@ -306,6 +309,7 @@ SCHEMA_XML['flash'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <connect to="*" from="prod/submission" type='hierarchy' relationship='search_type'/>
  </schema>
 '''
+"""
 
 
 SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -384,7 +388,7 @@ class Schema(SObject):
             return
 
 
-        # a schema has knowledge of it's parent
+        # a schema has knowledge of its parent
         my.parent_schema = my.get_parent_schema()
 
         # sthpw schema that everybody inherits from
@@ -429,10 +433,8 @@ class Schema(SObject):
             return parent_schema
         else:
 
-            # try the project type
-            # FIXME: assume schema code == project_code
+            # Note: assume schema code == project_code
             schema_code = my.get_value("code")
-            #assert schema_code and schema_code != "admin"
 
             from pyasm.biz import Project
             project = Project.get_by_code(schema_code)
@@ -1280,7 +1282,6 @@ class Schema(SObject):
 
  
     def get(cls, reset_cache=False):
-
         if not reset_cache:
             schema = Container.get("Schema")
             if schema:
@@ -1290,14 +1291,14 @@ class Schema(SObject):
         project_code = Project.get_project_code()
 
         # the predefined ones cannot be overriden
-        #if project_code in ['prod', 'unittest', 'flash', 'admin']:
         if project_code in ['unittest']:
             schema = cls.get_predefined_schema(project_code)
             schema.init()
             sthpw_schema = cls.get_predefined_schema("admin")
             sthpw_schema.init()
             schema.sthpw_schema = sthpw_schema
-            return schema
+            #return schema
+
         elif project_code in ['sthpw','admin']:
             sthpw_schema = cls.get_predefined_schema("admin")
             sthpw_schema.init()
@@ -1310,8 +1311,42 @@ class Schema(SObject):
         # find using explicit search ... too much nested caching going
         # on here.  It is confusing when changing schema
         search = Search("sthpw/schema")
-        search.add_filter("code", project_code)
-        schema = search.get_sobject()
+        search.add_op("begin")
+        if project_code not in ['unittest']:
+            search.add_filter("code", project_code)
+        search.add_filter("project_code", project_code)
+        search.add_op("or")
+        schemas = search.get_sobjects()
+
+        if project_code in ['unittest']:
+            schemas.insert(0, schema)
+
+        if len(schemas) > 1:
+            schema = SearchType.create("sthpw/schema")
+            schema.set_value("code", project_code)
+            schema.set_value("project_code", project_code)
+
+            new_xml = []
+            new_xml.append("<schema>\n")
+
+            for schema in schemas:
+                xml = schema.get_xml_value("schema")
+                nodes = xml.get_nodes("schema/*")
+                for node in nodes:
+                    new_xml.append(xml.to_string(node))
+
+            new_xml.append("</schema>\n")
+
+            new_xml = "".join(new_xml)
+            print new_xml
+            schema.set_value("schema", new_xml)
+
+        elif schemas:
+            schema = schemas[0]
+
+        else:
+            schema = None
+
 
         # if the project schema does not exist, then create an empty one
         if not schema:

@@ -17,7 +17,18 @@ from pyasm.search.upgrade.project import *
 from pyasm.search import Sql
 
 class SthpwUpgrade(BaseUpgrade):
-    
+
+
+    #
+    # 4.1.0.b02
+    #
+    def upgrade_v4_1_0_b02_001(my):
+        my.run_sql('''
+        ALTER TABLE "schema" ADD "project_code" varchar(256);
+        ''')
+
+
+   
     #
     # 4.1.0.a01
     #

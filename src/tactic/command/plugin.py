@@ -1018,7 +1018,8 @@ class PluginInstaller(PluginBase):
 
     def import_data(my, path, commit=True, unique=False):
         if not os.path.exists(path):
-            print "WARNING: path [%s] does not exist" % path
+            # This is printed too often in harmless situations
+            #print "WARNING: path [%s] does not exist" % path
             return []
 
         #f = codecs.open(path, 'r', 'utf-8')
