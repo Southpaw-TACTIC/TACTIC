@@ -1478,7 +1478,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context = task.get_value("context")
                 search_key = task.get_search_key()
                 task_id = task.get_id()
-                select = SelectWdg('status_%s'%task_id)
+
+                if task.is_insert():
+                    process = task.get_value("process")
+                    name = 'status_NEW_%s' % process
+                else:
+                    name = 'status_EDIT_%s' % task.get_id()
+
+                select = SelectWdg(name)
+                #select = SelectWdg('status_%s'%task_id)
                 select.add_attr("spt_context", context)
 
 
@@ -1552,7 +1560,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select_div = DivWdg()
                     assigned_div.add(select_div)
 
-                    select = SelectWdg('assigned_%s' %subtask.get_id())
+                    if task.is_insert():
+                        process = task.get_value("process")
+                        name = 'assigned_NEW_%s' % process
+                    else:
+                        name = 'assigned_EDIT_%s' % task.get_id()
+                    select = SelectWdg(name)
+                    #select = SelectWdg('assigned_%s' %subtask.get_id())
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
                     select.add_class('spt_task_status_select')
@@ -1669,10 +1683,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 text_div = DivWdg()
                 bid_div.add(text_div)
 
-                if task.is_insert():
+                if subtask.is_insert():
                     text = TextWdg('bid_NEW_%s' % process)
                 else:
-                    text = TextWdg('bid_%s' %subtask.get_id())
+                    text = TextWdg('bid_EDIT_%s' %subtask.get_id())
                 text_div.add(text)
                 text.add_style("width: 80px")
                 text.add_style("text-align: center")
@@ -1757,10 +1771,97 @@ class TaskElementCbk(DatabaseAction):
         task_bid_ids = []
         clone_ids = {}
 
+        new_tasks_by_process = {}
+
+        # create all of the new tasks first
+        import re
+        p = re.compile("(\w+)_(\w+)_(.*)")
+        for key, value in xx.items():
+            #print "ke: ", key, value
+            m = re.match(p, key)
+            if not m:
+                continue
+
+            groups = m.groups()
+
+            column = groups[0]
+            if column == "bid":
+                column = "bid_duration"
+
+            action = groups[1]
+
+            if action == "NEW":
+                process = groups[2]
+                task = new_tasks_by_process.get(process)
+                if not task:
+                    # create a new task
+                    task = SearchType.create("sthpw/task")
+                    task.set_value("process", process)
+                    task.set_parent(my.sobject)
+                    new_tasks_by_process[process] = task
+                task.set_value(column, value)
+
+            elif action == "EDIT":
+                task_id = groups[2]
+
+                if column == "status":
+                    task_status_ids.append(task_id)
+                elif column == "bid_duration":
+                    task_bid_ids.append(task_id)
+                elif column == "assigned":
+                    task_assigned_ids.append(task_id)
+                else:
+                    raise Exception("Column [%s] not supported")
+
+
+            elif action.startswith('COPY'):
+                task_id = groups[2]
+                task = Search.get_by_id("sthpw/task", task_id)
+                status = value
+                clone = task.clone()
+                clone.set_value("assigned", value)
+                clone.commit()
+
+            elif action == 'DELETE':
+                task_id = groups[0]
+                task = Search.get_by_id("sthpw/task", task_id)
+                task.delete()
+
+
+        # commit all of the new tasks
+        tasks = {}
+        for process, task in new_tasks_by_process.items():
+            tasks[task.get_id()] = task
+            task.commit()
+
+
+
+
+        # then go through all updates of the changes
+        for key, value in xx.items():
+            m = re.match(p, key)
+            if not m:
+                continue
+
+            column = groups[0]
+            action = groups[1]
+
+            # skip the new tasks this time
+            if action == "NEW":
+                continue
+
+
+
+
+
+        """
+
         for key, value in xx.items():
             if key.startswith('status_'):
                 tmps = key.split('_') 
                 task_status_ids.append(tmps[1]);
+
+
             elif key.startswith('assigned_'):
                 tmps = key.split('_') 
 
@@ -1801,7 +1902,7 @@ class TaskElementCbk(DatabaseAction):
                 else:
                     task_bid_ids.append(tmps[1])
 
-
+        """
 
         
         # get the tasks
@@ -1812,7 +1913,8 @@ class TaskElementCbk(DatabaseAction):
 
             for task in tasks:
                 current_status = task.get_value("status")
-                new_status = xx.get('status_%s'%task.get_id())
+                new_status = xx.get('status_EDIT_%s'%task.get_id())
+                print "edit: ", task.get_id(), current_status, new_status
                 if current_status == new_status:
                     continue
                 task.set_value("status", new_status)
@@ -1826,7 +1928,7 @@ class TaskElementCbk(DatabaseAction):
 
             for task in tasks:
                 current_assigned = task.get_value("assigned")
-                new_assigned = xx.get('assigned_%s'%task.get_id())
+                new_assigned = xx.get('assigned_EDIT_%s'%task.get_id())
                 if current_assigned == new_assigned:
                     continue
 
@@ -1841,7 +1943,7 @@ class TaskElementCbk(DatabaseAction):
             tasks = search.get_sobjects()
 
             for task in tasks:
-                new_bid = xx.get('bid_%s'%task.get_id())
+                new_bid = xx.get('bid_EDIT_%s'%task.get_id())
 
                 task.set_value("bid_duration", new_bid)
                 task.commit()
