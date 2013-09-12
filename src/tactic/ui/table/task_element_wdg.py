@@ -750,8 +750,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 var menu = spt.table.get_edit_menu(bvr.src_el);
                 var activator =  menu.activator_el; 
                 parent = activator.getParent();
-                if (activator.name.substr(-7) == "_DELETE") {
-                    activator.name = activator.name.replace("/_DELETE//g");
+                if (activator.name.indexOf("_DELETE") != -1) {
+                    activator.name = activator.name.replace("_DELETE", "_COPY");
+                    var select = parent.getElement(".spt_task_element_assigned");
+                    select.name = select.name.replace("_DELETE", "_COPY");
                     parent.setStyle("opacity", "1.0");
                 }
                 else if (activator.name.indexOf("_COPY") != -1) {
@@ -770,7 +772,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     var select = clone.getElement(".spt_task_element_assigned");
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
-                    select.name = select.name + "_COPY" + rnd;
+                    //select.name = select.name + "_COPY" + rnd;
+                    select.name = select.name + "_" + rnd;
+                    select.name = select.name.replace("_EDIT", "_COPY");
 
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
@@ -791,7 +795,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 var select = parent.getElement(".spt_task_element_assigned");
                 select.value = '';
-                select.name = select.name + "_DELETE";
+                select.name = select.name.replace("_EDIT", "_DELETE");
 
                 spt.task_element.status_change_cbk(evt, {src_el: activator});
 
@@ -1776,9 +1780,12 @@ class TaskElementCbk(DatabaseAction):
         # create all of the new tasks first
         import re
         p = re.compile("(\w+)_(\w+)_(.*)")
+        copy_p = re.compile("(\w+)_(\w+)_(\w+)_(\w+)")
         for key, value in xx.items():
-            #print "ke: ", key, value
-            m = re.match(p, key)
+            if key.find("_COPY") != -1:
+                m = re.match(copy_p, key)
+            else:
+                m = re.match(p, key)
             if not m:
                 continue
 
@@ -1788,7 +1795,10 @@ class TaskElementCbk(DatabaseAction):
             if column == "bid":
                 column = "bid_duration"
 
+            print "groups: ", groups
             action = groups[1]
+
+            print "action: ", action
 
             if action == "NEW":
                 process = groups[2]
@@ -1823,7 +1833,7 @@ class TaskElementCbk(DatabaseAction):
                 clone.commit()
 
             elif action == 'DELETE':
-                task_id = groups[0]
+                task_id = groups[2]
                 task = Search.get_by_id("sthpw/task", task_id)
                 task.delete()
 
