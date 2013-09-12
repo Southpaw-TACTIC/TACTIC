@@ -107,6 +107,7 @@ class TextInputWdg(BaseInputWdg):
             my.text = PasswordWdg(name)
         else:
             my.text = TextWdg(name)
+            my.text.persistence = False
 
 
         class_name = kwargs.get("class")
@@ -292,7 +293,14 @@ class TextInputWdg(BaseInputWdg):
             is_admin = False
 
         search_type = my.kwargs.get("search_type")
-        if is_admin and not my.readonly and search_type:
+
+        show_edit = my.kwargs.get("show_edit")
+        if show_edit in [True, 'true']:
+            show_edit = True
+        else:
+            show_edit = False
+
+        if show_edit and is_admin and not my.readonly and search_type:
             from pyasm.widget import IconButtonWdg
 
             edit_div = DivWdg()
