@@ -102,7 +102,10 @@ class EditWdg(BaseRefreshWdg):
             sobject = Search.get_by_search_key(my.search_key)
             my.search_id = sobject.get_id()
             my.search_type = sobject.get_base_search_type()
-            my.mode = 'edit'
+            if sobject.is_insert():
+                my.mode = 'insert'
+            else:
+                my.mode = 'edit'
 
         elif my.expression:
             sobject = Search.eval(my.expression, single=True)

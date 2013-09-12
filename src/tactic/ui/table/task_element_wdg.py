@@ -10,7 +10,7 @@
 #
 #
 
-__all___ = ['TaskElementWdg', 'TaskElementCbk', 'TaskCheckoutManageWdg','TaskCheckinManageWdg','WorkElementWdg']
+__all__ = ['TaskElementWdg', 'TaskElementCbk', 'TaskCheckoutManageWdg','TaskCheckinManageWdg','WorkElementWdg']
 
 import re, time, types
 from dateutil import rrule
@@ -920,6 +920,31 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             tasks = sorted(tasks,compare)
 
+
+
+        # fill in any missing tasks
+        autocreate_tasks = my.kwargs.get("autocreate_tasks")
+        if autocreate_tasks in ["true", True]:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if not pipeline:
+                pipeline = Pipeline.get_by_code("task")
+            processes = pipeline.get_process_names()
+
+            missing = []
+            task_processes = [x.get_value("process") for x in tasks]
+            for process in processes:
+                if process not in task_processes:
+                    missing.append(process)
+
+            for process in missing:
+                task = SearchType.create("sthpw/task")
+                task.set_value("process", process)
+                task.set_value("context", process)
+                task.set_parent(sobject)
+                tasks.append(task)
+         
+            tasks = sorted(tasks,get_compare(processes))
+
 	
         return tasks
 
@@ -1026,6 +1051,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         my.task_filter = my.kwargs.get('task_filter')
 
+
+
     def get_display(my):
         
         my.tasks = my.get_tasks()
@@ -1065,29 +1092,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         """
 
 
-
-        # fill in any missing tasks
-        autocreate_tasks = my.kwargs.get("autocreate_tasks")
-        if autocreate_tasks == "true":
-            pipeline = Pipeline.get_by_code(pipeline_code)
-            if not pipeline:
-                pipeline = Pipeline.get_by_code("task")
-            processes = pipeline.get_process_names()
-
-            missing = []
-            task_processes = [x.get_value("process") for x in my.tasks]
-            for process in processes:
-                if process not in task_processes:
-                    missing.append(process)
-
-            for process in missing:
-                task = SearchType.create("sthpw/task")
-                task.set_value("process", process)
-                task.set_value("context", process)
-                task.set_parent(sobject)
-                my.tasks.append(task)
-         
-            my.tasks = sorted(my.tasks,get_compare(processes))
 
         parent_key =  SearchKey.get_by_sobject(sobject, use_id=True)
         from pyasm.common import Environment
@@ -1739,6 +1743,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+
+
 class TaskElementCbk(DatabaseAction):
 
     def get_title(my):
@@ -1959,6 +1965,98 @@ class TaskElementCbk(DatabaseAction):
                 task.commit()
 
 
+
+
+__all__.append("TaskSummaryElementWdg")
+class TaskSummaryElementWdg(TaskElementWdg):
+    def get_display(my):
+
+        my.kwargs["autocreate_tasks"] = True
+
+        my.tasks = my.get_tasks()
+        sobject = my.get_current_sobject()
+
+        top = my.top
+
+        table = Table()
+        top.add(table)
+        table.add_row()
+        table.add_style("width: 100%")
+        table.add_style("font-size: 0.8em")
+
+
+        table.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_task',
+            'cbjs_action': '''
+            var task_key = bvr.src_el.getAttribute("spt_task_key");
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_key: task_key,
+            }
+            spt.panel.load_popup("Task Edit", class_name, kwargs);
+            '''
+        } )
+
+        import re
+
+
+        for task in my.tasks:
+            bgColor = ''
+            process = task.get_value("process")
+            parts = re.split( re.compile("[ -]"), process)
+            parts = [x[:1] for x in parts]
+            title = "&nbsp;".join(parts)
+            title = "".join(parts)
+
+            status = task.get_value("status")
+
+
+            task_pipeline_code = task.get_value("pipeline_code")
+
+            status_colors = my.status_colors.get(task_pipeline_code)
+            if status_colors != None:
+                bgColor = status_colors.get(status)
+                if not bgColor:
+                    status_colors = my.status_colors.get("task")
+                    bgColor = status_colors.get(status)
+            if not bgColor:
+                bgColor = Task.get_default_color(status)
+
+
+
+
+            td = table.add_cell()
+            td.add_attr("spt_task_key", task.get_search_key())
+
+            td.add(title)
+            td.add_style("text-align: center")
+            div = DivWdg()
+            td.add(div)
+            td.add_style("padding: 0px 3px 0px 3px")
+            td.add_style("min-width: 20px")
+            div.add_border()
+            div.set_round_corners(10)
+
+            if not bgColor:
+                bgColor = '#EEE'
+                td.add_style("opacity: 0.5")
+            else:
+                td.add_class("spt_task")
+            div.add_style("background", bgColor)
+
+            div.add_style("width: 15px")
+            div.add_style("height: 15px")
+            div.add_style("margin-left: auto")
+            div.add_style("margin-right: auto")
+
+            if status:
+                td.add_attr("title", "%s - %s" % (process, status))
+            else:
+                td.add_attr("title", "%s - N/A" % process)
+
+
+        return top
 
 
 
