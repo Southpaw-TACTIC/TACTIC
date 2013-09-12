@@ -461,53 +461,6 @@ class Command(Base):
         my.handle_pipeline(pipeline, current_process, event)
 
 
-        # get related pipelines
-        related_pipelines = my.get_related_pipelines(sobject)
-
-        # use the full name for external pipelines
-        current_process = "%s/%s" % (current_pipeline_code, current_process)
-        for pipeline in related_pipelines:
-            my.handle_pipeline(pipeline, current_process, event)
-
-
-
-    def get_related_pipelines(my, sobject):
-
-        # FIXME: this is not really being used yet!!!
-
-        from_search_type = sobject.get_base_search_type()
-
-        schema = '''
-        <pipeline>
-          <process name='prod/concept'/>
-          <process name='prod/asset'/>
-          <process name='prod/shot'/>
-          <process name='prod/render'/>
-
-          <connect from="prod/concept" to="prod/asset"/>
-          <connect from="prod/asset" to="prod/render"/>
-          <connect from="prod/asset" to="prod/shot"/>
-        </pipeline>
-        '''
-
-
-        # get the connected search_types
-        pipeline = SearchType.create("sthpw/pipeline")
-        pipeline.set_pipeline(schema)
-        to_search_types = pipeline.get_output_processes(from_search_type)
-        to_search_types = [x.get_name() for x in to_search_types]
-        if not to_search_types:
-            return []
-
-        # Once we have related search_types, we can get the pipelines
-        # We need to look at the pipeline to figure out if we have anything
-        # to do
-        search = Search("sthpw/pipeline")
-        search.add_filters("search_type", to_search_types)
-        pipelines = search.get_sobjects()
-        return pipelines
-
-
 
     def handle_pipeline(my, pipeline, current_process, event):
 
@@ -548,9 +501,6 @@ class Command(Base):
             handler.set_input(input)
             # By default, inputs travel through
             handler.set_output(input)
-
-            # TODO: set the pipeline????
-            
 
 
             # execute the handler command wrapper

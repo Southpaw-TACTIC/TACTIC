@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["PipelineException", "Process", "ProcessConnect", "Pipeline", "Context"]
+__all__ = ["PipelineException", "Process", "ProcessConnect", "Pipeline", "ProjectPipeline", "Context"]
 
 import types
 
@@ -709,7 +709,13 @@ class Pipeline(SObject):
         '''it is fatal not to have a pipeline, so put a default'''
         if not code:
             return None
-        pipeline = super(Pipeline,cls).get_by_code(code)
+
+        # first look at project specific pipeline
+        pipeline = Search.get_by_code("config/pipeline", code)
+
+        if not pipeline:
+            pipeline = super(Pipeline,cls).get_by_code(code)
+
         if not pipeline and code == 'task':
             # Create a default task pipeline
             pipeline = SearchType.create("sthpw/pipeline")
@@ -767,13 +773,22 @@ class Pipeline(SObject):
         search_type = search_type_obj.get_base_key()
 
         cache_key = "%s|%s" % (search_type, project_code)
+
+
+        # commenting out until we have a full implementation of
+        # project pipelines
+        """
+        search = Search("config/pipeline")
+        if search_type:
+            search.add_filter("search_type", search_type)
+        search.add_project_filter(project_code)
+        pipelines = cls.get_by_search(search, cache_key, is_multi=True)
+        """
+
         
         search = Search("sthpw/pipeline")
         if search_type:
             search.add_filter("search_type", search_type)
-        #project_stmt = "project_code is NULL"
-        
-
         search.add_project_filter(project_code)
         pipelines = cls.get_by_search(search, cache_key, is_multi=True)
         if not pipelines:
@@ -869,6 +884,21 @@ class Pipeline(SObject):
         return pipeline
 
     get_by_sobject = staticmethod(get_by_sobject)
+
+
+
+
+class ProjectPipeline(Pipeline):
+
+    def get_defaults(my):
+        defaults = {}
+
+        my.on_insert()
+
+        return defaults
+
+
+
 
 
 

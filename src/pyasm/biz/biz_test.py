@@ -28,7 +28,7 @@ from schema import *
 from task import *
 from naming import *
 from note import Note
-from pipeline import Context
+from pipeline import Context, Pipeline
 from expression import ExpressionParser
 from pyasm.unittest import UnittestEnvironment
 
@@ -60,11 +60,12 @@ class BizTest(unittest.TestCase):
             my.context = "test"
             my.full_context = "test/subtest"
 
+            my._test_pipeline()
+            my._test_pipeline_connects()
+
             my._test_schema()
             my._test_snapshot()
             my._test_level()
-            #my._test_pipeline()
-            my._test_pipeline_connects()
             my._test_naming_util()
             my._test_sobject_hierarchy()
 
@@ -555,9 +556,56 @@ class BizTest(unittest.TestCase):
         Project.set_project('unittest')
 
     def _test_pipeline(my):
-        # FIXME: disabling for now: does not work on client sites
+
+        # test project specific pipelines
+        pipeline_xml = '''
+        <pipeline>
+            <process name='sketch'/>
+            <process name='design'/>
+            <process name='build'/>
+            <process name='deploy'/>
+        </pipeline>
+        '''
+        pipeline = SearchType.create("sthpw/pipeline")
+        pipeline.set_value("pipeline", pipeline_xml)
+        pipeline.set_value("code", "unittest/test")
+        pipeline.set_value("search_type", "unittest/person")
+        pipeline.commit()
+
+        pipeline = Pipeline.get_by_code("unittest/test")
+        my.assertEquals("sthpw/pipeline", pipeline.get_search_type() )
+
+        process_names = pipeline.get_process_names()
+        my.assertEquals(4, len(process_names))
+
+        # test project specific pipelines
+        pipeline_xml = '''
+        <pipeline>
+            <process name='think'/>
+            <process name='sketch'/>
+            <process name='design'/>
+            <process name='build'/>
+            <process name='deploy'/>
+        </pipeline>
+        '''
+        pipeline = SearchType.create("config/pipeline")
+        pipeline.set_value("pipeline", pipeline_xml)
+        pipeline.set_value("code", "unittest/test")
+        pipeline.set_value("search_type", "unittest/person")
+        pipeline.commit()
+
+
+        pipeline = Pipeline.get_by_code("unittest/test")
+        my.assertEquals("config/pipeline?project=unittest", pipeline.get_search_type() )
+        process_names = pipeline.get_process_names()
+        my.assertEquals(5, len(process_names))
 
         return
+
+
+        # TEST 
+        # TEST 
+        # TEST 
         pipeline_xml = '''
         <pipeline>
             <process name='layout'>

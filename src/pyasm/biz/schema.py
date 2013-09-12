@@ -1338,7 +1338,7 @@ class Schema(SObject):
             new_xml.append("</schema>\n")
 
             new_xml = "".join(new_xml)
-            print new_xml
+            #print new_xml
             schema.set_value("schema", new_xml)
 
         elif schemas:
