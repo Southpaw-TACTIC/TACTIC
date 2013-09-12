@@ -107,7 +107,6 @@ class TextInputWdg(BaseInputWdg):
             my.text = PasswordWdg(name)
         else:
             my.text = TextWdg(name)
-            my.text.persistence = False
 
 
         class_name = kwargs.get("class")
