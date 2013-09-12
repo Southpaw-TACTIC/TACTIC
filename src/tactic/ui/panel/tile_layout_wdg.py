@@ -26,6 +26,9 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 from tool_layout_wdg import ToolLayoutWdg
 class TileLayoutWdg(ToolLayoutWdg):
 
+    def can_select(my):
+        return True
+
     def can_expand(my):
         return True
 
@@ -219,11 +222,105 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
+        
+        border = layout_wdg.get_color("border")
+
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'border': border,
+            'bvr_match_class': 'spt_tile_select',
+            'cbjs_action': '''
+            if (evt.shift == true) {
+
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_table_row");
+
+
+                var rows = spt.table.get_all_rows(true);
+                var last_selected = spt.table.last_selected_row;
+                var last_index = -1;
+                var cur_index = -1;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] == last_selected) {
+                        last_index = i;
+                    }
+                    if (rows[i] == row) {
+                        cur_index = i;
+                    }
+
+                    if (cur_index != -1 && last_index != -1) {
+                        break;
+                    }
+
+                }
+                var start_index;
+                var end_index;
+                if (last_index < cur_index) {
+                    start_index = last_index;
+                    end_index = cur_index;
+                }
+                else {
+                    start_index = cur_index;
+                    end_index = last_index;
+                }
+
+
+                var select = last_selected.hasClass("spt_table_selected");
+                for (var i = start_index; i < end_index+1; i++) {
+
+                    var row = rows[i];
+                    var checkbox = row.getElement(".spt_tile_checkbox");
+
+                    if (!select) {
+                        checkbox.checked = false;
+                        row.removeClass("spt_table_selected");
+                        row.setStyle("border", "solid 1px " + bvr.border);
+
+                    }
+                    else {
+                        checkbox.checked = true;
+                        //row.addClass("spt_table_selected");
+                        row.setStyle("border", "solid 1px yellow");
+                        spt.table.select_row(row);
+
+                    }
+                }
+
+            }
+            else {
+
+                var row = bvr.src_el.getParent(".spt_table_row");
+                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
+
+                if (checkbox.checked == true) {
+                    checkbox.checked = false;
+                    row.removeClass("spt_table_selected");
+                    row.setStyle("border", "solid 1px " + bvr.border);
+
+                }
+                else {
+                    checkbox.checked = true;
+                    //row.addClass("spt_table_selected");
+                    row.setStyle("border", "solid 1px yellow");
+                    spt.table.select_row(row);
+
+                }
+
+            }
+
+            '''
+        } )
+
+
+
+
 
     def get_tile_wdg(my, sobject):
 
         div = DivWdg()
         div.add_class("spt_tile_top")
+
+        div.add_class("spt_table_row")
 
 
         top_view = my.kwargs.get("top_view")
@@ -507,6 +604,19 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
         detail_div.add(detail)
 
+
+        title_div = DivWdg()
+        title_div.add_class("spt_tile_select")
+        title_div.add_class("hand")
+        div.add(title_div)
+        title_div.add_class("SPT_DTS")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+        title_div.add(checkbox)
+        title_div.add(" ")
+
         title = sobject.get_name()
         if not title:
             title = sobject.get_code()
@@ -515,7 +625,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         if description:
             div.add_attr("title", sobject.get_code())
 
-        div.add(title)
+        title_div.add(title)
 
 
         return div

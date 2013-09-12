@@ -1071,15 +1071,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         var row = bvr.src_el.getParent(".spt_table_row");
 
         var rows = spt.table.get_all_rows();
-        /*
-        if (row.hasClass("spt_table_selected")) {
-            spt.table.unselect_row(row);
-        }
-        else {
-            spt.table.select_row(row);
-        }
-        */
-
         var last_selected = spt.table.last_selected_row;
         var last_index = -1;
         var cur_index = -1;
