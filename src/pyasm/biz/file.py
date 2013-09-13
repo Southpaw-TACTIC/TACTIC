@@ -508,9 +508,15 @@ class IconCreator(object):
         if sys.platform == 'darwin':
             return
         else:
-            cmd = "convert -geometry 80 -raise 2x2 %s[0] %s" \
+            #cmd = "convert -geometry 80 -raise 2x2 %s[0] %s" \
                 % (my.file_path, tmp_icon_path)
-        os.system(cmd)
+            #os.system(cmd)
+            my.file_path = my.file_path.encode('utf-8')
+            import shlex, subprocess
+            subprocess.call(['convert', '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
+                    "%s"%tmp_icon_path]) 
+
+
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
@@ -652,8 +658,13 @@ class IconCreator(object):
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
                     % (thumb_size[0], thumb_size[1], large_path, small_path)
                 print "cmd: ", cmd
-
-            os.system(cmd)
+            print "BEFORE PATH ", large_path
+            large_path = large_path.encode('utf-8')
+            print "AFTER PATH ", large_path
+            import subprocess
+            subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                    "%s"%large_path,  "%s"%small_path ]) 
+            #os.system(cmd)
             if not os.path.exists(small_path):
                 raise
 
