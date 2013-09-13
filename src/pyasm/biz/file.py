@@ -509,7 +509,7 @@ class IconCreator(object):
             return
         else:
             #cmd = "convert -geometry 80 -raise 2x2 %s[0] %s" \
-                % (my.file_path, tmp_icon_path)
+            #    % (my.file_path, tmp_icon_path)
             #os.system(cmd)
             my.file_path = my.file_path.encode('utf-8')
             import shlex, subprocess

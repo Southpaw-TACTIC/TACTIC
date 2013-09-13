@@ -210,11 +210,12 @@ spt.html5upload.upload_file = function(kwargs) {
   var fd = new FormData();
   for (var i = 0; i < el.files.length; i++) {
       fd.append("file"+i, el.files[i]);
+      fd.append("file_name"+i, el.files[i].name);
   }
   fd.append("num_files", el.files.length);
 
   fd.append('transaction_ticket', transaction_ticket);
- 
+
 
   /* event listeners */
   if (upload_start) {
