@@ -487,10 +487,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var applet = spt.Applet.get();
         var server = TacticServerStub.get();
+        var path = applet.open_file_browser();
+        if (!path[0]){
+            spt.alert('Error: No file has benn selected');
+            return;
+        }
 
         spt.app_busy.show("Browsing for preview image");
-        var path = applet.open_file_browser();
-
         var top = bvr.src_el.getParent(".spt_image_top");
         var text = top.getElement(".spt_image_path");
         var display = top.getElement(".spt_path_display");
@@ -512,6 +515,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         var filename = spt.path.get_basename(path);
         filename = spt.path.get_filesystem_name(filename);
+
+
         var kwargs = {
             ticket: ticket,
             filename: filename

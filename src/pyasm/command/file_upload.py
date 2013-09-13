@@ -87,6 +87,8 @@ class FileUpload(Base):
                 filename = filename.decode('unicode-escape')
             except UnicodeEncodeError, e:
                 pass
+            except UnicodeError,e:
+                pass
             if filename == "":
                 return None
             filename = filename.replace("\\", "/")
