@@ -914,6 +914,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     def fill_data(my):
 
         default = my.kwargs.get("default")
+        do_search = my.kwargs.get("do_search")
 
 
         # fill in the values
@@ -983,7 +984,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 display = display or "" 
               
                 my.text.set_value(display)
-                if value != None:
+                if value != None and do_search !='false':
                     my.hidden.set_value(value)
 
 
