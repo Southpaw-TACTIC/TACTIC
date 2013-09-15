@@ -193,26 +193,19 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
 
-
-
-        #stats_div.add("Found: %s file/s" % len(paths) )
-
-
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
             open_depth = 0
         else:
             open_depth = int(open_depth)
 
-        #file_codes = my.file_codes
 
         if search_type:
             search_types = [search_type]
         else:
             search_types = None
 
-        keywords = my.kwargs.get("keywords")
-
+        search_keys =  [x.get_search_key() for x in my.sobjects]
         dynamic = True
 
         dir_list = RepoBrowserDirListWdg(
@@ -223,6 +216,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 search_types=search_types,
                 dynamic=dynamic,
                 keywords=keywords,
+                search_keys=search_keys,
         )
         content_div.add(dir_list)
 
@@ -381,12 +375,22 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.search_types_dict = {}
         my.search_codes = {}
 
+
         #dynamic = True
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
         else:
             my.dynamic = False
+
+
+        # find the sobjects
+        search_keys = my.kwargs.get("search_keys")
+        if search_keys:
+            my.sobjects = Search.get_by_search_keys(search_keys)
+        else:
+            my.sobjects = []
+
 
         super(RepoBrowserDirListWdg, my).init()
 
@@ -410,11 +414,10 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         keywords = my.kwargs.get("keywords")
 
-        sobjects = my.sobjects
         search_types = my.kwargs.get("search_types")
 
-
-        if not my.sobjects:
+        sobjects = my.sobjects
+        if not sobjects:
 
             search_key = my.kwargs.get("search_key")
             search_type = my.kwargs.get("search_type")
@@ -447,6 +450,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         else:
             search_types = [sobjects[0].get_search_type()]
             parent_ids = [x.get_id() for x in sobjects]
+            my.sobjects = sobjects
 
 
 
@@ -488,6 +492,14 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             if show_main_only:
                 search.add_filter("type", "main")
+
+
+
+            if my.sobjects:
+                search.add_sobjects_filter(my.sobjects)
+
+
+
 
             file_objects = search.get_sobjects()
 
@@ -1322,8 +1334,16 @@ class RepoBrowserDirListWdg(DirListWdg):
             }
         }
 
+        var dir_list_top = bvr.src_el.getParent(".spt_dir_list_top");
+        var search_keys = dir_list_top.getAttribute("spt_search_keys");
+        if (search_keys) {
+            search_keys = search_keys.split("|");
+        }
+        else {
+            search_keys = [];
+        }
+
         var search_codes = bvr.src_el.getAttribute("spt_search_codes");
-        //alert(search_codes);
         search_codes = search_codes.split("|");
 
         spt.app_busy.show("Loading ...");
@@ -1331,7 +1351,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_type: search_type,
             view: 'table',
             dirname: bvr.dirname,
-            basename: bvr.basename
+            basename: bvr.basename,
+            search_keys: search_keys
         };
         spt.panel.load(content, class_name, kwargs);
         spt.app_busy.hide();
@@ -1719,18 +1740,20 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         if layout_mode == "checkin":
             element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
 
+        search_keys = my.kwargs.get("search_keys")
+
 
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type=search_type,
             expression=expression,
-            #search_keys=search_keys,
+            search_keys=search_keys,
             view="table",
             element_names=element_names,
             show_shelf=True,
             layout=layout_mode,
             scale='75',
-            width='100%'
+            width='100%',
         )
         #layout.set_sobjects(sobjects)
 

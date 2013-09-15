@@ -3074,6 +3074,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         #    search_div.add_style("display: none")
         #layout_table.search_container_wdg.add(search_wdg)
 
+        search_keys = my.kwargs.get("search_keys")
+        if search_keys:
+            my.sobjects = Search.get_by_search_keys(search_keys)
+
 
         if my.sobjects:
             layout_table.set_sobjects(my.sobjects)
