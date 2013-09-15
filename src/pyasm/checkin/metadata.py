@@ -450,7 +450,8 @@ class FFProbeMetadataParser(BaseMetadataParser):
     def get_tactic_mapping(my):
         return {
             'width': 'video:width',
-            'height': 'video:height'
+            'height': 'video:height',
+            'frames': 'video:nb_frames',
         }
 
 
