@@ -470,6 +470,8 @@ class DirListWdg(BaseRefreshWdg):
         """
 
         search_keys = my.kwargs.get("search_keys")
+        if not search_keys:
+            search_keys = []
         top.add_attr("spt_search_keys", "|".join(search_keys) )
 
         handler_kwargs = {
