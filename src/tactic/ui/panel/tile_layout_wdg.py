@@ -610,6 +610,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         title_div.add_class("hand")
         div.add(title_div)
         title_div.add_class("SPT_DTS")
+        title_div.add_style("overflow-x: hidden")
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")

@@ -30,7 +30,11 @@ class VideoWdg(BaseRefreshWdg):
         'poster': 'Link to an image for the poster representing the video',
     }
 
+    def init(my):
+        my.video = Video()
 
+    def get_video(my):
+        return my.video
 
     def get_display(my):
 
@@ -61,8 +65,7 @@ class VideoWdg(BaseRefreshWdg):
             sources = ["http://techslides.com/demos/sample-videos/small.ogv"]
 
 
-
-        video = Video()
+        video = my.video
         video.add_class("video-js")
         video.add_class("vjs-default-skin")
         top.add(video)
@@ -90,6 +93,7 @@ class VideoWdg(BaseRefreshWdg):
 
 
 
+
         if width:
             video.add_attr("width", width)
         if height:
@@ -104,8 +108,9 @@ class VideoWdg(BaseRefreshWdg):
         video.add_attr("preload", preload)
 
         if not controls:
-            controls = ""
-        video.add_attr("controls", controls)
+            controls = "true"
+        if controls not in [False, 'false']:
+            video.add_attr("controls", controls)
 
 
 
