@@ -94,8 +94,7 @@ class FileUpload(Base):
             filename = filename.replace("\\", "/")
             
             basename = os.path.basename(filename)
-            print "BASE ", basename
-           
+
             # File.process_file_path() should be deprecated
             return "%s/%s" % (my.file_dir, File.get_filesystem_name(basename))
             #return "%s/%s" % (my.file_dir, File.process_file_path(basename) )

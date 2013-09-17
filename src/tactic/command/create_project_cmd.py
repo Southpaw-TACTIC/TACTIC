@@ -38,7 +38,6 @@ class CopyFileToAssetTempCmd(Command):
             os.makedirs(asset_temp_dir)
 
         from_path = "%s/%s" % (upload_dir, filename)
-
         icon_creator = IconCreator(from_path)
         icon_creator.execute()
         icon_path = icon_creator.get_icon_path()

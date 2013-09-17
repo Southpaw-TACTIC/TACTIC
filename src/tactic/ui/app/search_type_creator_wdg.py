@@ -25,6 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 from tactic.ui.container import PopupWdg, DynamicListWdg
 from tactic.ui.widget import SearchTypeSelectWdg, ActionButtonWdg
+from tactic.ui.input import UploadButtonWdg 
 
 class SearchTypeToolWdg(BaseRefreshWdg):
 
@@ -462,8 +463,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         #pipeline_div.add("<br/>"*2)
 
-
-
         # Page 3
         
 
@@ -478,66 +477,57 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         image_div.add("<b>Preview Image: </b>")
         image_div.add("<br/>"*3)
-        button = ActionButtonWdg(title="Browse")
-        image_div.add(button)
-        button.add_style("margin-left: auto")
-        button.add_style("margin-right: auto")
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var applet = spt.Applet.get();
-        var server = TacticServerStub.get();
-        var path = applet.open_file_browser();
-        if (!path[0]){
-            spt.alert('Error: No file has benn selected');
-            return;
+
+        on_complete = '''var server = TacticServerStub.get();
+        var file = spt.html5upload.get_file(); 
+        if (file) { 
+
+            var top = bvr.src_el.getParent(".spt_image_top");
+            var text = top.getElement(".spt_image_path");
+            var display = top.getElement(".spt_path_display");
+            var check_icon = top.getElement(".spt_check_icon");
+
+            var server = TacticServerStub.get();
+            var ticket = spt.Environment.get().get_ticket();
+
+
+            display.innerHTML = "Uploaded: " + file.name;
+            display.setStyle("padding", "10px");
+            check_icon.setStyle("display", "");
+          
+          
+            var filename = file.name;
+            filename = spt.path.get_filesystem_name(filename);
+            var kwargs = {
+                ticket: ticket,
+                filename: filename
+            }
+            try {
+                
+                var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
+
+                var info = ret_val.info;
+                var path = info.web_path;
+                text.value = info.lib_path;
+                display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
+            }
+            catch(e) {
+                spt.alert(spt.exception.handler(e));
+            }
+            spt.app_busy.hide();
+            }
+        else {
+            spt.alert('Error: file object cannot be found.') 
         }
-
-        spt.app_busy.show("Browsing for preview image");
-        var top = bvr.src_el.getParent(".spt_image_top");
-        var text = top.getElement(".spt_image_path");
-        var display = top.getElement(".spt_path_display");
-        var check_icon = top.getElement(".spt_check_icon");
-
-        var ticket = spt.Environment.get().get_ticket();
-        server.upload_file(path, ticket);
-
-        display.innerHTML = "Uploaded: " + path;
-        display.setStyle("padding", "10px");
-        check_icon.setStyle("display", "");
-
-        path = path + "";
-        /*
-        path = path.replace(/\\\\/g, "/");
-        var parts = path.split("/");
-        var filename = parts[parts.length-1];
-        */
-
-        var filename = spt.path.get_basename(path);
-        filename = spt.path.get_filesystem_name(filename);
-
-
-        var kwargs = {
-            ticket: ticket,
-            filename: filename
-        }
-        try {
-            var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs)
-            var info = ret_val.info;
-            var path = info.path;
-            text.value = path;
-
-            display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
-
-        } 
-        catch(e) {
-            spt.alert(spt.exception.handler(e));
-        }
-        spt.app_busy.hide();
-
+            spt.app_busy.hide();
         '''
-        } )
+        ticket = Environment.get_ticket()
+        button = UploadButtonWdg(title="Browse", on_complete=on_complete, ticket=ticket) 
+        image_div.add(button)
 
+        button.add_style("margin-left: 210px")
+        button.add_style("margin-right: auto")
+       
         text = HiddenWdg("image_path")
         #text = TextWdg("image_path")
         text.add_class("spt_image_path")

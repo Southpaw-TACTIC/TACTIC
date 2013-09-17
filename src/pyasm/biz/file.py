@@ -658,9 +658,8 @@ class IconCreator(object):
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
                     % (thumb_size[0], thumb_size[1], large_path, small_path)
                 print "cmd: ", cmd
-            print "BEFORE PATH ", large_path
+   
             large_path = large_path.encode('utf-8')
-            print "AFTER PATH ", large_path
             import subprocess
             subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
