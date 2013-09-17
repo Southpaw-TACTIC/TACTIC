@@ -433,7 +433,7 @@ class FastTableLayoutWdg(TableLayoutWdg):
 
 
         # get all client triggers
-        exp = "@SOBJECT(config/client_trigger['event','EQ','%s$'])" %my.search_type
+        exp = "@SOBJECT(config/client_trigger['event','like','%%%s'])" %my.search_type
         client_triggers = Search.eval(exp)
 
         inner.add_attr('upload_id',my.upload_id)
