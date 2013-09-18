@@ -634,6 +634,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 select = SelectWdg("process")
                 table.add_cell(select)
                 process_names.append("---")
+                process_names.append("publish")
                 process_names.append("icon")
                 select.set_option("values", process_names)
         
