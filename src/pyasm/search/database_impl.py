@@ -2853,8 +2853,6 @@ class MySQLImpl(PostgresImpl):
             data_type = result[1]
             nullable = True
 
-            print "data_type: ", name, data_type
-
             if data_type.startswith("character varying"):
                 size = data_type.replace("character varying", "")
                 size = size.replace("(", "")
@@ -2884,11 +2882,13 @@ class MySQLImpl(PostgresImpl):
 
             elif data_type.startswith("longtext"):
                 data_type = 'text'
+                size = 0
             elif data_type.startswith("mediumtext"):
                 data_type = 'text'
+                size = 0
             elif data_type.startswith("varchar"):
-                size = 256
                 data_type = 'text'
+                size = 256
 
             elif data_type.startswith("int"):
                 parts = data_type.split(" ")
