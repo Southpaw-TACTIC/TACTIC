@@ -2887,7 +2887,10 @@ class CreateTable(Base):
         for constraint in my.constraints:
             columns = constraint.get("columns")
             mode = constraint.get("mode")
-            name = "%s_%s_idx" % (my.table, "_".join(columns) )
+            suffix = 'idx'
+            if mode.upper() =='UNIQUE':
+                suffix = 'unique'
+            name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
             expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
             expressions.append(expr)
 
