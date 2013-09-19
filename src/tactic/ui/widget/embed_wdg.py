@@ -64,20 +64,38 @@ class EmbedWdg(BaseRefreshWdg):
         ext = parts[1]
         ext = ext.lower()
 
+        click = True
+
         if ext in ['.png', '.jpeg', '.jpg', '.gif']:
             embed = HtmlElement.img(src)
+        elif ext in ['.mp4', '.ogg', '.mov', '.avi']:
+            from tactic.ui.widget import VideoWdg
+            embed = DivWdg()
+
+            video_id = None
+            sources = [src]
+            poster = 'http://video-js.zencoder.com/oceans-clip.png'
+            width = '100%'
+            height = '100%'
+            video = VideoWdg(video_id=video_id, sources=sources, poster=poster, preload="auto", controls="true", width=width, height=height)
+            embed.add(video)
+            video.get_video().add_class("spt_resizable")
+
+            click = False
+
         else:
             embed = HtmlElement.embed(src)
         div.add(embed)
 
-        embed.add_behavior( {
-            'type': 'click_up',
-            'src': src,
-            'cbjs_action': '''
-            window.open(bvr.src);
-            '''
-        } )
-        embed.add_class("hand")
+        if click:
+            embed.add_behavior( {
+                'type': 'click_up',
+                'src': src,
+                'cbjs_action': '''
+                window.open(bvr.src);
+                '''
+            } )
+            embed.add_class("hand")
 
 
 

@@ -684,11 +684,17 @@ class ThumbWdg2(BaseRefreshWdg):
         search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
             search_code = sobject.get_id()
+
+        # FIXME: make this faster
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
+        if not snapshot:
+            snapshot = Snapshot.get_snapshot(search_type, search_code)
+
+
         if snapshot:
             file_type = "web"
             icon_path = snapshot.get_web_path_by_type(file_type)
