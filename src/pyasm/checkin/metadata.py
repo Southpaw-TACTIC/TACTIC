@@ -452,6 +452,8 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'width': 'video:width',
             'height': 'video:height',
             'frames': 'video:nb_frames',
+            'fps': 'video:r_frame_rate',
+            'codec': 'video:codec_name'
         }
 
 

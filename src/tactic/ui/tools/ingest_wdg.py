@@ -108,7 +108,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 	    var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 for (var i = 0; i < files.length; i++) {
-                    spt.drag.show_file(files[i], files_el);
+                    spt.drag.show_file(files[i], files_el, 0, true);
                 }
 	    }
 
@@ -201,7 +201,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.drag = {}
         var background;
 
-        spt.drag.show_file = function(file, top, delay) {
+        spt.drag.show_file = function(file, top, delay, icon) {
 
             if (!background) {
                 background = top.getElement(".spt_files_background");
@@ -228,10 +228,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             var date_label_el = clone.getElement(".spt_date_label");
             var date_el = clone.getElement(".spt_date");
 
-            if (true) {
-
-                //var loadingImage = loadImage(
-                setTimeout( function() {
+            //var loadingImage = loadImage(
+            setTimeout( function() {
+                if (icon) {
                     var loadingImage = loadImage(
                         file,
                         function (img) {
@@ -239,39 +238,50 @@ class IngestUploadWdg(BaseRefreshWdg):
                         },
                         {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
                     );
-                    loadImage.parseMetaData(
-                        file,
-                        function(data) {
-                            if (data.exif) {
-                                var date = data.exif.get('DateTimeOriginal');
-                                if (date) {
-                                    date_label_el.innerHTML = date;
-                                    if (date_el) {
-                                        date_el.value = date;
-                                    }
+                }
+                else {
+                    var img = $(document.createElement("div"));
+                    img.setStyle("width", "60");
+                    img.setStyle("height", "40");
+                    //img.innerHTML = "MP4";
+                    img.setStyle("border", "solid 1px black")
+                    thumb_el.appendChild(img);
+                }
+
+
+                loadImage.parseMetaData(
+                    file,
+                    function(data) {
+                        if (data.exif) {
+                            var date = data.exif.get('DateTimeOriginal');
+                            if (date) {
+                                date_label_el.innerHTML = date;
+                                if (date_el) {
+                                    date_el.value = date;
                                 }
                             }
-
                         }
-                    );
-                }, delay );
 
-                /*
-                var reader = new FileReader();
-                reader.thumb_el = thumb_el;
-                reader.onload = function(e) {
-                    this.thumb_el.innerHTML = [
-                        '<img class="thumb" src="',
-                        e.target.result,
-                        '" title="', escape(name),
-                        '" width="60px"',
-                        '" padding="5px"',
-                        '"/>'
-                    ].join('');
-                }
-                reader.readAsDataURL(file);
-                */
+                    }
+                );
+
+            }, delay );
+
+            /*
+            var reader = new FileReader();
+            reader.thumb_el = thumb_el;
+            reader.onload = function(e) {
+                this.thumb_el.innerHTML = [
+                    '<img class="thumb" src="',
+                    e.target.result,
+                    '" title="', escape(name),
+                    '" width="60px"',
+                    '" padding="5px"',
+                    '"/>'
+                ].join('');
             }
+            reader.readAsDataURL(file);
+            */
          
             clone.getElement(".spt_name").innerHTML = file.name;
             clone.getElement(".spt_size").innerHTML = size + " KB";
@@ -291,13 +301,16 @@ class IngestUploadWdg(BaseRefreshWdg):
             for (var i = 0; i < files.length; i++) {
                 var size = files[i].size;
 
-                if (size >= 10*1024*1024) continue
+                if (size >= 10*1024*1024) {
+                    spt.drag.show_file(files[i], files_el, 0, false);
+                }
+                else {
+                    spt.drag.show_file(files[i], files_el, delay, true);
 
-                spt.drag.show_file(files[i], files_el, delay);
-
-                if (size < 100*1024)       delay += 50;
-                else if (size < 1024*1024) delay += 500;
-                else if (size < 10*1024*1024) delay += 1000;
+                    if (size < 100*1024)       delay += 50;
+                    else if (size < 1024*1024) delay += 500;
+                    else if (size < 10*1024*1024) delay += 1000;
+                }
 
             }
         }
@@ -487,8 +500,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
-        var category = values.category[0];
+        //var category = values.category[0];
         var keywords = values.keywords[0];
+
+        var convert_el = top.getElement(".spt_image_convert")
+        var convert = spt.api.get_input_values(convert_el);
 
         var processes = values.process;
         if (processes) {
@@ -506,9 +522,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             relative_dir: relative_dir,
             filenames: filenames,
             key: key,
-            category: category,
+            //category: category,
             keywords: keywords,
             process: process,
+            convert: convert,
         }
         on_complete = function() {
             spt.info("Ingest complete");
@@ -613,7 +630,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     def get_data_wdg(my):
         div = DivWdg()
-        div.add_style("width: 150px")
 
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
@@ -634,14 +650,21 @@ class IngestUploadWdg(BaseRefreshWdg):
                 select = SelectWdg("process")
                 table.add_cell(select)
                 process_names.append("---")
+                process_names.append("publish")
                 process_names.append("icon")
                 select.set_option("values", process_names)
         
 
 
+        ####
+        buttons = Table()
+        div.add(buttons)
+        buttons.add_row()
+
 
         button = IconButtonWdg(title="Add Data", icon=IconWdg.FOLDER)
-        div.add(button)
+        buttons.add_cell(button)
+
 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
@@ -715,6 +738,27 @@ class IngestUploadWdg(BaseRefreshWdg):
         text.add_style("padding: 1px")
 
 
+        ####
+
+        button = IconButtonWdg(title="Resize", icon=IconWdg.FILM)
+        buttons.add_cell(button)
+
+        dialog = DialogWdg(display="false", show_title=False)
+        div.add(dialog)
+        dialog.set_as_activator(button, offset={'x':-10,'y':10})
+
+        try:
+            from spt.tools.convert import ConvertOptionsWdg
+            convert_div = DivWdg()
+            dialog.add(convert_div)
+            convert_div.add_style("padding: 20px")
+            convert_div.add_color("background", "background")
+            convert_div.add_class("spt_image_convert")
+
+            convert = ConvertOptionsWdg()
+            convert_div.add(convert)
+        except:
+            pass
 
 
         # use base name for name
@@ -807,6 +851,18 @@ class IngestUploadCmd(Command):
 
             # extract metadata
             file_path = "%s/%s" % (upload_dir, File.get_filesystem_name(filename))
+
+            # TEST: convert on upload
+            try:
+                convert = my.kwargs.get("convert")
+                if convert:
+                    message_key = "IngestConvert001"
+                    cmd = ConvertCbk(**convert)
+                    cmd.execute()
+            except Exception, e:
+                print "WARNING: ", e
+
+
             if not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
 

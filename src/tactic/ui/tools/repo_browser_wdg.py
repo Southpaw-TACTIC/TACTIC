@@ -499,8 +499,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search.add_sobjects_filter(my.sobjects)
 
 
-
-
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -1706,8 +1704,10 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         search2.add_relationship_search_filter(search)
         sobjects = search2.get_sobjects()
 
-        top = my.top
 
+
+
+        top = my.top
 
         path = my.kwargs.get("dirname")
         path_div = DivWdg()
@@ -1719,9 +1719,16 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_style("margin: -1 -1 0 -1")
         path_div.add_border()
 
+
+
         search_codes = [x.get_value("code") for x in sobjects]
         search_codes_str = "|".join(search_codes)
         expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
+
+        #search_keys = my.kwargs.get("search_keys")
+        search_keys = []
+
+
 
         #layout_mode = 'default'
 
@@ -1740,7 +1747,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         if layout_mode == "checkin":
             element_names = ['preview','code','name','general_checkin','file_list', 'history','description','notes']
 
-        search_keys = my.kwargs.get("search_keys")
 
 
         from tactic.ui.panel import ViewPanelWdg

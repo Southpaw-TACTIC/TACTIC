@@ -799,7 +799,8 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
                     var session = editor.getSession();
-                    session.setUseWrapMode(true);
+                    //session.setUseWrapMode(true);
+                    //session.setWrapLimitRange(120, 120);
                 };
 
                 var editor = spt.ace_editor.editor;
