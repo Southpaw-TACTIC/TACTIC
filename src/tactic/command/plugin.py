@@ -664,6 +664,7 @@ class PluginCreator(PluginBase):
         xml.read_string(manifest)
         nodes = xml.get_nodes("manifest/*")
 
+        sobjects = []
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
@@ -675,6 +676,8 @@ class PluginCreator(PluginBase):
                 my.handle_search_type(node)
             elif name == 'include':
                 my.handle_include(node)
+
+
 
 
 
