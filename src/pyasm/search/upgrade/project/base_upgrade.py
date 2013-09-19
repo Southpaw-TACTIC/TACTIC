@@ -127,6 +127,15 @@ class BaseUpgrade(Command):
 
             Command.execute_cmd(upgrade, call_trigger=False)
 
+    def get_database_type(my):
+        project = Project.get_by_code(my.project_code)
+        db_resource = project.get_project_db_resource()
+        db = DbContainer.get(db_resource)
+        return db.get_database_type()
+
+
+
+
     def run_sql(my, sql):
         ''' run an sql statement. my is an instance of the dynamically created 
         <project_type>Upgrade class. If SqlException arise, it will record the

@@ -2879,6 +2879,17 @@ class MySQLImpl(PostgresImpl):
                 else:
                     size = 4
                 data_type = 'boolean'
+
+            elif data_type.startswith("longtext"):
+                data_type = 'text'
+                size = 0
+            elif data_type.startswith("mediumtext"):
+                data_type = 'text'
+                size = 0
+            elif data_type.startswith("varchar"):
+                data_type = 'text'
+                size = 256
+
             elif data_type.startswith("int"):
                 parts = data_type.split(" ")
                 size = parts[0]
