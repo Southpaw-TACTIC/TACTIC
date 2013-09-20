@@ -15,7 +15,7 @@ __all__ = ['SnapshotFilesWdg','SObjectDirListWdg']
 
 from pyasm.common import Environment, Common, jsonloads, jsondumps
 from pyasm.search import SearchKey, Search
-from pyasm.biz import Snapshot
+from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import WebContainer, SpanWdg, DivWdg, Table
 from pyasm.widget import IconWdg, SelectWdg
 
@@ -730,12 +730,10 @@ class SObjectDirListWdg(DirListWdg):
         pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
         processes = []
         if pipeline_code:
-            search = Search("sthpw/pipeline")
-            search.add_filter("code", pipeline_code)
-            pipeline = search.get_sobject()
-
-            process_names = pipeline.get_process_names()
-            processes.extend(process_names)
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if pipeline:
+                process_names = pipeline.get_process_names()
+                processes.extend(process_names)
 
         processes.insert(0, "all")
 
