@@ -296,20 +296,28 @@ class DatabaseImpl(object):
     def get_regex_filter(my, column, regex, op='EQI'):
         return None
 
-
+    
+    
     def get_text_search_filter(cls, column, keywords, column_type, table=None):
         '''default impl works with Postgres'''
         if isinstance(keywords, basestring):
-            if keywords.find("|") != -1 or keywords.find("&") != -1:
-                # prevent syntax error from multiple | or &
-                keywords = re.sub( r'\|+', r'|', keywords)
-                keywords = re.sub( r'\&+', r'&', keywords)
-                value = keywords
-            else:
+            def split_keywords(keywords):
                 keywords = keywords.strip()
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
                 value = ' | '.join(parts)
+                return value
+            
+            if keywords.find("|") != -1 or keywords.find("&") != -1:
+                # prevent syntax error from multiple | or &
+                keywords = re.sub( r'\|+', r'|', keywords)
+                keywords = re.sub( r'\&+', r'&', keywords)
+                keywords = keywords.rstrip('&')
+                value = keywords
+                if keywords.find("|") == -1 and  keywords.find("&") == -1:
+                    value = split_keywords(keywords)
+            else:
+                value = split_keywords(keywords)
 
         elif type(keywords) == types.ListType:
             # remove empty strings from the list
