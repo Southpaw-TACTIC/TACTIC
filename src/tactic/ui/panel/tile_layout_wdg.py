@@ -131,11 +131,17 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_key = top.getAttribute("spt_search_key");
             var server = TacticServerStub.get();
             var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-            if (snapshot) {
+            if (snapshot.__search_key__) {
                 window.open(snapshot.__web_paths_dict__.main);
             }
             else {
-                alert("Can't find file");
+                var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                if (snapshot.__search_key__) {
+                    window.open(snapshot.__web_paths_dict__.main);
+                }
+                else {
+                    alert("WARNING: No file for this asset");
+                }
             }
             '''
         } )
@@ -274,13 +280,21 @@ class TileLayoutWdg(ToolLayoutWdg):
                     if (!select) {
                         checkbox.checked = false;
                         row.removeClass("spt_table_selected");
+
                         row.setStyle("border", "solid 1px " + bvr.border);
+                        var size = row.getSize();
+                        row.setStyle("width", size.x+6);
+                        row.setStyle("height", size.y+6);
+
 
                     }
                     else {
                         checkbox.checked = true;
                         //row.addClass("spt_table_selected");
-                        row.setStyle("border", "solid 1px yellow");
+                        var size = row.getSize();
+                        row.setStyle("width", size.x-10);
+                        row.setStyle("height", size.y-10);
+                        row.setStyle("border", "solid 5px yellow");
                         spt.table.select_row(row);
 
                     }
@@ -295,14 +309,25 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
                     row.removeClass("spt_table_selected");
+
                     row.setStyle("border", "solid 1px " + bvr.border);
+
+                    var size = row.getSize();
+                    row.setStyle("width", size.x+6);
+                    row.setStyle("height", size.y+6);
 
                 }
                 else {
                     checkbox.checked = true;
                     //row.addClass("spt_table_selected");
-                    row.setStyle("border", "solid 1px yellow");
+
+                    var size = row.getSize();
+                    row.setStyle("width", size.x-10);
+                    row.setStyle("height", size.y-10);
+                    row.setStyle("border", "solid 5px yellow");
                     spt.table.select_row(row);
+
+
 
                 }
 

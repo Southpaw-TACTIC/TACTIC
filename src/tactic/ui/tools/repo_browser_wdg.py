@@ -49,16 +49,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = 'all'
         #my.mode = 'folder'
 
-        """
-        title_wdg = DivWdg()
-        top.add(title_wdg)
-        title_wdg.add_border()
-        title_wdg.add_style("padding: 10px")
-        title_wdg.add_gradient("background", "background", -10)
-        title_wdg.add("Repository Browser")
-        title_wdg.add_style("font-size: 14px")
-        title_wdg.add_style("font-weight: bold")
-        """
 
         #table = ResizableTableWdg()
         table = Table()
@@ -168,7 +158,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         left_inner = DivWdg()
         left.add(left_inner)
-        left_inner.add_style("width: 350px")
+        left_inner.add_style("width: 300px")
         left_inner.add_style("padding: 5px")
         #left_inner.add_style("max-height: 600px")
         left_inner.add_style("min-height: 500px")
@@ -1252,7 +1242,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         spt.app_busy.hide();
 
         spt.repo_browser.select(bvr.src_el);
-
         '''
         } )
 
