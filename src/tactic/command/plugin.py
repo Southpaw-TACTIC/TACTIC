@@ -169,8 +169,22 @@ class PluginBase(Command):
             search = Search("config/plugin")
             search.add_filter("code", my.code)
             plugin = search.get_sobject()
+            relative_dir = plugin.get_value("code")
 
-            my.manifest = plugin.get_value("manifest")
+            plugin_base_dir = Environment.get_plugin_dir()
+            my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+            manifest_path = "%s/manifest.xml" % my.plugin_dir
+            if not os.path.exists(manifest_path):
+                plugin_base_dir = Environment.get_builtin_plugin_dir()
+                my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+                manifest_path = "%s/manifest.xml" % my.plugin_dir
+
+            f = open(manifest_path, 'r')
+            my.manifest = f.read()
+            f.close()
+
+            #my.manifest = plugin.get_value("manifest")
+
             my.code = plugin.get_code()
             my.version = plugin.get_value("version")
 
