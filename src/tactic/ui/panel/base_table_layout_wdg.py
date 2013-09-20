@@ -430,6 +430,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     group_values = None
             if not group_values or not group_values.has_key('group'):
             """
+
+
             group_values = values[0]
 
             # the group element is always ordered first
@@ -443,14 +445,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 my.group_interval = group_values.get("interval")
                 # order by is no longer coupled with group by
                 # it can be turned on together in the context menu Group and Order by
-                """
-                element_type = SearchType.get_tactic_type(my.search_type, my.group_element)
-                is_expr = re.search("^(@|\$|{@|{\$)", my.group_element)
-                if element_type in ['time', 'date', 'datetime'] or is_expr or my.is_expression_element(my.group_element):
-                    pass
-                else:
-                    search.add_order_by(my.group_element)
-                """
             else:
                 my.group_element = False
 
@@ -568,7 +562,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not custom_search_view:
             custom_search_view = ''
 
-        my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=my.parent_key, limit=limit, custom_search_view=custom_search_view)
+        my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:
@@ -621,9 +615,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 handler = Common.create_from_class_path(class_name)
                 handler.alter_search(search)
 
-
-        if my.parent_key and my.parent_key != "%s":
-            parent = Search.get_by_search_key(my.parent_key)
+        # reget parent key from kwargs because my.parent is retrieved
+	parent_key = my.kwargs.get("parent_key")
+        if parent_key and parent_key != "%s":
+            parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
                 my.items_found = 0
@@ -650,46 +645,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     	my.element_process_sobjects(search)
 
-
-
-
-    # DEPRECATED
-    """
-    def handle_expression_search(my, expression):
-
-        if my.expr_sobjects:
-            sobjects = my.expr_sobjects
-        else:
-            if my.search_key and my.search_key != "%s":
-                start_sobj = Search.get_by_search_key(my.search_key)
-            else:
-                start_sobj = None
-
-            sobjects = Search.eval(expression, start_sobj, list=True)
-        my.items_found = len(sobjects)
-
-        # re-create a search to satistfy the alter_search()
-        # it's not efficient though, could be improved if Search.eval
-        # returns a search instead
-        
-        # only do this alter_search if search_limit is visible
-        if my.search_limit:
-            search = Search(my.search_type)
-            
-            ids = SObject.get_values(sobjects, 'id')
-            search.add_filters('id', ids)
-            #search.add_enum_order_by('id', ids)
-
-            my.search_limit.set_search(search)
-            my.alter_search(search)
-            my.sobjects = search.get_sobjects()
-            my.element_process_sobjects(search)
-        else:
-            my.sobjects = sobjects
-            my.element_process_sobjects(None)
-
-        return
-    """
 
 
 
