@@ -616,7 +616,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 handler.alter_search(search)
 
         # reget parent key from kwargs because my.parent is retrieved
-	parent_key = my.kwargs.get("parent_key")
+	parent_key = my.kwargs.get("search_key")
+        if not parent_key:
+            parent_key = my.kwargs.get("parent_key")
         if parent_key and parent_key != "%s":
             parent = Search.get_by_search_key(parent_key)
             if not parent:
