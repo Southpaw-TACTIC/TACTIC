@@ -4540,9 +4540,12 @@ class SwitchLayoutMenu(object):
         menu_item = MenuItem(type='title', label='Switch Layout')
         menu.add(menu_item)
 
+        config = WidgetConfigView.get_by_search_type(my.search_type, "table")
+        default_element_names = config.get_element_names()
 
-        views = ['tile', 'list', 'content', 'navigate', 'schedule', 'checkin', 'tool', 'browser', 'card', 'overview']
-        labels = ['Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Overview']
+
+        views = ['table', 'tile', 'list', 'content', 'navigate', 'schedule', 'checkin', 'tool', 'browser', 'card', 'overview']
+        labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Overview']
 
         # this is fast table biased
         if my.kwargs.get("is_refresh") in ['false', False]:
@@ -4557,9 +4560,11 @@ class SwitchLayoutMenu(object):
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
+                'tactic.ui.panel.ViewPanelWdg',
             ]
         else:
             class_names = [
+                'tactic.ui.panel.FastTableLayoutWdg',
                 'tactic.ui.panel.TileLayoutWdg',
                 'tactic.ui.panel.FastTableLayoutWdg',
                 'tactic.ui.panel.FastTableLayoutWdg',
@@ -4574,6 +4579,7 @@ class SwitchLayoutMenu(object):
 
 
         layouts = [
+            'table',
             'tile',
             'default',
             'default',
@@ -4587,6 +4593,7 @@ class SwitchLayoutMenu(object):
         ]
 
         element_names = [
+            default_element_names,
             [],
             ['name'],
             ['preview','code','name','description'],
@@ -4601,6 +4608,7 @@ class SwitchLayoutMenu(object):
 
         if not SearchType.column_exists(my.search_type, 'name'):
             element_names = [
+            default_element_names,
             [],
             ['code'],
             ['preview','code','description'],
