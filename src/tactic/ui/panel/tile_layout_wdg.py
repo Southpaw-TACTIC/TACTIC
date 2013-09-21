@@ -13,7 +13,7 @@ __all__ = ["TileLayoutWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
@@ -115,10 +115,11 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_key = top.getAttribute("spt_search_key");
             var name = top.getAttribute("spt_name");
             var search_code = top.getAttribute("spt_search_code");
-            var class_name = 'tactic.ui.tools.SObjectDetailWdg'
+            var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+            var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
             var kwargs = {
                 search_key: search_key
-            }
+            };
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
@@ -630,28 +631,38 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         detail_div.add(detail)
 
 
-        title_div = DivWdg()
-        title_div.add_class("spt_tile_select")
-        title_div.add_class("hand")
-        div.add(title_div)
-        title_div.add_class("SPT_DTS")
-        title_div.add_style("overflow-x: hidden")
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        header_div.add_class("hand")
+        div.add(header_div)
+        header_div.add_class("SPT_DTS")
+        header_div.add_style("overflow-x: hidden")
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
-        title_div.add(checkbox)
-        title_div.add(" ")
 
         title = sobject.get_name()
         if not title:
             title = sobject.get_code()
+      
+        table = Table()
+        header_div.add(table)
+
+        table.add_cell(checkbox)
+
+        title_div = DivWdg()
+        td = table.add_cell(title_div)
+        title_div.add(title)
+        title_div.add_style("height: 15px")
+        #title_div.add_style("white-space", "nowrap")
+        td.add_style("overflow: hidden")
+
 
         description = sobject.get_value("description", no_exception=True)
         if description:
             div.add_attr("title", sobject.get_code())
 
-        title_div.add(title)
 
 
         return div
