@@ -116,7 +116,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             var name = top.getAttribute("spt_name");
             var search_code = top.getAttribute("spt_search_code");
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
-            var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
+            //var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
             var kwargs = {
                 search_key: search_key
             };
@@ -618,7 +618,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
 
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
-        div.add_style("height: 15px")
+        div.add_style("height: 16px")
 
 
         detail_div = DivWdg()
@@ -648,6 +648,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
       
         table = Table()
         header_div.add(table)
+        header_div.add_style("position: relative")
 
         table.add_cell(checkbox)
 
@@ -655,8 +656,13 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         td = table.add_cell(title_div)
         title_div.add(title)
         title_div.add_style("height: 15px")
+        title_div.add_style("left: 25px")
+        title_div.add_style("top: 3px")
+        title_div.add_style("position: absolute")
+        title_div.add_attr("title", title)
         #title_div.add_style("white-space", "nowrap")
-        td.add_style("overflow: hidden")
+        #td.add_style("overflow: hidden")
+        title_div.add("<br clear='all'/>")
 
 
         description = sobject.get_value("description", no_exception=True)

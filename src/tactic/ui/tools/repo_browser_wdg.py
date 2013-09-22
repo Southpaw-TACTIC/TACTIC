@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserCbk', 'RepoBrowserDirContentWdg', 'RepoBrowserActionCmd']
+__all__ = ['RepoBrowserWdg', 'RepoBrowserDirListWdg','RepoBrowserContentWdg', 'RepoBrowserCbk', 'RepoBrowserDirContentWdg', 'RepoBrowserActionCmd']
 
 from tactic.ui.common import BaseRefreshWdg
 

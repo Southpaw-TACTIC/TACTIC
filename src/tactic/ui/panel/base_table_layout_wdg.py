@@ -415,22 +415,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     search.add_order_by(my.order_element, direction)
 
         if values:
-            # Outdated: This is to maintain grouping .... filter_xml must be completely
-            # redone
-            """
-            filter_xml = my.kwargs.get("filter_xml")
-            group_values = {}
-            if filter_xml:
-                try:
-                    filter_xml = eval(filter_xml)
-                    filter_data = FilterData(data=filter_xml)
-                    group_values = filter_data.get_values_by_index("group")
-                    assert type(group_values) == types.DictType
-                except:
-                    group_values = None
-            if not group_values or not group_values.has_key('group'):
-            """
-
 
             group_values = values[0]
 
@@ -543,11 +527,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.sobjects = []
             return
 
-        # DEPRECATED: handled by the above code
-        # if an expression exists, then this rules the search
-        #if expression:
-        #    my.handle_expression_search(expression)
-        #    return
 
 
         # don't set the view here, it affects the logic in SearchWdg
@@ -615,8 +594,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 handler = Common.create_from_class_path(class_name)
                 handler.alter_search(search)
 
-        # reget parent key from kwargs because my.parent is retrieved
-	parent_key = my.kwargs.get("search_key")
+        # re-get parent key from kwargs because my.parent is retrieved
+        # This only is used if an expression is not used.  Otherwise, the
+        # search_key is applied to the expression
+        parent_key = None
+        if not expression:
+            parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
         if parent_key and parent_key != "%s":
