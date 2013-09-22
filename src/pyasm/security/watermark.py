@@ -115,8 +115,8 @@ class Watermark(object):
                 sizey = im_in.size[1]
                 max_res = sizex * quality
                 max_width = sizex
-                im_in = im_in.resize( (max_res, int(sizey/(sizex/float(max_res)))) )
-                im_in = im_in.resize( (max_width, int(sizey/(sizex/float(max_width)))) )
+                im_in = im_in.resize( (int(max_res), int(sizey/(sizex/float(max_res)))) )
+                im_in = im_in.resize( (int(max_width), int(sizey/(sizex/float(max_width)))) )
 
             # add the watermark
             #watermark = Watermark()
