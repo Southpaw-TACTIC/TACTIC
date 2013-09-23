@@ -405,7 +405,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_view_wdg(my, sobject, view):
         div = DivWdg()
-        div.add_style("overflow: hidden")
+        #div.add_style("overflow: hidden")
 
         kwargs = {
             'search_key': sobject.get_search_key(),
@@ -422,8 +422,11 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_scale_wdg(my):
 
+        show_scale = my.kwargs.get("show_scale")
 
         div = DivWdg()
+        if show_scale in [False, 'false']:
+            div.add_style("display: none")
         div.add_style("padding: 5px")
         div.add_class("spt_table_search")
         hidden = HiddenWdg("prefix", "tile_layout")
