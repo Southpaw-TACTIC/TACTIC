@@ -91,7 +91,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             server = TacticServerStub.get(protocol='local')
             my.rel_path = server.get_doc_link(alias)
 
-        if not my.rel_path:
+        if not my.rel_path or my.rel_path == 'none_found':
             #raise TacticException("Help alias [%s] does not exist" % alias)
             layout = DivWdg()
             layout.add(HelpCreateWdg(alias=alias))
