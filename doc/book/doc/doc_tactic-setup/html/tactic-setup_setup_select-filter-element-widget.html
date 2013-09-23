@@ -1,0 +1,361 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Select Filter Element Widget</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-simple-search.html" title="Simple Search Widgets">
+      <link rel="prev" href="tactic-setup_setup_simple_search_filter_setup.html" title="How To Set Up A Simple Search Filter">
+      <link rel="next" href="tactic-setup_setup_checkbox_filter_element_wdg.html" title="Checkbox Filter Element Widget">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_simple_search_filter_setup.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_checkbox_filter_element_wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Select Filter Element Widget">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_select-filter-element-widget"></a>Select Filter Element Widget
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <p>
+                    
+         </p>
+         <div class="mediaobject"><img src="media/1_select_filter_element_widget_overview.png"></div>
+         <p>
+                
+         </p>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12942"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>This widget provides a drop down selection menu of values for a column for the Simple
+                           Search to do filtering on.
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12947"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Select Filter Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.filter.SelectFilterElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.7+</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12991"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>title</strong></span></p>
+                                                   
+                        </td>
+                        <td>The title for the Select Filter Element. For
+                                                       example:<pre class="screen">&lt;element name='artist_name' <span class="bold"><strong>title='Artist Name'</strong></span>&gt; </pre></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>values</strong></span>
+                                                              <span class="italic">(required)</span></p>
+                                                   
+                        </td>
+                        <td>
+                                                       
+                           <p>The values to populate the drop down selection with. For example,
+                                                              it can be a TACTIC expression:
+                           </p>
+                                                       <pre class="screen">&lt;values_expr&gt;@GET(sthpw/login.login)&lt;/values_expr&gt; </pre>
+                                                       <p>or, it can be a pipe separated list of values. For example:</p>
+                                                       <pre class="screen">&lt;values&gt;new|open|in_dev|need_info|on_hold|need_validation|closed|invalid&lt;/values&gt; </pre>
+                                                   </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>column</strong></span>
+                                                              <span class="italic">(required)</span></p>
+                                                   
+                        </td>
+                        <td>The table column to do the select from. For
+                                                       example:<pre class="screen">&lt;column&gt;asset_category_code&lt;/column&gt; </pre></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13051"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Find or define the filter view in the Widget Config and use the following XML code as
+                           an example of what to add to the config:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+    &lt;element name='dynamic'&gt;
+      &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@GET(project/asset_category.code))&lt;/values_expr&gt; 
+          &lt;column&gt;asset_category_code&lt;/column&gt; 
+      &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre><p>
+                       
+            </p>
+            <p>For the above example, this filter will provide a list of asset category codes to
+                           select from.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/2_select_filter_element_widget_example_asset_category.png"></div>
+            <p>
+                       
+            </p>
+            <p>Notice that an icon of a green light appears next to the filter if it is being used:</p>
+            <div class="mediaobject"><img src="media/2b_select_filter_element_widget_example_asset_category_after.png"></div>
+         </div>
+         <div class="simplesect" title="Example 1">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13074"></a>Example 1
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The following example demonstrates the Select Filter Element Widget providing
+                           filtering options for scrum tickets.
+            </p>
+            <p>Below is what the Select Filter Elements look like in the user interface:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/3_select_filter_element_widget_example_scrum.png"></div>
+            <p>
+                       
+            </p>
+            <p>Below is what the config for the above example looks like in the Widget
+                           Config:
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+  
+    &lt;element name='assigned'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(sthpw/login.login)&lt;/values_expr&gt; 
+          &lt;column&gt;assigned&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+  
+    &lt;element name='status'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values&gt;new|open|in_dev|need_info|on_hold|need_validation|closed|invalid&lt;/values&gt; 
+          &lt;column&gt;status&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='type'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@UNIQUE(@GET(scrum/ticket.type))&lt;/values_expr&gt; 
+          &lt;column&gt;type&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='sprint'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(scrum/sprint.title)&lt;/values_expr&gt; 
+          &lt;column&gt;scrum/sprint.title&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='feature'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(scrum/feature.title)&lt;/values_expr&gt; 
+          &lt;column&gt;scrum/feature.title&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='product'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(scrum/product.title)&lt;/values_expr&gt; 
+          &lt;column&gt;scrum/feature.scrum/product.title&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='customer'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@UNIQUE(@GET(scrum/ticket.customer_code))&lt;/values_expr&gt; 
+          &lt;column&gt;customer_code&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre></div>
+         <div class="simplesect" title="Example 2">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13091"></a>Example 2
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The following example is from the VFX project. It demonstrates how the Select Filter
+                           Element Widget can provide filtering options on assets based on columns not belonging to
+                           the current table itself.
+            </p>
+            <p>Below is the schema for the VFX project. From the <span class="bold"><strong>asset</strong></span> search type, a Select Filter Element is built based for attributes
+                           in the <span class="bold"><strong>asset_category</strong></span>, <span class="bold"><strong>sequence</strong></span>, <span class="bold"><strong>shot</strong></span> and search types.
+            </p>
+            <div class="mediaobject"><img src="media/5_select_filter_element_widget_example_vfx_schema.png"></div>
+            <p>Below is what the Select Filter Elements look like in the user interface:</p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/4_select_filter_element_widget_example_vfx.png"></div>
+            <p>
+                       
+            </p>
+            <p>Below is what the config for the above example looks like in the Widget
+                           Config:
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+    &lt;element name='keywords'/&gt;
+  
+    &lt;element name='asset_category'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(vfx/asset_category.code))&lt;/values_expr&gt; 
+          &lt;column&gt;asset_category&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='sequence'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(vfx/sequence.code))&lt;/values_expr&gt; 
+          &lt;column&gt;vfx/asset_in_sequence.sequence_code&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+    &lt;element name='shot'&gt; 
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt; 
+          &lt;values_expr&gt;@GET(vfx/shot.code))&lt;/values_expr&gt; 
+          &lt;column&gt;vfx/asset_in_shot.shot_code&lt;/column&gt; 
+        &lt;/display&gt; 
+    &lt;/element&gt;
+
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre></div>
+         <p><span class="bold"><strong>Note</strong></span>: the column attribute can only point to sTypes of
+                    the local database. For example if you are in vfx project's sequence page, you can't filter
+                    for task status of a shot with &lt;column&gt;vfx/shot.sthpw/task.status&lt;/column&gt;. An
+                    alternative is to use the Advanced Search Criteria's children section or the cross_db
+                    attribute of the KeywordFilterElementWdg.
+         </p><pre class="screen">&lt;!-- in a task view, search for the shot's title attribute--&gt;
+
+&lt;element name="keywords"&gt;
+  &lt;display class="tactic.ui.filter.KeywordFilterElementWdg"&gt;
+    &lt;mode&gt;keyword&lt;/mode&gt;
+    &lt;column&gt;vfx/shot.title&lt;/column&gt;
+    &lt;cross_db&gt;true&lt;/cross_db&gt;
+  &lt;/display&gt;
+&lt;/element&gt;        
+    </pre></div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_simple_search_filter_setup.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-simple-search.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_checkbox_filter_element_wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,187 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>query_snapshots</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_query.html" title="query">
+      <link rel="next" href="python-client-api_general_reactivate_sobject.html" title="reactivate_sobject">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_query.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_reactivate_sobject.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="query_snapshots">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_query_snapshots"></a>
+                         query_snapshots
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False,
+                  include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False)
+                      </strong></span>
+                
+         </p>
+         <p>
+                thin wrapper around query, but is specific to querying snapshots
+                
+         </p>
+         <p>
+                with some useful included flags that are specific to snapshots
+                
+         </p>
+         <h4><a name="d0e5798"></a>
+                params:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      ticket 
+                      </strong></span>
+                 -  authentication ticket
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      filters 
+                      </strong></span>
+                 -  (optional) an array of filters to alter the search
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      columns 
+                      </strong></span>
+                 -  (optional) an array of columns whose values should be
+                
+         </p>
+         <p>
+                retrieved
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      order_bys 
+                      </strong></span>
+                 -  (optional) an array of order_by to alter the search
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      show_retired 
+                      </strong></span>
+                 -  (optional) 
+                
+         </p>
+         <p>
+                returned
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      limit 
+                      </strong></span>
+                 -  sets the maximum number of results returned
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      single 
+                      </strong></span>
+                 -  returns a single sobject that is not wrapped up in an array
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      include_paths 
+                      </strong></span>
+                 -  flag to specify whether to include a __paths__ property
+                
+         </p>
+         <p>
+                containing a list of all paths in the dependent snapshots
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      include_paths_dict 
+                      </strong></span>
+                 -  flag to specify whether to include a
+                
+         </p>
+         <p>
+                __paths_dict__ property containing a dict of all paths in the
+                
+         </p>
+         <p>
+                dependent snapshots
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      include_full_xml 
+                      </strong></span>
+                 -  flag to return the full xml definition of a snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      include_parent 
+                      </strong></span>
+                 -  includes all of the parent attributes in a __parent__ dictionary
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      include_files 
+                      </strong></span>
+                 -  includes all of the file objects referenced in the
+                
+         </p>
+         <p>
+                snapshots
+                
+         </p>
+         <h4><a name="d0e5872"></a>
+                return:
+                
+         </h4>
+         <p>
+                list of snapshots
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_query.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_reactivate_sobject.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

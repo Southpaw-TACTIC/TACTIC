@@ -1,0 +1,136 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>HTTP Co-Service Installation/Configuration</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-web-server.html" title="Install Web Server">
+      <link rel="prev" href="tactic-sys-admin_install-web-server.html" title="Install Web Server">
+      <link rel="next" href="tactic-sys-admin_sys-admin_configure-http-apache.html" title="Apache HTTP Co-Service Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_install-web-server.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-http-apache.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="HTTP Co-Service Installation/Configuration">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_configure-http"></a>HTTP Co-Service Installation/Configuration
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>The aim of this document is to be able to configure Apache to proxy TACTIC on a UNIX
+            machine. For Apache on Windows machines, there may be some slight differences in behavior or
+                    steps. 
+         </p>
+         <div class="simplesect" title="Requirements:">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2726"></a>Requirements: 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="orderedlist">
+               <ol class="orderedlist" type="1">
+                  <li class="listitem">
+                     <p>User must have sufficient technical knowledge to navigate the OS directories,
+                                            edit text files, and start/stop services. Knowledge of the target web server is
+                                            required.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>TACTIC must be installed on the host machine. It should be runnable to the
+                                            point where all diagnostics presume no error in the TACTIC configuration. In the
+                                            below examples, TACTIC is installed with all default options.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>The web server must be installed on the host machine. Since different OS's can
+                                            have vastly different HTTP service default configurations, configuration files
+                                            will need to be found by command or appropriate documentation
+                                            consultation.
+                     </p>
+                  </li>
+               </ol>
+            </div>
+         </div>
+         <div class="simplesect" title="Prerequisites">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2739"></a>Prerequisites
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The TACTIC host machine should have the following prerequisites</p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>A working TACTIC installation </p>
+                  </li>
+                  <li class="listitem">
+                     <p>An OS capable of running the target HTTP co-service</p>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="simplesect" title="HTTP server assumptions">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2751"></a>HTTP server assumptions
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The HTTP configuration assumes that the main server is being used to proxy TACTIC
+                           requests, without SSL or virtual servers. TACTIC requires that the appropriate modules
+                           or 3rd party modules are activated.
+            </p>
+         </div>
+         <div class="simplesect" title="TACTIC configuration assumptions">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2756"></a>TACTIC configuration assumptions
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>This document assumes that TACTIC has been configured correctly and is functioning as
+                           expected. It is assumed that TACTIC is installed with default ports 8081 through 8083.
+                           This is the typical default TACTIC configuration.
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_install-web-server.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-web-server.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_configure-http-apache.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

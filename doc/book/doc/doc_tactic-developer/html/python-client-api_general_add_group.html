@@ -1,0 +1,123 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>add_group</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_add_file.html" title="add_file">
+      <link rel="next" href="python-client-api_general_add_initial_tasks.html" title="add_initial_tasks">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_add_file.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_initial_tasks.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="add_group">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_add_group"></a>
+                         add_group
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  add_group(snapshot_code, file_path, file_type, file_range, use_handoff_dir=False, mode=None)
+                      </strong></span>
+                
+         </p>
+         <p>
+                Add a file range to an already existing snapshot
+                
+         </p>
+         <h4><a name="d0e2692"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      snapshot_code 
+                      </strong></span>
+                 -  the unique code identifier of a snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_path 
+                      </strong></span>
+                 -  path of the file to add to the snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_type 
+                      </strong></span>
+                 -  type of the file to be added.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_range 
+                      </strong></span>
+                 -  range with format s
+                
+         </p>
+         <h4><a name="d0e2714"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      use_handoff_dir 
+                      </strong></span>
+                 -  use handoff dir to checkin file
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      mode 
+                      </strong></span>
+                 -  one of 'copy','move','preallocate'
+                
+         </p>
+         <h4><a name="d0e2726"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  the resulting snapshot
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_add_file.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_initial_tasks.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

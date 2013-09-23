@@ -1,0 +1,392 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>View Panel</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-layout.html" title="Layout Widgets">
+      <link rel="prev" href="tactic-setup_tactic-widgets-layout.html" title="Layout Widgets">
+      <link rel="next" href="tactic-setup_setup_custom-layout-wdg.html" title="Custom Layout">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_tactic-widgets-layout.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_custom-layout-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="View Panel">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_view-panel-wdg"></a>View Panel
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/1_view_panel_overview.png"></div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12025"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The View Panel is a composite widget which binds together a Table Layout Widget and a
+               Search Widget. The Search Widget is a searching mechanism that retrieves items and
+               transfers them to a Table Layout Widget to draw. The View Panel Widget is used in most
+                           of TACTIC's predefined views.
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12030"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>View Panel</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>ViewPanelWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>2.5.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12074"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The View Panel widget makes use of the TableLayoutWdg capabilities. The views
+                           available to the View Panel are identical to that of the Table Layout Widget.
+            </p>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12079"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_gear</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show the gear menu.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_search</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show the search box.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_search_limit</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show the search limit.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_insert</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show the insert button.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>insert_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>Specify the path to a custom insert view.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>edit_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>Specify the path to a custom edit view.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_commit_all</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show the commit all button.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_refresh</strong></span></p>
+                                                   
+                        </td>
+                        <td>Display the refresh button on the shelf.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>show_row_select</strong></span></p>
+                                                   
+                        </td>
+                        <td>Flag to show row_selection.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>popup</strong></span></p>
+                                                   
+                        </td>
+                        <td>Pop the view up in a pop-up window.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>layout</strong></span></p>
+                                                   
+                        </td>
+                        <td><span class="bold"><strong>default</strong></span>, <span class="bold"><strong>tile</strong></span>, <span class="bold"><strong>static</strong></span>, <span class="bold"><strong>raw</strong></span>, <span class="bold"><strong>fast_table</strong></span>, <span class="bold"><strong>old_table</strong></span></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>search_type</strong></span></p>
+                                                   
+                        </td>
+                        <td>The type that this widget works with</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>view</strong></span></p>
+                                                   
+                        </td>
+                        <td>The TACTIC name for the view. e.g. admin.test_asset_tracking</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>do_initial_search</strong></span></p>
+                                                   
+                        </td>
+                        <td>Run the search on loading of the view.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>simple_search_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>Specify the simple search view.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>custom_filter_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>View for custom filters. Defaults to "custom_filter".</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>process</strong></span></p>
+                                                   
+                        </td>
+                        <td>The process which is applicable in the UI when load view is
+                                                       used.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>mode</strong></span></p>
+                                                   
+                        </td>
+                        <td><span class="bold"><strong>simple</strong></span>, <span class="bold"><strong>insert</strong></span></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>parent_key</strong></span></p>
+                                                   
+                        </td>
+                        <td>Provides a parent item to filter in the search.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>search_key</strong></span></p>
+                                                   
+                        </td>
+                        <td>Provides the starting search key.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>element_names</strong></span></p>
+                                                   
+                        </td>
+                        <td>Provides a list of column names (ie. "preview,name,description") for
+                                                       the view.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>schema_default_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>(INTERNAL) flag to show whether this is generated straight from the
+                                                       schema.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>order_by</strong></span></p>
+                                                   
+                        </td>
+                        <td>The column name to order ascending by.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>search_view</strong></span></p>
+                                                   
+                        </td>
+                        <td>(INTERNAL) View for custom searches.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>width</strong></span></p>
+                                                   
+                        </td>
+                        <td>Set the default width of the table</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>expression</strong></span></p>
+                                                   
+                        </td>
+                        <td>Use an expression for the search. The expression must return
+                                                       items.
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>filter</strong></span></p>
+                                                   
+                        </td>
+                        <td>JSON data structure representing the settings for SearchWdg</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e12350"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Often, the ViewPanelWdg is defined from a side bar link. It can be defined by XML as
+                           follows
+            </p><pre class="screen">&lt;element name='summary'&gt;
+  &lt;display class='tactic.ui.panel.ViewPanelWdg'&gt;
+    &lt;search_type&gt;sthpw/task&lt;/search_type&gt;
+    &lt;view&gt;task_summary&lt;/view&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_tactic-widgets-layout.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-layout.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_custom-layout-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

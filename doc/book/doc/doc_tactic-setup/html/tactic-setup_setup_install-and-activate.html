@@ -1,0 +1,163 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Install and Activate</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_plugins.html" title="Plugins">
+      <link rel="prev" href="tactic-setup_setup_download-plugins.html" title="Download Plugins">
+      <link rel="next" href="tactic-setup_setup_remove-and-delete.html" title="Remove and Delete">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_download-plugins.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_remove-and-delete.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Install and Activate">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-setup_setup_install-and-activate"></a>Install and Activate
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/0_plugins_overview.png"></div>
+         <div class="simplesect" title="Plugin Manager">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1789"></a>Plugin Manager
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The Plugin Manager is the primary tool for loading, unloading, deleting and creating
+                       plugins.
+            </p>
+            <p>To open the Plugin Manager, go to:</p>
+            <p><span class="bold"><strong>sidebar -&gt; Admin views -&gt; Project -&gt; Plugins</strong></span></p>
+         </div>
+         <div class="simplesect" title="How to Install a Plugin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1799"></a>How to Install a Plugin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Plugins are installed through the Plugin Manager. When a plugin is installed, the
+                           plugin's .zip file is placed in the &lt;TACTIC_DATA_DIR&gt;/dist and the contents are
+                           extracted to the &lt;TACTIC_DATA_DIR&gt;/plugin directory.
+            </p>
+            <p>There are two ways to install a plugin, one way is through the URL. This involves
+                           copying the link address of the .zip file from the plugin page. You can then paste the
+                           URL back in tactic and press <span class="bold"><strong>Install</strong></span>.
+            </p>
+            <div class="mediaobject"><img src="media/1_copy_link_address.png"></div>
+            <p> The other way to install a plugin is to browse for the .zip file. Once the Plugin
+                           Manager is open, do the following:
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>click on the green plus "+" button to open the panel</p>
+                  </li>
+                  <li class="listitem">
+                     <p>click on the<span class="bold"><strong>Browse</strong></span> and select the .zip file
+                                            you have downloaded.
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <div class="mediaobject"><img src="media/1_install_browse.png"></div>
+         </div>
+         <div class="simplesect" title="How to Activate a Plugin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1827"></a>How to Activate a Plugin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Plugins are activated through the Plugin Manager.</p>
+            <p>Once the plugin is installed (see section above on installing a plugin) the plugin
+                           will appear in the Plugin List.
+            </p>
+            <p>In order to use a plugin in a particular project, it must be activated. "Activation"
+                           of a plugin will register the plugin and import any configuration as specified in the
+                           .spt file. Since each project has its own set of independent plugins, it is possible
+                           that different plugins versions are active on different projects. However, only one
+                           version of a plugin may be active at a time on any given project. This allows you to
+                           have several different plugins installed in Tactic but you select which ones you want to
+                           have active in the project you are working on. 
+            </p>
+            <p>To activate a plugin, in the Plugin Manager, select the plugin from the Plugin List.
+                           The panel on the right will open.
+            </p>
+            <div class="mediaobject"><img src="media/3_activate.png"></div>
+            <p>In the new panel, select <span class="bold"><strong>Info</strong></span> from the
+                           list of tabs and click on the <span class="bold"><strong>Activate</strong></span> button.
+            </p>
+            <div class="mediaobject"><img src="media/4_activate_button.png"></div>
+         </div>
+         <div class="simplesect" title="Multiple versions of the same plugin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1852"></a>Multiple versions of the same plugin 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>A TACTIC installation can have multiple different versions of the same plugin
+                           installed, but only one version of the plugin can be active on a single project. For the
+                           most part, different projects can have different plugins active without interference.
+                           Because of the flexibility of TACTIC and TACTIC&#8217;s plugins, it is entirely possible to
+                           break this, so care must be taken to write self-contained plugins that will not
+                           interfere with others. 
+            </p>
+         </div>
+         <div class="simplesect" title="Updating a plugin">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e1857"></a>Updating a plugin
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Plugins can be updated simply by deactivating an older version and activating a new
+                           version of the plugin. Most plugins should have no trouble with this, however, it is
+                           possible that any given plugin requires special instructions. Refer to the documentation
+                           of the individual plugin for more details if any exist. 
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_download-plugins.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_plugins.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_remove-and-delete.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

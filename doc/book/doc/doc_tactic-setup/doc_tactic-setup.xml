@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbookxi.rng" type="xml"?>
+<chapter xml:id="book_doc_tactic-setup" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+    <title>TACTIC Setup</title>
+    <?hard-pagebreak?>
+   
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_introduction/tactic-setup_setup_introduction.xml"/>
+    
+    <section xml:id="tactic-setup_projects">
+        <title>Create Projects</title>
+        <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_what-are-projects/tactic-setup_setup_what-are-projects.xml"/>-->
+        <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-quickstart/tactic-setup_setup_project-quickstart.xml"/>-->
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_create-new-project/tactic-setup_setup_create-new-project.xml"/>
+         <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-templates/tactic-setup_setup_project-templates.xml"/>
+    </section>
+
+    <section xml:id="tactic-setup_project-startup">
+        <title>Project Startup</title>    
+        <section xml:id="tactic-setup_project-startup-configuration">
+            <title>Configuration</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-startup-configuration/tactic-setup_setup_project-startup-configuration.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-add-new-stype/tactic-setup_setup_configuration-add-new-stype.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-view-items/tactic-setup_setup_configuration-view-items.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-add-items/tactic-setup_setup_configuration-add-items.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-import-items/tactic-setup_setup_configuration-import-items.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-workflow/tactic-setup_setup_configuration-workflow.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-notifications/tactic-setup_setup_configuration-notifications.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-triggers/tactic-setup_setup_configuration-triggers.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_configuration-edit-stype/tactic-setup_setup_configuration-edit-stype.xml"/>
+        </section>
+        
+        <section xml:id="tactic-setup_project-startup-manage-users">
+            <title>Users and Groups</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-startup-manage-users/tactic-setup_setup_project-startup-manage-users.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_insert-new-user/tactic-setup_setup_insert-new-user.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_group-assignment/tactic-setup_setup_group-assignment.xml"/>
+        </section>
+        
+        <section xml:id="tactic-setup_project-startup-manage-security">
+            <title>User and Group Security</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_manage-security/tactic-setup_setup_manage-security.xml"/>          
+        </section>       
+        
+        <section xml:id="tactic-setup_project-startup-dashboards">
+            <title>Dashboards</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-startup-dashboards/tactic-setup_setup_project-startup-dashboards.xml"/>    
+        </section>
+        <section xml:id="tactic-setup_project-startup-reports">
+            <title>Reports</title>    
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-startup-reports/tactic-setup_setup_project-startup-reports.xml"/>
+        </section>            
+    </section>
+
+
+    <section xml:id="tactic-setup_plugins">
+        <title>Plugins</title>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_download-plugins/tactic-setup_setup_download-plugins.xml"/>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_install-and-activate/tactic-setup_setup_install-and-activate.xml"/>          
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_remove-and-delete/tactic-setup_setup_remove-and-delete.xml"/>          
+    </section>   
+
+
+    <section xml:id="tactic-setup_advanced-project-setup">
+        <title>Advanced Project Setup</title>
+        <section xml:id="tactic-setup_project-schema">
+            <title>Schema</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_tactic-anatomy-lesson/tactic-setup_setup_tactic-anatomy-lesson.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_built-in-stypes/tactic-setup_setup_built-in-stypes.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-schema/tactic-setup_setup_project-schema.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_stype-register/tactic-setup_setup_stype-register.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_stype-connect/tactic-setup_setup_stype-connect.xml"/>
+        </section>
+        
+        <section xml:id="tactic-setup_project-workflow">
+            <title>Advanced Workflow</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-workflow/tactic-setup_setup_project-workflow.xml"/>
+            <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_pipeline-process-options/tactic-setup_setup_pipeline-process-options.xml"/> -->
+        </section>
+
+        
+        <section xml:id="tactic-setup_sidebar">
+            <title>Sidebar</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_tactic-sidebar/tactic-setup_setup_tactic-sidebar.xml"/>    
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_managing-sidebar/tactic-setup_setup_managing-sidebar.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_element-definition/tactic-setup_setup_element-definition.xml"/>
+        </section>
+        
+        
+        
+        
+ 
+        <section xml:id="tactic-setup_views">
+            <title>Views Configuration</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_view-manager/tactic-setup_setup_view-manager.xml"/>
+        </section> 
+
+        <section xml:id="tactic-setup_naming-conventions">
+            <title>Naming Conventions</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-automation-file-naming/tactic-setup_setup_project-automation-file-naming.xml"/>
+        </section>
+
+
+
+        <xi:include
+            href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-workflow-introduction/tactic-setup_setup_project-workflow-introduction.xml"/>
+        
+        <section xml:id="tactic-setup_settings">
+            <title>Settings</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_modify-project-settings/tactic-setup_setup_modify-project-settings.xml"/>  
+        </section>
+    
+    
+    
+        <section xml:id="tactic-setup_advanced-configuration">
+            <title>Advanced Configuration</title>
+        
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-schema-configuration/tactic-setup_setup_advanced-schema-configuration.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-access-rule-configuration/tactic-setup_setup_advanced-access-rule-configuration.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_remove-projects/tactic-setup_setup_remove-projects.xml"/>
+        </section>
+
+
+        <section xml:id="tactic-setup_advanced-automation">
+            <title>Advanced Automation</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_tactic-event-system/tactic-setup_setup_tactic-event-system.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-automation-triggers/tactic-setup_setup_project-automation-triggers.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_project-automation-notifications/tactic-setup_setup_project-automation-notifications.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-notification-setup/tactic-setup_setup_advanced-notification-setup.xml"/>
+            <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-event-usage/tactic-setup_setup_advanced-event-usage.xml"/>--> 
+            <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-trigger-setup/tactic-setup_setup_advanced-trigger-setup.xml"/>-->
+            <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_advanced-file-naming-setup/tactic-setup_setup_advanced-file-naming-setup.xml"/>-->
+            <!--<xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_versionless-checkin/tactic-setup_setup_versionless-checkin.xml"/>-->
+        </section>
+    
+    </section>
+
+
+    <!-- Should this be in the end user section?? -->
+    <section xml:id="tactic-setup_expression-language">
+        <title>Expression Language</title>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_expression-language-introduction/tactic-setup_setup_expression-language-introduction.xml"/>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_expression-method-reference/tactic-setup_setup_expression-method-reference.xml"/>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_expression-variable-reference/tactic-setup_setup_expression-variable-reference.xml"/>
+    </section>
+
+
+
+    <!-- Should this be in the end user section as well?? -->
+    <!--    
+    <section xml:id="tactic-setup_import-export">
+        <title>Import and Export</title>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_importing-csv-data/tactic-setup_setup_importing-csv-data.xml"/>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_exporting-csv-data/tactic-setup_setup_exporting-csv-data.xml"/>
+    </section>
+    -->  
+
+
+
+    <section xml:id="tactic-setup_debugging">
+        <title>Debugging TACTIC</title>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_exception-log/tactic-setup_setup_exception-log.xml"/>
+    </section>
+    
+    <section xml:id="tactic-setup_tactic-widgets">
+        <title>Widgets</title>
+        <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_tactic-widgets/tactic-setup_setup_tactic-widgets.xml"/>
+        
+        <section xml:id="tactic-setup_tactic-widgets-view">
+            <title>View Widgets</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_simple-table-element-wdg/tactic-setup_setup_simple-table-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_format-element-wdg/tactic-setup_setup_format-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_expression-element-wdg/tactic-setup_setup_expression-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_expression-value-element-wdg/tactic-setup_setup_expression-value-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_link-element-wdg/tactic-setup_setup_link-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_gantt-wdg/tactic-setup_setup_gantt-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_hidden-row-toggle-wdg/tactic-setup_setup_hidden-row-toggle-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_drop-element-wdg/tactic-setup_setup_drop-element-wdg.xml"/>
+        
+        </section>
+    
+        <section xml:id="tactic-setup_tactic-widgets-edit">
+            <title>Edit Widgets</title>
+            <!-- Default -->        
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_select-wdg/tactic-setup_setup_select-wdg.xml"/>      
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_text-wdg/tactic-setup_setup_text-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_text-area-wdg/tactic-setup_setup_text-area-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_calendar-wdg/tactic-setup_setup_calendar-wdg.xml"/>
+        </section>
+    
+        <section xml:id="tactic-setup_tactic-widgets-common">
+            <title>Common Widgets</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_task-completion-wdg/tactic-setup_setup_task-completion-wdg.xml"/>
+            <!-- Expand -->
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_explorer-table-element-wdg/tactic-setup_setup_explorer-table-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_general-checkin-wdg/tactic-setup_setup_general-checkin-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_sobject-checkin-history-wdg/tactic-setup_setup_sobject-checkin-history-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_discussion-wdg/tactic-setup_setup_discussion-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_note-sheet-wdg/tactic-setup_setup_note-sheet-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_thumb-wdg/tactic-setup_setup_thumb-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_task-edit-wdg/tactic-setup_setup_task-edit-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_task-schedule-wdg/tactic-setup_setup_task-schedule-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_task-element-wdg/tactic-setup_setup_task-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_task-status-history-wdg/tactic-setup_setup_task-status-history-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_work-element-wdg/tactic-setup_setup_work-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_work-hours-element-wdg/tactic-setup_setup_work-hours-element-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_simple-upload-wdg/tactic-setup_setup_simple-upload-wdg.xml"/>
+            
+        </section>
+
+        <section xml:id="tactic-setup_tactic-widgets-layout">
+            <title>Layout Widgets</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_view-panel-wdg/tactic-setup_setup_view-panel-wdg.xml" />
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_custom-layout-wdg/tactic-setup_setup_custom-layout-wdg.xml"/>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_table-layout-wdg/tactic-setup_setup_table-layout-wdg.xml"/>
+            <!-- Edit Wdg -->
+            <!-- Tile Layout -->
+        </section>
+        
+        <section xml:id="tactic-setup_tactic-widgets-simple-search">
+            <title>Simple Search Widgets</title>
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_simple_search_filter_setup/tactic-setup_setup_simple_search_filter_setup.xml" />
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_select-filter-element-widget/tactic-setup_setup_select-filter-element-widget.xml" />
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_checkbox_filter_element_wdg/tactic-setup_setup_checkbox_filter_element_wdg.xml" />
+            <xi:include href="../../../section/doc/tactic-setup/setup/tactic-setup_setup_keyword_search/tactic-setup_setup_keyword_search.xml" />
+        </section>
+        
+    </section>
+
+</chapter>

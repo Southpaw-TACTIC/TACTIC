@@ -1,0 +1,326 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Expression</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-view.html" title="View Widgets">
+      <link rel="prev" href="tactic-setup_setup_format-element-wdg.html" title="Formatted Widget">
+      <link rel="next" href="tactic-setup_setup_expression-value-element-wdg.html" title="Expression Value Element">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_format-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-value-element-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Expression">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_expression-element-wdg"></a>Expression
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/expression-element-wdg_dynamic.png"></div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7682"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The ExpressionElementWdg allows you to use the TACTIC expression language to determine
+               the value displayed in the table cell. The expression is caclulated from a starting
+               sobject which represents the sobject in the particular row in the table. The expression
+               is evaluated for each sobject on every row. When an expression is evaluated, the value
+               is added to a dynamic attribute of the sobject and can be used in future expressions in
+               this widget. Please refer to the expression language reference for more information on
+                           the expression language.
+            </p>
+            <h5><a name="d0e7687"></a>Info
+            </h5>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>ExpressionElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.table.ExpressionElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Common Columns</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td>TableLayoutWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>2.5.0 +</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>depends on expression</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7748"></a>Implementation
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Display the total cost of an item by multiplying the total_number column with the
+                           unit_cost column When an expression is evaluated by the ExpressionElementWdg, a new
+                           attribute with the name of the element is dynamically added to the sobject (in this
+                           cost) which can be used in the "bottom" directive.
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='cost'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@GET(.total_number) * @GET(.unit_cost)&lt;/expression&gt;
+    &lt;bottom&gt;@SUM(.cost)&lt;/bottom&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <h6><a name="d0e7756"></a>Options
+            </h6>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>expression</strong></span></p>
+                                                   
+                        </td>
+                        <td>Expression to evaluate the widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>display_format</strong></span></p>
+                                                   
+                        </td>
+                        <td>Display format string like DATETIME, DATE, -$1,234 applicable for various Formatted Element can be used here.</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>inline_styles</strong></span></p>
+                                                   
+                        </td>
+                        <td>Styles to add to the DIV generated that contains the result of the
+                                                       expression
+                        </td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>return</strong></span></p>
+                                                   
+                        </td>
+                        <td>single|list - Determines what the expression return type should
+                                                   be
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>bottom</strong></span></td>
+                        <td>Expression to calculate the bottom row of the table</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>group_bottom</strong></span></td>
+                        <td>Expression to calculate the group bottom row of the table</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>mode</strong></span></td>
+                        <td>value|boolean|check|icon - Display mode for this widget</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>expression_mode</strong></span></td>
+                        <td>default|absolute - If absolute mode is selected, it does not relate to the current SObject</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>calc_mode</strong></span></td>
+                        <td>fast|slow - fast uses new calculation mode. Only @SUM, @COUNT, @SOBJECT and @GET are current supported</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>enable_eval_listener</strong></span></td>
+                        <td> Currently javascript expression evaluation is not fully baked, so
+                                                       only use the client side evaluation listener when needed and NOT by
+                                                       default
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>icon_expr</strong></span></td>
+                        <td> Expression to evaluate which icon to use when mode = 'icon'</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>order_by</strong></span></td>
+                        <td>provide a simple string to order by e.g. code or by an attribute in a related sType in the same database, e.g.  prod/sequence.dsecription
+                           
+                        </td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>group_by</strong></span></td>
+                        <td>true|false - Turn on group by in context menu if set to true</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>group_by_time</strong></span></td>
+                        <td>true|false - Turn on group by time options in context menu if set to true</td>
+                     </tr>
+                     <tr>
+                        <td><span class="bold"><strong>justify</strong></span></td>
+                        <td>default|left|right|center - set the justification for the cell in display</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Examples">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e7865"></a>Examples
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Display the number of tasks for a given sobject and then display the total number at
+                           the bottom. 
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='num_tasks'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@COUNT(sthpw/task)&lt;/expression&gt;
+    &lt;bottom&gt;@SUM(.num_tasks)&lt;/bottom&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <p>Mode "boolean" displays a green dot for every sobject that has an expression that
+                           evalutes to True. In this case, a green dot is display on every row where the number of
+                           tasks is greater than zero.
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='has_tasks'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@COUNT(sthpw/task) &gt; 0&lt;/expression&gt;
+    &lt;mode&gt;boolean&lt;/mode&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <p>Another example of a mode which displays a checkbox instead of red/green dots. The
+                           checkbox appears for any result greater than zero
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='has_tasks'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@COUNT(sthpw/task) &gt; 0&lt;/expression&gt;
+    &lt;mode&gt;check&lt;/mode&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <p>The expression language has the ability to get values from other related tables. The
+                           following example illustrates an expression to find the description of the parent
+                           sequence of a shot.
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='sequence_description'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@GET(prod/sequence.description)&lt;/expression&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <p>The expression language has the ability to get values from other related tables and
+                           format it using the DATETIME project setting which can be customized per project 
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">&lt;element name='task_due_date'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@GET(sthpw/task.bid_end_date)&lt;/expression&gt;
+    &lt;display_format&gt;DATETIME&lt;/display_format&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div>
+            <p>Ultimately, the ExpressionElementWdg can make use of any expression in the TACTIC
+                           Expression Lanaguage.
+            </p>
+            <p>When using mode = 'icon', it is possible to set up an expression using icon_expr to
+                           determine what that icon should be.  A special variable $VALUE is used to determine the
+                           value of the expressions
+            </p>
+            <div class="sidebar">
+               <p class="title"><b></b></p><pre class="screen">
+&lt;element name="is_synced" title='Synced' edit='false'&gt;
+  &lt;display class='tactic.ui.table.ExpressionElementWdg'&gt;
+    &lt;expression&gt;@GET(.is_synced) == True&lt;/expression&gt;
+    &lt;mode&gt;icon&lt;/mode&gt;
+    &lt;icon_expr&gt;@IF( '$VALUE' == True, 'CHECK', 'CROSS' )&lt;/icon_expr&gt;
+  &lt;/display&gt;
+&lt;/element&gt;
+       </pre></div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_format-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-view.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_expression-value-element-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

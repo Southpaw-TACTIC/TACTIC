@@ -1,0 +1,291 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>add_file</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_add_directory.html" title="add_directory">
+      <link rel="next" href="python-client-api_general_add_group.html" title="add_group">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_add_directory.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_group.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="add_file">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_add_file"></a>
+                         add_file
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  add_file(snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False)
+                      </strong></span>
+                
+         </p>
+         <p>
+                Add a file to an already existing snapshot.  This method is used in
+                
+         </p>
+         <p>
+                piecewise checkins.  A blank snapshot can be created using
+                
+         </p>
+         <p>
+                create_snapshot().  This method can then be used to successively
+                
+         </p>
+         <p>
+                add files to the snapshot.
+                
+         </p>
+         <p>
+                In order to check  in the file, the server will need to have access
+                
+         </p>
+         <p>
+                to these files.  There are a number of ways of getting the files
+                
+         </p>
+         <p>
+                to the server.  When using copy or move mode, the files are either
+                
+         </p>
+         <p>
+                copied or moved to the "handoff_dir".  This directory
+                
+         </p>
+         <p>
+                is an agreed upon directory in which to handoff the files to the
+                
+         </p>
+         <p>
+                server.  This mode is generally used for checking in user files.
+                
+         </p>
+         <p>
+                For heavy bandwidth checkins, it is recommended to user preallocated
+                
+         </p>
+         <p>
+                checkins.
+                
+         </p>
+         <h4><a name="d0e2582"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      snapshot_code 
+                      </strong></span>
+                 -  the unique code identifier of a snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_path 
+                      </strong></span>
+                 -  path of the file to add to the snapshot.
+                
+         </p>
+         <p>
+                Optional: this can also be an array to add multiple files at once.
+                
+         </p>
+         <p>
+                This has much faster performance that adding one file at a time.
+                
+         </p>
+         <p>
+                Also, note that in this case, file_types must be an array
+                
+         </p>
+         <p>
+                of equal size.
+                
+         </p>
+         <h4><a name="d0e2602"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      file_type 
+                      </strong></span>
+                 -  type of the file to be added.
+                
+         </p>
+         <p>
+                Optional: this can also be an array.  See file_path argument
+                
+         </p>
+         <p>
+                for more information.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      use_handoff_dir 
+                      </strong></span>
+                 -  DEPRECATED: (use mode arg) use handoff dir to checkin
+                
+         </p>
+         <p>
+                file.  The handoff dir is an agreed upon directory between the
+                
+         </p>
+         <p>
+                client and server to transfer files.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      mode 
+                      </strong></span>
+                 -  upload|copy|move|manual|inplace 
+                
+         </p>
+         <p>
+                the file to the server.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      create_icon 
+                      </strong></span>
+                 -  (True|False) determine whether to create an icon for
+                
+         </p>
+         <p>
+                this appended file.  Only 1 icon should be created for each
+                
+         </p>
+         <p>
+                snapshot.
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      dir_naming 
+                      </strong></span>
+                 -  explicitly set a dir_naming expression to use
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_naming 
+                      </strong></span>
+                 -  explicitly set a file_naming expression to use
+                
+         </p>
+         <h4><a name="d0e2648"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  the resulting snapshot
+                
+         </p>
+         <h4><a name="d0e2655"></a>
+                example:
+                
+         </h4>
+         <p>
+                This will create a blank model snapshot for character chr001 and
+                
+         </p>
+         <p>
+                add a file
+                
+         </p><pre class="screen">
+    
+search_type = 'prod/asset'
+code = 'chr001'
+search_key = server.build_search_type(search_type, code)
+context = 'model'
+path = "./my_model.ma"
+
+snapshot = server.create_snapshot(search_key, context)
+server.add_file( snapshot.get('code'), path )
+
+
+    </pre><p>
+                Different files should be separated by file type.  For example,
+                
+         </p>
+         <p>
+                to check in both a maya and houdin file in the same snapshot:
+                
+         </p><pre class="screen">
+    
+maya_path = "./my_model.ma"
+houdini_path = "./my_model.hip"
+
+server.add_file( snapshot_code, maya_path, file_type='maya' )
+server.add_file( snapshot_code, houdini_path, file_type='houdini' )
+
+
+    </pre><p>
+                To transfer files by uploading (using http protocol):
+                
+         </p><pre class="screen">
+    
+server.add_file( snapshot_code, maya_path, mode='upload' )
+
+
+    </pre><p>
+                To create an icon for this file
+                
+         </p><pre class="screen">
+    
+path = 'image.jpg'
+server.add_file( snapshot_code, path, mode='upload', create_icon=True )
+
+
+    </pre><p>
+                To add multiple files at once
+                
+         </p><pre class="screen">
+    
+file_paths = [maya_path, houdini_path]
+file_types ['maya', 'houdini']
+server.add_file( snapshot_code, file_paths, file_types=file_types, mode='upload')
+
+
+    </pre></div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_add_directory.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_group.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

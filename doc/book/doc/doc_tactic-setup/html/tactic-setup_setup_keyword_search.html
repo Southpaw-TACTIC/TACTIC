@@ -1,0 +1,321 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Keyword Search</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-simple-search.html" title="Simple Search Widgets">
+      <link rel="prev" href="tactic-setup_setup_checkbox_filter_element_wdg.html" title="Checkbox Filter Element Widget">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_checkbox_filter_element_wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Keyword Search">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_keyword_search"></a>Keyword Search
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="mediaobject"><img src="media/1_keyword_search_overview.png"></div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13299"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Keyword Search allows for filtering of the table results on words occurring in
+                           either the default columns (<span class="bold"><strong>code, name, description</strong></span>) or
+                           words in the column named <span class="bold"><strong>keywords</strong></span>.
+            </p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13310"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Keyword Filter Element Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>tactic.ui.filter.KeywordFilterElementWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>3.8+</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>none</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13354"></a>Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>mode</strong></span></p>
+                                                   
+                        </td>
+                        <td>The mode for the Keyword Search: <span class="bold"><strong>global</strong></span> or <span class="bold"><strong>keyword</strong></span>. For
+                                                       example:<pre class="screen">&lt;mode&gt;global&lt;/mode&gt;</pre> or
+                                                       <pre class="screen">&lt;mode&gt;keyword&lt;/mode&gt;</pre></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>column</strong></span></p>
+                                                   
+                        </td>
+                        <td>A pipe separated list of column names of the sType of the current
+                                                       view to perform the keyword search on. For
+                                                       example:<pre class="screen">&lt;column&gt;code|description|title&lt;/column&gt;
+ 
+                            </pre>
+                                                       It could also be a column from a related sType. If we are in a
+                                                       project/sequence view and want to search for description of the shots
+                                                       related:<pre class="screen">
+&lt;column&gt;project/shot.description&lt;/column&gt;</pre>
+                                                       If no &lt;column&gt; is specified, then the name specified in the element
+                                                       name attribute is assumed to be the column name and is used to perform
+                                                       the search on. In the example below, the 'title' column will be used to
+                                                       perform the search on.<pre class="screen">&lt;element name='title'&gt;</pre></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>cross_db</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true, the column attribute can be used with an expression
+                                                       string with sTypes from a different
+                                                       database<pre class="screen">&lt;cross_db&gt;true&lt;/cross_db&gt;</pre></td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>relevant</strong></span></p>
+                                                   
+                        </td>
+                        <td>If set to true, it will only return results that have already been
+                                                       entered in the current table. This applies to situation when you use a
+                                                       column of a related sType in the column
+                                                       option.<pre class="screen">&lt;relevant&gt;true&lt;/relevant&gt;</pre></td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13421"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>Once the Simple Search Keyword Search Filter is set up, input the search criteria into
+                           the search field, hit enter to submit the criteria and the matching results will appear
+                           in the table.
+            </p>
+         </div>
+         <div class="simplesect" title="Modes for Keyword Search">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13426"></a>Modes for Keyword Search
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>There are 2 different modes for the Keyword Search. They are described below:</p>
+            <p><span class="bold"><strong>Global Search Mode</strong></span>: Whenever a new item is inserted
+                           or updated, the keywords (from <span class="bold"><strong>code, name, description</strong></span>
+                           and <span class="bold"><strong>keywords</strong></span> column are recorded to a global table.
+                           This global table is read from when the Keyword Search is in Global Search Mode.
+            </p>
+            <p>Below is an example of the Widget Config for a Simple Search Custom Filter in
+                               <span class="italic">Global Search Mode</span>:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+    &lt;element name='title'&gt;
+        &lt;display class='tactic.ui.filter.KeywordFilterElementWdg'&gt;
+            &lt;mode&gt;global&lt;/mode&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre><p>
+                       
+            </p>
+            <p><span class="bold"><strong>Keyword Search Mode</strong></span> In this search mode, the user
+                           specifies the column in the current view to do the Keyword Search on. This mode allows
+                           the user to create a Simple Search Keyword Search per column.
+            </p>
+            <p>Below is an example of the Widget Config for a Simple Search Custom Filter in
+                               <span class="italic">Keyword Search Mode</span>:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+    &lt;element name='title'&gt;
+        &lt;display class='tactic.ui.filter.KeywordFilterElementWdg'&gt;
+            &lt;mode&gt;keyword&lt;/mode&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre><p>
+                       
+            </p>
+            <p>In the above example, since no &lt;column&gt; is specified in the XML, the name specified
+                           in attribute &lt;element name='title'&gt; is assumed to be the column name and so it is
+                           used to run the search on the 'title' column.
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>If no mode is specified, the mode defaults to <span class="bold"><strong>Global Search
+                                            Mode</strong></span>.
+               </p>
+               <p>The XML definition will look like the
+                                  following:
+               </p><pre class="screen"><span class="bold"><strong>&lt;element name='keywords'/&gt;</strong></span></pre></div>
+         </div>
+         <div class="simplesect" title="Features and Options">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13478"></a>Features and Options
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>Partial Word Match</strong></span> There is a check box next on the
+                           right of the Keywords Search field. When checked (which is the default), the search will
+                           do a partial word match. 
+            </p>
+            <p>For example, if the input the search criteria is: <span class="italic">house</span>, this could return results with the keyword <span class="italic">warehouse</span>. 
+            </p>
+            <p>Otherwise, if the partial word match is turned off, there would be no match on the
+                           keyword <span class="italic">warehouse</span>.
+            </p>
+            <div class="mediaobject"><img src="media/4_keyword_search_partial_word_match.png"></div>
+         </div>
+         <div class="simplesect" title="Support for Different Languages">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13501"></a>Support for Different Languages
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p> The Keyword Search also supports searches in different languages. The search is
+                           simply doing a match on individual characters in the words.
+            </p>
+            <div class="mediaobject"><img src="media/5_keyword_search_different_languages.png"></div>
+         </div>
+         <div class="simplesect" title="Advanced Configuration">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e13509"></a>Advanced Configuration
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>Specifying more than one keyword search column</strong></span>: Below
+                           is an example in Keyword Mode where <span class="italic">3 columns</span> are
+                           specified to do the search on:
+            </p><pre class="screen">&lt;config&gt;
+  &lt;custom_filter&gt; 
+    &lt;element name='description'&gt;
+        &lt;display class='tactic.ui.filter.KeywordFilterElementWdg'&gt;
+        &lt;mode&gt;keyword&lt;/mode&gt;
+        &lt;column&gt;code|description|title&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+  &lt;/custom_filter&gt;
+&lt;/config&gt;</pre></div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_checkbox_filter_element_wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-simple-search.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;</td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

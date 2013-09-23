@@ -1,0 +1,478 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>TACTIC VM Setup and Install</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_tsi.html" title="TACTIC Server VM">
+      <link rel="prev" href="tactic-sys-admin_tsi.html" title="TACTIC Server VM">
+      <link rel="next" href="tactic-sys-admin_sys-admin_tsi-moving-data.html" title="Moving VM Data">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_tsi.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_tsi-moving-data.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="TACTIC VM Setup and Install">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_tsi-setup-and-install"></a>TACTIC VM Setup and Install
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Evaluating TACTIC on Windows and Linux">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5375"></a>Evaluating TACTIC on Windows and Linux 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>The TACTIC VM lets you run a virtual machine on Windows or Linux, and provides an easy
+               way to evaluate the TACTIC platform without changing your operating system. The VM
+                           requires VMware Player for Windows or Linux,
+            </p>
+            <p><span class="bold"><strong><span class="italic">Q.</span></strong></span> Will my
+                           computer be adversely affected if I run VM ? 
+            </p>
+            <p><span class="bold"><strong><span class="italic">A.</span></strong></span> Your computer
+               will not be affected by the VM. Aside from requiring a large amount of memory (the TSI
+               unzips into a folder needing at least 5-10 GB), the TACTIC virtual machine does not
+                           interact with your host machine. At the end of the evaluation period, you can either
+                           continue using the TSI for production, migrate your data to a new full server install or
+                           simply delete the TSI directory. (Note that if you delete the TSI directory, all
+                           evaluation data you entered into the TACTIC evaluation is destroyed.) 
+            </p>
+         </div>
+         <div class="simplesect" title="What You Need">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5390"></a>What You Need 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p><span class="bold"><strong>Request and download the TACTIC Server Image (TSI)</strong></span>
+                       
+            </p>
+            <p>The TSI is available on request from Southpaw Technology. When you contact the
+                           Southpaw sales or support representatives and set up an evaluation account, they will
+                           send you a URL and login/password information so you can begin the trial. 
+            </p>
+            <p>For more information, visit: </p>
+            <p><a class="link" href="http://www.southpawtech.com" target="_top"><span class="bold"><strong><a class="link" href="http://www.southpawtech.com" target="_top">http://www.southpawtech.com</a></strong></span></a></p>
+            <p><span class="bold"><strong>Download VMware Player or server</strong></span></p>
+            <p>The VMware player is a license-free player you can download from </p>
+            <p><span class="bold"><strong><a class="link" href="http://vmware.com/download/player/ " target="_top">http://vmware.com/download/player/</a></strong></span></p>
+            <p>VMware currently supports Microsoft Windows XP, Windows Vista and many flavors of
+                           Linux. To streamline the evaluation process, we chose the Fedora Linux-based operating
+                           system to create the TSI virtual machine image. (Although you will be running the VM on
+                           any of many supported operating systems, you will see the Fedora Linux when you use the
+                           VM.)
+            </p>
+            <p><span class="bold"><strong>Download VMware Server</strong></span></p>
+            <p>The VMware server is a full-featured service for Virtual machines </p>
+            <p>VMware server is a service that allows users to run VMs silently in the background. No
+                           window is needed, and the server can be configured to run the VM on host machine
+                           startup. Additionally, there are several interesting options that allow for more
+                           flexible operation of a VM.
+            </p>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Web UI</strong></span></p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Pause</strong></span> The ability to pause a VM is useful for
+                                            cycling the VM host.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>
+                                            <span class="bold"><strong>Snapshot a VM</strong></span> The VMs current state can be
+                                            saved and recalled in the future. Note that if the VM is reverted to a snapshot,
+                                            then any changes that have occurred since the snapshot was taken will be
+                                            permanently deleted. 
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p><span class="bold"><strong>Change hardware</strong></span> The VM can be modified to
+                                            change hardware. For example, another network interface, or a USB interface
+                                        
+                     </p>
+                  </li>
+               </ul>
+            </div>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>The instructions for running a VM can be found in the VMware server documentation.
+                                  Running the VM from VMware player is covered in this document.
+               </p>
+            </div>
+            <p><span class="bold"><strong>Web Browser</strong></span></p>
+            <p>We recommend you use Mozilla Firefox as your web browser to access the TSI. You can
+                           download Firefox at: 
+            </p>
+            <p><span class="bold"><strong><a class="link" href="http://www.mozilla.com/en-US/firefox/ " target="_top">http://www.mozilla.com/en-US/firefox/</a></strong></span></p>
+            <p></p>
+            <p><span class="bold"><strong>Login Info</strong></span></p>
+            <p> There are three sets of login info to remember: </p>
+            <div class="orderedlist">
+               <ol class="orderedlist" type="1">
+                  <li class="listitem">
+                     <p> VM Linux user </p>
+                     <p>user: root password: south123paw </p>
+                  </li>
+                  <li class="listitem">
+                     <p> TACTIC UI in browser</p>
+                     <p>user: admin password: tactic </p>
+                  </li>
+                  <li class="listitem">
+                     <p> Windows Samba share</p>
+                     <p>user: apache password: south123paw </p>
+                  </li>
+               </ol>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="VM networking">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5480"></a>VM networking
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <h5><a name="d0e5484"></a>Networking 
+            </h5>
+            <p>When VMware software is installed, several new
+                           network interfaces can become available, depending on the options selected during the
+                           installation process. Although any one of the interfaces can be used to connect to the
+                           VM, it is advised to install all three network interfaces, as this allows the most
+                           flexibility
+            </p>
+            <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+               <h3 class="title">Note</h3>
+               <p>Successful operation of a virtual machine may require some input from system
+                                  administrators within a network environment.
+               </p>
+            </div>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>NAT</p>
+                     <div class="itemizedlist">
+                        <ul class="itemizedlist">
+                           <li class="listitem">
+                              <p>If it becomes necessary to isolate the VM on a host machine, then the
+                                                             NAT interface can be used to connect to the VM.
+                              </p>
+                           </li>
+                           <li class="listitem">
+                              <p>Internet and LAN connectivity can be utilized through the NAT
+                                                             interface if the host machine is connected to an external network such
+                                                             as the internet or a LAN. Allowing the VM to communicate with a LAN may
+                                                             require changes to the routing system on the LAN. If this is a
+                                                             requirement, then bridged networking may be the better option.
+                              </p>
+                           </li>
+                           <li class="listitem">
+                              <p>NAT is a complete network that originates at the host machine, and is
+                                                             a self-contained router with DHCP services. The VM, once run, will
+                                                             usually ask the host machine for an IP address to assign to a network
+                                                             interface. The host machine can then connect to the VM interface through
+                                                             this IP.
+                              </p>
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+               </ul>
+            </div>
+            <div class="itemizedlist">
+               <ul class="itemizedlist">
+                  <li class="listitem">
+                     <p>Bridged</p>
+                     <div class="itemizedlist">
+                        <ul class="itemizedlist">
+                           <li class="listitem">
+                              <p>If there are machines other than the host machine that are required to
+                                                             connect to the VM, then the bridged connection should be used. 
+                              </p>
+                           </li>
+                           <li class="listitem">
+                              <p>The only requirement that bridged networking has is that there are
+                                                             appropriate services for the operation of the interface, such as DHCP on
+                                                             the host machines network. If these services do not exist, then the VM
+                                                             network interface needs to have manually set options.
+                              </p>
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+                  <li class="listitem">
+                     <p>Host Only </p>
+                     <div class="itemizedlist">
+                        <ul class="itemizedlist">
+                           <li class="listitem">
+                              <p>To isolate the TSI completely, the &#8220;Host Only&#65533;? option can be used.
+                                                             
+                              </p>
+                           </li>
+                           <li class="listitem">
+                              <p>Host Only is a complete network that originates at the host
+                                                                 machine, and is a self-contained router with DHCP services. The VM,
+                                                                 once run, will usually ask the host machine for an IP address to
+                                                                 assign to a network interface. The host machine can then connect to
+                                                                 the VM interface through this IP. 
+                              </p>
+                           </li>
+                           <li class="listitem">
+                              <p>The VM is completely isolated from the host machines LAN. There is
+                                                                 no network connectivity, therefore no LAN or internet will be
+                                                                 available on the VM. 
+                              </p>
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="simplesect" title="Starting Up the TSI in VMware Player">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5528"></a>Starting Up the TSI in VMware Player
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>After you start up the VMware Player, click on the <span class="bold"><strong>Open</strong></span> option to browse for a virtual machine. 
+            </p>
+            <div class="mediaobject"><img src="media/vmwareStartup.png"></div>
+            <p>Browse to where the unzipped VM is. Open the
+                               <code class="filename">TACTIC_VM_3.8.0.v04.vmx</code> file. The TSI will start up in the
+                           VMware Player. 
+            </p>
+            <p>When you first start the VM, you are presented with a window asking whether the
+                           virtual machine was moved or copied. Click the "I copied it" button. 
+            </p>
+            <div class="mediaobject"><img src="media/movedOrCopied.png"></div>
+            <p>Start-up messages scroll by after the Linux kernel boots in the VM window. After the
+                           boot-up is completed, you will see this prompt: 
+            </p>
+            <div class="mediaobject"><img src="media/TSI_loginScreen.png"></div>
+            <p>If you see this prompt, the TACTIC VM has started up correctly. If it does not show an
+                           IP address (for example, a number like "192.168.25.138"), it means the virtual machine
+                           has not picked up an IP address from a DHCP server. This IP address is required, so you
+                           must contact your IT department to fix this situation. (Refer to the Troubleshooting
+                           Section.) 
+            </p>
+            <p>Write down the IP address and any names you see such as "localhost.localdomain". (You
+                           will need this information in a next step.) 
+            </p>
+         </div>
+         <div class="simplesect" title="Expanding Disk Space on the VM">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5558"></a>Expanding Disk Space on the VM
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>In special evaluation situations, there is a requirement for more disk space than has
+                           been allocated for a standard evaluation (i.e. a large amount of assets are to be
+                           stored, then the TSI "assets partition" can be expanded.
+            </p>
+            <p>Steps to expand disk space on a VM</p>
+            <p>
+                           
+            </p>
+            <div class="orderedlist">
+               <ol class="orderedlist" type="1">
+                  <li class="listitem">
+                     <p>Shut down TACTIC</p>
+                     <p>To shut down TACTIC, issue the command</p>
+                     <p>
+                                                
+                     </p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">service tactic stop</pre></div>
+                     <p>
+                                            
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Unmount the "TACTIC" drive</p>
+                     <p>
+                                                
+                     </p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">umount /home/apache</pre></div>
+                     <p>
+                                            
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Run the logical Volume expansion tool</p>
+                     <p>
+                                                
+                     </p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">lvextend -L+2G /dev/mapper/VolGroup00-LogVol00</pre></div>
+                     <p>
+                                            
+                     </p>
+                     <p>This example command resizes the logical volume by +2 G, as seen in the
+                                                command itself. The volume can be expanded to the total size of the virtual
+                                                disk.
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Run the filesystem consistancy checker to make sure the filesystem is
+                                                ok
+                     </p>
+                     <p>
+                                                
+                     </p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">e2fsck -f /dev/mapper/VolGroup00-LogVol00</pre></div>
+                     <p>
+                                            
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Resize the filesystem on the logical volume</p>
+                     <p>
+                                                
+                     </p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">resize2fs /dev/mapper/VolGroup00-LogVol00</pre></div>
+                     <p>
+                                            
+                     </p>
+                  </li>
+                  <li class="listitem">
+                     <p>Re-mount the "assets" drive</p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">mount /home/apache/assets</pre></div>
+                  </li>
+                  <li class="listitem">
+                     <p>Restart TACTIC</p>
+                     <div class="sidebar">
+                        <p class="title"><b></b></p><pre class="screen">service tactic start</pre></div>
+                  </li>
+               </ol>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Security Notes">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5630"></a>Security Notes
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>To make your evaluation easier, the TSI uses passwords that are easy to guess and a
+                           Samba share. This could cause security issues, so your IT department must be aware of
+                           your use of the TSI.
+            </p>
+            <p><span class="bold"><strong>Tactic Samba Network Details </strong></span></p>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col width="100px" align="right">
+                     <col width="100px">
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td align="right"><span class="bold"><strong>Workgroup</strong></span></td>
+                        <td>Southpawtech</td>
+                     </tr>
+                     <tr>
+                        <td align="right"><span class="bold"><strong>Machine</strong></span></td>
+                        <td>TSI 2.0.0</td>
+                     </tr>
+                     <tr>
+                        <td align="right"><span class="bold"><strong>Share</strong></span></td>
+                        <td>Tactic</td>
+                     </tr>
+                     <tr>
+                        <td align="right"><span class="bold"><strong>Share User</strong></span></td>
+                        <td>Apache</td>
+                     </tr>
+                     <tr>
+                        <td align="right"><span class="bold"><strong>Share Password</strong></span></td>
+                        <td>south123paw</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Re-installing/Resetting the VM">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5673"></a>Re-installing/Resetting the VM
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>If at any point during the usage of the VM there is a need to reset the VM back to its
+                           original state, simply delete or archive the directory with the TSI data, and re-expand
+                           the zip file that was downloaded from the community site.
+            </p>
+         </div>
+         <div class="simplesect" title="Congratulations!">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e5678"></a>Congratulations! 
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Your TACTIC VM server is set up. </p>
+            <p>Contact your TACTIC Representative for support details at
+                           support@southpawtech.com
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_tsi.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_tsi.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_tsi-moving-data.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

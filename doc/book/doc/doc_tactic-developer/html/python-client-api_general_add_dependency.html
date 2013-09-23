@@ -1,0 +1,152 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>add_dependency</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+      <link rel="prev" href="python-client-api_general_add_config_element.html" title="add_config_element">
+      <link rel="next" href="python-client-api_general_add_dependency_by_code.html" title="add_dependency_by_code">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_add_config_element.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_dependency_by_code.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="add_dependency">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="python-client-api_general_add_dependency"></a>
+                         add_dependency
+                         
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                <span class="bold"><strong>
+                  add_dependency(snapshot_code, file_path, type='ref')
+                      </strong></span>
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      Append a dependency referent to an existing check
+                      </strong></span>
+                 - in.
+                
+         </p>
+         <p>
+                All files are uniquely containe by a particular snapshot.  Presently,
+                
+         </p>
+         <p>
+                this method does a reverse lookup by file name.  This assumes that
+                
+         </p>
+         <p>
+                the filename is unique within the system, so it is not recommended
+                
+         </p>
+         <p>
+                unless it is known that naming conventions will produce unique
+                
+         </p>
+         <p>
+                file names for every this particular file.  If this is not the
+                
+         </p>
+         <p>
+                case, it is recommended that add_dependency_by_code() is used.
+                
+         </p>
+         <h4><a name="d0e2385"></a>
+                param:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      snapshot_code 
+                      </strong></span>
+                 -  the unique code identifier of a snapshot
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      file_path 
+                      </strong></span>
+                 -  the path of the dependent file.  This function is able
+                
+         </p>
+         <p>
+                reverse map the file_path to the appropriate snapshot
+                
+         </p>
+         <h4><a name="d0e2399"></a>
+                keyparam:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      type 
+                      </strong></span>
+                 -  type of dependency.  Values include 'ref' and 'input_ref'
+                
+         </p>
+         <p>
+                ref = hierarchical reference:   ie A contains B
+                
+         </p>
+         <p>
+                input_ref = input reference:    ie: A was used to create B
+                
+         </p>
+         <p>
+                <span class="bold"><strong>
+                      tag 
+                      </strong></span>
+                 -  a tagged keyword can be added to a dependency to categorize
+                
+         </p>
+         <p>
+                the different dependencies that exist in a snapshot
+                
+         </p>
+         <h4><a name="d0e2417"></a>
+                return:
+                
+         </h4>
+         <p>
+                <span class="bold"><strong>
+                      dictionary 
+                      </strong></span>
+                 -  the resulting snapshot
+                
+         </p>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_add_config_element.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_add_dependency_by_code.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>
