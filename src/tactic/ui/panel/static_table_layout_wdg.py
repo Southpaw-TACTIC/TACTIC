@@ -108,6 +108,9 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 widget.preprocess()
 
 
+        my.process_groups()
+        my.order_sobjects()
+        my.remap_sobjects()
 
 
         my.attributes = []
@@ -146,6 +149,11 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
         border_color = table.get_color("table_border", default="border")
         for row, sobject in enumerate(my.sobjects):
+
+            # put in a group row
+            if my.is_grouped:
+                my.handle_groups(table, row, sobject)
+
             tr = table.add_row()
             if row % 2:
                 background = tr.add_color("background", "background")
@@ -154,6 +162,8 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
             tr.add_class("spt_table_row")
             tr.add_attr("spt_search_key", sobject.get_search_key())
+
+
 
             for i, widget in enumerate(my.widgets):
 
@@ -210,7 +220,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             header_div = DivWdg()
             th.add(header_div)
             th.add_style("padding: 3px")
-            th.add_gradient("background", "background", -10)
+            th.add_gradient("background", "background", -5, -10)
             th.add_border()
 
             if my.mode == 'widget':
@@ -239,6 +249,28 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
             widget.handle_th(th, i)
 
+
+
+    def handle_group(my, table, i, sobject, group_name, group_value):
+
+        tr, td = table.add_row_cell()
+        tr.add_color("background", "background3", 5)
+        tr.add_color("color", "color3")
+
+        if group_value == '__NONE__':
+            label = '(unknown)'
+        else:
+            label = Common.process_unicode_string(group_value)
+
+        td.add(label)
+
+        td.add_style("height: 25px")
+        td.add_style("padding-left: %spx" % (i*15+5))
+        td.add_style("border-style: solid")
+        border_color = td.get_color("border")
+        td.add_style("border-width: 0px 0px 0px 1px")
+        td.add_style("border-color: %s" % border_color)
+        td.add_style("font-weight: bold")
 
 
 
