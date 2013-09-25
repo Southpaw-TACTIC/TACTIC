@@ -766,7 +766,8 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
  
 
         try:
-            import Image
+           #import Image
+           from PIL import Image 
         except ImportError:
             print "ERROR: Cannot import Python Imaging Library. Please Install."
             print
