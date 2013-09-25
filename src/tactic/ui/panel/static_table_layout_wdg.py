@@ -110,6 +110,19 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
 
 
+        my.attributes = []
+        for i, widget in enumerate(my.widgets):
+            element_name = widget.get_name()
+
+            if element_name and element_name != "None":
+                attrs = my.config.get_element_attributes(element_name)
+            else:
+                attrs = {}
+            
+            my.attributes.append(attrs)
+ 
+
+
         is_refresh = my.kwargs.get("is_refresh")
         if my.kwargs.get("show_shelf") not in ['false', False]:
             action = my.get_action_wdg()
@@ -142,7 +155,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             tr.add_class("spt_table_row")
             tr.add_attr("spt_search_key", sobject.get_search_key())
 
-            for widget in my.widgets:
+            for i, widget in enumerate(my.widgets):
 
                 value_div = DivWdg()
                 value_div.add_style("padding: 3px")
@@ -182,6 +195,10 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
     def handle_headers(my, table):
 
+        # this comes from refresh
+        widths = my.kwargs.get("column_widths")
+
+
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
@@ -203,6 +220,27 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 value = Common.get_display_title(element)
             header_div.add(value)
 
+
+            if widths and len(widths) > i:
+                th.add_style("width", widths[i])
+                width_set = True
+                width = widths[i]
+
+            else: # get width from definition 
+                width = my.attributes[i].get("width")
+                if width:
+                     th.add_style("width", width)
+                     width_set = True
+            if width:
+                th.add_style("min-width", width)
+            else:
+                th.add_style("overflow","hidden")
+
+
             widget.handle_th(th, i)
+
+
+
+
 
 

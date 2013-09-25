@@ -450,13 +450,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
-
-        # TEST TEST TEST
-        #inner.add('<br><br><br>')
-        #upload_wdg = Html5UploadWdg()
-        #inner.add(upload_wdg)
-        # TEST TEST TEST
-        
         inner.add_attr('upload_id',my.upload_id)
 
 
@@ -630,11 +623,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         
 
         # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        show_context_menu = my.kwargs.get("show_context_menu")
+        if show_context_menu in ['false', False]:
+            show_context_menu = False
+        else:
+            show_context_menu = True
+
+        menus_in = {}
+        if show_context_menu:
+            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
+            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        if menus_in:
+            SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
@@ -1381,24 +1381,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             resize_div.add("&nbsp;")
             resize_div.add_class("spt_resize_handle")
 
-            # FIXME: not sure why the qt browser on nt does not handle these
-	    # relayed css properties
-            # This is fixed in PySide 1.1.2
-            if my.browser == 'Qt' and os.name == 'nt':
 
-                #resize_div.add_style("float: right")
-                #resize_div.add_style("cursor: e-resize")
-
-                #th.add_style("background-repeat: no-repeat")
-                #th.add_style("background-position: top center")
-                #th.add_style("text-align: center")
-                pass
-
-
-            resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
-            resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-
-
+            #resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
+            #resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
 
 
             header_div = DivWdg()
@@ -1511,18 +1496,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     group_row.add(td)
                     td.add(group_widget)
 
-        """
-        if has_widgets:
-            # handle the bottom table
-            tr = my.table.add_row()
-            td = my.table.add_cell()
-            td.add_attr("colspan", "2")
-            for widget in my.widgets:
-                bottom_wdg = widget.get_bottom_wdg()
-                my.table.add_cell(bottom_wdg)
-
-            tr.add_class("spt_table_bottom_row")
-        """
 
     def add_table_bottom(my, table):
         '''override the same method in BaseTableLayoutWdg to add a bottom row. this does not 
