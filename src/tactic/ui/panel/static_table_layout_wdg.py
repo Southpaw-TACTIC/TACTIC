@@ -140,7 +140,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
         table.add_color("color", "color")
 
         # initialize the spt.table js
-        my.handle_table_behaviors(table)
+        #my.handle_table_behaviors(table)
 
         my.handle_headers(table)
 

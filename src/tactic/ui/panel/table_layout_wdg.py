@@ -2115,7 +2115,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
 
-
         select_color = table.get_color("background3")
         shadow_color = table.get_color("shadow")
 
