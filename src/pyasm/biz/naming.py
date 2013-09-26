@@ -35,8 +35,8 @@ class Naming(SObject):
 
     def validate(my):
 
-        sandbox_dir_naming = my.get_value('sandbox_dir_naming')
-        dir_naming = my.get_value('dir_naming')
+        sandbox_dir_naming = my.get_value('sandbox_dir_naming', no_exception=True)
+        dir_naming = my.get_value('dir_naming', no_exception=True)
 
         if sandbox_dir_naming and sandbox_dir_naming.endswith('/'):
             raise TacticException('sandbox_dir_naming should not end with /')
