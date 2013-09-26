@@ -51,7 +51,6 @@ class TableSchemaDumper(object):
         search_type_obj = SearchType.get(my.search_type)
         database = search_type_obj.get_database()
         table = search_type_obj.get_table()
-
         db_resource = SearchType.get_db_resource_by_search_type(my.search_type)
         sql = DbContainer.get(db_resource)
         exists = sql.table_exists(table)   
@@ -200,6 +199,8 @@ class TableDataDumper(object):
         project_code = first.get_project_code()
         from pyasm.biz import Project
         project = Project.get_by_code(project_code)
+        if not project:
+            raise Exception("SObject [%s] has a project_code [%s] that does not exist" % (first.get_search_key(), project_code) )
 
         my.db_resource = project.get_project_db_resource()
 

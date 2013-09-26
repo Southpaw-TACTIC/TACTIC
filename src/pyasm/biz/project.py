@@ -372,6 +372,18 @@ class Project(SObject):
         search.add_order_by("search_type")
         search_type_objs = search.get_sobjects()
 
+        """
+        from pyasm.biz import Schema
+        schema = Schema.get()
+        xml = schema.get_xml_value("schema")
+        search_types = xml.get_values("schema/search_type/@name")
+        search = Search("sthpw/search_object")
+        search.add_filters("code", search_types)
+        search_type_objs = search.get_sobjects()
+        """
+
+
+
         search_types = []
         for x in search_type_objs:
             # to avoid the old ill-defined prod/custom_property defined in sthpw namespace

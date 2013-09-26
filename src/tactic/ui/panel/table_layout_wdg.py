@@ -233,6 +233,64 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.items_found = total_count
 
 
+    def process_groups(my):
+
+        my.group_values = {}
+        my.group_ids = {}
+        my.group_rows = []
+        my.level_name = ''
+        my.level_spacing = 20
+
+        my.is_on = True
+        my.grouping_data = False
+
+
+        # set some grouping parameters
+        my.current_groups = []
+        if my.group_element:
+            if my.group_element in [True, False, '']: # Backwards compatibiity
+                my.group_columns = []
+            else:
+                my.group_columns = [my.group_element]
+        else:
+            my.group_columns = my.kwargs.get("group_elements")
+            
+            if not my.group_columns or my.group_columns == ['']: # Backwards compatibility
+                my.group_columns = []
+            if isinstance(my.group_columns, basestring):
+                if not my.group_columns.startswith('['):
+                    my.group_columns = [my.group_columns]
+                else:
+                    eval(my.group_columns)
+
+        #my.group_columns = ['timestamp']
+        #my.group_interval = TableLayoutWdg.GROUP_WEEKLY
+        if not my.group_columns:
+            from tactic.ui.filter import FilterData
+            filter = my.kwargs.get("filter")
+            values = {}
+            if filter:
+                filter_data = FilterData(filter)
+                values_list = filter_data.get_values_by_prefix("group")
+                if values_list:
+                    values = values_list[0]
+
+            if values.get("group"):
+                my.group_columns = [values.get("group")]
+                my.group_interval = values.get("interval")
+        my.is_grouped = len(my.group_columns) > 0
+        my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
+
+        # grouping preprocess , check the type of grouping  
+        if my.is_grouped and my.sobjects:
+            search_type = my.sobjects[0].get_search_type()
+            element_type = SearchType.get_tactic_type(my.search_type, my.group_columns[0])
+            my.group_by_time = element_type in ['time', 'date', 'datetime']
+
+
+
+
+
 
     def check_access(my):
         '''check access for each element'''
@@ -352,6 +410,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set some grouping parameters
+        my.process_groups()
+        """
         my.current_groups = []
         if my.group_element:
             if my.group_element in [True, False, '']: # Backwards compatibiity
@@ -392,6 +452,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             search_type = my.sobjects[0].get_search_type()
             element_type = SearchType.get_tactic_type(my.search_type, my.group_columns[0])
             my.group_by_time = element_type in ['time', 'date', 'datetime']
+        """
 
 
         my.order_sobjects()
@@ -416,8 +477,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #    my.mode = 'widget'
         my.mode = 'widget'
 
-
-        my.is_on = True
 
         top = my.top
         my.set_as_panel(top)
@@ -450,13 +509,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
-
-        # TEST TEST TEST
-        #inner.add('<br><br><br>')
-        #upload_wdg = Html5UploadWdg()
-        #inner.add(upload_wdg)
-        # TEST TEST TEST
-        
         inner.add_attr('upload_id',my.upload_id)
 
 
@@ -630,11 +682,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         
 
         # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        show_context_menu = my.kwargs.get("show_context_menu")
+        if show_context_menu in ['false', False]:
+            show_context_menu = False
+        else:
+            show_context_menu = True
+
+        menus_in = {}
+        if show_context_menu:
+            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
+            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        if menus_in:
+            SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
@@ -892,6 +951,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     sobject_list.append(sobject)
 
+
+
         # extend back into an ordered list
         sobject_sorted_list = []
         reverse=False
@@ -1071,15 +1132,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         var row = bvr.src_el.getParent(".spt_table_row");
 
         var rows = spt.table.get_all_rows();
-        /*
-        if (row.hasClass("spt_table_selected")) {
-            spt.table.unselect_row(row);
-        }
-        else {
-            spt.table.select_row(row);
-        }
-        */
-
         var last_selected = spt.table.last_selected_row;
         var last_index = -1;
         var cur_index = -1;
@@ -1390,24 +1442,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             resize_div.add("&nbsp;")
             resize_div.add_class("spt_resize_handle")
 
-            # FIXME: not sure why the qt browser on nt does not handle these
-	    # relayed css properties
-            # This is fixed in PySide 1.1.2
-            if my.browser == 'Qt' and os.name == 'nt':
 
-                #resize_div.add_style("float: right")
-                #resize_div.add_style("cursor: e-resize")
-
-                #th.add_style("background-repeat: no-repeat")
-                #th.add_style("background-position: top center")
-                #th.add_style("text-align: center")
-                pass
-
-
-            resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
-            resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-
-
+            #resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
+            #resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
 
 
             header_div = DivWdg()
@@ -1520,18 +1557,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     group_row.add(td)
                     td.add(group_widget)
 
-        """
-        if has_widgets:
-            # handle the bottom table
-            tr = my.table.add_row()
-            td = my.table.add_cell()
-            td.add_attr("colspan", "2")
-            for widget in my.widgets:
-                bottom_wdg = widget.get_bottom_wdg()
-                my.table.add_cell(bottom_wdg)
-
-            tr.add_class("spt_table_bottom_row")
-        """
 
     def add_table_bottom(my, table):
         '''override the same method in BaseTableLayoutWdg to add a bottom row. this does not 
@@ -1600,65 +1625,72 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 group_value = "__NONE__"
             last_value = my.group_values.get(group_column)
             
-          
             if last_value == None or group_value != last_value:
-                # we have a new group
-                tr, td = table.add_row_cell()
-                if i != 0 and not my.is_on:
-                    tr.add_style("display: none")
 
-                unique_id = tr.set_unique_id()
+                my.handle_group(table, i, sobject, group_column, group_value)
 
-                my.group_rows.append(tr)
-                
-                if group_value == '__NONE__':
-                    label = '(unknown)'
-                else:
-                    label = Common.process_unicode_string(group_value)
-
-                title = label
-                if my.group_by_time:
-                    if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
-                        title = 'Week  %s' %label
-                    elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
-                        # order by number, but convert to alpha title
-                        labels = label.split(' ')
-                        if len(labels)== 2:
-                            timestamp = datetime(int(labels[0]),int(labels[1]),1)
-                            title = timestamp.strftime("%Y %b")
-
-
-                from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-                swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
-                swap.set_behavior_top(my.table)
-                td.add(swap)
-
-                td.add_style("height: 25px")
-                td.add_style("padding-left: %spx" % (i*15))
-                td.add_style("border-style: solid")
-                border_color = td.get_color("border")
-                td.add_style("border-width: 0px 0px 0px 1px")
-                td.add_style("border-color: %s" % border_color)
-                
-                tr.add_attr("spt_unique_id", unique_id)
-                tr.add_class("spt_group_row")
-
-                tr.add_attr("spt_group_name", group_value)
-
-
-                if i != 0:
-                    tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
+                my.group_values[group_column] = group_value
                 last_group_column = group_column
 
 
-                my.group_values[group_column] = group_value
-                my.group_ids[group_column] = unique_id
-
-                tr.add_color("background", "background3", 5)
 
         # what does this do?
         if my.group_rows:
             my.group_rows[-1].get_sobjects().append(sobject)
+
+
+    def handle_group(my, table, i, sobject, group_column, group_value):
+
+        # we have a new group
+        tr, td = table.add_row_cell()
+        if i != 0 and not my.is_on:
+            tr.add_style("display: none")
+
+        unique_id = tr.set_unique_id()
+
+        my.group_rows.append(tr)
+        
+        if group_value == '__NONE__':
+            label = '(unknown)'
+        else:
+            label = Common.process_unicode_string(group_value)
+
+        title = label
+        if my.group_by_time:
+            if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
+                title = 'Week  %s' %label
+            elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
+                # order by number, but convert to alpha title
+                labels = label.split(' ')
+                if len(labels)== 2:
+                    timestamp = datetime(int(labels[0]),int(labels[1]),1)
+                    title = timestamp.strftime("%Y %b")
+
+        from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
+        swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
+        swap.set_behavior_top(my.table)
+        td.add(swap)
+
+        td.add_style("height: 25px")
+        td.add_style("padding-left: %spx" % (i*15))
+        td.add_style("border-style: solid")
+        border_color = td.get_color("border")
+        td.add_style("border-width: 0px 0px 0px 1px")
+        td.add_style("border-color: %s" % border_color)
+        
+        tr.add_attr("spt_unique_id", unique_id)
+        tr.add_class("spt_group_row")
+
+        tr.add_attr("spt_group_name", group_value)
+
+
+        if i != 0:
+            tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
+
+        my.group_ids[group_column] = unique_id
+
+        tr.add_color("background", "background3", 5)
+        tr.add_color("color", "color3")
 
 
 
@@ -2150,7 +2182,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
-
 
         select_color = table.get_color("background3")
         shadow_color = table.get_color("shadow")

@@ -14,10 +14,29 @@ __all__ = ['SthpwUpgrade']
 
 
 from pyasm.search.upgrade.project import *
-from pyasm.search import Sql
 
 class SthpwUpgrade(BaseUpgrade):
-    
+
+
+    #
+    # 4.1.0.b02
+    #
+
+    def upgrade_v4_1_0_b02_002(my):
+        my.run_sql('''
+        UPDATE search_object SET table_name = 'spt_pipeline', class_name = 'pyasm.biz.ProjectPipeline', code = 'config/pipeline'  where search_type = 'config/pipeline';
+        ''')
+
+
+
+
+    def upgrade_v4_1_0_b02_001(my):
+        my.run_sql('''
+        ALTER TABLE "schema" ADD "project_code" varchar(256);
+        ''')
+
+
+   
     #
     # 4.1.0.a01
     #
@@ -57,7 +76,7 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_1_0_a01_008(my):
-        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message_log', 'sthpw', 'Message Log', 'sthpw', 'message_log', 'pyasm.search.SObject', 'Message Log', 'public');
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message_log', 'sthpw/message_log', 'sthpw', 'Message Log', 'sthpw', 'message_log', 'pyasm.search.SObject', 'Message Log', 'public');
         ''')
 
 
@@ -80,12 +99,12 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_1_0_a01_006(my):
-        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/plugin_content', 'config', 'Plugin Contents', '{project}', 'spt_plugin_content', 'pyasm.search.SObject', 'Plugin Contents', 'public');
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/plugin_content', 'config/plugin_content', 'config', 'Plugin Contents', '{project}', 'spt_plugin_content', 'pyasm.search.SObject', 'Plugin Contents', 'public');
         ''')
 
 
     def upgrade_v4_1_0_a01_005(my):
-        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/subscription', 'sthpw', 'Subscription', 'sthpw', 'subscription', 'pyasm.search.SObject', 'Subscription', 'public');
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/subscription', 'sthpw/subscription', 'sthpw', 'Subscription', 'sthpw', 'subscription', 'pyasm.search.SObject', 'Subscription', 'public');
         ''')
 
 
@@ -241,7 +260,7 @@ IMPORTANT NOTICE:
     # 4.0.0.a09
     #
     def upgrade_v4_0_0_a09_002(my):
-        if Sql.get_database_type() == 'MySQL':
+        if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE file MODIFY search_id integer NULL;''')
         else:
             my.run_sql('''
@@ -422,7 +441,7 @@ IMPORTANT NOTICE:
 
 
     def upgrade_v4_0_0_a01_026(my):
-        if Sql.get_database_type() == 'MySQL':
+        if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE snapshot MODIFY column_name varchar(100) NULL;''')
         else:
             my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name DROP NOT NULL;''')
@@ -1741,7 +1760,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v3_5_0_v01_002(my):
-        if Sql.get_database_type() == 'MySQL':
+        if my.get_database_type() == 'MySQL':
             my.run_sql('''
             ALTER table snapshot modify lock_login varchar(100) NULL;
             ''')

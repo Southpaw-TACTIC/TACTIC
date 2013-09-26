@@ -960,10 +960,6 @@ spt.pipeline = {};
 
 
 spt.pipeline.top = null;
-var xxxcanvas = null;
-var xxxpaint = null;
-var xxxctx = null;
-
 
 // External method to initialize callback
 spt.pipeline.init_cbk = function(common_top) {

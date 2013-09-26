@@ -499,7 +499,9 @@ class TopWdg(Widget):
         for css_file in css_files:
             widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % css_file )
 
-        
+       
+        # TEST TEST TEST
+        widget.add('<link rel="stylesheet" href="/assets/_video/video-js.min.css" type="text/css" />\n')
         return widget
 
 

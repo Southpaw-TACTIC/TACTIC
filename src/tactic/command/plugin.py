@@ -169,8 +169,22 @@ class PluginBase(Command):
             search = Search("config/plugin")
             search.add_filter("code", my.code)
             plugin = search.get_sobject()
+            relative_dir = plugin.get_value("code")
 
-            my.manifest = plugin.get_value("manifest")
+            plugin_base_dir = Environment.get_plugin_dir()
+            my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+            manifest_path = "%s/manifest.xml" % my.plugin_dir
+            if not os.path.exists(manifest_path):
+                plugin_base_dir = Environment.get_builtin_plugin_dir()
+                my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+                manifest_path = "%s/manifest.xml" % my.plugin_dir
+
+            f = open(manifest_path, 'r')
+            my.manifest = f.read()
+            f.close()
+
+            #my.manifest = plugin.get_value("manifest")
+
             my.code = plugin.get_code()
             my.version = plugin.get_value("version")
 
@@ -664,6 +678,7 @@ class PluginCreator(PluginBase):
         xml.read_string(manifest)
         nodes = xml.get_nodes("manifest/*")
 
+        sobjects = []
         for i, node in enumerate(nodes):
             name = my.xml.get_node_name(node)
             if name == 'sobject':
@@ -675,6 +690,8 @@ class PluginCreator(PluginBase):
                 my.handle_search_type(node)
             elif name == 'include':
                 my.handle_include(node)
+
+
 
 
 
@@ -1018,7 +1035,8 @@ class PluginInstaller(PluginBase):
 
     def import_data(my, path, commit=True, unique=False):
         if not os.path.exists(path):
-            print "WARNING: path [%s] does not exist" % path
+            # This is printed too often in harmless situations
+            #print "WARNING: path [%s] does not exist" % path
             return []
 
         #f = codecs.open(path, 'r', 'utf-8')

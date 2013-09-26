@@ -469,12 +469,18 @@ class DirListWdg(BaseRefreshWdg):
         }
         """
 
+        search_keys = my.kwargs.get("search_keys")
+        if not search_keys:
+            search_keys = []
+        top.add_attr("spt_search_keys", "|".join(search_keys) )
+
         handler_kwargs = {
             'base_dir':my.base_dir,
             'search_types': my.kwargs.get("search_types"),
+            'search_keys': my.kwargs.get("search_keys"),
         }
 
-        # Test
+
         if dynamic:
             dir_list = DirListPathHandler(
                 level=0,
@@ -595,6 +601,17 @@ class DirListWdg(BaseRefreshWdg):
 
                 var base_dir = item_top.getAttribute("spt_dir");
 
+                // get the search_keys, if any
+                var top = bvr.src_el.getParent(".spt_dir_list_top");
+                var search_keys = top.getAttribute("spt_search_keys");
+                if (search_keys) {
+                    search_keys = search_keys.split("|");
+                }
+                else {
+                    search_keys = [];
+                }
+
+
 
                 var class_name = 'tactic.ui.widget.DirListPathHandler';
                 var kwargs = {
@@ -606,6 +623,7 @@ class DirListWdg(BaseRefreshWdg):
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: {
                         base_dir: base_dir,
+                        search_keys: search_keys
                     }
 
                 }

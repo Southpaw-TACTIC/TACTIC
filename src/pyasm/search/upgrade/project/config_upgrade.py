@@ -21,6 +21,28 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.1.0.b02
     #
+
+    def upgrade_v4_1_0_b02_002(my):
+        my.run_sql('''
+        CREATE TABLE spt_pipeline (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            pipeline text,
+            timestamp timestamp DEFAULT now(),
+            search_type varchar(256),
+            description text,
+            s_status varchar(32),
+            color character varying(256),
+            autocreate_tasks boolean,
+            CONSTRAINT "spt_pipeline_code_idx" UNIQUE (code)
+        );
+        ''')
+
+
+ 
+
+
+
     def upgrade_v4_1_0_b02_001(my):
         my.run_sql('''
         ALTER TABLE "widget_config" ADD "title" varchar(1024);

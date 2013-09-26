@@ -13,7 +13,7 @@ __all__ = ["TileLayoutWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
@@ -25,6 +25,9 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 
 from tool_layout_wdg import ToolLayoutWdg
 class TileLayoutWdg(ToolLayoutWdg):
+
+    def can_select(my):
+        return True
 
     def can_expand(my):
         return True
@@ -112,10 +115,11 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_key = top.getAttribute("spt_search_key");
             var name = top.getAttribute("spt_name");
             var search_code = top.getAttribute("spt_search_code");
-            var class_name = 'tactic.ui.tools.SObjectDetailWdg'
+            var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+            //var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
             var kwargs = {
                 search_key: search_key
-            }
+            };
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
@@ -128,11 +132,17 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_key = top.getAttribute("spt_search_key");
             var server = TacticServerStub.get();
             var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-            if (snapshot) {
+            if (snapshot.__search_key__) {
                 window.open(snapshot.__web_paths_dict__.main);
             }
             else {
-                alert("Can't find file");
+                var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                if (snapshot.__search_key__) {
+                    window.open(snapshot.__web_paths_dict__.main);
+                }
+                else {
+                    alert("WARNING: No file for this asset");
+                }
             }
             '''
         } )
@@ -219,11 +229,124 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
+        
+        border = layout_wdg.get_color("border")
+
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'border': border,
+            'bvr_match_class': 'spt_tile_select',
+            'cbjs_action': '''
+            if (evt.shift == true) {
+
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_table_row");
+
+
+                var rows = spt.table.get_all_rows(true);
+                var last_selected = spt.table.last_selected_row;
+                var last_index = -1;
+                var cur_index = -1;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] == last_selected) {
+                        last_index = i;
+                    }
+                    if (rows[i] == row) {
+                        cur_index = i;
+                    }
+
+                    if (cur_index != -1 && last_index != -1) {
+                        break;
+                    }
+
+                }
+                var start_index;
+                var end_index;
+                if (last_index < cur_index) {
+                    start_index = last_index;
+                    end_index = cur_index;
+                }
+                else {
+                    start_index = cur_index;
+                    end_index = last_index;
+                }
+
+
+                var select = last_selected.hasClass("spt_table_selected");
+                for (var i = start_index; i < end_index+1; i++) {
+
+                    var row = rows[i];
+                    var checkbox = row.getElement(".spt_tile_checkbox");
+
+                    if (!select) {
+                        checkbox.checked = false;
+                        row.removeClass("spt_table_selected");
+
+                        row.setStyle("border", "solid 1px " + bvr.border);
+                        var size = row.getSize();
+                        row.setStyle("width", size.x+6);
+                        row.setStyle("height", size.y+6);
+
+
+                    }
+                    else {
+                        checkbox.checked = true;
+                        //row.addClass("spt_table_selected");
+                        var size = row.getSize();
+                        row.setStyle("width", size.x-10);
+                        row.setStyle("height", size.y-10);
+                        row.setStyle("border", "solid 5px yellow");
+                        spt.table.select_row(row);
+
+                    }
+                }
+
+            }
+            else {
+
+                var row = bvr.src_el.getParent(".spt_table_row");
+                var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
+
+                if (checkbox.checked == true) {
+                    checkbox.checked = false;
+                    row.removeClass("spt_table_selected");
+
+                    row.setStyle("border", "solid 1px " + bvr.border);
+
+                    var size = row.getSize();
+                    row.setStyle("width", size.x+6);
+                    row.setStyle("height", size.y+6);
+
+                }
+                else {
+                    checkbox.checked = true;
+                    //row.addClass("spt_table_selected");
+
+                    var size = row.getSize();
+                    row.setStyle("width", size.x-10);
+                    row.setStyle("height", size.y-10);
+                    row.setStyle("border", "solid 5px yellow");
+                    spt.table.select_row(row);
+
+
+
+                }
+
+            }
+
+            '''
+        } )
+
+
+
+
 
     def get_tile_wdg(my, sobject):
 
         div = DivWdg()
         div.add_class("spt_tile_top")
+
+        div.add_class("spt_table_row")
 
 
         top_view = my.kwargs.get("top_view")
@@ -282,7 +405,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_view_wdg(my, sobject, view):
         div = DivWdg()
-        div.add_style("overflow: hidden")
+        #div.add_style("overflow: hidden")
 
         kwargs = {
             'search_key': sobject.get_search_key(),
@@ -299,8 +422,11 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_scale_wdg(my):
 
+        show_scale = my.kwargs.get("show_scale")
 
         div = DivWdg()
+        if show_scale in [False, 'false']:
+            div.add_style("display: none")
         div.add_style("padding: 5px")
         div.add_class("spt_table_search")
         hidden = HiddenWdg("prefix", "tile_layout")
@@ -495,7 +621,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
 
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
-        div.add_style("height: 15px")
+        div.add_style("height: 16px")
 
 
         detail_div = DivWdg()
@@ -507,15 +633,45 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
         detail_div.add(detail)
 
+
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        header_div.add_class("hand")
+        div.add(header_div)
+        header_div.add_class("SPT_DTS")
+        header_div.add_style("overflow-x: hidden")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+
         title = sobject.get_name()
         if not title:
             title = sobject.get_code()
+      
+        table = Table()
+        header_div.add(table)
+        header_div.add_style("position: relative")
+
+        table.add_cell(checkbox)
+
+        title_div = DivWdg()
+        td = table.add_cell(title_div)
+        title_div.add(title)
+        title_div.add_style("height: 15px")
+        title_div.add_style("left: 25px")
+        title_div.add_style("top: 3px")
+        title_div.add_style("position: absolute")
+        title_div.add_attr("title", title)
+        #title_div.add_style("white-space", "nowrap")
+        #td.add_style("overflow: hidden")
+        title_div.add("<br clear='all'/>")
+
 
         description = sobject.get_value("description", no_exception=True)
         if description:
             div.add_attr("title", sobject.get_code())
 
-        div.add(title)
 
 
         return div
@@ -573,11 +729,17 @@ class ThumbWdg2(BaseRefreshWdg):
         search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
             search_code = sobject.get_id()
+
+        # FIXME: make this faster
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
+        if not snapshot:
+            snapshot = Snapshot.get_snapshot(search_type, search_code)
+
+
         if snapshot:
             file_type = "web"
             icon_path = snapshot.get_web_path_by_type(file_type)

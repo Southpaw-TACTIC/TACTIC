@@ -320,6 +320,7 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
         kwargs = my.kwargs.copy()
         kwargs['open_depth'] = 1
         layout = RepoBrowserWdg(**kwargs)
+        print "sobjects: ", my.sobjects
         layout.set_sobjects(my.sobjects)
         return layout
 

@@ -12,7 +12,7 @@
 
 
 __all__ = ['HtmlException', 'HtmlElement', 'DivWdg', 'FloatDivWdg', 
-        'SpanWdg', 'Tbody', 'Table', 'Canvas']
+        'SpanWdg', 'Tbody', 'Table', 'Canvas', 'Video']
 
 import os
 import re
@@ -1510,6 +1510,12 @@ class Canvas(HtmlElement):
     def __init__(my, css=None, id=None ):
         super(Canvas,my).__init__("canvas", css=css, id=id)
 
+
+
+class Video(HtmlElement):
+    '''Basic Video element'''
+    def __init__(my, css=None, id=None ):
+        super(Video,my).__init__("video", css=css, id=id)
 
 
 

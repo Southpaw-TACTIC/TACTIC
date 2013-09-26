@@ -20,7 +20,8 @@ import sys, os, string, re, stat
 
 
 try:
-    import Image
+    #import Image
+    from PIL import Image
     HAS_PIL = True
     # Test to see if imaging actually works
     import _imaging

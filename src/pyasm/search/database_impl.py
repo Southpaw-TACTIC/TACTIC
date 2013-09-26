@@ -192,7 +192,8 @@ class DatabaseImpl(DatabaseImplInterface):
             schema_dir = my.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
             if not os.path.exists(schema_path):
-                Environment.add_warning("Schema does not exist", "Schema '%s' does not exist" % schema_path)
+                # This warning occurs too often in harmless places
+                #Environment.add_warning("Schema does not exist", "Schema '%s' does not exist" % schema_path)
                 continue
 
             my.import_sql_file(db_resource, schema_path)
@@ -2878,6 +2879,17 @@ class MySQLImpl(PostgresImpl):
                 else:
                     size = 4
                 data_type = 'boolean'
+
+            elif data_type.startswith("longtext"):
+                data_type = 'text'
+                size = 0
+            elif data_type.startswith("mediumtext"):
+                data_type = 'text'
+                size = 0
+            elif data_type.startswith("varchar"):
+                data_type = 'text'
+                size = 256
+
             elif data_type.startswith("int"):
                 parts = data_type.split(" ")
                 size = parts[0]

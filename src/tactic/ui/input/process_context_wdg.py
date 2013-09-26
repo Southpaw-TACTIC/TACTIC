@@ -31,8 +31,6 @@ class ProcessInputWdg(BaseInputWdg):
 
     def get_display(my):
 
-        # Need to import this dynamically
-        from tactic.ui.panel import EditWdg
 
         show_context = my.get_option('context') == 'true'
 
@@ -67,7 +65,8 @@ class ProcessInputWdg(BaseInputWdg):
             top.add_attr("spt_cbjs_get_input_key", "return cell_to_edit.getAttribute('spt_pipeline_code')")
 
 
-
+        # Need to import this dynamically
+        from tactic.ui.panel import EditWdg
         # This is only executed for the popup edit widget
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
             my.in_edit_wdg = True
@@ -191,159 +190,8 @@ class ProcessInputWdg(BaseInputWdg):
         return top
 
 
-#DEPRECATED
-"""
-class ProcessContextInputWdg(BaseInputWdg):
-    '''This widget display a drop down for process context pairs.  It is
-    primarily used as the input widget for adding a process/context combo
-    onto a task base on a the parents pipeline'''
-
-  
-    def get_display(my):
-
-        sobject = my.get_current_sobject()
-        parent = sobject.get_parent()
-
-        my.pipelines = []
-        my.is_edit = False
-        from tactic.ui.panel import EditWdg
-        if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-            if parent:
-                pipeline_code = parent.get_value('pipeline_code')
-                if pipeline_code:
-                    my.pipelines = [Pipeline.get_by_code(pipeline_code)]
-        else:
-            my.pipelines = Search.eval("@SOBJECT(sthpw/pipeline)")
-        my.pipeline_codes = [x.get_code() for x in my.pipelines]
-
-         
-
-        top = DivWdg()
-
-        # put in a js callback to determine the to use.
-        top.add_class("spt_input_top")
-
-        # HACK! This isn't very well constructed
-        top.add_attr("spt_cbjs_get_input_key", "return cell_to_edit.getAttribute('spt_pipeline_code')")
-
-        context_list = []
-        for i, pipeline_code in enumerate(my.pipeline_codes):
-            pipeline = my.pipelines[i]
-
-            div = DivWdg()
-            div.add_class("spt_input_option")
-            div.add_attr("spt_input_key", pipeline_code)
-
-            
-            name = my.get_input_name()
-            select = SelectWdg(name)
-            select.add_empty_option("-- Select a %s --" % my.get_name() )
 
 
-            # FIXME: is this necessary?  If so, we should centralize it.
-            select.add_behavior( { 'type': 'click',
-               'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el ); '
-            } )
-            
-            #behavior = {
-            #    'type': 'keyboard',
-            #    'kbd_handler_name': 'DgTableSelectWidgetKeyInput',
-            #}
-            #select.add_behavior( behavior )
-
-            # get the sub-pipeline processes as well
-            processes = pipeline.get_processes(recurse=True)
-            values = []
-            labels = []
-            for process in processes:
-                if process.is_from_sub_pipeline():
-                    process_name  = process.get_full_name()
-                else:
-                    process_name  = process.get_name()
-                values.append("[label]")
-                labels.append("--------------")
-                values.append("[label]")
-                labels.append("[%s]" % process_name)
-
-                output_contexts = pipeline.get_output_contexts(process.get_name(), show_process=True)
-
-                # put in the contexts
-                for context in output_contexts:
-                    out_process, out_context = context
-                    context_list.append(out_context)
-                    value = "%s||%s" % (process_name, out_context)
-                    if value in values:
-                        continue
-
-                    values.append(value)
-                    #labels.append("--> %s (%s)" % (out_process, out_context))
-                    if process_name == out_context:
-                        labels.append(out_context)
-                    else:
-                        labels.append("%s (from %s)" % (out_context, process_name))
-
-                #values.append("%s||%s" % (process, "foo") )
-                #labels.append("--> %s" % "foo")
-
-            select.set_option("values", values) 
-            select.set_option("labels", labels) 
-            
-            div.add(select)
-            # there is only 1 select for EditWdg
-            if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-                process = sobject.get_value('process')
-                context_value = sobject.get_value(my.get_name())
-                if context_value:
-                    # check if this context is predefined, if not, just use the base context part
-                    if context_value not in context_list and context_value.find('/') != -1:
-                        context_value, subcontext = context_value.split('/',1)
-                    select.set_value('%s||%s'%(process, context_value))
-            top.add(div)
-
-
-
-        return top
-
-"""
-#DEPRECATED
-"""
-class ProcessContextAction(DatabaseAction):
-
-    def execute(my):
-
-        value = my.get_value()
-
-        web = WebContainer.get_web()
-
-        process = None
-        if value.find("||") == -1:
-            # we only have a process select, so process = context
-            # prevent wiping out process
-            if value:
-                process = value
-            context = value
-        else:
-            process, context = value.split("||")
-
-
-        # WARNING! Do not try to uncomment this to try to accomodate 
-        # for existing subcontext when changing context. It will inherit
-        # double subcontext if the context happens to be in a format like
-        # context/subcontext. It makes sense to wipe out the old subcontext anyways.
-        '''
-        old_context = my.sobject.get_value("context")
-        if old_context.find("/") != -1:
-            base, subcontext = old_context.split("/", 1)
-        else:
-            subcontext = ""
-        if subcontext:
-            context = "%s/%s" % (context, subcontext)
-        '''
-        if process:
-            my.sobject.set_value("process", process)
-        my.sobject.set_value("context", context)
-
-"""
 class SubContextInputWdg(TextWdg):
 
 
@@ -352,7 +200,8 @@ class SubContextInputWdg(TextWdg):
         context = ''
         if sobject:
             context = sobject.get_value("context")
-       
+      
+        from tactic.ui.panel import EditWdg
         if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
             # FIXME: this is added for EditWdg where the KeyboardHandler captures the key and won't let user type
             behavior = {

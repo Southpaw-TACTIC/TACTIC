@@ -16,7 +16,8 @@ __all__ = ["Watermark"]
 import tacticenv
 from pyasm.common import Environment
 
-import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
+#import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
+from PIL import ImageEnhance, ImageChops, ImageFont, ImageDraw
 import types
 
 class Watermark(object):
@@ -95,9 +96,9 @@ class Watermark(object):
 
 
 
-    def add_watermark(my, in_path, out_path, quality=0.5):
+    def add_watermark(my, in_path, out_path, quality=0.5, texts=[], sizes=[]):
 
-        import Image
+        from PIL import Image
         from pyasm.security.watermark import Watermark
         from datetime import datetime
 
@@ -115,14 +116,16 @@ class Watermark(object):
                 sizey = im_in.size[1]
                 max_res = sizex * quality
                 max_width = sizex
-                im_in = im_in.resize( (max_res, int(sizey/(sizex/float(max_res)))) )
-                im_in = im_in.resize( (max_width, int(sizey/(sizex/float(max_width)))) )
+                im_in = im_in.resize( (int(max_res), int(sizey/(sizex/float(max_res)))) )
+                im_in = im_in.resize( (int(max_width), int(sizey/(sizex/float(max_width)))) )
 
             # add the watermark
             #watermark = Watermark()
             now = datetime.today().strftime("%Y/%m/%d, %H:%M")
-            texts = ['Do Not Copy', now]
-            sizes = [20, 10, 10, 20, 20]
+            if not texts:
+                texts = ['Do Not Copy', now]
+            if not sizes:
+                sizes = [20, 10]
 
             mark = my.generate(texts, sizes)
             im_out = my.execute(im_in, mark, 'tile', 0.5)
@@ -137,7 +140,7 @@ class Watermark(object):
 def test():
     watermark = Watermark()
 
-    texts = ['Do Not Copy', 'Remko Noteboom', 'id=12345', 'Feb 12, 2011']
+    texts = ['Do Not Copy', 'Joe Smith', 'id=12345', 'Feb 12, 2011']
     #watermark_path = './sample-watermark.png'
     #mark = Image.open(watermark_path)
 

@@ -65,7 +65,10 @@ class DeleteToolWdg(BaseRefreshWdg):
         title = DivWdg()
         top.add(title)
         title.add_color("background", "background", -10)
-        title.add("Delete Item [%s]" % (sobject.get_code()))
+        if my.search_keys:
+            title.add("Delete %s Items" % len(my.search_keys))
+        else:
+            title.add("Delete Item [%s]" % (sobject.get_code()))
         title.add_style("font-size: 14px")
         title.add_style("font-weight: bold")
         title.add_style("padding: 10px")

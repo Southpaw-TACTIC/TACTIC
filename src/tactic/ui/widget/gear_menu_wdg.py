@@ -221,7 +221,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         security = Environment.get_security()
         if security.check_access("builtin", "retire_delete", "allow"):
-            if not my.layout or my.layout.can_add_columns():
+            if not my.layout or my.layout.can_select():
                 opt_spec_list.extend([
             
                     { "type": "action", "label": "Retire Selected Items",
