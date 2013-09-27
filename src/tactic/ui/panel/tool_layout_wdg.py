@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ToolLayoutWdg"]
+__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
@@ -273,7 +273,6 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-__all__ = ['CustomLayoutWithSearchWdg']
 from custom_layout_wdg import CustomLayoutWdg
 class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
@@ -289,7 +288,7 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['CustomItemLayoutWithSearchWdg']
+
 class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -309,7 +308,6 @@ class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['RepoBrowserLayoutWdg']
 class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -327,7 +325,6 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['CardLayoutWdg']
 class CardLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
