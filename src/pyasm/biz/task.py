@@ -296,6 +296,7 @@ class Task(SObject):
             bid_duration = my.get_value("bid_duration")
             if bid_duration and bid_start_date:
                 date = Date(db=bid_start_date)
+                bid_duration = float(bid_duration)
                 date.add_days(bid_duration)
                 bid_end_date = date.get_db_time()
             else:
