@@ -16,7 +16,8 @@ __all__ = ["Watermark"]
 import tacticenv
 from pyasm.common import Environment
 
-import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
+#import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
+from PIL import ImageEnhance, ImageChops, ImageFont, ImageDraw
 import types
 
 class Watermark(object):
@@ -97,7 +98,7 @@ class Watermark(object):
 
     def add_watermark(my, in_path, out_path, quality=0.5, texts=[], sizes=[]):
 
-        import Image
+        from PIL import Image
         from pyasm.security.watermark import Watermark
         from datetime import datetime
 

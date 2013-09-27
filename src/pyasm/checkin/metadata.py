@@ -19,7 +19,7 @@ from pyasm.common import Common
 
 
 try:
-    import Image
+    from PIL import Image
     HAS_PIL = True
     # Test to see if imaging actually works
     import _imaging
@@ -255,7 +255,7 @@ class PILMetadataParser(BaseMetadataParser):
         path = my.kwargs.get("path")
 
         try:
-            import Image
+            from PIL import Image
             im = Image.open(path)
             return my._get_data(im)
         except Exception, e:

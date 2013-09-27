@@ -22,7 +22,7 @@ class CornerGenerator(object):
         my.kwargs = kwargs
 
     def execute(my):
-        import Image, ImageDraw, ImageFilter
+        from PIL import Image, ImageDraw, ImageFilter
 
         color = my.kwargs.get("color")
         if not color:
