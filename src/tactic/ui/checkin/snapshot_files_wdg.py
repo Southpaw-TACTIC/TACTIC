@@ -569,8 +569,16 @@ class SObjectDirListWdg(DirListWdg):
 
 
         for sobject in my.sobjects:
-            sobject_paths = my.get_sobject_files(sobject)
-            paths.extend(sobject_paths)
+            
+            if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
+                parent = sobject.get_parent()
+                sobject_paths = my.get_sobject_files(parent)
+                paths.extend(sobject_paths)
+
+            else:
+                sobject_paths = my.get_sobject_files(sobject)
+                paths.extend(sobject_paths)
+
 
         return paths
 
