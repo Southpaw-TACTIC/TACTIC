@@ -6439,6 +6439,10 @@ class SearchKey(object):
         if not search_keys:
             return []
 
+
+        if isinstance(search_keys, basestring):
+            search_keys = search_keys.split(",")
+
         search_type_list = []
         search_code_list = []
         search_id_list = []

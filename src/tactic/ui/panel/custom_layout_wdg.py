@@ -625,7 +625,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print "Mako: ", exceptions.text_error_template().render()
+                print "Error in view [%s]: " % my.view, exceptions.text_error_template().render()
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")

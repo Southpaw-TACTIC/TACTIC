@@ -22,6 +22,26 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.1.0.b02
     #
 
+
+    def upgrade_v4_1_0_b02_002(my):
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/department', 'sthpw/department', 'sthpw', 'Department', 'sthpw', 'department', 'pyasm.search.SObject', 'Department', 'public');
+        ''')
+
+
+    def upgrade_v4_1_0_b02_003(my):
+        my.run_sql('''
+        CREATE TABLE department (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            name varchar(256),
+            "timestamp" timestamp
+        );
+        ''') 
+
+
+
+
+
     def upgrade_v4_1_0_b02_002(my):
         my.run_sql('''
         UPDATE search_object SET table_name = 'spt_pipeline', class_name = 'pyasm.biz.ProjectPipeline', code = 'config/pipeline'  where search_type = 'config/pipeline';
