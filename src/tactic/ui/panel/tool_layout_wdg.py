@@ -441,7 +441,8 @@ class CardLayoutWdg(ToolLayoutWdg):
 
         div.add("<br/>")
         from tactic.ui.widget import DiscussionWdg
-        notes_wdg = DiscussionWdg()
+        search_key = sobject.get_search_key()
+        notes_wdg = DiscussionWdg(search_key=search_key)
         notes_wdg.set_sobject(sobject)
         div.add(notes_wdg)
 
