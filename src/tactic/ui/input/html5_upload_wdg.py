@@ -23,7 +23,7 @@ from pyasm.widget import TextWdg, HiddenWdg
 class Html5UploadWdg(BaseRefreshWdg):
 
     def init(my):
-
+        print "INIT \n"
         name = my.kwargs.get("name")
         if not name:
             name = "table_upload"
@@ -147,11 +147,8 @@ spt.html5upload.select_files = function(onchange) {
         }, 100 );
     }
     else {
-        setTimeout( function() {
-            el.click();
-            spt.html5upload.events['select_file'] = onchange;
-        }, 100 );
-
+        el.click();
+        spt.html5upload.events['select_file'] = onchange;
     }
 
     // FIXME: this is not very useful as the select file is async, but
