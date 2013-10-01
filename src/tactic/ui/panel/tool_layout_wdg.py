@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ToolLayoutWdg"]
+__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
@@ -182,30 +182,33 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             '''
         } )
 
+        main_bg1 = layout_wdg.get_color("background")
+        main_bg2 = layout_wdg.get_color("background", 5)
+
         bg1 = layout_wdg.get_color("background3")
         bg2 = layout_wdg.get_color("background3", 5)
         layout_wdg.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_item_top',
             'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", "0.8");
+            bvr.src_el.setStyle('background', '%s');
             var el = bvr.src_el.getElement(".spt_tile_title");
             if (el) {
                 el.setStyle("background", "%s");
             }
-            ''' % bg2
+            ''' % (main_bg2, bg2)
         } )
 
         layout_wdg.add_relay_behavior( {
             'type': 'mouseout',
             'bvr_match_class': 'spt_item_top',
             'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", "1.0");
+            bvr.src_el.setStyle('background', '%s');
             var el = bvr.src_el.getElement(".spt_tile_title");
             if (el) {
                 el.setStyle("background", "%s");
             }
-            ''' % bg1
+            ''' %(main_bg1, bg1)
         } )
 
 
@@ -273,7 +276,6 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-__all__ = ['CustomLayoutWithSearchWdg']
 from custom_layout_wdg import CustomLayoutWdg
 class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
@@ -289,7 +291,7 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['CustomItemLayoutWithSearchWdg']
+
 class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -309,7 +311,6 @@ class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['RepoBrowserLayoutWdg']
 class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -327,7 +328,6 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
 
 
-__all__ = ['CardLayoutWdg']
 class CardLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -444,7 +444,8 @@ class CardLayoutWdg(ToolLayoutWdg):
 
         div.add("<br/>")
         from tactic.ui.widget import DiscussionWdg
-        notes_wdg = DiscussionWdg()
+        search_key = sobject.get_search_key()
+        notes_wdg = DiscussionWdg(search_key=search_key)
         notes_wdg.set_sobject(sobject)
         div.add(notes_wdg)
 
