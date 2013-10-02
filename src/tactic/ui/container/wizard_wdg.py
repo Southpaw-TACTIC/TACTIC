@@ -19,6 +19,32 @@ from tactic.ui.common import BaseRefreshWdg
 
 
 class WizardWdg(BaseRefreshWdg):
+    ARGS_KEYS = {
+        'submit_title': {
+            'description': 'Title shown on submit button',
+            'values': 'true|false',
+            'category': 'Display'
+        },
+        'command': {
+            'description': 'Python command class to run on submit',
+            'category': 'Display'
+        },
+        'script': {
+            'description': 'Python script path to run on submit',
+            'category': 'Display'
+        },
+        'jsscript': {
+            'description': 'Javascript path to run on submit',
+            'category': 'Display'
+        },
+
+        'views': {
+            'description': 'List of views to display for each page',
+            'category': 'Display'
+        }
+
+    }
+
 
     def __init__(my, **kwargs):
         super(WizardWdg, my).__init__(**kwargs)
@@ -240,6 +266,7 @@ class WizardWdg(BaseRefreshWdg):
             submit_title = my.kwargs.get("submit_title")
             command = my.kwargs.get("command")
             script = my.kwargs.get("script")
+            jsscript = my.kwargs.get("jsscript")
 
             if not submit_title:
                 submit_title = "Submit"
@@ -248,18 +275,24 @@ class WizardWdg(BaseRefreshWdg):
             'type': 'click_up',
             'command': command,
             'script': script,
+            'jsscript': jsscript,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_wizard_top");
 
             var values = spt.api.Utility.get_input_values(top);
 
-            spt.app_busy.show("Executing ...", "");
             var server = TacticServerStub.get();
             try {
                 if (bvr.command) {
+                    spt.app_busy.show("Executing ...", "");
                     server.execute_cmd(bvr.command, values);
                 }
+                else if (bvr.jsscript) {
+                    var values = spt.api.get_input_values(top, null, false);
+                    spt.CustomProject.run_script_by_path(bvr.jsscript, values);
+                }
                 else if (bvr.script) {
+                    var values = spt.api.get_input_values(top, null, false);
                     server.execute_python_script(bvr.script, {values:values});
                 }
                 else {
@@ -280,6 +313,7 @@ class WizardWdg(BaseRefreshWdg):
                 }
                 throw(e);
             }
+            spt.app_busy.hide();
 
             '''
             } )

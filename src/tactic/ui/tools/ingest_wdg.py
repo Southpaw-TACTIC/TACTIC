@@ -343,7 +343,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         } )
 
 
-        metadata_view = "test/metadata"
+        """
+        metadata_view = "test/wizard/metadata"
         files_div.add_relay_behavior( {
             'type': 'mouseup',
             'view': metadata_view,
@@ -358,6 +359,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             '''
         } )
+        """
 
 
 
