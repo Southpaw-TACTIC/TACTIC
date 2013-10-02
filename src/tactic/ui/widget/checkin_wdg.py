@@ -4973,7 +4973,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         # set the context if one has been passed in
         if my.context:
 
-            if re.search('/', my.context):
+            if re.match(r'.*/.*\d{3}', my.context):
                 new_context = my.context.split("/")[0]
                 select.set_value(new_context)
             else:
