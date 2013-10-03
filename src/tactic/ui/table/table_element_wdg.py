@@ -424,8 +424,11 @@ class CheckinButtonElementWdg(ButtonElementWdg):
             'values': 'parent|connect|sobject',
             'order': 8,
             'description': 'Determines which sobject to check into'},
-            
-            
+     'checkin_options_view':  {'type': 'TextWdg',
+            'category': '2. Display',
+            'order': 9,
+            'description': 'custom layout view which defines a custom check-in options UI to appear on the left side of the UI'}
+
      #'show_sub_context' : {'type': 'SelectWdg',
      #       'category': '2. Display',
      #       'values': 'true|false',
@@ -635,7 +638,6 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 class CheckoutButtonElementWdg(ButtonElementWdg):
 
     def get_display(my):
-
         mode = my.get_option('mode')
         size = my.get_option('icon_size')
         if mode == 'add':
