@@ -15,7 +15,7 @@ __all__ = ['SnapshotFilesWdg','SObjectDirListWdg']
 
 from pyasm.common import Environment, Common, jsonloads, jsondumps
 from pyasm.search import SearchKey, Search
-from pyasm.biz import Snapshot
+from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import WebContainer, SpanWdg, DivWdg, Table
 from pyasm.widget import IconWdg, SelectWdg
 
@@ -730,12 +730,10 @@ class SObjectDirListWdg(DirListWdg):
         pipeline_code = my.sobject.get_value("pipeline_code", no_exception=True)
         processes = []
         if pipeline_code:
-            search = Search("sthpw/pipeline")
-            search.add_filter("code", pipeline_code)
-            pipeline = search.get_sobject()
-
-            process_names = pipeline.get_process_names()
-            processes.extend(process_names)
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if pipeline:
+                process_names = pipeline.get_process_names()
+                processes.extend(process_names)
 
         processes.insert(0, "all")
 
@@ -838,7 +836,7 @@ class SObjectDirListWdg(DirListWdg):
         gear.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.app_busy.show('Select a folder to download to','');
+            spt.app_busy.show('Select a folder to download to...','');
             var top_class = 'spt_sobject_dir_list_top';
             var top = bvr.src_el.getParent("."+top_class);
             spt.selection.set_top(top);
@@ -849,13 +847,22 @@ class SObjectDirListWdg(DirListWdg):
                 var applet = spt.Applet.get();
                 var select_dir =true;
                 var dir = applet.open_file_browser('', select_dir);
-                if (!dir) {
+                if (dir.length == 0)
                     dir = applet.get_current_dir();
-                }
+                else 
+                    dir = dir[0];
+
                 if (!dir) {
-                    spt.alert("No folder selected to copy to");
+                    spt.alert("No folder selected to copy to.");
+                    spt.app_busy.hide();
                     return;
                 }
+                if (items.length == 0){
+                    spt.alert("Please select at least one file to download.");
+                    spt.app_busy.hide();
+                    return;
+                }
+                
 
                 var asset_dir = '%s';
                 for (var i = 0; i < items.length; i++) {

@@ -881,25 +881,34 @@ class DirListWdg(BaseRefreshWdg):
 
     def add_base_dir_behaviors(my, div, base_dir):
 
+        location = my.kwargs.get("location")
+        if location == 'server':
+            base_dir = Environment.get_client_repo_dir()
+            
         div.add_class("hand")
-
+        div.add_attr('title','Double click to open explorer')
         div.add_behavior( {
         'type': 'double_click',
         'base_dir': base_dir,
         'cbjs_action': '''
         var applet = spt.Applet.get();
         var path = bvr.base_dir;
-        spt.app_busy.show("Opening file", path);
-        applet.open_file(path);
-        spt.app_busy.hide();
+        applet.open_explorer(path); 
         '''
         } )
 
 
 
-
     def add_dir_behaviors(my, item_div, dir, item):
 
+        location = my.kwargs.get("location")
+        if location == 'server':
+            base_dir = my.kwargs.get("base_dir")
+            repo_dir = Environment.get_client_repo_dir()
+            dir = dir.replace(base_dir,'')
+            dir = repo_dir + dir
+
+        item_div.add_attr('title','Double click to open explorer')
         item_div.add_behavior( {
         'type': 'double_click',
         'dirname': dir,
@@ -907,13 +916,9 @@ class DirListWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var applet = spt.Applet.get();
         var path = bvr.dirname + "/" + bvr.basename;
-        //applet.exec_shell('cmd.exe "' + path + '"', false);
-        spt.app_busy.show("Opening file", path);
-        applet.open_file(path);
-        spt.app_busy.hide();
+        applet.open_explorer(path); 
         '''
         } )
-
 
 
 

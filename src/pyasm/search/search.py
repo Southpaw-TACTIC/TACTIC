@@ -5114,13 +5114,34 @@ class SearchType(SObject):
                 table = search_type_obj.get_table()
 
                 column_info = sql.get_column_info(table)
+                #print "INFO ", column_info
 
             Container.put("SearchType:column_info:%s" % search_type, column_info)
         return column_info
 
     get_column_info = classmethod(get_column_info)
 
+    def clear_column_cache(cls, search_type):
+        '''clear the column cache in 2 steps'''
+        # this needs to be None to clear
+        Container.put("SearchType:column_info:%s" % search_type, None)
 
+        from pyasm.biz import Project
+        project = Project.get_by_search_type(search_type)
+        db_resource = project.get_project_db_resource()
+        sql = DbContainer.get(db_resource)
+        key = "DatabaseImpl:column_info"
+        cache_dict = Container.get(key)
+        if cache_dict:
+            search_type_obj = SearchType.get(search_type)
+            table = search_type_obj.get_table()
+            key2 = "%s:%s" % (db_resource, table)
+            cache_dict[key2] = None
+
+    clear_column_cache = classmethod(clear_column_cache)
+
+            
+        
 
     def column_exists(cls, search_type, column):
         if isinstance(search_type, SObject):

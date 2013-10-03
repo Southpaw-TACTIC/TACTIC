@@ -278,11 +278,13 @@ class ColumnAddIndexCmd(Command):
         db_resource = Project.get_db_resource_by_search_type(my.search_type)
         sql = DbContainer.get(db_resource)
 
-        index_name = "%s_%s_idx" % (table, my.column)
+       
         
         if my.constraint == "unique":
+            index_name = "%s_%s_unique" % (table, my.column)
             statement = 'ALTER TABLE "%s" add constraint "%s" UNIQUE ("%s")' % (table, index_name, my.column)
         else:
+            index_name = "%s_%s_idx" % (table, my.column)
             statement = 'CREATE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
 
         sql.do_update(statement)
