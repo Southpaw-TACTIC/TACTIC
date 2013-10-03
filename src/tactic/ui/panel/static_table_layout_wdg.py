@@ -258,7 +258,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
         tr.add_color("color", "color3")
 
         if group_value == '__NONE__':
-            label = '(unknown)'
+            label = '---'
         else:
             label = Common.process_unicode_string(group_value)
 
