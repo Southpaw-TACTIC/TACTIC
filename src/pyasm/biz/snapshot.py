@@ -80,8 +80,10 @@ class Snapshot(SObject):
             return None
 
         sobject = None
-        if search_code:
+        if search_code and isinstance(search_code, basestring):
             sobject = Search.get_by_code(search_type, search_code, show_retired=True)
+        else:
+            sobject = Search.get_by_id(search_type, search_id, show_retired=True)
         if sobject == None:
             if search_id:
                 sobject = Search.get_by_id(search_type, search_id)
@@ -1645,7 +1647,12 @@ class Snapshot(SObject):
 
     def get_current_by_sobject(sobject, context=None):
         search_type = sobject.get_search_type()
-        search_code = sobject.get_value("code")
+        code_exists = SearchType.column_exists(search_type, "code")
+        if code_exists:
+            search_code = sobject.get_value("code")
+        else:
+            search_code = sobject.get_id()
+
         snapshot = Snapshot.get_current(search_type, search_code, context)
         return snapshot
     get_current_by_sobject = staticmethod(get_current_by_sobject)
@@ -1670,7 +1677,6 @@ class Snapshot(SObject):
         search.add_filter("search_type", search_type)
 
         code_exists = SearchType.column_exists(search_type, "code")
-
         if code_exists:
             search.add_filter("search_code", search_code)
         else:
@@ -1797,7 +1803,7 @@ class Snapshot(SObject):
 
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
-        search_code = sobject.get_code()
+        search_code = sobject.get_value("code", no_exception=True)
 
         """
         rev = None

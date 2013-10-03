@@ -2897,11 +2897,34 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
             depth = 1
-            from tactic.ui.checkin import CheckinDirListWdg
-            list_dir_wdg = CheckinDirListWdg(base_dir=my.base_dir, location="client", show_base_dir=my.show_base_dir, all_open=False, paths=paths,  search_key=search_key, md5s=md5s, subcontext_options=subcontext_options, context_options=context_options, depth=depth, sizes=sizes, preselected=my.preselected, show_selection=True, process=my.process, folder_state=folder_state)
-            dir_div.add(list_dir_wdg)
 
-          
+            folder_mode = my.kwargs.get("folder_mode")
+            if folder_mode == "thumb":
+                # TEST TEST TEST
+                list_dir_div = DivWdg()
+                dir_div.add(list_dir_div)
+                from tactic.ui.panel import ThumbWdg2
+                for path in paths:
+                    print "path: ", path
+                    path_div = DivWdg()
+                    list_dir_div.add(path_div)
+                    thumb = ThumbWdg2()
+                    path_div.add(thumb)
+                    thumb.set_path(path)
+
+            else:
+                from tactic.ui.checkin import CheckinDirListWdg
+                list_dir_wdg = CheckinDirListWdg(base_dir=my.base_dir, location="client", show_base_dir=my.show_base_dir, all_open=False, paths=paths,  search_key=search_key, md5s=md5s, subcontext_options=subcontext_options, context_options=context_options, depth=depth, sizes=sizes, preselected=my.preselected, show_selection=True, process=my.process, folder_state=folder_state)
+                dir_div.add(list_dir_wdg)
+
+ 
+            if not paths:
+                none_div = DivWdg()
+                none_div.add_style("padding: 20px")
+                none_div.add_style("text-align: center")
+                none_div.add_style("font-style: italic")
+                none_div.add("Folder is empty")
+                dir_div.add(none_div)         
         else:
 
             msg_div = DivWdg()
@@ -2954,7 +2977,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
             msg_div = DivWdg()
             td.add(msg_div)
-            msg_div.add('"%s"<br/><br/>' % my.base_dir)
+            msg_div.add('<b>"%s"</b><br/><br/>' % my.base_dir)
             msg_div.add('The sandbox folder is a work folder allocated for this process.  It does not yet exist.  If you wish to work in the sandbox folder, press the "Create" button.')
             msg_div.add_styles("margin-top: 8px;margin-left: 16px")
 

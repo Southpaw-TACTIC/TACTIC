@@ -699,6 +699,9 @@ class ThumbWdg2(BaseRefreshWdg):
         super(ThumbWdg2, my).set_sobject(sobject)
         my.path = my.get_path_from_sobject(sobject)
 
+    def set_path(my, path):
+        my.path = path
+
     def get_path(my):
         return my.path
 
