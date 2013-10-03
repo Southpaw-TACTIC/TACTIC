@@ -836,7 +836,7 @@ class FileUndo:
                             shutil.rmtree(src)
                         else:
                             os.unlink(src)
-                        print "Error: ", e
+                        print "Error: ", e.args[0].encode('utf-8','ignore')
                         print "Error moving [%s] to cache directory in [%s] failed. Removed repository files" % (src, tmp_dir)
 
                 # attempt to remove directories
