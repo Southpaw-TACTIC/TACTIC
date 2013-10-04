@@ -19,16 +19,16 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     #
-    # 4.1.0.b02
+    # 4.1.0.b03
     #
 
 
-    def upgrade_v4_1_0_b02_004(my):
+    def upgrade_v4_1_0_b03_002(my):
         my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/department', 'sthpw/department', 'sthpw', 'Department', 'sthpw', 'department', 'pyasm.search.SObject', 'Department', 'public');
         ''')
 
 
-    def upgrade_v4_1_0_b02_003(my):
+    def upgrade_v4_1_0_b03_001(my):
         my.run_sql('''
         CREATE TABLE department (
             id serial PRIMARY KEY,
@@ -40,6 +40,9 @@ class SthpwUpgrade(BaseUpgrade):
 
 
 
+    #
+    # 4.1.0.b02
+    #
 
 
     def upgrade_v4_1_0_b02_002(my):
