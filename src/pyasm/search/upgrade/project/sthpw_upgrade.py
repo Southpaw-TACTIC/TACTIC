@@ -23,7 +23,7 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
 
-    def upgrade_v4_1_0_b02_002(my):
+    def upgrade_v4_1_0_b02_004(my):
         my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/department', 'sthpw/department', 'sthpw', 'Department', 'sthpw', 'department', 'pyasm.search.SObject', 'Department', 'public');
         ''')
 
