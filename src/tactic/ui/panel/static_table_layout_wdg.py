@@ -108,6 +108,22 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 widget.preprocess()
 
 
+        my.process_groups()
+        my.order_sobjects()
+        my.remap_sobjects()
+
+
+        my.attributes = []
+        for i, widget in enumerate(my.widgets):
+            element_name = widget.get_name()
+
+            if element_name and element_name != "None":
+                attrs = my.config.get_element_attributes(element_name)
+            else:
+                attrs = {}
+            
+            my.attributes.append(attrs)
+ 
 
 
         is_refresh = my.kwargs.get("is_refresh")
@@ -127,12 +143,17 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
         table.add_color("color", "color")
 
         # initialize the spt.table js
-        my.handle_table_behaviors(table)
+        #my.handle_table_behaviors(table)
 
         my.handle_headers(table)
 
         border_color = table.get_color("table_border", default="border")
         for row, sobject in enumerate(my.sobjects):
+
+            # put in a group row
+            if my.is_grouped:
+                my.handle_groups(table, row, sobject)
+
             tr = table.add_row()
             if row % 2:
                 background = tr.add_color("background", "background")
@@ -142,7 +163,9 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             tr.add_class("spt_table_row")
             tr.add_attr("spt_search_key", sobject.get_search_key())
 
-            for widget in my.widgets:
+
+
+            for i, widget in enumerate(my.widgets):
 
                 value_div = DivWdg()
                 value_div.add_style("padding: 3px")
@@ -182,6 +205,10 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
 
     def handle_headers(my, table):
 
+        # this comes from refresh
+        widths = my.kwargs.get("column_widths")
+
+
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
@@ -193,7 +220,7 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
             header_div = DivWdg()
             th.add(header_div)
             th.add_style("padding: 3px")
-            th.add_gradient("background", "background", -10)
+            th.add_gradient("background", "background", -5, -10)
             th.add_border()
 
             if my.mode == 'widget':
@@ -203,6 +230,49 @@ class StaticTableLayoutWdg(FastTableLayoutWdg):
                 value = Common.get_display_title(element)
             header_div.add(value)
 
+
+            if widths and len(widths) > i:
+                th.add_style("width", widths[i])
+                width_set = True
+                width = widths[i]
+
+            else: # get width from definition 
+                width = my.attributes[i].get("width")
+                if width:
+                     th.add_style("width", width)
+                     width_set = True
+            if width:
+                th.add_style("min-width", width)
+            else:
+                th.add_style("overflow","hidden")
+
+
             widget.handle_th(th, i)
+
+
+
+    def handle_group(my, table, i, sobject, group_name, group_value):
+
+        tr, td = table.add_row_cell()
+        tr.add_color("background", "background3", 5)
+        tr.add_color("color", "color3")
+
+        if group_value == '__NONE__':
+            label = '---'
+        else:
+            label = Common.process_unicode_string(group_value)
+
+        td.add(label)
+
+        td.add_style("height: 25px")
+        td.add_style("padding-left: %spx" % (i*15+5))
+        td.add_style("border-style: solid")
+        border_color = td.get_color("border")
+        td.add_style("border-width: 0px 0px 0px 1px")
+        td.add_style("border-color: %s" % border_color)
+        td.add_style("font-weight: bold")
+
+
+
 
 

@@ -1231,6 +1231,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
+        spt.table.last_table = null;
         var class_name = "tactic.ui.tools.repo_browser_wdg.RepoBrowserContentWdg";
         spt.app_busy.show("Loading information");
         var kwargs = {
@@ -1341,6 +1342,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             basename: bvr.basename,
             search_keys: search_keys
         };
+        spt.table.last_table = null;
         spt.panel.load(content, class_name, kwargs);
         spt.app_busy.hide();
 

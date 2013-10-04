@@ -672,6 +672,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 search_key = search_key.replace("&amp;", "&")
 
 
+            print "search_key: ", search_key
             sobject = SearchKey.get_by_search_key(search_key)
             if not sobject:
                 if no_exception:

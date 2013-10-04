@@ -11,6 +11,7 @@
 #
 __all__ = ["WizardWdg", "TestWizardWdg"]
 
+from pyasm.common import Common
 from pyasm.web import *
 from pyasm.widget import IconWdg, IconButtonWdg, SelectWdg, ProdIconButtonWdg, TextWdg
 
@@ -18,6 +19,32 @@ from tactic.ui.common import BaseRefreshWdg
 
 
 class WizardWdg(BaseRefreshWdg):
+    ARGS_KEYS = {
+        'submit_title': {
+            'description': 'Title shown on submit button',
+            'values': 'true|false',
+            'category': 'Display'
+        },
+        'command': {
+            'description': 'Python command class to run on submit',
+            'category': 'Display'
+        },
+        'script': {
+            'description': 'Python script path to run on submit',
+            'category': 'Display'
+        },
+        'jsscript': {
+            'description': 'Javascript path to run on submit',
+            'category': 'Display'
+        },
+
+        'views': {
+            'description': 'List of views to display for each page',
+            'category': 'Display'
+        }
+
+    }
+
 
     def __init__(my, **kwargs):
         super(WizardWdg, my).__init__(**kwargs)
@@ -51,6 +78,18 @@ class WizardWdg(BaseRefreshWdg):
         title_wdg.add_style("font-weight: bold")
 
         inner.add("<br/>")
+
+
+        views = my.kwargs.get("views")
+        if views:
+            from tactic.ui.panel import CustomLayoutWdg
+            if isinstance(views, basestring):
+                views = views.split("|")
+            for view in views:
+                title = Common.get_display_title(view)
+                widget = CustomLayoutWdg(view=view)
+                my.add(widget, title)
+
 
 
         header_wdg = my.get_header_wdg()
@@ -220,35 +259,61 @@ class WizardWdg(BaseRefreshWdg):
 
 
 
+
         if my.submit_button:
             submit = my.submit_button
         else:
-            command = my.kwargs.get("command")
             submit_title = my.kwargs.get("submit_title")
+            command = my.kwargs.get("command")
+            script = my.kwargs.get("script")
+            jsscript = my.kwargs.get("jsscript")
+
             if not submit_title:
                 submit_title = "Submit"
             submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
             submit.add_behavior( {
             'type': 'click_up',
             'command': command,
+            'script': script,
+            'jsscript': jsscript,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_wizard_top");
 
             var values = spt.api.Utility.get_input_values(top);
 
-            spt.app_busy.show("Executing ...", "");
             var server = TacticServerStub.get();
             try {
-                server.execute_cmd(bvr.command, values);
+                if (bvr.command) {
+                    spt.app_busy.show("Executing ...", "");
+                    server.execute_cmd(bvr.command, values);
+                }
+                else if (bvr.jsscript) {
+                    var values = spt.api.get_input_values(top, null, false);
+                    spt.CustomProject.run_script_by_path(bvr.jsscript, values);
+                }
+                else if (bvr.script) {
+                    var values = spt.api.get_input_values(top, null, false);
+                    server.execute_python_script(bvr.script, {values:values});
+                }
+                else {
+                    alert("No script or command defined");
+                }
             }
             catch(e) {
+                console.log(e);
                 var xml = spt.parse_xml(e);
                 var node = xml.getElementsByTagName("string")[0];
-                var error = node.textContent;
-                spt.error("Error: " + error);
-                spt.app_busy.hide();
+                if (node) {
+                    var error = node.textContent;
+                    spt.error("Error: " + error);
+                    spt.app_busy.hide();
+                }
+                else {
+                    alert(e);
+                }
                 throw(e);
             }
+            spt.app_busy.hide();
 
             '''
             } )

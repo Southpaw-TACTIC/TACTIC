@@ -343,6 +343,25 @@ class IngestUploadWdg(BaseRefreshWdg):
         } )
 
 
+        """
+        metadata_view = "test/wizard/metadata"
+        files_div.add_relay_behavior( {
+            'type': 'mouseup',
+            'view': metadata_view,
+            'bvr_match_class': 'spt_upload_file',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: bvr.view
+            }
+            spt.app_busy.show("Loading Metadata");
+            spt.panel.load_popup("Metadata", class_name, kwargs);
+            spt.app_busy.hide();
+            '''
+        } )
+        """
+
+
 
         # template for each file item
         file_template = DivWdg()
@@ -738,8 +757,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         text.add_style("padding: 1px")
 
 
-        ####
-
+        #### TEST Image options
+        """
         button = IconButtonWdg(title="Resize", icon=IconWdg.FILM)
         buttons.add_cell(button)
 
@@ -759,6 +778,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             convert_div.add(convert)
         except:
             pass
+        """
 
 
         # use base name for name

@@ -731,7 +731,7 @@ class ButtonNewWdg(BaseRefreshWdg):
  
 
 
-class ActionButtonWdg(DivWdg):
+class ActionButtonWdgOld(DivWdg):
 
 
     ARGS_KEYS = {
@@ -956,6 +956,191 @@ class ActionButtonWdg(DivWdg):
 
 
         return super(ActionButtonWdg,my).get_display()
+
+
+
+
+
+class ActionButtonWdg(DivWdg):
+
+
+    ARGS_KEYS = {
+    'title': {
+        'description': 'Value to show on actual button',
+        'type': 'TextWdg',
+        'order': 0,
+        'category': 'Options'
+    },
+    'tip': {
+        'description': 'Tool tip info to show when mouse hovers over button',
+        'type': 'TextWdg',
+        'order': 1,
+        'category': 'Options'
+    },
+    'action': {
+        'description': 'Javascript callback',
+        'type': 'TextAreaWdg',
+        'order': 1,
+        'category': 'Options'
+    }
+    }
+ 
+    def __init__(my, **kwargs):
+        #my.top = DivWdg()
+        my.kwargs = kwargs
+        my.text_wdg = DivWdg()
+        my.table = Table()
+        my.table.add_row()
+        my.table.add_style("color", "#333")
+        my.td = my.table.add_cell()
+        my.td.add_class("spt_action_button")
+        super(ActionButtonWdg,my).__init__()
+
+        web = WebContainer.get_web() 
+        my.browser = web.get_browser()
+        
+
+    def add_behavior(my, behavior):
+        my.td.add_behavior(behavior)
+
+    """
+    def add_style(my, name, value=None):
+        my.add_style(name, value)
+    """
+
+    def add_top_behaviors(my, top):
+        pass
+
+
+
+    def get_display(my):
+        my.add_class("spt_button_top")
+        # no need to define top
+        #my.add(top)
+
+        opacity = my.kwargs.get("opacity")
+        if not opacity:
+            opacity = 1.0 
+        my.add_style("opacity: %s" % opacity)
+
+        base = "%s/%s" % (BASE, my.get_theme() )
+
+        my.add(my.table)
+        td = my.td
+        td.add_style("text-align: center")
+
+        size = my.kwargs.get("size")
+        if not size:
+            size = 'medium'
+        size = size[:1]
+ 
+        top_width = 40
+        if size == 'm':
+            top_width = 83
+            my.add_style("width: %spx"%top_width)
+        if size == 'l':
+            top_width = 127
+            my.add_style("width: %spx"%top_width)
+
+        
+
+
+
+        #request_top_wdg = Container.get("request_top_wdg")
+        #if not request_top_wdg:
+        #    request_top_wdg = my.table
+        request_top_wdg = my.table
+
+        try:
+            button_bvr = request_top_wdg.has_class("spt_button_behaviors")
+            if not button_bvr:
+                my.add_top_behaviors(request_top_wdg)
+                request_top_wdg.add_class("spt_button_behaviors")
+        except Exception, e:
+            print "WARNING: ", e
+
+
+        title = my.kwargs.get("title")
+        if not title:
+            title = "No Title"
+
+        # stretch it wider in case the text is longer, 
+        # don't make it too long though
+        if len(title) > 10:
+            width = len(title)/8.0 * 60
+            if width < top_width:
+                width = top_width
+            td.add_style('width', width)
+            td.add_style('height', '28px')
+        if not title:
+            title = "(No title)"
+
+        #title = "Search"
+        tip = my.kwargs.get("tip")
+        if not tip:
+            tip = title
+        my.add_attr("title", tip)
+
+
+        title2 = my.kwargs.get("title2")
+        if title2:
+            td.add_behavior( {
+            'type': 'click_up',
+            'title1': title,
+            'title2': title2,
+            'cbjs_action': '''
+            var label_el = bvr.src_el.getElement(".spt_label");
+            var label1 = "<b>" + bvr.title1 + "</b>";
+            var label2 = "<b>" + bvr.title2 + "</b>";
+            if (label_el.innerHTML == label1) {
+                label_el.innerHTML = label2;
+            }
+            else {
+                label_el.innerHTML = label1;
+            }
+            '''
+            } )
+
+
+        from pyasm.widget import ButtonWdg
+        button = ButtonWdg()
+
+        icon = my.kwargs.get("icon")
+        if icon:
+            icon_div = DivWdg() 
+            icon = IconWdg(title, icon )
+            icon_div.add(icon)
+            button.add(icon_div)
+            my.table.add_style("position: relative")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("left: 5px")
+            icon_div.add_style("top: 6px")
+            title = " &nbsp; &nbsp; %s" % title
+            button.add_style("padding: 2px")
+
+        button.set_name(title)
+
+        td.add(button)
+        #button.add_border()
+        #button.set_box_shadow("0px 0px 1px", color=button.get_color("shadow"))
+
+
+
+	if my.browser == 'Qt' and os.name != 'nt':
+            button.add_style("top: 8px")
+        else:
+	    button.add_style("top: 6px")
+
+
+        button.add_attr('spt_text_label', title)
+        td.add_class("spt_action_button_hit")
+        button.add_class("hand")
+
+        return super(ActionButtonWdg,my).get_display()
+
+
+
+
 
 
 
