@@ -165,9 +165,6 @@ class CheckinWdg(BaseRefreshWdg):
         else:
             my.subcontext = ""
 
-
-
-
         """
         print "process: ", my.process
         print "context: ", my.context
@@ -551,8 +548,8 @@ class CheckinWdg(BaseRefreshWdg):
                     '''
                     } )
                     
-                    
-
+                
+            
                 if my.process:
                     process_select.set_value(my.process)
                 else:
@@ -1342,7 +1339,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         show_history = my.kwargs.get("show_history")
         if show_history not in ['false', False]:
-            history = SObjectCheckinHistoryWdg(search_key=my.search_key, context=my.context)
+            new_context = my.context 
+            if re.match(r'.*/.*\d{3}', my.context):
+                new_context = my.context.split("/")[0]
+        
+            history = SObjectCheckinHistoryWdg(search_key=my.search_key, history_context=new_context)
             tab.add(history)
             history.set_name("History")
 
@@ -2413,6 +2414,7 @@ class ContextPanelWdg(BaseRefreshWdg):
             } )
             div.add(context_select)
         else:
+
             context_hidden = HiddenWdg("context")
             context_hidden.add_class("spt_checkin_context")
             if my.context:
@@ -4495,7 +4497,7 @@ class CheckinHistoryWdg(BaseRefreshWdg):
         hist_div.add_color("color", "color")
 
 
-        hist_table = SObjectCheckinHistoryWdg(search_key=parent_key, context=context)
+        hist_table = SObjectCheckinHistoryWdg(search_key=parent_key, history_context=context)
         hist_div.add(hist_table)
 
         """
@@ -4880,8 +4882,8 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         my.search_id = my.parent.get_id()
 
-        my.context = my.kwargs.get("context")
-
+        my.context = my.kwargs.get("history_context")
+    
         state = my.get_state()
         if not state:
             state = {}
@@ -4919,14 +4921,13 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
 
-        context_filter = web.get_form_value("context")
+        context_filter = web.get_form_value("history_context")
         versions_filter = web.get_form_value("versions")
 
         if not context_filter:
             context_filter = my.context
         else:
             my.context = context_filter
-
         my.is_refresh = my.kwargs.get('is_refresh') == 'true'
         if my.is_refresh:
             div = Widget()
@@ -5019,7 +5020,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
         # add a context selector
-        select = SelectWdg("context")
+        select = SelectWdg("history_context")
         select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
