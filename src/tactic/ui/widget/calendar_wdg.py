@@ -361,6 +361,8 @@ spt.calendar.set_day = function(evt, bvr)
 
     
         widget.add(table)
+
+
         return widget
 
 

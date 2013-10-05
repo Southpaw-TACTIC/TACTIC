@@ -4447,7 +4447,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
  
 
     @xmlrpc_decorator
-    def get_widget(my, ticket, class_name, args={}, values={}):
+    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}):
         '''get a defined widget
 
         @params
@@ -4486,6 +4486,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+                Container.put("JSLibraries", libraries)
                 Container.put("request_top_wdg", widget)
 
                 html = widget.get_buffer_display()
