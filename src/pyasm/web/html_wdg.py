@@ -430,6 +430,8 @@ class HtmlElement(Widget):
 
     def add_behavior(my, bvr_spec):
         '''adds an individual behavior specification to the HTML based widget'''
+        #print "bvr: ", str(bvr_spec).replace(r"\n", "\n")
+        #print "---"
         if my.behaviors == None:
             my.behaviors = []
 

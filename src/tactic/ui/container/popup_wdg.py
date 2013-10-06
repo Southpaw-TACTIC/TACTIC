@@ -11,6 +11,7 @@
 #
 __all__ = ["PopupWdg"]
 
+from pyasm.common import Common, Container
 from pyasm.web import *
 from pyasm.widget import IconWdg
 
@@ -157,10 +158,11 @@ class PopupWdg(BaseRefreshWdg):
         div.add(widget)
         widget.add_class("spt_popup")
 
-        widget.add_behavior( {
-            'type': 'load',
-            'cbjs_action': my.get_onload_js()
-        } )
+        if not Container.get_dict("JSLibraries", "spt_popup"):
+            widget.add_behavior( {
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            } )
 
 
         width = my.kwargs.get("width")
@@ -562,6 +564,9 @@ class PopupWdg(BaseRefreshWdg):
 if (spt.z_index) {
     return;
 }
+
+
+spt.Environment.get().add_library("spt_popup");
 
 
 spt.z_index = {};

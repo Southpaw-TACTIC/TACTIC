@@ -358,7 +358,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_tile_top")
 
         div.add_class("spt_table_row")
-        print "table: ", my.table_id
         div.add_class("spt_table_row_%s" % my.table_id)
 
 
