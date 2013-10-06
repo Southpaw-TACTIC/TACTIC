@@ -23,7 +23,6 @@ from pyasm.widget import TextWdg, HiddenWdg
 class Html5UploadWdg(BaseRefreshWdg):
 
     def init(my):
-        print "INIT \n"
         name = my.kwargs.get("name")
         if not name:
             name = "table_upload"
@@ -215,7 +214,7 @@ spt.html5upload.upload_file = function(kwargs) {
    
     // build the form data structure
     var fd = new FormData();
-
+    for (var i = 0; i < files.length; i++) {
       fd.append("file"+i, el.files[i]);
       el.files[i].name = JSON.stringify(el.files[i].name)
       fd.append("file_name"+i, el.files[i].name);
@@ -243,8 +242,6 @@ spt.html5upload.upload_file = function(kwargs) {
     xhr.addEventListener("abort", function() {log.critical("abort")}, false);
     xhr.open("POST", "/tactic/default/UploadServer/", true);
     xhr.send(fd);
-
-
 
 }
         '''
