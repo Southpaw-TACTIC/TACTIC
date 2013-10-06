@@ -163,7 +163,7 @@ public class Upload
         try
         {
             String agent = "Tactic Client";
-            String type = "multipart/form-data; boundary=" + BOUNDARY;
+            String type = "multipart/form-data; charset=utf-8; boundary=" + BOUNDARY;
             //String type = "application/x-www-form-urlencoded";
 
             conn.setRequestMethod( "POST" );
@@ -276,6 +276,28 @@ public class Upload
         pout.write(str + CRLF);
     }
 
+    public String escape_unicode(String input) {
+        StringBuilder retStr = new StringBuilder();
+        for (int i=0; i<input.length(); i++) {
+            int cp = Character.codePointAt(input, i);
+            int charCount = Character.charCount(cp);
+            if (charCount > 1) {
+                i += charCount - 1; // 2.
+                if (i >= input.length()) {
+                throw new IllegalArgumentException("Incomplete file name encountered.");
+                }
+            }
+
+            if (cp < 128) {
+                retStr.appendCodePoint(cp);
+            } else {
+                retStr.append(String.format("\\u%x", cp));
+            }
+          }
+        return retStr.toString();
+      
+    }
+    
 
     int handle_output(OutputStream cout, String action) throws IOException
     {
@@ -306,6 +328,9 @@ public class Upload
         //for (key, filename, value) in files:
         String key = "file";
         pout.write("--" + BOUNDARY + CRLF);
+        my_from_path = escape_unicode(my_from_path);
+        
+
         pout.write("Content-Disposition: form-data; name=\""+key+"\"; filename=\""+my_from_path+"\"" +CRLF);
         pout.write(CRLF);
         pout.flush();

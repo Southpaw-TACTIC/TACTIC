@@ -27,25 +27,28 @@ class UploadServerWdg(Widget):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
+        # HTML5 upload
         if num_files:
             num_files = int(num_files)
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
-                items = my.dump(field_storage)
+                file_name = web.get_form_value("file_name%s"% i)
+                items = my.dump(field_storage, file_name)
                 files.extend(items)
 
 
         else:
             field_storage = web.get_form_value("file")
-            files = my.dump(field_storage)
+            file_name = web.get_form_value("file_name0")
+            files = my.dump(field_storage, file_name)
 
         print "files: ", files
         return "file_name=%s\n" % ','.join(files)
 
 
 
-    def dump(my, field_storage=None):
+    def dump(my, field_storage=None, file_name=None):
 
         web = WebContainer.get_web()
 
@@ -61,7 +64,7 @@ class UploadServerWdg(Widget):
 
         #field_storage = web.get_form_value("fileToUpload")
 
-        file_name = ''
+        #file_name = ''
         if field_storage == "":
             # for swfupload
             field_storage = web.get_form_value("Filedata")
@@ -90,7 +93,7 @@ class UploadServerWdg(Widget):
 
         # set the field storage
         if field_storage:
-            upload.set_field_storage(field_storage)
+            upload.set_field_storage(field_storage, file_name)
 
         # set the directory
         tmpdir = Environment.get_tmp_dir()

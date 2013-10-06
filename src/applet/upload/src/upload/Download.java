@@ -97,6 +97,12 @@ public class Download
                 parent.mkdirs();
 
             URL url = new URL(url_path);
+            /*
+            String decodedURL = URLDecoder.decode(url_path, "UTF-8");
+            URL url = new URL(decodedURL);
+            URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef()); 
+            url = uri.toURL(); 
+            */
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
            
             BufferedInputStream in =

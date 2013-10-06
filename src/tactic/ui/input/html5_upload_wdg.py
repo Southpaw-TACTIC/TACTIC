@@ -65,7 +65,6 @@ class Html5UploadWdg(BaseRefreshWdg):
         if multiple in [True, 'true']:
             input.add_attr("multiple", "multiple")
 
-
         form.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -216,13 +215,15 @@ spt.html5upload.upload_file = function(kwargs) {
    
     // build the form data structure
     var fd = new FormData();
-    for (var i = 0; i < files.length; i++) {
-        fd.append("file"+i, files[i]);
+
+      fd.append("file"+i, el.files[i]);
+      el.files[i].name = JSON.stringify(el.files[i].name)
+      fd.append("file_name"+i, el.files[i].name);
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);
    
-   
+
     /* event listeners */
    
     var xhr = new XMLHttpRequest();

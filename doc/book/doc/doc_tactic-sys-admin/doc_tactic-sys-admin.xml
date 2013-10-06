@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbookxi.rng" type="xml"?>
+<chapter xml:id="book_doc_tactic-sys-admin" xmlns="http://docbook.org/ns/docbook"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="5.0">
+    <title>TACTIC System Administrator</title>
+    <?hard-pagebreak?>
+    <section xml:id="tactic-sys-admin_planning">
+        <title>Planning</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_deploy-tactic-scalability-solution/tactic-sys-admin_sys-admin_deploy-tactic-scalability-solution.xml"
+        />
+        <!--
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_deploy-tactic-scalability-planning/tactic-sys-admin_sys-admin_deploy-tactic-scalability-planning.xml"
+        />
+        -->
+    </section>
+    <section xml:id="tactic-sys-admin_install-tactic-application">
+        <title>Install TACTIC Application</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-general/tactic-sys-admin_sys-admin_install-tactic-general.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-centos-5.5/tactic-sys-admin_sys-admin_install-tactic-centos-5.5.xml"/>   
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-centos-5.7/tactic-sys-admin_sys-admin_install-tactic-centos-5.7.xml"/>  
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-centos-6.2/tactic-sys-admin_sys-admin_install-tactic-centos-6.2.xml"/>         
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-windows-server-2008/tactic-sys-admin_sys-admin_install-tactic-windows-server-2008.xml"/>
+        
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-fedora-12/tactic-sys-admin_sys-admin_install-tactic-fedora-12.xml"/>
+        
+      
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-tactic-license/tactic-sys-admin_sys-admin_install-tactic-license.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_upgrade-tactic/tactic-sys-admin_sys-admin_upgrade-tactic.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_multiple-tactic-services/tactic-sys-admin_sys-admin_multiple-tactic-services.xml"
+        />
+    </section>
+    <section xml:id="tactic-sys-admin_python">
+        <title>Install Python</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_install-python/tactic-sys-admin_sys-admin_install-python.xml"/>
+    </section>
+    
+    <section xml:id="tactic-sys-admin_install-web-server">
+        <title>Install Web Server</title>
+          
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-http/tactic-sys-admin_sys-admin_configure-http.xml"/>
+         
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-http-apache/tactic-sys-admin_sys-admin_configure-http-apache.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-http-iis-7/tactic-sys-admin_sys-admin_configure-http-iis-7.xml"/>
+         
+    </section>
+    
+ 
+    
+    <section xml:id="tactic-sys-admin_install-database">
+        <title>Install Database</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_database-configuration/tactic-sys-admin_sys-admin_database-configuration.xml"
+        />
+    </section>
+
+   
+  
+    <section xml:id="tactic-sys-admin_configuration">
+        <title>Server Configuration</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_deploy-tactic-configuration/tactic-sys-admin_sys-admin_deploy-tactic-configuration.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_config-tactic/tactic-sys-admin_sys-admin_config-tactic.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-tactic-service/tactic-sys-admin_sys-admin_configure-tactic-service.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-ssl/tactic-sys-admin_sys-admin_configure-ssl.xml"
+        />
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_active-directory/tactic-sys-admin_sys-admin_active-directory.xml"
+        />
+    </section>
+       
+    <section xml:id="tactic-sys-admin_fileserver">
+        <title>Fileserver</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_relocate-assets-directory/tactic-sys-admin_sys-admin_relocate-assets-directory.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_configure-remote-repo/tactic-sys-admin_sys-admin_configure-remote-repo.xml"
+        />
+    </section>
+    
+
+    <section xml:id="tactic-sys-admin_scalability">
+        <title>Scalability</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_deploy-tactic-scalability-configuration-examples/tactic-sys-admin_sys-admin_deploy-tactic-scalability-configuration-examples.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_load-balancing-tactic/tactic-sys-admin_sys-admin_load-balancing-tactic.xml"
+        />
+    </section>
+    
+<!--   
+    <section xml:id="doc_sys-admin_remote-access">
+        <title>Remote Access</title>
+        <para/>
+    </section>
+-->
+<!--
+    <section xml:id="doc_sys-admin_email">
+        <title>Email</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_setup-email/tactic-sys-admin_sys-admin_setup-email.xml"/>
+        <para/>
+    </section>
+-->   
+<!--     
+    <section xml:id="doc_sys-admin_authentication">
+        <title>Authentication</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_authentication/tactic-sys-admin_sys-admin_authentication.xml"/>
+        <para/>
+    </section>
+-->
+    <section xml:id="tactic-sys-admin_troubleshooting">
+        <title>Troubleshooting</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_troubleshooting-tactic/tactic-sys-admin_sys-admin_troubleshooting-tactic.xml"/>
+        <para/>
+    </section>
+    
+    <section xml:id="tactic-sys-admin_maintanence">
+        <title>Maintanence</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_backup-and-restore-server/tactic-sys-admin_sys-admin_backup-and-restore-server.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_automate-database-backup/tactic-sys-admin_sys-admin_automate-database-backup.xml"/>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_maintenance-logs/tactic-sys-admin_sys-admin_maintenance-logs.xml"
+        />
+<!--         
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_monitor-server-performance/tactic-sys-admin_sys-admin_monitor-server-performance.xml"
+        />
+-->
+    </section>
+
+    <section xml:id="tactic-sys-admin_tsi">
+        <title >TACTIC Server VM</title>
+       
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_tsi-setup-and-install/tactic-sys-admin_sys-admin_tsi-setup-and-install.xml"
+        />
+       
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_tsi-moving-data/tactic-sys-admin_sys-admin_tsi-moving-data.xml"
+        />
+     
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_tsi-troubleshooting/tactic-sys-admin_sys-admin_tsi-troubleshooting.xml"
+        />
+ 
+    </section>
+ 
+    <section xml:id="tactic-sys-admin_client-setup">
+        <title >Client Setup</title>
+        <xi:include
+            href="../../../section/doc/tactic-sys-admin/sys-admin/tactic-sys-admin_sys-admin_setup-client-computer/tactic-sys-admin_sys-admin_setup-client-computer.xml"
+        />
+    </section>
+     
+  
+
+</chapter>

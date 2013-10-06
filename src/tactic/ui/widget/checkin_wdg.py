@@ -5037,7 +5037,12 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # set the context if one has been passed in
         if my.context:
-            select.set_value(my.context)
+
+            if re.search('/', my.context):
+                new_context = my.context.split("/")[0]
+                select.set_value(new_context)
+            else:
+                select.set_value(my.context)
 
         #select.set_value("icon")
 

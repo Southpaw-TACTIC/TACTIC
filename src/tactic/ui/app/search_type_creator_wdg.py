@@ -796,6 +796,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         image_div.add("<b>Preview Image: </b>")
+        image_div.add("<br/>"*3)
 
         on_complete = '''var server = TacticServerStub.get();
         var file = spt.html5upload.get_file(); 
@@ -822,12 +823,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                 filename: filename
             }
             try {
+           
                 
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
 
                 var info = ret_val.info;
                 var path = info.web_path;
                 text.value = info.lib_path;
+            
                 display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
             }
             catch(e) {
