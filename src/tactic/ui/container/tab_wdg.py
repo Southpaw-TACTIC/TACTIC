@@ -865,8 +865,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         top.add(inner);
 
 
-        libraries = Container.get("JSLibraries")
-        if not libraries.get("spt_tab"):
+        if not Container.get_dict("JSLibraries", "spt_tab"):
             inner.add_behavior( {
             'type': 'load',
             'gradient': gradient,

@@ -2184,8 +2184,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
 
-        libraries = Container.get("JSLibraries")
-        if libraries.get("spt_table"):
+        if Container.get_dict("JSLibraries", "spt_table"):
             return
 
         select_color = table.get_color("background3")

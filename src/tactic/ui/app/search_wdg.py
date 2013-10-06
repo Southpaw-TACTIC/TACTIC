@@ -219,12 +219,6 @@ class SearchWdg(BaseRefreshWdg):
 
     def init(my):
 
-        """
-        # Needed for MMS_COLOR_OVERRIDE ...
-        web = WebContainer.get_web()
-        my.skin = web.get_skin()
-        """
-
         my.user_override = my.kwargs.get('user_override') in ['true', True]
 
         custom_search_view = my.kwargs.get('custom_search_view')

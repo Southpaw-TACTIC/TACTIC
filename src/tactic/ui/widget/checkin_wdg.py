@@ -269,12 +269,14 @@ class CheckinWdg(BaseRefreshWdg):
 
             top.add_attr("spt_sandbox_dir", my._get_sandbox_dir())
 
-            js_div = DivWdg()
-            top.add(js_div)
-            js_div.add_behavior( {
-                'type': 'load',
-                'cbjs_action': my.get_onload_js()
-            } )
+
+            if not Container.get_dict("JSLibraries", "spt_checkin"):
+                js_div = DivWdg()
+                top.add(js_div)
+                js_div.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': my.get_onload_js()
+                } )
 
 
             # initialize the widget
@@ -625,6 +627,12 @@ class CheckinWdg(BaseRefreshWdg):
     def get_onload_js(cls):
 
         return '''
+
+if (spt.checkin) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_checkin");
 
 spt.checkin = {};
 
