@@ -753,7 +753,8 @@ class HtmlElement(Widget):
         elif my.type == "span":
             buffer.write("</%s>" % my.type)
         elif my.type != 'br':
-            buffer.write("</%s>\n" % my.type)
+            #buffer.write("</%s>\n" % my.type)
+            buffer.write("</%s>" % my.type)
 
         my.clear()
 

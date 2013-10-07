@@ -1287,7 +1287,6 @@ class IconButtonWdg(DivWdg):
 
 
     def get_display(my):
-        my.add_style("border: solid 3px red")
         my.add_style("position: relative")
         my.add_class("spt_button_top")
         my.add_style("height: %spx" % my.get_height() )
