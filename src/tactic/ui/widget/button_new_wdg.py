@@ -1196,6 +1196,76 @@ class IconButtonWdg(DivWdg):
         my.width = 28
 
 
+    def init(my):
+        if not Container.get_dict("JSLibraries", "spt_icon_button"):
+            doc_top = Container.get("TopWdg::top")
+            if doc_top:
+                doc_top.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    spt.Environment.get().add_library("spt_icon_button");
+                    '''
+                } )
+                bvr_wdg = doc_top
+            else:
+                bvr_wdg = my
+
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_icon_button_top',
+            'cbjs_action': '''
+                var out = bvr.src_el.getElement(".spt_button_out");
+                var over = bvr.src_el.getElement(".spt_button_over");
+                var click = bvr.src_el.getElement(".spt_button_click");
+                out.setStyle("display", "none");
+                over.setStyle("display", "");
+                click.setStyle("display", "none");
+            '''
+            } )
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_icon_button_top',
+            'cbjs_action': '''
+                var out = bvr.src_el.getElement(".spt_button_out");
+                var over = bvr.src_el.getElement(".spt_button_over");
+                var click = bvr.src_el.getElement(".spt_button_click");
+                out.setStyle("display", "");
+                over.setStyle("display", "none");
+                click.setStyle("display", "none");
+            '''
+            } )
+            
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mousedown',
+            'bvr_match_class': 'spt_icon_button_top',
+            'cbjs_action': '''
+                var out = bvr.src_el.getElement(".spt_button_out");
+                var over = bvr.src_el.getElement(".spt_button_over");
+                var click = bvr.src_el.getElement(".spt_button_click");
+                out.setStyle("display", "none");
+                over.setStyle("display", "none");
+                click.setStyle("display", "");
+            '''
+            } )
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_icon_button_top',
+            'cbjs_action': '''
+                var out = bvr.src_el.getElement(".spt_button_out");
+                var over = bvr.src_el.getElement(".spt_button_over");
+                var click = bvr.src_el.getElement(".spt_button_click");
+                over.setStyle("display", "");
+                over.setStyle("display", "none");
+                click.setStyle("display", "none");
+            '''
+            } )
+
+
+
+
     def get_out_img(my):
         return None
 
@@ -1217,6 +1287,7 @@ class IconButtonWdg(DivWdg):
 
 
     def get_display(my):
+        my.add_style("border: solid 3px red")
         my.add_style("position: relative")
         my.add_class("spt_button_top")
         my.add_style("height: %spx" % my.get_height() )
@@ -1225,6 +1296,7 @@ class IconButtonWdg(DivWdg):
 
         display = DivWdg()
         my.add(display)
+        display.add_class("spt_icon_button_top")
 
         offset = my.get_offset()
 
@@ -1295,53 +1367,6 @@ class IconButtonWdg(DivWdg):
             arrow_div.add(arrow)
 
 
-
-
-
-        hit_wdg = my
-
-        hit_wdg.add_behavior( {
-        'type': 'hover',
-        'cbjs_action_over': '''
-            var out = bvr.src_el.getElement(".spt_button_out");
-            var over = bvr.src_el.getElement(".spt_button_over");
-            var click = bvr.src_el.getElement(".spt_button_click");
-            out.setStyle("display", "none");
-            over.setStyle("display", "");
-            click.setStyle("display", "none");
-        ''',
-        'cbjs_action_out': '''
-            var out = bvr.src_el.getElement(".spt_button_out");
-            var over = bvr.src_el.getElement(".spt_button_over");
-            var click = bvr.src_el.getElement(".spt_button_click");
-            out.setStyle("display", "");
-            over.setStyle("display", "none");
-            click.setStyle("display", "none");
-        '''
-        } )
-        
-        hit_wdg.add_behavior( {
-        'type': 'click',
-        'cbjs_action': '''
-            var out = bvr.src_el.getElement(".spt_button_out");
-            var over = bvr.src_el.getElement(".spt_button_over");
-            var click = bvr.src_el.getElement(".spt_button_click");
-            out.setStyle("display", "none");
-            over.setStyle("display", "none");
-            click.setStyle("display", "");
-        '''
-        } )
-        hit_wdg.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-            var out = bvr.src_el.getElement(".spt_button_out");
-            var over = bvr.src_el.getElement(".spt_button_over");
-            var click = bvr.src_el.getElement(".spt_button_click");
-            over.setStyle("display", "");
-            over.setStyle("display", "none");
-            click.setStyle("display", "none");
-        '''
-        } )
 
         spacer = DivWdg()
         display.add(spacer)

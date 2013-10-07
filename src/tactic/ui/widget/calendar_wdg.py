@@ -796,6 +796,7 @@ class CalendarInputWdg(BaseInputWdg):
                     spt.simple_display_toggle(el);
                 '''
             } )
+
             """
             clear_icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE)
             clear_icon.add_class('hand')

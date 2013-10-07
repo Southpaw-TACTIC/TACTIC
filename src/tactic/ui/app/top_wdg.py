@@ -228,8 +228,9 @@ class TopWdg(Widget):
 
 
         # add a dummy button for global behaviors
-        from tactic.ui.widget import ButtonNewWdg
-        button = ButtonNewWdg(title="WOW", icon=IconWdg.FILM)
+        from tactic.ui.widget import ButtonNewWdg, IconButtonWdg
+        ButtonNewWdg(title="WOW", icon=IconWdg.FILM)
+        IconButtonWdg(title="WOW", icon=IconWdg.FILM)
         # NOTE: it does not need to be in the DOM.  Just needs to be
         # instantiated
         #content_div.add(button)
