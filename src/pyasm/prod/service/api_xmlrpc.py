@@ -3913,6 +3913,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         search_type = sobject.get_search_type() 
         search_id = sobject.get_id()
+        search_code = sobject.get_value("code")
 
         # get the level object
         if level_key:
@@ -3926,13 +3927,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_id, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
+            snapshot = Snapshot.get_snapshot(search_type, search_code, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'
             else:
                 versionless_mode = 'current'
-            snapshot = Snapshot.get_versionless(search_type, search_id, context=context , mode=versionless_mode, create=False)
+            snapshot = Snapshot.get_versionless(search_type, search_code, context=context , mode=versionless_mode, create=False)
 
         if not snapshot:
             return {}
