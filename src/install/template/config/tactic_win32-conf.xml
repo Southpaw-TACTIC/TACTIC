@@ -107,6 +107,7 @@
     <linux_client_handoff_dir></linux_client_handoff_dir>
     <win32_server_handoff_dir></win32_server_handoff_dir>
     <linux_server_handoff_dir></linux_server_handoff_dir>
+    <sudo_no_password>false</sudo_no_password>
     <version_padding>3</version_padding>
 </checkin>
 

@@ -124,7 +124,8 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         header_row_div = DivWdg()
         header_row_div.add_class("spt_table_header_row")
         content.add(header_row_div)
-        content.add_class("spt_table_table");
+        content.add_class("spt_table_table")
+        content.set_id(my.table_id)
 
         my.handle_load_behaviors(content)
 
@@ -321,7 +322,6 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
         kwargs = my.kwargs.copy()
         kwargs['open_depth'] = 1
         layout = RepoBrowserWdg(**kwargs)
-        print "sobjects: ", my.sobjects
         layout.set_sobjects(my.sobjects)
         return layout
 

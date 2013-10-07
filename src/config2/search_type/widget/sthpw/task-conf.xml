@@ -201,7 +201,6 @@
   <element name="pipeline_code">
     <display class="SelectWdg">
         <values_expr>@GET(sthpw/pipeline['search_type','sthpw/task']['project_code','EQ', $PROJECT]['project_code','is','NULL']['or'].code)</values_expr>
-        <default>task</default>
         <empty>true</empty>
     </display>
   </element>
@@ -413,8 +412,6 @@
     <element name="bid_end_date"/>
     <element name="bid_duration"/>
     <element name="priority"/>
-    <element name="pipeline_code"/>
-    <element name="status"/>
 </insert>
 
 

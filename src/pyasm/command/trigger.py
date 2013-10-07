@@ -839,6 +839,8 @@ class SnapshotIsLatestTrigger(Trigger):
     def execute(my):
         input = my.get_input()
         mode = input.get("mode")
+        if mode == 'insert':
+            return
 
         if mode in ['delete','retire']:
             sobject_dict = input.get("sobject")
@@ -873,7 +875,8 @@ class SnapshotIsLatestTrigger(Trigger):
                 # current snapshot is deleted
 
             return
-
+        
+        
 
         sobject_dict = input.get("sobject_dict")
         search_key = input.get("search_key")

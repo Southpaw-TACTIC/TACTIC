@@ -23,7 +23,6 @@ from pyasm.widget import TextWdg, HiddenWdg
 class Html5UploadWdg(BaseRefreshWdg):
 
     def init(my):
-        print "INIT \n"
         name = my.kwargs.get("name")
         if not name:
             name = "table_upload"
@@ -65,13 +64,17 @@ class Html5UploadWdg(BaseRefreshWdg):
         if multiple in [True, 'true']:
             input.add_attr("multiple", "multiple")
 
-
-        form.add_behavior( {
+        from pyasm.common import Container
+        if not Container.get_dict("JSLibraries", "spt_html5upload"):
+            form.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
 
 if (spt.html5upload)
     return;
+
+spt.Environment.get().add_library("spt_html5upload")
+
 spt.html5upload = {};
 spt.html5upload.form = null;
 spt.html5upload.files = [];
@@ -217,12 +220,14 @@ spt.html5upload.upload_file = function(kwargs) {
     // build the form data structure
     var fd = new FormData();
     for (var i = 0; i < files.length; i++) {
-        fd.append("file"+i, files[i]);
+      fd.append("file"+i, el.files[i]);
+      el.files[i].name = JSON.stringify(el.files[i].name)
+      fd.append("file_name"+i, el.files[i].name);
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);
    
-   
+
     /* event listeners */
    
     var xhr = new XMLHttpRequest();
@@ -243,11 +248,9 @@ spt.html5upload.upload_file = function(kwargs) {
     xhr.open("POST", "/tactic/default/UploadServer/", true);
     xhr.send(fd);
 
-
-
 }
-        '''
-        } )
+            '''
+            } )
 
 
         return top

@@ -16,7 +16,7 @@ import re
 from dateutil import parser, rrule
 from datetime import datetime, timedelta
 
-from pyasm.common import Common, jsonloads, jsondumps, Environment
+from pyasm.common import Common, jsonloads, jsondumps, Environment, Container
 from pyasm.search import Search, SearchKey, SObject, SearchType, SearchException
 from pyasm.web import DivWdg, Table, HtmlElement, WebContainer
 from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView
@@ -601,6 +601,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         is_refresh = my.kwargs.get("is_refresh")
+
         if my.kwargs.get("show_shelf") not in ['false', False]:
             # draws the row of buttons to insert and refresh
             action = my.get_action_wdg()
@@ -2181,6 +2182,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
     def handle_load_behaviors(my, table):
 
         if my.kwargs.get("load_init_js") in [False, 'false']:
+            return
+
+        if Container.get_dict("JSLibraries", "spt_table"):
             return
 
         select_color = table.get_color("background3")
@@ -4805,6 +4809,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
 
             '''
+
         if my.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table on load
@@ -4814,6 +4819,8 @@ spt.table.open_ingest_tool = function(search_type) {
                 spt.table.set_table(bvr.src_el);
                 return;
             }
+
+            spt.Environment.get().add_library("spt_table");
 
 
             spt.table = {};
@@ -4837,6 +4844,7 @@ spt.table.open_ingest_tool = function(search_type) {
             'cbjs_action': my.get_onload_js()
         } )
 
+
         table.add_behavior( {
             'type': 'load',
             'hidden_row_color': hidden_row_color,
@@ -4844,7 +4852,6 @@ spt.table.open_ingest_tool = function(search_type) {
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
         } )
-
 
 
     #

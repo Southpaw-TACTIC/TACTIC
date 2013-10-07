@@ -9,6 +9,7 @@
 __all__ = ['UploadMultipart', 'TacticUploadException']
 
 import httplib, urlparse, socket
+import os, sys
 
 class TacticUploadException(Exception):
     pass
@@ -62,6 +63,13 @@ class UploadMultipart(object):
             if my.ticket:
                 fields.append( ("ticket", my.ticket) )
                 fields.append( ("login_ticket", my.ticket) )
+                basename = os.path.basename(path)
+                from json import dumps as jsondumps
+                basename = basename.decode(sys.stdout.encoding)
+                basename = jsondumps(basename)
+                basename = basename.strip('"')
+                # the first index begins at 0
+                fields.append( ("file_name0", basename) )
 
 	    
             files = [("file", path, buffer)]

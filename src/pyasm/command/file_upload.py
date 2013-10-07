@@ -26,6 +26,7 @@ class FileUpload(Base):
     '''utility class that handles a single file upload'''
     def __init__(my):
         my.field_storage = None
+        my.file_name = None
         my.file_path = None
         my.file_dir = None
 
@@ -54,9 +55,11 @@ class FileUpload(Base):
         my.create_icon = flag
 
 
-    def set_field_storage(my, field_storage):
+    def set_field_storage(my, field_storage, file_name=None):
         '''set the field storage taken from the web adapter'''
         my.field_storage = field_storage
+        # if a particular file_name is given with the field_storage
+        my.file_name = file_name
 
     def set_file_path(my, file_path):
         my.file_path = file_path
@@ -72,17 +75,35 @@ class FileUpload(Base):
             return File.process_file_path(my.file_path)
 
         elif my.file_dir:
-            filename = my.field_storage.filename
+            if my.file_name:
+                filename = my.file_name
+            else:
+                filename = my.field_storage.filename
+            
+            # depending how the file is uploaded. If it's uploaded thru Python,
+            # it has been JSON dumped as unicode code points, so this decode
+            # step would be necessary
+            try:
+                filename = filename.decode('unicode-escape')
+            except UnicodeEncodeError, e:
+                pass
+            except UnicodeError,e:
+                pass
             if filename == "":
                 return None
             filename = filename.replace("\\", "/")
+            
             basename = os.path.basename(filename)
+
             # File.process_file_path() should be deprecated
             return "%s/%s" % (my.file_dir, File.get_filesystem_name(basename))
             #return "%s/%s" % (my.file_dir, File.process_file_path(basename) )
 
         elif my.field_storage != None:
-            filename = my.field_storage.filename
+            if my.file_name:
+                filename = my.file_name
+            else:
+                filename = my.field_storage.filename
             if filename == "":
                 return None
             filename = filename.replace("\\", "/")

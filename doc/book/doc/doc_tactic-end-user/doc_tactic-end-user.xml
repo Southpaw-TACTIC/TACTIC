@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
+<chapter xml:id="book_doc_tactic-end-user" xmlns="http://docbook.org/ns/docbook"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="5.0">
+    <title>TACTIC End User</title>
+    <?hard-pagebreak?>
+    <indexterm>
+        <primary>introduction</primary>
+    </indexterm>
+    <indexterm>
+        <primary>startup</primary>
+    </indexterm>
+    <xi:include
+        href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_introduction-to-tactic/tactic-end-user_end-user_introduction-to-tactic.xml"/>
+    
+    <section id="tactic-end-user_startup">
+        <title>TACTIC Start up</title>
+        <indexterm><primary>startup</primary></indexterm>
+        <indexterm><primary>browser</primary></indexterm>
+        <indexterm><primary>web browser</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_setting-up-web-browser/tactic-end-user_end-user_setting-up-web-browser.xml"/>
+        <indexterm><primary>interface</primary></indexterm>
+        <indexterm><primary>map</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_interface-map/tactic-end-user_end-user_interface-map.xml"/>
+        <indexterm><primary>menu</primary></indexterm>
+        <indexterm><primary>gear menu</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_tactic-gear-menus/tactic-end-user_end-user_tactic-gear-menus.xml"/>
+        <indexterm><primary>sidebar</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_tactic-sidebar/tactic-end-user_end-user_tactic-sidebar.xml"/>
+    </section>
+
+    <section id="tactic-end-user_preferences">
+        <title>Preferences</title>
+        <indexterm><primary>preferences</primary></indexterm>
+        <indexterm><primary>password</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_change-your-password/tactic-end-user_end-user_change-your-password.xml"/>
+    </section>
+    
+    <section id="tactic-end-user_views">
+        <title>Interface Usage</title>
+        <indexterm>
+            <primary>insert</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_insert/tactic-end-user_end-user_insert.xml"/>
+        <indexterm>
+            <primary>edit</primary>
+        </indexterm>
+        <indexterm>
+            <primary>multi-edit</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_edit/tactic-end-user_end-user_edit.xml"/>
+        <indexterm>
+            <primary>delete</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_delete-and-retire/tactic-end-user_end-user_delete-and-retire.xml"/>
+        <indexterm>
+            <primary>views</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_create-and-edit-views/tactic-end-user_end-user_create-and-edit-views.xml"
+        />
+    </section> 
+    
+    <section id="tactic-end-user_searching">
+        <title>Searching</title>
+        <indexterm>
+            <primary>search</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_search-interface/tactic-end-user_end-user_search-interface.xml"/>
+        <indexterm>
+            <primary>compound search</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_search-compound/tactic-end-user_end-user_search-compound.xml"/>
+        <indexterm>
+            <primary>expression</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_search-expressions/tactic-end-user_end-user_search-expressions.xml"
+        />
+    </section>
+    
+     
+    <section id="tactic-end-user_tasks">
+        <title>Tasks and Schedules</title>
+        <indexterm>
+            <primary>tasks</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_creating-tasks/tactic-end-user_end-user_creating-tasks.xml"/>
+        <indexterm>
+            <primary>widget</primary>
+            <secondary>gantt</secondary>
+        </indexterm>
+        <indexterm>
+            <primary>tasks</primary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_gantt-widget/tactic-end-user_end-user_gantt-widget.xml"
+        />
+    </section>
+    <section id="tactic-end-user_notes">
+        <title>Notes and Communication</title>
+        <indexterm>
+            <primary>notes</primary>
+        </indexterm>
+        <indexterm>
+            <primary>widget</primary>
+            <secondary>notes</secondary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_notes-widget/tactic-end-user_end-user_notes-widget.xml"/>
+        <indexterm>
+            <primary>notes</primary>
+        </indexterm>
+        <indexterm>
+            <primary>widget</primary>
+            <secondary>notes sheet</secondary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_note-sheet-widget/tactic-end-user_end-user_note-sheet-widget.xml"
+        />
+    </section>
+    
+    <section id="tactic-end-user_checkin-checkout">
+        <title>File Management</title>
+        <indexterm>
+            <primary>check-in</primary>
+        </indexterm>
+        <indexterm>
+            <primary>check-out</primary>
+        </indexterm>
+        <indexterm>
+            <primary>widget</primary>
+            <secondary>check-in</secondary>
+        </indexterm>
+        <xi:include
+            href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_general-checkin/tactic-end-user_end-user_general-checkin.xml"
+        />
+    </section>
+  
+    <section id="tactic-end-user_work-hours">
+        <title>Time tracking</title>
+        <indexterm><primary>work hours</primary></indexterm>
+        <indexterm><primary>widget</primary><secondary>work hours</secondary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_tracking-work-hours/tactic-end-user_end-user_tracking-work-hours.xml"/>
+    </section>
+
+    <section id="tactic-end-user_import-export">
+        <title>Importing and Exporting</title>
+        <indexterm><primary>import</primary></indexterm>
+        <indexterm><primary>csv</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_importing-csv-data/tactic-end-user_end-user_importing-csv-data.xml"/>
+        <indexterm><primary>export</primary></indexterm><indexterm><primary>csv</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_exporting-csv-data/tactic-end-user_end-user_exporting-csv-data.xml"/>
+    </section>
+
+<!--
+    <section id="tactic-end-user_reporting">
+        <title>Reporting</title>
+        <indexterm><primary>reports</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_charting/tactic-end-user_end-user_charting.xml"/>
+    </section>
+-->    
+
+    <section id="tactic-end-user_clipboard">
+        <title>Clipboard</title>
+        <indexterm><primary>clipboard</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_clipboard/tactic-end-user_end-user_clipboard.xml"/>
+    </section>        
+    
+
+    
+    <section id="tactic-end-user_transactions">
+        <title>Transactions</title>
+        <indexterm><primary>transactions</primary></indexterm>
+        <indexterm><primary>undo</primary></indexterm>
+        <indexterm><primary>redo</primary></indexterm>
+        <xi:include href="../../../section/doc/tactic-end-user/end-user/tactic-end-user_end-user_tactic-undo/tactic-end-user_end-user_tactic-undo.xml"/>   
+    </section>
+    <index/>
+
+</chapter>

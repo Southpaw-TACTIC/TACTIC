@@ -219,12 +219,6 @@ class SearchWdg(BaseRefreshWdg):
 
     def init(my):
 
-        """
-        # Needed for MMS_COLOR_OVERRIDE ...
-        web = WebContainer.get_web()
-        my.skin = web.get_skin()
-        """
-
         my.user_override = my.kwargs.get('user_override') in ['true', True]
 
         custom_search_view = my.kwargs.get('custom_search_view')
@@ -670,21 +664,18 @@ class SearchWdg(BaseRefreshWdg):
             filters_div.add(div)
 
             div.add_class("hand")
-            #div.add_event("onclick", "toggle_display('filter_%s')" % element_name)
             class_suffix = element_name.replace(' ', '_')
             cbjs_action = 'var el=spt.get_cousin(bvr.src_el,".spt_search",".spt_filter_%s");spt.simple_display_toggle(el);' % class_suffix
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': cbjs_action
             } )
-            #div.add_class("maq_search_bar")
             div.add_color("color", "color", +5)
             div.add_gradient("background", "background", -5, -5)
             div.add_style("margin-top: -1px")
 
             div.add_border()
             div.add_style("padding: 3px")
-            #div.add_style("width: 650")
             div.add_style("whitespace: nowrap")
 
             

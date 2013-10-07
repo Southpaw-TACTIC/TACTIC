@@ -541,7 +541,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not custom_search_view:
             custom_search_view = ''
 
-        my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
+        #my.search_wdg = None
+        if not my.search_wdg:
+            # if this is not passed in, then create one
+            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:

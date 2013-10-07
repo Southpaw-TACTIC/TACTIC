@@ -2880,27 +2880,34 @@ class ViewPanelWdg(BaseRefreshWdg):
        
         run_search_bvr = my.kwargs.get('run_search_bvr') 
 
-        # The search widget is still there, just hidden.  This search
-        # mechanism hiding is for convenience of cleaning up the interface
-        # and not for security.  If security is needed, use security rules.
+
+        search_dialog_id = 0
         search_wdg = None
-        try:
-            search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=parent_key, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, skip_search=True)
-        except SearchException, e:
-            # reset the top_layout and must raise again
-            WidgetSettings.set_value_by_key('top_layout','')
-            raise
+
+        show_shelf = my.kwargs.get("show_shelf")
+        # FIXME: this doesn't work yet because the filter information is not
+        # passed through
+        #if show_shelf not in [False, 'false']:
+        if True:
+            try:
+                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=parent_key, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, skip_search=True)
+            except SearchException, e:
+                # reset the top_layout and must raise again
+                WidgetSettings.set_value_by_key('top_layout','')
+                raise
 
 
-        from tactic.ui.container import DialogWdg
-        search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
-        #if show_search == 'true':
-        # Comment out the above. 
-        # Needs to draw the search_dialog for pre-saved parameters to go thru
-        # Fast(Base) Table Layout will take care of hiding it
-        inner.add(search_dialog)
-        search_dialog.add_title("Advanced Search")
-        search_dialog.add(search_wdg)
+            from tactic.ui.container import DialogWdg
+            search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
+            search_dialog_id = search_dialog.get_id()
+            #if show_search == 'true':
+            # Comment out the above. 
+            # Needs to draw the search_dialog for pre-saved parameters to go thru
+            # Fast(Base) Table Layout will take care of hiding it
+            inner.add(search_dialog)
+            search_dialog.add_title("Advanced Search")
+            search_dialog.add(search_wdg)
+
         # FIXME: this should be a configured option.
         from tactic.ui.cgapp import CGAppLoaderWdg
         cg_wdg = CGAppLoaderWdg(view=view, search_type=search_type)
@@ -3008,12 +3015,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
-            "search_dialog_id": search_dialog.get_id(),
+            "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
             "mode": mode,
             "keywords": keywords,
-            "filter": filter
+            "filter": filter,
+            "search_wdg": search_wdg,
             
         }
         if run_search_bvr:

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbookxi.rng" type="xml"?>
+<chapter xml:id="book_doc_tactic-developer" xmlns="http://docbook.org/ns/docbook"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="5.0">
+    <title>TACTIC Developer</title>
+    <?hard-pagebreak?>
+    <section xml:id="tactic-developer_developer_introduction">
+        <title>Developer Start-up</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_development-concepts/tactic-developer_developer_development-concepts.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_architecture-overview/tactic-developer_developer_architecture-overview.xml"/>
+                <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_tactic-script-editor/tactic-developer_developer_tactic-script-editor.xml"/>
+    </section>
+   
+    <section xml:id="tactic-developer_client-api">
+        <title>Client API</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_client-api-setup/tactic-developer_developer_client-api-setup.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_client-api-structure/tactic-developer_developer_client-api-structure.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_client-api-basic/tactic-developer_developer_client-api-basic.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_client-api-checkin/tactic-developer_developer_client-api-checkin.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_client-api-dependency/tactic-developer_developer_client-api-dependency.xml"/>
+    </section>
+    
+    
+    <section xml:id="tactic-developer_changes">
+        <title>Changes</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_search-id-to-search-code/tactic-developer_developer_search-id-to-search-code.xml"/>
+       
+    </section>
+        
+    <section xml:id="tactic-developer_widgets">
+        <title>Custom Widgets</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_tactic-widgets/tactic-developer_developer_tactic-widgets.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_custom-layout-editor/tactic-developer_developer_custom-layout-editor.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_custom-interfaces-in-tactic/tactic-developer_developer_custom-interfaces-in-tactic.xml"/>	
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_widget-development/tactic-developer_developer_widget-development.xml"/>
+        
+    </section>
+    
+    <section xml:id="tactic-developer_plugin-developement">
+        <title>Plugins</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_plugin-manager-interface/tactic-developer_developer_plugin-manager-interface.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_create-a-plugin/tactic-developer_developer_create-a-plugin.xml"/>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_packaging-a-plugin/tactic-developer_developer_packaging-a-plugin.xml"/>
+        <!--<xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_plugin-versions/tactic-developer_developer_plugin-versions.xml"/>-->
+    </section>
+    
+    <section xml:id="tactic-developer_expression-language">
+        <title>Expression Development</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_using-expressions-in-scripting/tactic-developer_developer_using-expressions-in-scripting.xml"/>
+    </section>
+    
+    <section xml:id="tactic-developer_validation">
+        <title>Validation</title>
+        <xi:include href="../../../section/doc/tactic-developer/developer/tactic-developer_developer_setup-validation/tactic-developer_developer_setup-validation.xml"/>
+    </section>
+  
+    <xi:include href="../../api/book_api_python-client-api/book_api_python-client-api.xml"/>
+
+</chapter>

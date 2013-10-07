@@ -109,6 +109,11 @@ class BaseUpgrade(Command):
 
             my.run_method(name, method)
 
+    def get_database_type(my):
+        project = Project.get_by_code(my.project_code)
+        db_resource = project.get_project_db_resource()
+        db = DbContainer.get(db_resource)
+        return db.get_database_type()
 
     def run_method(my, name, method):
             try:

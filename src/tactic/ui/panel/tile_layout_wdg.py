@@ -358,6 +358,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_tile_top")
 
         div.add_class("spt_table_row")
+        div.add_class("spt_table_row_%s" % my.table_id)
 
 
         top_view = my.kwargs.get("top_view")
@@ -692,15 +693,28 @@ from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
 __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
+
+    def init(my):
+        my.path = None
+
+    def set_sobject(my, sobject):
+        super(ThumbWdg2, my).set_sobject(sobject)
+        my.path = my.get_path_from_sobject(sobject)
+
+    def get_path(my):
+        return my.path
+
+
     def get_display(my):
 
         width = "100%"
 
+        sobject = my.get_current_sobject()
+
         div = DivWdg()
         div.add_class("spt_thumb_top")
 
-        sobject = my.get_current_sobject()
-        path = my.get_path_from_sobject(sobject)
+        path = my.path
         if path:
             img = HtmlElement.img(src=path)
         else:

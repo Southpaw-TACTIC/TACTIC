@@ -34,6 +34,7 @@ spt.Environment = function() {
     this.client_handoff_dir = null;
     this.client_repo_dir = null;
     this.colors = {};
+    this.libraries = {};
 
     // by default, look at the browser
     var location = document.location;
@@ -106,6 +107,15 @@ spt.Environment = function() {
     this.get_colors = function() {
         return this.colors;
     }
+
+
+    this.add_library = function(library) {
+        this.libraries[library] = true;
+    }
+    this.get_libraries = function() {
+        return this.libraries;
+    }
+
 
 
 
