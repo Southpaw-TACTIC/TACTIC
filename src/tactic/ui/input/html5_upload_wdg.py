@@ -64,12 +64,17 @@ class Html5UploadWdg(BaseRefreshWdg):
         if multiple in [True, 'true']:
             input.add_attr("multiple", "multiple")
 
-        form.add_behavior( {
+        from pyasm.common import Container
+        if not Container.get_dict("JSLibraries", "spt_html5upload"):
+            form.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
 
 if (spt.html5upload)
     return;
+
+spt.Environment.get().add_library("spt_html5upload")
+
 spt.html5upload = {};
 spt.html5upload.form = null;
 spt.html5upload.files = [];
@@ -244,8 +249,8 @@ spt.html5upload.upload_file = function(kwargs) {
     xhr.send(fd);
 
 }
-        '''
-        } )
+            '''
+            } )
 
 
         return top

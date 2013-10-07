@@ -37,9 +37,16 @@ class TopWdg(Widget):
 
     def init(my):
         my.body = HtmlElement("body")
+        Container.put("TopWdg::body", my.body)
 
+        my.top = DivWdg()
+        my.body.add(my.top)
+        my.top.add_class("spt_top")
+        Container.put("TopWdg::top", my.top)
 
-        my.body.add_behavior( {
+        click_div = DivWdg()
+        my.top.add(click_div)
+        click_div.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
         spt.body = {};
@@ -98,7 +105,8 @@ class TopWdg(Widget):
                 spt.body.focus_elements = [];
 
         }
-        bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
+        //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
+        document.body.addEvent("mousedown", spt.body.hide_focus_elements);
         '''
         } )
 
@@ -127,6 +135,8 @@ class TopWdg(Widget):
     def get_body(my):
         return my.body
 
+    def get_top(my):
+        return my.top
 
 
 
@@ -137,7 +147,6 @@ class TopWdg(Widget):
 
         widget = Widget()
         html = HtmlElement("html")
-
 
         is_xhtml = False
         if is_xhtml:
@@ -193,11 +202,14 @@ class TopWdg(Widget):
         # add the body
         body = my.body
         html.add( body )
+        body.add_event('onload', 'spt.onload_startup(this)')
 
+
+        top = my.top
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
         # is not checked ... TODO: clean up and re-style to make look nicer
-        body.add( """
+        top.add( """
         <NOSCRIPT>
         <div style="border: 2px solid black; background-color: #FFFF99; color: black; width: 600px; height: 70px; padding: 20px;">
         <img src="%s" style="border: none;" /> <b>Javascript is not enabled on your browser!</b>
@@ -210,20 +222,32 @@ class TopWdg(Widget):
 
 
         # add the content
+        content_div = DivWdg()
+        top.add(content_div)
+        Container.put("TopWdg::content", content_div)
+
+
+        # add a dummy button for global behaviors
+        from tactic.ui.widget import ButtonNewWdg
+        button = ButtonNewWdg(title="WOW", icon=IconWdg.FILM)
+        # NOTE: it does not need to be in the DOM.  Just needs to be
+        # instantiated
+        #content_div.add(button)
+
+
         if my.widgets:
             content_wdg = my.get_widget('content')
         else:
             content_wdg = Widget()
             my.add(content_wdg)
-        body.add( content_wdg )
 
-        body.add_event('onload', 'spt.onload_startup(this)')
+        content_div.add( content_wdg )
 
 
         if web.is_admin_page():
             from tactic_branding_wdg import TacticCopyrightNoticeWdg
             branding = TacticCopyrightNoticeWdg(show_license_info=True)
-            body.add(branding)
+            top.add(branding)
 
 
         # add the admin bar
@@ -231,8 +255,8 @@ class TopWdg(Widget):
         if not web.is_admin_page() and security.check_access("builtin", "view_site_admin", "allow"):
 
             div = DivWdg()
-            body.add(div)
-            body.add_style("padding-top: 21px")
+            top.add(div)
+            top.add_style("padding-top: 21px")
 
             div.add_class("spt_admin_bar")
 
@@ -263,8 +287,8 @@ class TopWdg(Widget):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var parent = bvr.src_el.getParent(".spt_admin_bar");
+                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(parent);
-                $(document.body).setStyle("padding-top", "0px");
                 '''
             } )
 
@@ -277,8 +301,8 @@ class TopWdg(Widget):
                 'type': 'listen',
                 'event_name': 'close_admin_bar',
                 'cbjs_action': '''
+                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(bvr.src_el);
-                $(document.body).setStyle("padding-top", "0px");
                 '''
             } )
 
@@ -312,7 +336,7 @@ class TopWdg(Widget):
 
         # Add the script editor listener
         load_div = DivWdg()
-        body.add(load_div)
+        top.add(load_div)
         load_div.add_behavior( {
         'type': 'listen',
         'event_name': 'show_script_editor',
@@ -355,7 +379,7 @@ class TopWdg(Widget):
                     env.set_palette('%s');
                     ''' % (colors, palette_key)
                 )
-                body.add(script)
+                top.add(script)
 
 
         env = Environment.get()
@@ -380,12 +404,12 @@ class TopWdg(Widget):
         env.set_client_repo_dir('%s');
 
         ''' % (Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
-        body.add(script)
+        top.add(script)
 
 
         # add a global container for commonly used widgets
         div = DivWdg()
-        body.add(div)
+        top.add(div)
         div.set_id("global_container")
 
         # add in the app busy widget
@@ -564,6 +588,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
 
 class TitleTopWdg(TopWdg):
+
+    '''Top used in title page for logins.  This does not include any of the
+    js libraries or other common TACTIC functionaity'''
     
     def init(my):
         my.body = HtmlElement("body")
@@ -633,22 +660,6 @@ class TitleTopWdg(TopWdg):
         # add the body
         body = my.body
         html.add( body )
-
-
-        # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
-        # is not checked ... TODO: clean up and re-style to make look nicer
-        body.add( """
-        <NOSCRIPT>
-        <div style="border: 2px solid black; background-color: #FFFF99; color: black; width: 600px; height: 70px; padding: 20px;">
-        <img src="%s" style="border: none;" /> <b>Javascript is not enabled on your browser!</b>
-        <p>This TACTIC powered, web-based application requires JavaScript to be enabled in order to function. In your browser's options/preferences, please make sure that the 'Enable JavaScript' option is checked on, click OK to accept the settings change, and then refresh this web page.</p>
-        </div>
-        </NOSCRIPT>
-        """ % ( IconWdg.get_icon_path("ERROR") ) )
-
-        
-        # add the javascript libraries
-        #head.add( JavascriptImportWdg() )
 
         body.add("<form id='form' name='form' method='post' enctype='multipart/form-data'>\n")
 

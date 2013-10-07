@@ -265,6 +265,72 @@ class ButtonNewWdg(BaseRefreshWdg):
         my.is_disabled = my.kwargs.get("is_disabled") in [True,"true"]
 
 
+        if not Container.get_dict("JSLibraries", "spt_button"):
+            doc_top = Container.get("TopWdg::top")
+            if doc_top:
+                doc_top.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    spt.Environment.get().add_library("spt_button");
+                    '''
+                } )
+                bvr_wdg = doc_top
+            else:
+                bvr_wdg = my.top
+
+            # change to a relay behavior
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mousedown',
+            'bvr_match_class': 'spt_button_hit_wdg',
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_button_top")
+                var over = top.getElement(".spt_button_over");
+                var click = top.getElement(".spt_button_click");
+                over.setStyle("display", "none");
+                click.setStyle("display", "");
+            '''
+            } )
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_button_hit_wdg',
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_button_top")
+                var over = top.getElement(".spt_button_over");
+                var click = top.getElement(".spt_button_click");
+                over.setStyle("display", "");
+                click.setStyle("display", "none");
+            '''
+            } )
+
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_button_hit_wdg',
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_button_top")
+                var over = top.getElement(".spt_button_over");
+                var click = top.getElement(".spt_button_click");
+                over.setStyle("display", "");
+                click.setStyle("display", "none");
+            ''',
+            } )
+
+            bvr_wdg.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_button_hit_wdg',
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_button_top")
+                var over = top.getElement(".spt_button_over");
+                var click = top.getElement(".spt_button_click");
+                over.setStyle("display", "none");
+                click.setStyle("display", "none");
+            '''
+            } )
+
+
+
+
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
 
@@ -422,10 +488,10 @@ class ButtonNewWdg(BaseRefreshWdg):
         my.hit_wdg.add_style("position: absolute")
         my.hit_wdg.add_style("top: 0px")
         my.hit_wdg.add_style("left: 0px")
-        #my.hit_wdg.add_style("background: #FFF")
         my.hit_wdg.add_attr("title", tip)
-        #my.hit_wdg.add_style("display: none")
-        #my.hit_wdg.add_styles('''filter: alpha(opacity=0); -moz-opacity: 0; opacity: 0''')
+
+
+        """
         my.hit_wdg.add_behavior( {
         'type': 'hover',
         'cbjs_action_over': '''
@@ -443,31 +509,7 @@ class ButtonNewWdg(BaseRefreshWdg):
             click.setStyle("display", "none");
         '''
         } )
-      
-        # change to a relay behavior
-        my.top.add_relay_behavior( {
-        'type': 'mousedown',
-        'bvr_match_class': 'spt_button_hit_wdg',
-        'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "none");
-            click.setStyle("display", "");
-        '''
-        } )
-
-        my.hit_wdg.add_relay_behavior( {
-        'type': 'mouseup',
-        'bvr_match_class': 'spt_button_hit_wdg',
-        'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "");
-            click.setStyle("display", "none");
-        '''
-        } )
+        """
 
 
 
