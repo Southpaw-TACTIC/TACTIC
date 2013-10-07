@@ -1393,8 +1393,19 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 # return a single empty sobject (empty dict)
                 ret_results = {}
         
+
         if my.get_language() == 'python':
-            return str(ret_results)
+            if my.get_protocol() == 'local':
+                return ret_results
+            else:
+                if isinstance(ret_results, unicode):
+                    return ret_results.encode('utf-8')
+                elif isinstance(ret_results, basestring):
+                    return unicode(ret_results, errors='ignore').encode('utf-8')
+                else: 
+                    # could be a list or dictionary, for quick operation, str struction is the best 
+                    # for xmlrpc transfer
+                    return str(ret_results)
         else:
             return ret_results
 
@@ -1821,15 +1832,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if isinstance(results, pyasm.search.SObject):
                 results = my._get_sobject_dict(results)
 
-
         if my.get_language() == 'python':
-            if isinstance(results, unicode):
-                return results.encode('utf-8')
-            elif isinstance(results, basestring):
-                return unicode(results, errors='ignore').encode('utf-8')
-            else: 
-                # could be a list or dictionary
-                return str(results)
+            if my.get_protocol() == 'local':
+                return results
+            else:
+                if isinstance(results, unicode):
+                    return results.encode('utf-8')
+                elif isinstance(results, basestring):
+                    return unicode(results, errors='ignore').encode('utf-8')
+                else: 
+                    # could be a list or dictionary, for quick operation, str struction is the best 
+                    # for xmlrpc transfer
+                    return str(results)
             
         else:
             return results
