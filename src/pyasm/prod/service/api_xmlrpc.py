@@ -1393,8 +1393,19 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 # return a single empty sobject (empty dict)
                 ret_results = {}
         
+
         if my.get_language() == 'python':
-            return str(ret_results)
+            if my.get_protocol() == 'local':
+                return ret_results
+            else:
+                if isinstance(ret_results, unicode):
+                    return ret_results.encode('utf-8')
+                elif isinstance(ret_results, basestring):
+                    return unicode(ret_results, errors='ignore').encode('utf-8')
+                else: 
+                    # could be a list or dictionary, for quick operation, str struction is the best 
+                    # for xmlrpc transfer
+                    return str(ret_results)
         else:
             return ret_results
 
@@ -1821,15 +1832,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if isinstance(results, pyasm.search.SObject):
                 results = my._get_sobject_dict(results)
 
-
         if my.get_language() == 'python':
-            if isinstance(results, unicode):
-                return results.encode('utf-8')
-            elif isinstance(results, basestring):
-                return unicode(results, errors='ignore').encode('utf-8')
-            else: 
-                # could be a list or dictionary
-                return str(results)
+            if my.get_protocol() == 'local':
+                return results
+            else:
+                if isinstance(results, unicode):
+                    return results.encode('utf-8')
+                elif isinstance(results, basestring):
+                    return unicode(results, errors='ignore').encode('utf-8')
+                else: 
+                    # could be a list or dictionary, for quick operation, str struction is the best 
+                    # for xmlrpc transfer
+                    return str(results)
             
         else:
             return results
@@ -3913,6 +3927,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         search_type = sobject.get_search_type() 
         search_id = sobject.get_id()
+        search_code = sobject.get_value("code")
 
         # get the level object
         if level_key:
@@ -3926,13 +3941,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_id, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
+            snapshot = Snapshot.get_snapshot(search_type, search_code, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'
             else:
                 versionless_mode = 'current'
-            snapshot = Snapshot.get_versionless(search_type, search_id, context=context , mode=versionless_mode, create=False)
+            snapshot = Snapshot.get_versionless(search_type, search_code, context=context , mode=versionless_mode, create=False)
 
         if not snapshot:
             return {}
