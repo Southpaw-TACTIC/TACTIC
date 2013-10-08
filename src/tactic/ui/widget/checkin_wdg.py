@@ -2610,7 +2610,7 @@ if (bvr.file_paths.length > 0) {
     }
 }
 else if (! applet.exists(sandbox_dir) ) {
-    js_paths = null;
+    js_paths = [];
     base_dir = sandbox_dir;
 }
 else {
@@ -2637,6 +2637,7 @@ else {
             continue;
         }
 
+       
         js_paths.push(js_path);
         file_data = cached_data[js_path];
         if (!file_data) {
@@ -2646,9 +2647,22 @@ else {
     }
 }
 
+var skipped_paths = [];
+for (var k=0; k < js_paths.length; k++) {
+    if (js_paths[k].test(/&/)) {
+        skipped_paths.push(js_paths[k]);
+        js_paths.splice(k,1);
+    }
+}
+
+if (skipped_paths.length > 0) {
+     var skipped = skipped_paths.join('<br>');
+     spt.alert("Please remove the '&' in these paths for them to be displayed properly: <br><br><div>" + skipped + "</div>", {type: 'html'})
+}
+
 var md5s = {}; 
 var sizes = {};
-if (js_paths != null) {
+if (js_paths.length > 0) {
     for (var i = 0; i < js_paths.length; i++) {
         var js_path = js_paths[i];
         var cache_info = cached_data[js_path];
@@ -2671,7 +2685,9 @@ if (js_paths != null) {
 
         // get current path info
         var path_info = applet.get_path_info(js_path);
-        var mtime = path_info.mtime;
+        var mtime;
+        if (path_info)
+            mtime = path_info.mtime;
 
         // only calculate md5 if the file has been checkedin
         var is_checked_in = false;
@@ -2698,12 +2714,10 @@ if (js_paths != null) {
         }
 
         sizes[js_path] = path_info.size;
-        cache_info['md5'] = md5;
-
-
-
-        cache_info['mtime'] = mtime;
+        
         cache_info['size'] = path_info.size;
+        cache_info['md5'] = md5;
+        cache_info['mtime'] = mtime;
     }
 }
 // avoid creating sandbox_dir by accident
