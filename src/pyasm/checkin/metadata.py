@@ -212,15 +212,19 @@ class PILMetadataParser:
         try:
             import Image
             im = Image.open(path)
-        except:
-            pass
 
+        except:
+            im = None
+            pass
+        
         return my.get_data(im)
 
  
     def get_data(my, im):
         #info = im._getexif()
         ret = {}
+        if not im:
+            return ret
         #if info:
         #    for tag, value in info.items():
         #        decoded = TAGS.get(tag, tag)
