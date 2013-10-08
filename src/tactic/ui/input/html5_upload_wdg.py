@@ -220,9 +220,9 @@ spt.html5upload.upload_file = function(kwargs) {
     // build the form data structure
     var fd = new FormData();
     for (var i = 0; i < files.length; i++) {
-      fd.append("file"+i, el.files[i]);
-      el.files[i].name = JSON.stringify(el.files[i].name)
-      fd.append("file_name"+i, el.files[i].name);
+      fd.append("file"+i, files[i]);
+      files[i].name = JSON.stringify(files[i].name)
+      fd.append("file_name"+i, files[i].name);
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);

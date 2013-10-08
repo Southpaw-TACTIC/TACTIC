@@ -89,11 +89,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-
-
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         div.add(upload)
+
+
         button = ActionButtonWdg(title="Add")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
@@ -636,8 +636,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
 
-            %s
+            %s;
 
+            spt.html5upload.set_form( top );
             spt.html5upload.upload_file(upload_file_kwargs);
 
             ''' % (upload_progress, on_complete, upload_init)
