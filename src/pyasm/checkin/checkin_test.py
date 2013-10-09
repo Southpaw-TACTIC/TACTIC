@@ -475,8 +475,9 @@ class CheckinTest(unittest.TestCase, Command):
             my.assertEquals(True, lexists)
 
             # check the real path links to the versioned path
-            real_path = os.path.realpath(versionless_path)
-            my.assertEquals(real_path, path)
+            if os.name != 'nt':
+                real_path = os.path.realpath(versionless_path)
+                my.assertEquals(real_path, path)
 
             # check that it actually points to a valid path
             exists = os.path.exists(versionless_path)
