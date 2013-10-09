@@ -56,9 +56,17 @@ spt.panel.load_cbk = function(aux, bvr) {
     spt.panel.load(aux, class_name, args, null, {fade: true});
 }
 
+
+
+
+spt.panel.async_load = function(panel_id, class_name, options, values) {
+    return spt.panel.load(panel_id, class_name, options, values);
+}
+
+
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     var fade = kwargs ? kwargs.fade : true;
-    var async = kwargs ? kwargs.async : false;
+    var async = kwargs ? kwargs.async : true;
     
     var panel = $(panel_id);
     if (!panel)
@@ -77,9 +85,27 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
         var wdg_kwargs = {'args': options, 'values': values};
 
         if (async) {
-                
+
+            var size = $(panel).getSize();
+            panel.innerHTML = '<div style="width: '+size.x+'; height: '+size.y+'"><div style="margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div></div>';
+
+            /*
+            var xelement = $(document.createElement("div"));
+            xelement.setStyle("opacity", "0.5");
+            xelement.innerHTML = '<div style="background: #FFF; z-index: 1000; margin-top: -'+size.y+';width: '+size.x+'; height: '+size.y+'"></div>';
+            panel.appendChild(xelement);
+
+
+            var element = $(document.createElement("div"));
+            element.innerHTML = '<div style="z-index: 1001; margin-top: -'+size.y+'; margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
+            panel.appendChild(element);
+            */
+
             wdg_kwargs.cbjs_action = function(widget_html) {
+                panel.setStyle("opacity", "0.5");
                 spt.behavior.replace_inner_html(panel, widget_html);
+                new Fx.Tween(panel, {duration: "short"}).start('opacity', '1');
+                //new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
             }
             var widget_html = server.async_get_widget(class_name, wdg_kwargs);
         }
@@ -89,8 +115,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
         }
     }
 
-
-    if (!spt.browser.is_IE() && fade == true) {
+    if (!async && !spt.browser.is_IE() && fade == true) {
         panel.setStyle("opacity", "0.5");
         tween.chain(draw_content()).start(0.5, 1);
 

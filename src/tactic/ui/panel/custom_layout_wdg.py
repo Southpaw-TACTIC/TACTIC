@@ -162,9 +162,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if not html:
             html = ""
 
-        # TEST
-        #behavior = my.kwargs.get('behavior')
-
+        # DEPRECATED
         my.state = my.kwargs.get("state")
         my.state = BaseRefreshWdg.process_state(my.state)
         if not my.state:
@@ -396,11 +394,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_custom_top")
-
-
-        # FIXME: This menu is only really used in containers
-        #menus_in = { 'HEADER_CTX': [ my.get_smart_header_context_menu_data() ] }
-        #SmartMenu.attach_smart_context_menu( top, menus_in, True )
 
 
         # create the content div
@@ -953,6 +946,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
+
     # FIXME: this is all necessary because CustomLayoutWdg is not derived from
     # BaseTableElementWdg ...  CustomLayoutWdg should probably not be used
     # as a table elementj
@@ -1028,18 +1022,52 @@ class CustomLayoutWdg(BaseRefreshWdg):
  
 
 
-    def get_element_wdg(my, xml, def_config):
 
+    def get_async_element_wdg(my, xml, element_name):
+
+        tmp_config = WidgetConfig.get('tmp', xml=xml)
+        display_handler = tmp_config.get_display_handler(element_name)
+        display_options = tmp_config.get_display_options(element_name)
+
+
+        div = DivWdg()
+        div.add_behavior( {
+            'type': 'load',
+            'class_name': display_handler,
+            'kwargs': display_options,
+            'cbjs_action': '''
+            spt.panel.async_load(bvr.src_el, bvr.class_name, bvr.kwargs);
+            '''
+        } )
+
+        loading_div = DivWdg()
+        loading_div.add_style("margin: auto auto")
+        loading_div.add_style("width: 150px")
+        loading_div.add_style("text-align: center")
+        loading_div.add_style("padding: 20px")
+        div.add(loading_div)
+        loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
+
+        return div
+
+
+
+    def get_element_wdg(my, xml, def_config):
 
         element_node = xml.get_node("config/tmp/element")
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
+
 
         if not element_name:
             import random
             num = random.randint(0, 100000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
+
+
+        if attrs.get("load") == "async":
+            return my.get_async_element_wdg(xml, element_name)
 
 
         # enable an ability to have a widget only loaded once in a request
@@ -1070,7 +1098,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             for name, value in attrs.items():
                 # replace the spt_ in the name.
-                # TODO: should this be restricted to only spt_ attributes?
+                # NOTE: should this be restricted to only spt_ attributes?
                 name = name.replace("spt_", "")
                 attr_node = xml.create_element(name)
                 xml.set_node_value(attr_node, value)
@@ -1085,13 +1113,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
         else:
             container = DivWdg()
 
-
         # add in attribute from the element definition
         # DEPRECATED: does this make any sense to have this here?
         for name, value in attrs.items():
             if name == 'name':
                 continue
             container.add_style(name, value)
+
+
+
+
 
 
         # add the content
@@ -1121,7 +1152,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 parent_view = my.view
 
-            # TODO: need some protection code for infinite loops
+            # NOTE: need some protection code for infinite loops
 
 
             includes = my.kwargs.get("include")
@@ -1147,27 +1178,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if my.layout:
                 sobject = my.get_current_sobject()
                 element_wdg.set_sobject(sobject)
-
-
-
-            # DEPRECATED
-            # All of these state mechanisms are deprecated and replaced with
-            # the above explicit method for passing state
-
-            # add in some extra options that can be used by the child.
-            # parent_key and state are kept for backwards compatibility
-            """
-            extra = {
-                'parent_key': my.search_key,
-                'state': my.state,
-                'parent_kwargs: ': my.kwargs # FIXME: not sure about this
-            }
-            element_wdg = config.get_display_widget(element_name, extra_options=extra)
-            # FIXME: what is this for?
-            # add external some parameters passed from the top widget
-            element_wdg.kwargs['parent_key'] = my.search_key
-            element_wdg.kwargs['state'] = my.state
-            """
 
 
 
@@ -1339,6 +1349,7 @@ class TestStateWdg(BaseRefreshWdg):
 
 
 
+# DEPRECATED
 
 class ContainerWdg(BaseRefreshWdg):
 

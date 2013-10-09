@@ -887,7 +887,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
     def get_submit_input(my):
-        submit_input = ActionButtonWdg(title='Register >>', tip="Register New sType", icon=IconWdg.CREATE)
+        submit_input = ActionButtonWdg(title='Register >>', tip="Register New sType")
 
         behavior = {
             'type':         'click_up',
