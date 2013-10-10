@@ -1121,10 +1121,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
 
-        load = attrs.get("load")
-        if load in ["async", "sequence"]:
-            return my.get_async_element_wdg(xml, element_name, load)
-
 
         # enable an ability to have a widget only loaded once in a request
         if attrs.get('load_once') in ['true', True]:
@@ -1159,6 +1155,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 attr_node = xml.create_element(name)
                 xml.set_node_value(attr_node, value)
                 xml.append_child(display_node, attr_node)
+
+
+        load = attrs.get("load")
+        if load in ["async", "sequence"]:
+            return my.get_async_element_wdg(xml, element_name, load)
+
 
 
 
