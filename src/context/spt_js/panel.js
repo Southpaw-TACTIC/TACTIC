@@ -67,6 +67,10 @@ spt.panel.async_load = function(panel_id, class_name, options, values) {
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     var fade = kwargs ? kwargs.fade : true;
     var async = kwargs ? kwargs.async : true;
+    var callback = kwargs ? kwargs.callback : null;
+    if (callback) {
+        async = true;
+    }
     
     var panel = $(panel_id);
     if (!panel)
@@ -106,6 +110,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(panel, {duration: "short"}).start('opacity', '1');
                 //new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
+                if (callback) callback();
             }
             var widget_html = server.async_get_widget(class_name, wdg_kwargs);
         }
