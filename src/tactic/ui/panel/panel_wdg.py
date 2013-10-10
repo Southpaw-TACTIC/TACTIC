@@ -2441,6 +2441,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         values = config.get_web_options(element_name)
         behavior = {
             'type':         'click_up',
+            'bvr_repeat_interval': 3,
             'cbjs_action':  '''spt.side_bar.display_link_cbk(evt, bvr)''',
             'target_id':    target_id,
             'title':        header_title,
