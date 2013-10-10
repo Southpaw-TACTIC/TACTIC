@@ -1816,7 +1816,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # add extra data if it exists
         extra_data = sobject.get_value("_extra_data", no_exception=True)
-        if extra_data is not None:
+        if extra_data is not None and extra_data:
             tr.add_behavior( {
                 'type': 'load',
                 'data': extra_data,

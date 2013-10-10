@@ -97,6 +97,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         my.sobject_dicts = None
         my.is_table_element = False
 
+        my.sequence_data = []
+
 
     def preprocess(my):
         code = my.kwargs.get('data')
@@ -941,6 +943,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             html.writeln(element_html)
 
+        sequence_wdg = my.get_sequence_wdg()
+        html.writeln(sequence_wdg.get_buffer_display() )
+        
+
         return html.to_string()
 
 
@@ -1021,24 +1027,74 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
  
 
+    def get_sequence_wdg(my):
+
+        funcs = []
+
+        div = DivWdg()
+        if not my.sequence_data:
+            return div
+
+        div.add_behavior( {
+            'type': 'load',
+            'data': my.sequence_data,
+            'cbjs_action': '''
+
+            var count = -1;
+
+            var func = function() {
+                if (count == bvr.data.length-1) {
+                    return;
+                }
+                count += 1;
+
+                var item = bvr.data[count];
+                var unique_id = item.unique_id;
+                var class_name = item.class_name;
+                var kwargs = item.kwargs;
+
+                var options = {
+                    async: true,
+                    callback: func
+                }
+                spt.panel.load($(unique_id), class_name, kwargs, {}, options);
+
+                next_func = func;
+            }
+
+            func();
+
+            '''
+        } )
+        return div
+
+ 
 
 
-    def get_async_element_wdg(my, xml, element_name):
+    def get_async_element_wdg(my, xml, element_name, load):
 
         tmp_config = WidgetConfig.get('tmp', xml=xml)
         display_handler = tmp_config.get_display_handler(element_name)
         display_options = tmp_config.get_display_options(element_name)
 
-
         div = DivWdg()
-        div.add_behavior( {
-            'type': 'load',
-            'class_name': display_handler,
-            'kwargs': display_options,
-            'cbjs_action': '''
-            spt.panel.async_load(bvr.src_el, bvr.class_name, bvr.kwargs);
-            '''
-        } )
+        unique_id = div.set_unique_id()
+
+        if load == "sequence":
+            my.sequence_data.append( {
+                'class_name': display_handler,
+                'kwargs': display_options,
+                'unique_id': unique_id
+            } )
+        else:
+            div.add_behavior( {
+                'type': 'load',
+                'class_name': display_handler,
+                'kwargs': display_options,
+                'cbjs_action': '''
+                spt.panel.async_load(bvr.src_el, bvr.class_name, bvr.kwargs);
+                '''
+            } )
 
         loading_div = DivWdg()
         loading_div.add_style("margin: auto auto")
@@ -1064,10 +1120,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             num = random.randint(0, 100000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
-
-
-        if attrs.get("load") == "async":
-            return my.get_async_element_wdg(xml, element_name)
 
 
         # enable an ability to have a widget only loaded once in a request
@@ -1103,6 +1155,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 attr_node = xml.create_element(name)
                 xml.set_node_value(attr_node, value)
                 xml.append_child(display_node, attr_node)
+
+
+        load = attrs.get("load")
+        if load in ["async", "sequence"]:
+            return my.get_async_element_wdg(xml, element_name, load)
+
 
 
 
