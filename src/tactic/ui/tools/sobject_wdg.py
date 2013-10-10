@@ -592,7 +592,9 @@ class TaskDetailWdg(SObjectDetailWdg):
         context = my.sobject.get_value("context")
         process_title = "Process - %s" % (process)
         process_name = "process_%s" % process
-        parent_key = SearchKey.get_by_sobject(my.parent).replace("&","&amp;")
+        parent_key = ''
+        if my.parent:
+            parent_key = SearchKey.get_by_sobject(my.parent).replace("&","&amp;")
         search_key = SearchKey.get_by_sobject(my.sobject).replace("&","&amp;")
 
         config_xml = []
@@ -675,6 +677,9 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_pipeline_wrapper")
         top.add_color("background", "background")
+        if not my.parent:
+            top.add('Parent of this task cannot be found.')
+            return top
         top.add(my.get_pipeline_wdg(pipeline_code) )
         return top
 
@@ -822,7 +827,9 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
     def get_sobject(my):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
-        my.parent = my.sobject.get_parent()
+        my.parent = None
+        if my.sobject:
+            my.parent = my.sobject.get_parent()
         return my.sobject
 
 
@@ -830,7 +837,8 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
         top = DivWdg()
 
         sobject = my.get_sobject()
-
+        if not sobject:
+            return top
         process = my.kwargs.get("process")
 
         #from tactic.ui.table import TaskElementWdg
