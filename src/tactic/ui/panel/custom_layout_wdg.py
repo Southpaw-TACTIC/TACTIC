@@ -301,11 +301,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         # find out if there is a plugin associated with this
         my.plugin = my.kwargs.get("plugin")
-        if my.plugin == '{}':
+        if not my.plugin or my.plugin == '{}':
             my.plugin = {}
-        
+
+        """
         if not my.plugin and isinstance(my.config, SObject):
+            print "plugin ..."
             my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
+        """
 
 
         # try to get the sobject if this is in a table element widget
@@ -602,12 +605,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 plugin = my.plugin
             else:
                 plugin = my.plugin.get_sobject_dict()
+            plugin_code = plugin.get_value("code")
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:
-            plugin = {}
+            plugin_code = ""
             plugin_dir = ""
+            plugin = {}
         my.kwargs['plugin_dir'] = plugin_dir
-        my.kwargs['plugin'] = plugin
+        my.kwargs['plugin_code'] = plugin_code
 
         try:
             html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)

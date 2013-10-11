@@ -399,11 +399,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
 
-
         bottom_view = my.kwargs.get("bottom_view")
         if bottom_view:
             div.add( my.get_view_wdg(sobject, bottom_view) )
-
 
 
         div.add_attr("ondragenter", "return false")
@@ -754,6 +752,7 @@ class ThumbWdg2(BaseRefreshWdg):
         search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
             search_code = sobject.get_id()
+
 
         # FIXME: make this faster
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
