@@ -14,6 +14,7 @@ __all__ = ['PipelineCanvasWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.common import Container
 from pyasm.web import DivWdg, WebContainer, Table, Widget
 from pyasm.search import Search, SearchType
 
@@ -106,13 +107,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # load the js
+        # FIXME: there is something initialized here that if schema is loaded
+        # first and the pipeline, the pipelines editor does not work
+        # correctly.  Loading the other way around works fine.
+        #if not Container.get_dict("JSLibraries", "spt_pipeline"):
+        if True:
+            script = DivWdg()
+            script.add_behavior( {
+            'type': 'load',
+            'cbjs_action': my.get_onload_js()
+            } )
+            inner.add(script)
+
         script = DivWdg()
         script.add_behavior( {
-        'type': 'load',
-        'cbjs_action': my.get_onload_js()
+            'type': 'load',
+            'cbjs_action': '''
+            spt.pipeline.first_init(bvr);
+            '''
         } )
         inner.add(script)
-
 
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
@@ -955,6 +969,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         return r'''
 
+
+spt.Environment.get().add_library("spt_pipeline");
 
 spt.pipeline = {};
 
@@ -3480,7 +3496,6 @@ spt.pipeline.export_group = function(group_name) {
 
 }
 
-spt.pipeline.first_init(bvr);
     '''
 
 

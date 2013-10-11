@@ -1036,6 +1036,9 @@ TacticServerStub = function() {
      * Widget methods
      */
     this.get_widget = function(class_name, kwargs) {
+        var libraries = spt.Environment.get().get_libraries();
+        kwargs.libraries = libraries;
+
         try {
             var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
             return ret_val;
@@ -1166,6 +1169,9 @@ TacticServerStub = function() {
     // async functions
 
     this.async_get_widget = function(class_name, kwargs) {
+        var libraries = spt.Environment.get().get_libraries();
+        kwargs.libraries = libraries;
+
         var callback = kwargs['cbjs_action'];
         this._delegate("get_widget", arguments, kwargs, "string", callback);
         return;

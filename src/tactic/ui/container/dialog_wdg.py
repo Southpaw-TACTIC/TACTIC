@@ -115,6 +115,13 @@ class DialogWdg(BaseRefreshWdg):
 
         my.widget = DivWdg()
 
+        title = my.kwargs.get("title")
+        if title:
+            my.title_wdg.add(title)
+
+
+
+
     def get_id(my):
         return my.name
 
@@ -227,6 +234,8 @@ class DialogWdg(BaseRefreshWdg):
 
         widget.add_class("spt_dialog_top")
         widget.add_class("spt_popup")
+
+
 
         z_index = my.kwargs.get("z_index")
         if not z_index:
@@ -402,6 +411,12 @@ class DialogWdg(BaseRefreshWdg):
         content_div.add_style("overflow: hidden")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 5px")
+
+        view = my.kwargs.get("view")
+        if view:
+            from tactic.ui.panel import CustomLayoutWdg
+            my.add( CustomLayoutWdg(view=view) )
+
         if not my.content_wdg:
             my.content_wdg = "No Content"
 
@@ -423,6 +438,7 @@ class DialogWdg(BaseRefreshWdg):
             "cb_set_prefix": 'spt.popup.resize_drag'
             } )
             widget.add(icon)
+
 
 
 

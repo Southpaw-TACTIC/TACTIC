@@ -17,8 +17,9 @@ import tacticenv
 from pyasm.common import Environment
 
 #import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
-from PIL import ImageEnhance, ImageChops, ImageFont, ImageDraw
+from PIL import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
 import types
+import os
 
 class Watermark(object):
 
@@ -126,6 +127,11 @@ class Watermark(object):
                 texts = ['Do Not Copy', now]
             if not sizes:
                 sizes = [20, 10]
+
+
+            dirname = os.path.dirname(out_path)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname)
 
             mark = my.generate(texts, sizes)
             im_out = my.execute(im_in, mark, 'tile', 0.5)

@@ -33,6 +33,7 @@ class Palette(object):
     'theme':        'dark',
 
     'table_border': '#494949',
+    'side_bar_title': '#3C76C2',
     }
     DARK = DEFAULT
 
@@ -49,6 +50,7 @@ class Palette(object):
     'theme':        'dark',
 
     'table_border': '#202020',
+    'side_bar_title': '#3C76C2',
     }
 
 
@@ -84,6 +86,8 @@ class Palette(object):
     'table_border': '#DDD',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.6)',
+
+    'side_bar_title': '#3C76C2',
     }
 
     # silver theme
@@ -98,6 +102,8 @@ class Palette(object):
     'table_border': '#FFF',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.6)',
+
+    'side_bar_title': '#3C76C2',
     }
 
 

@@ -14,6 +14,8 @@ __all__ = ["EnvironmentException", "Environment"]
 
 import tacticenv
 
+
+
 import sys, os
 
 from common import *
@@ -25,6 +27,13 @@ from common_exception import TacticWarning, TacticException
 
 class EnvironmentException(Exception):
     pass
+
+
+# set the temp dir
+import tempfile
+tmp_dir = Config.get_value("install", "tmp_dir")
+if tmp_dir:
+    tempfile.tempdir = "%s/temp" % tmp_dir
 
 
 class Environment(Base):

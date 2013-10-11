@@ -301,6 +301,7 @@ class EditCmd(Command):
         my.sobjects.append(sobject)
         my.info['action'] = action
         my.info['search_key'] = SearchKey.get_by_sobject(sobject, use_id=True)
+        my.info['sobject'] = sobject.get_sobject_dict()
 
         return sobject
 

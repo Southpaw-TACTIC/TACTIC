@@ -1260,6 +1260,15 @@ spt.mouse.smart_drag_action = function( evt, bvr, mouse_411 )
     var accept_drop = false;
     var drop_code = bvr.drop_code;
 
+    if( !drop_code && bvr.cbjs_action) {
+        // if no drop code is specified then run cbjs_action
+        spt.behavior.run_cbjs( bvr.cbjs_action, bvr, evt, mouse_411 );
+        return;
+    }
+
+
+
+
     // if the immediate target element is not the element designated to accept a drop then go up
     // through parent nodes to see which element (if any) up the DOM heirarchy is supposed to
     // accept the drop ...
@@ -1320,7 +1329,6 @@ spt.mouse.smart_drag_action = function( evt, bvr, mouse_411 )
     }
 
     if( bvr.cbjs_action && ! accept_drop_bvrs_have_run ) {
-        // ... otherwise, run the 'cbjs_action' call-back of the dragging element's smart-drag behavior ...
         spt.behavior.run_cbjs( bvr.cbjs_action, bvr, evt, mouse_411 );
     }
 

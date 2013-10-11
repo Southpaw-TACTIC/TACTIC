@@ -12,7 +12,7 @@
 
 __all__ = ['TabWdg', 'TabSaveStateCmd']
 
-from pyasm.common import TacticException, Xml, Common, Environment
+from pyasm.common import TacticException, Xml, Common, Environment, Container
 from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer
 from pyasm.search import Search
 from pyasm.widget import WidgetConfigView, WidgetConfig, IconWdg
@@ -31,7 +31,16 @@ class TabWdg(BaseRefreshWdg):
     }
 
     def get_onload_js(my):
+
         return r'''
+
+if (spt.tab) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_tab");
+
+
 spt.tab = {};
 
 spt.tab.top = null;
@@ -854,11 +863,14 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
         inner = DivWdg();
         top.add(inner);
-        inner.add_behavior( {
-        'type': 'load',
-        'gradient': gradient,
-        'cbjs_action': my.get_onload_js()
-        } )
+
+
+        if not Container.get_dict("JSLibraries", "spt_tab"):
+            inner.add_behavior( {
+            'type': 'load',
+            'gradient': gradient,
+            'cbjs_action': my.get_onload_js()
+            } )
 
         #outer_header = DivWdg()
         #inner.add(outer_header)
