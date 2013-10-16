@@ -49,6 +49,7 @@ le -->
                         <attribute name="Trusted-Library" value="true" />
                         <attribute name="Permissions" value="all-permissions" />
                         <attribute name="Codebase" value="*"/>
+                        <attribute name="Application-Name" value="TACTIC"/>
                      </manifest>
                 </jar>
                     
