@@ -576,6 +576,12 @@ class FileUndo:
 
         if os.path.exists(src):
             System().makedirs(tmp_dir)
+            if os.path.exists(tmp_file):
+                # just write over
+                if os.path.isdir(tmp_file):
+                    shutil.rmtree(tmp_file)
+                else:
+                    os.unlink(tmp_file)
             shutil.move(src, tmp_file)
 
         # all file links need to be relative
