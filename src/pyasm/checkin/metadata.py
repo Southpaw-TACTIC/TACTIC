@@ -79,7 +79,6 @@ class CheckinMetadataHandler():
                 parser_type = "PIL"
 
             metadata = {}
-
             if not os.path.exists(path):
                 pass
 
@@ -137,7 +136,6 @@ class CheckinMetadataHandler():
 
             if metadata and not file_object.get_value("metadata"):
                 file_object.add_metadata(metadata, replace=True)
-
                 searchable = my.get_searchable(metadata)
                 file_object.set_value("metadata_search", searchable)
 
@@ -235,8 +233,18 @@ class BaseMetadataParser(object):
             tactic_data[name] = metadata.get(name2)
 
         return tactic_data
-
-
+    
+    def sanitize_data(my, data):
+        # sanitize output
+        RE_ILLEGAL_XML = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
+                 u'|' + u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
+                  (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                   unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                   unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff))
+        data = re.sub(RE_ILLEGAL_XML, "?", data)
+        return data
+    
+    
 
 
 
@@ -342,6 +350,7 @@ class ImageMagickMetadataParser:
         if error:
             return ret
 
+        ret_val = my.sanitize_data(ret_val)
         p = re.compile(":\ +")
 
         level = 0
@@ -394,6 +403,8 @@ class FFProbeMetadataParser(BaseMetadataParser):
     def get_metadata(my):
         path = my.kwargs.get("path")
         out = my.probe_file(path)
+        # sanitize output
+        out = my.sanitize_data(out)
 
         metadata = my.parse_output(out)
 

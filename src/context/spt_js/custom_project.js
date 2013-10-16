@@ -81,6 +81,7 @@ spt.CustomProject.run_script_by_path = function( script_path, input )
     }
     try {
         if (!input) input = {};
+        var kwargs = input;
         eval(script, input);
     } catch(e) {
         spt.alert("[ERROR in custom script '" + script_path + "']: " + e);

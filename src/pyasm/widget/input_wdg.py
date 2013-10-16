@@ -1539,7 +1539,7 @@ class ItemsNavigatorWdg(HtmlElement):
 class ButtonWdg(BaseInputWdg):
     def __init__(my,name=None):
         super(ButtonWdg,my).__init__(name,"input")
-        my.add_style("background-color: #f0f0f0")
+        #my.add_style("background-color: #f0f0f0")
 
     def get_display(my):
         my.set_attr("type", "button")

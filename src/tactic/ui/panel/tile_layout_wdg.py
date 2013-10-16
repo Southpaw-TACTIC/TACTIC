@@ -65,12 +65,23 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner = DivWdg()
         div.add(inner)
 
+
         # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        show_context_menu = my.kwargs.get("show_context_menu")
+        if show_context_menu in ['false', False]:
+            show_context_menu = False
+        else:
+            show_context_menu = True
+
+        menus_in = {}
+        if show_context_menu:
+            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
+            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        if menus_in:
+            SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+
+
+
 
 
         from tactic.ui.filter import FilterData
@@ -347,6 +358,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_tile_top")
 
         div.add_class("spt_table_row")
+        div.add_class("spt_table_row_%s" % my.table_id)
 
 
         top_view = my.kwargs.get("top_view")
@@ -387,11 +399,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
 
-
         bottom_view = my.kwargs.get("bottom_view")
         if bottom_view:
             div.add( my.get_view_wdg(sobject, bottom_view) )
-
 
 
         div.add_attr("ondragenter", "return false")
@@ -681,15 +691,28 @@ from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
 __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
+
+    def init(my):
+        my.path = None
+
+    def set_sobject(my, sobject):
+        super(ThumbWdg2, my).set_sobject(sobject)
+        my.path = my.get_path_from_sobject(sobject)
+
+    def get_path(my):
+        return my.path
+
+
     def get_display(my):
 
         width = "100%"
 
+        sobject = my.get_current_sobject()
+
         div = DivWdg()
         div.add_class("spt_thumb_top")
 
-        sobject = my.get_current_sobject()
-        path = my.get_path_from_sobject(sobject)
+        path = my.path
         if path:
             img = HtmlElement.img(src=path)
         else:
@@ -729,6 +752,7 @@ class ThumbWdg2(BaseRefreshWdg):
         search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
             search_code = sobject.get_id()
+
 
         # FIXME: make this faster
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')

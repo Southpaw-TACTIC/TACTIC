@@ -89,11 +89,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-
-
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         div.add(upload)
+
+
         button = ActionButtonWdg(title="Add")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
@@ -341,6 +341,25 @@ class IngestUploadWdg(BaseRefreshWdg):
             spt.behavior.destroy_element(top);
             '''
         } )
+
+
+        """
+        metadata_view = "test/wizard/metadata"
+        files_div.add_relay_behavior( {
+            'type': 'mouseup',
+            'view': metadata_view,
+            'bvr_match_class': 'spt_upload_file',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+            var kwargs = {
+                view: bvr.view
+            }
+            spt.app_busy.show("Loading Metadata");
+            spt.panel.load_popup("Metadata", class_name, kwargs);
+            spt.app_busy.hide();
+            '''
+        } )
+        """
 
 
 
@@ -617,8 +636,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
 
-            %s
+            %s;
 
+            spt.html5upload.set_form( top );
             spt.html5upload.upload_file(upload_file_kwargs);
 
             ''' % (upload_progress, on_complete, upload_init)
@@ -738,8 +758,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         text.add_style("padding: 1px")
 
 
-        ####
-
+        #### TEST Image options
+        """
         button = IconButtonWdg(title="Resize", icon=IconWdg.FILM)
         buttons.add_cell(button)
 
@@ -759,6 +779,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             convert_div.add(convert)
         except:
             pass
+        """
 
 
         # use base name for name

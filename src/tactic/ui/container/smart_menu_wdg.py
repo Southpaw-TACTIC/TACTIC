@@ -133,17 +133,18 @@ class SmartMenuWdg(BaseRefreshWdg):
         """
         menu_table.add_relay_behavior( {
             'type': 'mouseenter',
-            'bvr_match_class': 'XSPT_SMENU_ENTRY',
-            'bgcolor': menu_table.get_color("background", -15),
+            'bvr_match_class': 'SPT_SMENU_ENTRY',
+            'bgcolor': menu_table.get_color("side_bar_title", -15, default="background3"),
             'cbjs_action': '''
             bvr.src_el.setStyle("background-color", bvr.bgcolor);
+            bvr.src_el.setStyle("color", bvr.bgcolor);
             spt.smenu.entry_over( evt, bvr );
             '''
         } )
 
         menu_table.add_relay_behavior( {
             'type': 'mouseleave',
-            'bvr_match_class': 'XSPT_SMENU_ENTRY',
+            'bvr_match_class': 'SPT_SMENU_ENTRY',
             'cbjs_action': '''
             bvr.src_el.setStyle("background-color", "");
             spt.smenu.entry_out( evt, bvr );
@@ -174,6 +175,7 @@ class SmartMenuWdg(BaseRefreshWdg):
                 tr.set_attr( "SPT_HIDE_WHEN_DISABLED", "true" )
 
             if opt['type'] in [ 'action', 'toggle' ]:
+
                 hover_bvr = {'type':'hover', 'add_looks': 'smenu_hilite',
                              'cbjs_action_over': 'spt.smenu.entry_over( evt, bvr );',
                              'cbjs_action_out': 'spt.smenu.entry_out( evt, bvr );' }

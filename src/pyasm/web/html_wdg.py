@@ -430,6 +430,8 @@ class HtmlElement(Widget):
 
     def add_behavior(my, bvr_spec):
         '''adds an individual behavior specification to the HTML based widget'''
+        #print "bvr: ", str(bvr_spec).replace(r"\n", "\n")
+        #print "---"
         if my.behaviors == None:
             my.behaviors = []
 
@@ -751,7 +753,8 @@ class HtmlElement(Widget):
         elif my.type == "span":
             buffer.write("</%s>" % my.type)
         elif my.type != 'br':
-            buffer.write("</%s>\n" % my.type)
+            #buffer.write("</%s>\n" % my.type)
+            buffer.write("</%s>" % my.type)
 
         my.clear()
 

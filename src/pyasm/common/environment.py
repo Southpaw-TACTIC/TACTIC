@@ -14,6 +14,8 @@ __all__ = ["EnvironmentException", "Environment"]
 
 import tacticenv
 
+
+
 import sys, os
 
 from common import *
@@ -25,6 +27,13 @@ from common_exception import TacticWarning, TacticException
 
 class EnvironmentException(Exception):
     pass
+
+
+# set the temp dir
+import tempfile
+tmp_dir = Config.get_value("install", "tmp_dir")
+if tmp_dir:
+    tempfile.tempdir = "%s/temp" % tmp_dir
 
 
 class Environment(Base):
@@ -329,8 +338,7 @@ class Environment(Base):
 
 
     def get_client_handoff_dir(my, ticket=None, no_exception=False, include_ticket=True):
-       
-        if my.get_client_os() == "nt":
+        if Environment.get_env_object().get_client_os() =='nt':
             base_handoff_dir = Config.get_value("checkin", "win32_client_handoff_dir", no_exception=True)
         else:
             base_handoff_dir = Config.get_value("checkin", "linux_client_handoff_dir", no_exception=True)
@@ -496,9 +504,11 @@ class Environment(Base):
 
 
     def get_client_repo_dir(cls):
-        '''get base asset directory'''
-        # FIXME: assumes windows client!!!
-        return Config.get_value("checkin","win32_client_repo_dir")
+        '''get base client repo directory'''
+        if Environment.get_env_object().get_client_os() =='nt':
+            return Config.get_value("checkin","win32_client_repo_dir")
+        else:
+            return Config.get_value("checkin","linux_client_repo_dir")
     get_client_repo_dir = classmethod(get_client_repo_dir)
 
 

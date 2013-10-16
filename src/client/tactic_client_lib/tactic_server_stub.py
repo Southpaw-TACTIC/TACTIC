@@ -986,7 +986,7 @@ class TacticServerStub(object):
         '''
         #return my.server.query(my.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, return_sobjects)
         results = my.server.query(my.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
-        if not return_sobjects:
+        if not return_sobjects and isinstance(results, basestring):
             results = eval(results)
         return results
 

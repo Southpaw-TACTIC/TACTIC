@@ -301,6 +301,26 @@ spt.behavior.run_callback_fn = function( cb_type, evt, bvr, mouse_411 )
 
 spt.behavior.run_preaction_action_postaction = function( bvr, evt, mouse_411 )
 {
+    if (bvr.bvr_repeat_interval) {
+        if (bvr.bvr_repeat_key) {
+            key = "SPT_BVR_REPEAT_"+bvr.bvr_repeat_key;
+        }
+        else {
+            key = "SPT_BVR_REPEAT_"+bvr.type;
+        }
+        if (bvr.src_el.hasClass(key)) {
+            return;
+        }
+        bvr.src_el.addClass(key);
+        var opacity = bvr.src_el.getStyle("opacity");
+        bvr.src_el.setStyle("opacity", "0.6");
+        setTimeout( function() {
+            bvr.src_el.removeClass(key);
+            bvr.src_el.setStyle("opacity", opacity);
+        }, bvr.bvr_repeat_interval*1000 );
+    }
+
+
     // Pre-action call-back ...
     if( bvr.cbjs_preaction ) {
         spt.behavior.run_cbjs( bvr.cbjs_preaction, bvr, evt, mouse_411 );

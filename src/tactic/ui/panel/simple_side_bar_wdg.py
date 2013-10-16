@@ -230,6 +230,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
                 'type': 'click_up',
+                'bvr_repeat_interval': 3,
                 'title': title,
                 'link': link,
                 'target': target,
@@ -245,6 +246,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
                 'type': 'click_up',
+                'bvr_repeat_interval': 3,
                 'title': title,
                 'link': link,
                 'element_name': element_name,

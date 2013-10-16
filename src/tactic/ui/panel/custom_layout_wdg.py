@@ -97,6 +97,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         my.sobject_dicts = None
         my.is_table_element = False
 
+        my.sequence_data = []
+
 
     def preprocess(my):
         code = my.kwargs.get('data')
@@ -162,9 +164,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if not html:
             html = ""
 
-        # TEST
-        #behavior = my.kwargs.get('behavior')
-
+        # DEPRECATED
         my.state = my.kwargs.get("state")
         my.state = BaseRefreshWdg.process_state(my.state)
         if not my.state:
@@ -301,11 +301,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         # find out if there is a plugin associated with this
         my.plugin = my.kwargs.get("plugin")
-        if my.plugin == '{}':
+        if not my.plugin or my.plugin == '{}':
             my.plugin = {}
-        
+
+        """
         if not my.plugin and isinstance(my.config, SObject):
+            print "plugin ..."
             my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
+        """
 
 
         # try to get the sobject if this is in a table element widget
@@ -396,11 +399,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_custom_top")
-
-
-        # FIXME: This menu is only really used in containers
-        #menus_in = { 'HEADER_CTX': [ my.get_smart_header_context_menu_data() ] }
-        #SmartMenu.attach_smart_context_menu( top, menus_in, True )
 
 
         # create the content div
@@ -607,12 +605,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 plugin = my.plugin
             else:
                 plugin = my.plugin.get_sobject_dict()
+            plugin_code = plugin.get_value("code")
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:
-            plugin = {}
+            plugin_code = ""
             plugin_dir = ""
+            plugin = {}
         my.kwargs['plugin_dir'] = plugin_dir
-        my.kwargs['plugin'] = plugin
+        my.kwargs['plugin_code'] = plugin_code
 
         try:
             html = template.render(server=my.server, search=Search, sobject=sobject, sobjects=my.sobject_dicts, data=my.data, plugin=plugin, kwargs=my.kwargs)
@@ -625,7 +625,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print "Mako: ", exceptions.text_error_template().render()
+                print "Error in view [%s]: " % my.view, exceptions.text_error_template().render()
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
@@ -948,7 +948,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             html.writeln(element_html)
 
+        sequence_wdg = my.get_sequence_wdg()
+        html.writeln(sequence_wdg.get_buffer_display() )
+        
+
         return html.to_string()
+
 
 
 
@@ -1027,13 +1032,93 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
  
 
+    def get_sequence_wdg(my):
+
+        funcs = []
+
+        div = DivWdg()
+        if not my.sequence_data:
+            return div
+
+        div.add_behavior( {
+            'type': 'load',
+            'data': my.sequence_data,
+            'cbjs_action': '''
+
+            var count = -1;
+
+            var func = function() {
+                if (count == bvr.data.length-1) {
+                    return;
+                }
+                count += 1;
+
+                var item = bvr.data[count];
+                var unique_id = item.unique_id;
+                var class_name = item.class_name;
+                var kwargs = item.kwargs;
+
+                var options = {
+                    async: true,
+                    callback: func
+                }
+                spt.panel.load($(unique_id), class_name, kwargs, {}, options);
+
+                next_func = func;
+            }
+
+            func();
+
+            '''
+        } )
+        return div
+
+ 
+
+
+    def get_async_element_wdg(my, xml, element_name, load):
+
+        tmp_config = WidgetConfig.get('tmp', xml=xml)
+        display_handler = tmp_config.get_display_handler(element_name)
+        display_options = tmp_config.get_display_options(element_name)
+
+        div = DivWdg()
+        unique_id = div.set_unique_id()
+
+        if load == "sequence":
+            my.sequence_data.append( {
+                'class_name': display_handler,
+                'kwargs': display_options,
+                'unique_id': unique_id
+            } )
+        else:
+            div.add_behavior( {
+                'type': 'load',
+                'class_name': display_handler,
+                'kwargs': display_options,
+                'cbjs_action': '''
+                spt.panel.async_load(bvr.src_el, bvr.class_name, bvr.kwargs);
+                '''
+            } )
+
+        loading_div = DivWdg()
+        loading_div.add_style("margin: auto auto")
+        loading_div.add_style("width: 150px")
+        loading_div.add_style("text-align: center")
+        loading_div.add_style("padding: 20px")
+        div.add(loading_div)
+        loading_div.add('''<img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b>''')
+
+        return div
+
+
 
     def get_element_wdg(my, xml, def_config):
-
 
         element_node = xml.get_node("config/tmp/element")
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
+
 
         if not element_name:
             import random
@@ -1070,11 +1155,17 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             for name, value in attrs.items():
                 # replace the spt_ in the name.
-                # TODO: should this be restricted to only spt_ attributes?
+                # NOTE: should this be restricted to only spt_ attributes?
                 name = name.replace("spt_", "")
                 attr_node = xml.create_element(name)
                 xml.set_node_value(attr_node, value)
                 xml.append_child(display_node, attr_node)
+
+
+        load = attrs.get("load")
+        if load in ["async", "sequence"]:
+            return my.get_async_element_wdg(xml, element_name, load)
+
 
 
 
@@ -1085,13 +1176,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
         else:
             container = DivWdg()
 
-
         # add in attribute from the element definition
         # DEPRECATED: does this make any sense to have this here?
         for name, value in attrs.items():
             if name == 'name':
                 continue
             container.add_style(name, value)
+
+
+
+
 
 
         # add the content
@@ -1121,7 +1215,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 parent_view = my.view
 
-            # TODO: need some protection code for infinite loops
+            # NOTE: need some protection code for infinite loops
 
 
             includes = my.kwargs.get("include")
@@ -1147,27 +1241,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if my.layout:
                 sobject = my.get_current_sobject()
                 element_wdg.set_sobject(sobject)
-
-
-
-            # DEPRECATED
-            # All of these state mechanisms are deprecated and replaced with
-            # the above explicit method for passing state
-
-            # add in some extra options that can be used by the child.
-            # parent_key and state are kept for backwards compatibility
-            """
-            extra = {
-                'parent_key': my.search_key,
-                'state': my.state,
-                'parent_kwargs: ': my.kwargs # FIXME: not sure about this
-            }
-            element_wdg = config.get_display_widget(element_name, extra_options=extra)
-            # FIXME: what is this for?
-            # add external some parameters passed from the top widget
-            element_wdg.kwargs['parent_key'] = my.search_key
-            element_wdg.kwargs['state'] = my.state
-            """
 
 
 
@@ -1339,6 +1412,7 @@ class TestStateWdg(BaseRefreshWdg):
 
 
 
+# DEPRECATED
 
 class ContainerWdg(BaseRefreshWdg):
 

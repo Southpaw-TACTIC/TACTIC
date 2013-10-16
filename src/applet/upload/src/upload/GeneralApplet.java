@@ -232,6 +232,7 @@ public class GeneralApplet extends JApplet
         }
 
         final String f_from_path = from_path;
+        
         final String[] f_to_filename = new String[1];
         final String f_subdir = subdir;
 

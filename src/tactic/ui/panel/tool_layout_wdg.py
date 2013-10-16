@@ -124,7 +124,8 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         header_row_div = DivWdg()
         header_row_div.add_class("spt_table_header_row")
         content.add(header_row_div)
-        content.add_class("spt_table_table");
+        content.add_class("spt_table_table")
+        content.set_id(my.table_id)
 
         my.handle_load_behaviors(content)
 
@@ -182,30 +183,33 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             '''
         } )
 
+        main_bg1 = layout_wdg.get_color("background")
+        main_bg2 = layout_wdg.get_color("background", 5)
+
         bg1 = layout_wdg.get_color("background3")
         bg2 = layout_wdg.get_color("background3", 5)
         layout_wdg.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_item_top',
             'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", "0.8");
+            bvr.src_el.setStyle('background', '%s');
             var el = bvr.src_el.getElement(".spt_tile_title");
             if (el) {
                 el.setStyle("background", "%s");
             }
-            ''' % bg2
+            ''' % (main_bg2, bg2)
         } )
 
         layout_wdg.add_relay_behavior( {
             'type': 'mouseout',
             'bvr_match_class': 'spt_item_top',
             'cbjs_action': '''
-            bvr.src_el.setStyle("opacity", "1.0");
+            bvr.src_el.setStyle('background', '%s');
             var el = bvr.src_el.getElement(".spt_tile_title");
             if (el) {
                 el.setStyle("background", "%s");
             }
-            ''' % bg1
+            ''' %(main_bg1, bg1)
         } )
 
 
@@ -318,7 +322,6 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
         kwargs = my.kwargs.copy()
         kwargs['open_depth'] = 1
         layout = RepoBrowserWdg(**kwargs)
-        print "sobjects: ", my.sobjects
         layout.set_sobjects(my.sobjects)
         return layout
 
@@ -441,7 +444,8 @@ class CardLayoutWdg(ToolLayoutWdg):
 
         div.add("<br/>")
         from tactic.ui.widget import DiscussionWdg
-        notes_wdg = DiscussionWdg()
+        search_key = sobject.get_search_key()
+        notes_wdg = DiscussionWdg(search_key=search_key)
         notes_wdg.set_sobject(sobject)
         div.add(notes_wdg)
 
