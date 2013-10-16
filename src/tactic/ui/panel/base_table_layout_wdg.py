@@ -325,7 +325,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def set_items_found(my, number):
         my.items_found = number
-
+    
+    def set_search_wdg(my, search_wdg):
+        my.search_wdg = search_wdg
 
 
     def is_expression_element(my, element_name):

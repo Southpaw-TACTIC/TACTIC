@@ -3021,8 +3021,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "no_results_mode": no_results_mode,
             "mode": mode,
             "keywords": keywords,
-            "filter": filter,
-            "search_wdg": search_wdg,
+            "filter": filter
             
         }
         if run_search_bvr:
@@ -3077,6 +3076,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
+        layout_table.set_search_wdg(search_wdg)
         # add the search in the table
         #search_container = layout_table.search_container_wdg
         #if not show_search:
