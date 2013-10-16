@@ -327,7 +327,7 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
 
-class ImageMagickMetadataParser:
+class ImageMagickMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs

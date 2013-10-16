@@ -503,6 +503,11 @@ class NamingUtil(object):
         expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
         temp_list = expression.findall(template)
 
+
+        expression = re.compile(r'{(.*?)}')
+        temp_list = expression.findall(template)
+
+
         # if nothing is found, then just return parse through an expression
         if not temp_list:
             #return template
@@ -537,7 +542,16 @@ class NamingUtil(object):
         for part in temp_list:
              
             index = -1
-            if part.find(".") != -1:
+
+
+            if part.startswith("@"):
+                env_sobjects = {
+                    'snapshot': snapshot,
+                    'file': file
+                }
+     
+                value = Search.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+            elif part.find(".") != -1:
                 # explict declarasions
                 object, attr = part.split(".")
                 

@@ -419,6 +419,11 @@ class CheckinButtonElementWdg(ButtonElementWdg):
             'values': 'true|false',
             'order': 8,
             'description': 'Determines whether to show the context selector'},
+     'sobject_mode': { 'type': 'SelectWdg',
+             'category': '2. Display',
+            'values': 'parent|connect|sobject',
+            'order': 8,
+            'description': 'Determines which sobject to check into'},
      'checkin_options_view':  {'type': 'TextWdg',
             'category': '2. Display',
             'order': 9,
@@ -583,15 +588,31 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
         my.context = ''
         sobject = my.get_current_sobject()
+
         if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
             my.process = sobject.get_value('process')
             my.context = sobject.get_value('context')
             if not my.process:
                 my.process = ''
 
-            parent = sobject.get_parent()
+
+            sobject_mode = my.kwargs.get("sobject_mode")
+            if not sobject_mode:
+                sobject_mode = "parent"
+            #sobject_mode = "connect"
+            if sobject_mode == "parent":
+                parent = sobject.get_parent()
+            elif sobject_mode == "connect":
+                parent = Search.eval("@SOBJECT(connect)", sobject, single=True)
+            elif sobject_mode == "expression":
+                expression = "???"
+                parent = Search.eval("@SOBJECT(connect)", sobject, single=True)
+            else:
+                parent = sobject
+
             if not parent:
                 return DivWdg()
+
             search_key = SearchKey.get_by_sobject(parent)
         else:
             my.process = my.get_option('process')
