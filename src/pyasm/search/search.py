@@ -1823,12 +1823,12 @@ class Search(Base):
     get_by_value = staticmethod(get_by_value)
 
     
-    def get_by_id(search_type, search_id):
+    def get_by_id(search_type, search_id, show_retired=True):
         # allow search_id = 0
         if not search_type or search_id in [None, '']:
             return None
         search = Search(search_type)
-        search.set_show_retired(True)
+        search.set_show_retired(show_retired)
         if isinstance(search_id, list):
             # assuming idential search_type
             search.add_filters(search.get_id_col(), search_id)

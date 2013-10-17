@@ -515,6 +515,8 @@ class OldTableLayoutWdg(BaseConfigWdg):
     def set_items_found(my, number):
         my.items_found = number
 
+    def set_search_wdg(my, search_wdg):
+        my.search_wdg = search_wdg
 
     def get_table(my):
         return my.table
