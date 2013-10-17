@@ -296,7 +296,7 @@ class ProjectTemplateInstallerCmd(Command):
             template_dir = "%s/%s" % (base_dir, my.template_code)
 
         template_dir = my.get_template_dir(template_dir)
-
+        
         # if the directory does not exist then look for a zip file
         use_zip = False
         if not os.path.exists(template_dir):
@@ -304,8 +304,12 @@ class ProjectTemplateInstallerCmd(Command):
             if os.path.exists(template_zip):
                 use_zip = True
             else:
-                raise TacticException("No template found for [%s] version [%s]" % my.template_code, version)
-
+                hint = "Please check if you have created the Template already using the Update button in the Template Project view."
+                if version:
+                    raise TacticException("No template found for [%s] version [%s]. %s" % (my.template_code, version, hint))
+                else:
+                    raise TacticException("No template found for [%s]. %s" % (my.template_code, hint))
+                    
 
 
 
