@@ -67,6 +67,8 @@ spt.panel.async_load = function(panel_id, class_name, options, values) {
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     var fade = kwargs ? kwargs.fade : true;
     var async = kwargs ? kwargs.async : true;
+    if (!async) { async = true; }
+
     var callback = kwargs ? kwargs.callback : null;
     if (callback) {
         async = true;
@@ -91,28 +93,49 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
         if (async) {
 
             var size = $(panel).getSize();
-            panel.innerHTML = '<div style="width: '+size.x+'; height: '+size.y+'"><div style="margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div></div>';
 
             /*
-            var xelement = $(document.createElement("div"));
-            xelement.setStyle("opacity", "0.5");
-            xelement.innerHTML = '<div style="background: #FFF; z-index: 1000; margin-top: -'+size.y+';width: '+size.x+'; height: '+size.y+'"></div>';
-            panel.appendChild(xelement);
-
-
-            var element = $(document.createElement("div"));
-            element.innerHTML = '<div style="z-index: 1001; margin-top: -'+size.y+'; margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
-            panel.appendChild(element);
-            */
+            panel.innerHTML = '<div style="width: '+size.x+'; height: '+size.y+'"><div style="margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div></div>';
 
             wdg_kwargs.cbjs_action = function(widget_html) {
                 panel.setStyle("opacity", "0.5");
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(panel, {duration: "short"}).start('opacity', '1');
-                //new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
                 if (callback) callback();
             }
+            */
+
+
+
+            var element = $(document.createElement("div"));
+            element.innerHTML = '<div style="background: transparent; margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
+            element.setStyle("z-index", "100");
+            element.setStyle("margin-top", -size.y);
+            element.setStyle("position", "relative");
+
+
+            var xelement = $(document.createElement("div"));
+            xelement.setStyle("opacity", "0.5");
+            xelement.innerHTML = '<div style="background: #FFF; width: '+size.x+'; height: '+size.y+'"></div>';
+            xelement.setStyle("margin-top", -size.y);
+            xelement.setStyle("position", "relative");
+
+            panel.appendChild(xelement);
+            panel.appendChild(element);
+
+
+            wdg_kwargs.cbjs_action = function(widget_html) {
+                xelement.setStyle("opacity", "0.5");
+                spt.behavior.replace_inner_html(panel, widget_html);
+                new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
+                if (callback) callback();
+            }
+
+
             var widget_html = server.async_get_widget(class_name, wdg_kwargs);
+
+
+
         }
         else {
             var widget_html = server.get_widget(class_name, wdg_kwargs);
@@ -287,7 +310,7 @@ spt.panel.get_element_options = function(element) {
 spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
     var fade = kwargs ? kwargs.fade : false;
-    var async = kwargs ? kwargs.async : false;
+    var async = kwargs ? kwargs.async : true;
  
     var element = $(element_id);
     if (! element) {
@@ -321,6 +344,10 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     if (async) {
         wdg_kwargs.cbjs_action = function(widget_html) {
             spt.behavior.replace_inner_html(element, widget_html);
+            if (fade) {
+                element.fade('in');
+            }
+            spt.panel.is_refreshing = false;
         }
         var widget_html = server.async_get_widget(widget_class, wdg_kwargs);
     }
@@ -328,16 +355,14 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         var widget_html = server.get_widget(widget_class, wdg_kwargs);
         // replace the former element with the new element
         spt.behavior.replace_inner_html( element, widget_html );
-    }
    
-    //note: this fade out/in effect doesn't work well if placed back 
-    //to back in a function
-    // FIXME: fade probably doesn't work well with async
-    if (fade) {
-        element.fade('in');
+        //note: this fade out/in effect doesn't work well if placed back 
+        //to back in a function
+        if (fade) {
+            element.fade('in');
+        }
+        spt.panel.is_refreshing = false;
     }
-    
-    spt.panel.is_refreshing = false;
 }
 
 

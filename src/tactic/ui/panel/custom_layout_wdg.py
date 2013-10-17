@@ -304,9 +304,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if not my.plugin or my.plugin == '{}':
             my.plugin = {}
 
+
+
         """
         if not my.plugin and isinstance(my.config, SObject):
-            print "plugin ..."
             my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
         """
 
@@ -605,7 +606,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 plugin = my.plugin
             else:
                 plugin = my.plugin.get_sobject_dict()
-            plugin_code = plugin.get_value("code")
+            plugin_code = plugin.get("code")
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:
             plugin_code = ""

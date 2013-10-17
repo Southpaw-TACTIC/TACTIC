@@ -1889,7 +1889,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         html = widget.get_buffer_display()
                         if not html:
-                            html = "<div sytle='height: 30px'>&nbsp;</div>"
+                            html = "<div style='height: 30px'>&nbsp;</div>"
                         td.add(html)
                 except Exception, e:
 

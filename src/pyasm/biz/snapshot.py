@@ -1359,7 +1359,10 @@ class Snapshot(SObject):
         if level_type and level_id:
             key = "%s:%s:%s" % (key, level_type, level_id )
         if process != None:
-            search.add_filter("process", process)
+            if isinstance(process, list):
+                search.add_enum_order_by("process", process)
+            else:
+                search.add_filter("process", process)
             key = '%s:process=%s' %(key, process)
         if context not in [None, '']:
             search.add_filter("context", context)
@@ -1391,6 +1394,7 @@ class Snapshot(SObject):
         search.add_order_by("version desc")
         search.add_order_by("revision desc")
         search.add_order_by("timestamp desc")
+
         if not isinstance(search_id, list):
             # only cache if search_id is not a list
             if use_cache:
