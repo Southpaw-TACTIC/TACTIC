@@ -1631,7 +1631,7 @@ class OldTableLayoutWdg(BaseConfigWdg):
         # set the sobjects to all the widgets then preprocess
         for widget in my.widgets:
             widget.set_sobjects(my.sobjects)
-            # FIXME: !!! This sets up a circular reference
+            # NOTE: This sets up a circular reference
             widget.set_parent_wdg(my)
 
             # preprocess the elements

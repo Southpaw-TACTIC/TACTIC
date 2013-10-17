@@ -54,14 +54,16 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
 
 
 
-    def _add_css_style(my, element, prefix):
+    def _add_css_style(my, element, prefix, name=None, value=None):
         # skip the edit/ insert row
-        sobject = my.get_current_sobject()
-        if not sobject or sobject.get_id() == -1:
-            return
+        #sobject = my.get_current_sobject()
+        #if not sobject or sobject.get_id() == -1:
+        #    return
 
-        value = my.get_value()
-        name = my.get_name()
+        if value is None:
+            value = my.get_value()
+        if name is None:
+            name = my.get_name()
 
         if not value:
             value = 0
@@ -82,11 +84,15 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
                     element.add_style("%s: %s" % (property, value) )
  
     def handle_td(my, td):
-        my._add_css_style(td, 'css_')
+        name = my.name
+        value = my.value
+        my._add_css_style(td, 'css_', name, value)
        
 
     def handle_tr(my, tr):
-        my._add_css_style(tr, 'rowcss_')
+        name = my.name
+        value = my.value
+        my._add_css_style(tr, 'rowcss_', name, value)
 
 
     def get_title(my):

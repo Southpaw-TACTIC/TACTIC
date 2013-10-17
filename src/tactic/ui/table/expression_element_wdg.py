@@ -379,10 +379,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
             print "Expression error: ", e
             print "    in column [%s] with [%s]" % (my.get_name(), expression)
             from pyasm.widget import ExceptionWdg
-            widget = ExceptionWdg(e)
+            #widget = ExceptionWdg(e)
+            #return widget
+            widget = DivWdg()
+            widget.add("Expression error: %s" % e)
             return widget
 
-            result = ""
 
         # FIXME: don't know how to do this any other way
         try:
@@ -554,7 +556,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     single = True
                     list = False
-                display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+
+                try:
+                    display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+                except Exception, e:
+                    print "WARNING: ", e
+                    display_result = "ERROR: %s" % e
 
             elif format_str:
                 # This import needs to be here because of a deep

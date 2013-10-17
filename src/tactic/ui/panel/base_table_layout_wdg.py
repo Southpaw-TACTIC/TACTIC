@@ -287,7 +287,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         web = WebContainer.get_web()
         my.skin = web.get_skin()
 
-
         # Set up default row looks ...
         my.look_row = 'dg_row'
         my.look_row_hilite = 'dg_row_hilite'
@@ -544,6 +543,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             custom_search_view = ''
 
         #my.search_wdg = None
+        if not my.search_wdg:
+            my.search_wdg = my.kwargs.get("search_wdg")
         if not my.search_wdg:
             # if this is not passed in, then create one
             my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
