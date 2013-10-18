@@ -664,18 +664,70 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.handle_table_behaviors(table)
 
-
-        
+        temp = my.kwargs.get("temp")
      
         # draw all of the rows
+        has_loading = False
         for row, sobject in enumerate(my.sobjects):
 
             # put in a group row
             if my.is_grouped:
                 my.handle_groups(table, row, sobject)
 
+            if not temp and row > 5:
+                tr, td = table.add_row_cell()
+                td.add_style("height: 30px")
+                td.add_style("padding: 20px")
+                td.add_style("text-align: center")
+                td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                td.add(" Loading ...")
+                tr.add_attr("spt_search_key", sobject.get_search_key())
+                tr.add_class("spt_loading")
+                has_loading = True
+                continue
+
+
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
+
+
+        chunk_size = 10
+        if has_loading:
+            table.add_behavior( {
+            'type': 'load',
+            'chunk': chunk_size,
+            'cbjs_action': '''
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            var rows = layout.getElements(".spt_loading");
+
+            var jobs = [];
+            var count = 0;
+            var chunk = bvr.chunk;
+            while (true) {
+                var job_item = rows.slice(count, count+chunk);
+                if (job_item.length == 0) {
+                    break;
+                }
+                jobs.push(job_item);
+                count += chunk;
+            }
+
+            var count = -1;
+            var func = function() {
+                count += 1;
+                var rows = jobs[count];
+                if (! rows || rows.length == 0) {
+                    return;
+                }
+                spt.table.refresh_rows(rows, null, null, {on_complete: func});
+            }
+
+            func();
+
+            '''
+            } )
+
 
 
 
@@ -1878,7 +1930,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             is_editable = True
 
-            if widget.is_editable():
+            if not widget.is_editable():
                 is_editable = False
             else:
                 security = Environment.get_security()
@@ -3810,7 +3862,7 @@ spt.table.get_refresh_kwargs = function(row) {
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
-    if (typeof(search_keys) == 'undefined') {
+    if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
             var search_key = rows[i].getAttribute("spt_search_key");
@@ -3902,6 +3954,12 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 var bottom_row = spt.table.get_bottom_row(); 
                 if (bottom_row)
                     bottom_row.setStyle('background', '#E6CB81');
+            }
+
+
+            if (kw['on_complete']) {
+                var on_complete = kw['on_complete'];
+                on_complete();
             }
             
             spt.app_busy.hide();

@@ -1065,7 +1065,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 }
                 spt.panel.load($(unique_id), class_name, kwargs, {}, options);
 
-                next_func = func;
             }
 
             func();

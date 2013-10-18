@@ -78,6 +78,7 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
                 continue
 
             if expr:
+                sobject = my.get_current_sobject()
                 prefix, property = key.split("_", 1)
                 value = Search.eval(expr, sobject, vars=vars)
                 if value:
