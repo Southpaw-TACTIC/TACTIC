@@ -3729,13 +3729,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
                     var expr = "@SOBJECT(config/process['process','"+bvr.process+"']['pipeline_code', '" + bvr.pipeline_code +"'])";
                     var process = server.eval(expr, {single: true});
+                    var process_search_key = process ? process.__search_key__ : '';
                     var class_name = 'tactic.ui.panel.EditWdg';
                     var kwargs = {
-                        search_key: process.__search_key__,
+                        search_key: process_search_key,
                         search_type: 'config/process',
                         view: 'edit',
                     };
-                    if (process && !process.__search_key__) {
+                    if (!process_search_key) {
                         var default_data = {'process': bvr.process, 'pipeline_code': bvr.pipeline_code}; 
                         var rtn = server.insert('config/process', default_data);
                         kwargs.search_key = rtn.__search_key__;
