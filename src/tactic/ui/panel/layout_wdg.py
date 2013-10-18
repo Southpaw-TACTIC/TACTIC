@@ -977,7 +977,7 @@ class OldTableLayoutWdg(BaseConfigWdg):
 
                     var server = TacticServerStub.get();
                     try {
-                        spt.app_busy.show(bvr.description, file);                   
+                        //spt.app_busy.show(bvr.description, file);                   
                         var snapshot = server.get_by_search_key(search_key);
                         var snapshot_code = snapshot.code;
                         if (search_key.search('sthpw/snapshot')!= -1){                       

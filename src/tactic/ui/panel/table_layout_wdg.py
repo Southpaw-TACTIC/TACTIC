@@ -674,7 +674,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if my.is_grouped:
                 my.handle_groups(table, row, sobject)
 
-            if not temp and row > 5:
+            if not temp and row > 4: 
                 tr, td = table.add_row_cell()
                 td.add_style("height: 30px")
                 td.add_style("padding: 20px")
@@ -691,7 +691,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             my.handle_row(table, sobject, row, level)
 
 
-        chunk_size = 10
+        chunk_size = 20
         if has_loading:
             table.add_behavior( {
             'type': 'load',
@@ -722,7 +722,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 }
                 spt.table.refresh_rows(rows, null, null, {on_complete: func});
             }
-
             func();
 
             '''
@@ -3886,6 +3885,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
+
     
     var table_top = layout.getParent('.spt_table_top');
     
@@ -3894,9 +3894,16 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var server = TacticServerStub.get();
 
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
-    group_elements = group_elements.split(",");
+    if (group_elements) {
+        group_elements = group_elements.split(",");
+    }
+    else {
+        group_elements = [];
+    }
 
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.TableLayoutWdg';
+    //var class_name = 'tactic.ui.panel.TileLayoutWdg';
+
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
     // there is no need to pass in variables that affects the drawing of the shelf here.

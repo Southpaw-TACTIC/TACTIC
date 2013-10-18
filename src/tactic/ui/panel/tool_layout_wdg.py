@@ -69,6 +69,18 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             widget.preprocess()
 
 
+        """
+        # TEST code to return only the content
+        temp = my.kwargs.get("temp")
+        if temp:
+            content = DivWdg()
+            content.add( my.get_content_wdg() )
+            return content
+        """
+
+
+
+
 
         # extraneous variables inherited from TableLayoutWdg
         my.edit_permission = True
