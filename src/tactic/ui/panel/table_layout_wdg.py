@@ -13,6 +13,7 @@ __all__ = ["FastTableLayoutWdg", "TableLayoutWdg"]
 
 import os
 import re
+import types
 from dateutil import parser, rrule
 from datetime import datetime, timedelta
 
@@ -347,6 +348,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # fast table should use 0 chunk size
         my.chunk_size = 0
 
+        my.timer = 0
+
         my.edit_permission = True
         
         view_editable = my.view_attributes.get("edit")
@@ -411,60 +414,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # set some grouping parameters
         my.process_groups()
-        """
-        my.current_groups = []
-        if my.group_element:
-            if my.group_element in [True, False, '']: # Backwards compatibiity
-                my.group_columns = []
-            else:
-                my.group_columns = [my.group_element]
-        else:
-            my.group_columns = my.kwargs.get("group_elements")
-            
-            if not my.group_columns or my.group_columns == ['']: # Backwards compatibility
-                my.group_columns = []
-            if isinstance(my.group_columns, basestring):
-                if not my.group_columns.startswith('['):
-                    my.group_columns = [my.group_columns]
-                else:
-                    eval(my.group_columns)
-
-        #my.group_columns = ['timestamp']
-        #my.group_interval = TableLayoutWdg.GROUP_WEEKLY
-        if not my.group_columns:
-            from tactic.ui.filter import FilterData
-            filter = my.kwargs.get("filter")
-            values = {}
-            if filter:
-                filter_data = FilterData(filter)
-                values_list = filter_data.get_values_by_prefix("group")
-                if values_list:
-                    values = values_list[0]
-
-            if values.get("group"):
-                my.group_columns = [values.get("group")]
-                my.group_interval = values.get("interval")
-        my.is_grouped = len(my.group_columns) > 0
-        my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
-
-        # grouping preprocess , check the type of grouping  
-        if my.is_grouped and my.sobjects:
-            search_type = my.sobjects[0].get_search_type()
-            element_type = SearchType.get_tactic_type(my.search_type, my.group_columns[0])
-            my.group_by_time = element_type in ['time', 'date', 'datetime']
-        """
-
 
         my.order_sobjects()
         my.remap_sobjects()
-
-        # TEST
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.items_found = len(my.sobjects)
-        #my.handle_sub_search()
 
         for sobject in my.sobjects:
             my.sobject_levels.append(0)
@@ -1850,6 +1802,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
+        my.is_insert = sobject.is_insert()
+
+
 
         # handle the grouping
         #for group_column in my.group_columns:
@@ -1863,12 +1818,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.kwargs.get("show_select") not in [False, 'false']:
             my.handle_select(table, sobject)
 
-
         for i, widget in enumerate(my.widgets):
             element_name = widget.get_name()
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
+            #td.add(element_name)
 
             # Qt webkit ignores these
             if my.browser == 'Qt':
@@ -1889,7 +1845,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         html = widget.get_buffer_display()
                         if not html:
-                            html = "<div sytle='height: 30px'>&nbsp;</div>"
+                            html = "<div style='height: 30px'>&nbsp;</div>"
                         td.add(html)
                 except Exception, e:
 
@@ -1908,7 +1864,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 value = sobject.get_value(element_name, no_exception=True)
                 td.add(value)
 
-            if my.mode == 'widget':
+
+            my.name = widget.get_name()
+            my.value = sobject.get_value(element_name, no_exception=True)
+
+            if not my.is_insert and my.mode == 'widget':
                 my.handle_color(td, widget, i)
 
                 # provide an opportunity for the widget to affect the td and tr
@@ -1917,41 +1877,44 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             is_editable = True
-            security = Environment.get_security()
-            if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+
+            if widget.is_editable():
                 is_editable = False
+            else:
+                security = Environment.get_security()
+                if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+                    is_editable = False
 
 
             # This is only neccesary if the table is editable
             if my.view_editable:
+
                 edit = my.edit_wdgs.get(element_name)
 
-                # FIXME: an edit should be always defined
-                if not edit:
-                    value = sobject.get_value(element_name, no_exception=True)
-                else:
-                    import types
+                # insert rows have no edits defined yet
+                if my.is_insert:
+                    if not is_editable:
+                        td.add_class("spt_cell_insert_no_edit")
+
+                elif not edit or not is_editable:
+                    td.add_class("spt_cell_no_edit")
+
+
+                #get the value from the widget, else use my.value
+                if edit:
                     edit.set_sobject(sobject)
                     values = edit.get_values()
                     column = edit.get_column()
                     value = values.get('main')
                     if not value and value != False:
                         value = ''
+                else:
+                    value = my.value
 
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
-                # insert rows have no edits defined yet
-                if sobject.is_insert():
-                    if not widget.is_editable():
-                        td.add_class("spt_cell_insert_no_edit")
 
-                elif not edit or not is_editable or not widget.is_editable():
-                    td.add_class("spt_cell_no_edit")
-
-                #if isinstance(value, basestring):
-                #    value = value.replace('"', "&quot;")
-                # lower the boolean to better match when clicking on checkboxes
                 if isinstance(value, bool):
                     value = str(value).lower()
                 td.add_attr("spt_input_value", value)
@@ -1960,10 +1923,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td.add_class("spt_cell_no_edit")
 
 
+            """
+            import time
+            start = time.time()
+            diff = time.time() - start
+            my.timer += diff
+            print diff, my.timer
+            """
+
 
 
             # if this is an insert, then set the element name
-            if sobject.is_insert():
+            if my.is_insert:
                 td.add_attr("spt_element_name", element_name)
 
 
@@ -2037,18 +2008,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         bg_color = None
         text_color = None
 
-        name = widget.get_name()
+        if my.name is None:
+            name = widget.get_name()
+        else:
+            name = my.name
+
         try:
-            widget_value = widget.get_value()
-            if not isinstance(widget_value, basestring):
-                widget_value = str(widget_value)
+            if my.value is None:
+                value = widget.get_value()
+            else:
+                value = my.value
+
+            if not isinstance(value, basestring):
+                value = str(value)
             bg_color_map, text_color_map = my.color_maps.get(name)
             if bg_color_map:
-                bg_color = bg_color_map.get(widget_value)
+                bg_color = bg_color_map.get(value)
                 if bg_color:
                     td.add_style("background-color", bg_color)
             if text_color_map:
-                text_color = text_color_map.get(widget_value)
+                text_color = text_color_map.get(value)
                 if text_color:
                     td.add_style("color", text_color)
         except Exception, e:

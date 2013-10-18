@@ -2616,7 +2616,7 @@ spt.checkin.write_cached_data = function(cached_data, check) {
 
 
 
-spt.app_busy.show("Loading ...");
+//spt.app_busy.show("Loading ...");
 
 setTimeout(function() {
 
@@ -3043,9 +3043,9 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_checkin_top");
-        spt.app_busy.show("Reading file system ...")
+        //spt.app_busy.show("Reading file system ...")
         spt.panel.refresh(top);
-        spt.app_busy.hide();
+        //spt.app_busy.hide();
         '''
         } )
  
@@ -3434,45 +3434,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         project_code = Project.get_project_code()
 
-        # refresh button
-        """
-        button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_checkin_top");
-        spt.app_busy.show("Reading file system ...")
-        spt.panel.refresh(top);
-        spt.app_busy.hide();
-        '''
-        } )
-        """
-
-        """
-        button = ButtonNewWdg(title="Set to Sandbox Folder for %s" % my.process, icon=IconWdg.SANDBOX)
-        button_row.add(button)
-        button.add_style("float: left")
-        behavior = {
-        'type': 'click_up',
-        'base_dir': my.base_dir,
-        'cbjs_action': '''
-            var applet = spt.Applet.get();
-            applet.reset_current_dir();
-
-            var dirname = bvr.base_dir;
-            var top = bvr.src_el.getParent(".spt_checkin_top");
-            var default_sandbox_dir = top.getAttribute("spt_default_sandbox_dir");
-            spt.checkin.set_top(top);
-            spt.checkin.switch_sandbox(default_sandbox_dir, true);
-        '''
-        }
-        button.add_behavior( behavior )
-        """
-
-
-
 
 
        
@@ -3501,56 +3462,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
 
         cbjs_action = my.get_checkout_cbjs_action(my.process)
-        """
-        cbjs_action = '''
-        var button = spt.smenu.get_activator(bvr);
-
-        var filename_mode = bvr.filename_mode;
-        if (!filename_mode) {
-            filename_mode = 'source';
-        }
-
-        if (bvr.snapshot_codes.length == 0) {
-            spt.alert("Nothing to checkout");
-            return;
-        }
-
-        spt.app_busy.show("Checking out", 'To: '+ bvr.sandbox_dir);
-
-        var transfer_mode = bvr.transfer_mode;
-        if (!transfer_mode) {
-            transfer_mode = spt.Environment.get().get_transfer_mode();
-        }
-        // NOTE: reusing checkin transfer mode
-        if (transfer_mode == 'copy') {
-            transfer_mode = 'client_repo';
-        }
-        if (transfer_mode == null) {
-            transfer_mode = 'web';
-        }
-
-        var file_types = bvr.file_types;
-        if (!file_types) {
-            file_types = [];
-        }
-
-        setTimeout( function() {
-            var server = TacticServerStub.get();
-            for (var i = 0; i < bvr.snapshot_codes.length; i++) {
-                var label = 1 + i;
-                spt.app_busy.show("Checking out latest snapshots in [%s] #"+ label +" ..." );
-                server.checkout_snapshot(bvr.snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
-            }
-
-            var top = button.getParent(".spt_checkin_top");
-            spt.app_busy.show("Reading file system ...")
-            spt.panel.refresh(top);
-            spt.app_busy.hide();
-
-        }, 50);
-        '''%my.process
-
-        """
 
         menu_item = MenuItem(type='action', label='Check-out Files')
         menu.add(menu_item)
@@ -3678,34 +3589,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
         button = ButtonNewWdg(title="File Actions", icon=IconWdg.FOLDER_EDIT, show_arrow=True)
-        #button_row.add(button)
-        """
-        button.add_behavior( {
-        'type': 'click_up',
-        'sandbox_dir': my.base_dir,
-        'cbjs_action': '''
-        var env = spt.Environment.get();
-        var server_url = env.get_server_url();
-        var applet = spt.Applet.get();
-        var filename = 'New Document.psd';
-        var ext = "psd";
-        var template;
-        if (ext == 'psd') {
-            template = "template.psd";
-        }
-        if (!template) {
-            spt.alert("No template found with extension ["+ext+"]");
-            return;
-        }
-        applet.download_file(server_url + "/context/template/"+template, bvr.sandbox_dir + "/" + filename);
-        var top = bvr.src_el.getParent(".spt_checkin_top");
-        spt.app_busy.show("Reading file system ...")
-        spt.panel.refresh(top);
-        spt.app_busy.hide();
-        '''
-        } )
-        """
-
 
         menu = Menu(width=180)
         menu_item = MenuItem(type='title', label='Actions')
