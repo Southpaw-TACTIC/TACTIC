@@ -49,6 +49,7 @@ class CheckinWdg(BaseRefreshWdg):
         'create_sandbox_script_path': 'inline action to create the sandbox folder and subfolders',
         'checkin_relative_dir': 'a predefined relative dir to the sandbox to construct a preselected checkin-in path',
         'checkout_script_path': 'path to the check-out script',
+        'checkin_options_view': 'custom layout view to define a custom check-in options UI to appear on the left side of the UI',
 
         'mode': 'sequence|file|dir|add|versionless: determines whether this widget can only check-in sequences',
 
@@ -472,7 +473,6 @@ class CheckinWdg(BaseRefreshWdg):
                 # in case a single pipeline with one process called "publish" is defined
                 # we should not hide it
                 process_div.add_style("display: none")
-
 
 
             if my.lock_process:
@@ -3862,7 +3862,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                 var label = 1 + i;
                 spt.app_busy.show("Checking out latest snapshots in [%s] #"+ label +" ..." );
                 sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
-                console.log('sandbox ' + sandbox_paths)
+                //console.log('sandbox ' + sandbox_paths)
             }
             if (button) {
                 var top = button.getParent(".spt_checkin_top");
