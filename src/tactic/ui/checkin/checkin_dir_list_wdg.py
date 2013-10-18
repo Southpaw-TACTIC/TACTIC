@@ -54,8 +54,8 @@ class CheckinDirListWdg(DirListWdg):
             new_path = path
             spaths.append(new_path)
 
-            my.md5s[new_path] = md5s[path]
-            my.sizes[new_path] = sizes[path]
+            my.md5s[new_path] = md5s.get(path)
+            my.sizes[new_path] = sizes.get(path)
 
 
         process = my.kwargs.get("process")
