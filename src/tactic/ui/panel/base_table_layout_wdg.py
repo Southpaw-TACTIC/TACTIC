@@ -531,23 +531,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # don't set the view here, it affects the logic in SearchWdg
-        from tactic.ui.app import SearchWdg
-        filter_xml = ''
-        if my.kwargs.get('filter_xml'):
-            filter_xml = my.kwargs.get('filter_xml')
-        
+        filter_json = ''
+        if my.kwargs.get('filter'):
+            filter_json = my.kwargs.get('filter')
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
         custom_search_view = my.kwargs.get('custom_search_view')
         if not custom_search_view:
             custom_search_view = ''
 
+        run_search_bvr = my.kwargs.get('run_search_bvr')
+
         #my.search_wdg = None
         if not my.search_wdg:
             my.search_wdg = my.kwargs.get("search_wdg")
         if not my.search_wdg:
+            from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
+            # custom_filter_view and custom_search_view are less used, so excluded here
+            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:

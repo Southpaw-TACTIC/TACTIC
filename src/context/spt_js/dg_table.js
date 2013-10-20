@@ -2879,9 +2879,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var search_values_dict = {'json' : JSON.stringify(new_values)};
     
     // get the actual filter
-    var filter_xml = '';
+    var filter_json= '';
     if (search_top){
-        filter_xml = search_top.getAttribute("spt_filter");
+        filter_json = search_top.getAttribute("spt_filter");
     }
     // handle state
     var state = target.getAttribute("spt_state");
@@ -2952,7 +2952,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'do_search': 'true',
         'state': state,
         'view_attrs': view_attrs,
-        'filter_xml': filter_xml,
+        'filter': filter_json,
         'expression': expr,
         'search_limit': search_limit,
         'parent_key': parent_key,

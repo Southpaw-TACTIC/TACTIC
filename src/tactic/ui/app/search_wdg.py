@@ -93,7 +93,7 @@ class SearchWdg(BaseRefreshWdg):
         '''
         return {
         'search_type': 'The search_type that this search is operating on',
-        'display': 'Boolean. The initial display mode of the search.  None by default',
+        'display': 'Boolean. The initial display mode of the search.  it is none by default',
         'view':     'The stored view for the data. Saved Search',
         'parent_key': 'Provides ability to search by a single parent key',
         #'popup_embedded': 'Boolean, if True then this widget is generated for a Popup window (so now open close)',
@@ -279,10 +279,9 @@ class SearchWdg(BaseRefreshWdg):
                 try:
                     filter_data = None
 
-                    # try config
-                    if not filter_data:
-                        my.config = WidgetConfig.get(xml=filter, view='filter')
-                        filter_data = FilterData.get()
+                    # This is for backward compatibilty
+                    my.config = WidgetConfig.get(xml=filter, view='filter')
+                    filter_data = FilterData.get()
                     if not filter_data.get_data():
                         # use widget settings
                         key = SearchWdg._get_key(my.search_type, my.view)
