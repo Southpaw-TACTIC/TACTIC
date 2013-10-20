@@ -1574,36 +1574,99 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         # handle deliveries to other processes
         if pipeline:
             output_processes = pipeline.get_output_processes(process)
+            output_connects = pipeline.get_output_connects(process)
         else:
             output_processes = None
+
         if output_processes:
 
-            """
-            for p in output_processes:
-                pipeline_code = p.parent_pipeline_code
-                if pipeline_code:
-                    pipeline = Pipeline.get_by_code(pipeline_code)
-                    search_type = pipeline.get_value("search_type")
-
-                    sobject = Search.get_by_search_key(search_key)
-                    related = Search.eval("@SOBJECT(%s)" % search_type, sobject)
-            """
-
-
-            process_names = [x.get_name() for x in output_processes]
+            process_names = []
+            label_names = []
 
             delivery_div = DivWdg()
+            delivery_div.add_class("spt_deliver")
+            #delivery_div.add_style("opacity: 0.5")
 
             checkbox = CheckboxWdg("deliver")
             delivery_div.add(checkbox)
             delivery_div.add_style("padding-top: 15px")
             delivery_div.add("Deliver to: ")
             top.add(delivery_div)
+            """
+            checkbox.add_behavior( {
+                'type': 'change',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_deliver");
+                var select = top.getElement(".spt_deliver_process");
+                if (bvr.src_el.value == 'on') {
+                    top.setStyle("opacity", "0.5");
+                    select.disabled = true;
+                }
+                else {
+                    top.setStyle("opacity", "1.0");
+                    select.disabled = false;
+                }
+                '''
+            } )
+            """
+
+            for connect in output_connects:
+                to_pipeline = connect.get_to_pipeline()
+                to_expression = connect.get_to_expression()
+                to_process = connect.get_to()
+
+                to_sobjects = []
+
+                if to_expression:
+                    to_sobjects = Search.eval(to_expression, my.sobject)
+
+                if to_pipeline:
+                    pipeline = Pipeline.get_by_code(to_pipeline)
+                    if not pipeline:
+                        print "WARNING: pipeline [%s] not found"
+                        continue
+
+                        search_type = pipeline.get_value("search_type")
+                        sobject_expr = "@SOBJECT(%s)" % search_type
+                        to_sobjects = Search.eval(sobject_expr, my.sobject)
+
+
+                for to_sobject in to_sobjects:
+                    name = "%s - %s" % (to_sobject.get_name(), to_process)
+
+                    # get the latest snapshot for this process
+                    """
+                    to_search_type = to_sobject.get_search_type()
+                    to_search_code = to_sobject.get_value("code", no_exception=True)
+                    if not to_search_code:
+                        to_search_code = to_sobject.get_id()
+                    snapshot = Snapshot.get_snapshot(to_search_type, to_search_code, process=to_process)
+
+                    if snapshot:
+                        name += " - (v%0.3d)" % snapshot.get_value("version")
+                    """
+
+
+
+                    search_key = to_sobject.get_search_key()
+                    process_names.append("%s|%s" % (search_key, to_process))
+                    label_names.append(name)
+
+                if not to_sobjects:
+                    label_names.append(to_process)
+                    process_names.append(to_process)
+
+
 
             select = SelectWdg("deliver_process")
+            select.add_class("spt_deliver_process")
             delivery_div.add(select)
             select.set_option("values", process_names)
+            select.set_option("labels", label_names)
             select.set_value(process_names[0])
+            select.add_style("margin-left: 20px")
+            select.add_style("margin-top: 5px")
+            select.add_style("width: 200px")
 
 
         # add as a note
@@ -1836,6 +1899,13 @@ bvr.custom_options = custom_options;
 // check to see if the check-in process is to be delivered elsewhere
 if (custom_options.deliver == "on") {
     process = custom_options.deliver_process;
+
+    if (process.indexOf("|") != -1) {
+        var parts = process.split("|");
+        search_key = parts[0];
+        process = parts[1];
+    }
+
 }
 
 
