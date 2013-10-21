@@ -1132,7 +1132,7 @@ class PluginInstaller(PluginBase):
                     if base_search_type.startswith("sthpw/"):
                         project = Project.get()
                         project_code = project.get_value("code")
-                        if sobject.column_exists("project_code"):
+                        if SearchType.column_exists(sobject.get_search_type(), "project_code"):
                             sobject.set_value("project_code", project_code)
 
                         if base_search_type == "sthpw/schema":
