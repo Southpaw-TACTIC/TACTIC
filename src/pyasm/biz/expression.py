@@ -323,7 +323,6 @@ class ExpressionParser(object):
 
             flat_cache_sobjects[search_key] = leaf_sobjects
 
-       
         return flat_cache_sobjects
 
 
@@ -2116,7 +2115,14 @@ class MethodMode(ExpressionParser):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
-                results[key] = my.get(values, column)
+                # special case where leaf = [sobject].  This is used to
+                # designate a leaf value.  Look at get_flat_cache() for
+                # code and explanation
+                if key and values and values[0].get_search_key() == key:
+                    # The result is empty
+                    results[key] = [None]
+                else:
+                    results[key] = my.get(values, column)
             return results
 
         if not sobjects:
