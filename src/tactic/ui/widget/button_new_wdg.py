@@ -1146,6 +1146,7 @@ class ActionButtonWdg(DivWdg):
 
         from pyasm.widget import ButtonWdg
         button = ButtonWdg()
+        button.add_style("width: %s" % top_width)
 
         icon = my.kwargs.get("icon")
         if icon:

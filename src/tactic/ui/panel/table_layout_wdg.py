@@ -3516,7 +3516,7 @@ spt.table.set_display = function( el, value, input_type ) {
         return;
     }
 
-    if (input_type == 'xml') {
+    if (input_type == 'xml' || value.substr(0,6) == '<?xml ') {
 
         var label = value;
         //var is_xml = label.substr(0,6) == '<?xml ';

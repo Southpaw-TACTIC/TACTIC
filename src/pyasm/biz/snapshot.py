@@ -1397,6 +1397,7 @@ class Snapshot(SObject):
         search.add_order_by("revision desc")
         search.add_order_by("timestamp desc")
 
+
         if not isinstance(search_id, list):
             # only cache if search_id is not a list
             if use_cache:

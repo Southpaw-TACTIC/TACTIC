@@ -14,7 +14,7 @@ __all__ = ['CheckinWdg', 'CheckoutWdg',  'CheckinQueueWdg', 'SObjectCheckinHisto
 import re
 from pyasm.common import Common, TacticException, Config, Environment, Container
 from pyasm.biz import File, Snapshot, Pipeline, Context, Project
-from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
+from pyasm.search import Search, SObjectFactory, SearchType, SearchKey, SearchException
 from pyasm.command import Command
 from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg, StringWdg, WidgetSettings
 from pyasm.widget import ButtonWdg, TextWdg, SelectWdg, TextAreaWdg, HiddenWdg, IconWdg, IconButtonWdg, ProdIconButtonWdg, ThumbWdg, HintWdg, CheckboxWdg, SwapDisplayWdg
@@ -1308,6 +1308,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         tab.add_style("margin: 5px -2px -2px -2px")
         td.add(tab)
 
+        show_inputs = my.kwargs.get("show_inputs")
+        if show_inputs not in ['false', False]:
+            input_wdg = my.get_input_wdg()
+            if input_wdg:
+                tab.add(input_wdg)
 
         if my.show_file_selector:
             kwargs = {
@@ -1348,18 +1353,194 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             history.set_name("History")
 
 
-        """
-        show_history = my.kwargs.get("show_history")
-        if show_history not in ['false', False]:
-            history = CheckinHistoryWdg(search_key=my.search_key, context=my.context, sandbox_dir=my.sandbox_dir)
-
-            table.add_row()
-            td = table.add_cell( history )
-            td.add_attr("colspan", "3")
-            td.add_border()
-        """
 
         return top
+
+
+    def get_input_wdg(my):
+
+        # handle deliveries to other processes
+        if my.pipeline:
+            input_connects = my.pipeline.get_input_connects(my.process)
+        else:
+            input_connects = None
+
+        if not input_connects:
+            return
+
+        input_div = DivWdg()
+        input_div.set_name("Received")
+        input_div.add_class("spt_inputs_top")
+
+
+        button = ActionButtonWdg(title="Copy")
+        input_div.add(button)
+        button.add_style("float: right")
+        button.add_style("margin-right: 5px")
+        button.add_style("margin-top: 15px")
+
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'sandbox_dir': my.sandbox_dir,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_inputs_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var snapshot_codes = values.download;
+            var server = TacticServerStub.get();
+
+            var count = 0;
+            for (var i = 0; i < snapshot_codes.length; i++) {
+                var codes = snapshot_codes[i].split("|");
+                for (var j = 0; j < codes.length; j++) {
+                    var snapshot_code = codes[j];
+                    if (!snapshot_code) continue;
+
+                    server.checkout_snapshot(snapshot_code, bvr.sandbox_dir, {file_types: ['main'], filename_mode: 'source'});
+                    count += 1;
+                }
+            }
+
+            if (count == 0) {
+                alert("Nothing selected to copy");
+                return;
+            }
+            else {
+                var top = bvr.src_el.getParent(".spt_checkin_top");
+                spt.panel.refresh(top);
+            }
+            '''
+        } )
+
+
+        button = ActionButtonWdg(title="Clipboard")
+        input_div.add(button)
+        button.add_style("float: right")
+        button.add_style("margin-right: 5px")
+        button.add_style("margin-top: 15px")
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'sandbox_dir': my.sandbox_dir,
+            'cbjs_action': '''
+
+            var server = TacticServerStub.get();
+
+            var search_keys = spt.clipboard.get_search_keys();
+            for (var i = 0; i < search_keys.length; i++) {
+                var search_key = search_keys[i];
+                var snapshot = server.get_snapshot(search_key, {context: ''});
+                server.checkout_snapshot(snapshot, bvr.sandbox_dir, {file_types: ['main'], filename_mode: 'source'});
+                
+            }
+
+            var top = bvr.src_el.getParent(".spt_checkin_top");
+            spt.panel.refresh(top);
+
+            '''
+        } )
+
+
+
+        input_div.add("<br clear='all'/>")
+
+
+
+        for connect in input_connects:
+            from_pipeline = connect.get_from_pipeline()
+            from_expression = connect.get_from_expression()
+            from_process = connect.get_from()
+
+            from_sobjects = []
+
+            if from_expression:
+                try:
+                    from_sobjects = Search.eval(from_expression, my.sobject)
+                except SearchException, e:
+                    print "WARNINIG: expression [%s] gave error: " % from_expression, e
+
+            if from_pipeline:
+                pipeline = Pipeline.get_by_code(from_pipeline)
+                if not pipeline:
+                    print "WARNING: pipeline [%s] not found"
+                    continue
+
+                    search_type = pipeline.get_value("search_type")
+                    sobject_expr = "@SOBJECT(%s)" % search_type
+                    from_sobjects = Search.eval(sobject_expr, my.sobject)
+
+            table = Table()
+            table.set_max_width()
+
+
+            for count, sobject in enumerate(from_sobjects):
+                sobject_div = DivWdg()
+                sobject_div.add_style("padding: 3px")
+                input_div.add(sobject_div)
+
+
+                sobject_div.add(table)
+                tr = table.add_row()
+
+                if count % 2 == 0:
+                    tr.add_color("background", "background", -3)
+                else:
+                    tr.add_color("background", "background")
+
+
+                search_key = sobject.get_search_key()
+
+                td = table.add_cell()
+                checkbox = CheckboxWdg("download")
+                td.add(checkbox)
+                checkbox.add_attr("spt_is_multiple", "true")
+                td.add_style("padding: 15px")
+                td.add_style("width: 1px")
+
+                td = table.add_cell()
+                thumb = ThumbWdg()
+                td.add(thumb)
+                thumb.set_sobject(sobject)
+                thumb.set_icon_size(60)
+                thumb.add_style("margin-right: 15px")
+                td.add_style("width: 1px")
+
+
+                td = table.add_cell()
+                info_div = DivWdg()
+                td.add(info_div)
+
+                info_div.add( sobject.get_name() )
+                info_div.add( " <i style='font-size: 0.8em'>(%s)</i>" % sobject.get_code() )
+
+                search = Search("sthpw/snapshot")
+                search.add_sobject_filter(sobject)
+                search.add_filter("process", from_process)
+                search.add_filter("is_latest", True)
+                snapshots = search.get_sobjects()
+
+                snapshot_codes = []
+
+                # list each snaphot
+                for snapshot in snapshots:
+                    info_div.add("<br/>")
+                    info_div.add(snapshot.get_value("process"))
+                    info_div.add(" - ")
+                    context = snapshot.get_value("context")
+                    version = snapshot.get_value("version")
+                    info_div.add("<i>(v%0.3d)</i>" % version)
+                    snapshot_codes.append(snapshot.get_value("code"))
+
+
+                if not snapshots:
+                    info_div.add("<br/>")
+                    info_div.add("<i>No Check-ins Available</i>")
+
+
+                #checkbox.set_option("value", search_key)
+                checkbox.set_option("value", "|".join(snapshot_codes))
+
+        return input_div
 
 
 
@@ -1573,12 +1754,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         # handle deliveries to other processes
         if pipeline:
-            output_processes = pipeline.get_output_processes(process)
             output_connects = pipeline.get_output_connects(process)
         else:
-            output_processes = None
+            output_connects = None
 
-        if output_processes:
+        if output_connects:
 
             process_names = []
             label_names = []
@@ -1618,7 +1798,10 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 to_sobjects = []
 
                 if to_expression:
-                    to_sobjects = Search.eval(to_expression, my.sobject)
+                    try: 
+                        to_sobjects = Search.eval(to_expression, my.sobject)
+                    except SearchException, e:
+                        print "WARNINIG: expression [%s] gave error: " % to_expression, e
 
                 if to_pipeline:
                     pipeline = Pipeline.get_by_code(to_pipeline)
@@ -2599,7 +2782,7 @@ class FileSelectorWdg(BaseRefreshWdg):
 
         load_div = DivWdg()
         div.add(load_div)
-        load_div.add("Reading Sandbox Folder ...")
+        load_div.add("Reading Folder ...")
         load_div.add_style("padding: 15px")
         load_div.add_style("font-size: 14px")
 
@@ -2984,7 +3167,23 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
             else:
                 from tactic.ui.checkin import CheckinDirListWdg
-                list_dir_wdg = CheckinDirListWdg(base_dir=my.base_dir, location="client", show_base_dir=my.show_base_dir, all_open=False, paths=paths,  search_key=search_key, md5s=md5s, subcontext_options=subcontext_options, context_options=context_options, depth=depth, sizes=sizes, preselected=my.preselected, show_selection=True, process=my.process, folder_state=folder_state)
+                list_dir_wdg = CheckinDirListWdg(
+                        base_dir=my.base_dir,
+                        location="client",
+                        show_base_dir=my.show_base_dir,
+                        all_open=False,
+                        paths=paths,
+                        search_key=search_key,
+                        md5s=md5s,
+                        subcontext_options=subcontext_options,
+                        context_options=context_options,
+                        depth=depth,
+                        sizes=sizes,
+                        preselected=my.preselected,
+                        show_selection=True,
+                        process=my.process,
+                        folder_state=folder_state
+                )
                 dir_div.add(list_dir_wdg)
 
  
@@ -3886,7 +4085,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             var sandbox_paths = []
             for (var i = 0; i < snapshot_codes.length; i++) {
                 var label = 1 + i;
-                spt.app_busy.show("Checking out latest snapshots in [%s] #"+ label +" ..." );
+                spt.app_busy.show("Checking out latest in [%s] #"+ label +" ..." );
                 sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
                 //console.log('sandbox ' + sandbox_paths)
             }
@@ -4608,7 +4807,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
             if (sandbox_input && link.checked) {
                 sandbox_dir = sandbox_input.value;
             }
-            spt.app_busy.show("Full Remote Check-out snapshot", "Downloading to Sandbox...");
+            spt.app_busy.show("Full Remote Check-out snapshot", "Copying to Sandbox...");
             setTimeout( function(){
                 var server = TacticServerStub.get();
                 for (var i =0; i < search_keys.length; i++) {
@@ -4965,15 +5164,16 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         filter_wdg = DivWdg()
 
         color = filter_wdg.get_color("table_border", default="border")
-        filter_wdg.add_style("border-color: %s" % color)
-        filter_wdg.add_style("border-width: 1px 1px 0 1px")
-        filter_wdg.add_style("border-style: solid")
         filter_wdg.add_style("height: 25px")
-        filter_wdg.add_style("margin-top: -2px")
+
+        #filter_wdg.add_style("border-width: 1px 1px 0 1px")
+        #filter_wdg.add_style("border-style: solid")
+        #filter_wdg.add_style("border-color: %s" % color)
 
         filter_wdg.add_style("padding: 8px")
         filter_wdg.add_color("color", "color")
-        filter_wdg.add_gradient("background", "background", -10)
+        #filter_wdg.add_gradient("background", "background", -10)
+        #filter_wdg.add_style("margin-top: -2px")
 
 
         from tactic.ui.widget import SingleButtonWdg
