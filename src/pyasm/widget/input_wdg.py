@@ -853,6 +853,7 @@ class CheckboxWdg(BaseInputWdg):
             my.set_attr(name,option)
 
         my.handle_behavior()
+        my.add_style("vertical-align: none")
 
         if not my.label:
             return super(CheckboxWdg, my).get_display()

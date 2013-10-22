@@ -1836,8 +1836,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-                        search_key = to_sobject.get_search_key()
-                        process_names.append("%s|%s" % (search_key, to_process))
+                        to_search_key = to_sobject.get_search_key()
+                        process_names.append("%s|%s" % (to_search_key, to_process))
                         label_names.append(name)
 
 
