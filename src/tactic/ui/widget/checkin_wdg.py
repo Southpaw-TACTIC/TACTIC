@@ -265,6 +265,7 @@ class CheckinWdg(BaseRefreshWdg):
             top.add_style("max-width: 1000px")
             top.add_style("width: 100%")
 
+
             top.add_attr("spt_sandbox_dir", my._get_sandbox_dir())
 
 
@@ -1275,6 +1276,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         table.add_row()
         #table.add_style("margin: 8px 5px 5px 5px")
         table.add_style("width: 100%")
+        table.add_style("width: 900px")
         if my.warning_msg:
             top.add_behavior( {'type': 'load',
                         'msg': "Warning: %s" %'<br>'.join(my.warning_msg),
@@ -1289,7 +1291,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         # control the max width for the publish desc area
-        td.add_style('max-width: 250px')
+        td.add_style('width: 250px')
         td.add_border()
         publish_wdg = my.get_publish_wdg(my.search_key, my.snapshot, my.process, my.pipeline, my.transfer_mode)  
         td.add( publish_wdg )
@@ -1450,6 +1452,13 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         for connect in input_connects:
+
+            to_expression = connect.get_to_expression()
+            to_pipeline = connect.get_to_pipeline()
+            if to_expression or to_pipeline:
+                continue
+
+
             from_pipeline = connect.get_from_pipeline()
             from_expression = connect.get_from_expression()
             from_process = connect.get_from()
@@ -1801,6 +1810,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             """
 
             for connect in output_connects:
+
+                from_expression = connect.get_from_expression()
+                from_pipeline = connect.get_from_pipeline()
+                if from_expression or from_pipeline:
+                    continue
+
                 to_pipeline = connect.get_to_pipeline()
                 to_expression = connect.get_to_expression()
                 to_process = connect.get_to()
