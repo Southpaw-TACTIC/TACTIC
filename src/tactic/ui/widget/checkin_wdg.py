@@ -836,6 +836,8 @@ spt.checkin.get_checkin_data = function() {
     data['context'] = context;
 
     var description = top.getElement(".spt_checkin_description").value;
+
+
     var file_type = 'main';
     if (bvr.snapshot_code){
         var file_type_el = top.getElement(".spt_checkin_file_type");
@@ -845,6 +847,7 @@ spt.checkin.get_checkin_data = function() {
     if (!transfer_mode)
         transfer_mode = spt.Environment.get().get_transfer_mode();
 
+    data['description'] = description;
     data['file_type'] = file_type;
     data['transfer_mode'] = transfer_mode;
 
@@ -1637,7 +1640,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         select = SelectWdg("checkin_type")
         checkin_wdg.add(select)
         select.add_class("spt_checkin_type")
-        select.set_persistence()
+        #select.set_persistence()
         select.add_style("margin: 4px")
         file_type = None
         hint = None
@@ -1654,6 +1657,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         elif mode in ['directory','dir']:
             select.set_option("labels", "A Directory")
             select.set_option("values", "dir_checkin")
+
+        elif mode in ['workarea']:
+            select.set_option("labels", "Work Area")
+            select.set_option("values", "workarea_checkin")
+
 
         elif mode == 'add':
             select.set_option("labels", "Add Directory|Add File")
@@ -1673,8 +1681,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         else:
-            select.set_option("labels", "A File|A Sequence|A Directory|Multiple Individual Files")
-            select.set_option("values", "file_checkin|group_checkin|dir_checkin|multi_file_checkin")
+            select.set_option("labels", "A File|A Sequence|A Directory|Multiple Individual Files|Work Area Check-in")
+            select.set_option("values", "file_checkin|group_checkin|dir_checkin|multi_file_checkin|workarea_checkin")
 
             if my.pipeline:
                 my.process_obj = my.pipeline.get_process(my.process)
@@ -1682,6 +1690,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                     attributes = my.process_obj.get_attributes()
                     if attributes.get("mode") == 'directory':
                         select.set_value("dir_checkin")
+                    elif attributes.get("mode") == 'workarea':
+                        select.set_value("workarea_checkin")
 
             web = WebContainer.get_web()
             values = web.get_form_values('file_info')
@@ -1997,6 +2007,67 @@ spt.app_busy.hide();
         # main check-in
         my.sandbox_dir = my.sandbox_dir.rstrip('/') 
 
+
+        # separate behavior for html5 check-in
+        html5_behavior = {
+            'type': 'click_up',
+            'cbjs_action': '''
+
+spt.checkin.html5_checkin = function(files) {
+    var server = TacticServerStub.get();
+
+    var options = spt.checkin.get_checkin_data();
+    var search_key = options.search_key;
+    var process = options.process;
+    var description = options.description;
+    var process = options.process;
+
+    var is_current = true;
+    var checkin_type = 'file';
+    var mode = 'uploaded';
+
+    console.log(options);
+
+    var upload_complete = function() {
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var file_path = file.name;
+            var context = process + '/' + file.name;
+            snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+        }
+
+        spt.app_busy.hide();
+    }
+
+    var upload_progress = function(evt) {
+
+        var percent = Math.round(evt.loaded * 100 / evt.total);
+        spt.app_busy.show("Uploading ["+percent+"%% complete]");
+    }
+
+    var upload_kwargs = {
+        upload_complete: upload_complete,
+        upload_progress: upload_progress,
+        files: el.files
+    }
+    spt.html5upload.upload_file(upload_kwargs);
+
+}
+
+
+
+var top = bvr.src_el.getParent(".spt_checkin_top");
+var el = top.getElement(".spt_checkin_content");
+var files = el.files;
+spt.checkin.html5_checkin(files);
+
+            '''
+        }
+
+
+
+
         behavior = {
             'type': 'click_up',
             'search_key': search_key,
@@ -2034,8 +2105,16 @@ if (is_context) {
 }
 
 
-file_paths = spt.checkin.get_selected_paths()
 
+
+var type = top.getElement(".spt_checkin_type").value;
+
+if (type == 'workarea_checkin') {
+    file_paths = [bvr.sandbox_dir];
+}
+else {
+    file_paths = spt.checkin.get_selected_paths();
+}
 
 
 if (!file_paths || file_paths.length == 0) {
@@ -2045,7 +2124,6 @@ if (!file_paths || file_paths.length == 0) {
 
 
 var range = '';
-var type = top.getElement(".spt_checkin_type").value;
 var is_current_el = top.getElement(".spt_is_current");
 is_current = is_current_el.checked || is_current_el.value=='true';
 
@@ -2187,6 +2265,10 @@ try {
             if (type == 'add_dir' || type == 'dir_checkin') {
                 is_dir = true;
             }
+            else if ( type == 'workarea_checkin' ) {
+                is_dir = true;
+            }
+
             var ticket = server.get_transaction_ticket();
             for (var i = 0; i < file_paths.length; i++) {
                 spt.app_busy.show("Uploading", file_paths[i]);
@@ -2195,9 +2277,6 @@ try {
                     server.upload_directory(file_paths[i], ticket);
                 }
                 else {
-                    //spt.progress.add_path(file_path, {ticket: ticket});
-                    //spt.progress.run_jobs();
-
                     var file_path = file_paths[i].replace(/\\\\/g, "/");
 
                     var startswith = file_path.indexOf(bvr.sandbox_dir);
@@ -2216,6 +2295,7 @@ try {
             }
             transfer_mode = 'uploaded';
         }
+
         
         var snapshot;
         if (transfer_mode == 'preallocate') {
@@ -2232,7 +2312,7 @@ try {
                 context = contexts[0];
             var applet = spt.Applet.get();
             
-            if (['file_checkin','dir_checkin'].contains(type)) {
+            if (['file_checkin','dir_checkin','workarea_checkin'].contains(type)) {
                 var snapshot_type = 'file';
                 if (applet.is_dir(file_paths[0])) { snapshot_type = 'dir' };
                 var kwargs =   { description: description, snapshot_type: snapshot_type, is_current: is_current};
@@ -2253,7 +2333,7 @@ try {
             // we use default context here 
             snapshot = server.group_checkin(search_key, context, file_paths, range, {description: description, mode: transfer_mode, command: bvr.checkin_command});
         }
-        else if (type == 'dir_checkin') {
+        else if (type == 'dir_checkin' || type == 'workarea_checkin') {
             if (file_paths.length > 1) {
                 throw('In directory check-in mode, you may only select 1 directory.');
             }
@@ -2450,13 +2530,26 @@ else {
 
         button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
         top.add(button)
+        button.add_class("spt_checkin_button")
         button.add_behavior(behavior)
-
-
         button.add_style("margin-right: auto")
         button.add_style("margin-left: auto")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
+
+
+
+
+        button =ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        top.add(button)
+        button.add_class("spt_checkin_html5_button")
+        button.add_behavior(html5_behavior)
+        button.add_style("margin-right: auto")
+        button.add_style("margin-left: auto")
+        button.add_style("margin-top: 20px")
+        button.add_style("margin-bottom: 20px")
+
+        button.add_style("display: none")
 
 
 
@@ -3146,7 +3239,66 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         dir_div.add_class("spt_checkin_content")
         dir_div.add_class("spt_resizable")
         dir_div.add_style("min-width: 500px")
-        #dir_div.add_style("width: auto")
+
+
+
+        # Test drag and drop files
+        dir_div.add_attr("ondragenter", "return false")
+        dir_div.add_attr("ondragover", "return false")
+        dir_div.add_attr("ondrop", "spt.drag.noop(event, this)")
+        dir_div.add_behavior( {
+            'type': 'load',
+            'base_dir': my.kwargs.get("base_dir"),
+            'search_key': search_key,
+            'cbjs_action': '''
+            spt.drag = {}
+
+            spt.drag.noop = function(evt, el) {
+              evt.stopPropagation();
+              evt.preventDefault();
+              evt.dataTransfer.dropEffect = 'copy';
+              var files = evt.dataTransfer.files;
+
+              bvr.src_el.files = files
+
+              // If TEAM
+              //var applet = spt.Applet.get();
+
+              var base_dir = 'DRAGDROP';
+              var file_names = [];
+              var sizes = {};
+              var md5s = {};
+              for (var i = 0; i < files.length; i++) {
+                  var file = files[i];
+                  var file_name = file.name;
+                  var file_name = base_dir + "/" + file_name;
+                  file_names.push(file_name);
+                  sizes[file_name] = file.size;
+                  md5s[file_name] = 0;
+              }
+              var kwargs = {
+                search_key: bvr.search_key,
+                base_dir: base_dir,
+                location: 'client',
+                paths: file_names,
+                sizes: sizes,
+                md5s: md5s
+              }
+
+              var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
+              spt.panel.load(bvr.src_el, class_name, kwargs);
+              var top = bvr.src_el.getParent(".spt_checkin_top");
+              var button1 = top.getElement(".spt_checkin_button");
+              spt.hide(button1);
+              var button2 = top.getElement(".spt_checkin_html5_button");
+              spt.show(button2);
+
+            }
+            '''
+        } )
+
+
+
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
             depth = 1
