@@ -1814,7 +1814,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                         to_sobjects = Search.eval(sobject_expr, my.sobject)
 
 
-                if not to_sobjects:
+                if to_sobjects == None:
                     label_names.append(to_process)
                     process_names.append(to_process)
                 else:
