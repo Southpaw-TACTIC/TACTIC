@@ -659,8 +659,11 @@ class IconCreator(object):
    
             large_path = large_path.encode('utf-8')
             import subprocess
-            subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+            try:
+                subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
+            except:
+                pass
             #os.system(cmd)
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
