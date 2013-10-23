@@ -1846,7 +1846,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             delivery_div.add(select)
             select.set_option("values", process_names)
             select.set_option("labels", label_names)
-            select.set_value(process_names[0])
+            if process_names:
+                select.set_value(process_names[0])
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
