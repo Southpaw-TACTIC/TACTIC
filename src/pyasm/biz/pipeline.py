@@ -190,9 +190,14 @@ class ProcessConnect(Base):
     def get_to_pipeline(my):
         return Xml.get_attribute(my.node, "to_pipeline")
 
+    def get_from_pipeline(my):
+        return Xml.get_attribute(my.node, "from_pipeline")
+
     def get_to_expression(my):
         return Xml.get_attribute(my.node, "to_expression")
 
+    def get_from_expression(my):
+        return Xml.get_attribute(my.node, "from_expression")
 
     def get_context(my, from_xml=False):
         # if the context is not specified, use the "from" process
@@ -614,6 +619,14 @@ class Pipeline(SObject):
             return []
         else:
             return connects
+
+    def get_input_connects(my, process):
+        connects = my._get_connects(process, direction="to")
+        if not connects:
+            return []
+        else:
+            return connects
+
 
     def get_output_connects(my, process):
         connects = my._get_connects(process, direction="from")

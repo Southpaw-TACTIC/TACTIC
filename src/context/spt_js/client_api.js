@@ -660,6 +660,8 @@ TacticServerStub = function() {
         return this._delegate("add_file", arguments, kwargs )
     }
 
+
+    // DEPRECATED
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -739,6 +741,8 @@ TacticServerStub = function() {
         return to_paths
    
     }
+
+
 
     this.checkout_snapshot = function(search_key, sandbox_dir, kwargs) {
         // get the files for this snapshot

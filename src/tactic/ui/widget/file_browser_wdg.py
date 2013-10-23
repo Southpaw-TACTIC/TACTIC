@@ -120,7 +120,7 @@ class DirListWdg(BaseRefreshWdg):
         select_all_wdg.add(checkbox)
 
         select_all_wdg.add_color("background", "background3")
-        select_all_wdg.add_style("padding: 2px")
+        select_all_wdg.add_style("padding: 3px")
         select_all_wdg.add_style("margin-top: -8px")
         select_all_wdg.add_border()
 
