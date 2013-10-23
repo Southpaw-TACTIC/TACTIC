@@ -1796,7 +1796,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 to_expression = connect.get_to_expression()
                 to_process = connect.get_to()
 
-                to_sobjects = []
+                to_sobjects = None
 
                 if to_expression:
                     try: 
@@ -1815,31 +1815,31 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                         to_sobjects = Search.eval(sobject_expr, my.sobject)
 
 
-                for to_sobject in to_sobjects:
-                    name = "%s - %s" % (to_sobject.get_name(), to_process)
-
-                    # get the latest snapshot for this process
-                    """
-                    to_search_type = to_sobject.get_search_type()
-                    to_search_code = to_sobject.get_value("code", no_exception=True)
-                    if not to_search_code:
-                        to_search_code = to_sobject.get_id()
-                    snapshot = Snapshot.get_snapshot(to_search_type, to_search_code, process=to_process)
-
-                    if snapshot:
-                        name += " - (v%0.3d)" % snapshot.get_value("version")
-                    """
-
-
-
-                    search_key = to_sobject.get_search_key()
-                    process_names.append("%s|%s" % (search_key, to_process))
-                    label_names.append(name)
-
-                if not to_sobjects:
+                if to_sobjects == None:
                     label_names.append(to_process)
                     process_names.append(to_process)
+                else:
 
+                    for to_sobject in to_sobjects:
+                        name = "%s - %s" % (to_sobject.get_name(), to_process)
+
+                        # get the latest snapshot for this process
+                        """
+                        to_search_type = to_sobject.get_search_type()
+                        to_search_code = to_sobject.get_value("code", no_exception=True)
+                        if not to_search_code:
+                            to_search_code = to_sobject.get_id()
+                        snapshot = Snapshot.get_snapshot(to_search_type, to_search_code, process=to_process)
+
+                        if snapshot:
+                            name += " - (v%0.3d)" % snapshot.get_value("version")
+                        """
+
+
+
+                        to_search_key = to_sobject.get_search_key()
+                        process_names.append("%s|%s" % (to_search_key, to_process))
+                        label_names.append(name)
 
 
             select = SelectWdg("deliver_process")
@@ -1847,7 +1847,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             delivery_div.add(select)
             select.set_option("values", process_names)
             select.set_option("labels", label_names)
-            select.set_value(process_names[0])
+            if process_names:
+                select.set_value(process_names[0])
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
