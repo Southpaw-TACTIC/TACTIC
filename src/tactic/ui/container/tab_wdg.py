@@ -170,6 +170,7 @@ spt.tab.set_attribute = function(element_name, name, value) {
 
 
 spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
+
     if (typeof(title) == 'undefined') {
         title = '(Untitled)';
     }
@@ -190,16 +191,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
     var top = spt.tab.top;
 
-    // register the hash
-    /*
-    var hash = "/element" + element_name;
-    spt.hash.add( hash, function() {
-        spt.tab.set_main_body_tab();
-        //spt.tab.add_new(element_name, title, class_name, kwargs, values);
-        spt.tab.add_new(element_name);
-    } );
-    */
 
+    var hash = "/tab/" + element_name;
+    var orig_element_name = element_name;
 
     var mode = top.getAttribute("spt_tab_mode");
     if (mode == "hidden") {
@@ -309,6 +303,16 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
     // FIXME: this should only move on the main table
     //var top_pos = spt.tab.getY(header_top);
     //scroll(0,top_pos-20);
+
+
+    // register the hash (DISABLE for now)
+    /*
+    spt.hash.add( hash, function() {
+        spt.tab.set_main_body_tab();
+        spt.tab.add_new(orig_element_name, title, class_name, kwargs, values);
+    } );
+    document.location.hash = hash;
+    */
 
     return header;
 }

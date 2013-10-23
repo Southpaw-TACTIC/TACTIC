@@ -40,7 +40,7 @@ spt.onload_startup = function()
     // handle hash changes
     spt.hash.handle_hash();
 
-    //spt.hash.set_interval();
+    spt.hash.set_interval();
 
 }
 
@@ -59,7 +59,7 @@ spt.hash.clear_interval = function() {
 }
 
 spt.hash.set_interval = function() {
-    spt.hash.interval_id = setInterval(spt.hash.handle_hash, 250);
+    spt.hash.interval_id = setInterval(spt.hash.test_handle_hash, 250);
 }
 
 
@@ -88,7 +88,6 @@ spt.hash.add = function(hash, action) {
     //spt.hash.links.push([hash, action]);
     spt.hash.links[hash] = action;
     spt.hash.last_hash = hash;
-    window.location.hash = hash;
 }
 
 

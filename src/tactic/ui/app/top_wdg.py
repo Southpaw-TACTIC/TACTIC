@@ -229,8 +229,8 @@ class TopWdg(Widget):
 
         # add a dummy button for global behaviors
         from tactic.ui.widget import ButtonNewWdg, IconButtonWdg
-        ButtonNewWdg(title="WOW", icon=IconWdg.FILM)
-        IconButtonWdg(title="WOW", icon=IconWdg.FILM)
+        ButtonNewWdg(title="DUMMY", icon=IconWdg.FILM)
+        IconButtonWdg(title="DUMMY", icon=IconWdg.FILM)
         # NOTE: it does not need to be in the DOM.  Just needs to be
         # instantiated
         #content_div.add(button)
@@ -474,7 +474,6 @@ class TopWdg(Widget):
         div.add(popup_div)
 
 
-        # popup parent
         inner_html_div = DivWdg()
         inner_html_div.set_id("inner_html")
         div.add(inner_html_div)
@@ -553,9 +552,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         # FIXME: this logic should not be located here.
         # no reason to have the edit_area_full.js
-        if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
-            if "edit_area/edit_area_full.js" in third_party:
-                third_party.remove("edit_area/edit_area_full.js")
+        #if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
+        #    if "edit_area/edit_area_full.js" in third_party:
+        #        third_party.remove("edit_area/edit_area_full.js")
 
 
         for include in js_includes.third_party:
@@ -580,9 +579,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
         #Container.append_seq("Page:js", "/context/spt_js/UnityObject.js")
 
 
-        #widget = DivWdg()
-        #widget.set_id("javascript")
-        #my.set_as_panel(widget)
         widget = Widget()
 
         js_files = Container.get("Page:js")

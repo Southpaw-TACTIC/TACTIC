@@ -1044,6 +1044,57 @@ spt.checkin.checkin_path = function(search_key, file_path, process, options) {
     return snapshot;
 }
 
+
+
+spt.checkin.drop_files = function(evt, el) {
+    el = $(el);
+    var search_key = el.getAttribute("spt_search_key")
+
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+    var files = evt.dataTransfer.files;
+
+    el.files = files
+
+    // If TEAM
+    //var applet = spt.Applet.get();
+
+    var base_dir = 'DROPPED FILES';
+    var file_names = [];
+    var sizes = {};
+    var md5s = {};
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var file_name = file.name;
+        var file_name = base_dir + "/" + file_name;
+        file_names.push(file_name);
+        sizes[file_name] = file.size;
+        md5s[file_name] = 0;
+    }
+    var kwargs = {
+        search_key: search_key,
+        base_dir: base_dir,
+        location: 'client',
+        paths: file_names,
+        sizes: sizes,
+        md5s: md5s
+    }
+
+    var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
+    spt.panel.load(el, class_name, kwargs);
+    var top = el.getParent(".spt_checkin_top");
+    var button1 = top.getElement(".spt_checkin_button");
+    spt.hide(button1);
+    var button2 = top.getElement(".spt_checkin_html5_button");
+    spt.show(button2);
+
+}
+
+
+
+
+
         '''
     get_onload_js = classmethod(get_onload_js)
 
@@ -3257,62 +3308,10 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        # Test drag and drop files
+        dir_div.add_attr("spt_search_key", search_key)
         dir_div.add_attr("ondragenter", "return false")
         dir_div.add_attr("ondragover", "return false")
-        dir_div.add_attr("ondrop", "spt.drag.noop(event, this)")
-        dir_div.add_behavior( {
-            'type': 'load',
-            'base_dir': my.kwargs.get("base_dir"),
-            'search_key': search_key,
-            'cbjs_action': '''
-            spt.drag = {}
-
-            spt.drag.noop = function(evt, el) {
-              evt.stopPropagation();
-              evt.preventDefault();
-              evt.dataTransfer.dropEffect = 'copy';
-              var files = evt.dataTransfer.files;
-
-              bvr.src_el.files = files
-
-              // If TEAM
-              //var applet = spt.Applet.get();
-
-              var base_dir = 'DRAGDROP';
-              var file_names = [];
-              var sizes = {};
-              var md5s = {};
-              for (var i = 0; i < files.length; i++) {
-                  var file = files[i];
-                  var file_name = file.name;
-                  var file_name = base_dir + "/" + file_name;
-                  file_names.push(file_name);
-                  sizes[file_name] = file.size;
-                  md5s[file_name] = 0;
-              }
-              var kwargs = {
-                search_key: bvr.search_key,
-                base_dir: base_dir,
-                location: 'client',
-                paths: file_names,
-                sizes: sizes,
-                md5s: md5s
-              }
-
-              var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
-              spt.panel.load(bvr.src_el, class_name, kwargs);
-              var top = bvr.src_el.getParent(".spt_checkin_top");
-              var button1 = top.getElement(".spt_checkin_button");
-              spt.hide(button1);
-              var button2 = top.getElement(".spt_checkin_html5_button");
-              spt.show(button2);
-
-            }
-            '''
-        } )
-
-
+        dir_div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
 
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")

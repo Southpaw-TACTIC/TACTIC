@@ -106,8 +106,6 @@ class HashPanelWdg(BaseRefreshWdg):
             expression = "/link/{link}"
             options = Common.extract_dict(hash, expression)
 
-           
-
             # This is the standard way of communicating through main interface
             # It uses the link keyword to draw the main widget
             if use_top:

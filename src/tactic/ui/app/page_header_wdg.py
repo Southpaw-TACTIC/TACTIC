@@ -375,7 +375,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
 
         from tactic.ui.container import  Menu, MenuItem
-        menu = Menu(width=180)
+        menu = Menu(width=240)
         menus.append(menu)
         menu.set_allow_icons(False)
 
