@@ -1003,11 +1003,10 @@ spt.edit = {}
 
 
 spt.edit.save_changes = function(content) {
-    var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
-
-    console.log(values);
+    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
     bvr = JSON.parse(values.__data__);
+    console.log(bvr);
 
     var class_name = "tactic.ui.panel.EditCmd";
     var kwargs = {};
@@ -1020,6 +1019,8 @@ spt.edit.save_changes = function(content) {
     kwargs['view'] = bvr.view;
 
     var server = TacticServerStub.get();
+
+    values['search_type'] = bvr.search_type;
 
     var info = server.execute_cmd(class_name, kwargs, values);
     return info.info.sobject;

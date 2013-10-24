@@ -690,7 +690,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
 
-
         chunk_size = 20
         if has_loading:
             table.add_behavior( {

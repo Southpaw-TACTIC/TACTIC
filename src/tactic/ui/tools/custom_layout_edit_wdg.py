@@ -974,6 +974,28 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add_style("margin: 0px -2px 0px -2px")
             right_div.add(tab)
 
+            right_div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var tab = spt.container.get_value("CustomLayoutEditor::tab")
+                if (tab) {
+                    spt.tab.set_tab_top(bvr.src_el);
+                    setTimeout( function() {
+                    spt.tab.select(tab);
+                    }, 0);
+                }
+                '''
+            } )
+            right_div.add_behavior( {
+                'type': 'unload',
+                'cbjs_action': '''
+                spt.tab.set_tab_top(bvr.src_el);
+                var tab = spt.tab.get_selected_element_name();
+                spt.container.set_value("CustomLayoutEditor::tab", tab)
+                '''
+            } )
+
+
 
             tab.add(html_div)
 
@@ -2365,7 +2387,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         search = Search("sthpw/snapshot")
         search.add_filter("version", -1)
-        #search.add_parent_filter(config)
+        search.add_parent_filter(config)
+        search.add_project_filter()
         search.set_limit(10)
         snapshots = search.get_sobjects()
 

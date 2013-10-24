@@ -929,7 +929,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             try:
                 element_wdg = my.get_element_wdg(xml, my.def_config)
-                element_html = element_wdg.get_buffer_display()
+                if element_wdg:
+                    element_html = element_wdg.get_buffer_display()
+                else:
+                    element_html = ''
             except Exception, e:
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
@@ -947,7 +950,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 print "Error: ", e
             """
 
-            html.writeln(element_html)
+            if element_html:
+                html.writeln(element_html)
 
         sequence_wdg = my.get_sequence_wdg()
         html.writeln(sequence_wdg.get_buffer_display() )
@@ -1144,6 +1148,32 @@ class CustomLayoutWdg(BaseRefreshWdg):
         display_node = xml.get_node("config/tmp/element/display")
         if display_node is None:
             view = attrs.get("view")
+            type = attrs.get("type")
+
+
+            if type == "reference":
+                search_type = attrs.get("search_type")
+                my.config = WidgetConfigView.get_by_search_type(search_type, view)
+                # check if definition has no name.  Don't use element_name
+                if not attrs.get("name"):
+                    return
+
+                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                container = DivWdg()
+                container.add(element_wdg)
+                return container
+
+            if not view:
+                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                container = DivWdg()
+                container.add(element_wdg)
+                return container
+
+
+
+
+
+
 
             # look at the attributes
             class_name = attrs.get("display_class")
@@ -1248,8 +1278,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
             from pyasm.widget import ExceptionWdg
             log = ExceptionWdg(e)
             element_wdg = log
-        container.add(element_wdg)
 
+        container.add(element_wdg)
         return container
 
 
