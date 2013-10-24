@@ -57,7 +57,6 @@ class CheckinWdg(BaseRefreshWdg):
         'checkin_ui_options': 'a json string of dictionary of ui options like is_current',
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
-        'show_context': 'true|false: determines whether to show context or not', 
         'show_links': 'true|false: determines whether show the button rows at the top'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
@@ -122,8 +121,7 @@ class CheckinWdg(BaseRefreshWdg):
         #my.subcontext = web.get_form_value('subcontext')
 
         my.process = my.get_value("process")
-        my.context = my.get_value("context")
-        my.show_context = my.kwargs.get("show_context") in [True, 'true']
+        my.context = None
         my.subcontext = my.get_value("subcontext")
         my.folder_state = my.get_value("folder_state")
  
@@ -388,7 +386,6 @@ class CheckinWdg(BaseRefreshWdg):
         panel_kwargs = {
                 'search_key':my.search_key,
                 'context':my.context,
-                'show_context': my.show_context,
                 'process':my.process,
                 'snapshot_code':my.snapshot_code,
                 'pipeline_code' : pipeline_code,
@@ -523,10 +520,10 @@ class CheckinWdg(BaseRefreshWdg):
                     var process = top.getElement(".spt_checkin_process").value;
                     top.setAttribute("spt_process", process);
 
-                    var info_el = top.getElement(".spt_checkin_info");
-                    // Is this even valid anymore?
-                    var context_el = top.getElement(".spt_checkin_context");
-                    spt.panel.refresh(context_el, {process : process, context: process});
+                    var history_sel = top.getElement('.spt_history_context')
+                    //reset history context when switching process
+                    if (history_sel) 
+                        history_sel.value = '';
 
                     // reset the folder_state
                     folder_state_el = top.getElement(".spt_folder_state");
@@ -545,7 +542,12 @@ class CheckinWdg(BaseRefreshWdg):
                     process_select.add_behavior( {
                     'type': 'change',
                     'cbjs_action': '''
+                        
                         spt.api.Utility.save_widget_setting('current_process', bvr.src_el.value);
+                        var top = bvr.src_el.getParent('.spt_checkin_top')
+                        var history_sel = top.getElement('.spt_history_context')
+                        if (history_sel)
+                            history_sel.value = '';
                     '''
                     } )
                     
@@ -561,13 +563,13 @@ class CheckinWdg(BaseRefreshWdg):
 
 
                 #TODO: do not apply but some mode rely on it. clean up later
+                """
                 context_div = DivWdg()
                 context_wdg = ContextPanelWdg(process=my.process, search_type=my.search_type, context=my.context, show_context=my.show_context, show_sub_context=show_sub_context)
                 context_div.add(context_wdg)
                 context_div.add_style("padding-top: 5px")
-
+                 
                 my.context = context_wdg.get_context()
-
                 if my.show_context:
                     context_title_div = FloatDivWdg('Context: &nbsp;')
                     context_title_div.add_style("margin: 5px 0 0 0")
@@ -579,6 +581,7 @@ class CheckinWdg(BaseRefreshWdg):
                     div.add_style("height: 65px")
 
                 div.add(context_div)
+                """
 
             div.add_style("margin-bottom: 20px")
 
@@ -1127,7 +1130,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         elif subcontext:
             my.context = '%s/%s'%(my.context, subcontext)
 
-        my.show_context = my.kwargs.get("show_context") in [True, 'true']
         
         # get all of the process sobjects for this pipeline
         if my.pipeline:
@@ -1352,7 +1354,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             new_context = my.context 
             if re.match(r'.*/.*\d{3}', my.context):
                 new_context = my.context.split("/")[0]
-        
             history = SObjectCheckinHistoryWdg(search_key=my.search_key, history_context=new_context)
             tab.add(history)
             history.set_name("History")
@@ -1753,7 +1754,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top = DivWdg()
         top.add_class("spt_checkin_publish")
         top.add_style("padding: 10px")
-        show_context = my.kwargs.get("show_context") in [True, 'true']
+        show_context = False
         if show_context:
             margin_top = '60px'
         else:
@@ -1871,7 +1872,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             delivery_div.add(select)
             select.set_option("values", process_names)
             select.set_option("labels", label_names)
-            select.set_value(process_names[0])
+            if process_names:
+                select.set_value(process_names[0])
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
@@ -2707,7 +2709,7 @@ class ContextPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        show_context = my.kwargs.get("show_context") in [True, 'true','True']
+        show_context = False
         show_sub_context = my.kwargs.get("show_sub_context") in [True, 'true', 'True']
         if my.refresh:
             div = Widget()
@@ -3325,7 +3327,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                 dir_div.add(list_dir_div)
                 from tactic.ui.panel import ThumbWdg2
                 for path in paths:
-                    print "path: ", path
                     path_div = DivWdg()
                     list_dir_div.add(path_div)
                     thumb = ThumbWdg2()
@@ -5225,7 +5226,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         my.search_id = my.parent.get_id()
 
         my.context = my.kwargs.get("history_context")
-    
         state = my.get_state()
         if not state:
             state = {}
@@ -5265,7 +5265,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         context_filter = web.get_form_value("history_context")
         versions_filter = web.get_form_value("versions")
-
         if not context_filter:
             context_filter = my.context
         else:
@@ -5364,6 +5363,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # add a context selector
         select = SelectWdg("history_context")
+        select.add_class('spt_history_context')
         select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
@@ -5377,21 +5377,26 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         # find all of the contexts that have been checked in
         
         contexts = my.get_snapshot_contexts(search_type, search_id)
-        select.set_option("values", contexts )
+        
+
 
         # set the context if one has been passed in
         if my.context:
 
             if re.search('/', my.context):
                 new_context = my.context.split("/")[0]
-                select.set_value(new_context)
             else:
-                select.set_value(my.context)
+                new_context = my.context
+            select.set_value(new_context)
+            if new_context not in contexts:
+                contexts.append(new_context)
+        
+        select.set_option("values", contexts )
 
         #select.set_value("icon")
 
         select.add_empty_option("-- Select --")
-        select.set_persist_on_submit()
+        #select.set_persist_on_submit()
         span = SpanWdg()
         span.add("Context: ")
         span.add(select)
