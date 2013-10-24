@@ -1099,10 +1099,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             text.set_value(behavior_str)
 
-            # This breaks the beahviors into separate intefaces
             """
+            # This breaks the beahviors into separate intefaces
             behavior_div.add_color("background", "background", -5)
             table = Table()
+            table.add_style("width: 100%")
             behavior_div.add(table)
             if not behavior_nodes:
                 behavior_nodes.append("__new__")
@@ -1116,6 +1117,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     value = ""
                 else:
                     name = Xml.get_attribute(behavior_node, "class")
+                    if not name:
+                        name = Xml.get_attribute(behavior_node, "relay_class")
                     value = xml.to_string(behavior_node)
 
 
@@ -1125,24 +1128,26 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 td.add(swap)
                 
                 bvr_name_text = TextInputWdg(name="behavior_name")
+                bvr_name_text.add_attr("spt_is_multiple", "true")
                 #td.add(bvr_name_text)
                 swap.set_title_wdg(bvr_name_text)
                 bvr_name_text.set_value(name)
 
                 content_div = DivWdg()
+                content_div.add_style("width: 100%")
                 td.add(content_div)
                 unique_id = content_div.set_unique_id("behavior")
                 swap.set_content_id(unique_id)
                 content_div.add_style("display: none")
 
                 bvr_text = TextAreaWdg("behavior_content")
+                bvr_text.add_style("font-size: 12px")
+                bvr_text.add_style("font-family: courier")
+                bvr_text.add_attr("spt_is_multiple", "true")
                 content_div.add(bvr_text)
                 bvr_text.set_value( value )
-                bvr_text.add_style("width: 600px")
+                bvr_text.add_style("width: 100%")
                 bvr_text.add_style("min-height: 400px")
-                bvr_text.add_style("padding: 5px")
-                bvr_text.add_style("margin: 10 20 20 25")
-
             """
 
 
@@ -1277,7 +1282,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'editor_id': my.editor_id,
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
@@ -1296,9 +1301,23 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var widget_type = values.widget_type;
             var code = values.code;
             var style = values.style;
-            var behavior = values.behavior;
             var mako = values.mako;
             var kwargs = values.kwargs;
+
+            var behavior = values.behavior;
+
+            /*
+            var behavior_names = values.behavior_name;
+            var behavior_contents = values.behavior_content;
+            var behavior = "\n";
+            for (var i = 0; i < behavior_names.length; i++) {
+                behavior += '<behavior class="'+behavior_names[i]+'">';
+                behavior += behavior_contents[i];
+                behavior += '</behavior>';
+                behavior += '\n';
+            }
+            */
+
 
             if (!view) {
                 spt.alert("A view name must be provided to save. e.g. 'custom/task_list' will create a custom folder with a task_list view");
