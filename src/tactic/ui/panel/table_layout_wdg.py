@@ -1655,7 +1655,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.group_rows.append(tr)
         
         if group_value == '__NONE__':
-            label = '(unknown)'
+            label = '---'
         else:
             label = Common.process_unicode_string(group_value)
 
