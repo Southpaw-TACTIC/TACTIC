@@ -475,6 +475,8 @@ class NamingUtil(object):
             #    raise NamingException("Value for part [%s] is empty" % part)
             if isinstance(value, int):
                 value = str(value)
+            elif value is None:
+                value = ""
             
             result = result.replace("{%s}" % part, value)
 
