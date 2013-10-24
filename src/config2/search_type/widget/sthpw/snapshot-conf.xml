@@ -100,7 +100,7 @@
    <element name="general_checkin">
       <display class='tactic.ui.table.CheckinButtonElementWdg'>
           <mode>add</mode>
-          <width>600</width>
+          <width>800</width>
       </display>
    </element>
    <element name="checkout">

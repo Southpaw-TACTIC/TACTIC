@@ -82,7 +82,7 @@ class Naming(SObject):
 
 
 
-    def get(sobject, snapshot, versionless='', file_path='' ,mode='find'):
+    def get(sobject, snapshot, versionless='', file_path='', mode='find'):
         '''
         The special check mode is used in versionless to check whether a
         naming convention is defined.  It should only be called by
@@ -233,6 +233,7 @@ class Naming(SObject):
             ext = ext.lstrip(".")
             value = ext
         vars = {'EXT': value, 'BASEFILE': base}
+        env_sobjects = {'snapshot': snapshot }
 
         for key in keys:
             if naming:
@@ -249,7 +250,7 @@ class Naming(SObject):
                     if not expr:
                         default_naming = tmp_naming
                    
-                    elif xp.eval(expr, sobject, vars=vars):
+                    elif xp.eval(expr, sobject, env_sobjects=env_sobjects, vars=vars):
                         naming = tmp_naming
                         break
 
