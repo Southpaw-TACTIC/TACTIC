@@ -82,6 +82,10 @@ class TextInputWdg(BaseInputWdg):
 
     def set_value(my, value, set_form_value=False):
         my.text.set_value(value, set_form_value=set_form_value)
+
+    def get_value(my):
+        return my.text.get_value()
+ 
  
     def add_behavior(my, behavior):
         my.text.add_behavior(behavior)
@@ -91,13 +95,11 @@ class TextInputWdg(BaseInputWdg):
         return my.text
  
 
-
-
-
-
     def __init__(my, **kwargs):
-        name = kwargs.get("name")
-        my.name = name
+        my.kwargs = kwargs
+
+        my.name = my.kwargs.get("name")
+        name = my.name
 
         my.password = kwargs.get("password")
         if my.password in [True, 'true']:
@@ -162,9 +164,8 @@ class TextInputWdg(BaseInputWdg):
        
         my.top = SpanWdg()
 
-        my.kwargs = kwargs
-        super(TextInputWdg, my).__init__()
 
+        super(TextInputWdg, my).__init__()
 
         my.width = my.kwargs.get("width")
         if not my.width:
@@ -215,6 +216,12 @@ class TextInputWdg(BaseInputWdg):
 
 
     def fill_data(my):
+
+        if not my.name:
+            my.name = my.kwargs.get("name")
+        name = my.get_input_name()
+        my.text.set_name(name)
+
         value = my.kwargs.get("value")
         # value always overrides
         if value:
@@ -224,8 +231,12 @@ class TextInputWdg(BaseInputWdg):
       
         # fill in the values
         search_key = my.kwargs.get("search_key")
-        if search_key and search_key != "None":
-            sobject = Search.get_by_search_key(search_key)
+        if search_key and search_key != "None" or my.sobjects:
+            if my.sobjects:
+                sobject = my.sobjects[0]
+            else:
+                sobject = Search.get_by_search_key(search_key)
+
             if sobject:
 
                 # look at the current sobject for the data
