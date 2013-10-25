@@ -1874,6 +1874,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             select.set_option("labels", label_names)
             if process_names:
                 select.set_value(process_names[0])
+            else:
+                #disable the checkbox
+                checkbox.set_attr('disabled','disabled')
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
