@@ -306,13 +306,11 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
 
     // register the hash (DISABLE for now)
-    /*
     spt.hash.add( hash, function() {
         spt.tab.set_main_body_tab();
         spt.tab.add_new(orig_element_name, title, class_name, kwargs, values);
     } );
     document.location.hash = hash;
-    */
 
     return header;
 }

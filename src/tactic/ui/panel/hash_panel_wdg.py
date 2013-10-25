@@ -102,7 +102,11 @@ class HashPanelWdg(BaseRefreshWdg):
         key = m.groups()[0]
 
         # add some predefined ones
-        if key == "link":
+        if key == "test":
+            widget = HashPanelWdg.get_widget_from_hash("/index")
+            return widget
+
+        elif key == "link":
             expression = "/link/{link}"
             options = Common.extract_dict(hash, expression)
 
@@ -143,7 +147,7 @@ class HashPanelWdg(BaseRefreshWdg):
                     { "element": "*" },
                     { "element": link, "project": project_code },
                     { "element": "*", "project": project_code }
-                    ]
+            ]
             if not security.check_access("link", keys, "allow", default="deny"):
                 widget = DivWdg()
                 widget.add_color("color", "color")
@@ -216,21 +220,26 @@ class HashPanelWdg(BaseRefreshWdg):
  
         else:
             # look up the expression
-            search = Search("config/url")
-            search.add_filter("url", "/%s/%%"%key, "like")
-            search.add_filter("url", "/%s"%key)
-            search.add_where("or")
-            sobject = search.get_sobject()
+            print "key: ", key
+            if key == "top":
+                kwargs["use_index"] = True
+                sobject = None
+            else:
+                search = Search("config/url")
+                search.add_filter("url", "/%s/%%"%key, "like")
+                search.add_filter("url", "/%s"%key)
+                search.add_where("or")
+                sobject = search.get_sobject()
 
-            if not sobject:
-                if return_none:
-                    return None
-                return DivWdg("No Widget found for hash [%s]" % hash)
+                if not sobject:
+                    if return_none:
+                        return None
+                    return DivWdg("No Widget found for hash [%s]" % hash)
  
 
-            config = sobject.get_value("widget")
-            xml = Xml()
-            xml.read_string(config)
+                config = sobject.get_value("widget")
+                xml = Xml()
+                xml.read_string(config)
 
 
             use_index = kwargs.get("use_index")
@@ -300,6 +309,10 @@ class HashPanelWdg(BaseRefreshWdg):
                     if class_name:
                         options['class_name'] = class_name
 
+                    # this passes the hash value to the index widget
+                    # which must handle it accordingly
+                    if key == "top":
+                        hash = hash.replace("/top", "/tab")
                     options['hash'] = hash
                     top = cls.build_widget(options)
 
@@ -309,20 +322,27 @@ class HashPanelWdg(BaseRefreshWdg):
  
 
             # build the widget
-            url = sobject.get_value("url")
-            url = url.strip()
+            if key == "top":
+                class_name = 'tactic.ui.panel.HashPanelWdg'
+                options = {
+                    "hash": hash.replace("/link", "/tab"),
+                    "class_name": class_name
+                }
+            else:
+                url = sobject.get_value("url")
+                url = url.strip()
 
-            
-            options = Common.extract_dict(hash, url)
-            for name, value in kwargs.items():
-                options[name] = value
+                
+                options = Common.extract_dict(hash, url)
+                for name, value in kwargs.items():
+                    options[name] = value
 
-            node = xml.get_node("element/display")
-            options.update(xml.get_node_values_of_children(node))
+                node = xml.get_node("element/display")
+                options.update(xml.get_node_values_of_children(node))
 
-            class_name = xml.get_value("element/display/@class")
-            if class_name:
-                options['class_name'] = class_name
+                class_name = xml.get_value("element/display/@class")
+                if class_name:
+                    options['class_name'] = class_name
 
             widget = cls.build_widget(options)
 
