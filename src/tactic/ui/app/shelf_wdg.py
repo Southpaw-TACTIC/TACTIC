@@ -11,7 +11,7 @@
 
 __all__ = ['ShelfWdg', 'ShelfEditWdg']
 
-from pyasm.common import Environment, Common, SecurityException
+from pyasm.common import Environment, Common, SecurityException, Container
 from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
 from pyasm.widget import TextAreaWdg, ButtonWdg, TextWdg, HiddenWdg, ProdIconButtonWdg, SelectWdg, IconWdg
@@ -208,10 +208,13 @@ class ShelfEditWdg(BaseRefreshWdg):
 
         editor = AceEditorWdg(custom_script=script_sobj)
         my.editor_id = editor.get_editor_id()
-        top.add_behavior( {
-            'type': 'load',
-            'cbjs_action': my.get_onload_js()
-        } )
+
+
+        if not Container.get_dict("JSLibraries", "spt_script_editor"):
+            top.add_behavior( {
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            } )
 
 
         # create the insert button
@@ -530,6 +533,13 @@ class ShelfEditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         
         return r'''
+
+if (spt.script_editor) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_script_editor");
+
 spt.script_editor = {}
 
 spt.script_editor.display_script_cbk = function(evt, bvr)
@@ -558,7 +568,8 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     if (!script) {
         script = server.query(search_type, {filters:filters, single:true} );
     }
-   
+  
+
     var script_text = script['script'];
     var script_folder = script['folder'];
     var script_title = script['title'];
@@ -586,7 +597,10 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     }
     var editor = spt.ace_editor.editor;
     var document = editor.getSession().getDocument()
-    document.setValue(script_text);
+
+    if (script_text) {
+        document.setValue(script_text);
+    }
 
     //editAreaLoader.setValue("shelf_script", script_text);
     //editAreaLoader.setSelectionRange("shelf_script", 0, 0);

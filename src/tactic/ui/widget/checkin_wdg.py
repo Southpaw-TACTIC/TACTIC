@@ -258,10 +258,11 @@ class CheckinWdg(BaseRefreshWdg):
             width = my.kwargs.get('width')
             if width:
                 top.add_style("width", width)
+            else:
+                top.add_style("width: 100%")
             top.add_class("spt_checkin_top")
             # it is needed or it will be wider than ur screen in sub tabs
-            top.add_style("max-width: 1000px")
-            top.add_style("width: 100%")
+            #top.add_style("max-width: 1000px")
 
 
             top.add_attr("spt_sandbox_dir", my._get_sandbox_dir())
@@ -464,6 +465,7 @@ class CheckinWdg(BaseRefreshWdg):
             div.add_style("margin: 15px 12px 12px 12px")
             # width prevents it from jumping in IE during refresh
             div.add_style("min-width: 700px")
+            div.add_style("width: 100%")
             process_div = FloatDivWdg('Process: &nbsp;')
             process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: 14px")
@@ -1278,7 +1280,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         table.add_row()
         #table.add_style("margin: 8px 5px 5px 5px")
         table.add_style("width: 100%")
-        table.add_style("width: 900px")
         if my.warning_msg:
             top.add_behavior( {'type': 'load',
                         'msg': "Warning: %s" %'<br>'.join(my.warning_msg),
