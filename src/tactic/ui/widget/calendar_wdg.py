@@ -14,7 +14,7 @@
 
 __all__ = ['CalendarWdg', 'CalendarMonthWdg', 'CalendarTimeWdg', 'CalendarInputWdg', 'TimeInputWdg']
 
-from pyasm.common import Date, Common, Config
+from pyasm.common import Date, Common, Config, Container
 from pyasm.biz import NamingUtil, ProdSetting
 from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
 from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
@@ -69,7 +69,10 @@ class CalendarWdg(BaseRefreshWdg):
         
         my.top_wdg = DivWdg()
         my.top_wdg.add_style("z-index: 100")
-        my.top_wdg.add_class("spt_calendar_top")
+        css_class = my.kwargs.get('css_class')
+        if not css_class:
+            css_class = "spt_calendar_top"
+        my.top_wdg.add_class(css_class)
         my.top_wdg.add_style("-moz-user-select: none")
 
         #my.top_wdg.add_style("background: #444")
@@ -142,8 +145,9 @@ class CalendarWdg(BaseRefreshWdg):
         return my.get_name()
 
 
-    def get_display(my):
+   
 
+    def get_display(my):
         # handle size
         size_str = my.kwargs.get("size")
         if size_str == "full":
@@ -174,26 +178,57 @@ class CalendarWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         my.top_wdg.add(inner)
+      
         inner.add( calendar )
 
+        if not Container.get_dict("JSLibraries", "spt_calendar"):
+            my.top_wdg.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+            spt.calendar = {}
 
+            // for now, refresh is always set to true by default when spt.calendar.get() is called to
+            // get a new calendar
+            spt.calendar.current;
+            spt.calendar.get = function(refresh) {
+                if ( typeof(refresh) == 'undefined' )
+                    refresh = true;
+                if (!refresh && spt.calendar.current) {
+                    return spt.calendar.current;
+                }
+                var temp = document.getElement('.spt_calendar_template_top');
+                var new_cal;
+                if (temp) { 
+                    new_cal = spt.behavior.clone(temp);
+                    new_cal.removeClass('spt_calendar_template_top');
+                    new_cal.addClass('spt_calendar_top');
+                    new_cal.setStyle("position","absolute");
+                    spt.calendar.current = new_cal
+                }
+                return new_cal;
+            }
+
+            spt.Environment.get().add_library("spt_calendar");
+                ''' } )
+
+        """NOTE: comment this out for now, doesn't seem to be used
         my.top_wdg.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_calendar_day',
             'cbjs_action': '''
-spt.calendar = {}
-spt.calendar.set_day = function(evt, bvr)
-{
-    var src_el = bvr.src_el;
-    var value = src_el.getAttribute("spt_date");
-    input = spt.get_cousin(src_el, ".spt_calendar_top", ".spt_calendar_date")
-    input.value = value;
+        spt.calendar.set_day = function(evt, bvr)
+        {
+            var src_el = bvr.src_el;
+            var value = src_el.getAttribute("spt_date");
+            input = spt.get_cousin(src_el, ".spt_calendar_top", ".spt_calendar_date")
+            input.value = value;
 
-    var top = spt.get_parent(src_el, ".spt_calendar_top");
-    top.setStyle("display", "none");
-}
-            ''' } )
-
+            var top = spt.get_parent(src_el, ".spt_calendar_top");
+            top.setStyle("display", "none");
+        }
+        '''
+        })
+        """
         if my.kwargs.get("is_refresh") in [True, 'true']:
             return inner
         else:
@@ -321,6 +356,17 @@ spt.calendar.set_day = function(evt, bvr)
         if not border_type:
             border_type = 'bottom'
 
+        # add day_cbks
+        for cbk in my.day_cbks:
+            behavior = {
+                'type': 'click_up',
+                'cbjs_action': cbk, 
+                'bvr_match_class': 'spt_calendar_day', 
+                'search_key' : my.search_key,
+                'top_id' : my.top_id,
+                'col_name': my.col_name
+            }
+            table.add_relay_behavior(behavior)
         
         for i, week in enumerate(weeks):
             table.add_row()
@@ -589,12 +635,13 @@ spt.calendar.set_day = function(evt, bvr)
         div.add_class("SPT_DAY_CBK")
         div.add( day.day )
         div.add_style("text-align: center")
-        div.add_class("hand")
+        div.add_class("spt_calendar_day hand")
 
         div.add_style("padding: 3px 6px 3px 6px")
 
-        # NOTE: generally, this is not used, but should be done with relay
-        # behaviors using "spt_calendar_day"
+        # NOTE: The bvr below is now added thru relay behavior
+
+        """
         for cbk in my.day_cbks:
             behavior = {
                 'type': 'click_up',
@@ -604,10 +651,7 @@ spt.calendar.set_day = function(evt, bvr)
                 'col_name': my.col_name
             }
             div.add_behavior(behavior)
-
-
-        div.add_class("spt_calendar_day")
-        
+        """
 
 
         today = datetime.today()
@@ -658,7 +702,7 @@ class CalendarInputWdg(BaseInputWdg):
             'category': 'Display'
         },
         "show_calendar": {
-            'description': "Determines whether or not a time value is entered.",
+            'description': "Determines whether or not the calendar is shown.",
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display'
@@ -739,7 +783,8 @@ class CalendarInputWdg(BaseInputWdg):
     def set_validation(my, validation, validation_warning):
         my.cbjs_validation = validation
         my.validation_warning = validation_warning
-    
+   
+  
 
     def get_display(my):
         # should not have float by default
@@ -793,7 +838,13 @@ class CalendarInputWdg(BaseInputWdg):
                 "type": "click_up",
                 "cbjs_action": '''
                     var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top');
+                    if (!el) {
+                        var el = spt.calendar.get();
+                        var top = bvr.src_el.getParent('.calendar_input_top');
+                        top.appendChild(el);
+                    }
                     spt.simple_display_toggle(el);
+
                 '''
             } )
 
@@ -858,8 +909,26 @@ class CalendarInputWdg(BaseInputWdg):
             text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
-            text.add_event('onclick', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.show(el);spt.body.add_focus_element(el); event.stopPropagation();''')
-            text.add_event('onfocus', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.show(el);spt.body.add_focus_element(el); event.stopPropagation();''')
+            text.add_event('onclick', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
+                    if (el)
+                        spt.show(el);
+                  
+                    spt.show(el);spt.body.add_focus_element(el); event.stopPropagation();''')
+
+            text.add_behavior({'type': 'focus', 'cbjs_action': 
+                    '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
+                    if (!el)  {
+                        el = spt.calendar.get(); 
+                       
+                        var top = bvr.src_el.getParent('.calendar_input_top');
+                        top.appendChild(el);
+                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:15, y:0}});
+                    }
+                    
+                    spt.show(el);
+                    spt.body.add_focus_element(el); 
+                    //evt.stopPropagation();
+                    '''})
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
             #input.add_event('onblur', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
@@ -917,7 +986,6 @@ class CalendarInputWdg(BaseInputWdg):
             'kbd_handler_name': 'CalendarInputKeyboard',
         }
         input.add_behavior( kbd_bvr )
-
 
         if my.cbjs_validation:
             if my.validation_warning:
@@ -1030,11 +1098,10 @@ class CalendarInputWdg(BaseInputWdg):
             cbks.append(day_cbk)
 
             for more_cbk in my.day_cbks:
-                #calendar.add_day_cbk(cbk)
                 day_cbk = "%s\n%s" % (day_cbk, more_cbk)
                 cbks.append(day_cbk)
 
-            calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
+            #calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
 
         else:
             
@@ -1123,7 +1190,7 @@ class CalendarInputWdg(BaseInputWdg):
                 day_cbk = "%s\n%s" % (day_cbk, more_cbk)
                 cbks.append(day_cbk)
 
-            calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
+            #calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
 
 
         # add all of the callbacks to the top widget
@@ -1137,16 +1204,13 @@ class CalendarInputWdg(BaseInputWdg):
                 'time_input_default': time_input_default
             } )
 
-
-
+        """
         show_text = False
         if not show_text:
             calendar.add_style("display: none")
-
-
-        calendar.add_style("position: absolute")
-        my.top.add(calendar)
-
+        """
+        #calendar.add_style("position: absolute")
+        #my.top.add(calendar)
         #my.top.add_class("spt_no_alter")
         return my.top
 

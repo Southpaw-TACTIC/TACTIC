@@ -131,7 +131,7 @@ display class, it will adopt the one defined here-->
 
     <element name="general_checkin" title='Check-in (Full)' help="general-checkin" edit="false" width="27px">
         <display class="tactic.ui.table.CheckinButtonElementWdg">
-            <width>600</width>
+            <width>800</width>
         </display>
     </element>
 

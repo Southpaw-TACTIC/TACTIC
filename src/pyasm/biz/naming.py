@@ -82,7 +82,7 @@ class Naming(SObject):
 
 
 
-    def get(sobject, snapshot, versionless='', file_path='' ,mode='find'):
+    def get(sobject, snapshot, versionless='', file_path='', mode='find'):
         '''
         The special check mode is used in versionless to check whether a
         naming convention is defined.  It should only be called by
@@ -233,6 +233,7 @@ class Naming(SObject):
             ext = ext.lstrip(".")
             value = ext
         vars = {'EXT': value, 'BASEFILE': base}
+        env_sobjects = {'snapshot': snapshot }
 
         for key in keys:
             if naming:
@@ -249,7 +250,7 @@ class Naming(SObject):
                     if not expr:
                         default_naming = tmp_naming
                    
-                    elif xp.eval(expr, sobject, vars=vars):
+                    elif xp.eval(expr, sobject, env_sobjects=env_sobjects, vars=vars):
                         naming = tmp_naming
                         break
 
@@ -474,6 +475,8 @@ class NamingUtil(object):
             #    raise NamingException("Value for part [%s] is empty" % part)
             if isinstance(value, int):
                 value = str(value)
+            elif value is None:
+                value = ""
             
             result = result.replace("{%s}" % part, value)
 
@@ -502,6 +505,11 @@ class NamingUtil(object):
         # parse the pattern string
         expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
         temp_list = expression.findall(template)
+
+
+        expression = re.compile(r'{(.*?)}')
+        temp_list = expression.findall(template)
+
 
         # if nothing is found, then just return parse through an expression
         if not temp_list:
@@ -537,7 +545,16 @@ class NamingUtil(object):
         for part in temp_list:
              
             index = -1
-            if part.find(".") != -1:
+
+
+            if part.startswith("@"):
+                env_sobjects = {
+                    'snapshot': snapshot,
+                    'file': file
+                }
+     
+                value = Search.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+            elif part.find(".") != -1:
                 # explict declarasions
                 object, attr = part.split(".")
                 

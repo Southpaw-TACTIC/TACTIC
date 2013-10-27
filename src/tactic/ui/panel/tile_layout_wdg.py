@@ -95,13 +95,34 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.scale == None:
             my.scale = my.kwargs.get("scale")
 
+
+        temp = my.kwargs.get("temp")
+        has_loading = False
+
         
         inner.add_style("margin-left: 20px")
 
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
 
-            for sobject in my.sobjects:
+            for row, sobject in enumerate(my.sobjects):
+
+                if False and not temp and row > 4: 
+                    tile_wdg = DivWdg()
+                    inner.add(tile_wdg)
+                    tile_wdg.add_style("width: 120px")
+                    tile_wdg.add_style("height: 120px")
+                    tile_wdg.add_style("float: left")
+                    tile_wdg.add_style("padding: 20px")
+                    tile_wdg.add_style("text-align: center")
+                    tile_wdg.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                    tile_wdg.add(" Loading ...")
+                    tile_wdg.add_attr("spt_search_key", sobject.get_search_key())
+                    tile_wdg.add_class("spt_loading")
+                    has_loading = True
+                    continue
+
+
                 kwargs = my.kwargs.copy()
                 tile = my.get_tile_wdg(sobject)
                 inner.add(tile)
@@ -111,8 +132,81 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.handle_no_results(table)
 
 
+        chunk_size = 5
+        if has_loading:
+            inner.add_behavior( {
+            'type': 'load',
+            'chunk': chunk_size,
+            'cbjs_action': '''
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            var rows = layout.getElements(".spt_loading");
+
+            var jobs = [];
+            var count = 0;
+            var chunk = bvr.chunk;
+            while (true) {
+                var job_item = rows.slice(count, count+chunk);
+                if (job_item.length == 0) {
+                    break;
+                }
+                jobs.push(job_item);
+                count += chunk;
+            }
+
+            var count = -1;
+            var func = function() {
+                count += 1;
+                var rows = jobs[count];
+                if (! rows || rows.length == 0) {
+                    return;
+                }
+                for (var i = 0; i < rows.length; i++) {
+                    rows[i].removeClass("spt_loading");
+                }
+                spt.table.refresh_rows(rows, null, null, {on_complete: func});
+            }
+            func();
+
+            '''
+            } )
+
+
+
+
+
         inner.add("<br clear='all'/>")
         return div
+
+
+
+    def init(my):
+
+        top_view = my.kwargs.get("top_view")
+        if top_view:
+            kwargs = {
+                'view': top_view,
+            }
+            from tactic.ui.panel import CustomLayoutWdg
+            my.title_wdg = CustomLayoutWdg(**kwargs)
+        else:
+            my.title_wdg = None
+
+ 
+
+
+        bottom_view = my.kwargs.get("bottom_view")
+        if bottom_view:
+            kwargs = {
+                'view': bottom_view,
+                'load': 'sequence',
+            }
+            from tactic.ui.panel import CustomLayoutWdg
+            my.bottom = CustomLayoutWdg(**kwargs)
+        else:
+            my.bottom = None
+
+        super(TileLayoutWdg, my).init()
 
 
     def add_layout_behaviors(my, layout_wdg):
@@ -361,12 +455,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row_%s" % my.table_id)
 
 
-        top_view = my.kwargs.get("top_view")
-        if top_view:
-            title_wdg = my.get_view_wdg(sobject, top_view)
+        if my.title_wdg:
+            my.title_wdg.set_sobject(sobject)
+            div.add(my.title_wdg.get_buffer_display())
         else:
             title_wdg = my.get_title(sobject)
-        div.add( title_wdg )
+            div.add( title_wdg )
 
 
         div.add_attr("spt_search_key", sobject.get_search_key())
@@ -399,9 +493,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
 
-        bottom_view = my.kwargs.get("bottom_view")
-        if bottom_view:
-            div.add( my.get_view_wdg(sobject, bottom_view) )
+        #bottom_view = my.kwargs.get("bottom_view")
+        #if bottom_view:
+        #    div.add( my.get_view_wdg(sobject, bottom_view) )
+        if my.bottom:
+            my.bottom.set_sobject(sobject)
+            div.add(my.bottom.get_buffer_display())
 
 
         div.add_attr("ondragenter", "return false")
@@ -418,12 +515,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         #div.add_style("overflow: hidden")
 
         kwargs = {
-            'search_key': sobject.get_search_key(),
-            'sobject': sobject,
             'view': view,
         }
         from tactic.ui.panel import CustomLayoutWdg
         layout = CustomLayoutWdg(**kwargs)
+        layout.set_sobject(sobject)
         div.add(layout.get_buffer_display())
         return div
 
@@ -699,6 +795,9 @@ class ThumbWdg2(BaseRefreshWdg):
         super(ThumbWdg2, my).set_sobject(sobject)
         my.path = my.get_path_from_sobject(sobject)
 
+    def set_path(my, path):
+        my.path = path
+
     def get_path(my):
         return my.path
 
@@ -755,6 +854,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         # FIXME: make this faster
+
+        snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
+
+        """
         snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
@@ -762,6 +865,7 @@ class ThumbWdg2(BaseRefreshWdg):
             snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
         if not snapshot:
             snapshot = Snapshot.get_snapshot(search_type, search_code)
+        """
 
 
         if snapshot:

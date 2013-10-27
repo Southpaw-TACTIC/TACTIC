@@ -304,9 +304,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
         if not my.plugin or my.plugin == '{}':
             my.plugin = {}
 
+
+
         """
         if not my.plugin and isinstance(my.config, SObject):
-            print "plugin ..."
             my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
         """
 
@@ -605,7 +606,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 plugin = my.plugin
             else:
                 plugin = my.plugin.get_sobject_dict()
-            plugin_code = plugin.get_value("code")
+            plugin_code = plugin.get("code")
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:
             plugin_code = ""
@@ -928,7 +929,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             try:
                 element_wdg = my.get_element_wdg(xml, my.def_config)
-                element_html = element_wdg.get_buffer_display()
+                if element_wdg:
+                    element_html = element_wdg.get_buffer_display()
+                else:
+                    element_html = ''
             except Exception, e:
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
@@ -946,7 +950,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 print "Error: ", e
             """
 
-            html.writeln(element_html)
+            if element_html:
+                html.writeln(element_html)
 
         sequence_wdg = my.get_sequence_wdg()
         html.writeln(sequence_wdg.get_buffer_display() )
@@ -1064,7 +1069,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 }
                 spt.panel.load($(unique_id), class_name, kwargs, {}, options);
 
-                next_func = func;
             }
 
             func();
@@ -1144,6 +1148,32 @@ class CustomLayoutWdg(BaseRefreshWdg):
         display_node = xml.get_node("config/tmp/element/display")
         if display_node is None:
             view = attrs.get("view")
+            type = attrs.get("type")
+
+
+            if type == "reference":
+                search_type = attrs.get("search_type")
+                my.config = WidgetConfigView.get_by_search_type(search_type, view)
+                # check if definition has no name.  Don't use element_name
+                if not attrs.get("name"):
+                    return
+
+                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                container = DivWdg()
+                container.add(element_wdg)
+                return container
+
+            if not view:
+                element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
+                container = DivWdg()
+                container.add(element_wdg)
+                return container
+
+
+
+
+
+
 
             # look at the attributes
             class_name = attrs.get("display_class")
@@ -1248,8 +1278,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
             from pyasm.widget import ExceptionWdg
             log = ExceptionWdg(e)
             element_wdg = log
-        container.add(element_wdg)
 
+        container.add(element_wdg)
         return container
 
 

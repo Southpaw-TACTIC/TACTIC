@@ -2865,20 +2865,20 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.app import SearchWdg, SearchBoxPopupWdg
+        
 
         # Search box
         inline_search = "true"
         search = None
         use_last_search = my.kwargs.get('use_last_search')
-
+        
         show_search = my.kwargs.get('show_search')
         if show_search in [False,'false']:
             show_search = 'false'
         else:
             show_search = 'true'
 
-       
+        search_limit = my.kwargs.get("search_limit")
         run_search_bvr = my.kwargs.get('run_search_bvr') 
 
 
@@ -2891,7 +2891,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         #if show_shelf not in [False, 'false']:
         if True:
             try:
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=parent_key, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, skip_search=True)
+                from tactic.ui.app import SearchWdg
+                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit, user_override=True )
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -2969,7 +2970,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
 
-        search_limit = my.kwargs.get("search_limit")
+       
 
         save_inputs = my.kwargs.get("save_inputs")
         no_results_mode = my.kwargs.get("no_results_mode")
@@ -3022,7 +3023,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
-            "search_wdg": search_wdg,
+            #"search_wdg": search_wdg
             
         }
         if run_search_bvr:
@@ -3076,6 +3077,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         else:
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
+
+        layout_table.set_search_wdg(search_wdg)
 
         # add the search in the table
         #search_container = layout_table.search_container_wdg

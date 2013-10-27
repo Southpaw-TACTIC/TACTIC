@@ -515,6 +515,8 @@ class OldTableLayoutWdg(BaseConfigWdg):
     def set_items_found(my, number):
         my.items_found = number
 
+    def set_search_wdg(my, search_wdg):
+        my.search_wdg = search_wdg
 
     def get_table(my):
         return my.table
@@ -735,8 +737,8 @@ class OldTableLayoutWdg(BaseConfigWdg):
         # don't set the view here, it affects the logic in SearchWdg
         from tactic.ui.app import SearchWdg
         filter_xml = ''
-        if my.kwargs.get('filter_xml'):
-            filter_xml = my.kwargs.get('filter_xml')
+        if my.kwargs.get('filter'):
+            filter_xml = my.kwargs.get('filter')
         
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
@@ -744,7 +746,10 @@ class OldTableLayoutWdg(BaseConfigWdg):
         if not custom_search_view:
             custom_search_view = ''
 
-        my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=my.parent_key, limit=limit, custom_search_view=custom_search_view)
+        if not my.search_wdg:
+            my.search_wdg = my.kwargs.get("search_wdg")
+        if not my.search_wdg:
+            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:
@@ -975,7 +980,7 @@ class OldTableLayoutWdg(BaseConfigWdg):
 
                     var server = TacticServerStub.get();
                     try {
-                        spt.app_busy.show(bvr.description, file);                   
+                        //spt.app_busy.show(bvr.description, file);                   
                         var snapshot = server.get_by_search_key(search_key);
                         var snapshot_code = snapshot.code;
                         if (search_key.search('sthpw/snapshot')!= -1){                       
@@ -1629,7 +1634,7 @@ class OldTableLayoutWdg(BaseConfigWdg):
         # set the sobjects to all the widgets then preprocess
         for widget in my.widgets:
             widget.set_sobjects(my.sobjects)
-            # FIXME: !!! This sets up a circular reference
+            # NOTE: This sets up a circular reference
             widget.set_parent_wdg(my)
 
             # preprocess the elements
