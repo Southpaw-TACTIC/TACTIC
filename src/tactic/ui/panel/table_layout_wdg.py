@@ -3936,7 +3936,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           'args': kwargs,
           'cbjs_action': function(widget_html) {
             //spt.behavior.replace_inner_html(hidden_row, widget_html);
-            spt.app_busy.show("Replacing changed rows ...");
+            //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);

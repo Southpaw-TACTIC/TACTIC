@@ -255,6 +255,8 @@ class MongoDbImpl(DatabaseImpl):
         table = select.tables[0]
         filters = select.raw_filters
         order_bys = select.order_bys
+        limit = select.limit
+        offset = select.offset
 
         collection = conn.get_collection(table)
 
@@ -279,6 +281,12 @@ class MongoDbImpl(DatabaseImpl):
                     sort_list.append( [order_by, 1] )
 
                 cursor.sort(sort_list)
+
+
+        if limit:
+            cursor.limit(limit)
+        if offset:
+            cursor.skip(offset)
 
         results = []
         for result in cursor:

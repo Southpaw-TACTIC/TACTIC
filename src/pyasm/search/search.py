@@ -6475,7 +6475,7 @@ class SearchKey(object):
 
             search_type_list.append(SearchKey.extract_search_type(sk))
             code = SearchKey.extract_code(sk)
-            if code:    
+            if code:
                 search_code_list.append(code)
             else:
                 id = SearchKey.extract_id(sk)
