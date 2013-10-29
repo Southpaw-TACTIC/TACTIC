@@ -341,6 +341,20 @@ class MongoDbImpl(DatabaseImpl):
         sql.last_row_id = object_id
 
 
+
+
+    def execute_delete(my, sql, table, id):
+        conn = sql.get_connection()
+
+        collection = conn.get_collection(table)
+
+        collection.remove( {"_id": id} )
+
+
+
+
+
+
     def execute_create_table(my, sql, create):
 
         conn = sql.get_connection()
@@ -376,10 +390,6 @@ class MongoDbImpl(DatabaseImpl):
         return object_id
 
 
-
-    def execute_delete(my, sql, delete):
-
-        pass
 
 
 

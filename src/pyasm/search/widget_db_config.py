@@ -108,7 +108,7 @@ class WidgetDbConfig(SObject):
 
 
 
-    # HACK for backwards compatibility
+    # for backwards compatibility
     def has_view(my, view=None):
         # check that this view actually exists in this file
 

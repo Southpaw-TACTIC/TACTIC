@@ -1528,6 +1528,8 @@ class Search(Base):
             security.alter_search(my)
 
 
+
+
         # build an sql object
         database = my.get_database() 
         # SQL Server: Skip the temp column put in by handle_pagination()
@@ -4082,10 +4084,16 @@ class SObject(object):
         if id == -1:
             return
 
-        base_search_type = my.get_base_search_type()
+        # remember the data
+        data = my.data.copy()
 
-        #where = my.get_id_col() + " = " + str(id)
-        where = '"%s" = %s' % (my.get_id_col(),id)
+        base_search_type = my.get_base_search_type()
+        database_impl = my.get_database_impl()
+        database_type = database_impl.get_database_type()
+
+        db_resource = my.get_db_resource()
+        sql = DbContainer.get(db_resource)
+
 
         # make sure we have the right table for search types
         is_search_type = isinstance(my,SearchType)
@@ -4096,26 +4104,25 @@ class SObject(object):
             database = my.get_database()
             table = my.search_type_obj.get_table()
 
-        # perform the update
-        assert where != "" or where != 0 or where != 1
+        if database_type == 'MongoDb':
 
-        # remember the data
-        data = my.data.copy()
+            database_impl.execute_delete(sql, table, id)
 
-        database_type = my.get_database_impl().get_database_type()
-        if database_type == 'Oracle':
-            # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
-            # for use with set-ups that use a service user to access the Oracle DB
-            statement = 'DELETE FROM %s."%s" WHERE %s' % (database, table, where )
-        elif database_type == 'SQLServer':
-            statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
+
         else:
-            statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
+            where = '"%s" = %s' % (my.get_id_col(),id)
+
+            if database_type == 'Oracle':
+                # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
+                # for use with set-ups that use a service user to access the Oracle DB
+                statement = 'DELETE FROM %s."%s" WHERE %s' % (database, table, where )
+            elif database_type == 'SQLServer':
+                statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
+            else:
+                statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
 
 
-        db_resource = my.get_db_resource()
-        sql = DbContainer.get(db_resource)
-        sql.do_update(statement)
+            sql.do_update(statement)
 
         # record the delete unless specifically not requested (for undo)
         if log:
@@ -5928,11 +5935,11 @@ class SObjectUndo:
         sobject_node = transaction.create_log_node("sobject")
         Xml.set_attribute(sobject_node,"search_type",sobject.get_search_type())
 
-        search_code = sobject.get_value("code")
+        search_code = sobject.get_value("code", no_exception=True)
         if search_code:
             Xml.set_attribute(sobject_node,"search_code", search_code)
         else:
-            search_id = sobject.get_value("id")
+            search_id = sobject.get_id()
             Xml.set_attribute(sobject_node,"search_id", search_id)
 
 
