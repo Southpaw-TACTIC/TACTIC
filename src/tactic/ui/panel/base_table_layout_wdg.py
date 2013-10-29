@@ -1127,22 +1127,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 '''%my.parent_key
 
             } )
-            # no need for app_busy.. since it's built-in to search_cbk()
-            button.add_behavior( {
-                'type': 'listen',
-                'event_name': 'search_table_%s' % my.table_id,
-                'cbjs_action': '''
-                    var top = bvr.src_el.getParent(".spt_layout");
-                    var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    } 
-                '''
-            } )
 
 
 

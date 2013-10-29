@@ -978,6 +978,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.handle_load_behaviors(table)
 
+        # add the search_table_<table_id> listener used by widgets 
+        # like Add Task to Selected
+	if my.kwargs.get('temp') != True:
+            table.add_behavior( {
+                'type': 'listen',
+                'event_name': 'search_table_%s' % my.table_id,
+                'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_layout");
+                    var version = top.getAttribute("spt_version");
+                    if (version == "2") {
+                        spt.table.set_layout(top);
+                        spt.table.run_search();
+                    }
+                    else {
+                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+                    }
+                '''
+            } )
 
         widths = my.kwargs.get("column_widths")
         """
@@ -997,6 +1015,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         """
+
+        # all for collapsing of columns
+        table.add_behavior( {
+            #'type': 'double_click',
+            'type': 'smart_click_up',
+            'modkeys': 'SHIFT',
+            'bvr_match_class': 'spt_table_header',
+            'cbjs_action': '''
+            spt.table.set_table(bvr.src_el);
+            var element_name = bvr.src_el.getAttribute("spt_element_name");
+            spt.table.toggle_collapse_column(element_name);
+            '''
+        } )
+
 
 
         # column resizing behavior
@@ -1042,68 +1074,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                                                 ' text-align: left; padding: 10px;'
                                } )
 
-        # all for collapsing of columns
-        table.add_behavior( {
-            #'type': 'double_click',
-            'type': 'smart_click_up',
-            'modkeys': 'SHIFT',
-            'bvr_match_class': 'spt_table_header',
-            'cbjs_action': '''
-            spt.table.set_table(bvr.src_el);
-            var element_name = bvr.src_el.getAttribute("spt_element_name");
-            spt.table.toggle_collapse_column(element_name);
-            '''
-        } )
-
-
-
-
-
-        # indicator that a cell is editable
-
-        # TEST: event delegation with MooTools
-        table.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
-                function(event, src_el) {
-                    if (src_el.hasClass("spt_cell_insert_no_edit")) {
-                        src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
-                    }
-                    else if (!src_el.hasClass("spt_cell_no_edit")) {
-                        src_el.setStyle("background-image", "url(/context/icons/silk/page_white_edit.png)" );
-                        src_el.setStyle("background-repeat", "no-repeat" );
-                        src_el.setStyle("background-position", "bottom right");
-                    }
-
-                } )
-
-            bvr.src_el.addEvent('mouseout:relay(.spt_cell_edit)',
-                function(event, src_el) {
-                    src_el.setStyle("background-image", "" );
-                } )
-            '''
-        } )
-
-        # row highlighting
-
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
-            function(event, src_el) {
-                // remember the original color
-                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
-                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
-            } )
-
-        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
-            function(event, src_el) {
-                src_el.setAttribute("spt_hover_background", "");
-                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
-            } )
-        '''
-        } )
 
 
 
@@ -1171,6 +1141,51 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
+        # indicator that a cell is editable
+
+        # TEST: event delegation with MooTools
+        table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
+                function(event, src_el) {
+                    if (src_el.hasClass("spt_cell_insert_no_edit")) {
+                        src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
+                    }
+                    else if (!src_el.hasClass("spt_cell_no_edit")) {
+                        src_el.setStyle("background-image", "url(/context/icons/silk/page_white_edit.png)" );
+                        src_el.setStyle("background-repeat", "no-repeat" );
+                        src_el.setStyle("background-position", "bottom right");
+                    }
+
+                } )
+
+            bvr.src_el.addEvent('mouseout:relay(.spt_cell_edit)',
+                function(event, src_el) {
+                    src_el.setStyle("background-image", "" );
+                } )
+            '''
+        } )
+
+        # row highlighting
+
+        table.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
+            function(event, src_el) {
+                // remember the original color
+                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
+                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
+            } )
+
+        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
+            function(event, src_el) {
+                src_el.setAttribute("spt_hover_background", "");
+                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+            } )
+        '''
+        } )
 
 
         # set styles at the table level to be relayed down
@@ -2215,6 +2230,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if Container.get_dict("JSLibraries", "spt_table"):
             return
+
 
         select_color = table.get_color("background3")
         shadow_color = table.get_color("shadow")
@@ -4895,6 +4911,9 @@ spt.table.open_ingest_tool = function(search_type) {
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
         } )
+
+
+
 
 
     #

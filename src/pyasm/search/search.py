@@ -1873,7 +1873,7 @@ class Search(Base):
 
    
     def get_by_search_keys(search_keys, keep_order=False):
-        return SearchKey.get_by_search_keys(search_keys)
+        return SearchKey.get_by_search_keys(search_keys, keep_order=keep_order)
     get_by_search_keys = staticmethod(get_by_search_keys)
 
     def get_compound_filter(text_value, columns):
@@ -3195,16 +3195,15 @@ class SObject(object):
         if relationship in ['search_type', 'search_code', 'search_id']:
 
             my.set_value("search_type", sobject.get_search_type() )
-
             # fill in search_id only if it is an integer: this may not be the
             # case, such as in MongoDb, where the id is an object
             if SearchType.column_exists(my.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
-                if isinstance(sobj_id, int):
+            
+                if isinstance(sobj_id, int) or isinstance(sobj_id, long):
                     my.set_value("search_id", sobj_id )
                 else:
                     my.set_value("search_code", sobj_id )
-
 
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
                 my.set_value("search_code", sobject.get_value("code") )
@@ -3234,7 +3233,7 @@ class SObject(object):
             #relationship = schema.get_relationship(search_type, search_type2)
 
 
-
+        print "REL ", relationship
         if relationship in ["search_type", "search_code", "search_id"]:
             my.set_sobject_value(sobject, type="hierarchy")
         elif relationship in ["foreign_key", "code", "id"]:
@@ -6461,7 +6460,7 @@ class SearchKey(object):
 
 
  
-    def get_by_search_keys(cls, search_keys):
+    def get_by_search_keys(cls, search_keys, keep_order=False):
         '''get all the sobjects in a more effective way, assuming same search_type'''
 
         if not search_keys:
@@ -6498,14 +6497,31 @@ class SearchKey(object):
             single_search_type=True
         if single_search_type:
             if search_code_list and len(search_keys)==len(search_code_list):
-                return Search.get_by_code(search_type_list[0], search_code_list)
+                sobjs = Search.get_by_code(search_type_list[0], search_code_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_code = sobj.get_code()
+                        sort_dict[sobj] = search_code_list.index(sobj_code)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             elif search_id_list and len(search_keys)==len(search_id_list):
-                return Search.get_by_id(search_type_list[0], search_id_list)
+                sobjs = Search.get_by_id(search_type_list[0], search_id_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_id = sobj.get_id()
+                        sort_dict[sobj] = search_id_list.index(sobj_id)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             else:
                 raise SetupException('A mixed code and id search keys detected.')
         else:
             raise SetupException('Single search type expected.')
-
     get_by_search_keys = classmethod(get_by_search_keys)
 
 
