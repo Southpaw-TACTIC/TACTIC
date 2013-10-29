@@ -1871,7 +1871,7 @@ class Search(Base):
 
    
     def get_by_search_keys(search_keys, keep_order=False):
-        return SearchKey.get_by_search_keys(search_keys)
+        return SearchKey.get_by_search_keys(search_keys, keep_order=keep_order)
     get_by_search_keys = staticmethod(get_by_search_keys)
 
     def get_compound_filter(text_value, columns):
@@ -6454,7 +6454,7 @@ class SearchKey(object):
 
 
  
-    def get_by_search_keys(cls, search_keys):
+    def get_by_search_keys(cls, search_keys, keep_order=False):
         '''get all the sobjects in a more effective way, assuming same search_type'''
 
         if not search_keys:
@@ -6491,14 +6491,31 @@ class SearchKey(object):
             single_search_type=True
         if single_search_type:
             if search_code_list and len(search_keys)==len(search_code_list):
-                return Search.get_by_code(search_type_list[0], search_code_list)
+                sobjs = Search.get_by_code(search_type_list[0], search_code_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_code = sobj.get_code()
+                        sort_dict[sobj] = search_code_list.index(sobj_code)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             elif search_id_list and len(search_keys)==len(search_id_list):
-                return Search.get_by_id(search_type_list[0], search_id_list)
+                sobjs = Search.get_by_id(search_type_list[0], search_id_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_id = sobj.get_id()
+                        sort_dict[sobj] = search_id_list.index(sobj_id)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             else:
                 raise SetupException('A mixed code and id search keys detected.')
         else:
             raise SetupException('Single search type expected.')
-
     get_by_search_keys = classmethod(get_by_search_keys)
 
 
