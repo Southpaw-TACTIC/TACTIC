@@ -3193,16 +3193,15 @@ class SObject(object):
         if relationship in ['search_type', 'search_code', 'search_id']:
 
             my.set_value("search_type", sobject.get_search_type() )
-
             # fill in search_id only if it is an integer: this may not be the
             # case, such as in MongoDb, where the id is an object
             if SearchType.column_exists(my.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
-                if isinstance(sobj_id, int):
+            
+                if isinstance(sobj_id, int) or isinstance(sobj_id, long):
                     my.set_value("search_id", sobj_id )
                 else:
                     my.set_value("search_code", sobj_id )
-
 
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
                 my.set_value("search_code", sobject.get_value("code") )
@@ -3232,7 +3231,7 @@ class SObject(object):
             #relationship = schema.get_relationship(search_type, search_type2)
 
 
-
+        print "REL ", relationship
         if relationship in ["search_type", "search_code", "search_id"]:
             my.set_sobject_value(sobject, type="hierarchy")
         elif relationship in ["foreign_key", "code", "id"]:
