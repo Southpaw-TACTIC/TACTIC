@@ -1046,10 +1046,9 @@ class EventTriggerEditWdg(BaseRefreshWdg):
                 listen_process = trigger.get_value("listen_process", no_exception=True)
             else:
                 listen_process = None
-
             inputs = pipeline.get_input_processes(process)
             inputs = [str(x) for x in inputs]
-
+            
             top.add("In the following process: <br/><br/>")
             process_div = DivWdg()
             top.add(process_div)
@@ -1784,10 +1783,12 @@ class NotificationTriggerEditCbk(Command):
 
         notification.set_value("event", event)
         notification.set_value("title", title)
-        if process:
-            notification.set_value("process", process)
+
+        # listen process takes precesdencce
         if listen_process:
-            trigger.set_value("listen_process", listen_process)
+            notification.set_value("process", listen_process)
+        elif process:
+            notification.set_value("process", process)
         if search_type:
             notification.set_value("search_type", search_type)
 
