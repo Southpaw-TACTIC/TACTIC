@@ -159,6 +159,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not my.search_type.startswith("sthpw/sobject_list"):
             return
 
+        # don't remap if it's the default table view when the user is
+        # viewing raw data
+        if my.view == 'table':
+            return
+
         search_types_dict = {}
         for row, sobject in enumerate(my.sobjects):
 
@@ -1824,8 +1829,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 bvr.src_el.extra_data = bvr.data;
                 '''
             } )
-
-        
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
