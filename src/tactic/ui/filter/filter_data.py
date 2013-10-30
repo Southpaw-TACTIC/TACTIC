@@ -50,17 +50,17 @@ class FilterData(object):
                     raise SetupException('Data is not decodable as JSON.')
                 # try a straight eval
                 my.data = eval(data)
+
             except Exception, e:
                  if e.__str__().find('cannot parse JSON description') != -1:
                     raise SetupException('Data is not valid JSON.')
 
-        
-        elif type(data) == types.DictType:
-            my.data = [data]
-
         else:
             my.data = data
 
+        # it takes care of different conditions that re-eval data as my.data
+        if isinstance(my.data, dict):
+            my.data = [my.data]
 
     def set_data(my, data):
         '''add data dictionary or a JSON string'''

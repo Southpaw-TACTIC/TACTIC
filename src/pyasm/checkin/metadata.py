@@ -169,7 +169,8 @@ class CheckinMetadataHandler():
             name = name.lower()
             name = name.replace(" ", "_")
             name = name.replace(":", "_")
-      
+            
+            keys = [] 
             # otherwise it could an int or float
             if isinstance(value, basestring):
                 value = value.lower()
@@ -327,7 +328,7 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
 
-class ImageMagickMetadataParser:
+class ImageMagickMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs

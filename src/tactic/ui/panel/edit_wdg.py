@@ -13,11 +13,11 @@
 __all__ = [ 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
-from pyasm.common import Environment, Common, TacticException, jsonloads
+from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
 from pyasm.widget import WidgetConfigView
-from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg
+from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
 
 
 from tactic.ui.common import BaseRefreshWdg
@@ -58,6 +58,26 @@ class EditWdg(BaseRefreshWdg):
             'description': "Width of the widget",
             'category': 'Options',
         },
+        "show_header": {
+            'description': "Determines whether or not to show the header",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Options',
+        },
+
+        "show_action": {
+            'description': "Determines whether or not to show action buttons",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Options',
+        },
+        "title_width": {
+            'description': "Width of the attribute titles column",
+            'type': 'TextWdg',
+            'category': 'Options',
+        },
+
+
 
 
         "search_id": "id of the sobject to be edited",
@@ -324,16 +344,31 @@ class EditWdg(BaseRefreshWdg):
         search_type_obj = SearchType.get(my.search_type)
         sobj_title = search_type_obj.get_title()
 
-        top_div = DivWdg()
+        my.color_mode = my.kwargs.get("color_mode")
+        if not my.color_mode:
+            my.color_mode = "default"
+
+
+        top_div = my.top
+        # TEST
+        top_div.add_class("spt_edit_top")
+
         if not my.is_refresh:
             my.set_as_panel(top_div)
         content_div = DivWdg()
         content_div.add_class("spt_edit_top")
         content_div.set_attr("spt_search_key", my.search_key)
 
+        if not Container.get_dict("JSLibraries", "spt_edit"):
+            content_div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            } )
+
+
 
         # add close listener
-        # FIXME: this is an absolute search, but is here for backwards
+        # NOTE: this is an absolute search, but is here for backwards
         # compatibility
         content_div.add_named_listener('close_EditWdg', '''
             var popup = bvr.src_el.getParent( ".spt_popup" );
@@ -400,8 +435,8 @@ class EditWdg(BaseRefreshWdg):
 
         table = Table()
         inner.add(table)
-        table.add_color("background", "background")
-        table.add_border()
+        if my.color_mode == "default":
+            table.add_color("background", "background")
         table.add_color("color", "color")
 
 
@@ -419,10 +454,11 @@ class EditWdg(BaseRefreshWdg):
 
         
         tr = table.add_row()
-        #tr.add_border()
 
 
-        my.add_header(table, sobj_title)
+        show_header = my.kwargs.get("show_header")
+        if show_header not in ['false', False]:
+            my.add_header(table, sobj_title)
 
         single = my.kwargs.get("single")
         if single in ['false', False] and my.mode == 'insert':
@@ -442,10 +478,11 @@ class EditWdg(BaseRefreshWdg):
 
             tr, td = table.add_row_cell( multi_div )
 
+            if my.color_mode == "default":
+                td.add_color("border-color", "table_border", default="border")
+                td.add_style("border-width: 1px")
+                td.add_style("border-style: solid")
 
-            td.add_color("border-color", "table_border", default="border")
-            td.add_style("border-width: 1px")
-            td.add_style("border-style: solid")
             td.add_style("padding: 8 3 8 3")
             td.add_color("background", "background3")
             td.add_color("color", "color3")
@@ -483,9 +520,6 @@ class EditWdg(BaseRefreshWdg):
                 content_div.add(msg)
                 content_div.add(HtmlElement.br())
                 continue
-                """
-                raise TacticException('The widget definition for [%s] uses [%s] and is not meant for use in Edit. Please revise the definition in widget config'% (widget.__class__.__name__, widget.get_name()))
-                """
             if my.input_prefix:
                 widget.set_input_prefix(my.input_prefix)
 
@@ -514,10 +548,11 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if i % 2 == 0:            
-                    tr.add_color("background", "background")
-                else:
-                    tr.add_color("background", "background", -5)
+                if my.color_mode == "default":
+                    if i % 2 == 0:
+                        tr.add_color("background", "background")
+                    else:
+                        tr.add_color("background", "background", -5)
 
 
 
@@ -530,16 +565,20 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
+                title_width = my.kwargs.get("title_width")
+                if title_width:
+                    td.add_style("width: %s" % title_width)
+                else:
+                    td.add_style("width: 100px")
+
                 security = Environment.get_security()
                 if security.check_access("builtin", "view_site_admin", "allow"):
                     SmartMenu.assign_as_local_activator( td, 'HEADER_CTX' )
 
-                #td.add_color("background", "background", -12)
-                td.add_style("width: 100px")
-
-                td.add_color("border-color", "table_border", default="border")
-                td.add_style("border-width: 1" )
-                td.add_style("border-style: solid" )
+                if my.color_mode == "default":
+                    td.add_color("border-color", "table_border", default="border")
+                    td.add_style("border-width: 1" )
+                    td.add_style("border-style: solid" )
 
                 td.add_style("text-align: right" )
  
@@ -556,13 +595,15 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
-                td.add_color("border-color", "table_border", default="border")
-                td.add_style("border-width: 1" )
-                td.add_style("border-style: solid" )
+                if my.color_mode == "default":
+                    td.add_color("border-color", "table_border", default="border")
+                    td.add_style("border-width: 1" )
+                    td.add_style("border-style: solid" )
 
                 hint = widget.get_option("hint")
                 if hint:
                     table.add_data( HintWdg(hint) ) 
+
 
         if not my.is_disabled and not my.mode == 'view':
             tr, td = table.add_row_cell( my.get_action_html() )
@@ -638,10 +679,10 @@ class EditWdg(BaseRefreshWdg):
         th.add(title_div)
         title_div.add(title_str)
         th.add_color("background", "background3")
-        #th.add_border()
-        th.add_color("border-color", "table_border", default="border")
-        th.add_style("border-width: 1px")
-        th.add_style("border-style: solid")
+        if my.color_mode == "default":
+            th.add_color("border-color", "table_border", default="border")
+            th.add_style("border-width: 1px")
+            th.add_style("border-style: solid")
         th.set_attr("colspan", "2")
         th.add_style("height: 30px")
 
@@ -713,10 +754,44 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
-        div.add_behavior( {
-            'type': 'load',
-            'cbjs_action': my.get_onload_js()
-        } )
+
+
+        # construct the bvr
+        element_names = my.element_names[:]
+        for element_name in my.skipped_element_names:
+            element_names.remove(element_name)
+
+        bvr =  {
+            'type': 'click_up',
+            'mode': my.mode,
+            'element_names': element_names,
+            'search_key': search_key,
+            'input_prefix': my.input_prefix,
+            'view': my.view
+        }
+
+        if my.mode == 'insert':
+            bvr['refresh'] = 'true'
+            # for adding parent relationship in EditCmd
+            if my.parent_key:
+                bvr['parent_key'] = my.parent_key
+
+
+
+
+        hidden_div = DivWdg()
+        hidden_div.add_style("display: none")
+        div.add(hidden_div)
+
+        hidden = TextAreaWdg("__data__")
+        hidden_div.add(hidden)
+        hidden.set_value( jsondumps(bvr) )
+
+        show_action = my.kwargs.get("show_action")
+        if show_action in [False, 'false']:
+            return div
+
+
 
  
         div.add_styles('height: 35px; margin-top: 5px;')
@@ -760,29 +835,11 @@ class EditWdg(BaseRefreshWdg):
         save_event = my.kwargs.get('save_event')
         if not save_event:
             save_event = div.get_unique_event("save")
+        bvr['save_event'] = save_event
+        bvr['named_event'] = 'edit_pressed'
 
-        #print "save: ", save_event
-        element_names = my.element_names[:]
-        for element_name in my.skipped_element_names:
-            element_names.remove(element_name)
+        bvr['cbjs_action'] = cbjs_insert
 
-        bvr =  {
-            'type': 'click_up',
-            'mode': my.mode,
-            'save_event': save_event,
-            'cbjs_action': cbjs_insert,
-         
-            'named_event': 'edit_pressed',
-            'element_names': element_names,
-            'search_key': search_key,
-            'input_prefix': my.input_prefix,
-            'view': my.view
-        }
-        if my.mode == 'insert':
-            bvr['refresh'] = 'true'
-            # for adding parent relationship in EditCmd
-            if my.parent_key:
-                bvr['parent_key'] = my.parent_key
         
         ok_btn_label = my.mode.capitalize()
         if ok_btn_label == 'Edit':
@@ -940,7 +997,36 @@ class EditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         return r'''
 
+spt.Environment.get().add_library("spt_edit");
+
 spt.edit = {}
+
+
+spt.edit.save_changes = function(content) {
+    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+
+    bvr = JSON.parse(values.__data__);
+    console.log(bvr);
+
+    var class_name = "tactic.ui.panel.EditCmd";
+    var kwargs = {};
+
+    kwargs['element_names'] = bvr.element_names;
+    kwargs['search_key'] = bvr.search_key;
+    if (bvr.parent_key)
+        kwargs['parent_key'] = bvr.parent_key;
+    kwargs['input_prefix'] = bvr.input_prefix;
+    kwargs['view'] = bvr.view;
+
+    var server = TacticServerStub.get();
+
+    values['search_type'] = bvr.search_type;
+
+    var info = server.execute_cmd(class_name, kwargs, values);
+    return info.info.sobject;
+}
+
+
 
 // Called when the form is submitted
 //
@@ -957,7 +1043,6 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
     var server = TacticServerStub.get();
 
-    //var class_name = "pyasm.command.EditCmd";
     var class_name = "tactic.ui.panel.EditCmd";
     var args = {};
 

@@ -89,8 +89,8 @@
     </element>
     <element name='checkin_mode'>
         <display class='SelectWdg'>
-            <values>file|dir|sequence|multi_file</values>
-            <labels>File|Directory|Sequence|Multiple Files</labels>
+            <values>file|dir|sequence|multi_file|workarea</values>
+            <labels>File|Directory|Sequence|Multiple Files|Work Area</labels>
             <empty>true</empty>
         </display>
     </element>

@@ -1089,7 +1089,6 @@ class DiscussionWdg(BaseRefreshWdg):
             }
 
 
-
             note_dialog = DialogWdg(display=False)
             note_dialog.add_title("Add Note")
             note_dialog.add_style("overflow-y: auto")

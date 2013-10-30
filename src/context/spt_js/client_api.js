@@ -660,6 +660,8 @@ TacticServerStub = function() {
         return this._delegate("add_file", arguments, kwargs )
     }
 
+
+    // DEPRECATED
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -739,6 +741,8 @@ TacticServerStub = function() {
         return to_paths
    
     }
+
+
 
     this.checkout_snapshot = function(search_key, sandbox_dir, kwargs) {
         // get the files for this snapshot
@@ -1036,7 +1040,7 @@ TacticServerStub = function() {
      * Widget methods
      */
     this.get_widget = function(class_name, kwargs) {
-        libraries = spt.Environment.get().get_libraries();
+        var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
         try {
@@ -1169,6 +1173,9 @@ TacticServerStub = function() {
     // async functions
 
     this.async_get_widget = function(class_name, kwargs) {
+        var libraries = spt.Environment.get().get_libraries();
+        kwargs.libraries = libraries;
+
         var callback = kwargs['cbjs_action'];
         this._delegate("get_widget", arguments, kwargs, "string", callback);
         return;
@@ -1282,8 +1289,12 @@ TacticServerStub = function() {
     this.async_callback = function(client, request) {
         if (request.readyState == 4) {
             if (request.status == 200) {
-                var data = this._handle_ret_val(client.func_name, request, client.ret_type);
-                client.callback(data);
+                try {
+                    var data = this._handle_ret_val(client.func_name, request, client.ret_type);
+                    client.callback(data);
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
             } else {
                 //alert("status is " + request.status);
                 throw("status is " + request.status);

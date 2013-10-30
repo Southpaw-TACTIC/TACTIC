@@ -287,7 +287,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         web = WebContainer.get_web()
         my.skin = web.get_skin()
 
-
         # Set up default row looks ...
         my.look_row = 'dg_row'
         my.look_row_hilite = 'dg_row_hilite'
@@ -325,7 +324,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def set_items_found(my, number):
         my.items_found = number
-
+    
+    def set_search_wdg(my, search_wdg):
+        my.search_wdg = search_wdg
 
 
     def is_expression_element(my, element_name):
@@ -530,21 +531,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # don't set the view here, it affects the logic in SearchWdg
-        from tactic.ui.app import SearchWdg
-        filter_xml = ''
-        if my.kwargs.get('filter_xml'):
-            filter_xml = my.kwargs.get('filter_xml')
-        
+        filter_json = ''
+        if my.kwargs.get('filter'):
+            filter_json = my.kwargs.get('filter')
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
         custom_search_view = my.kwargs.get('custom_search_view')
         if not custom_search_view:
             custom_search_view = ''
 
+        run_search_bvr = my.kwargs.get('run_search_bvr')
+
         #my.search_wdg = None
         if not my.search_wdg:
+            my.search_wdg = my.kwargs.get("search_wdg")
+        if not my.search_wdg:
+            from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
+            # custom_filter_view and custom_search_view are less used, so excluded here
+            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:
@@ -605,7 +610,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s":
+        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -1121,22 +1126,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
-            } )
-            # no need for app_busy.. since it's built-in to search_cbk()
-            button.add_behavior( {
-                'type': 'listen',
-                'event_name': 'search_table_%s' % my.table_id,
-                'cbjs_action': '''
-                    var top = bvr.src_el.getParent(".spt_layout");
-                    var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    } 
-                '''
             } )
 
 
