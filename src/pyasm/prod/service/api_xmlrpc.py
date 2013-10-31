@@ -2015,7 +2015,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # delete this sobject
         if include_dependencies:
             from tactic.ui.tools import DeleteCmd
-            cmd = DeleteCmd(sobject=sobject)
+            cmd = DeleteCmd(sobject=sobject, auto_discover=True)
             cmd.execute()
         else:
             sobject.delete()

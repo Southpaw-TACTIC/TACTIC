@@ -3233,7 +3233,6 @@ class SObject(object):
             #relationship = schema.get_relationship(search_type, search_type2)
 
 
-        print "REL ", relationship
         if relationship in ["search_type", "search_code", "search_id"]:
             my.set_sobject_value(sobject, type="hierarchy")
         elif relationship in ["foreign_key", "code", "id"]:
@@ -4601,7 +4600,8 @@ class SObject(object):
 
     def get_reference(my, search_type):
         return my.get_parent(search_type)
-   
+  
+    
 
     def get_icon_context(cls, context=None):
         '''gives various widgets (namely the ThumbWdg) and indication of
@@ -5753,6 +5753,43 @@ class SearchType(SObject):
 
 
     breakup_search_type = staticmethod(breakup_search_type)
+
+    def get_related_types(cls, search_type, direction="children"):
+        '''find all the downstream related types for delete purpose in delete_sobject() or DeleteToolWdg'''
+        
+        from pyasm.biz import Schema
+        schema = Schema.get()
+        related_types = schema.get_related_search_types(search_type, direction=direction)
+        parent_type = schema.get_parent_type(search_type)
+
+
+        # some special considerations
+        # FIXME: this needs to be more automatic.  Should only be
+        # deletable children (however, that will be defined)
+        if search_type in ['sthpw/task','sthpw/note', 'sthpw/snapshot']:
+            if "sthpw/project" in related_types:
+                related_types.remove("sthpw/project")
+
+            if "sthpw/login" in related_types:
+                related_types.remove("sthpw/login")
+
+            if "config/process" in related_types:
+                related_types.remove("config/process")
+
+
+
+        if parent_type in related_types:
+            related_types.remove(parent_type)
+
+        related_types.append('sthpw/note')
+        related_types.append('sthpw/task')
+        related_types.append('sthpw/snapshot')
+        if 'sthpw/work_hour' not in related_types:
+            related_types.append('sthpw/work_hour')
+    
+        return related_types
+
+    get_related_types = classmethod(get_related_types)
 
 
 class SObjectFactory(Base):
