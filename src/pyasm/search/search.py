@@ -6558,7 +6558,23 @@ class SearchKey(object):
             else:
                 raise SetupException('A mixed code and id search keys detected.')
         else:
-            raise SetupException('Single search type expected.')
+            # multiple sTypes, rearrange them first in order
+            search_key_dict = {}
+            for sk in search_keys:
+                search_type = SearchKey.extract_search_type(sk)
+                search_key_list = search_key_dict.get(search_type)
+                if search_key_list == None:
+                    search_key_dict[search_type] = [sk]
+                else:
+                    search_key_list.append(sk)
+                
+            results = []
+            for key, sk_list in search_key_dict.items():
+                result = SearchKey.get_by_search_keys(sk_list, keep_order=keep_order)
+                results.extend(result)
+            return results
+                
+            #raise SetupException('Single search type expected.')
     get_by_search_keys = classmethod(get_by_search_keys)
 
 

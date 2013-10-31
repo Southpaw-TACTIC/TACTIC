@@ -376,7 +376,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
-
         keyword_values = filter_data.get_values_by_prefix("keyword")
         if keyword_values:
             column = "keywords"
@@ -397,11 +396,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
         # passed in filter overrides
+        """
         if state_filter:
             filter_data.set_data(state_filter)
+        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
-      
+        
         # user-chosen order has top priority
         if order:
             my.order_element = order
@@ -421,7 +422,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # the group element is always ordered first
             my.group_element = group_values.get("group")
-            
 
             if my.group_element == 'true':
                 my.group_element = True
@@ -534,6 +534,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         filter_json = ''
         if my.kwargs.get('filter'):
             filter_json = my.kwargs.get('filter')
+            
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
         custom_search_view = my.kwargs.get('custom_search_view')

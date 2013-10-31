@@ -190,7 +190,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             search_types_list.append((row,sobject))
 
-
         deleted = {}
         for search_type, sobjects in search_types_dict.items():
             try:
@@ -420,8 +419,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # set some grouping parameters
         my.process_groups()
 
-        my.order_sobjects()
-        my.remap_sobjects()
+        if my.kwargs.get('temp') != True:
+            my.order_sobjects()
+            my.remap_sobjects()
 
         for sobject in my.sobjects:
             my.sobject_levels.append(0)
@@ -1649,12 +1649,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             last_value = my.group_values.get(group_column)
             
             if last_value == None or group_value != last_value:
-
                 my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
-
 
 
         # what does this do?
