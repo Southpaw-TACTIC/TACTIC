@@ -388,6 +388,7 @@ class DirListWdg(BaseRefreshWdg):
         top.add_attr("ondragenter", "return false")
         top.add_attr("ondragover", "return false")
         top.add_attr("ondrop", "spt.drag.noop(event, this)")
+        top.add_style("border: solid 1px green")
         top.add_behavior( {
             'type': 'load',
             'base_dir': my.kwargs.get("base_dir"),

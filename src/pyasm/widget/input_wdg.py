@@ -853,14 +853,12 @@ class CheckboxWdg(BaseInputWdg):
             my.set_attr(name,option)
 
         my.handle_behavior()
-        my.add_style("vertical-align: none")
 
         if not my.label:
             return super(CheckboxWdg, my).get_display()
         else:
             cb = BaseInputWdg.get_class_display(my)
             span = SpanWdg(cb, css=my.css)
-            span.add_style("vertical-align: center")
             span.add(my.label)
             return span
 

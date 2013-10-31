@@ -947,8 +947,8 @@ TacticServerStub = function() {
         return this._delegate("reactivate_sobject", arguments);
     }
 
-    this.delete_sobject = function(search_key) {
-        return this._delegate("delete_sobject", arguments);
+    this.delete_sobject = function(search_key, kwargs) {
+        return this._delegate("delete_sobject", arguments, kwargs);
     }
 
     this.clone_sobject = function(search_key, data) {
@@ -1289,8 +1289,12 @@ TacticServerStub = function() {
     this.async_callback = function(client, request) {
         if (request.readyState == 4) {
             if (request.status == 200) {
-                var data = this._handle_ret_val(client.func_name, request, client.ret_type);
-                client.callback(data);
+                try {
+                    var data = this._handle_ret_val(client.func_name, request, client.ret_type);
+                    client.callback(data);
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
             } else {
                 //alert("status is " + request.status);
                 throw("status is " + request.status);

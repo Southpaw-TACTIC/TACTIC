@@ -672,7 +672,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 search_key = search_key.replace("&amp;", "&")
 
 
-            print "search_key: ", search_key
+            #print "search_key: ", search_key
             sobject = SearchKey.get_by_search_key(search_key)
             if not sobject:
                 if no_exception:
@@ -2015,7 +2015,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # delete this sobject
         if include_dependencies:
             from tactic.ui.tools import DeleteCmd
-            cmd = DeleteCmd(sobject=sobject)
+            cmd = DeleteCmd(sobject=sobject, auto_discover=True)
             cmd.execute()
         else:
             sobject.delete()

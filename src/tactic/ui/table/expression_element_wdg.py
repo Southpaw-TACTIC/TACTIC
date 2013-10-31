@@ -251,9 +251,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache:
             return True
 
-        group_by = my.get_option("group_by")
-        if group_by:
-            return True
 
         group_by = my.get_option("group_by")
         if group_by:
@@ -560,7 +557,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 try:
                     display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
                 except Exception, e:
-                    print "WARNING: ", e
+                    print "WARNING in display expression [%s]: " % display_expr, e
                     display_result = "ERROR: %s" % e
 
             elif format_str:

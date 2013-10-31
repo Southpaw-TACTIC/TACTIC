@@ -164,8 +164,6 @@ class FolderTrigger(Trigger):
             path = path.encode('utf-8')
         else:
             path = unicode(path, errors='ignore').encode('utf-8')
-        print "path: ", path
-        print "search_key: ", sobject.get_search_key()
 
         #dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
 
