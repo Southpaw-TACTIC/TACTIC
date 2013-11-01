@@ -220,8 +220,8 @@
 
 
 <db_resource layout="tactic.ui.panel.EditWdg">
-  <element name='snapshot'/>
-  <element name='code'>
+  <element name='snapshot' title="Preview"/>
+  <element name='code' title="Resource Project Code">
       <display class="TextWdg">
       </display>
   </element>

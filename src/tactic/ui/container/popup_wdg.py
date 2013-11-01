@@ -967,31 +967,36 @@ spt.popup.get_widget = function( evt, bvr )
         values = bvr.values;
     }
     var kwargs = {'args': args, 'values': values};
+
+
+    var callback = function() {
+
+        // place in the middle of the screen
+        var size = popup.getSize();
+        var body = document.body;
+        var win_size = $(window).getSize();
+        var offset = $(window);
+        var xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
+        var ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
+        if (xpos < 0) {
+            xpos = 0;
+        }
+        if (ypos < 0) {
+            ypos = 0;
+        }
+        popup.setStyle("top", ypos);
+        popup.setStyle("left", xpos);
+        popup.setStyle("margin-left", 0);
+        popup.setStyle("position", "fixed");
+
+        spt.popup.show_background();
+
+    };
+
+    //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);
-
-    // replace the popup html
     spt.behavior.replace_inner_html( content_wdg, widget_html );
-
-
-    // place in the middle of the screen
-    var size = popup.getSize();
-    var body = document.body;
-    var win_size = $(window).getSize();
-    var offset = $(window);
-    var xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
-    var ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
-    if (xpos < 0) {
-        xpos = 0;
-    }
-    if (ypos < 0) {
-        ypos = 0;
-    }
-    popup.setStyle("top", ypos);
-    popup.setStyle("left", xpos);
-    popup.setStyle("margin-left", 0);
-    popup.setStyle("position", "fixed");
-
-    spt.popup.show_background();
+    callback();
 
     return popup;
 }

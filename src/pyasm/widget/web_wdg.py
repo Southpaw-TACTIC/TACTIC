@@ -1365,7 +1365,6 @@ class TacticLogoWdg(Widget):
  	#div.add( "<img src='/context/icons/logo/tactic_silver.png
 
         div.add(HtmlElement.br(2))
-        div.add("SOUTHPAW TECHNOLOGY INC<br/><br>")
         div.add("Release: %s" %Environment.get_release_version() )
         div.add(HtmlElement.br(4))
 
