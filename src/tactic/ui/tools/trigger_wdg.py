@@ -1052,8 +1052,12 @@ class EventTriggerEditWdg(BaseRefreshWdg):
             
             else:
                 listen_process = None
+            
+            top.add_style("padding: 10px")
 
-            inputs = pipeline.get_input_processes(process)
+            if not pipeline:
+                return top
+            inputs = pipeline.get_process_names()
             inputs = [str(x) for x in inputs]
             
             """  
@@ -1083,7 +1087,6 @@ class EventTriggerEditWdg(BaseRefreshWdg):
             if listen_process:
                 select.set_value(listen_process)
 
-            top.add_style("padding: 10px")
 
 
         return top
