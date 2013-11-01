@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import jsondumps, jsonloads, Common
 from pyasm.biz import Notification, CustomScript, Pipeline, Project
-from pyasm.web import DivWdg, WebContainer, Table, HtmlElement
+from pyasm.web import DivWdg, WebContainer, Table, HtmlElement, SpanWdg
 from pyasm.command import Command
 from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
@@ -666,16 +666,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'Send a notification',
                 #'Create a task for each process',
                 #'Add a note',
-                'Set task complete',
+                #'Set task complete',
                 #'Delete versions',
                 'Run python code',
                 'Run python trigger',
             ]
+            #TODO: enable task_complete
             trigger_values = [
                 'notification',
                 #'task_create_all',
                 #'note_insert',
-                'task_complete',
+                #'task_complete',
                 #'version_delete',
                 'python_script',
                 'python_class',
@@ -1041,19 +1042,22 @@ class EventTriggerEditWdg(BaseRefreshWdg):
             top.add("<br/>")
             top.add_style("padding: 10px")
 
-        elif event.startswith("checkin|") and process:
+        elif event.startswith("checkin|") and not process:
+            # search_type mode does not have a process
             if trigger:
-                listen_process = trigger.get_value("listen_process", no_exception=True)
+                if isinstance(trigger, Notification):
+                    listen_process = trigger.get_value("process", no_exception=True)
+                else:
+                    listen_process = trigger.get_value("listen_process", no_exception=True)
+            
             else:
                 listen_process = None
+
             inputs = pipeline.get_input_processes(process)
             inputs = [str(x) for x in inputs]
             
+            """  
             top.add("In the following process: <br/><br/>")
-            process_div = DivWdg()
-            top.add(process_div)
-            process_div.add_style("margin-left: 10px")
-
             checkbox = CheckboxWdg("this_process")
             process_div.add(checkbox)
             if not listen_process or listen_process == process:
@@ -1062,12 +1066,21 @@ class EventTriggerEditWdg(BaseRefreshWdg):
 
             process_div.add("&nbsp;"*3 + " or " + "&nbsp;"*3)
 
+            """
+            span = SpanWdg('to')
+            span.add_style('padding: 8px')
+
+            process_div = DivWdg(span)
+            process_div.add_style("margin-left: 6px")
+            top.add(process_div)
+            
             select = SelectWdg("listen_process")
             process_div.add(select)
             select.set_option("values", inputs)
             select.set_option("labels", inputs)
-            select.add_empty_option("-- Previous Process --")
-            if listen_process and listen_process != process:
+            select.add_empty_option("-- Select a Process --")
+            
+            if listen_process:
                 select.set_value(listen_process)
 
             top.add_style("padding: 10px")
