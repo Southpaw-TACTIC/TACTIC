@@ -651,7 +651,7 @@
 
 
 
-  <element name="db_resource" title="Database Resource" icon="db" help='main'>
+  <element name="db_resource" title="Database Resource" icon="db" help='database_resource'>
     <display class="LinkWdg">
         <search_type>sthpw/db_resource</search_type>
         <view>table</view>
