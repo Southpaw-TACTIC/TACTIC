@@ -779,6 +779,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
        
 
         div = DivWdg()
+        div.add_style("position: relative")
         #div.add_style("width: 360px")
         #div.add_style("height: 35px")
         #div.add_style("padding-top: 15px")
@@ -888,7 +889,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         value = my.values.get("value")
         if value:
             text.set_value(value)
-        div.add(text)
 
 
         text.add_behavior( {
@@ -900,21 +900,47 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         }
         ''' } )
 
-        #text.add_behavior( {
-        #    'type': 'change',
-        #    'cbjs_action': my.get_set_js_action()
-        #} )
+
+        div.add(text)
+
+
+        from pyasm.widget import IconWdg
+        icon_div = DivWdg()
+        icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
+        icon_div.add(icon)
+        icon_div.add_class("hand")
+        icon_div.add_style("position: absolute")
+        icon_div.add_style("top: 5")
+        icon_div.add_style("right: 0")
+
+        from tactic.ui.container import DialogWdg
+        dialog = DialogWdg(show_title=False, show_pointer=False)
+        dialog.set_as_activator(icon_div, {'x': -150, 'y': 0})
+        div.add(dialog)
+
+        match_div = DivWdg()
+        match_div.add_style("width: 150")
+        dialog.add(match_div)
+        checkbox = CheckboxWdg("partial")
+        match_div.add(checkbox)
+        checkbox.add_attr("title", "Use partial word match (slower)")
+        match_div.add_style("padding: 10px")
+        match_div.add_color("color", "color")
+        match_div.add_color("background", "background")
+        match_div.add(" Use partial word match")
 
 
         if my.mode == 'keyword' and my.has_index:
-            checkbox = CheckboxWdg("partial")
-            checkbox.add_attr("title", "Use partial word match (slower)")
-            div.add(checkbox)
+            div.add(icon_div)
+            #checkbox = CheckboxWdg("partial")
+            #checkbox.add_attr("title", "Use partial word match (slower)")
+            #div.add(checkbox)
         elif my.mode =='global' and my.has_index:
-            checkbox = CheckboxWdg("partial")
-            checkbox.add_attr("title", "Use partial word match (slower)")
+            div.add(icon_div)
+            #checkbox = CheckboxWdg("partial")
+            #checkbox.add_attr("title", "Use partial word match (slower)")
             checkbox.set_default_checked()
-            div.add(checkbox)
+            #div.add(checkbox)
             
         else:
             # partial is implied otherwise

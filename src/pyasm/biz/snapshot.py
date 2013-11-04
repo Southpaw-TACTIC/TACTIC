@@ -1201,7 +1201,6 @@ class Snapshot(SObject):
 
 
 
-
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,
@@ -1427,20 +1426,23 @@ class Snapshot(SObject):
 
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
-            level_type=None, level_id=None, show_retired=False):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
+            level_type=None, level_id=None, show_retired=False, \
+            process=None):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
-    def get_latest_by_sobject(sobject, context=None, show_retired=False):
+    def get_latest_by_sobject(sobject, context=None, show_retired=False, \
+            process=None):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired)
+                context=context, show_retired=show_retired, process=process \
+        )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
 
