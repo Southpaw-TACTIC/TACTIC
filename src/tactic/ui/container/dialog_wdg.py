@@ -205,8 +205,10 @@ class DialogWdg(BaseRefreshWdg):
 
                 // adjust the pointer
                 var pointer = dialog.getElement(".spt_popup_pointer");
-                pointer_pos = pointer.getPosition();
-                pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
+                if (pointer) {
+                    pointer_pos = pointer.getPosition();
+                    pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
+                }
 
             }
             bvr.src_el.dialog = dialog;
