@@ -73,7 +73,7 @@ class CheckinMetadataHandler():
 
             if not os.path.exists(path):
                 continue
-            elif ext in ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax','wm','wvx','ogg','webm','mkv']:
+            elif ext in ['.mov','.wmv','.mpg','.mpeg','.m1v','.m2v','.mp2','.mpa','.mpe','.mp4','.wma','.asf','.asx','.avi','.wax','.wm','.wvx','.ogg','.webm','.mkv']:
                 parser_type = "FFMPEG"
             elif ext in ['.txt','.doc','.docx','.xls','.rtf','.odt']:
                 continue
