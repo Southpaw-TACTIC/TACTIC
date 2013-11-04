@@ -381,7 +381,7 @@ class Common(Base):
     get_dict_list = staticmethod(get_dict_list)
 
     def subset_dict(dct, keys):
-        return dict([ (i, dct[i] ) for i in keys])
+        return dict([ (i, dct.get(i) ) for i in keys])
     subset_dict = staticmethod(subset_dict)
 
     def get_unique_list(list):
