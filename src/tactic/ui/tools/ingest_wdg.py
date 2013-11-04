@@ -238,8 +238,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             var date_label_el = clone.getElement(".spt_date_label");
             var date_el = clone.getElement(".spt_date");
 
-                //var loadingImage = loadImage(
-                setTimeout( function() {
+            //var loadingImage = loadImage(
+            setTimeout( function() {
                 if (icon) {
                     var loadingImage = loadImage(
                         file,
@@ -259,39 +259,39 @@ class IngestUploadWdg(BaseRefreshWdg):
                 }
 
 
-                    loadImage.parseMetaData(
-                        file,
-                        function(data) {
-                            if (data.exif) {
-                                var date = data.exif.get('DateTimeOriginal');
-                                if (date) {
-                                    date_label_el.innerHTML = date;
+                loadImage.parseMetaData(
+                    file,
+                    function(data) {
+                        if (data.exif) {
+                            var date = data.exif.get('DateTimeOriginal');
+                            if (date) {
+                                date_label_el.innerHTML = date;
                                 if (date_el) {
                                     date_el.value = date;
                                 }
                             }
                         }
 
-                        }
-                    );
+                    }
+                );
 
-                }, delay );
+            }, delay );
 
-                /*
-                var reader = new FileReader();
-                reader.thumb_el = thumb_el;
-                reader.onload = function(e) {
-                    this.thumb_el.innerHTML = [
-                        '<img class="thumb" src="',
-                        e.target.result,
-                        '" title="', escape(name),
-                        '" width="60px"',
-                        '" padding="5px"',
-                        '"/>'
-                    ].join('');
-                }
-                reader.readAsDataURL(file);
-                */
+            /*
+            var reader = new FileReader();
+            reader.thumb_el = thumb_el;
+            reader.onload = function(e) {
+                this.thumb_el.innerHTML = [
+                    '<img class="thumb" src="',
+                    e.target.result,
+                    '" title="', escape(name),
+                    '" width="60px"',
+                    '" padding="5px"',
+                    '"/>'
+                ].join('');
+            }
+            reader.readAsDataURL(file);
+            */
          
             clone.getElement(".spt_name").innerHTML = file.name;
             clone.getElement(".spt_size").innerHTML = size + " KB";
@@ -317,9 +317,9 @@ class IngestUploadWdg(BaseRefreshWdg):
                 else {
                     spt.drag.show_file(files[i], files_el, delay, true);
 
-                if (size < 100*1024)       delay += 50;
-                else if (size < 1024*1024) delay += 500;
-                else if (size < 10*1024*1024) delay += 1000;
+                    if (size < 100*1024)       delay += 50;
+                    else if (size < 1024*1024) delay += 500;
+                    else if (size < 10*1024*1024) delay += 1000;
                 }
 
             }
