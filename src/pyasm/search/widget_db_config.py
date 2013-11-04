@@ -164,6 +164,14 @@ class WidgetDbConfig(SObject):
         return ordered_nodes
 
 
+    def get_element_xml(my, element_name):
+        node = my.get_element_node(element_name)
+        if node is None:
+            return ''
+        return my.xml.to_string(node)
+
+
+
     def get_element_node(my, element_name):
         xpath = "config/%s/element[@name='%s']" % (my.view,element_name)
         node = my.xml.get_node(xpath)

@@ -15,7 +15,7 @@ import os, types, re
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, jsondumps
 from pyasm.biz import Project
 from pyasm.security import Security
-from pyasm.search import Search
+from pyasm.search import Search, SearchType
 from pyasm.web import WebEnvironment, DivWdg
 
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
@@ -115,49 +115,103 @@ class HashPanelWdg(BaseRefreshWdg):
                 use_index = xml.get_value("/element/@index");
                 if use_index in ['true', True]:
                     use_index = True
+                else:
+                    use_index = False
 
             use_admin = sobject.get_value("admin", no_exception=True)
             if not use_admin:
                 use_admin = xml.get_value("/element/@admin");
                 if use_admin in ['true', True]:
                     use_admin = True
+                else:
+                    use_admin = False
 
                 use_sidebar = xml.get_value("/element/@sidebar");
                 if use_sidebar in ['false', False]:
                     use_sidebar = False
+                else:
+                    use_sidebar = True
 
         return use_index, use_admin, use_sidebar
 
     _get_flags = classmethod(_get_flags)
 
 
-    def _get_predefined_wdg(cls, hash):
-        # add some predefined ones
-        if key == "link":
-            expression = "/link/{link}"
+
+
+    def _get_predefined_url(cls, key, hash):
+
+        # make some predefined fake urls
+        if key in ["link", "tab", "admin"]:
+
+            # this is called by PageNav
+            expression = "/%s/{link}" % key
             options = Common.extract_dict(hash, expression)
+            link = options.get("link")
 
-            # This is the standard way of communicating through main interface
-            # It uses the link keyword to draw the main widget
-            if use_top:
-                top_class_name = WebEnvironment.get_top_class_name()
-                kwargs = {
-                    "link": options.get("link")
-                }
+            if not link:
+                return None
+
+            # test link security
+            project_code = Project.get_project_code()
+            security = Environment.get_security()
+            link = options.get("link")
+            keys = [
+                    { "element": link },
+                    { "element": "*" },
+                    { "element": link, "project": project_code },
+                    { "element": "*", "project": project_code }
+            ]
+            if not security.check_access("link", keys, "allow", default="deny"):
+                return None
+
+
+            from tactic.ui.panel import SideBarBookmarkMenuWdg
+            personal = False
+            if '.' in link:
+                personal = True
+
+            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
+            options = config.get_display_options(link)
+
+            class_name = options.get("class_name")
+            widget_key = options.get("widget_key")
+            if widget_key:
+                class_name = WidgetClassHandler().get_display_handler(widget_key)
+            elif not class_name:
+                class_name = 'tactic.ui.panel.ViewPanelWdg'
+
+            if key in ["admin", "tab"]:
+                use_index = "false"
             else:
-                top_class_name = 'tactic.ui.panel.HashPanelWdg'
-                kwargs = {
-                    "hash": hash.replace("/link", "/tab")
-                }
+                use_index = "true"
 
-                
-            widget = Common.create_from_class_path(top_class_name, [], kwargs) 
-            return widget
+            if key in ['admin']:
+                use_admin = "true"
+            else:
+                use_admin = "false"
 
+
+            xml = []
+            xml.append('''<element admin="%s" index="%s">''' % (use_admin, use_index))
+            xml.append('''  <display class="%s">''' % class_name)
+            for name, value in options.items():
+                xml.append("<%s>%s</%s>" % (name, value, name) )
+            xml.append('''  </display>''')
+            xml.append('''</element>''')
+
+            xml = "\n".join(xml)
+
+            sobject = SearchType.create("config/url")
+            sobject.set_value("url", "/%s/{value}" % key)
+            sobject.set_value("widget", xml )
+
+            return sobject
+ 
         else:
             return None
 
-    _get_predefined_wdg = classmethod(_get_predefined_wdg)
+    _get_predefined_url = classmethod(_get_predefined_url)
 
 
 
@@ -182,18 +236,21 @@ class HashPanelWdg(BaseRefreshWdg):
         key = m.groups()[0]
 
 
+        sobject = cls._get_predefined_url(key, hash)
 
         # look up the url
-        search = Search("config/url")
-        search.add_filter("url", "/%s/%%"%key, "like")
-        search.add_filter("url", "/%s"%key)
-        search.add_where("or")
-        sobject = search.get_sobject()
+        if not sobject:
+            search = Search("config/url")
+            search.add_filter("url", "/%s/%%"%key, "like")
+            search.add_filter("url", "/%s"%key)
+            search.add_where("or")
+            sobject = search.get_sobject()
 
         if not sobject:
             if return_none:
                 return None
             return DivWdg("No Widget found for hash [%s]" % hash)
+
 
 
         config = sobject.get_value("widget")
@@ -273,7 +330,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_widget_from_hash2(cls, hash, return_none=False, force_no_index=False, kwargs={}):
+    def get_widget_from_hashX(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):
