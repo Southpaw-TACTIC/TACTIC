@@ -813,7 +813,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
                 daily_total = 0
                 for value in sobj_daily_sub_dict.values():
-                    daily_total += value
+                    if value:
+                        daily_total += value
 
                 text.set_value(daily_total)
                 td.add(text)
@@ -850,7 +851,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             else:
                 sobj_daily_sub_dict = sobj_daily_dict
             for value in sobj_daily_sub_dict.values():
-                daily_total += value
+                if value:
+                    daily_total += value
             text.set_value(daily_total)
 
             td = table.add_cell(text)

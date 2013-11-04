@@ -9,7 +9,9 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg']
+
+
 
 import tacticenv
 
@@ -1112,12 +1114,7 @@ class SecurityAddGroupToProjectAction(DatabaseAction):
 
 
 
-__all__.append("ProjectSecurityWdg")
-__all__.append("UserSecurityWdg")
-__all__.append("LinkSecurityWdg")
-__all__.append("SearchTypeSecurityWdg")
-__all__.append("ProcessSecurityWdg")
-__all__.append("TaskSecurityWdg") 
+
 class ProjectSecurityWdg(BaseRefreshWdg):
 
     def get_security_type(my):
@@ -1318,7 +1315,8 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             show_search_limit="false",
             #show_select=False,
             config_xml=config_xml,
-            save_class_name=my.get_save_cbk()
+            save_class_name=my.get_save_cbk(),
+            init_load_num = -1
 
         )
         layout.set_sobjects(sobjects)

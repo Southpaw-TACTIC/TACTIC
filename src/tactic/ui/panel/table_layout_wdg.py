@@ -190,7 +190,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             search_types_list.append((row,sobject))
 
-
         deleted = {}
         for search_type, sobjects in search_types_dict.items():
             try:
@@ -420,8 +419,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # set some grouping parameters
         my.process_groups()
 
-        my.order_sobjects()
-        my.remap_sobjects()
+        if my.kwargs.get('temp') != True:
+            my.order_sobjects()
+            my.remap_sobjects()
 
         for sobject in my.sobjects:
             my.sobject_levels.append(0)
@@ -671,22 +671,36 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         temp = my.kwargs.get("temp")
      
-        # draw all of the rows
+        # draw 4 rows initially by default
         has_loading = False
+        init_load_num = my.kwargs.get('init_load_num')
+        if not init_load_num:
+            init_load_num = 4
+       
+           
+        # minus 1 since row starts at 0
+        init_load_num -= 1
+
+        chunk_size = 20
+
         for row, sobject in enumerate(my.sobjects):
 
             # put in a group row
             if my.is_grouped:
                 my.handle_groups(table, row, sobject)
+            start_point = row - init_load_num
+            mod = start_point % chunk_size
 
-            if not temp and row > 4: 
+            if not temp and init_load_num >= 0  and row > init_load_num: 
                 tr, td = table.add_row_cell()
                 td.add_style("height: 30px")
                 td.add_style("padding: 20px")
                 td.add_style("text-align: center")
-                td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-                td.add(" Loading ...")
-                tr.add_attr("spt_search_key", sobject.get_search_key())
+                if mod == 1:
+                    td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                    td.add("Loading ...")
+                
+                tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
                 tr.add_class("spt_loading")
                 has_loading = True
                 continue
@@ -695,7 +709,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
 
-        chunk_size = 20
         if has_loading:
             table.add_behavior( {
             'type': 'load',
@@ -1649,12 +1662,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             last_value = my.group_values.get(group_column)
             
             if last_value == None or group_value != last_value:
-
                 my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
-
 
 
         # what does this do?
@@ -1851,7 +1862,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
-
         if sobject.is_retired():
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
