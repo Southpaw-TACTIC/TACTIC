@@ -38,9 +38,9 @@ spt.onload_startup = function()
 
 
     // handle hash changes
-    spt.hash.handle_hash();
+    spt.hash.onload_first();
 
-    spt.hash.set_interval();
+    //spt.hash.set_interval();
 
 }
 
@@ -91,9 +91,29 @@ spt.hash.add = function(hash, action) {
 }
 
 
+spt.hash.last_hash = "";
+spt.hash.first_load = true;
+
 
 spt.hash.onload_first = function() {
     var hash = window.location.hash;
+    spt.hash.first_load = false;
+    spt.hash.last_hash = hash;
+
+    /*
+    var env = spt.Environment.get();
+    var server = env.get_server_url();
+    var project = env.get_project();
+    if (hash) {
+        // if it has a hash then use a base url with the hash
+        var url = server + "/" + project + "/" + hash;
+        alert(url);
+        document.location = url;
+        return;
+
+    }
+    */
+
     if (!hash) {
         hash = spt.hash.hash;
         if (!hash) {
@@ -118,92 +138,6 @@ spt.hash.onload_first = function() {
     }
 }
 
-
-spt.hash.last_hash = "";
-spt.hash.first_load = true;
-spt.hash.handle_hash = function() {
-
-    //var hash = spt.get_raw_hash();
-    var hash = window.location.hash;
-    // handle the first entry
-    if (spt.hash.first_load == true) {
-        spt.hash.onload_first();
-        spt.hash.first_load = false;
-        spt.hash.last_hash = hash;
-        return;
-    }
-
-    // check if the hash has changed
-    if ( hash == "" || hash == spt.hash.last_hash || hash == "#"+spt.hash.last_hash) {
-        return;
-    }
-
-    spt.hash.last_hash = hash;
-
-    hash = hash.replace(/#/, '');
-
-
-    /*
-    var action = spt.hash.links[hash];
-    if (action) {
-        action();
-        return;
-    }
-    */
-
-
-
-    if (hash.substring(0,1) == "/") {
-
-        spt.app_busy.show("Loading ... ", "Retriving url \""+hash+"\"");
-        class_name = 'tactic.ui.panel.HashPanelWdg';
-        options = {
-            hash: hash
-        };
-
-        // add to the selected tab ...
-        var top = $("main_body").getElement(".spt_tab_top");
-        spt.tab.top = top;
-        spt.tab.load_selected(hash, hash, class_name, options);
-
-        spt.app_busy.hide();
-
-    }
-
-    /*
-
-    else {
-        
-        var parts = hash.split(/&/);
-        var options = {};
-        for (var i=0; i<parts.length; i++) {
-            var part = parts[i];
-            var nvpair = part.split("=");
-            var name = nvpair[0];
-            var value = nvpair[1];
-            value = decodeURIComponent(value);
-            options[name] = value;
-        }
-
-
-        var class_name = options['class_name'];
-        if (class_name == null) {
-            class_name = "tactic.ui.panel.ViewPanelWdg";
-        }
-        // load the new panel
-        var panel_id = 'main_body';
-        spt.panel.load(panel_id, class_name, options);
-
-    }
-
-    var title = hash;
-    if (options.title){
-        title = options.title;
-    }
-    $("breadcrumb").innerHTML = title;
-    */
-
-}
 
 
 

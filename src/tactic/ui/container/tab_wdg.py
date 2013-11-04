@@ -192,7 +192,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
     var top = spt.tab.top;
 
 
-    var hash = "/tab/" + element_name;
+    var hash = "/link/" + element_name;
     var orig_element_name = element_name;
 
     var mode = top.getAttribute("spt_tab_mode");

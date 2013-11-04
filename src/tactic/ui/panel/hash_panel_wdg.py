@@ -83,8 +83,197 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
+    def _get_flags(cls, xml, sobject=None, force_no_index=False, kwargs={}):
+        use_index = kwargs.get("use_index")
+        if use_index in [True, 'true']:
+            use_index = True
+        elif use_index in [False, 'false']:
+            use_index = False
+
+        use_admin = kwargs.get("use_admin")
+        if use_admin in [True, 'true']:
+            use_admin = True
+        elif use_admin in [False, 'false']:
+            use_admin = False
+
+
+        use_sidebar = kwargs.get("use_sidebar")
+        if use_sidebar in [False, 'false']:
+            use_sidebar = False
+        elif use_admin in [True, 'true']:
+            use_sidebar = True
+
+
+        if use_index is not None or use_admin is not None:
+            pass
+
+        elif force_no_index in [True, 'true']:
+            use_index = False
+        else:
+            use_index = sobject.get_value("index", no_exception=True)
+            if not use_index:
+                use_index = xml.get_value("/element/@index");
+                if use_index in ['true', True]:
+                    use_index = True
+
+            use_admin = sobject.get_value("admin", no_exception=True)
+            if not use_admin:
+                use_admin = xml.get_value("/element/@admin");
+                if use_admin in ['true', True]:
+                    use_admin = True
+
+                use_sidebar = xml.get_value("/element/@sidebar");
+                if use_sidebar in ['false', False]:
+                    use_sidebar = False
+
+        return use_index, use_admin, use_sidebar
+
+    _get_flags = classmethod(_get_flags)
+
+
+    def _get_predefined_wdg(cls, hash):
+        # add some predefined ones
+        if key == "link":
+            expression = "/link/{link}"
+            options = Common.extract_dict(hash, expression)
+
+            # This is the standard way of communicating through main interface
+            # It uses the link keyword to draw the main widget
+            if use_top:
+                top_class_name = WebEnvironment.get_top_class_name()
+                kwargs = {
+                    "link": options.get("link")
+                }
+            else:
+                top_class_name = 'tactic.ui.panel.HashPanelWdg'
+                kwargs = {
+                    "hash": hash.replace("/link", "/tab")
+                }
+
+                
+            widget = Common.create_from_class_path(top_class_name, [], kwargs) 
+            return widget
+
+        else:
+            return None
+
+    _get_predefined_wdg = classmethod(_get_predefined_wdg)
+
+
+
 
     def get_widget_from_hash(cls, hash, return_none=False, force_no_index=False, kwargs={}):
+
+        from pyasm.web import DivWdg
+        if hash.startswith("//"):
+            use_top = False
+            hash = hash[1:]
+        else:
+            use_top = True
+
+        import re
+        p = re.compile("^/(\w+)")
+        m = p.search(hash)
+        if not m:
+            if return_none:
+                return None
+            print "Cannot parse hash[%s]" % hash
+            return DivWdg("Cannot parse hash [%s]" % hash)
+        key = m.groups()[0]
+
+
+
+        # look up the url
+        search = Search("config/url")
+        search.add_filter("url", "/%s/%%"%key, "like")
+        search.add_filter("url", "/%s"%key)
+        search.add_where("or")
+        sobject = search.get_sobject()
+
+        if not sobject:
+            if return_none:
+                return None
+            return DivWdg("No Widget found for hash [%s]" % hash)
+
+
+        config = sobject.get_value("widget")
+        url = sobject.get_value("url")
+        url = url.strip()
+
+        # update the config value with expressions
+        options = Common.extract_dict(hash, url)
+        for name, value in options.items():
+            config = config.replace("{%s}" % name, value)
+
+
+        xml = Xml()
+        xml.read_string(config)
+
+
+        use_index, use_admin, use_sidebar = cls._get_flags(xml, sobject, force_no_index, kwargs)
+
+
+        if use_admin:
+            # use admin
+            from tactic.ui.app import PageNavContainerWdg
+            top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )
+            return top.get_buffer_display()
+
+        elif use_index:
+
+            # check if there is an index
+            search = Search("config/url")
+            search.add_filter("url", "/index")
+            index = search.get_sobject()
+
+            config = index.get_value("widget")
+            xml = Xml()
+            xml.read_string(config)
+            node = xml.get_node("element/display")
+
+            options = {}
+            options.update(xml.get_node_values_of_children(node))
+
+            class_name = xml.get_value("element/display/@class")
+            if class_name:
+                options['class_name'] = class_name
+
+            # this passes the hash value to the index widget
+            # which must handle it accordingly
+            options['hash'] = hash
+            top = cls.build_widget(options)
+
+            return top.get_buffer_display()
+
+
+
+
+        # process the options and then build the widget from the xml
+
+
+        options = Common.extract_dict(hash, url)
+        for name, value in kwargs.items():
+            options[name] = value
+
+        node = xml.get_node("element/display")
+        options.update(xml.get_node_values_of_children(node))
+
+        class_name = xml.get_value("element/display/@class")
+        if class_name:
+            options['class_name'] = class_name
+
+        widget = cls.build_widget(options)
+
+        name = hash.lstrip("/")
+        name = name.replace("/", " ")
+        widget.set_name(name)
+
+        return widget
+
+
+
+
+    def get_widget_from_hash2(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):
@@ -102,11 +291,7 @@ class HashPanelWdg(BaseRefreshWdg):
         key = m.groups()[0]
 
         # add some predefined ones
-        if key == "test":
-            widget = HashPanelWdg.get_widget_from_hash("/index")
-            return widget
-
-        elif key == "link":
+        if key == "link":
             expression = "/link/{link}"
             options = Common.extract_dict(hash, expression)
 
@@ -197,34 +382,12 @@ class HashPanelWdg(BaseRefreshWdg):
             widget = Common.create_from_class_path(class_name, args, kwargs) 
             return cls.build_widget(options)
             
-        elif key == "calendar":
-            from tactic.ui.widget import CalendarWdg
-            return CalendarWdg()
-
-        elif key == "list":
-            expression = "/list/{search_type}/{view}"
-            options = Common.extract_dict(hash, expression)
-            class_name = 'tactic.ui.panel.ViewPanelWdg'
-            widget = Common.create_from_class_path(class_name, [], options) 
-            return widget
-
-        elif key == "widget":
-            expression = "/widget/{class_name}"
-            options = Common.extract_dict(hash, expression)
-            class_name = options.get("class_name")
-            kwargs = {
-            }
-
-            widget = Common.create_from_class_path(class_name, [], kwargs) 
-            return widget
- 
         else:
-            # look up the expression
-            print "key: ", key
             if key == "top":
                 kwargs["use_index"] = True
                 sobject = None
             else:
+                # look up the url
                 search = Search("config/url")
                 search.add_filter("url", "/%s/%%"%key, "like")
                 search.add_filter("url", "/%s"%key)
@@ -349,39 +512,6 @@ class HashPanelWdg(BaseRefreshWdg):
             name = hash.lstrip("/")
             name = name.replace("/", " ")
             widget.set_name(name)
-
-            if not widget and return_none:
-                return None
-
-            # NOTE: This has been moved to TopWdg ... the reason being that
-            # there are a lot of global entities like app_busy and popups that
-            # are defined there and are not taken into account if the
-            # palette is set here.  Leaving this in hear in case it ever
-            # becomes possible for a lower widget to affect the global palette
-            """
-            palette_key = xml.get_value("element/@palette")
-            if url == "/index" and palette_key:
-
-                from pyasm.web import Palette
-
-                # look up palette the expression for index
-                palette = Palette.get()
-
-                palette.set_palette(palette_key)
-                colors = palette.get_colors()
-                colors = jsondumps(colors)
-
-                widget.add_behavior( {
-                    'type': 'load',
-                    'palette_key': palette_key,
-                    'colors': colors,
-                    'cbjs_action': '''
-                    var env = spt.Environment.get();
-                    env.set_colors(%s);
-                    env.set_palette(bvr.palette_key);
-                    ''' % colors
-                } )
-            """
 
             return widget
 
