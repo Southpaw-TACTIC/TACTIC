@@ -1753,7 +1753,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         top = DivWdg()
-        top.add_class("spt_checkin_publish")
+        top.add_class("spt_checkin_all_options")
         top.add_style("padding: 10px")
         show_context = False
         if show_context:
@@ -2172,16 +2172,13 @@ if (!transfer_mode) {
 
 
 // add in custom elements
-var custom_options_el = top.getElement(".spt_custom_options_top");
+var custom_options_el = top.getElement(".spt_checkin_all_options");
 var custom_options = spt.api.Utility.get_input_values(custom_options_el, null, false);
 bvr.custom_options = custom_options;
-
-
 
 // check to see if the check-in process is to be delivered elsewhere
 if (custom_options.deliver == "on") {
     process = custom_options.deliver_process;
-
     if (process.indexOf("|") != -1) {
         var parts = process.split("|");
         search_key = parts[0];
@@ -2189,7 +2186,7 @@ if (custom_options.deliver == "on") {
     }
 
 }
-
+)
 
 
 
