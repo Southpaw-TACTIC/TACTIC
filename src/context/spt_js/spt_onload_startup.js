@@ -49,84 +49,7 @@ spt.hash = {};
 
 spt.hash.hash;
 
-/*
-spt.hash.interval_id = null;
-
-spt.hash.clear_interval = function() {
-    if (spt.hash.interval_id) {
-        clearInterval(spt.hash.interval_id);
-        spt.hash.interval_id = null;
-    }
-}
-
-
-spt.hash.set_interval = function() {
-    interval = 200;
-    spt.hash.interval_id = setInterval(spt.hash.handle_hash, interval);
-}
-
-
-
-spt.hash.handle_hash = function() {
-    var hash = window.location.hash;
-    hash = hash.replace("#", "");
-    if (hash == spt.hash.last_hash) {
-        return;
-    }
-
-
-    //console.log("     hash: " + hash);
-    //console.log("last_hash: " + spt.hash.last_hash);
-    //console.log("---");
-
-
-    // remember this as the last one
-    spt.hash.set_last_hash(hash);
-
-
-    var class_name = "tactic.ui.panel.HashPanelWdg";
-    var kwargs = {
-        hash: hash
-    }
-
-
-    //spt.tab.set_main_body_tab();
-    //spt.tab.add_new(name, name, class_name, kwargs);
-
-    document.location.reload()
-
-    return;
-
-
-
-
-    var action = spt.hash.links[hash];
-    if (action) {
-        action();
-    }
-    else {
-        // just ignore the request
-        console.log("No action found for ["+hash+"]");
-    }
-}
-
-
-
-
-spt.hash.links = {};
-spt.hash.add = function(hash, action) {
-    //spt.hash.links.push([hash, action]);
-    spt.hash.links[hash] = action;
-    spt.hash.last_hash = hash;
-}
-
-*/
-
-
-
-spt.hash.last_hash = "";
 spt.hash.first_load = true;
-
 
 spt.hash.set_hash = function(state, title, url) {
 
@@ -160,12 +83,6 @@ spt.hash.set_hash = function(state, title, url) {
 }
 
 
-spt.hash.set_last_hash = function(hash) {
-    hash = hash.replace("#", "");
-    spt.hash.last_hash = hash;
-}
-
-
 
 spt.hash.onpopstate = function(evt) {
     var state = evt.state;
@@ -182,17 +99,17 @@ spt.hash.onpopstate = function(evt) {
     var name = state.element_name;
 
     var class_name = "tactic.ui.panel.HashPanelWdg";
-    var kwargs = {
-        hash: "/" + hash,
-        use_index: false
-    }
     var tab = spt.tab.set_main_body_tab();
     if (tab) {
         var set_hash = false;
+        var kwargs = {
+            hash: "/" + hash,
+            use_index: false
+        }
         spt.tab.add_new(name, title, class_name, kwargs, {}, set_hash);
     }
     else {
-        alert("Cannot load ["+title+"] ... no tabs available");
+        document.location.refresh();
     }
 
 }
@@ -205,7 +122,6 @@ spt.hash.onload_first = function() {
 
     var hash = window.location.hash;
     spt.hash.first_load = false;
-    spt.hash.set_last_hash(hash);
 
     if (!hash) {
         hash = spt.hash.hash;

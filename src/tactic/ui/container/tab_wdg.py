@@ -306,14 +306,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values, set_
 
 
     // register the hash (DISABLE for now)
-    /*
-    spt.hash.add( hash, function() {
-        spt.tab.set_main_body_tab();
-        spt.tab.add_new(orig_element_name, title, class_name, kwargs, values);
-    } );
-    spt.hash.set_last_hash(hash);
-    document.location.hash = hash;
-    */
     var state = {
         element_name: orig_element_name,
         title: title,
