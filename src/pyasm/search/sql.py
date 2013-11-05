@@ -1776,7 +1776,8 @@ class Select(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
     def set_statement(my, statement):
         '''special function which allows you to put in an arbitrary sql
@@ -2692,7 +2693,8 @@ class Insert(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
 
 
@@ -2899,7 +2901,8 @@ class Update(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
 
     def set_table(my, table):

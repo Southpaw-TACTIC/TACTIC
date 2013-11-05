@@ -7,7 +7,7 @@
       <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
       <link rel="up" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
       <link rel="prev" href="python-client-api_general_insert_update.html" title="insert_update">
-      <link rel="next" href="python-client-api_general_query.html" title="query">
+      <link rel="next" href="python-client-api_general_log_message.html" title="log_message">
    </head>
    <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
       <div class="navheader">
@@ -16,7 +16,7 @@
                <td width="20%" align="left"><a accesskey="p" href="python-client-api_general_insert_update.html">Prev</a>&nbsp;
                </td>
                <th width="60%" align="center">&nbsp;</th>
-               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_query.html">Next</a></td>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_log_message.html">Next</a></td>
             </tr>
          </table>
       </div>
@@ -24,80 +24,42 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_log"></a>
-                         log
-                         
+                  <h3 class="title"><a name="python-client-api_general_log"></a>log
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  log(level, message, category="default")
-                      </strong></span>
+                <span class="bold"><strong> log(level, message, category="default")</strong></span>
                 
          </p>
-         <p>
-                Log a message in the logging queue.  It is often difficult to see output
-                
-         </p>
-         <p>
-                of a trigger unless you are running the server in debug mode.
-                
-         </p>
-         <p>
-                In production mode, the server sends the output to log files.
-                
-         </p>
-         <p>
-                The log files are general buffered.
-                
-         </p>
-         <p>
-                It cannot be predicted exactly when buffered output will be dumped to a file.
-                
-         </p>
-         <p>
-                This log() method will make a request to the server.
-                
-         </p>
-         <p>
-                The message will be immediately stored in the database in the debug log table.
-                
-         </p>
-         <h4><a name="d0e5675"></a>
-                param:
-                
+         <p>Log a message in the logging queue.  It is often difficult to see output</p>
+         <p>of a trigger unless you are running the server in debug mode.</p>
+         <p>In production mode, the server sends the output to log files.</p>
+         <p>The log files are general buffered.</p>
+         <p>It cannot be predicted exactly when buffered output will be dumped to a file.</p>
+         <p>This log() method will make a request to the server.</p>
+         <p>The message will be immediately stored in the database in the debug log table.</p>
+         <h4><a name="d0e5944"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      level 
-                      </strong></span>
+                <span class="bold"><strong>level </strong></span>
                  -  critical|error|warning|info|debug 
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      message 
-                      </strong></span>
+                <span class="bold"><strong>message </strong></span>
                  -  freeform string describing the entry
                 
          </p>
-         <h4><a name="d0e5687"></a>
-                keyparam:
-                
+         <h4><a name="d0e5956"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      category 
-                      </strong></span>
+                <span class="bold"><strong>category </strong></span>
                  -  a label for the type of message being logged.
                 
          </p>
-         <p>
-                It defaults to "default"
-                
-         </p>
+         <p>It defaults to "default"</p>
       </div>
       <div class="navfooter">
          <hr>
@@ -106,7 +68,7 @@
                <td width="40%" align="left"><a accesskey="p" href="python-client-api_general_insert_update.html">Prev</a>&nbsp;
                </td>
                <td width="20%" align="center"><a accesskey="u" href="api_python_general_build.html">Up</a></td>
-               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_query.html">Next</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="python-client-api_general_log_message.html">Next</a></td>
             </tr>
             <tr>
                <td width="40%" align="left" valign="top">&nbsp;</td>
