@@ -2020,8 +2020,7 @@ class Snapshot(SObject):
         # get the versionless snapshot
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code", no_exception=True)
-        if not search_code:
-            search_id = sobject.get_id()
+        search_id = sobject.get_id()
 
 
 
