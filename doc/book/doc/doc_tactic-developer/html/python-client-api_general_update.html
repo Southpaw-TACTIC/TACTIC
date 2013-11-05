@@ -24,115 +24,68 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_update"></a>
-                         update
-                         
+                  <h3 class="title"><a name="python-client-api_general_update"></a>update
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  update(search_key, data={}, metadata={}, parent_key=None, info={}, use_id=False, triggers=True)
-                      </strong></span>
+                <span class="bold"><strong> update(search_key, data={}, metadata={}, parent_key=None, info={}, use_id=False, triggers=True)</strong></span>
                 
          </p>
-         <p>
-                General update for updating sobject
-                
-         </p>
-         <h4><a name="d0e6348"></a>
-                param:
-                
+         <p>General update for updating sobject</p>
+         <h4><a name="d0e6694"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_key 
-                      </strong></span>
+                <span class="bold"><strong>search_key </strong></span>
                  -  a unique identifier key representing an sobject.
                 
          </p>
-         <p>
-                Note: this can also be an array, in which case, the data will
-                
-         </p>
-         <p>
-                be updated to each sobject represented by this search key
-                
-         </p>
-         <h4><a name="d0e6359"></a>
-                keyparam:
-                
+         <p>Note: this can also be an array, in which case, the data will</p>
+         <p>be updated to each sobject represented by this search key</p>
+         <h4><a name="d0e6705"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      data 
-                      </strong></span>
+                <span class="bold"><strong>data </strong></span>
                  -  a dictionary of name/value pairs which will be used to update
                 
          </p>
+         <p>the sobject defined by the search_key</p>
+         <p>Note: this can also be an array.  Each data dictionary element in</p>
+         <p>the array will be applied to the corresponding search key</p>
          <p>
-                the sobject defined by the search_key
-                
-         </p>
-         <p>
-                Note: this can also be an array.  Each data dictionary element in
-                
-         </p>
-         <p>
-                the array will be applied to the corresponding search key
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      parent_key 
-                      </strong></span>
+                <span class="bold"><strong>parent_key </strong></span>
                  -  set the parent key for this sobject
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      info 
-                      </strong></span>
+                <span class="bold"><strong>info </strong></span>
                  -  a dictionary of info to pass to the ApiClientCmd
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      metadata 
-                      </strong></span>
+                <span class="bold"><strong>metadata </strong></span>
                  -  a dictionary of values that will be stored in the metadata attribute if available
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      use_id 
-                      </strong></span>
+                <span class="bold"><strong>use_id </strong></span>
                  -  use id in the returned search key
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      triggers 
-                      </strong></span>
+                <span class="bold"><strong>triggers </strong></span>
                  -  boolean to fire trigger on update
                 
          </p>
-         <h4><a name="d0e6397"></a>
-                return:
-                
+         <h4><a name="d0e6743"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  represent the sobject with its current data.
                 
          </p>
-         <p>
-                If search_key is an array, This will be an array of dictionaries
-                
-         </p>
+         <p>If search_key is an array, This will be an array of dictionaries</p>
       </div>
       <div class="navfooter">
          <hr>

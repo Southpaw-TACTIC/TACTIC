@@ -24,110 +24,58 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_add_dependency"></a>
-                         add_dependency
-                         
+                  <h3 class="title"><a name="python-client-api_general_add_dependency"></a>add_dependency
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  add_dependency(snapshot_code, file_path, type='ref')
-                      </strong></span>
+                <span class="bold"><strong> add_dependency(snapshot_code, file_path, type='ref')</strong></span>
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      Append a dependency referent to an existing check
-                      </strong></span>
+                <span class="bold"><strong>Append a dependency referent to an existing check</strong></span>
                  - in.
                 
          </p>
-         <p>
-                All files are uniquely containe by a particular snapshot.  Presently,
-                
-         </p>
-         <p>
-                this method does a reverse lookup by file name.  This assumes that
-                
-         </p>
-         <p>
-                the filename is unique within the system, so it is not recommended
-                
-         </p>
-         <p>
-                unless it is known that naming conventions will produce unique
-                
-         </p>
-         <p>
-                file names for every this particular file.  If this is not the
-                
-         </p>
-         <p>
-                case, it is recommended that add_dependency_by_code() is used.
-                
-         </p>
-         <h4><a name="d0e2385"></a>
-                param:
-                
+         <p>All files are uniquely containe by a particular snapshot.  Presently,</p>
+         <p>this method does a reverse lookup by file name.  This assumes that</p>
+         <p>the filename is unique within the system, so it is not recommended</p>
+         <p>unless it is known that naming conventions will produce unique</p>
+         <p>file names for every this particular file.  If this is not the</p>
+         <p>case, it is recommended that add_dependency_by_code() is used.</p>
+         <h4><a name="d0e2659"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_code 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_code </strong></span>
                  -  the unique code identifier of a snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_path 
-                      </strong></span>
+                <span class="bold"><strong>file_path </strong></span>
                  -  the path of the dependent file.  This function is able
                 
          </p>
-         <p>
-                reverse map the file_path to the appropriate snapshot
-                
-         </p>
-         <h4><a name="d0e2399"></a>
-                keyparam:
-                
+         <p>reverse map the file_path to the appropriate snapshot</p>
+         <h4><a name="d0e2673"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      type 
-                      </strong></span>
+                <span class="bold"><strong>type </strong></span>
                  -  type of dependency.  Values include 'ref' and 'input_ref'
                 
          </p>
+         <p>ref = hierarchical reference:   ie A contains B</p>
+         <p>input_ref = input reference:    ie: A was used to create B</p>
          <p>
-                ref = hierarchical reference:   ie A contains B
-                
-         </p>
-         <p>
-                input_ref = input reference:    ie: A was used to create B
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      tag 
-                      </strong></span>
+                <span class="bold"><strong>tag </strong></span>
                  -  a tagged keyword can be added to a dependency to categorize
                 
          </p>
-         <p>
-                the different dependencies that exist in a snapshot
-                
-         </p>
-         <h4><a name="d0e2417"></a>
-                return:
-                
+         <p>the different dependencies that exist in a snapshot</p>
+         <h4><a name="d0e2691"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  the resulting snapshot
                 
          </p>

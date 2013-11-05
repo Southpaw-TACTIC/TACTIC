@@ -24,141 +24,72 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_preallocated_path"></a>
-                         get_preallocated_path
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_preallocated_path"></a>get_preallocated_path
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='')
-                      </strong></span>
+                <span class="bold"><strong> get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='')</strong></span>
                 
          </p>
-         <p>
-                Get the preallocated path for this snapshot.  It assumes that
-                
-         </p>
-         <p>
-                this checkin actually exists in the repository and will create virtual
-                
-         </p>
-         <p>
-                entities to simulate a checkin.  This method can be used to determine
-                
-         </p>
-         <p>
-                where a checkin will go.  However, the snapshot must exist 
-                
-         </p>
-         <p>
-                using create_snapshot() or some other method.  For a pure virtual naming
-                
-         </p>
-         <p>
-                simulator, use get_virtual_snapshot_path().
-                
-         </p>
-         <h4><a name="d0e4768"></a>
-                param:
-                
+         <p>Get the preallocated path for this snapshot.  It assumes that</p>
+         <p>this checkin actually exists in the repository and will create virtual</p>
+         <p>entities to simulate a checkin.  This method can be used to determine</p>
+         <p>where a checkin will go.  However, the snapshot must exist </p>
+         <p>using create_snapshot() or some other method.  For a pure virtual naming</p>
+         <p>simulator, use get_virtual_snapshot_path().</p>
+         <h4><a name="d0e5034"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_code 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_code </strong></span>
                  -  the code of a preallocated snapshot.  This can be
                 
          </p>
-         <p>
-                create by get_snapshot()
-                
-         </p>
-         <h4><a name="d0e4777"></a>
-                keyparam:
-                
+         <p>create by get_snapshot()</p>
+         <h4><a name="d0e5043"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      file_type 
-                      </strong></span>
+                <span class="bold"><strong>file_type </strong></span>
                  -  the type of file that will be checked in.  Some naming
                 
          </p>
+         <p>conventions make use of this information to separate directories</p>
+         <p>for different file types</p>
          <p>
-                conventions make use of this information to separate directories
-                
-         </p>
-         <p>
-                for different file types
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      file_name 
-                      </strong></span>
+                <span class="bold"><strong>file_name </strong></span>
                  -  the desired file name of the preallocation.  This information
                 
          </p>
+         <p>may be ignored by the naming convention or it may use this as a</p>
+         <p>base for the final file name</p>
          <p>
-                may be ignored by the naming convention or it may use this as a
-                
-         </p>
-         <p>
-                base for the final file name
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      mkdir 
-                      </strong></span>
+                <span class="bold"><strong>mkdir </strong></span>
                  -  an option which determines whether the directory of the
                 
          </p>
+         <p>preallocation should be created</p>
          <p>
-                preallocation should be created
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      protocol 
-                      </strong></span>
+                <span class="bold"><strong>protocol </strong></span>
                  -  It's either client_repo, sandbox, or None. It determines whether the
                 
          </p>
+         <p>path is from a client or server perspective</p>
          <p>
-                path is from a client or server perspective
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      ext 
-                      </strong></span>
+                <span class="bold"><strong>ext </strong></span>
                  -  force the extension of the file name returned
                 
          </p>
-         <h4><a name="d0e4816"></a>
-                return:
-                
+         <h4><a name="d0e5082"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      string 
-                      </strong></span>
+                <span class="bold"><strong>string </strong></span>
                  -  the path where add_file() expects the file to be checked into
                 
          </p>
-         <h4><a name="d0e4823"></a>
-                example:
-                
+         <h4><a name="d0e5089"></a>example:
          </h4>
-         <p>
-                it saves time if you get the path and copy it to the final destination first. 
-                
-         </p><pre class="screen">
-    
+         <p>it saves time if you get the path and copy it to the final destination first. </p><pre class="screen">
 snapshot = my.server.create_snapshot(search_key, context)
 snapshot_code = snapshot.get('code')
 file_name = 'input_file_name.txt'
@@ -172,8 +103,7 @@ if not os.path.exists(new_dir):
 shutil.copy(orig_path, path)
 my.server.add_file(snapshot_code, path, file_type, mode='preallocate')
 
-
-    </pre></div>
+</pre></div>
       <div class="navfooter">
          <hr>
          <table width="100%" summary="Navigation footer">

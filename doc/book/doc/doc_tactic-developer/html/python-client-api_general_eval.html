@@ -24,115 +24,65 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_eval"></a>
-                         eval
-                         
+                  <h3 class="title"><a name="python-client-api_general_eval"></a>eval
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  eval(expression, search_keys=[], mode=None, single=False, vars={}, show_retired=False)
-                      </strong></span>
+                <span class="bold"><strong> eval(expression, search_keys=[], mode=None, single=False, vars={}, show_retired=False)</strong></span>
                 
          </p>
-         <p>
-                Evaluate the expression.  This expression uses the TACTIC expression
-                
-         </p>
-         <p>
-                language to retrieve results.  For more information, refer to the
-                
-         </p>
-         <p>
-                expression language documentation.
-                
-         </p>
-         <h4><a name="d0e3359"></a>
-                param:
-                
+         <p>Evaluate the expression.  This expression uses the TACTIC expression</p>
+         <p>language to retrieve results.  For more information, refer to the</p>
+         <p>expression language documentation.</p>
+         <h4><a name="d0e3633"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      expression 
-                      </strong></span>
+                <span class="bold"><strong>expression </strong></span>
                  -  string expression
                 
          </p>
-         <h4><a name="d0e3366"></a>
-                keyparam:
-                
+         <h4><a name="d0e3640"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_keys 
-                      </strong></span>
+                <span class="bold"><strong>search_keys </strong></span>
                  -  the starting point for the expression.
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      mode 
-                      </strong></span>
+                <span class="bold"><strong>mode </strong></span>
                  -  string|expression 
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      single 
-                      </strong></span>
+                <span class="bold"><strong>single </strong></span>
                  -  True|False 
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      vars 
-                      </strong></span>
+                <span class="bold"><strong>vars </strong></span>
                  -  user defined variable
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      show_retired 
-                      </strong></span>
+                <span class="bold"><strong>show_retired </strong></span>
                  -  defaults to False to not return retired items
                 
          </p>
-         <h4><a name="d0e3393"></a>
-                return:
-                
+         <h4><a name="d0e3667"></a>return:
          </h4>
-         <p>
-                results of the expression.  The results depend on the exact nature
-                
-         </p>
-         <p>
-                of the expression.
-                
-         </p>
-         <h4><a name="d0e3399"></a>
-                example:
-                
+         <p>results of the expression.  The results depend on the exact nature</p>
+         <p>of the expression.</p>
+         <h4><a name="d0e3673"></a>example:
          </h4>
-         <p>
-                #1. Search for snapshots with context beginning with 'model' for the asset with the search key 'prod/asset?project=sample3d&amp;id=96'
-                
-         </p><pre class="screen">
-    
+         <p>#1. Search for snapshots with context beginning with 'model' for the asset with the search key 'prod/asset?project=sample3d&amp;id=96'</p><pre class="screen">
 server = TacticServerStub.get()
 exp = "@SOBJECT(sthpw/snapshot['context','EQ','^model'])"
 result = server.eval(exp, search_keys=['prod/asset?project=sample3d&amp;id=96'])
 
-
-    </pre><p>
-                Please refer to the expression language documentation for numerous
-                
-         </p>
-         <p>
-                examples on how to use the expression language.
-                
-         </p>
+</pre><p>Please refer to the expression language documentation for numerous</p>
+         <p>examples on how to use the expression language.</p>
       </div>
       <div class="navfooter">
          <hr>
