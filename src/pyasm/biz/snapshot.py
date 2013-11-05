@@ -1201,7 +1201,6 @@ class Snapshot(SObject):
 
 
 
-
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,
@@ -1427,20 +1426,23 @@ class Snapshot(SObject):
 
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
-            level_type=None, level_id=None, show_retired=False):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
+            level_type=None, level_id=None, show_retired=False, \
+            process=None):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
-    def get_latest_by_sobject(sobject, context=None, show_retired=False):
+    def get_latest_by_sobject(sobject, context=None, show_retired=False, \
+            process=None):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired)
+                context=context, show_retired=show_retired, process=process \
+        )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
 
@@ -2017,16 +2019,21 @@ class Snapshot(SObject):
 
         # get the versionless snapshot
         search_type = sobject.get_search_type()
-        search_id = sobject.get_value("code")
-        if not search_id:
-            search_id = sobject.get_id()
+        search_code = sobject.get_value("code", no_exception=True)
+        search_id = sobject.get_id()
+
+
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
         snapshot_type = my.get_value('snapshot_type')
 
         # Get the versionless snapshot.  This is used as a template to build
         # the next snapshot definition. 
-        versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        if search_code:
+            versionless = Snapshot.get_versionless(search_type, search_code, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        elif search_id:
+            versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+
         v_snapshot_xml = versionless.get_xml_value("snapshot")
 
         #assert versionless.get_id() != -1
@@ -2096,8 +2103,7 @@ class Snapshot(SObject):
             file_objects.append(file_object)
             file_object.set_value("search_type", sobject.get_search_type() )
 
-            search_code = sobject.get_value("code")
-            search_id = sobject.get_id()
+            
             if search_code:
                 file_object.set_value("search_code", search_code )
             if search_id and isinstance(search_id, int):

@@ -476,14 +476,12 @@ class DiscussionWdg(BaseRefreshWdg):
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
-                spt.panel.load(container, class_name, kwargs, {}, {fade: false});
+                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
+                spt.toggle_show_hide(add_note);
             }
 
-            //container.setStyle("overflow-y", "hidden")
-            //add_note.setStyle("margin-top", -200)
             //new Fx.Tween(add_note,{duration:"short"}).start('margin-top', 0);
-            spt.toggle_show_hide(add_note);
 
             // select the appropriate context or process
             var select = add_note.getElement(".spt_add_note_process");

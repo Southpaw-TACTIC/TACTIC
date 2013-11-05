@@ -376,7 +376,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
-
         keyword_values = filter_data.get_values_by_prefix("keyword")
         if keyword_values:
             column = "keywords"
@@ -397,11 +396,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
         # passed in filter overrides
+        """
         if state_filter:
             filter_data.set_data(state_filter)
+        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
-      
+        
         # user-chosen order has top priority
         if order:
             my.order_element = order
@@ -421,7 +422,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # the group element is always ordered first
             my.group_element = group_values.get("group")
-            
 
             if my.group_element == 'true':
                 my.group_element = True
@@ -534,6 +534,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         filter_json = ''
         if my.kwargs.get('filter'):
             filter_json = my.kwargs.get('filter')
+            
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
         custom_search_view = my.kwargs.get('custom_search_view')
@@ -610,7 +611,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s":
+        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -1126,22 +1127,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
-            } )
-            # no need for app_busy.. since it's built-in to search_cbk()
-            button.add_behavior( {
-                'type': 'listen',
-                'event_name': 'search_table_%s' % my.table_id,
-                'cbjs_action': '''
-                    var top = bvr.src_el.getParent(".spt_layout");
-                    var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    } 
-                '''
             } )
 
 

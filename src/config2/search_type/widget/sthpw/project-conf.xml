@@ -89,6 +89,7 @@
     <element name="is_template"/>
     <element name="palette"/>
     <element name="db_resource"/>
+    <element name="database"/>
 </table>
 
 
@@ -216,6 +217,35 @@
         </display>
     </element>
 </simple_filter>
+
+
+<db_resource layout="tactic.ui.panel.EditWdg">
+  <element name='snapshot' title="Preview"/>
+  <element name='code' title="Resource Project Code">
+      <display class="TextWdg">
+      </display>
+  </element>
+  <element name='title'>
+      <display class="TextWdg">
+          <size>50</size>
+      </display>
+  </element>
+  <element name='db_resource'>
+      <display class="SelectWdg">
+          <query>sthpw/db_resource|code|code</query>
+      </display>
+  </element>
+  <element name='database'/>
+</db_resource>
+
+
+<db_resource_list layout="tactic.ui.panel.TableLayoutWdg">
+  <element name='preview'/>
+  <element name='code'/>
+  <element name='title'/>
+  <element name='db_resource'/>
+  <element name='database'/>
+</db_resource_list>
 
 
 

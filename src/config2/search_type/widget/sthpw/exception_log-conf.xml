@@ -20,7 +20,7 @@
 <element name="class"/>
 <element name="message"/>
 <element name="stack_trace">
-    <display class="XmlWdg"/>
+    <display widget="default"/>
 </element>
 </definition>
 
@@ -31,9 +31,7 @@
 <element name="timestamp"/>
 <element name="class"/>
 <element name="message"/>
-<element name="stack_trace">
-    <display class="XmlWdg"/>
-</element>
+<element name="stack_trace"/>
 </table>
 
 </config>

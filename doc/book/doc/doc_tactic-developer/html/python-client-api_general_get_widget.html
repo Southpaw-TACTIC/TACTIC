@@ -24,91 +24,50 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_widget"></a>
-                         get_widget
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_widget"></a>get_widget
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  get_widget(class_name, args={}, values={})
-                      </strong></span>
+                <span class="bold"><strong> get_widget(class_name, args={}, values={})</strong></span>
                 
          </p>
-         <p>
-                Get a defined widget
-                
-         </p>
-         <h4><a name="d0e5291"></a>
-                params:
-                
+         <p>Get a defined widget</p>
+         <h4><a name="d0e5560"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      class_name 
-                      </strong></span>
+                <span class="bold"><strong>class_name </strong></span>
                  -  the fully qualified class name of the widget
                 
          </p>
-         <h4><a name="d0e5298"></a>
-                keyparams:
-                
+         <h4><a name="d0e5567"></a>keyparams:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      args 
-                      </strong></span>
+                <span class="bold"><strong>args </strong></span>
                  -  keyword arguments required to create a specific widget
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      values 
-                      </strong></span>
+                <span class="bold"><strong>values </strong></span>
                  -  form values that are passed in from the interface
                 
          </p>
-         <h4><a name="d0e5310"></a>
-                return:
-                
+         <h4><a name="d0e5579"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      string 
-                      </strong></span>
+                <span class="bold"><strong>string </strong></span>
                  -  html form of the widget
                 
          </p>
-         <h4><a name="d0e5317"></a>
-                example:
-                
+         <h4><a name="d0e5586"></a>example:
          </h4>
-         <p>
-                class_name = 'TableLayoutWdg'
-                
-         </p>
-         <p>
-                args = {
-                
-         </p>
-         <p>
-                'view': 'manage',
-                
-         </p>
-         <p>
-                'search_type': 'prod/asset',
-                
-         </p>
-         <p>
-                }
-                
-         </p>
-         <p>
-                widget = server.get_widget(class_name, args))
-                
-         </p>
+         <p>class_name = 'TableLayoutWdg'</p>
+         <p>args = {</p>
+         <p>'view': 'manage',</p>
+         <p>'search_type': 'prod/asset',</p>
+         <p>}</p>
+         <p>widget = server.get_widget(class_name, args))</p>
       </div>
       <div class="navfooter">
          <hr>

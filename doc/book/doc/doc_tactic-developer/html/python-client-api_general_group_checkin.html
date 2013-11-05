@@ -24,153 +24,89 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_group_checkin"></a>
-                         group_checkin
-                         
+                  <h3 class="title"><a name="python-client-api_general_group_checkin"></a>group_checkin
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  group_checkin(search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={},
-                  mode=None, is_revision=False, info={} )
-                      </strong></span>
+                <span class="bold"><strong> group_checkin(search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={},
+                  mode=None, is_revision=False, info={} )</strong></span>
                 
          </p>
-         <p>
-                Check in a range of files.  A range of file is defined as any group
-                
-         </p>
-         <p>
-                of files that have some sequence of numbers grouping them together.
-                
-         </p>
-         <p>
-                An example of this includes a range frames that are rendered.
-                
-         </p>
-         <p>
-                Although it is possible to add each frame in a range using add_file,
-                
-         </p>
-         <p>
-                adding them as as sequence is lightweight, often significantly reducing
-                
-         </p>
-         <p>
-                the number of database entries required.  Also, it is understood that
-                
-         </p>
-         <p>
-                test files form a range of related files, so that other optimizations
-                
-         </p>
-         <p>
-                and manipulations can be operated on these files accordingly.
-                
-         </p>
-         <h4><a name="d0e5378"></a>
-                param:
-                
+         <p>Check in a range of files.  A range of file is defined as any group</p>
+         <p>of files that have some sequence of numbers grouping them together.</p>
+         <p>An example of this includes a range frames that are rendered.</p>
+         <p>Although it is possible to add each frame in a range using add_file,</p>
+         <p>adding them as as sequence is lightweight, often significantly reducing</p>
+         <p>the number of database entries required.  Also, it is understood that</p>
+         <p>test files form a range of related files, so that other optimizations</p>
+         <p>and manipulations can be operated on these files accordingly.</p>
+         <h4><a name="d0e5647"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_key 
-                      </strong></span>
+                <span class="bold"><strong>search_key </strong></span>
                  -  a unique identifier key representing an sobject
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_path 
-                      </strong></span>
+                <span class="bold"><strong>file_path </strong></span>
                  -  expression for file range: ./blah.####.jpg
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_type 
-                      </strong></span>
+                <span class="bold"><strong>file_type </strong></span>
                  -  the typ of file this is checked in as. Default = 'main'
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_range 
-                      </strong></span>
+                <span class="bold"><strong>file_range </strong></span>
                  -  string describing range of frames in the form '1
                 
          </p>
-         <h4><a name="d0e5400"></a>
-                keyparam:
-                
+         <h4><a name="d0e5669"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_type 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_type </strong></span>
                  -  type of snapshot this checkin will have
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      description 
-                      </strong></span>
+                <span class="bold"><strong>description </strong></span>
                  -  description related to this checkin
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_type 
-                      </strong></span>
+                <span class="bold"><strong>file_type </strong></span>
                  -  the type of file that will be associated with this group
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      metadata 
-                      </strong></span>
+                <span class="bold"><strong>metadata </strong></span>
                  -  add metadata to snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      mode 
-                      </strong></span>
+                <span class="bold"><strong>mode </strong></span>
                  -  determines whether the files passed in should be copied, moved
                 
          </p>
+         <p>or uploaded.  By default, this is a manual process (for backwards</p>
+         <p>compatibility)</p>
          <p>
-                or uploaded.  By default, this is a manual process (for backwards
-                
-         </p>
-         <p>
-                compatibility)
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      is_revision 
-                      </strong></span>
+                <span class="bold"><strong>is_revision </strong></span>
                  -  flag to set this as a revision instead of a version
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      info 
-                      </strong></span>
+                <span class="bold"><strong>info </strong></span>
                  -  dict of info to pass to the ApiClientCmd
                 
          </p>
-         <h4><a name="d0e5441"></a>
-                return:
-                
+         <h4><a name="d0e5710"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  snapshot
                 
          </p>

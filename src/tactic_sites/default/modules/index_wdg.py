@@ -73,6 +73,7 @@ class IndexWdg2(Widget):
 
         search = Search("sthpw/project")
         search.add_where("\"code\" not in ('sthpw', 'admin', 'unittest')")
+        search.add_where("\"type\" not in ('resource')")
         # hide template projects
         if security.check_access("builtin", "view_site_admin", "allow") or security.check_access("builtin", "view_template_projects", "allow"):
             pass

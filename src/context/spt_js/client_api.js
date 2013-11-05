@@ -947,8 +947,8 @@ TacticServerStub = function() {
         return this._delegate("reactivate_sobject", arguments);
     }
 
-    this.delete_sobject = function(search_key) {
-        return this._delegate("delete_sobject", arguments);
+    this.delete_sobject = function(search_key, kwargs) {
+        return this._delegate("delete_sobject", arguments, kwargs);
     }
 
     this.clone_sobject = function(search_key, data) {

@@ -318,6 +318,7 @@ class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
             layout.set_sobjects(my.sobjects)
             layout.set_sobject(sobject)
             div.add(layout)
+        div.add("<br clear='all'/>")
         return div
 
 

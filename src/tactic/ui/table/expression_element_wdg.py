@@ -251,9 +251,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache:
             return True
 
-        group_by = my.get_option("group_by")
-        if group_by:
-            return True
 
         group_by = my.get_option("group_by")
         if group_by:

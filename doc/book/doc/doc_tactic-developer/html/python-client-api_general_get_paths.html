@@ -24,121 +24,77 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_paths"></a>
-                         get_paths
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_paths"></a>get_paths
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)
-                      </strong></span>
+                <span class="bold"><strong> get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None, single=False, versionless=False)</strong></span>
                 
          </p>
-         <p>
-                Get paths from an sobject
-                
-         </p>
-         <h4><a name="d0e4521"></a>
-                params:
-                
+         <p>Get paths from an sobject</p>
+         <h4><a name="d0e4791"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_key 
-                      </strong></span>
+                <span class="bold"><strong>search_key </strong></span>
                  -  a unique identifier key representing an sobject
                 
          </p>
-         <h4><a name="d0e4528"></a>
-                keyparams:
-                
+         <h4><a name="d0e4798"></a>keyparams:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      context 
-                      </strong></span>
+                <span class="bold"><strong>context </strong></span>
                  -  context of the snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      version 
-                      </strong></span>
+                <span class="bold"><strong>version </strong></span>
                  -  version of the snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_type 
-                      </strong></span>
+                <span class="bold"><strong>file_type </strong></span>
                  -  file type defined for the file node in the snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      level_key 
-                      </strong></span>
+                <span class="bold"><strong>level_key </strong></span>
                  -  the unique identifier of the level that this
                 
          </p>
+         <p>was checked into</p>
          <p>
-                was checked into
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      single 
-                      </strong></span>
+                <span class="bold"><strong>single </strong></span>
                  -  If set to True, the first of each path set is returned
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      versionless 
-                      </strong></span>
+                <span class="bold"><strong>versionless </strong></span>
                  -  boolean to return the versionless snapshot, which takes a version of 
                 
          </p>
-         <h4><a name="d0e4562"></a>
-                return
-                
+         <h4><a name="d0e4832"></a>return
          </h4>
+         <p>A dictionary of lists representing various paths.  The paths returned</p>
+         <p>are as follows:</p>
          <p>
-                A dictionary of lists representing various paths.  The paths returned
-                
-         </p>
-         <p>
-                are as follows:
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  client_lib_paths: all the paths to the repository relative to the client
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  lib_paths: all the paths to the repository relative to the server
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  sandbox_paths: all of the paths mapped to the sandbox
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  web: all of the paths relative to the http server
                 
          </p>
