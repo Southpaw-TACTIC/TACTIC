@@ -143,9 +143,11 @@ class HashPanelWdg(BaseRefreshWdg):
 
         # make some predefined fake urls
         if key in ["link", "tab", "admin"]:
-
             # this is called by PageNav
-            expression = "/%s/{link}" % key
+            if key == "admin":
+                expression = "/admin/link/{link}"
+            else:
+                expression = "/%s/{link}" % key
             options = Common.extract_dict(hash, expression)
             link = options.get("link")
 
@@ -155,7 +157,6 @@ class HashPanelWdg(BaseRefreshWdg):
             # test link security
             project_code = Project.get_project_code()
             security = Environment.get_security()
-            link = options.get("link")
             keys = [
                     { "element": link },
                     { "element": "*" },
@@ -173,6 +174,9 @@ class HashPanelWdg(BaseRefreshWdg):
 
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
             options = config.get_display_options(link)
+            if not options:
+                return None
+
 
             class_name = options.get("class_name")
             widget_key = options.get("widget_key")
@@ -180,6 +184,7 @@ class HashPanelWdg(BaseRefreshWdg):
                 class_name = WidgetClassHandler().get_display_handler(widget_key)
             elif not class_name:
                 class_name = 'tactic.ui.panel.ViewPanelWdg'
+
 
             if key in ["admin", "tab"]:
                 use_index = "false"
@@ -330,7 +335,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_widget_from_hashX(cls, hash, return_none=False, force_no_index=False, kwargs={}):
+    def get_widget_from_hashXX(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
         from pyasm.web import DivWdg
         if hash.startswith("//"):

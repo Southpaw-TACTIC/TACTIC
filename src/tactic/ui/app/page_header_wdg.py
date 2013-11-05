@@ -1310,7 +1310,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
                     location = "/tactic/" + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + project_code + "/link/_startup";
+                    location = "/tactic/" + project_code + "/admin/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

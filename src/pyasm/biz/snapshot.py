@@ -1200,8 +1200,6 @@ class Snapshot(SObject):
 
 
 
-
-
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,
@@ -1431,6 +1429,7 @@ class Snapshot(SObject):
         snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
         return snapshot
     get_latest = staticmethod(get_latest)
+
 
 
 

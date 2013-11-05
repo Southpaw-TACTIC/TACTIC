@@ -331,7 +331,7 @@ class TopWdg(Widget):
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                var url = "/tactic/%s/link/_startup";
+                var url = "/tactic/%s/admin/_startup";
                 window.open(url);
 
                 ''' % project_code

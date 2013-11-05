@@ -280,21 +280,22 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         var server = TacticServerStub.get();
         server.set_application_state(key, panel_id, widget_class, options, values);
 
-        // also set the breadcrumb
-        //$("breadcrumb").innerHTML = path
-        //$("breadcrumb").innerHTML = title
-
         // set the url hash
         if (typeof(options.element_name) != "undefined") {
             var hash = "/link/"+options.element_name;
             if( ! spt.browser.is_Firefox() && ! spt.browser.is_Opera() ) {
                 hash = encodeURI( hash );
             }
-            spt.last_hash = hash;
-            window.location.hash = hash;
+            var state = {
+                hash: hash,
+                element_name: options.element_name,
+                title: title
+            };
+            var url = "link/"+options.element_name;
+            spt.hash.set_hash( {hash: hash}, title, url );
+
         }
         else {
-            
             var kwargs = {'predefined': true};
             spt.panel.set_hash(panel_id, widget_class, options, kwargs)
         }
