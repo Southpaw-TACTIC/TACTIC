@@ -1886,9 +1886,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if personal:
                 login = Environment.get_user_name()
             
-            
             search.add_filter("login", login)
-           
+
             config = search.get_sobject()
             if config:
                 configs.append(config)
@@ -1934,6 +1933,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
             # then look for a definition in the definition file
             SideBarBookmarkMenuWdg.add_internal_config(configs, ['definition'])
+
         widget_config_view = WidgetConfigView(config_search_type, view, configs)
 
         return widget_config_view

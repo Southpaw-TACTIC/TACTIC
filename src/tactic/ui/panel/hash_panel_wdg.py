@@ -172,6 +172,7 @@ class HashPanelWdg(BaseRefreshWdg):
             if '.' in link:
                 personal = True
 
+
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
             options = config.get_display_options(link)
             if not options:
