@@ -2019,16 +2019,22 @@ class Snapshot(SObject):
 
         # get the versionless snapshot
         search_type = sobject.get_search_type()
-        search_id = sobject.get_value("code")
-        if not search_id:
+        search_code = sobject.get_value("code", no_exception=True)
+        if not search_code:
             search_id = sobject.get_id()
+
+
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
         snapshot_type = my.get_value('snapshot_type')
 
         # Get the versionless snapshot.  This is used as a template to build
         # the next snapshot definition. 
-        versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        if search_code:
+            versionless = Snapshot.get_versionless(search_type, search_code, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        elif search_id:
+            versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+
         v_snapshot_xml = versionless.get_xml_value("snapshot")
 
         #assert versionless.get_id() != -1
@@ -2098,8 +2104,7 @@ class Snapshot(SObject):
             file_objects.append(file_object)
             file_object.set_value("search_type", sobject.get_search_type() )
 
-            search_code = sobject.get_value("code")
-            search_id = sobject.get_id()
+            
             if search_code:
                 file_object.set_value("search_code", search_code )
             if search_id and isinstance(search_id, int):
