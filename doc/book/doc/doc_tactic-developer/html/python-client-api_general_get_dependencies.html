@@ -24,126 +24,78 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_dependencies"></a>
-                         get_dependencies
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_dependencies"></a>get_dependencies
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  get_dependencies(snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False,
-                  repo_mode='client_repo', show_retired=False)
-                      </strong></span>
+                <span class="bold"><strong> get_dependencies(snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False,
+                  repo_mode='client_repo', show_retired=False)</strong></span>
                 
          </p>
-         <p>
-                Return the dependent snapshots of a certain tag
-                
-         </p>
-         <h4><a name="d0e4119"></a>
-                params:
-                
+         <p>Return the dependent snapshots of a certain tag</p>
+         <h4><a name="d0e4391"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_code 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_code </strong></span>
                  -  unique code of a snapshot
                 
          </p>
-         <h4><a name="d0e4126"></a>
-                keyparams:
-                
+         <h4><a name="d0e4398"></a>keyparams:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      mode 
-                      </strong></span>
+                <span class="bold"><strong>mode </strong></span>
                  -  explict (get version as defined in snapshot)
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  latest
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      
-                      </strong></span>
+                <span class="bold"><strong></strong></span>
                  -  current
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      tag 
-                      </strong></span>
+                <span class="bold"><strong>tag </strong></span>
                  -  retrieve only dependencies that have this named tag
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      include_paths 
-                      </strong></span>
+                <span class="bold"><strong>include_paths </strong></span>
                  -  flag to specify whether to include a __paths__ property
                 
          </p>
+         <p>containing all of the paths in the dependent snapshots</p>
          <p>
-                containing all of the paths in the dependent snapshots
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      include_paths_dict 
-                      </strong></span>
+                <span class="bold"><strong>include_paths_dict </strong></span>
                  -  flag to specify whether to include a
                 
          </p>
+         <p>__paths_dict__ property containing a dict of all paths in the</p>
+         <p>dependent snapshots</p>
          <p>
-                __paths_dict__ property containing a dict of all paths in the
-                
-         </p>
-         <p>
-                dependent snapshots
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      include_files 
-                      </strong></span>
+                <span class="bold"><strong>include_files </strong></span>
                  -  includes all of the file objects referenced in the
                 
          </p>
+         <p>snapshots</p>
          <p>
-                snapshots
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      repo_mode 
-                      </strong></span>
+                <span class="bold"><strong>repo_mode </strong></span>
                  -  client_repo, web, lib, relative
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      show_retired 
-                      </strong></span>
+                <span class="bold"><strong>show_retired </strong></span>
                  -  defaults to False so that it doesn't show retired dependencies
                 
          </p>
-         <h4><a name="d0e4181"></a>
-                return:
-                
+         <h4><a name="d0e4451"></a>return:
          </h4>
-         <p>
-                a list of snapshots
-                
-         </p>
+         <p>a list of snapshots</p>
       </div>
       <div class="navfooter">
          <hr>

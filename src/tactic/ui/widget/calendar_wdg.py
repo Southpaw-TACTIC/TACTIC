@@ -500,10 +500,11 @@ class CalendarWdg(BaseRefreshWdg):
         prev_month_wdg.add_behavior( {
             'type': "click_up",
             'cbjs_action':  '''
+                var kwargs = {async: false, fade: false};
                 var el = bvr.src_el.getParent('.spt_calendar_top');
                 spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
                         'search_key': '%s', 'top_id': '%s',
-                    'col_name': '%s'}, false);
+                    'col_name': '%s'}, kwargs );
             ''' % (prev_year, prev_month, my.search_key, my.top_id, my.col_name )
         })
         return prev_month_wdg
@@ -522,10 +523,11 @@ class CalendarWdg(BaseRefreshWdg):
         next_month_wdg.add_behavior( {
             'type': "click_up",
             'cbjs_action':  '''
+                var kwargs = {async: false, fade: false};
                 var el = bvr.src_el.getParent('.spt_calendar_top');
                 spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
                         'search_key': '%s', 'top_id': '%s',
-                    'col_name': '%s'}, false);
+                    'col_name': '%s'}, kwargs);
             ''' % (next_year, next_month, my.search_key, my.top_id, my.col_name )
         })
         return next_month_wdg
@@ -1067,7 +1069,7 @@ class CalendarInputWdg(BaseInputWdg):
                     date_format: bvr.date_format,
                 };
 
-                var kwargs = {fade: false};
+                var kwargs = {fade: false, show_loading: false};
 
                 spt.panel.load(top, class_name, options, null, kwargs);
             }
@@ -1154,7 +1156,7 @@ class CalendarInputWdg(BaseInputWdg):
                     date_format: bvr.date_format,
                 };
 
-                var kwargs = {fade: false};
+                var kwargs = {fade: false, show_loading: false};
                 spt.panel.load(top, class_name, options, null, kwargs);
             }
             else {
@@ -1375,7 +1377,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             except:
                 # this seems redundant but required.
                 # usually caused by the time in the date string, so try stripping it
-                print "Error parsing: ", date
+                print "Error parsing: %s. Reparsing without time." %date
                 if date.find(' ') != -1:
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:

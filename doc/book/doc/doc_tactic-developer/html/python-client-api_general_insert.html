@@ -24,108 +24,67 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_insert"></a>
-                         insert
-                         
+                  <h3 class="title"><a name="python-client-api_general_insert"></a>insert
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  insert(search_type, data, metadata={}, parent_key=None,  info={}, use_id=False, triggers=True)
-                      </strong></span>
+                <span class="bold"><strong> insert(search_type, data, metadata={}, parent_key=None,  info={}, use_id=False, triggers=True)</strong></span>
                 
          </p>
-         <p>
-                General insert for creating a new sobject
-                
-         </p>
-         <h4><a name="d0e5459"></a>
-                param:
-                
+         <p>General insert for creating a new sobject</p>
+         <h4><a name="d0e5728"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_type 
-                      </strong></span>
+                <span class="bold"><strong>search_type </strong></span>
                  -  the search_type attribute of the sType
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      data 
-                      </strong></span>
+                <span class="bold"><strong>data </strong></span>
                  -  a dictionary of name/value pairs which will be used to update
                 
          </p>
+         <p>the sobject defined by the search_key.</p>
          <p>
-                the sobject defined by the search_key.
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      parent_key 
-                      </strong></span>
+                <span class="bold"><strong>parent_key </strong></span>
                  -  set the parent key for this sobject
                 
          </p>
-         <h4><a name="d0e5478"></a>
-                keyparam:
-                
+         <h4><a name="d0e5747"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      metadata 
-                      </strong></span>
+                <span class="bold"><strong>metadata </strong></span>
                  -  a dictionary of values that will be stored in the metadata attribute 
                 
          </p>
+         <p>if available</p>
          <p>
-                if available
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      info 
-                      </strong></span>
+                <span class="bold"><strong>info </strong></span>
                  -  a dictionary of info to pass to the ApiClientCmd
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      use_id 
-                      </strong></span>
+                <span class="bold"><strong>use_id </strong></span>
                  -  use id in the returned search key
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      triggers 
-                      </strong></span>
+                <span class="bold"><strong>triggers </strong></span>
                  -  boolean to fire trigger on insert
                 
          </p>
-         <h4><a name="d0e5502"></a>
-                return:
-                
+         <h4><a name="d0e5771"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  represent the sobject with it's current data
                 
          </p>
-         <h4><a name="d0e5509"></a>
-                example:
-                
+         <h4><a name="d0e5778"></a>example:
          </h4>
-         <p>
-                insert a new asset
-                
-         </p><pre class="screen">
-    
+         <p>insert a new asset</p><pre class="screen">
 search_type = "prod/asset"
 
 {
@@ -135,12 +94,7 @@ search_type = "prod/asset"
 
 insert( search_type, data )
 
-
-    </pre><p>
-                insert a new note with a shot parent
-                
-         </p><pre class="screen">
-    
+</pre><p>insert a new note with a shot parent</p><pre class="screen">
 # get shot key
 shot_key = server.build_search_key(search_type='prod/shot',code='XG001')
 
@@ -152,12 +106,7 @@ data = {
 
 server.insert( search_type, data, parent_key=shot_key)
 
-
-    </pre><p>
-                insert a note without firing triggers
-                
-         </p><pre class="screen">
-    
+</pre><p>insert a note without firing triggers</p><pre class="screen">
 
 search_type = "sthpw/note"
 
@@ -170,8 +119,7 @@ data = {
 
 server.insert( search_type, data, triggers=False )
 
-
-    </pre></div>
+</pre></div>
       <div class="navfooter">
          <hr>
          <table width="100%" summary="Navigation footer">

@@ -53,7 +53,7 @@
          <p><span class="bold"><strong>Input Widget: </strong></span>An input widget is a widget that requires
                     one or more values to put entered or extracted.
          </p>
-         <h4><a name="d0e1701"></a>Create your own custom widget
+         <h4><a name="d0e1731"></a>Create your own custom widget
          </h4>
          <p>You can create your own custom widgets in Tactic that become completely integrated in the
                     user interface.
@@ -62,7 +62,7 @@
                     the fundamental functionality required for all widgets that appear in TACTIC. To create your
                     own widget, you can derive off of this class.
          </p>
-         <h5><a name="d0e1707"></a>Hello World
+         <h5><a name="d0e1737"></a>Hello World
          </h5>
          <p>In order to start showing how custom widgets can be created, we will start with the base
                     "Hello World" widget. Create a folder called "custom" and then create a new file called
@@ -88,7 +88,7 @@ class HelloWorldWdg(Widget):
          <p>Note that the title does not change. This is something that the link will do
                     automatically.
          </p>
-         <h5><a name="d0e1729"></a>Formatting the Widget
+         <h5><a name="d0e1759"></a>Formatting the Widget
          </h5>
          <p>We could format the widge a litlle more using some basic HTML widgets.</p><pre class="screen">from pyasm.web import Widget, DivWdg
 
@@ -108,7 +108,7 @@ class HelloWorldWdg2(Widget):
                     type:
          </p><pre class="screen">spt.panel.load("custom.hello_world_wdg2.HelloWorldWdg2");</pre><p>Pressing the "Run" button gives:</p>
          <div class="mediaobject"><img src="media/widgetDevelopment_02.png"></div>
-         <h5><a name="d0e1744"></a>HTML
+         <h5><a name="d0e1774"></a>HTML
          </h5>
          <p>Here we introduce the basic HTML widget DivWdg. The add_style() allows you to add
                     arbitrary CSS styles to the widget. There are various operations that can be added to HTML
@@ -165,7 +165,7 @@ class HelloWorldWdg2(Widget):
                     are useful for laying out a complex widget. All HTML elements and their properties are
                     accessible from these.
          </p>
-         <h5><a name="d0e1787"></a>Using other widgets
+         <h5><a name="d0e1817"></a>Using other widgets
          </h5>
          <p>You can add other predefined widget, for example, the CalendarWdg</p><pre class="screen">from pyasm.web import Widget, DivWdg
 
@@ -197,7 +197,7 @@ class HelloWorldWdg3(Widget):
                     added to other widgets. Any widget can embed any other widget within it's display. This
                     provides a very flexible archictecure for building up complex hierarchical widgets.
          </p>
-         <h5><a name="d0e1805"></a>Create your own table element widget
+         <h5><a name="d0e1835"></a>Create your own table element widget
          </h5>
          <p>There is a special class of widgets that are designed to be used in conjuntion with
                     TableLayoutWdg, the primary widget used for laying out tabular data. These widgets should be
@@ -271,7 +271,7 @@ spt.panel.load("main_body", "tactic.ui.panel.TableLayoutWdg", args);</pre><p>Thi
                     and appear with your custom widget.
          </p>
          <div class="mediaobject"><img src="media/widgetDevelopment_05.png"></div>
-         <h5><a name="d0e1839"></a>BaseTableElementWdg
+         <h5><a name="d0e1869"></a>BaseTableElementWdg
          </h5>
          <p>This example describes how to create your own BaseTableElementWdg to execute a server-side
                 command. The user can type some words in the text field, and then click on the "Action"

@@ -671,12 +671,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         temp = my.kwargs.get("temp")
      
-        # draw 4 rows initially by default
+        # draw 4 (even) rows initially by default
         has_loading = False
         init_load_num = my.kwargs.get('init_load_num')
         if not init_load_num:
             init_load_num = 4
        
+        # override init_load_num if group column has group_bottom
+        if my.has_group_bottom():
+            init_load_num = -1
            
         # minus 1 since row starts at 0
         init_load_num -= 1
@@ -750,28 +753,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not my.sobjects:
             my.handle_no_results(table)
 
-
-        my.add_table_bottom(table)
-        my.postprocess_groups()
-
-
-        # extra stuff to make it work with ViewPanelWdg
-        top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
-        top.add_attr("spt_class_name", class_name)
-
-        my.table.add_class("spt_table_content");
-        inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
-        inner.add_attr("spt_view", my.kwargs.get('view'))
-
-        # extra ?? Doesn't really work to keep the mode
-        inner.add_attr("spt_mode", my.mode)
-        top.add_attr("spt_mode", my.mode)
+        if temp != True: 
+            my.add_table_bottom(table)
+            my.postprocess_groups()
 
 
+            # extra stuff to make it work with ViewPanelWdg
+            top.add_class("spt_table_top");
+            class_name = Common.get_full_class_name(my)
+            top.add_attr("spt_class_name", class_name)
 
-        # add a hidden insert table
-        inner.add( my.get_insert_wdg() )
+            my.table.add_class("spt_table_content");
+            inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
+            inner.add_attr("spt_view", my.kwargs.get('view'))
+
+            # extra ?? Doesn't really work to keep the mode
+            inner.add_attr("spt_mode", my.mode)
+            top.add_attr("spt_mode", my.mode)
+
+
+
+            # add a hidden insert table
+            inner.add( my.get_insert_wdg() )
      
         if my.search_limit:
             limit_span = DivWdg()
@@ -1558,6 +1561,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not width_set:
             table.add_style('width', '100%')
 
+    def has_group_bottom(my):
+        '''return True if group_column has group_bottom'''
+        if not my.group_columns:
+            return False
+        
+        for widget in my.widgets:
+            if widget.get_name() == my.group_columns[0]:
+                expression = widget.get_option("group_bottom")
+                if expression:
+                    return True
+            
+        return False
 
     def postprocess_groups(my):
 

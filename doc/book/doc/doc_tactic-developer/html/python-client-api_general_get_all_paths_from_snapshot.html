@@ -24,117 +24,63 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_all_paths_from_snapshot"></a>
-                         get_all_paths_from_snapshot
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_all_paths_from_snapshot"></a>get_all_paths_from_snapshot
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  get_all_paths_from_snapshot(snapshot_code, mode='client_repo', expand_paths=False, filename_mode='')
-                      </strong></span>
+                <span class="bold"><strong> get_all_paths_from_snapshot(snapshot_code, mode='client_repo', expand_paths=False, filename_mode='')</strong></span>
                 
          </p>
-         <p>
-                Get all paths from snapshot
-                
-         </p>
-         <h4><a name="d0e3683"></a>
-                param:
-                
+         <p>Get all paths from snapshot</p>
+         <h4><a name="d0e3955"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_code 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_code </strong></span>
                  -  the unique code of the snapshot
                 
          </p>
-         <h4><a name="d0e3690"></a>
-                keyparam:
-                
+         <h4><a name="d0e3962"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      mode 
-                      </strong></span>
+                <span class="bold"><strong>mode </strong></span>
                  -  forces the type of folder path returned to use the value from the
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      appropriate tactic_&lt;SERVER_OS&gt;
-                      </strong></span>
+                <span class="bold"><strong>appropriate tactic_&lt;SERVER_OS&gt;</strong></span>
                  - conf.xml configuration file.
                 
          </p>
+         <p>Values include 'lib', 'web', 'local_repo', 'sandbox', 'client_repo', 'relative'</p>
+         <p>lib = the NFS asset directory from the server point of view</p>
+         <p>web = the http asset directory from the client point of view</p>
+         <p>local_repo = the local sync of the TACTIC repository</p>
+         <p>sandbox = the local sandbox (work area) designated by TACTIC</p>
+         <p>client_repo (default) = the asset directory from the client point of view</p>
+         <p>If there is no value for win32_client_repo_dir or linux_client_repo_dir</p>
+         <p>in the config, then the value for asset_base_dir will be used instead.</p>
+         <p>relative = the relative direcory without any base</p>
          <p>
-                Values include 'lib', 'web', 'local_repo', 'sandbox', 'client_repo', 'relative'
-                
-         </p>
-         <p>
-                lib = the NFS asset directory from the server point of view
-                
-         </p>
-         <p>
-                web = the http asset directory from the client point of view
-                
-         </p>
-         <p>
-                local_repo = the local sync of the TACTIC repository
-                
-         </p>
-         <p>
-                sandbox = the local sandbox (work area) designated by TACTIC
-                
-         </p>
-         <p>
-                client_repo (default) = the asset directory from the client point of view
-                
-         </p>
-         <p>
-                If there is no value for win32_client_repo_dir or linux_client_repo_dir
-                
-         </p>
-         <p>
-                in the config, then the value for asset_base_dir will be used instead.
-                
-         </p>
-         <p>
-                relative = the relative direcory without any base
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      expand_paths 
-                      </strong></span>
+                <span class="bold"><strong>expand_paths </strong></span>
                  -  expand the paths of a sequence check
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      filename_mode 
-                      </strong></span>
+                <span class="bold"><strong>filename_mode </strong></span>
                  -  source or '', where source reveals the source_path of the check
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_types 
-                      </strong></span>
+                <span class="bold"><strong>file_types </strong></span>
                  -  list: only return files in snapshot with these types
                 
          </p>
-         <h4><a name="d0e3735"></a>
-                return:
-                
+         <h4><a name="d0e4007"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      list 
-                      </strong></span>
+                <span class="bold"><strong>list </strong></span>
                  -  paths
                 
          </p>

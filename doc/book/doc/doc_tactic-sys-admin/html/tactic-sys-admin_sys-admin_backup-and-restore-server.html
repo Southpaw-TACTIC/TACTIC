@@ -5,15 +5,15 @@
       <title>TACTIC Backup and Restore</title>
       <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
       <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
-      <link rel="up" href="tactic-sys-admin_maintanence.html" title="Maintanence">
-      <link rel="prev" href="tactic-sys-admin_maintanence.html" title="Maintanence">
+      <link rel="up" href="tactic-sys-admin_maintenance.html" title="Maintenance">
+      <link rel="prev" href="tactic-sys-admin_maintenance.html" title="Maintenance">
       <link rel="next" href="tactic-sys-admin_sys-admin_automate-database-backup.html" title="Database Backup Automation">
    </head>
    <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
       <div class="navheader">
          <table width="100%" summary="Navigation header">
             <tr>
-               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_maintanence.html">Prev</a>&nbsp;
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_maintenance.html">Prev</a>&nbsp;
                </td>
                <th width="60%" align="center">&nbsp;</th>
                <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_automate-database-backup.html">Next</a></td>
@@ -33,7 +33,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e4982"></a>Overview
+                     <h4 class="title"><a name="d0e5073"></a>Overview
                      </h4>
                   </div>
                </div>
@@ -99,7 +99,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5026"></a>Procedure
+                     <h4 class="title"><a name="d0e5117"></a>Procedure
                      </h4>
                   </div>
                </div>
@@ -116,15 +116,15 @@
                <p>You may want to stop the tactic service while you do your backup process. To do
                                   so, run the following commands:
                </p>
-               <p><span class="command"><strong>tactic service stop</strong></span></p>
-               <p><span class="command"><strong>tactic service start</strong></span></p>
+               <p><span class="command"><strong>service tactic stop</strong></span></p>
+               <p><span class="command"><strong>service tactic start</strong></span></p>
             </div>
          </div>
          <div class="simplesect" title="Back up the 'assets' directory">
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5046"></a>Back up the 'assets' directory
+                     <h4 class="title"><a name="d0e5137"></a>Back up the 'assets' directory
                      </h4>
                   </div>
                </div>
@@ -139,7 +139,7 @@
                                   directory has been redirected to another location.
                </p>
             </div>
-            <h5><a name="d0e5054"></a>For backup:
+            <h5><a name="d0e5145"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span></p>
             <p>The 'assets' directory on a Windows install is located by default in:</p>
@@ -147,7 +147,7 @@
             <p><span class="bold"><strong>Linux</strong></span></p>
             <p>The 'assets' directory on a Linux install is located by default in:</p>
             <p><span class="command"><strong>/home/apache/assets</strong></span></p>
-            <h5><a name="d0e5072"></a>For restore:
+            <h5><a name="d0e5163"></a>For restore:
             </h5>
             <p>To restore the TACTIC 'assets' directory, you have to restore your backup to the
                            current 'assets' location.
@@ -157,12 +157,12 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5076"></a>Dump the TACTIC database
+                     <h4 class="title"><a name="d0e5167"></a>Dump the TACTIC database
                      </h4>
                   </div>
                </div>
             </div>
-            <p>To dump the TACTIC data base you need to log in to the postgreSQL database and perform
+            <p>To dump the TACTIC data base you need to log in to the PostgreSQL database and perform
                            a database dump.
             </p>
             <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
@@ -174,14 +174,14 @@
                                   tag.
                </p>
             </div>
-            <h5><a name="d0e5087"></a>For backup:
+            <h5><a name="d0e5178"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span></p>
             <p><span class="command"><strong>pg_dumpall -U postgres -c &gt; c:\assets\tacticDatabase.sql</strong></span></p>
             <p><span class="bold"><strong>Linux</strong></span></p>
             <p><span class="command"><strong>pg_dumpall -U postgres -c &gt;
                                  /home/apache/assets/tacticDatabase.sql</strong></span></p>
-            <h5><a name="d0e5101"></a>For restore:
+            <h5><a name="d0e5192"></a>For restore:
             </h5>
             <p>To restore the TACTIC database run the command:</p>
             <p><span class="command"><strong>psql -U postgres &lt; tacticDatabase.sql</strong></span></p>
@@ -190,7 +190,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5108"></a>Back up the TACTIC program directory
+                     <h4 class="title"><a name="d0e5199"></a>Back up the TACTIC program directory
                      </h4>
                   </div>
                </div>
@@ -198,7 +198,7 @@
             <p>This last step, although not completely necessary, is recommended because it takes a
                            snapshot of your TACTIC source code and project settings at the time of backup.
             </p>
-            <h5><a name="d0e5113"></a>For backup:
+            <h5><a name="d0e5204"></a>For backup:
             </h5>
             <p><span class="bold"><strong>Windows</strong></span>
                        
@@ -210,7 +210,7 @@
             <p>The folders to back up are:</p>
             <p><span class="command"><strong>/home/apache/tactic</strong></span></p>
             <p><span class="command"><strong>/home/apache/projects</strong></span></p>
-            <h5><a name="d0e5138"></a>For restore:
+            <h5><a name="d0e5229"></a>For restore:
             </h5>
             <p>To restore the TACTIC program files, you have to restore the <span class="command"><strong>tactic</strong></span>
                            and <span class="command"><strong>projects</strong></span> directories to their original locations.
@@ -221,9 +221,9 @@
          <hr>
          <table width="100%" summary="Navigation footer">
             <tr>
-               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_maintanence.html">Prev</a>&nbsp;
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_maintenance.html">Prev</a>&nbsp;
                </td>
-               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_maintanence.html">Up</a></td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_maintenance.html">Up</a></td>
                <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_sys-admin_automate-database-backup.html">Next</a></td>
             </tr>
             <tr>

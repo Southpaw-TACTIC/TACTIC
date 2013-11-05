@@ -24,89 +24,42 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_get_resource_path"></a>
-                         get_resource_path
-                         
+                  <h3 class="title"><a name="python-client-api_general_get_resource_path"></a>get_resource_path
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                       get_resource_path(login=None)
-                      </strong></span>
+                <span class="bold"><strong> get_resource_path(login=None)</strong></span>
                 
          </p>
-         <p>
-                Get the resource path of the current user. It differs from 
-                
-         </p>
-         <p>
-                create_resource_paths() which actually create dir. The resource path
-                
-         </p>
-         <p>
-                identifies the location of the file which is used to cache connection information.
-                
-         </p>
-         <p>
-                An exmple of the contents is shown below:
-                
-         </p><pre class="screen">
-    
+         <p>Get the resource path of the current user. It differs from </p>
+         <p>create_resource_paths() which actually create dir. The resource path</p>
+         <p>identifies the location of the file which is used to cache connection information.</p>
+         <p>An exmple of the contents is shown below:</p><pre class="screen">
 login=admin
 server=localhost
 ticket=30818057bf561429f97af59243e6ef21
 project=unittest
 
-
-    </pre><p>
-                The contents in the resource file represent the defaults to use
-                
-         </p>
-         <p>
-                when connection to the TACTIC server, but may be overriden by the
-                
-         </p>
-         <p>
-                API methods: set_ticket(), set_server(), set_project() or the
-                
-         </p>
-         <p>
-                environment variables: TACTIC_TICKET, TACTIC_SERVER, and TACTIC_PROJECT
-                
-         </p>
-         <p>
-                Typically this method is not explicitly called by API developers and
-                
-         </p>
-         <p>
-                is used automatically by the API server stub. It attempts to get from 
-                
-         </p>
-         <p>
-                home dir first and then from temp_dir is it fails. 
-                
-         </p>
-         <h4><a name="d0e4900"></a>
-                param:
-                
+</pre><p>The contents in the resource file represent the defaults to use</p>
+         <p>when connection to the TACTIC server, but may be overriden by the</p>
+         <p>API methods: set_ticket(), set_server(), set_project() or the</p>
+         <p>environment variables: TACTIC_TICKET, TACTIC_SERVER, and TACTIC_PROJECT</p>
+         <p>Typically this method is not explicitly called by API developers and</p>
+         <p>is used automatically by the API server stub. It attempts to get from </p>
+         <p>home dir first and then from temp_dir is it fails. </p>
+         <h4><a name="d0e5166"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      login (optional) 
-                      </strong></span>
+                <span class="bold"><strong>login (optional) </strong></span>
                  -  login code. If not provided, it gets the current system user
                 
          </p>
-         <h4><a name="d0e4907"></a>
-                return:
-                
+         <h4><a name="d0e5173"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      string 
-                      </strong></span>
+                <span class="bold"><strong>string </strong></span>
                  -  resource file path
                 
          </p>

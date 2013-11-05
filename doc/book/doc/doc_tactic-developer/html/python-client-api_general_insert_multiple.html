@@ -24,126 +24,61 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_insert_multiple"></a>
-                         insert_multiple
-                         
+                  <h3 class="title"><a name="python-client-api_general_insert_multiple"></a>insert_multiple
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  insert_multiple(data, metadata=[], parent_key=None, use_id=False, triggers=True)
-                      </strong></span>
+                <span class="bold"><strong> insert_multiple(data, metadata=[], parent_key=None, use_id=False, triggers=True)</strong></span>
                 
          </p>
-         <p>
-                Insert for several sobjects in one function call.  The
-                
-         </p>
-         <p>
-                data structure contains all the infon needed to update and is
-                
-         </p>
-         <p>
-                formated as follows:
-                
-         </p>
-         <p>
-                data = [
-                
-         </p>
-         <p>
-                { column1: value1, column2: value2,  column3: value3 },
-                
-         </p>
-         <p>
-                { column1: value1, column2: value2,  column3: value3 }
-                
-         </p>
-         <p>
-                }
-                
-         </p>
-         <p>
-                metadata =  [
-                
-         </p>
-         <p>
-                { color: blue, height: 180 },
-                
-         </p>
-         <p>
-                { color: orange, height: 170 }
-                
-         </p>
-         <p>
-                ]
-                
-         </p>
-         <h4><a name="d0e5554"></a>
-                params:
-                
+         <p>Insert for several sobjects in one function call.  The</p>
+         <p>data structure contains all the infon needed to update and is</p>
+         <p>formated as follows:</p>
+         <p>data = [</p>
+         <p>{ column1: value1, column2: value2,  column3: value3 },</p>
+         <p>{ column1: value1, column2: value2,  column3: value3 }</p>
+         <p>}</p>
+         <p>metadata =  [</p>
+         <p>{ color: blue, height: 180 },</p>
+         <p>{ color: orange, height: 170 }</p>
+         <p>]</p>
+         <h4><a name="d0e5823"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_type 
-                      </strong></span>
+                <span class="bold"><strong>search_type </strong></span>
                  -  the search_type attribute of the sType
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      data 
-                      </strong></span>
+                <span class="bold"><strong>data </strong></span>
                  -  a dictionary of name/value pairs which will be used to update
                 
          </p>
-         <p>
-                the sobject defined by the search_key
-                
-         </p>
-         <p>
-                Note: this can also be an array.  Each data dictionary element in
-                
-         </p>
-         <p>
-                the array will be applied to the corresponding search key
-                
-         </p>
-         <h4><a name="d0e5572"></a>
-                keyparam:
-                
+         <p>the sobject defined by the search_key</p>
+         <p>Note: this can also be an array.  Each data dictionary element in</p>
+         <p>the array will be applied to the corresponding search key</p>
+         <h4><a name="d0e5841"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      parent_key 
-                      </strong></span>
+                <span class="bold"><strong>parent_key </strong></span>
                  -  set the parent key for this sobject
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      use_id 
-                      </strong></span>
+                <span class="bold"><strong>use_id </strong></span>
                  -  boolean to control if id is used in the search_key in returning sobject dict
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      triggers 
-                      </strong></span>
+                <span class="bold"><strong>triggers </strong></span>
                  -  boolean to fire trigger on insert
                 
          </p>
-         <h4><a name="d0e5589"></a>
-                return:
-                
+         <h4><a name="d0e5858"></a>return:
          </h4>
-         <p>
-                a list of all the inserted sobjects
-                
-         </p>
+         <p>a list of all the inserted sobjects</p>
       </div>
       <div class="navfooter">
          <hr>
