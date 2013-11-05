@@ -29,12 +29,6 @@ class EnvironmentException(Exception):
     pass
 
 
-# set the temp dir
-import tempfile
-tmp_dir = Config.get_value("install", "tmp_dir")
-if tmp_dir:
-    tempfile.tempdir = "%s/temp" % tmp_dir
-
 
 class Environment(Base):
     """class which encapsulates the environment the framework is running
@@ -49,6 +43,15 @@ class Environment(Base):
         if not Environment.IS_INITIALIZED:
             my.initialize()
             Environment.IS_INITIALIZED = True
+
+        # set the temp dir
+        import tempfile
+        tmp_dir = Config.get_value("install", "tmp_dir")
+        if tmp_dir:
+            tempfile.tempdir = "%s/temp" % tmp_dir
+
+
+
        
 
     def initialize_python_path(my):
