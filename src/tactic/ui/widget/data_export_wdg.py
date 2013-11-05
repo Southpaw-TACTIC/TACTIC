@@ -68,7 +68,7 @@ class CsvExportWdg(BaseRefreshWdg):
             
             table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
                 show_search_limit='false', search_limit=-1, search_view=my.search_view,\
-                search_class=my.search_class, simple_search_view=my.simple_search_view)
+                search_class=my.search_class, simple_search_view=my.simple_search_view, init_load_num=-1)
             table.handle_search()
             search_objs = table.sobjects
             my.selected_search_keys = SearchKey.get_by_sobjects(search_objs, use_id=True)

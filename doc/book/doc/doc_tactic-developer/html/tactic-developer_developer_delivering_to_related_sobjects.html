@@ -1,0 +1,123 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Delivering To Related sObjects</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-developer.html" title="TACTIC Developer">
+      <link rel="up" href="tactic-developer_deliverying_to_related_sobjects.html" title="Delivering to Related sObjects">
+      <link rel="prev" href="tactic-developer_deliverying_to_related_sobjects.html" title="Delivering to Related sObjects">
+      <link rel="next" href="api_python_general_build.html" title="TACTIC Python Client API Reference">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-developer_deliverying_to_related_sobjects.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="api_python_general_build.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Delivering To Related sObjects">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-developer_developer_delivering_to_related_sobjects"></a>Delivering To Related sObjects
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Delivering Files to a Process">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2417"></a>Delivering Files to a Process
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <div class="mediaobject">
+               <table border="0" summary="manufactured viewport for HTML img" cellspacing="0" cellpadding="0" width="300">
+                  <tr>
+                     <td><img src="media/delivering.png" width="300"></td>
+                  </tr>
+               </table>
+            </div>
+            <p>TACTIC's digital asset management features now include the ability to deliver checkins
+               to another process. This provides additional flexibility for what happens to an asset
+               once it has gone through a certain process. This feature is currently only configurable
+               by editing a pipeline's XML definition. A 'to_expression' attribute has been added to
+                           allow this.
+            </p>
+            <p>In the example below, a pipeline which has the single process 'animation' is set up to
+                           deliver to any sObject of the sType 'game/asset'.
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;pipeline&gt;
+  &lt;process name="Animation" task_pipeline="game/Animation"/&gt;
+  &lt;connect from="Animation" to="output" to_expression="@SOBJECT(game/asset)])"/&gt;
+&lt;/pipeline&gt;</pre><p>
+                       
+            </p>
+            <p>The result of this is that any sObjects of sType 'game/asset' will now show as an
+                           option to 'deliver to' in the check-in widget UI. In this example, an asset called
+                           'test' is being delivered to, this delivery being the final output of the animation
+                           process.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject">
+               <table border="0" summary="manufactured viewport for HTML img" cellspacing="0" cellpadding="0" width="400">
+                  <tr>
+                     <td><img src="media/delivering_UI.png" width="400"></td>
+                  </tr>
+               </table>
+            </div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Receiving Files">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e2440"></a>Receiving Files
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Similar to delivering files, a 'from_expression' can also be used in a process to
+                           allow the process to get files from another process. This allows use of the 'received'
+                           tab in the check-in widget.
+            </p>
+            <div class="mediaobject">
+               <table border="0" summary="manufactured viewport for HTML img" cellspacing="0" cellpadding="0" width="400">
+                  <tr>
+                     <td><img src="media/receivables.jpg" width="400"></td>
+                  </tr>
+               </table>
+            </div>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-developer_deliverying_to_related_sobjects.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-developer_deliverying_to_related_sobjects.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="api_python_general_build.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-developer.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -24,157 +24,103 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_add_config_element"></a>
-                         add_config_element
-                         
+                  <h3 class="title"><a name="python-client-api_general_add_config_element"></a>add_config_element
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  add_config_element(search_type, view, name, class_name=None, display_options={},  action_class_name=None, action_options={},
-                  element_attrs={},login=None,  unique=True, auto_unique_name=False, auto_unique_view=False)
-                      </strong></span>
+                <span class="bold"><strong> add_config_element(search_type, view, name, class_name=None, display_options={},  action_class_name=None, action_options={},
+                  element_attrs={},login=None,  unique=True, auto_unique_name=False, auto_unique_view=False)</strong></span>
                 
          </p>
-         <p>
-                This method adds an element into a config.  It is used by various
-                
-         </p>
-         <p>
-                UI components to add new widget element to a particular view.
-                
-         </p>
-         <h4><a name="d0e2278"></a>
-                param:
-                
+         <p>This method adds an element into a config.  It is used by various</p>
+         <p>UI components to add new widget element to a particular view.</p>
+         <h4><a name="d0e2552"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_type 
-                      </strong></span>
+                <span class="bold"><strong>search_type </strong></span>
                  -  the search type that this config belongs to
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      view 
-                      </strong></span>
+                <span class="bold"><strong>view </strong></span>
                  -  the specific view of the search type
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      name 
-                      </strong></span>
+                <span class="bold"><strong>name </strong></span>
                  -  the name of the element
                 
          </p>
-         <h4><a name="d0e2295"></a>
-                keyparam:
-                
+         <h4><a name="d0e2569"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      class_name 
-                      </strong></span>
+                <span class="bold"><strong>class_name </strong></span>
                  -  the fully qualified class of the display
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      action_class_name 
-                      </strong></span>
+                <span class="bold"><strong>action_class_name </strong></span>
                  -  the fully qualified class of the action
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      display_options 
-                      </strong></span>
+                <span class="bold"><strong>display_options </strong></span>
                  -  keyward options in a dictionary to construct the specific display
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      action_options 
-                      </strong></span>
+                <span class="bold"><strong>action_options </strong></span>
                  -  keyward options in a dictionary to construct the specific action
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      element_attrs 
-                      </strong></span>
+                <span class="bold"><strong>element_attrs </strong></span>
                  -  element attributes in a dictionary
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      login 
-                      </strong></span>
+                <span class="bold"><strong>login </strong></span>
                  -  login name if it is for a specific user
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      unique 
-                      </strong></span>
+                <span class="bold"><strong>unique </strong></span>
                  -  add an unique element if True. update the element if False.
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      auto_unique_name 
-                      </strong></span>
+                <span class="bold"><strong>auto_unique_name </strong></span>
                  -  auto generate a unique element and display view name
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      auto_unique_view 
-                      </strong></span>
+                <span class="bold"><strong>auto_unique_view </strong></span>
                  -  auto generate a unique display view name
                 
          </p>
-         <h4><a name="d0e2342"></a>
-                return:
-                
+         <h4><a name="d0e2616"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      boolean 
-                      </strong></span>
+                <span class="bold"><strong>boolean </strong></span>
                  -  True
                 
          </p>
-         <h4><a name="d0e2349"></a>
-                example:
-                
+         <h4><a name="d0e2623"></a>example:
          </h4>
-         <p>
-                This will add a new element to the "character" view for a 3D asset
-                
-         </p><pre class="screen">
-    
+         <p>This will add a new element to the "character" view for a 3D asset</p><pre class="screen">
 search_type = 'prod/asset'
 view = 'characters'
 class_name = 'tactic.ui.common.SimpleElementWdg'
 server.add_config_element(search_type, view, class_name)
 
-
-    </pre><p>
-                This will add a new element named "user" to the "definition" view. It contains detailed display and action nodes
-                
-         </p><pre class="screen">
-    
+</pre><p>This will add a new element named "user" to the "definition" view. It contains detailed display and action nodes</p><pre class="screen">
 data_dict = {} # some data here
 search_type = 'prod/asset'
 server.add_config_element(search_type, 'definition', 'user',  class_name = data_dict['class_name'], display_options=data_dict['display_options'], element_attrs=data_dict['element_attrs'], unique=True, action_class_name=data_dict['action_class_name'], action_options=data_dict['action_options'])
 
-
-    </pre></div>
+</pre></div>
       <div class="navfooter">
          <hr>
          <table width="100%" summary="Navigation footer">

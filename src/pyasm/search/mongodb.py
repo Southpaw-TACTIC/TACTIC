@@ -255,6 +255,8 @@ class MongoDbImpl(DatabaseImpl):
         table = select.tables[0]
         filters = select.raw_filters
         order_bys = select.order_bys
+        limit = select.limit
+        offset = select.offset
 
         collection = conn.get_collection(table)
 
@@ -279,6 +281,12 @@ class MongoDbImpl(DatabaseImpl):
                     sort_list.append( [order_by, 1] )
 
                 cursor.sort(sort_list)
+
+
+        if limit:
+            cursor.limit(limit)
+        if offset:
+            cursor.skip(offset)
 
         results = []
         for result in cursor:
@@ -333,6 +341,20 @@ class MongoDbImpl(DatabaseImpl):
         sql.last_row_id = object_id
 
 
+
+
+    def execute_delete(my, sql, table, id):
+        conn = sql.get_connection()
+
+        collection = conn.get_collection(table)
+
+        collection.remove( {"_id": id} )
+
+
+
+
+
+
     def execute_create_table(my, sql, create):
 
         conn = sql.get_connection()
@@ -368,10 +390,6 @@ class MongoDbImpl(DatabaseImpl):
         return object_id
 
 
-
-    def execute_delete(my, sql, delete):
-
-        pass
 
 
 

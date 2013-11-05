@@ -1013,6 +1013,12 @@ class ActionButtonWdg(DivWdg):
         'order': 0,
         'category': 'Options'
     },
+    'title2': {
+        'description': 'Alt Value to show on actual button when clicked on',
+        'type': 'TextWdg',
+        'order': 0,
+        'category': 'Options'
+    },
     'tip': {
         'description': 'Tool tip info to show when mouse hovers over button',
         'type': 'TextWdg',
@@ -1147,6 +1153,7 @@ class ActionButtonWdg(DivWdg):
         from pyasm.widget import ButtonWdg
         button = ButtonWdg()
         button.add_style("width: %s" % top_width)
+        button.add_class('spt_label')
 
         icon = my.kwargs.get("icon")
         if icon:

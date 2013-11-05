@@ -24,148 +24,89 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_query_snapshots"></a>
-                         query_snapshots
-                         
+                  <h3 class="title"><a name="python-client-api_general_query_snapshots"></a>query_snapshots
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False,
-                  include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False)
-                      </strong></span>
+                <span class="bold"><strong>  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False,
+                  include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False)</strong></span>
                 
          </p>
-         <p>
-                thin wrapper around query, but is specific to querying snapshots
-                
-         </p>
-         <p>
-                with some useful included flags that are specific to snapshots
-                
-         </p>
-         <h4><a name="d0e5798"></a>
-                params:
-                
+         <p>thin wrapper around query, but is specific to querying snapshots</p>
+         <p>with some useful included flags that are specific to snapshots</p>
+         <h4><a name="d0e6111"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      ticket 
-                      </strong></span>
+                <span class="bold"><strong>ticket </strong></span>
                  -  authentication ticket
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      filters 
-                      </strong></span>
+                <span class="bold"><strong>filters </strong></span>
                  -  (optional) an array of filters to alter the search
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      columns 
-                      </strong></span>
+                <span class="bold"><strong>columns </strong></span>
                  -  (optional) an array of columns whose values should be
                 
          </p>
+         <p>retrieved</p>
          <p>
-                retrieved
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      order_bys 
-                      </strong></span>
+                <span class="bold"><strong>order_bys </strong></span>
                  -  (optional) an array of order_by to alter the search
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      show_retired 
-                      </strong></span>
+                <span class="bold"><strong>show_retired </strong></span>
                  -  (optional) 
                 
          </p>
+         <p>returned</p>
          <p>
-                returned
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      limit 
-                      </strong></span>
+                <span class="bold"><strong>limit </strong></span>
                  -  sets the maximum number of results returned
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      single 
-                      </strong></span>
+                <span class="bold"><strong>single </strong></span>
                  -  returns a single sobject that is not wrapped up in an array
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      include_paths 
-                      </strong></span>
+                <span class="bold"><strong>include_paths </strong></span>
                  -  flag to specify whether to include a __paths__ property
                 
          </p>
+         <p>containing a list of all paths in the dependent snapshots</p>
          <p>
-                containing a list of all paths in the dependent snapshots
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      include_paths_dict 
-                      </strong></span>
+                <span class="bold"><strong>include_paths_dict </strong></span>
                  -  flag to specify whether to include a
                 
          </p>
+         <p>__paths_dict__ property containing a dict of all paths in the</p>
+         <p>dependent snapshots</p>
          <p>
-                __paths_dict__ property containing a dict of all paths in the
-                
-         </p>
-         <p>
-                dependent snapshots
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      include_full_xml 
-                      </strong></span>
+                <span class="bold"><strong>include_full_xml </strong></span>
                  -  flag to return the full xml definition of a snapshot
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      include_parent 
-                      </strong></span>
+                <span class="bold"><strong>include_parent </strong></span>
                  -  includes all of the parent attributes in a __parent__ dictionary
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      include_files 
-                      </strong></span>
+                <span class="bold"><strong>include_files </strong></span>
                  -  includes all of the file objects referenced in the
                 
          </p>
-         <p>
-                snapshots
-                
-         </p>
-         <h4><a name="d0e5872"></a>
-                return:
-                
+         <p>snapshots</p>
+         <h4><a name="d0e6185"></a>return:
          </h4>
-         <p>
-                list of snapshots
-                
-         </p>
+         <p>list of snapshots</p>
       </div>
       <div class="navfooter">
          <hr>
