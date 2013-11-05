@@ -66,21 +66,20 @@ class CheckinMetadataHandler():
             base, ext = os.path.splitext(path)
             file_object = file_objects[i]
 
-            if HAS_FFMPEG:
-                parser_type = "FFMPEG"
-            elif HAS_IMAGEMAGICK:
-                parser_type = "ImageMagick"
-            else:
-                parser_type = "PIL"
-
-            metadata = {}
             if not os.path.exists(path):
-                pass
+                continue
+            elif HAS_FFMPEG and ext in ['.mov','.wmv','.mpg','.mpeg','.m1v','.m2v','.mp2','.mpa','.mpe','.mp4','.wma','.asf','.asx','.avi','.wax','.wm','.wvx','.ogg','.webm','.mkv']:
+                parser_type = "FFMPEG"
+            elif ext in ['.txt','.doc','.docx','.xls','.xlsx','.rtf','.odt']:
+                continue
+            else:
+                if HAS_IMAGEMAGICK:                    
+                    parser_type = "ImageMagick" 
+                else:
+                    parser_type = "PIL"
+            metadata = {}
 
-            elif ext in ['.txt','.doc','.docx','.xls','.rtf','.odt']:
-                pass
-
-            elif parser_type == "FFMPEG":
+            if parser_type == "FFMPEG":
                 parser = FFProbeMetadataParser(path=path)
                 metadata = parser.get_metadata()
             elif parser_type == "ImageMagick":
@@ -305,12 +304,13 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         names = []
         curr_ret = ret
         for line in ret_val.split("\n"):
+            line = line.strip()
             if not line:
                 continue
 
             index = 0
             while 1:
-                if  line[index] != ' ':
+                if line and line[index] != ' ':
                     break
                 index += 1
             level = index / 2
@@ -323,13 +323,21 @@ class ImageMagickMetadataParser(BaseMetadataParser):
                 continue
 
             parts = re.split(p, line)
+            if len(parts) < 2:
+                print "WARNING: Skipping an ImageMagick line due to inconsistent formatting."
+                continue
             name = parts[0]
             value = parts[1]
-            value = value.encode('utf8', 'ignore')
+            
+            if isinstance(value, unicode):
+                value = value.encode('utf-8', 'ignore')
+            else:
+                value = unicode(value, errors='ignore').encode('utf-8')
+            
             ret[name] = value
 
             names.append(name)
-
+        
         if names:
             ret['__keys__'] = names
 
