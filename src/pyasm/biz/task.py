@@ -427,23 +427,30 @@ class Task(SObject):
                 multi_stypes = True
                 break
 
+        
         search = Search( Task.SEARCH_TYPE )
         if multi_stypes:
+            # sort this into a dictionary and make multiple calls to 
+            # search.add_relationship_filters
             # use the first sobject as a sample
-            sobject = sobjects[0]
-            if not sobject:
-                #print "None task passed in"
-                return []
+            sobjects_dict = {}
+            for sobject in sobjects:
+                st = sobject.get_search_type()
+                sobj_list = sobjects_dict.get(st)
+                if sobj_list == None:
+                    sobjects_dict[st] = [sobject]
+                else:
+                    sobj_list.append(sobject)
 
-            if len(sobjects) == 1:
-                search_id = sobject.get_id()
-                search.add_filter("search_id", search_id)
-            else:
-                search_ids = [x.get_id() for x in sobjects]
-                search.add_filters("search_id", search_ids)
+        
+            search.add_op('begin')
+            for key, sobj_list in sobjects_dict.items():
+                search.add_op('begin')
+                search.add_relationship_filters(sobj_list)
+                search.add_op('and')
+            search.add_op('or')
 
-            search_type = sobject.get_search_type()
-            search.add_filter("search_type", search_type)
+
 
         else:
 
@@ -452,13 +459,12 @@ class Task(SObject):
 
             # FIXME: why doesn't the ops work here?
             filters = []
+            search.add_relationship_filters(sobjects)
+            """
             for sobject in sobjects:
                 search_type = sobject.get_search_type()
-
-
                 attrs = schema.get_relationship_attrs("sthpw/task", search_type)
                 attrs = schema.resolve_relationship_attrs(attrs, "sthpw/task", search_type)
-
                 search_code = sobject.get_value(attrs.get("to_col"))
                 #search_code = sobject.get_value("code")
                 #search.add_filter('search_type', search_type)
@@ -469,7 +475,7 @@ class Task(SObject):
                 else:
                     filters.append("search_type = '%s' and search_id = %s" % (search_type, search_code))
             search.add_where(" or ".join(filters))
-
+            """
 
         search.add_order_by("search_type")
 
