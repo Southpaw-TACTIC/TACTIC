@@ -1086,9 +1086,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
 
 
 
