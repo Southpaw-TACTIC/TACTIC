@@ -2187,7 +2187,6 @@ if (custom_options.deliver == "on") {
     }
 
 }
-)
 
 
 
