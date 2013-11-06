@@ -4257,8 +4257,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             for (var i = 0; i < snapshot_codes.length; i++) {
                 var label = 1 + i;
                 spt.app_busy.show("Checking out latest in [%s] #"+ label +" ..." );
-                sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
-                //console.log('sandbox ' + sandbox_paths)
+                sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types, expand_paths: true} );
             }
             if (button) {
                 var top = button.getParent(".spt_checkin_top");
