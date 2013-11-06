@@ -351,7 +351,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         calc_mode = my.get_option("calc_mode")
         if not calc_mode:
             calc_mode = 'slow'
- 
+        #calc_mode = 'fast'
         # parse the expression
         parser = ExpressionParser()
         try:

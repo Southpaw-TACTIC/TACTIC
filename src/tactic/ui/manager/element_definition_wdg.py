@@ -161,7 +161,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         return top
 
     def get_submit_input(my):
-        submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column", icon=IconWdg.CREATE)
+        submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column")
 
         behavior = {
             'type':         'click_up',

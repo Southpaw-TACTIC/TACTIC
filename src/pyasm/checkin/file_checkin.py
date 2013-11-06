@@ -519,7 +519,7 @@ class FileCheckin(BaseCheckin):
     get = classmethod(get)
 
 
-    def get_preallocated_path(cls, snapshot, file_type='main', file_name='', file_range='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(cls, snapshot, file_type='main', file_name='', file_range='', mkdir=True, protocol=None, ext='', parent=None):
         '''Get a preallocated directory for this snapshot.  This will run a
         virtual checkin through the naming convention and construct a path
         that Tactic expects the checked in file to go to
@@ -545,7 +545,8 @@ class FileCheckin(BaseCheckin):
         #if not file_range:
         #    file_range = "1-30"
 
-        parent = snapshot.get_parent()
+        if not parent:
+            parent = snapshot.get_parent()
         assert parent
         if not file_name:
             file_name = parent.get_code()

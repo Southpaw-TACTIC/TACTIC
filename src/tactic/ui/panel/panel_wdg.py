@@ -2742,8 +2742,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         order_by = my.kwargs.get('order_by')
         element_name = my.kwargs.get('element_name')
 
-        my.element_names = my.kwargs.get('element_names')
         mode = my.kwargs.get('mode')
+
 
 
         if link_view:   
@@ -2778,7 +2778,18 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         if not view:
             view = "table"
-            
+
+
+
+        my.element_names = my.kwargs.get('element_names')
+        if not my.element_names:
+            impl = SearchType.get_database_impl_by_search_type(search_type)
+            if impl.get_database_type() == "MongoDb":
+                my.element_names = impl.get_default_columns()
+ 
+
+
+           
          
         # this is needed so that each custom made view can have its own last-search settings
         if not search_view:
@@ -2884,12 +2895,27 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         search_dialog_id = 0
         search_wdg = None
+        can_search = True
 
         show_shelf = my.kwargs.get("show_shelf")
-        # FIXME: this doesn't work yet because the filter information is not
-        # passed through
+
+
+        # make some checks to see if search will actually work
+        try:
+            search = Search(search_type)
+            search.set_null_filter()
+            sobjects = search.get_sobjects()
+        except Exception, e:
+            impl = SearchType.get_database_impl_by_search_type(search_type)
+            if impl.get_database_type() == "MongoDb":
+                can_search = False
+
+
+        # FIXME: this doesn't work yet because the filter information
+        # is not passed through
         #if show_shelf not in [False, 'false']:
-        if True:
+        #if True:
+        if can_search:
             try:
                 from tactic.ui.app import SearchWdg
                 search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit, user_override=True )
@@ -3101,7 +3127,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             # not be fatal, so we catch the exception here
             from pyasm.search import SqlException
             try:
-                layout_table.handle_search()
+                if can_search:
+                    layout_table.handle_search()
             except SqlException, e:
                 from pyasm.widget import ExceptionWdg
                 exception_wdg = ExceptionWdg(e)
