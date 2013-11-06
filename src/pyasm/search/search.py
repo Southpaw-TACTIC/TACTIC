@@ -225,6 +225,7 @@ class Search(Base):
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
+
         if not search_type == 'sthpw/virtual' and not exists:
             raise SearchException('This table [%s] does not exist for database [%s]' %(table, my.database))
 
@@ -3206,7 +3207,11 @@ class SObject(object):
                     my.set_value("search_code", sobj_id )
 
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
-                my.set_value("search_code", sobject.get_value("code") )
+
+                if sobject.get_database_type() == "MongoDb":
+                    my.set_value("search_code", sobject.get_id() )
+                else:
+                    my.set_value("search_code", sobject.get_value("code") )
 
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
@@ -4874,14 +4879,6 @@ class SearchType(SObject):
             search_type = search_type.SEARCH_TYPE
 
 
-        # MongoDb Test
-        #if search_type.startswith("mongodb/"):
-        #    my.base_key = search_type
-        #else:
-        #    my.base_key = ""
-
-
-
         super(SearchType,my).__init__(search_type,columns,result, fast_data=fast_data)
 
         # cache this value as it gets called a lot
@@ -6331,6 +6328,15 @@ class SearchKey(object):
             name, value = expr.split("=")
             data[name] = value
 
+        project = data.get("project")
+        if project:
+            search_type = "%s?project=%s" % (base_search_type, project)
+        else:
+            search_type = base_search_type
+
+        data["search_type"] = search_type
+        data["base_search_type"] = base_search_type
+
 
         return base_search_type, data
     _get_data = classmethod(_get_data)
@@ -6351,34 +6357,18 @@ class SearchKey(object):
     def extract_project(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("project")
-
-        #if "project=" in search_key:
-        #    return search_key.split("project=")[1].split("&")[0]
-        #else:
-        #    return None
     extract_project = classmethod(extract_project)
 
 
     def extract_code(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("code")
-
-        #try:
-        #    tmp, code = search_key.split("code=", 1)
-        #except ValueError:
-        #    return ""
-        #return code
     extract_code = classmethod(extract_code)
 
 
     def extract_id(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("id")
-        #try:
-        #    tmp, id = search_key.split("id=", 1)
-        #except ValueError:
-        #    return ""
-        #return id
     extract_id = classmethod(extract_id)
 
 
@@ -6522,11 +6512,8 @@ class SearchKey(object):
                 search_code_list.append(code)
             else:
                 id = SearchKey.extract_id(sk)
-                try:
-                    # if possible, set as an integer
-                    id = int(id)
-                except:
-                    pass
+                # convert to a string for ocmparison
+                id = str(id)
                 search_id_list.append(id)
        
         single_search_type = False
@@ -6549,7 +6536,7 @@ class SearchKey(object):
                 if keep_order:
                     sort_dict = {}
                     for sobj in sobjs:
-                        sobj_id = sobj.get_id()
+                        sobj_id = str(sobj.get_id())
                         sort_dict[sobj] = search_id_list.index(sobj_id)
                     sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
                     return sorted_sobjs

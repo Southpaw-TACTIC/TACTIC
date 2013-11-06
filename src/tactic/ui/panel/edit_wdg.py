@@ -213,6 +213,7 @@ class EditWdg(BaseRefreshWdg):
         
         my.skipped_element_names = []
         my.element_names = my.config.get_element_names()
+
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
             ignore = ignore.split("|")
@@ -221,6 +222,20 @@ class EditWdg(BaseRefreshWdg):
 
         my.element_titles = my.config.get_element_titles()  
         my.element_descriptions = my.config.get_element_descriptions()  
+
+
+        # MongoDb
+        # Default columns
+        if not my.element_names:
+            impl = SearchType.get_database_impl_by_search_type(my.search_type)
+            if impl.get_database_type() == "MongoDb":
+                my.element_names = impl.get_default_columns()
+                my.element_titles = ['Code', 'Name', 'Description']
+                my.element_descriptions = ['Code', 'Name', 'Description']
+
+
+
+
         my.input_prefix = my.kwargs.get('input_prefix')
         if not my.input_prefix:
             my.input_prefix = 'edit'
