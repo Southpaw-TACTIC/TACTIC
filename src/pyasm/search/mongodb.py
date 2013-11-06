@@ -17,9 +17,9 @@ from pyasm.common import Environment, SetupException, Config, Container, TacticE
 
 from database_impl import DatabaseImplException, DatabaseImpl
 
-import bson
 
 try:
+    import bson
     import pymongo
     pymongo.OperationalError = Exception
     pymongo.Error = Exception
@@ -97,14 +97,19 @@ class MongoDbImpl(DatabaseImpl):
         pass
 
 
+    def get_default_columns(my):
+        return ['code','name','description']
+
+
     def get_columns(cls, db_resource, table):
         from pyasm.search import DbResource, DbContainer
         sql = DbContainer.get(db_resource)
         conn = sql.get_connection()
         collection = conn.get_collection(table)
 
+        # FIXME:
         # This just gets the first one to discover the columns.  This is
-        # not accurate because each item in a collection ccan contain
+        # not accurate because each item in a collection can contain
         # different "attributes". The key here is to define a location
         # for where this "schema" description is stored
         result = collection.find_one()
@@ -330,13 +335,14 @@ class MongoDbImpl(DatabaseImpl):
         # select data
         table = update.table
         data = update.data
+        if table == "search_object":
+            dada
 
         if data.get("_id") in ["-1", -1, '']:
             del(data['_id'])
 
         collection = conn.get_collection(table)
-
-        object_id  = collection.insert(data)
+        object_id = collection.insert(data)
 
         sql.last_row_id = object_id
 

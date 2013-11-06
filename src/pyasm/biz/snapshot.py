@@ -564,10 +564,6 @@ class Snapshot(SObject):
             file_code = xml.get_attribute(node, "file_code")
             context = my.get_value("context")
 
-            # in auto mode, you can get the path from the context
-            #parts = context.split("/")
-            #file_name = "/".join(parts[1:])
-
             file_object = Search.get_by_code("sthpw/file", file_code)
             file_name = os.path.basename(file_object.get_value("source_path"))
         else:
@@ -576,6 +572,53 @@ class Snapshot(SObject):
         file_path = "%s/%s" % (dirname,file_name)
         
         return file_path
+
+
+
+    def get_paths_by_type(my, type, mode="lib", filename_mode=None, expand_paths=True):
+        dirname = my.get_dir(mode, file_type=type, file_object=None)
+        repo_dirname = my.get_dir("lib", file_type=type, file_object=None)
+
+        xml = my.get_snapshot_xml()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+ 
+        # get the source file name
+        if filename_mode == 'source':
+            file_code = xml.get_attribute(node, "file_code")
+            context = my.get_value("context")
+
+            file_object = Search.get_by_code("sthpw/file", file_code)
+            file_name = os.path.basename(file_object.get_value("source_path"))
+            repo_file_name = my._get_file_name(node)
+        else:
+            file_name = my._get_file_name(node)
+            repo_file_name = file_name
+
+
+        file_paths = []
+
+        if expand_paths:
+            repo_file_path = "%s/%s" % (repo_dirname, repo_file_name)
+            if os.path.isdir(repo_file_path):
+                for root, dirnames, basenames in os.walk(repo_file_path):
+                    for basename in basenames:
+                        path = "%s/%s" % (root, basename)
+                        rel_path = path.replace(repo_file_path, "")
+                        path = "%s/%s/%s" % (dirname, file_name, rel_path)
+                        file_paths.append(path)
+            else:
+                file_path = "%s/%s" % (dirname,file_name)
+                file_paths.append(file_path)
+        else:
+            file_path = "%s/%s" % (dirname,file_name)
+            file_paths.append(file_path)
+        
+        return file_paths
+
 
 
 
@@ -1043,9 +1086,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
 
 
 

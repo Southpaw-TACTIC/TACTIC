@@ -157,7 +157,7 @@ class FolderTrigger(Trigger):
         mkdirs = False
         ext = 'jpg'
 
-        path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext)
+        path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext, parent=sobject)
         dirname = os.path.dirname(path)
 
         if isinstance(path, unicode):

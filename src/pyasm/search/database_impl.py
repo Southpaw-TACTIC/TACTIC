@@ -138,6 +138,18 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 
+    #
+    # Column type functions
+    #
+    def get_text(my, not_null=False):
+        parts = []
+        parts.append("text")
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
+
 
     #
     # Schema functions
