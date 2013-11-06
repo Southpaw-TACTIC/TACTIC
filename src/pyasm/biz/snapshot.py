@@ -1811,7 +1811,10 @@ class Snapshot(SObject):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_code = sobject.get_value("code", no_exception=True)
-
+        # temp var
+        search_combo = search_code
+        if not search_code:
+            search_combo = search_id
         """
         rev = None
         if is_revision:
@@ -1821,7 +1824,7 @@ class Snapshot(SObject):
         rev = -1
         # to find the version number, we have to find the highest number
         # of a particular snapshot
-        old_snapshot = Snapshot._get_by_version(search_type, search_code, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
+        old_snapshot = Snapshot._get_by_version(search_type, search_combo, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
         # have to clear the cache here, because after it is created
         # it shouldn't be None anymore
         if not old_snapshot:
