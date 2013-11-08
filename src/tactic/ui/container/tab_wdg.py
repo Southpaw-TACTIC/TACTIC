@@ -192,7 +192,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
     // register the hash
     /*
-    var hash = "/element" + element_name;
+    var hash = "/view/" + element_name;
     spt.hash.add( hash, function() {
         spt.tab.set_main_body_tab();
         //spt.tab.add_new(element_name, title, class_name, kwargs, values);

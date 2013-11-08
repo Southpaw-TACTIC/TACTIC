@@ -24,63 +24,31 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_abort"></a>
-                         abort
-                         
+                  <h3 class="title"><a name="python-client-api_general_abort"></a>abort
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                       abort(ignore_files=False)
-                      </strong></span>
+                <span class="bold"><strong> abort(ignore_files=False)</strong></span>
                 
          </p>
-         <p>
-                Abort the transaction.  This undos all commands that occurred
-                
-         </p>
-         <p>
-                from the beginning of the transactions
-                
-         </p>
-         <h4><a name="d0e2244"></a>
-                keyparam:
-                
+         <p>Abort the transaction.  This undos all commands that occurred</p>
+         <p>from the beginning of the transactions</p>
+         <h4><a name="d0e2518"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      ignore_files: (boolean) 
-                      </strong></span>
+                <span class="bold"><strong>ignore_files: (boolean) </strong></span>
                  -  determines if any files moved into the
                 
          </p>
-         <p>
-                repository are left as is.  This is useful for very long processes
-                
-         </p>
-         <p>
-                where it is desireable to keep the files in the repository
-                
-         </p>
-         <p>
-                even on abort.
-                
-         </p>
-         <h4><a name="d0e2257"></a>
-                example:
-                
+         <p>repository are left as is.  This is useful for very long processes</p>
+         <p>where it is desireable to keep the files in the repository</p>
+         <p>even on abort.</p>
+         <h4><a name="d0e2531"></a>example:
          </h4>
-         <p>
-                A full transaction inserting 10 shots.  If an error occurs, all 10
-                
-         </p>
-         <p>
-                inserts will be aborted.
-                
-         </p><pre class="screen">
-    
+         <p>A full transaction inserting 10 shots.  If an error occurs, all 10</p>
+         <p>inserts will be aborted.</p><pre class="screen">
 server.start('Start adding shots')
 try:
     for i in range(0,10):
@@ -90,8 +58,7 @@ except:
 else:
     server.finish("10 shots added")
 
-
-    </pre></div>
+</pre></div>
       <div class="navfooter">
          <hr>
          <table width="100%" summary="Navigation footer">

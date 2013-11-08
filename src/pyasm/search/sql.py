@@ -488,13 +488,19 @@ class Sql(Base):
 
 
             elif my.vendor == "MySQL":
+                encoding = Config.get_value("database", "encoding")
+                charset = Config.get_value("database", "charset")
+                if not encoding:
+                    encoding = 'utf8mb4'
+                if not charset:
+                    charset = 'utf8'
                 my.conn = MySQLdb.connect(  db=my.database_name,
                                             host=my.host,
                                             user=my.user,
-                                            charset='utf8',
+                                            charset=charset,
                                             use_unicode=True,
                                             passwd=my.password )
-                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES utf8mb4");
+                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES %s"%encoding);
 
             elif my.vendor == "Oracle":
                 # if we connect as a single user (like most databases, then
@@ -1770,7 +1776,8 @@ class Select(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
     def set_statement(my, statement):
         '''special function which allows you to put in an arbitrary sql
@@ -2686,7 +2693,8 @@ class Insert(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
 
 
@@ -2893,7 +2901,8 @@ class Update(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
-
+        elif database_type == 'Sqlite':
+            my.database = None
 
 
     def set_table(my, table):

@@ -49,6 +49,10 @@ class MetadataElementWdg(ButtonElementWdg):
         if not context:
             context = "publish"
 
+        process = my.get_option("process")
+        if not process:
+            process = "publish"
+
 
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
@@ -56,7 +60,10 @@ class MetadataElementWdg(ButtonElementWdg):
             search_type = sobject.get_search_type()
 
         else:
-            snapshot = Snapshot.get_latest_by_sobject(sobject, context=context)
+            if process:
+                snapshot = Snapshot.get_latest_by_sobject(sobject, process=process)
+            else:
+                snapshot = Snapshot.get_latest_by_sobject(sobject, context=context)
 
         if not snapshot:
             top = DivWdg()

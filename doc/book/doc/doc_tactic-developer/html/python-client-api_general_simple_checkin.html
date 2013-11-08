@@ -24,206 +24,133 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_simple_checkin"></a>
-                         simple_checkin
-                         
+                  <h3 class="title"><a name="python-client-api_general_simple_checkin"></a>simple_checkin
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  simple_checkin( search_key, context, file_path, snapshot_type="file", description="No description", use_handoff_dir=False,
+                <span class="bold"><strong> simple_checkin( search_key, context, file_path, snapshot_type="file", description="No description", use_handoff_dir=False,
                   file_type="main", is_current=True, level_key=None, breadcrumb=False, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False,
                   create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None,
-                  version=None )
-                      </strong></span>
+                  version=None )</strong></span>
                 
          </p>
-         <p>
-                Simple method that checks in a file.
-                
-         </p>
-         <h4><a name="d0e6111"></a>
-                param:
-                
+         <p>Simple method that checks in a file.</p>
+         <h4><a name="d0e6424"></a>param:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      search_key 
-                      </strong></span>
+                <span class="bold"><strong>search_key </strong></span>
                  -  a unique identifier key representing an sobject
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      context 
-                      </strong></span>
+                <span class="bold"><strong>context </strong></span>
                  -  the context of the checkin
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_path 
-                      </strong></span>
+                <span class="bold"><strong>file_path </strong></span>
                  -  path of the file that was previously uploaded
                 
          </p>
-         <h4><a name="d0e6128"></a>
-                keyparam:
-                
+         <h4><a name="d0e6441"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      snapshot_type 
-                      </strong></span>
+                <span class="bold"><strong>snapshot_type </strong></span>
                  -  [optional] descibes what kind of a snapshot this is.
                 
          </p>
+         <p>More information about a snapshot type can be found in the</p>
+         <p>prod/snapshot_type sobject</p>
          <p>
-                More information about a snapshot type can be found in the
-                
-         </p>
-         <p>
-                prod/snapshot_type sobject
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      description 
-                      </strong></span>
+                <span class="bold"><strong>description </strong></span>
                  -  [optional] optional description for this checkin
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      file_type 
-                      </strong></span>
+                <span class="bold"><strong>file_type </strong></span>
                  -  [optional] optional description for this file_type
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      is_current 
-                      </strong></span>
+                <span class="bold"><strong>is_current </strong></span>
                  -  flag to determine if this checkin is to be set as current
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      level_key 
-                      </strong></span>
+                <span class="bold"><strong>level_key </strong></span>
                  -  the unique identifier of the level that this
                 
          </p>
+         <p>is to be checked into</p>
          <p>
-                is to be checked into
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      breadcrumb 
-                      </strong></span>
+                <span class="bold"><strong>breadcrumb </strong></span>
                  -  flag to leave a .snapshot breadcrumb file containing
                 
          </p>
+         <p>information about what happened to a checked in file</p>
          <p>
-                information about what happened to a checked in file
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      metadata 
-                      </strong></span>
+                <span class="bold"><strong>metadata </strong></span>
                  -  a dictionary of values that will be stored as metadata
                 
          </p>
+         <p>on the snapshot</p>
          <p>
-                on the snapshot
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      mode 
-                      </strong></span>
+                <span class="bold"><strong>mode </strong></span>
                  -  inplace, upload, copy, move
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      is_revision 
-                      </strong></span>
+                <span class="bold"><strong>is_revision </strong></span>
                  -  flag to set this as a revision instead of a version
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      create_icon 
-                      </strong></span>
+                <span class="bold"><strong>create_icon </strong></span>
                  -  flag to create an icon on checkin
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      info 
-                      </strong></span>
+                <span class="bold"><strong>info </strong></span>
                  -  dict of info to pass to the ApiClientCmd
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      keep_file_name 
-                      </strong></span>
+                <span class="bold"><strong>keep_file_name </strong></span>
                  -  keep the original file name
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      checkin_cls 
-                      </strong></span>
+                <span class="bold"><strong>checkin_cls </strong></span>
                  -  checkin class
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      context_index_padding 
-                      </strong></span>
+                <span class="bold"><strong>context_index_padding </strong></span>
                  -  determines the padding used for context
                 
          </p>
+         <p>indexing: ie: design/0001</p>
          <p>
-                indexing: ie: design/0001
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      checkin_type 
-                      </strong></span>
+                <span class="bold"><strong>checkin_type </strong></span>
                  -  auto or strict which controls whether to auto create versionless
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      source_path 
-                      </strong></span>
+                <span class="bold"><strong>source_path </strong></span>
                  -  explicitly give the source path
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      version 
-                      </strong></span>
+                <span class="bold"><strong>version </strong></span>
                  -  force a version for this check
                 
          </p>
-         <h4><a name="d0e6227"></a>
-                return:
-                
+         <h4><a name="d0e6540"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  representation of the snapshot created for this checkin
                 
          </p>

@@ -672,12 +672,13 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
         my.parent = my.sobject.get_parent()
-
         pipeline_code = my.kwargs.get("pipeline")
         top = my.top
         top.add_class("spt_pipeline_wrapper")
         top.add_color("background", "background")
-        if not my.parent:
+  
+        # it's ok to not have a parent unless it's a task, then just exit early
+        if not my.parent and my.sobject.get_base_search_type() == 'sthpw/task':
             top.add('Parent of this task cannot be found.')
             return top
         top.add(my.get_pipeline_wdg(pipeline_code) )

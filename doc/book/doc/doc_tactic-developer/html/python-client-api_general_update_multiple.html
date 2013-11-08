@@ -24,100 +24,48 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_update_multiple"></a>
-                         update_multiple
-                         
+                  <h3 class="title"><a name="python-client-api_general_update_multiple"></a>update_multiple
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                       update_multiple(data, triggers=True) 
-                      </strong></span>
+                <span class="bold"><strong> update_multiple(data, triggers=True) </strong></span>
                 
          </p>
-         <p>
-                Update for several sobjects with different data in one function call.  The
-                
-         </p>
-         <p>
-                data structure contains all the information needed to update and is
-                
-         </p>
-         <p>
-                formated as follows:
-                
-         </p>
-         <p>
-                data = {
-                
-         </p>
-         <p>
-                search_key1: { column1: value1, column2: value2 }
-                
-         </p>
-         <p>
-                search_key2: { column1: value1, column2: value2 }
-                
-         </p>
-         <p>
-                }
-                
-         </p>
-         <h4><a name="d0e6464"></a>
-                params:
-                
+         <p>Update for several sobjects with different data in one function call.  The</p>
+         <p>data structure contains all the information needed to update and is</p>
+         <p>formated as follows:</p>
+         <p>data = {</p>
+         <p>search_key1: { column1: value1, column2: value2 }</p>
+         <p>search_key2: { column1: value1, column2: value2 }</p>
+         <p>}</p>
+         <h4><a name="d0e6810"></a>params:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      data 
-                      </strong></span>
+                <span class="bold"><strong>data </strong></span>
                  -  data structure containing update information for all
                 
          </p>
-         <p>
-                sobjects
-                
-         </p>
-         <h4><a name="d0e6473"></a>
-                keyparam:
-                
+         <p>sobjects</p>
+         <h4><a name="d0e6819"></a>keyparam:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      data 
-                      </strong></span>
+                <span class="bold"><strong>data </strong></span>
                  -  a dictionary of name/value pairs which will be used to update
                 
          </p>
+         <p>the sobject defined by the search_key</p>
+         <p>Note: this can also be an array.  Each data dictionary element in</p>
+         <p>the array will be applied to the corresponding search key</p>
          <p>
-                the sobject defined by the search_key
-                
-         </p>
-         <p>
-                Note: this can also be an array.  Each data dictionary element in
-                
-         </p>
-         <p>
-                the array will be applied to the corresponding search key
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      triggers 
-                      </strong></span>
+                <span class="bold"><strong>triggers </strong></span>
                  -  boolean to fire trigger on insert
                 
          </p>
-         <h4><a name="d0e6491"></a>
-                return:
-                
+         <h4><a name="d0e6837"></a>return:
          </h4>
-         <p>
-                None
-                
-         </p>
+         <p>None</p>
       </div>
       <div class="navfooter">
          <hr>

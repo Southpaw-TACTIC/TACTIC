@@ -1,0 +1,180 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Database Resource</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
+      <link rel="up" href="tactic-sys-admin_install-database.html" title="Install Database">
+      <link rel="prev" href="tactic-sys-admin_sys-admin_database-configuration.html" title="TACTIC Database Configuration">
+      <link rel="next" href="tactic-sys-admin_configuration.html" title="Server Configuration">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_database-configuration.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_configuration.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Database Resource">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h3 class="title"><a name="tactic-sys-admin_sys-admin_database_resource"></a>Database Resource
+                  </h3>
+               </div>
+            </div>
+         </div>
+         <p>
+                    
+         </p>
+         <div class="mediaobject"><img src="media/0131029011321.png"></div>
+         <p>
+                
+         </p>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3377"></a>Description
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>TACTIC can map onto any supported database platform. A single TACTIC installation can
+               map on to any number of external databases and use them as a database resource. These
+               database resources are treated as first class citizens in the TACTIC. All of the
+               features that are inherent to any native TACTIC data are also available to these
+               external database resources. To implement this functionality, db_resource can be used to
+               connect a project to a database resource. It defines the location and connection
+               credentials to access a database server. Database resources can be added under the side
+                           bar menu &#8220;Global -&gt; Database Resource&#8221;. 
+            </p>
+         </div>
+         <div class="simplesect" title="Implementation">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3382"></a>Implementation
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Specify (or look up) the Database Resource under <span class="bold"><strong>Admin Views -&gt;
+                                     Global </strong></span>.
+            </p>
+            <p>The database resource entry in Database Resource contains all the information needed
+                           to connect to a database. In order for TACTIC to access another database, it has to have
+                           a database resource registered and then it has to &#8220;mapped&#8221; to a project. 
+            </p>
+            <p>In the example below, the new database's code is named: <span class="bold"><strong>my_new_db_resource</strong></span>, which is the reference of this entry. Host, which
+                           refers to the IP address of the server, is set to be a tested address. The Login and
+                           Password are the information used to log in the database.
+            </p>
+            <div class="mediaobject"><img src="media/20131029011421.png"></div>
+            <p>Since all TACTIC projects have a single database resource that it uses as
+                           a persistent store for sObjects. By default, the project will use the same resource as
+                           the &#8220;sthpw&#8221; database and is defined in the TACTIC config file. However, this can be
+                           configured to point to another database resource.
+            </p>
+         </div>
+         <div class="simplesect" title="Database as Pure Resource">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3402"></a>Database as Pure Resource
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>Note that the search type uses a project to find the corresponding database. Any
+                           project configured to look at a database resource with the db_resource and database
+                           columns. The db resource defines the connection criteria and the column determines which
+                           database to connect to that resource. 
+            </p>
+            <p>To add new a database as pure resource database, Specify (or look up) the 'Add
+                           Project' and 'Projects' columns under <span class="bold"><strong>Admin Views -&gt; Global -&gt;
+                                     Database Resource</strong></span>.
+            </p>
+            <p>In the example below, the new database called <span class="bold"><strong>test_database001</strong></span> from the db_resource <span class="bold"><strong>my_new_db_resource</strong></span> has been added to a Project called <span class="bold"><strong>Testing</strong></span>.
+            </p>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/0131031044916.png"></div>
+            <p>
+                           
+            </p>
+            <div class="mediaobject"><img src="media/0131031045815.png"></div>
+            <p>
+                       
+            </p>
+         </div>
+         <div class="simplesect" title="Database as Full Project">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3433"></a>Database as Full Project
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>For a project to become a full TACTIC project (complete with separate URL space:
+                           http://&lt;server&gt;/&lt;project&gt; and separate themes an interfaces), all that is required
+                           is the &#8220;config&#8221; tables to exist in that database resource. Thus a database resource can
+                           start off as a data source and then, at any time, be upgraded to a full TACTIC project
+                           if that is ever required by importing the appropriate config tables that the search type
+                           uses in the project to find the corresponding database. The project is  configured to
+                           look at a database resource with the db_resource and database columns. The db resource
+                           defines the connection criteria and the column determines which database to connect to
+                           on that resource. 
+            </p>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h4 class="title"><a name="d0e3438"></a>Advanced
+                     </h4>
+                  </div>
+               </div>
+            </div>
+            <p>In order for TACTIC to access another database, it has to have a database resource
+                           registered and then it has to &#8220;mapped&#8221; to a project. This mapping is currently required
+                           because all search types are scoped and searched using the notation:
+            </p>
+            <p>
+                           
+            </p><pre class="screen">&lt;namespace&gt;/&lt;table&gt;?project=&lt;project&gt;&amp;code=&lt;code&gt;</pre><p>
+                       
+            </p>
+            <p>An example search_type entry would be:</p>
+            <p>
+                           
+            </p><pre class="screen">jobs/media?project=my_test_project</pre><p>
+                       
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_database-configuration.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_install-database.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_configuration.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-sys-admin.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

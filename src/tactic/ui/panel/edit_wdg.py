@@ -213,6 +213,7 @@ class EditWdg(BaseRefreshWdg):
         
         my.skipped_element_names = []
         my.element_names = my.config.get_element_names()
+
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
             ignore = ignore.split("|")
@@ -221,6 +222,20 @@ class EditWdg(BaseRefreshWdg):
 
         my.element_titles = my.config.get_element_titles()  
         my.element_descriptions = my.config.get_element_descriptions()  
+
+
+        # MongoDb
+        # Default columns
+        if not my.element_names:
+            impl = SearchType.get_database_impl_by_search_type(my.search_type)
+            if impl.get_database_type() == "MongoDb":
+                my.element_names = impl.get_default_columns()
+                my.element_titles = ['Code', 'Name', 'Description']
+                my.element_descriptions = ['Code', 'Name', 'Description']
+
+
+
+
         my.input_prefix = my.kwargs.get('input_prefix')
         if not my.input_prefix:
             my.input_prefix = 'edit'
@@ -344,8 +359,14 @@ class EditWdg(BaseRefreshWdg):
         search_type_obj = SearchType.get(my.search_type)
         sobj_title = search_type_obj.get_title()
 
+        my.color_mode = my.kwargs.get("color_mode")
+        if not my.color_mode:
+            my.color_mode = "default"
+
+
         top_div = my.top
-        top_div.set_id("big_pig")
+        # TEST
+        top_div.add_class("spt_edit_top")
 
         if not my.is_refresh:
             my.set_as_panel(top_div)
@@ -362,7 +383,7 @@ class EditWdg(BaseRefreshWdg):
 
 
         # add close listener
-        # FIXME: this is an absolute search, but is here for backwards
+        # NOTE: this is an absolute search, but is here for backwards
         # compatibility
         content_div.add_named_listener('close_EditWdg', '''
             var popup = bvr.src_el.getParent( ".spt_popup" );
@@ -429,7 +450,8 @@ class EditWdg(BaseRefreshWdg):
 
         table = Table()
         inner.add(table)
-        table.add_color("background", "background")
+        if my.color_mode == "default":
+            table.add_color("background", "background")
         table.add_color("color", "color")
 
 
@@ -471,10 +493,11 @@ class EditWdg(BaseRefreshWdg):
 
             tr, td = table.add_row_cell( multi_div )
 
+            if my.color_mode == "default":
+                td.add_color("border-color", "table_border", default="border")
+                td.add_style("border-width: 1px")
+                td.add_style("border-style: solid")
 
-            td.add_color("border-color", "table_border", default="border")
-            td.add_style("border-width: 1px")
-            td.add_style("border-style: solid")
             td.add_style("padding: 8 3 8 3")
             td.add_color("background", "background3")
             td.add_color("color", "color3")
@@ -512,9 +535,6 @@ class EditWdg(BaseRefreshWdg):
                 content_div.add(msg)
                 content_div.add(HtmlElement.br())
                 continue
-                """
-                raise TacticException('The widget definition for [%s] uses [%s] and is not meant for use in Edit. Please revise the definition in widget config'% (widget.__class__.__name__, widget.get_name()))
-                """
             if my.input_prefix:
                 widget.set_input_prefix(my.input_prefix)
 
@@ -543,10 +563,11 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if i % 2 == 0:
-                    tr.add_color("background", "background")
-                else:
-                    tr.add_color("background", "background", -5)
+                if my.color_mode == "default":
+                    if i % 2 == 0:
+                        tr.add_color("background", "background")
+                    else:
+                        tr.add_color("background", "background", -5)
 
 
 
@@ -569,11 +590,10 @@ class EditWdg(BaseRefreshWdg):
                 if security.check_access("builtin", "view_site_admin", "allow"):
                     SmartMenu.assign_as_local_activator( td, 'HEADER_CTX' )
 
-                #td.add_color("background", "background", -12)
-
-                td.add_color("border-color", "table_border", default="border")
-                td.add_style("border-width: 1" )
-                td.add_style("border-style: solid" )
+                if my.color_mode == "default":
+                    td.add_color("border-color", "table_border", default="border")
+                    td.add_style("border-width: 1" )
+                    td.add_style("border-style: solid" )
 
                 td.add_style("text-align: right" )
  
@@ -590,9 +610,10 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
-                td.add_color("border-color", "table_border", default="border")
-                td.add_style("border-width: 1" )
-                td.add_style("border-style: solid" )
+                if my.color_mode == "default":
+                    td.add_color("border-color", "table_border", default="border")
+                    td.add_style("border-width: 1" )
+                    td.add_style("border-style: solid" )
 
                 hint = widget.get_option("hint")
                 if hint:
@@ -673,10 +694,10 @@ class EditWdg(BaseRefreshWdg):
         th.add(title_div)
         title_div.add(title_str)
         th.add_color("background", "background3")
-        #th.add_border()
-        th.add_color("border-color", "table_border", default="border")
-        th.add_style("border-width: 1px")
-        th.add_style("border-style: solid")
+        if my.color_mode == "default":
+            th.add_color("border-color", "table_border", default="border")
+            th.add_style("border-width: 1px")
+            th.add_style("border-style: solid")
         th.set_attr("colspan", "2")
         th.add_style("height: 30px")
 
@@ -997,11 +1018,10 @@ spt.edit = {}
 
 
 spt.edit.save_changes = function(content) {
-    var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
-
-    console.log(values);
+    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
     bvr = JSON.parse(values.__data__);
+    console.log(bvr);
 
     var class_name = "tactic.ui.panel.EditCmd";
     var kwargs = {};
@@ -1015,8 +1035,10 @@ spt.edit.save_changes = function(content) {
 
     var server = TacticServerStub.get();
 
+    values['search_type'] = bvr.search_type;
+
     var info = server.execute_cmd(class_name, kwargs, values);
-    return info;
+    return info.info.sobject;
 }
 
 

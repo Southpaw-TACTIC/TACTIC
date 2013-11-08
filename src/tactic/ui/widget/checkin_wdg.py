@@ -1,3 +1,4 @@
+
 ###########################################################
 #
 # Copyright (c) 2005, Southpaw Technology
@@ -57,7 +58,6 @@ class CheckinWdg(BaseRefreshWdg):
         'checkin_ui_options': 'a json string of dictionary of ui options like is_current',
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
-        'show_context': 'true|false: determines whether to show context or not', 
         'show_links': 'true|false: determines whether show the button rows at the top'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
@@ -122,8 +122,7 @@ class CheckinWdg(BaseRefreshWdg):
         #my.subcontext = web.get_form_value('subcontext')
 
         my.process = my.get_value("process")
-        my.context = my.get_value("context")
-        my.show_context = my.kwargs.get("show_context") in [True, 'true']
+        my.context = None
         my.subcontext = my.get_value("subcontext")
         my.folder_state = my.get_value("folder_state")
  
@@ -260,10 +259,12 @@ class CheckinWdg(BaseRefreshWdg):
             width = my.kwargs.get('width')
             if width:
                 top.add_style("width", width)
+            else:
+                top.add_style("width: 100%")
             top.add_class("spt_checkin_top")
             # it is needed or it will be wider than ur screen in sub tabs
-            top.add_style("max-width: 1000px")
-            top.add_style("width: 100%")
+            #top.add_style("max-width: 1000px")
+
 
             top.add_attr("spt_sandbox_dir", my._get_sandbox_dir())
 
@@ -387,7 +388,6 @@ class CheckinWdg(BaseRefreshWdg):
         panel_kwargs = {
                 'search_key':my.search_key,
                 'context':my.context,
-                'show_context': my.show_context,
                 'process':my.process,
                 'snapshot_code':my.snapshot_code,
                 'pipeline_code' : pipeline_code,
@@ -466,6 +466,7 @@ class CheckinWdg(BaseRefreshWdg):
             div.add_style("margin: 15px 12px 12px 12px")
             # width prevents it from jumping in IE during refresh
             div.add_style("min-width: 700px")
+            div.add_style("width: 100%")
             process_div = FloatDivWdg('Process: &nbsp;')
             process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: 14px")
@@ -522,10 +523,10 @@ class CheckinWdg(BaseRefreshWdg):
                     var process = top.getElement(".spt_checkin_process").value;
                     top.setAttribute("spt_process", process);
 
-                    var info_el = top.getElement(".spt_checkin_info");
-                    // Is this even valid anymore?
-                    var context_el = top.getElement(".spt_checkin_context");
-                    spt.panel.refresh(context_el, {process : process, context: process});
+                    var history_sel = top.getElement('.spt_history_context')
+                    //reset history context when switching process
+                    if (history_sel) 
+                        history_sel.value = '';
 
                     // reset the folder_state
                     folder_state_el = top.getElement(".spt_folder_state");
@@ -544,7 +545,12 @@ class CheckinWdg(BaseRefreshWdg):
                     process_select.add_behavior( {
                     'type': 'change',
                     'cbjs_action': '''
+                        
                         spt.api.Utility.save_widget_setting('current_process', bvr.src_el.value);
+                        var top = bvr.src_el.getParent('.spt_checkin_top')
+                        var history_sel = top.getElement('.spt_history_context')
+                        if (history_sel)
+                            history_sel.value = '';
                     '''
                     } )
                     
@@ -560,13 +566,13 @@ class CheckinWdg(BaseRefreshWdg):
 
 
                 #TODO: do not apply but some mode rely on it. clean up later
+                """
                 context_div = DivWdg()
                 context_wdg = ContextPanelWdg(process=my.process, search_type=my.search_type, context=my.context, show_context=my.show_context, show_sub_context=show_sub_context)
                 context_div.add(context_wdg)
                 context_div.add_style("padding-top: 5px")
-
+                 
                 my.context = context_wdg.get_context()
-
                 if my.show_context:
                     context_title_div = FloatDivWdg('Context: &nbsp;')
                     context_title_div.add_style("margin: 5px 0 0 0")
@@ -578,6 +584,7 @@ class CheckinWdg(BaseRefreshWdg):
                     div.add_style("height: 65px")
 
                 div.add(context_div)
+                """
 
             div.add_style("margin-bottom: 20px")
 
@@ -836,6 +843,8 @@ spt.checkin.get_checkin_data = function() {
     data['context'] = context;
 
     var description = top.getElement(".spt_checkin_description").value;
+
+
     var file_type = 'main';
     if (bvr.snapshot_code){
         var file_type_el = top.getElement(".spt_checkin_file_type");
@@ -845,6 +854,7 @@ spt.checkin.get_checkin_data = function() {
     if (!transfer_mode)
         transfer_mode = spt.Environment.get().get_transfer_mode();
 
+    data['description'] = description;
     data['file_type'] = file_type;
     data['transfer_mode'] = transfer_mode;
 
@@ -1123,7 +1133,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         elif subcontext:
             my.context = '%s/%s'%(my.context, subcontext)
 
-        my.show_context = my.kwargs.get("show_context") in [True, 'true']
         
         # get all of the process sobjects for this pipeline
         if my.pipeline:
@@ -1286,7 +1295,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         # control the max width for the publish desc area
-        td.add_style('max-width: 250px')
+        td.add_style('width: 250px')
         td.add_border()
         publish_wdg = my.get_publish_wdg(my.search_key, my.snapshot, my.process, my.pipeline, my.transfer_mode)  
         td.add( publish_wdg )
@@ -1347,7 +1356,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             new_context = my.context 
             if re.match(r'.*/.*\d{3}', my.context):
                 new_context = my.context.split("/")[0]
-        
             history = SObjectCheckinHistoryWdg(search_key=my.search_key, history_context=new_context)
             tab.add(history)
             history.set_name("History")
@@ -1447,6 +1455,13 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         for connect in input_connects:
+
+            to_expression = connect.get_to_expression()
+            to_pipeline = connect.get_to_pipeline()
+            if to_expression or to_pipeline:
+                continue
+
+
             from_pipeline = connect.get_from_pipeline()
             from_expression = connect.get_from_expression()
             from_process = connect.get_from()
@@ -1637,7 +1652,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         select = SelectWdg("checkin_type")
         checkin_wdg.add(select)
         select.add_class("spt_checkin_type")
-        select.set_persistence()
+        #select.set_persistence()
         select.add_style("margin: 4px")
         file_type = None
         hint = None
@@ -1654,6 +1669,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         elif mode in ['directory','dir']:
             select.set_option("labels", "A Directory")
             select.set_option("values", "dir_checkin")
+
+        elif mode in ['workarea']:
+            select.set_option("labels", "Work Area")
+            select.set_option("values", "workarea_checkin")
+
 
         elif mode == 'add':
             select.set_option("labels", "Add Directory|Add File")
@@ -1673,8 +1693,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         else:
-            select.set_option("labels", "A File|A Sequence|A Directory|Multiple Individual Files")
-            select.set_option("values", "file_checkin|group_checkin|dir_checkin|multi_file_checkin")
+            select.set_option("labels", "A File|A Sequence|A Directory|Multiple Individual Files|Work Area Check-in")
+            select.set_option("values", "file_checkin|group_checkin|dir_checkin|multi_file_checkin|workarea_checkin")
 
             if my.pipeline:
                 my.process_obj = my.pipeline.get_process(my.process)
@@ -1682,6 +1702,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                     attributes = my.process_obj.get_attributes()
                     if attributes.get("mode") == 'directory':
                         select.set_value("dir_checkin")
+                    elif attributes.get("mode") == 'workarea':
+                        select.set_value("workarea_checkin")
 
             web = WebContainer.get_web()
             values = web.get_form_values('file_info')
@@ -1732,9 +1754,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
         top = DivWdg()
-        top.add_class("spt_checkin_publish")
+        top.add_class("spt_checkin_all_options")
         top.add_style("padding: 10px")
-        show_context = my.kwargs.get("show_context") in [True, 'true']
+        show_context = False
         if show_context:
             margin_top = '60px'
         else:
@@ -1791,6 +1813,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             """
 
             for connect in output_connects:
+
+                from_expression = connect.get_from_expression()
+                from_pipeline = connect.get_from_pipeline()
+                if from_expression or from_pipeline:
+                    continue
+
                 to_pipeline = connect.get_to_pipeline()
                 to_expression = connect.get_to_expression()
                 to_process = connect.get_to()
@@ -1836,8 +1864,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-                        search_key = to_sobject.get_search_key()
-                        process_names.append("%s|%s" % (search_key, to_process))
+                        to_search_key = to_sobject.get_search_key()
+                        process_names.append("%s|%s" % (to_search_key, to_process))
                         label_names.append(name)
 
 
@@ -1846,7 +1874,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             delivery_div.add(select)
             select.set_option("values", process_names)
             select.set_option("labels", label_names)
-            select.set_value(process_names[0])
+            if process_names:
+                select.set_value(process_names[0])
+            else:
+                #disable the checkbox
+                checkbox.set_attr('disabled','disabled')
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
@@ -1997,6 +2029,67 @@ spt.app_busy.hide();
         # main check-in
         my.sandbox_dir = my.sandbox_dir.rstrip('/') 
 
+
+        # separate behavior for html5 check-in
+        html5_behavior = {
+            'type': 'click_up',
+            'cbjs_action': '''
+
+spt.checkin.html5_checkin = function(files) {
+    var server = TacticServerStub.get();
+
+    var options = spt.checkin.get_checkin_data();
+    var search_key = options.search_key;
+    var process = options.process;
+    var description = options.description;
+    var process = options.process;
+
+    var is_current = true;
+    var checkin_type = 'file';
+    var mode = 'uploaded';
+
+    console.log(options);
+
+    var upload_complete = function() {
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var file_path = file.name;
+            var context = process + '/' + file.name;
+            snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+        }
+
+        spt.app_busy.hide();
+    }
+
+    var upload_progress = function(evt) {
+
+        var percent = Math.round(evt.loaded * 100 / evt.total);
+        spt.app_busy.show("Uploading ["+percent+"%% complete]");
+    }
+
+    var upload_kwargs = {
+        upload_complete: upload_complete,
+        upload_progress: upload_progress,
+        files: el.files
+    }
+    spt.html5upload.upload_file(upload_kwargs);
+
+}
+
+
+
+var top = bvr.src_el.getParent(".spt_checkin_top");
+var el = top.getElement(".spt_checkin_content");
+var files = el.files;
+spt.checkin.html5_checkin(files);
+
+            '''
+        }
+
+
+
+
         behavior = {
             'type': 'click_up',
             'search_key': search_key,
@@ -2034,8 +2127,16 @@ if (is_context) {
 }
 
 
-file_paths = spt.checkin.get_selected_paths()
 
+
+var type = top.getElement(".spt_checkin_type").value;
+
+if (type == 'workarea_checkin') {
+    file_paths = [bvr.sandbox_dir];
+}
+else {
+    file_paths = spt.checkin.get_selected_paths();
+}
 
 
 if (!file_paths || file_paths.length == 0) {
@@ -2045,7 +2146,6 @@ if (!file_paths || file_paths.length == 0) {
 
 
 var range = '';
-var type = top.getElement(".spt_checkin_type").value;
 var is_current_el = top.getElement(".spt_is_current");
 is_current = is_current_el.checked || is_current_el.value=='true';
 
@@ -2073,16 +2173,13 @@ if (!transfer_mode) {
 
 
 // add in custom elements
-var custom_options_el = top.getElement(".spt_custom_options_top");
+var custom_options_el = top.getElement(".spt_checkin_all_options");
 var custom_options = spt.api.Utility.get_input_values(custom_options_el, null, false);
 bvr.custom_options = custom_options;
-
-
 
 // check to see if the check-in process is to be delivered elsewhere
 if (custom_options.deliver == "on") {
     process = custom_options.deliver_process;
-
     if (process.indexOf("|") != -1) {
         var parts = process.split("|");
         search_key = parts[0];
@@ -2090,7 +2187,6 @@ if (custom_options.deliver == "on") {
     }
 
 }
-
 
 
 
@@ -2187,6 +2283,10 @@ try {
             if (type == 'add_dir' || type == 'dir_checkin') {
                 is_dir = true;
             }
+            else if ( type == 'workarea_checkin' ) {
+                is_dir = true;
+            }
+
             var ticket = server.get_transaction_ticket();
             for (var i = 0; i < file_paths.length; i++) {
                 spt.app_busy.show("Uploading", file_paths[i]);
@@ -2195,9 +2295,6 @@ try {
                     server.upload_directory(file_paths[i], ticket);
                 }
                 else {
-                    //spt.progress.add_path(file_path, {ticket: ticket});
-                    //spt.progress.run_jobs();
-
                     var file_path = file_paths[i].replace(/\\\\/g, "/");
 
                     var startswith = file_path.indexOf(bvr.sandbox_dir);
@@ -2216,6 +2313,7 @@ try {
             }
             transfer_mode = 'uploaded';
         }
+
         
         var snapshot;
         if (transfer_mode == 'preallocate') {
@@ -2232,7 +2330,7 @@ try {
                 context = contexts[0];
             var applet = spt.Applet.get();
             
-            if (['file_checkin','dir_checkin'].contains(type)) {
+            if (['file_checkin','dir_checkin','workarea_checkin'].contains(type)) {
                 var snapshot_type = 'file';
                 if (applet.is_dir(file_paths[0])) { snapshot_type = 'dir' };
                 var kwargs =   { description: description, snapshot_type: snapshot_type, is_current: is_current};
@@ -2253,7 +2351,7 @@ try {
             // we use default context here 
             snapshot = server.group_checkin(search_key, context, file_paths, range, {description: description, mode: transfer_mode, command: bvr.checkin_command});
         }
-        else if (type == 'dir_checkin') {
+        else if (type == 'dir_checkin' || type == 'workarea_checkin') {
             if (file_paths.length > 1) {
                 throw('In directory check-in mode, you may only select 1 directory.');
             }
@@ -2450,13 +2548,26 @@ else {
 
         button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
         top.add(button)
+        button.add_class("spt_checkin_button")
         button.add_behavior(behavior)
-
-
         button.add_style("margin-right: auto")
         button.add_style("margin-left: auto")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
+
+
+
+
+        button =ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        top.add(button)
+        button.add_class("spt_checkin_html5_button")
+        button.add_behavior(html5_behavior)
+        button.add_style("margin-right: auto")
+        button.add_style("margin-left: auto")
+        button.add_style("margin-top: 20px")
+        button.add_style("margin-bottom: 20px")
+
+        button.add_style("display: none")
 
 
 
@@ -2599,7 +2710,7 @@ class ContextPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-        show_context = my.kwargs.get("show_context") in [True, 'true','True']
+        show_context = False
         show_sub_context = my.kwargs.get("show_sub_context") in [True, 'true', 'True']
         if my.refresh:
             div = Widget()
@@ -3146,7 +3257,66 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         dir_div.add_class("spt_checkin_content")
         dir_div.add_class("spt_resizable")
         dir_div.add_style("min-width: 500px")
-        #dir_div.add_style("width: auto")
+
+
+
+        # Test drag and drop files
+        dir_div.add_attr("ondragenter", "return false")
+        dir_div.add_attr("ondragover", "return false")
+        dir_div.add_attr("ondrop", "spt.drag.noop(event, this)")
+        dir_div.add_behavior( {
+            'type': 'load',
+            'base_dir': my.kwargs.get("base_dir"),
+            'search_key': search_key,
+            'cbjs_action': '''
+            spt.drag = {}
+
+            spt.drag.noop = function(evt, el) {
+              evt.stopPropagation();
+              evt.preventDefault();
+              evt.dataTransfer.dropEffect = 'copy';
+              var files = evt.dataTransfer.files;
+
+              bvr.src_el.files = files
+
+              // If TEAM
+              //var applet = spt.Applet.get();
+
+              var base_dir = 'DRAGDROP';
+              var file_names = [];
+              var sizes = {};
+              var md5s = {};
+              for (var i = 0; i < files.length; i++) {
+                  var file = files[i];
+                  var file_name = file.name;
+                  var file_name = base_dir + "/" + file_name;
+                  file_names.push(file_name);
+                  sizes[file_name] = file.size;
+                  md5s[file_name] = 0;
+              }
+              var kwargs = {
+                search_key: bvr.search_key,
+                base_dir: base_dir,
+                location: 'client',
+                paths: file_names,
+                sizes: sizes,
+                md5s: md5s
+              }
+
+              var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
+              spt.panel.load(bvr.src_el, class_name, kwargs);
+              var top = bvr.src_el.getParent(".spt_checkin_top");
+              var button1 = top.getElement(".spt_checkin_button");
+              spt.hide(button1);
+              var button2 = top.getElement(".spt_checkin_html5_button");
+              spt.show(button2);
+
+            }
+            '''
+        } )
+
+
+
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
             depth = 1
@@ -3158,7 +3328,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                 dir_div.add(list_dir_div)
                 from tactic.ui.panel import ThumbWdg2
                 for path in paths:
-                    print "path: ", path
                     path_div = DivWdg()
                     list_dir_div.add(path_div)
                     thumb = ThumbWdg2()
@@ -3955,13 +4124,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
                     var expr = "@SOBJECT(config/process['process','"+bvr.process+"']['pipeline_code', '" + bvr.pipeline_code +"'])";
                     var process = server.eval(expr, {single: true});
+                    var process_search_key = process ? process.__search_key__ : '';
                     var class_name = 'tactic.ui.panel.EditWdg';
                     var kwargs = {
-                        search_key: process.__search_key__,
+                        search_key: process_search_key,
                         search_type: 'config/process',
                         view: 'edit',
                     };
-                    if (process && !process.__search_key__) {
+                    if (!process_search_key) {
                         var default_data = {'process': bvr.process, 'pipeline_code': bvr.pipeline_code}; 
                         var rtn = server.insert('config/process', default_data);
                         kwargs.search_key = rtn.__search_key__;
@@ -4086,8 +4256,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             for (var i = 0; i < snapshot_codes.length; i++) {
                 var label = 1 + i;
                 spt.app_busy.show("Checking out latest in [%s] #"+ label +" ..." );
-                sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
-                //console.log('sandbox ' + sandbox_paths)
+                sandbox_paths = server.checkout_snapshot(snapshot_codes[i], bvr.sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types, expand_paths: true} );
             }
             if (button) {
                 var top = button.getParent(".spt_checkin_top");
@@ -5058,7 +5227,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         my.search_id = my.parent.get_id()
 
         my.context = my.kwargs.get("history_context")
-    
         state = my.get_state()
         if not state:
             state = {}
@@ -5098,7 +5266,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         context_filter = web.get_form_value("history_context")
         versions_filter = web.get_form_value("versions")
-
         if not context_filter:
             context_filter = my.context
         else:
@@ -5197,6 +5364,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # add a context selector
         select = SelectWdg("history_context")
+        select.add_class('spt_history_context')
         select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
@@ -5210,21 +5378,26 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         # find all of the contexts that have been checked in
         
         contexts = my.get_snapshot_contexts(search_type, search_id)
-        select.set_option("values", contexts )
+        
+
 
         # set the context if one has been passed in
         if my.context:
 
             if re.search('/', my.context):
                 new_context = my.context.split("/")[0]
-                select.set_value(new_context)
             else:
-                select.set_value(my.context)
+                new_context = my.context
+            select.set_value(new_context)
+            if new_context not in contexts:
+                contexts.append(new_context)
+        
+        select.set_option("values", contexts )
 
         #select.set_value("icon")
 
         select.add_empty_option("-- Select --")
-        select.set_persist_on_submit()
+        #select.set_persist_on_submit()
         span = SpanWdg()
         span.add("Context: ")
         span.add(select)

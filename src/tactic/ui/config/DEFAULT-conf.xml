@@ -394,7 +394,7 @@
   </element>
 
 
-  <element name="config_custom_url" title="Custom URL" icon="website" help='main'>
+  <element name="config_custom_url" title="Custom URL" icon="website" help='custom-url-configuration'>
     <display class="LinkWdg">
       <search_type>config/url</search_type>
       <view>table</view>
@@ -651,7 +651,7 @@
 
 
 
-  <element name="db_resource" title="Database Resource" icon="db" help='main'>
+  <element name="db_resource" title="Database Resource" icon="db" help='database_resource'>
     <display class="LinkWdg">
         <search_type>sthpw/db_resource</search_type>
         <view>table</view>

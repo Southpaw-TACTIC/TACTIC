@@ -613,12 +613,6 @@ class Pipeline(SObject):
         return process.get_group()
 
 
-    def get_input_processes(my, process):
-        connects = my._get_connects(process, direction='to')
-        if not connects:
-            return []
-        else:
-            return connects
 
     def get_input_connects(my, process):
         connects = my._get_connects(process, direction="to")
