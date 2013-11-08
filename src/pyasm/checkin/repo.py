@@ -65,7 +65,7 @@ class TacticRepo(BaseRepo):
                         file_object.set_value("md5", md5_checksum)
 
                 file_object.commit(triggers=False)
-                return
+            return
             
    
         for i, file in enumerate(files):
