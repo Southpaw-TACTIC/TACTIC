@@ -1348,6 +1348,7 @@ spt.scm.run = function(method, args) {
     var kwargs = spt.scm.get_kwargs();
     kwargs['method'] = method;
     kwargs['args'] = args;
+
     try {
         var ret_val = applet.exec_local_cmd(class_name, kwargs);
         var value = ret_val.value;
@@ -1402,7 +1403,8 @@ spt.scm.login_user = function(user, password) {
 
 spt.scm.is_logged_in = function() {
     if (!spt.scm.user) return false;
-    if (!spt.scm.password) return false;
+    // This condition is removed because of empty passwords
+    //if (!spt.scm.password) return false;
     return true;
 }
 

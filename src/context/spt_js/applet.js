@@ -755,7 +755,10 @@ spt.Applet = function()
 
 
         var file_name = api_version + ".zip";
-        var base = 'C:/ProgramData/Southpaw/Tactic';
+
+        var base = 'C:/ProgramData/Tactic';
+
+
         var output_base = base + "/temp/output";
         var to_path = base + "/api/" + file_name;
 
@@ -765,9 +768,8 @@ spt.Applet = function()
         var server_url = env.get_server_url();
         var download_url = server_url + "/context/client/" + file_name;
 
-        var applet = document.general_applet;
-        applet.download(download_url, to_path);
-        applet.unzip_file(to_path, base +"/api");
+        this.download_file(download_url, to_path);
+        this.unzip_file(to_path, base +"/api");
         spt.app_busy.hide();
 
     }
@@ -775,6 +777,13 @@ spt.Applet = function()
 
     this.exec_local_cmd = function(class_name, kwargs)
     {
+        // If the client language is ptyhon, then call the functions
+        // directly from python
+        if (this.client_lang == 'python') {
+            return this.exec_python_cmd(class_name, kwargs);
+        }
+
+
         var server = TacticServerStub.get();
         if (this.server_api_version == null) {
             this.server_api_version = server.get_server_api_version();
@@ -783,12 +792,12 @@ spt.Applet = function()
         api_version = "tactic-api-python-" + api_version;
 
         // NOTE: this assumes an installed directory (and assumes windows)
-        var base = 'C:/ProgramData/Southpaw/Tactic';
+        var base = 'C:/ProgramData/Tactic';
+
         var output_base = base + "/temp/output";
         var python = base + "/api/" + api_version + "/python.exe";
         var executable = base + "/api/"+api_version+"/Lib/site-packages/tactic_client_lib/scm/delegate.py";
 
-        var applet = document.general_applet;
 
         // detect if there is a python version available
         if (! this.exists(python)) {
@@ -802,6 +811,7 @@ spt.Applet = function()
 
 
 
+        var applet = document.general_applet;
         var env = spt.Environment.get();
 
         // add the class name to the kwargs
@@ -823,6 +833,16 @@ spt.Applet = function()
         return ret_val;
     }
 
+
+
+    this.exec_python_cmd = function(class_name, kwargs) {
+        // This only works on Qt Team version of TACTIC
+        var kwargs = JSON.stringify(kwargs)
+        var applet = document.general_applet;
+        var ret_val_json = applet.execute_python_cmd(class_name, kwargs);
+        ret_val = JSON.parse(ret_val_json);
+        return ret_val;
+    }
 
 }
 

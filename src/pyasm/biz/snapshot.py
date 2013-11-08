@@ -1243,7 +1243,6 @@ class Snapshot(SObject):
 
 
 
-
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,

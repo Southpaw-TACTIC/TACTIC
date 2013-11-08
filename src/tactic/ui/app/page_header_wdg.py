@@ -375,7 +375,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
 
         from tactic.ui.container import  Menu, MenuItem
-        menu = Menu(width=180)
+        menu = Menu(width=240)
         menus.append(menu)
         menu.set_allow_icons(False)
 
@@ -1310,7 +1310,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
                     location = "/tactic/" + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + project_code + "/link/_startup";
+                    location = "/tactic/" + project_code + "/admin/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

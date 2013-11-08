@@ -20,6 +20,7 @@ try:
     HAS_PERFORCE = True
 except Exception, e:
     HAS_PERFORCE = False
+    P4 = None
 
 
 class PerforceImpl(ScmImpl):
