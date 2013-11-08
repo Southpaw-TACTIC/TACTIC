@@ -14,7 +14,10 @@ from subversion import *
 from perforce import *
 
 import os, sys, traceback
-import simplejson as json
+try:
+    import json
+except:
+    import simplejson as json
 import pprint
 
 
@@ -64,12 +67,9 @@ class DelegateCmd(BaseCmd):
 
 
 
-
-
-
 def main():
     if os.name == "nt":
-        tactic_data = "C:/ProgramData/Southpaw/Tactic"
+        tactic_data = "C:/ProgramData/Tactic"
     else:
         tactic_data = "/tmp/perforce"
 
@@ -100,6 +100,9 @@ def main():
 
 
         class_name = kwargs.get("class_name")
+        if not class_name:
+            class_name = "DelegateCmd"
+
         cmd = eval("%s(**kwargs2)" % class_name)
         ret_val = cmd.execute()
 

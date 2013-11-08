@@ -49,8 +49,6 @@ spt.hash = {};
 
 spt.hash.hash;
 
-spt.hash.first_load = true;
-
 spt.hash.set_hash = function(state, title, url) {
 
     var env = spt.Environment.get();
@@ -118,11 +116,8 @@ spt.hash.onpopstate = function(evt) {
 
 spt.hash.onload_first = function() {
 
-    window.onpopstate = spt.hash.onpopstate;
-
+    
     var hash = window.location.hash;
-    spt.hash.first_load = false;
-
     if (!hash) {
         hash = spt.hash.hash;
         if (!hash) {
@@ -130,6 +125,11 @@ spt.hash.onload_first = function() {
         }
     }
     hash = hash.replace(/#/, '');
+
+    // On Qt browsers, this causes the page to refresh continuously
+    if (!spt.browser.is_Qt() ) {
+        window.onpopstate = spt.hash.onpopstate;
+    }
 
 
 
