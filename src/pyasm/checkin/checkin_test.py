@@ -68,7 +68,7 @@ class CheckinTest(unittest.TestCase, Command):
         search = Search("sthpw/snapshot")
 
         my.person = Person.create( "Unit", "Test",
-                "ComputerWorld", "Fake Unittest Person")
+                "ComputerWorld", "")
 
        
         
@@ -566,7 +566,14 @@ class CheckinTest(unittest.TestCase, Command):
         naming.set_value("context", "naming/*")
         naming.set_value("file_naming", "TEST{basefile}_v{version}.{ext}")
         naming.commit()
- 
+
+        # create 2nd naming where 
+        naming = SearchType.create("config/naming")
+        naming.set_value("search_type", "unittest/person")
+        naming.set_value("context", "naming/empty_dir_test")
+        naming.set_value("file_naming", "TEST{basefile}_v{version}.{ext}")
+        naming.set_value("dir_naming", "{@GET(.description)}")
+        naming.commit()
 
         my.clear_naming()
         for i, subdir in enumerate(subdirs):
@@ -581,6 +588,8 @@ class CheckinTest(unittest.TestCase, Command):
             file = open(file_path, 'w')
             file.write("test")
             file.close()
+
+           
  
 
 
@@ -602,6 +611,21 @@ class CheckinTest(unittest.TestCase, Command):
             basename = os.path.basename(path)
             expected = "TESTfilename_v001.jpg"
             my.assertEquals(expected, basename)
+
+        try:
+
+            # create a new test.txt file
+            file_path = "./%s" % filename
+            file = open(file_path, 'w')
+            file.write("test2")
+            file.close()
+            checkin = FileCheckin(my.person, file_path, context='naming/empty_dir_test')
+            checkin.execute()
+        except AssertionError, e:
+            print unicode(e)
+        else:
+            raise Exception('It should have caused an assertion error since my.person has an empty description.')
+
 
 
 
