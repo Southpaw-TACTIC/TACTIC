@@ -1154,24 +1154,26 @@ class ScmSignInWdg(BaseRefreshWdg):
         td.add_style("width: 75px")
 
         text = TextInputWdg(name="port")
-        table.add_cell(text)
+        td = table.add_cell(text)
+        td.add_style("vertical-align: top")
         text.set_value("1666")
 
-        tr = table.add_row()
-        table.add_row_cell("&nbsp;")
 
         table.add_row()
         td = table.add_cell("Login: ")
+        td.add_style("vertical-align: top")
         td.add_style("width: 75px")
 
         text = TextInputWdg(name="user")
-        table.add_cell(text)
+        td = table.add_cell(text)
+        td.add_style("vertical-align: top")
         user = Environment.get_user_name()
         text.set_value(user)
 
         table.add_row()
 
-        table.add_cell("Password: ")
+        td = table.add_cell("Password: ")
+        td.add_style("vertical-align: top")
 
         text = PasswordInputWdg(name="password")
         table.add_cell(text)
@@ -1180,23 +1182,15 @@ class ScmSignInWdg(BaseRefreshWdg):
         table.add_row_cell("&nbsp;")
 
         tr = table.add_row()
-        table.add_cell("Workspace: ")
+        td = table.add_cell("Workspace: ")
+        td.add_style("vertical-align: top")
         text = TextInputWdg(name="workspace")
-        table.add_cell(text)
+        td = table.add_cell(text)
         text.add_class("spt_workspace")
 
 
-
-        top.add("<br/>"*2)
-
-
-        button = ActionButtonWdg(title="Sign In", icon=IconWdg.PUBLISH, size='medium')
-        top.add(button)
-        button.add_style("float: right")
-
-
-        button.add_behavior( {
-            'type': 'click_up',
+        text.add_behavior( {
+            'type': 'load',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_sign_in_top");
             var values = spt.api.get_input_values(top);
@@ -1205,20 +1199,6 @@ class ScmSignInWdg(BaseRefreshWdg):
             var user = values.user[0];
             var password = values.password[0];
             var client = values.workspace[0];
-
-            // login in user
-            spt.scm.port = port;
-            spt.scm.user = user;
-            spt.scm.password = password;
-            spt.scm.client = client;
-
-
-            // test the connection
-            var ping = spt.scm.ping();
-            if (ping != "OK") {
-                spt.scm.show_login();
-                return;
-            }
 
             // TODO: get the workspaces and use this as a list
             // For now, just fill it in with the first one
@@ -1238,11 +1218,55 @@ class ScmSignInWdg(BaseRefreshWdg):
                 }
                 return;
             }
+            ''' } )
+
+
+
+
+        top.add("<br/>"*2)
+
+
+        button = ActionButtonWdg(title="Sign In >>", size='medium')
+        top.add(button)
+        button.add_style("float: right")
+
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_sign_in_top");
+            var values = spt.api.get_input_values(top);
+
+            var port = values.port[0];
+            var user = values.user[0];
+            var password = values.password[0];
+            var client = values.workspace[0];
+
+
+            if (!client) {
+                alert("No client selected");
+                return;
+            }
+
+            // login in user
+            spt.scm.port = port;
+            spt.scm.user = user;
+            spt.scm.password = password;
+            spt.scm.client = client;
+
+
+
+            // test the connection
+            var ping = spt.scm.ping();
+            if (ping != "OK") {
+                spt.scm.show_login();
+                return;
+            }
 
 
             // check the workspaces
             if (!spt.scm.check_workspace()) {
-                alert("Problem with current workspace");
+                alert("There was a problem with the given workspace");
                 spt.scm.show_login();
                 return;
             }

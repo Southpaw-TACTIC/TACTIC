@@ -85,16 +85,24 @@ spt.hash.set_hash = function(state, title, url) {
 spt.hash.onpopstate = function(evt) {
     var state = evt.state;
     if (!state) {
-        document.location.reload();
+        //document.location.refresh();
         return;
+
+        //var hash = "/index";
+        //var title = "index";
+        //var name = "index";
     }
 
+    else {
 
-    var class_name = state.class_name;
-    var kwargs = state.kwargs;
-    var hash = state.hash;
-    var title = state.title;
-    var name = state.element_name;
+        //var class_name = state.class_name;
+        //var kwargs = state.kwargs;
+        var hash = state.hash;
+        var title = state.title;
+        var name = state.element_name;
+
+    }
+
 
     var class_name = "tactic.ui.panel.HashPanelWdg";
     var tab = spt.tab.set_main_body_tab();
@@ -107,7 +115,7 @@ spt.hash.onpopstate = function(evt) {
         spt.tab.add_new(name, title, class_name, kwargs, {}, set_hash);
     }
     else {
-        document.location.refresh();
+        document.location.reload();
     }
 
 }
@@ -131,6 +139,7 @@ spt.hash.onload_first = function() {
         window.onpopstate = spt.hash.onpopstate;
     }
 
+    spt.hash.first_load = false;
 
 
     var options = {
