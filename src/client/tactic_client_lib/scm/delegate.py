@@ -14,7 +14,10 @@ from subversion import *
 from perforce import *
 
 import os, sys, traceback
-import simplejson as json
+try:
+    import json
+except:
+    import simplejson as json
 import pprint
 
 
@@ -64,36 +67,47 @@ class DelegateCmd(BaseCmd):
 
 
 
+__all__.append('CmdWrapper')
+class CmdWrapper():
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+
+
+    def execute(my):
+        return run( my.kwargs)
 
 
 
-def main():
+
+
+def run(kwargs=None):
     if os.name == "nt":
-        tactic_data = "C:/ProgramData/Southpaw/Tactic"
+        tactic_data = "C:/ProgramData/Tactic"
     else:
         tactic_data = "/tmp/perforce"
-
-    base = "%s/temp/output" % tactic_data
 
     cmd = None
 
     try:
-        # remove the files
+        from tactic_client_lib import scm
+
+
+        base = "%s/temp/output" % tactic_data
+        if not os.path.exists(base):
+            os.makedirs(base)
+
         kwargs_path = "%s/kwargs.json" % base
         output_path = "%s/output.json" % base
         pretty_output_path = "%s/pretty_output.json" % base
 
-        if not os.path.exists(base):
-            os.makedirs(base)
 
+        if kwargs == None:
+            f = open(kwargs_path, 'r')
+            kwargs_json = f.read()
+            f.close()
 
-        f = open(kwargs_path, 'r')
-        kwargs_json = f.read()
-        f.close()
+            kwargs = json.loads(kwargs_json)
 
-        from tactic_client_lib import scm
-
-        kwargs = json.loads(kwargs_json)
         kwargs2 = {}
         for key, value in kwargs.items():
             kwargs2[key.encode("UTF8")] = value
@@ -144,6 +158,7 @@ def main():
         pp.pprint(ret_val)
         f.close()
 
+
     finally:
         if not os.path.exists(output_path):
             f = open(output_path, 'w')
@@ -155,9 +170,12 @@ def main():
             f.close()
 
 
+        return ret_val
+
+
 
 if __name__ == '__main__':
-    main()
+    run()
 
 
 
