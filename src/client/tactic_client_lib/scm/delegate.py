@@ -67,6 +67,7 @@ class DelegateCmd(BaseCmd):
 
 
 
+<<<<<<< HEAD
 __all__.append('CmdWrapper')
 class CmdWrapper():
     def __init__(my, **kwargs):
@@ -81,6 +82,9 @@ class CmdWrapper():
 
 
 def run(kwargs=None):
+=======
+def main():
+>>>>>>> 4.1-hash
     if os.name == "nt":
         tactic_data = "C:/ProgramData/Tactic"
     else:
@@ -114,6 +118,9 @@ def run(kwargs=None):
 
 
         class_name = kwargs.get("class_name")
+        if not class_name:
+            class_name = "DelegateCmd"
+
         cmd = eval("%s(**kwargs2)" % class_name)
         ret_val = cmd.execute()
 

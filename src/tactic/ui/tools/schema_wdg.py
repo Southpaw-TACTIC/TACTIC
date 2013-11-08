@@ -106,8 +106,10 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         #schema = Schema.get()
         schema = Search.get_by_code("sthpw/schema", project_code)
-
-        search_types = schema.get_search_types(hierarchy=False)
+        if schema:
+            search_types = schema.get_search_types(hierarchy=False)
+        else:
+            search_types = []
         for search_type in search_types:
             project = current_project
             try:
