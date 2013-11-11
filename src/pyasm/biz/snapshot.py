@@ -615,13 +615,6 @@ class Snapshot(SObject):
             file_name = my._get_file_name(node)
             repo_file_name = file_name
 
-        if filename_mode == "source" and file_name.startswith("8"):
-            print "dirname: ", dirname
-            print "context: ", context
-            print "file_name: ", file_name
-            saadfffs
-
-
         file_paths = []
 
         if expand_paths:
