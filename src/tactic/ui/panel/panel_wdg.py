@@ -13,7 +13,7 @@ __all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPan
 
 import os, types
 import random
-from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config
+from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config, SetupException
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
@@ -2688,9 +2688,16 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 9,
+            'order': '9',
             'category': 'Display'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '9a'
+        },    
 
 
         "link": {
@@ -2782,12 +2789,17 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
+        from pyasm.search import SearchException
         my.element_names = my.kwargs.get('element_names')
         if not my.element_names:
-            impl = SearchType.get_database_impl_by_search_type(search_type)
-            if impl.get_database_type() == "MongoDb":
-                my.element_names = impl.get_default_columns()
- 
+            if not search_type:
+                raise SetupException('Empty search_type is passed in')
+            try:
+                impl = SearchType.get_database_impl_by_search_type(search_type)
+                if impl.get_database_type() == "MongoDb":
+                    my.element_names = impl.get_default_columns()
+            except SearchException:
+                raise
 
 
            
@@ -2838,7 +2850,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # set up a search
-        from pyasm.search import SearchException
         try:
             search_type_obj = SearchType.get(search_type)
         except SearchException, e:
@@ -2996,6 +3007,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
+        init_load_num = my.kwargs.get("init_load_num")
 
        
 
@@ -3047,6 +3059,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
+            "init_load_num": init_load_num, 
             "mode": mode,
             "keywords": keywords,
             "filter": filter,

@@ -130,6 +130,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '8'
+        },
+
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -674,8 +681,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # draw 4 (even) rows initially by default
         has_loading = False
         init_load_num = my.kwargs.get('init_load_num')
+
         if not init_load_num:
             init_load_num = 4
+        else:
+            init_load_num = int(init_load_num)
        
         # override init_load_num if group column has group_bottom
         if my.has_group_bottom():

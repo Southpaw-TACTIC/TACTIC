@@ -2904,11 +2904,12 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var edit_view = target.getAttribute("spt_edit_view");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
-        class_name = "tactic.ui.panel.FastTableLayoutWdg";
+        class_name = "tactic.ui.panel.TableLayoutWdg";
     }
     var simple_search_view = target.getAttribute("spt_simple_search_view");
     var search_dialog_id = target.getAttribute("spt_search_dialog_id");
     var do_initial_search = target.getAttribute("spt_do_initial_search");
+    var init_load_num = target.getAttribute("spt_init_load_num");
     var mode = target.getAttribute("spt_mode");
     var element_names;
     var column_widths = [];
@@ -2971,6 +2972,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'simple_search_view': simple_search_view,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
+        'init_load_num': init_load_num,
         'mode': mode,
         'is_refresh': 'true',
         'search_keys': search_keys,
