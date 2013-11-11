@@ -2716,14 +2716,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        #expand_paths = True
-
         if file_types:
             paths = []
             for file_type in file_types:
-                path = snapshot.get_path_by_type(file_type, mode=mode, filename_mode=filename_mode)
-                if path:
-                    paths.append(path)
+                paths = snapshot.get_paths_by_type(file_type, mode=mode, filename_mode=filename_mode)
         else:
             paths = snapshot.get_all_lib_paths(expand_paths=expand_paths, mode=mode, filename_mode=filename_mode)
 

@@ -447,7 +447,7 @@ class TablePrintLayoutWdg(BaseTableLayoutWdg):
                 //var base_url = '%(url)s';
 
                 var location = document.location;
-                var base_url = location.protocol + "//" + location.hostname;
+                var base_url = spt.Environment.get().get_server_url();
 
 
 

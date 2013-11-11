@@ -47,7 +47,7 @@ spt.tab.top = null;
 
 spt.tab.set_main_body_tab = function() {
     spt.tab.top = $(document.body).getElement(".spt_tab_top");
-    return spt.tab_top;
+    return spt.tab.top;
 }
 
 // this is to be deprecated
@@ -169,7 +169,8 @@ spt.tab.set_attribute = function(element_name, name, value) {
 
 
 
-spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
+spt.tab.add_new = function(element_name, title, class_name, kwargs, values, set_hash) {
+
     if (typeof(title) == 'undefined') {
         title = '(Untitled)';
     }
@@ -190,16 +191,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
     var top = spt.tab.top;
 
-    // register the hash
-    /*
-    var hash = "/view/" + element_name;
-    spt.hash.add( hash, function() {
-        spt.tab.set_main_body_tab();
-        //spt.tab.add_new(element_name, title, class_name, kwargs, values);
-        spt.tab.add_new(element_name);
-    } );
-    */
 
+    var hash = "link/" + element_name;
+    var orig_element_name = element_name;
 
     var mode = top.getAttribute("spt_tab_mode");
     if (mode == "hidden") {
@@ -309,6 +303,19 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
     // FIXME: this should only move on the main table
     //var top_pos = spt.tab.getY(header_top);
     //scroll(0,top_pos-20);
+
+
+    // register the hash (DISABLE for now)
+    var state = {
+        element_name: orig_element_name,
+        title: title,
+        class_name: class_name,
+        kwargs: kwargs,
+        hash: hash
+    }
+    if (set_hash != false) {
+        spt.hash.set_hash(state, title, hash);
+    }
 
     return header;
 }

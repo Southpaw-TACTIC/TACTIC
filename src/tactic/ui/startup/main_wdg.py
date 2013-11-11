@@ -389,7 +389,7 @@ class MainWdg(BaseRefreshWdg):
             var kwargs = {
                 help_alias: 'project-startup-configuration'
                 };
-            spt.tab.add_new("configuration", "Configuration", class_name, kwargs);
+            spt.tab.add_new("project_configuration", "Configuration", class_name, kwargs);
             '''
         }
         config_wdg = my.get_main_section_wdg(title, description, image, behavior)
@@ -426,7 +426,7 @@ class MainWdg(BaseRefreshWdg):
         var kwargs = {
             help_alias: 'project-startup-manage-users'
             };
-        spt.tab.add_new("user", "Users", class_name, kwargs);
+        spt.tab.add_new("manage_user", "Manage Users", class_name, kwargs);
         '''
         }
         manage_users_wdg = my.get_main_section_wdg(title, description, image, behavior)
@@ -458,112 +458,6 @@ class MainWdg(BaseRefreshWdg):
 
 
 
-
-        """
-        # Manage Security
-        td = table.add_cell()
-        td.add_style("vertical-align: top")
-        td.add_style("padding: 3px")
-        title = "Manage Security"
-        image = "<img src='/context/icons/64x64/lock_64.png'/>"
-        description = '''Configure User Group security for Projects, Links and more'''
-
-        behavior = {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var class_name = 'tactic.ui.startup.SecurityWdg';
-        var kwargs = {
-            help_alias: 'manage-security'
-            };
-        spt.tab.set_main_body_tab();
-        spt.tab.add_new("security", "Security", class_name, kwargs);
-        '''
-        }
-        security_wdg = my.get_main_section_wdg(title, description, image, behavior)
-        td.add(security_wdg)
-        """
-
-
-
-        """
-        table.add_row()
-        # Lists
-        td = table.add_cell()
-        td.add_style("padding: 3px")
-        td.add_style("vertical-align: top")
-        title = "Lists of Items"
-        image = IconWdg("Lists", IconWdg.SEARCH_TYPE_32)
-        description = '''View all of the lists items for this project'''
-        behavior = {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.tab.set_main_body_tab();
-            var class_name = 'tactic.ui.startup.HomeWdg';
-            var kwargs = {
-                help_alias: 'main'
-                };
-            spt.tab.add_new("lists", "Lists", class_name, kwargs);
-            '''
-        }
-        lists_wdg = my.get_small_section_wdg(title, description, image, behavior)
-        td.add(lists_wdg)
-        """
-
-
-        """
-        # Dashboards
-        td = table.add_cell()
-        td.add_style("vertical-align: top")
-        td.add_style("padding: 3px")
-        title = "Dashboards"
-        image = IconWdg("Dashboards", IconWdg.DASHBOARD_02)
-        #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
-        description = '''Dashboards display key project data in single views.'''
-
-        behavior = {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var class_name = 'tactic.ui.startup.dashboards_wdg.DashboardsWdg';
-        var kwargs = {
-            help_alias: 'project-startup-dashboards'
-            };
-        spt.tab.set_main_body_tab();
-        spt.tab.add_new("dashboards", "Dashboards", class_name, kwargs);
-        '''
-        }
-        dashboard_wdg = my.get_small_section_wdg(title, description, image, behavior)
-        td.add(dashboard_wdg)
-        """
-
-        """
-        # Reports
-        td = table.add_cell()
-        td.add_style("padding: 3px")
-        td.add_style("vertical-align: top")
-        title = "Reports"
-        image = IconWdg("Reports", IconWdg.GRAPH_LINE_03)
-        #image = "<img src='/context/icons/64x64/report_64.png'/>"
-        #description = '''TACTIC provides a number of predefined reports for real-time analytics.'''
-        description = '''A number of predefined reports for real-time project analytics.'''
-
-        behavior = {
-          'type': 'click_up',
-          'cbjs_action': '''
-            var class_name = 'tactic.ui.startup.reports_wdg.ReportsWdg';
-            var kwargs = {
-                help_alias: 'main'
-                };
-            spt.tab.set_main_body_tab();
-            spt.tab.add_new("reports", "Reports", class_name, kwargs);
-          '''
-        }
-
-        report_wdg = my.get_small_section_wdg(title, description, image, behavior)
-        td.add(report_wdg)
-        """
-
-
-
         tr = table.add_row()
 
         # Plugins
@@ -580,7 +474,7 @@ class MainWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var class_name = 'tactic.ui.app.PluginWdg';
         spt.tab.set_main_body_tab();
-        spt.tab.add_new("plugin_manager", "Plugin Manager", class_name, kwargs);
+        spt.tab.add_new("plugins", "Plugin Manager", class_name, kwargs);
         '''
         }
         plugin_wdg = my.get_small_section_wdg(title, description, image, behavior)

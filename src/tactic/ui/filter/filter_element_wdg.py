@@ -25,6 +25,8 @@ __all__ = [
         'ButtonFilterElementWdg',
         'CheckboxFilterElementWdg'
 ]
+import datetime
+from dateutil.relativedelta import relativedelta
 
 from pyasm.common import Common, TacticException
 from pyasm.biz import Project
@@ -1261,6 +1263,7 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
                 "REPLACE": field_value,
                 "VALUE": field_value
             })
+
             if results:
                 search.add_filters(column, results)
             else:
@@ -1314,36 +1317,56 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
             values = my.get_option("select_values")
             labels = my.get_option("select_labels")
             select = SelectWdg("field")
-            select.add_style("width: 150px")
+            select.add_style("width: 120px")
 
             select.add_empty_option("-- Select --")
             select.set_option("values", values)
             select.set_option("labels", labels)
             div.add(select)
-
+    
+        mod_value = my.get_option('last_modified_days')
+        if mod_value:
+            select = SelectWdg("last_modified", label='modified in: ')
+            #select.add_style("width: 10px")
+            if mod_value =='true':
+                mod_value = '10|20|30|60|90'
+            mod_values = mod_value.split('|')
+            mod_values = [x.strip() for x in mod_values]
+            mod_labels = ["last %s Days"%x for x in mod_values] 
+            select.add_empty_option("-- Select --")
+            select.set_option("values", mod_values)
+            select.set_option("labels", mod_labels)
+            div.add(select)
+            
+            
         return div
+
 
 
 __all__.append("TaskConnectFilterElementWdg")
 class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
     def alter_search(my, search):
-        field_value = my.values.get("field")
-
         
+        field_value = my.values.get("field")
+        last_mod_value = None
+
+        last_mod_option = my.get_option("last_modified_days")
+        if last_mod_option:
+            last_mod_value = my.values.get('last_modified')
+
         search_type = my.get_option("search_type")
         if search_type:
             search_type = Project.get_full_search_type(search_type)
+
         # This controls what to filter at the end other than id
         filter_column = my.get_option("filter_column")
 
         do_search = my.get_option("do_search")
-        
         if not field_value:
             if do_search =='true':
                 pass
             else:
                 return
-        
         column = my.get_option("column")
         assert column
 
@@ -1355,7 +1378,7 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
         from_col = "src_search_id"
         to_col = "id"
         select.add_join(from_table, to_table, from_col, to_col, join="INNER")
-
+    
         prefix = "src_"
         prefix2 = "dst_"
         search2.add_filter("%ssearch_type" % prefix, "sthpw/task")
@@ -1368,12 +1391,21 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
 
 
         # use field value
-        search2.add_filter(column, field_value, table="task")
+        if field_value:
+            search2.add_filter(column, field_value, table="task")
 
         filters = my.get_option("filters")
         if filters:
             search2.add_op_filters(filters)
+        
 
+        if last_mod_value:
+            last_mod_value = int(last_mod_value)
+            today = datetime.datetime.today()
+            date =  today + relativedelta(days=-last_mod_value)
+            setting = "%Y-%m-%d"
+            date_value = date.strftime(setting)
+            search2.add_where( "task.id in (SELECT search_id from status_log where timestamp  > '%s')"%date_value )
 
         statement = search2.get_statement()
         sql = search2.get_sql()
@@ -1383,6 +1415,7 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
         if not filter_column:
             filter_column = 'id'
         search.add_filters(filter_column, values)
+        
 
 
 

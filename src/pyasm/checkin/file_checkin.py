@@ -367,6 +367,8 @@ class FileCheckin(BaseCheckin):
             is_synced = True
 
 
+        my.is_latest = is_latest
+
         # copy the snapshot and put it in the snapshot history
         my.snapshot = Snapshot.create( my.sobject, snapshot_type,
             my.context, my.column, my.description, snapshot_xml,
@@ -519,7 +521,7 @@ class FileCheckin(BaseCheckin):
     get = classmethod(get)
 
 
-    def get_preallocated_path(cls, snapshot, file_type='main', file_name='', file_range='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(cls, snapshot, file_type='main', file_name='', file_range='', mkdir=True, protocol=None, ext='', parent=None):
         '''Get a preallocated directory for this snapshot.  This will run a
         virtual checkin through the naming convention and construct a path
         that Tactic expects the checked in file to go to
@@ -545,7 +547,8 @@ class FileCheckin(BaseCheckin):
         #if not file_range:
         #    file_range = "1-30"
 
-        parent = snapshot.get_parent()
+        if not parent:
+            parent = snapshot.get_parent()
         assert parent
         if not file_name:
             file_name = parent.get_code()
@@ -671,7 +674,6 @@ class FileAppendCheckin(FileCheckin):
 
 
     def create_snapshot(my, snapshot_xml):
-
         # copy the snapshot and put it in the snapshot history
         my.append_snapshot.set_value("snapshot", snapshot_xml)
         my.append_snapshot.commit()
@@ -679,6 +681,8 @@ class FileAppendCheckin(FileCheckin):
 
         return my.snapshot
 
+    def get_trigger_prefix(my):
+        return "add_file"
 
 
 
@@ -900,4 +904,6 @@ class FileGroupAppendCheckin(FileGroupCheckin):
 
         return my.snapshot
 
+    def get_trigger_prefix(my):
+        return "add_group"
 

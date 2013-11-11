@@ -386,6 +386,8 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
 spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {
 
+    alert("spt.panel.set_hash is DEPRECATED");
+
     // for now, ignore all panels that are not the main_body
     if ( $(panel_id).getAttribute('id') != 'main_body' ) {
         return;

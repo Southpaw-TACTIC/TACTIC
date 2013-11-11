@@ -660,6 +660,15 @@ class WidgetConfigView(Base):
         return element_names
 
 
+    def get_element_xml(my, element_name):
+        for config in my.configs:
+            element_xml = config.get_element_xml(element_name)
+            if element_xml:
+                return element_xml
+
+
+
+
     def get_definition_config(my):
         '''gets the first definition config'''
         for config in my.configs:
