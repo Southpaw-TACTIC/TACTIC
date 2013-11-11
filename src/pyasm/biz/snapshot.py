@@ -565,7 +565,16 @@ class Snapshot(SObject):
             context = my.get_value("context")
 
             file_object = Search.get_by_code("sthpw/file", file_code)
-            file_name = os.path.basename(file_object.get_value("source_path"))
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+ 
+
         else:
             file_name = my._get_file_name(node)
 
@@ -592,11 +601,25 @@ class Snapshot(SObject):
             context = my.get_value("context")
 
             file_object = Search.get_by_code("sthpw/file", file_code)
-            file_name = os.path.basename(file_object.get_value("source_path"))
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
             repo_file_name = my._get_file_name(node)
         else:
             file_name = my._get_file_name(node)
             repo_file_name = file_name
+
+        if filename_mode == "source" and file_name.startswith("8"):
+            print "dirname: ", dirname
+            print "context: ", context
+            print "file_name: ", file_name
+            saadfffs
 
 
         file_paths = []

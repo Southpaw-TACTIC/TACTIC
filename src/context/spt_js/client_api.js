@@ -809,6 +809,7 @@ TacticServerStub = function() {
              
             }
             else if (filename_mode == 'source') {
+                console.log(dst);
                 basename = spt.path.get_basename(dst);
             }
 
