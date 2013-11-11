@@ -356,6 +356,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         names = []
         curr_ret = ret
         for line in ret_val.split("\n"):
+            line = line.strip()
             if not line:
                 continue
 
@@ -385,7 +386,11 @@ class ImageMagickMetadataParser(BaseMetadataParser):
             name = parts[0]
             value = parts[1]
             try:
-                value = value.encode('utf8', 'ignore')
+                if isinstance(value, unicode):
+                   value = value.encode('utf-8', 'ignore')
+                else:
+                   value = unicode(value, errors='ignore').encode('utf-8')
+
                 ret[name] = value
                 names.append(name)
             except Exception, e:
