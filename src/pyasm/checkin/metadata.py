@@ -361,11 +361,16 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             index = 0
             while 1:
-                if  line[index] != ' ':
+                if index >= len(line):
+                    break
+                if line[index] != ' ':
                     break
                 index += 1
             level = index / 2
             line = line.strip()
+
+            if not line:
+                continue
 
             if line.endswith(":"):
                 name = line.rstrip(":")
@@ -375,14 +380,17 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             parts = re.split(p, line)
             if len(parts) < 2:
-                print "WARNING: Skipping an ImageMagick line due to inconsistent formatting."
+                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
                 continue
             name = parts[0]
             value = parts[1]
-            value = value.encode('utf8', 'ignore')
-            ret[name] = value
+            try:
+                value = value.encode('utf8', 'ignore')
+                ret[name] = value
+                names.append(name)
+            except Exception, e:
+                print "WARNING: Cannot handle line [%s] with error: " % line, e
 
-            names.append(name)
 
         if names:
             ret['__keys__'] = names
