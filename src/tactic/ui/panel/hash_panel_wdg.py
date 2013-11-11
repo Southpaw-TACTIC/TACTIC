@@ -260,6 +260,8 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
         config = sobject.get_value("widget")
+        config = config.replace('&','&amp;')
+
         url = sobject.get_value("url")
         url = url.strip()
 
@@ -288,7 +290,12 @@ class HashPanelWdg(BaseRefreshWdg):
             search = Search("config/url")
             search.add_filter("url", "/index")
             index = search.get_sobject()
-
+            # just use admin if no index page is found
+            if not index:
+                from tactic.ui.app import PageNavContainerWdg
+                top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )
+                return top.get_buffer_display()
+                
             config = index.get_value("widget")
             xml = Xml()
             xml.read_string(config)
