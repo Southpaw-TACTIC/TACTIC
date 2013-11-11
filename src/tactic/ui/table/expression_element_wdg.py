@@ -383,7 +383,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return widget
 
             result = ""
-
         # FIXME: don't know how to do this any other way
         try:
             if not list:
@@ -504,22 +503,34 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return div
 
 
-        use_cache = my.get_option("use_cache") in ['true', True]
-        if use_cache:
-            result = my.sobject.get_value(my.get_name())
-        else:
-            result = my._get_result(my.sobject, my.expression)
+       
+        try:
+            use_cache = my.get_option("use_cache") in ['true', True]
+            if use_cache:
+                result = my.sobject.get_value(my.get_name())
+            else:
+                result = my._get_result(my.sobject, my.expression)
 
 
 
 
 
-        # calculte the alt expression if defined
-        # DEPRECATED: use format expression instead
-        if my.alt_expression:
-            my.alt_result = my._get_result(my.sobject, my.alt_expression)
-        else:
-            my.alt_result = result
+      
+            # calculte the alt expression if defined
+            # DEPRECATED: use format expression instead
+            if my.alt_expression:
+                my.alt_result = my._get_result(my.sobject, my.alt_expression)
+            else:
+                my.alt_result = result
+        except Exception, e:
+            print "Expression error: ", e
+            print "    in column [%s] with [%s]" % (my.get_name(), my.expression)
+            #from pyasm.widget import ExceptionWdg
+            #widget = ExceptionWdg(e)
+            #return widget
+            widget = DivWdg()
+            widget.add("Expression error: %s" % e)
+            return widget
 
         my.value = result
 

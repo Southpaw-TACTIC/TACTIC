@@ -2162,7 +2162,8 @@ class MethodMode(ExpressionParser):
 
         total = 0
         for sobject in sobjects:
-            value = sobject.get_value(column)
+            
+            value = sobject.get_value(column, no_exception=True)
             if not value:
                 continue
             if type(value) in types.StringTypes:
