@@ -2115,6 +2115,7 @@ class MethodMode(ExpressionParser):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
+                """
                 # special case where leaf = [sobject].  This is used to
                 # designate a leaf value.  Look at get_flat_cache() for
                 # code and explanation
@@ -2123,6 +2124,8 @@ class MethodMode(ExpressionParser):
                     results[key] = [None]
                 else:
                     results[key] = my.get(values, column)
+                """
+                results[key] = my.get(values, column)
             return results
 
         if not sobjects:
@@ -2168,7 +2171,8 @@ class MethodMode(ExpressionParser):
 
         total = 0
         for sobject in sobjects:
-            value = sobject.get_value(column)
+            
+            value = sobject.get_value(column, no_exception=True)
             if not value:
                 continue
             if type(value) in types.StringTypes:

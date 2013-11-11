@@ -401,13 +401,13 @@ class ExpressionTest(unittest.TestCase):
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
 
-        expected = '''SELECT "task".* FROM "task" WHERE "search_type" = 'unittest/person?project=unittest' AND "task"."search_code" in ('''
+        expected = '''SELECT "sthpw"."public"."task".* FROM "sthpw"."public"."task" WHERE "task"."search_type" = 'unittest/person?project=unittest' AND "task"."search_code" in ('''
 
         my.assertEquals(search.get_statement().startswith(expected), True)
         expression = "@SEARCH(unittest/person.unittest/person)"
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
-        expected = 'SELECT "person".* FROM "person"'
+        expected = 'SELECT "unittest"."public"."person".* FROM "unittest"."public"."person"'
         my.assertEquals(search.get_statement(), expected)
 
         expression = "@SEARCH(sthpw/login['login', @GET(sthpw/login['login','ben'].login)])"

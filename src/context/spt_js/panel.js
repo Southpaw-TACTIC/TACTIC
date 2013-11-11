@@ -67,19 +67,21 @@ spt.panel.async_load = function(panel_id, class_name, options, values) {
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     var fade = kwargs ? kwargs.fade : true;
     var async = kwargs ? kwargs.async : true;
-    if (!async) { async = true; }
+    var show_loading = kwargs ? kwargs.show_loading : true;
+    if (async == null) { async = true; }
+    if (show_loading == null) { show_loading = true; }
 
     var callback = kwargs ? kwargs.callback : null;
     if (callback) {
         async = true;
     }
-    
     var panel = $(panel_id);
     if (!panel)
     {
         log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
         return;
     }
+    
     var tween = null;
     if (!spt.browser.is_IE() && fade == true) {
         // define the tween instance 
@@ -134,8 +136,10 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             xelement.setStyle("margin-top", -size.y);
             xelement.setStyle("position", "relative");
 
-            panel.appendChild(xelement);
-            panel.appendChild(element);
+            if (show_loading) {
+                panel.appendChild(xelement);
+                panel.appendChild(element);
+            }
 
 
             wdg_kwargs.cbjs_action = function(widget_html) {
@@ -325,7 +329,7 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
     var fade = kwargs ? kwargs.fade : false;
     var async = kwargs ? kwargs.async : true;
- 
+    
     var element = $(element_id);
     if (! element) {
         log.warning("_refresh_widget " + element_id +  " not found ");
@@ -381,6 +385,8 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
 
 spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {
+
+    alert("spt.panel.set_hash is DEPRECATED");
 
     // for now, ignore all panels that are not the main_body
     if ( $(panel_id).getAttribute('id') != 'main_body' ) {

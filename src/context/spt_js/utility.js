@@ -1032,6 +1032,8 @@ spt.hide = function( element )
 
 spt.is_shown = function( element )
 {
+    if (!element) return false;
+        
     var display = element.getStyle("display");
     if( display == "none" ) {
         return false;

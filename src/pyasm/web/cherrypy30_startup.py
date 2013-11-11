@@ -102,7 +102,7 @@ class CherryPyStartup(CherryPyStartup20):
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
         project = Project.get_by_code(project_code)
-        if not has_project and project:
+        if not has_project and project and project.get_value("type") != 'resource':
 
             startup = cherrypy.startup
             config = startup.config
@@ -239,6 +239,7 @@ class CherryPyStartup(CherryPyStartup20):
 
         from pyasm.search import Search
         search = Search("sthpw/project")
+        search.add_filter("type", "resource", op="!=")
         projects = search.get_sobjects()
 
 

@@ -71,21 +71,20 @@ class CheckinMetadataHandler():
             base, ext = os.path.splitext(path)
             file_object = file_objects[i]
 
-            if HAS_FFMPEG:
-                parser_type = "FFMPEG"
-            elif HAS_IMAGEMAGICK:
-                parser_type = "ImageMagick"
-            else:
-                parser_type = "PIL"
-
-            metadata = {}
             if not os.path.exists(path):
-                pass
-
+                continue
+            elif ext in ['.mov','.wmv','.mpg','.mpeg','.m1v','.m2v','.mp2','.mpa','.mpe','.mp4','.wma','.asf','.asx','.avi','.wax','.wm','.wvx','.ogg','.webm','.mkv']:
+                parser_type = "FFMPEG"
             elif ext in ['.txt','.doc','.docx','.xls','.rtf','.odt']:
-                pass
+                continue
+            else:
+                if HAS_IMAGEMAGICK:                    
+                    parser_type = "ImageMagick" 
+                else:
+                    parser_type = "PIL"
+            metadata = {}
 
-            elif parser_type == "FFMPEG":
+            if parser_type == "FFMPEG":
                 parser = FFProbeMetadataParser(path=path)
                 metadata = parser.get_metadata()
             elif parser_type == "ImageMagick":
@@ -94,7 +93,6 @@ class CheckinMetadataHandler():
             else:
                 parser = PILMetadataParser(path=path)
                 metadata = parser.get_metadata()
-
 
             metadata['__parser__'] = parser_type
 
@@ -363,11 +361,16 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             index = 0
             while 1:
-                if  line[index] != ' ':
+                if index >= len(line):
+                    break
+                if line[index] != ' ':
                     break
                 index += 1
             level = index / 2
             line = line.strip()
+
+            if not line:
+                continue
 
             if line.endswith(":"):
                 name = line.rstrip(":")
@@ -376,12 +379,18 @@ class ImageMagickMetadataParser(BaseMetadataParser):
                 continue
 
             parts = re.split(p, line)
+            if len(parts) < 2:
+                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
+                continue
             name = parts[0]
             value = parts[1]
-            value = value.encode('utf8', 'ignore')
-            ret[name] = value
+            try:
+                value = value.encode('utf8', 'ignore')
+                ret[name] = value
+                names.append(name)
+            except Exception, e:
+                print "WARNING: Cannot handle line [%s] with error: " % line, e
 
-            names.append(name)
 
         if names:
             ret['__keys__'] = names

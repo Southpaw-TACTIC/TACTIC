@@ -564,18 +564,77 @@ class Snapshot(SObject):
             file_code = xml.get_attribute(node, "file_code")
             context = my.get_value("context")
 
-            # in auto mode, you can get the path from the context
-            #parts = context.split("/")
-            #file_name = "/".join(parts[1:])
-
             file_object = Search.get_by_code("sthpw/file", file_code)
-            file_name = os.path.basename(file_object.get_value("source_path"))
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+ 
+
         else:
             file_name = my._get_file_name(node)
 
         file_path = "%s/%s" % (dirname,file_name)
         
         return file_path
+
+
+
+    def get_paths_by_type(my, type, mode="lib", filename_mode=None, expand_paths=True):
+        dirname = my.get_dir(mode, file_type=type, file_object=None)
+        repo_dirname = my.get_dir("lib", file_type=type, file_object=None)
+
+        xml = my.get_snapshot_xml()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+ 
+        # get the source file name
+        if filename_mode == 'source':
+            file_code = xml.get_attribute(node, "file_code")
+            context = my.get_value("context")
+
+            file_object = Search.get_by_code("sthpw/file", file_code)
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
+            repo_file_name = my._get_file_name(node)
+        else:
+            file_name = my._get_file_name(node)
+            repo_file_name = file_name
+
+        file_paths = []
+
+        if expand_paths:
+            repo_file_path = "%s/%s" % (repo_dirname, repo_file_name)
+            if os.path.isdir(repo_file_path):
+                for root, dirnames, basenames in os.walk(repo_file_path):
+                    for basename in basenames:
+                        path = "%s/%s" % (root, basename)
+                        rel_path = path.replace(repo_file_path, "")
+                        path = "%s/%s/%s" % (dirname, file_name, rel_path)
+                        file_paths.append(path)
+            else:
+                file_path = "%s/%s" % (dirname,file_name)
+                file_paths.append(file_path)
+        else:
+            file_path = "%s/%s" % (dirname,file_name)
+            file_paths.append(file_path)
+        
+        return file_paths
+
 
 
 
@@ -1043,9 +1102,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
 
 
 
@@ -1197,8 +1256,6 @@ class Snapshot(SObject):
 
         return search.do_search()
     get_by_search_type = staticmethod(get_by_search_type)
-
-
 
 
 
@@ -1427,20 +1484,23 @@ class Snapshot(SObject):
 
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
-            level_type=None, level_id=None, show_retired=False):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
+            level_type=None, level_id=None, show_retired=False, \
+            process=None):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
-    def get_latest_by_sobject(sobject, context=None, show_retired=False):
+    def get_latest_by_sobject(sobject, context=None, show_retired=False, \
+            process=None):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired)
+                context=context, show_retired=show_retired, process=process \
+        )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
 
@@ -1809,7 +1869,10 @@ class Snapshot(SObject):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_code = sobject.get_value("code", no_exception=True)
-
+        # temp var
+        search_combo = search_code
+        if not search_code:
+            search_combo = search_id
         """
         rev = None
         if is_revision:
@@ -1819,7 +1882,7 @@ class Snapshot(SObject):
         rev = -1
         # to find the version number, we have to find the highest number
         # of a particular snapshot
-        old_snapshot = Snapshot._get_by_version(search_type, search_code, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
+        old_snapshot = Snapshot._get_by_version(search_type, search_combo, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
         # have to clear the cache here, because after it is created
         # it shouldn't be None anymore
         if not old_snapshot:
@@ -2017,16 +2080,21 @@ class Snapshot(SObject):
 
         # get the versionless snapshot
         search_type = sobject.get_search_type()
-        search_id = sobject.get_value("code")
-        if not search_id:
-            search_id = sobject.get_id()
+        search_code = sobject.get_value("code", no_exception=True)
+        search_id = sobject.get_id()
+
+
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
         snapshot_type = my.get_value('snapshot_type')
 
         # Get the versionless snapshot.  This is used as a template to build
         # the next snapshot definition. 
-        versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        if search_code:
+            versionless = Snapshot.get_versionless(search_type, search_code, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        elif search_id:
+            versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+
         v_snapshot_xml = versionless.get_xml_value("snapshot")
 
         #assert versionless.get_id() != -1
@@ -2096,8 +2164,7 @@ class Snapshot(SObject):
             file_objects.append(file_object)
             file_object.set_value("search_type", sobject.get_search_type() )
 
-            search_code = sobject.get_value("code")
-            search_id = sobject.get_id()
+            
             if search_code:
                 file_object.set_value("search_code", search_code )
             if search_id and isinstance(search_id, int):

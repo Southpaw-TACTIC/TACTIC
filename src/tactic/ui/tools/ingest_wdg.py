@@ -87,7 +87,17 @@ class IngestUploadWdg(BaseRefreshWdg):
         data_div.add_style("float: left")
         div.add(data_div)
 
+        # create the help button
+        help_button_wdg = DivWdg()
+        div.add(help_button_wdg)
+        help_button_wdg.add_style("float: right")
+        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+        help_button_wdg.add(help_button)
 
+        help_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+        } )
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)

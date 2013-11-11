@@ -33,7 +33,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e4130"></a>Introduction
+                     <h5 class="title"><a name="d0e4362"></a>Introduction
                      </h5>
                   </div>
                </div>
@@ -160,7 +160,7 @@
                            same field of a naming entry.
             </p>
             <p></p>
-            <h6><a name="d0e4252"></a>3.0 Defaults
+            <h6><a name="d0e4484"></a>3.0 Defaults
             </h6>
             <p>TACTIC will fall back on the default convention which would be represented by the
                            following expression. These defaults are slightly different from previous
@@ -181,10 +181,10 @@
             </p>
             <p>
                            
-            </p><pre class="screen">assets/sample3d/characters/chr001/publish/characterFile_v001.ma</pre><p>
+            </p><pre class="screen">sample3d/characters/chr001/publish/characterFile_v001.ma</pre><p>
                        
             </p>
-            <h6><a name="d0e4281"></a>Assumptions
+            <h6><a name="d0e4513"></a>Assumptions
             </h6>
             <p>Various assumptions have been made about which attributes are attached to which
                            SObjects. It is often the case that the context is composed of a number of parts that
@@ -201,7 +201,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e4297"></a>Inserting Naming Conventions
+                     <h5 class="title"><a name="d0e4529"></a>Inserting Naming Conventions
                      </h5>
                   </div>
                </div>
@@ -349,14 +349,14 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h5 class="title"><a name="d0e4405"></a>Examples
+                     <h5 class="title"><a name="d0e4637"></a>Examples
                      </h5>
                   </div>
                </div>
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4409"></a>Example A
+               <h6><a name="d0e4641"></a>Example A
                </h6>
                <p>In the following example, the file is being checked in withe general 'publish'
                                   context
@@ -383,7 +383,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4443"></a>Example B
+               <h6><a name="d0e4675"></a>Example B
                </h6>
                <p>In the following example, the shot RC_001_001 is part of the parent sequence
                                   RC_001 and is checked in with an 'animation' context. This will also use the short
@@ -409,7 +409,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4474"></a>Example C
+               <h6><a name="d0e4706"></a>Example C
                </h6>
                <p>In the following example, the desired file location is at the project folder level
                                   to accommodate a cross-project library of files. 
@@ -434,7 +434,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4505"></a>Example D
+               <h6><a name="d0e4737"></a>Example D
                </h6>
                <p>In the following example, a context and subcontext are used for checking in to a
                                   final process for an art asset
@@ -459,7 +459,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4536"></a>Example E
+               <h6><a name="d0e4768"></a>Example E
                </h6>
                <p>In the following example, the shot RC_001_001 is part of the parent sequence
                                   RC_001 and is checked in with an 'animation' context. Also when a user checks out
@@ -493,7 +493,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4578"></a>Example F
+               <h6><a name="d0e4810"></a>Example F
                </h6>
                <p>In the following example, the shot RC_001_001 is part of the parent sequence
                                   RC_001 and is checked in with an 'animation' context. Also when a user checks out
@@ -556,7 +556,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4656"></a>Example G
+               <h6><a name="d0e4888"></a>Example G
                </h6>
                <p>In the following example, a texture file is checked in under shot RC_001_001. Also
                                   when a user checks out the sandbox, files should be organized into a user folder.
@@ -617,7 +617,7 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4734"></a>Example H
+               <h6><a name="d0e4966"></a>Example H
                </h6>
                <p>In the following example, asset file name is made up of asset_code, context, and
                                   version by default. If the asset's category is '2D' , we will add this category as a
@@ -676,11 +676,43 @@
             </div>
             <div class="sidebar">
                <p class="title"><b></b></p>
-               <h6><a name="d0e4812"></a>Example I - keywords: snapshot and file
+               <h6><a name="d0e5044"></a>Example I
+               </h6>
+               <p>In the following example, the 'Checkin Type' is set to be (auto), to use the
+                                  filename as the subcontext.
+               </p>
+               <p>The checkin type "(main)", uses the process as context.</p>
+               <p>The checkin type "(strict)" could also be available as a checkin type.</p>
+               <p><span class="bold"><strong>File:</strong></span> shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Checkin context:</strong></span> design/shotFile.ma
+               </p>
+               <p><span class="bold"><strong>Desired Repo
+                                        output:</strong></span>finals/art001/photoshop/design/shotFile.ma
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span>  finals/{sobject.code}/photoshop/{snapshot.context}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Checkin Type:</strong></span> (auto)</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {sobject.code}_{snapshot.context}_v{snapshot.version}.{ext}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e5086"></a>Example J - keywords: snapshot and file
                </h6>
                <p>The following is an example of the proper way to use the special keywords
                                       <span class="bold"><strong>snapshot</strong></span> and <span class="bold"><strong>file</strong></span> in an expression to retrieve the snapshot and file object for a
-                                  check-in:
+                                  checkin:
                </p>
                <p>
                                   
@@ -696,9 +728,6 @@
                                   of typical TACTIC expressions.
                </p>
                <p>In the example below, {$PROJECT} is used to replace {project.code}.</p>
-               <p>Keep in mind that it not possible to filter down to the exact snapshot through the
-                                  @GET(sthpw/snapshot['context','anim']) approach.
-               </p>
                <p></p>
                <p>Below is an example using these expressions of a file being checked in with the
                                   general 'publish' context:
@@ -720,6 +749,71 @@
                <p>
                                   
                </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> source_art_v{@GET(snapshot.context).version,%04.d}.{@GET(file.type)}</pre><p>
+                              
+               </p>
+            </div>
+            <div class="sidebar">
+               <p class="title"><b></b></p>
+               <h6><a name="d0e5143"></a>Example K - Combination of TACTIC expression language
+                                  syntax and the original keyword approach
+               </h6>
+               <p>The following is an example of directory naming using the TACTIC expression
+                                  language syntax and the original keyword approach. It will also use expression
+                                  language syntax to specify the condition. 
+               </p>
+               <p>
+                                  
+               </p><pre class="screen">{@GET(snapshot.process)}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen">{@GET(file.name)}</pre><p>
+                              
+               </p>
+               <p>Notice that the syntax for these particular expressions deviates from the syntax
+                                  of typical TACTIC expressions.
+               </p>
+               <p>In the example below, the keyword approach {project.code}, can be used with
+                                  expression language {@GET(.code)}. 
+               </p>
+               <p></p>
+               <p>Below is an example using these expressions of a file being checked in with the
+                                  process 'finish', the 'Condition' entry defines a specific category called '2D' and
+                                  the 'Context' entry will only allow you to check in the files that have the process
+                                  design:
+               </p>
+               <p><span class="bold"><strong>File:</strong></span>
+                                  <span class="italic">source_art_v001.jpg</span>
+                              
+               </p>
+               <p><span class="bold"><strong>Checkin Context:</strong></span> design
+               </p>
+               <p><span class="bold"><strong>Desired output:</strong></span> sample3d/chr001/design
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Dir Naming:</strong></span>  {project.code}/{@GET(.code)}/{@GET(snapshot.process)}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Context:</strong></span> Design/*</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Sandbox Naming:</strong></span> {project.code}/{login.login}/asset/{sobject.code}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>File Naming:</strong></span> {@GET(file.name).version,%03.d}.{@GET(file.type)}</pre><p>
+                              
+               </p>
+               <p>
+                                  
+               </p><pre class="screen"><span class="bold"><strong>Condition:</strong></span> @GET(.category)=='2D'</pre><p>
                               
                </p>
             </div>

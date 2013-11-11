@@ -24,88 +24,45 @@
          <div class="titlepage">
             <div>
                <div>
-                  <h3 class="title"><a name="python-client-api_general_add_dependency_by_code"></a>
-                         add_dependency_by_code
-                         
+                  <h3 class="title"><a name="python-client-api_general_add_dependency_by_code"></a>add_dependency_by_code
                   </h3>
                </div>
             </div>
          </div>
          <p>
-                <span class="bold"><strong>
-                  add_dependency_by_code(to_snapshot_code, from_snapshot_code, type='ref')
-                      </strong></span>
+                <span class="bold"><strong> add_dependency_by_code(to_snapshot_code, from_snapshot_code, type='ref')</strong></span>
                 
          </p>
-         <p>
-                Append a dependency reference to an existing checkin.  This dependency
-                
-         </p>
-         <p>
-                is used to connect various checkins together creating a separate
-                
-         </p>
-         <p>
-                dependency tree for each checkin.
-                
-         </p>
-         <h4><a name="d0e2439"></a>
-                param:
-                
+         <p>Append a dependency reference to an existing checkin.  This dependency</p>
+         <p>is used to connect various checkins together creating a separate</p>
+         <p>dependency tree for each checkin.</p>
+         <h4><a name="d0e2713"></a>param:
          </h4>
+         <p>to_snapshot_code: the snapshot code which the dependency will be</p>
+         <p>connected to</p>
+         <p>from_snapshot_code: the snapshot code which the dependency will be</p>
+         <p>connected from</p>
          <p>
-                to_snapshot_code: the snapshot code which the dependency will be
-                
-         </p>
-         <p>
-                connected to
-                
-         </p>
-         <p>
-                from_snapshot_code: the snapshot code which the dependency will be
-                
-         </p>
-         <p>
-                connected from
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      type 
-                      </strong></span>
+                <span class="bold"><strong>type </strong></span>
                  -  type of dependency.  Values include 'ref' and 'input_ref'
                 
          </p>
+         <p>ref = hierarchical reference:   ie A contains B</p>
          <p>
-                ref = hierarchical reference:   ie A contains B
-                
-         </p>
-         <p>
-                <span class="bold"><strong>
-                      input_ref 
-                      </strong></span>
+                <span class="bold"><strong>input_ref </strong></span>
                  -  input reference:    ie: A was used to create B
                 
          </p>
          <p>
-                <span class="bold"><strong>
-                      tag 
-                      </strong></span>
+                <span class="bold"><strong>tag </strong></span>
                  -  a tagged keyword can be added to a dependency to categorize
                 
          </p>
-         <p>
-                the different dependencies that exist in a snapshot
-                
-         </p>
-         <h4><a name="d0e2468"></a>
-                return:
-                
+         <p>the different dependencies that exist in a snapshot</p>
+         <h4><a name="d0e2742"></a>return:
          </h4>
          <p>
-                <span class="bold"><strong>
-                      dictionary 
-                      </strong></span>
+                <span class="bold"><strong>dictionary </strong></span>
                  -  the resulting snapshot
                 
          </p>

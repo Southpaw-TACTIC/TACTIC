@@ -5,7 +5,7 @@
       <title>TACTIC logs</title>
       <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
       <link rel="home" href="doc_tactic-sys-admin.html" title="TACTIC System Administrator">
-      <link rel="up" href="tactic-sys-admin_maintanence.html" title="Maintanence">
+      <link rel="up" href="tactic-sys-admin_maintenance.html" title="Maintenance">
       <link rel="prev" href="tactic-sys-admin_sys-admin_automate-database-backup.html" title="Database Backup Automation">
       <link rel="next" href="tactic-sys-admin_tsi.html" title="TACTIC Server VM">
    </head>
@@ -33,7 +33,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5277"></a>Overview
+                     <h4 class="title"><a name="d0e5368"></a>Overview
                      </h4>
                   </div>
                </div>
@@ -49,7 +49,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5282"></a>Prerequisites
+                     <h4 class="title"><a name="d0e5373"></a>Prerequisites
                      </h4>
                   </div>
                </div>
@@ -62,7 +62,7 @@
             <div class="titlepage">
                <div>
                   <div>
-                     <h4 class="title"><a name="d0e5287"></a>Configuration
+                     <h4 class="title"><a name="d0e5378"></a>Configuration
                      </h4>
                   </div>
                </div>
@@ -70,7 +70,7 @@
             <p>Logrotate is used as a tool to rotate text files on a chronological basis. The tool
                            allows automatic rotation, compression, removal and mailing of log files.
             </p>
-            <h5><a name="d0e5292"></a>Directives
+            <h5><a name="d0e5383"></a>Directives
             </h5>
             <p>This is a partial list of logrotate directives.</p>
             <div class="itemizedlist">
@@ -109,7 +109,7 @@
                   </li>
                </ul>
             </div>
-            <h5><a name="d0e5327"></a>Default  configuration
+            <h5><a name="d0e5418"></a>Default  configuration
             </h5>
             <p>Logrotate's main configuration file
                                <code class="filename">/etc/logrotate.conf</code></p>
@@ -132,7 +132,7 @@ monthly
 create 0664 root utmp
 rotate 1
 }
-</pre><h5><a name="d0e5337"></a>Example Service Configuration
+</pre><h5><a name="d0e5428"></a>Example Service Configuration
             </h5>
             <p>This is an example logrotate configuration for HTTP. The configuration file is
                                    <code class="filename">/etc/logrotate.d/httpd </code></p><pre class="screen">/var/log/httpd/*.log {
@@ -158,7 +158,7 @@ rotate 1
                            themselves) are executed after the log file is rotated. These directives may only appear
                            inside a log file definition. In our case we are reloading lighttpd. 
             </p>
-            <h5><a name="d0e5354"></a>Example TACTIC configuration
+            <h5><a name="d0e5445"></a>Example TACTIC configuration
             </h5>
             <p>The configuration goal is get logrotate to get the tactic log files rotated for
                                our needs and requirements.
@@ -182,7 +182,7 @@ rotate 1
             <tr>
                <td width="40%" align="left"><a accesskey="p" href="tactic-sys-admin_sys-admin_automate-database-backup.html">Prev</a>&nbsp;
                </td>
-               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_maintanence.html">Up</a></td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-sys-admin_maintenance.html">Up</a></td>
                <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-sys-admin_tsi.html">Next</a></td>
             </tr>
             <tr>

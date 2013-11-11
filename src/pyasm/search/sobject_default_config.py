@@ -93,74 +93,59 @@ class SObjectDefaultConfig(Base):
             columns = ["preview", "code"]
         elif "name" in db_columns:
             columns = ["preview", "name"]
-        elif "name" in db_columns:
+        elif "id" in db_columns:
             columns = ["preview", "id"]
 
 
         table = my.xml.create_element("table")
-        #root.appendChild(table)
         Xml.append_child(root, table)
         for column in ["preview", "code"]:
             element = my.xml.create_element("element")
             Xml.set_attribute(element, "name", column)
-            #table.appendChild(element)
             Xml.append_child(table, element)
 
         # create the edit
         edit = my.xml.create_element("edit")
-        #root.appendChild(edit)
         Xml.append_child(root, edit)
 
         for column in ["preview", "code"]:
             element = my.xml.create_element("element")
             Xml.set_attribute(element, "name", column)
-            #edit.appendChild(element)
             Xml.append_child(edit, element)
 
 
         # create the manual publish view
         publish = my.xml.create_element("publish")
-        #root.appendChild(publish)
         Xml.append_child(root, publish)
         element = my.xml.create_element("element")
         Xml.set_attribute(element, "name", "image")
-        #publish.appendChild(element)
         Xml.append_child(publish, element)
         dis_element = my.xml.create_element("display")
         Xml.set_attribute(dis_element, "class", "ThumbInputWdg")
         act_element = my.xml.create_element("action")
         Xml.set_attribute(act_element, "class", "NullAction")
-        #element.appendChild(dis_element)
         Xml.append_child(element, dis_element)
-        #element.appendChild(act_element)
         Xml.append_child(element, act_element)
 
         element = my.xml.create_element("element")
         Xml.set_attribute(element, "name", "publish_files")
-        #publish.appendChild(element)
         Xml.append_child(publish, element)
         dis_element = my.xml.create_element("display")
         Xml.set_attribute(dis_element, "class", "UploadWdg")
         # add options
         option = my.xml.create_text_element('names','publish_icon|publish_main')
-        #dis_element.appendChild(option)
         Xml.append_child(dis_element, option)
         option = my.xml.create_text_element('required','false|true')
-        #dis_element.appendChild(option)
         Xml.append_child(dis_element, option)
 
         act_element = my.xml.create_element("action")
         Xml.set_attribute(act_element, "class", "MultiUploadAction")
         # add options
         option = my.xml.create_text_element('names','publish_icon|publish_main')
-        #act_element.appendChild(option)
         Xml.append_child(act_element, option)
         option = my.xml.create_text_element('types','icon_main|main')
-        #act_element.appendChild(option)
         Xml.append_child(act_element, option)
-        #element.appendChild(dis_element)
         Xml.append_child(element, dis_element)
-        #element.appendChild(act_element)
         Xml.append_child(element, act_element)
 
         value = my.xml.to_string()
@@ -185,7 +170,7 @@ class SObjectDefaultConfig(Base):
             table = my.xml.create_element(my.view)
             my.xml.append_child(root, table)
             for column in columns:
-                if column in ["id", "oid", "s_status"]:
+                if column in ["_id", "id", "oid", "s_status"]:
                     continue
                 element = my.xml.create_element("element")
                 Xml.set_attribute(element, "name", column)
@@ -210,9 +195,7 @@ class SObjectDefaultConfig(Base):
                     op2 = my.xml.create_text_element("mode", column)
 
                     
-                    #display_element.appendChild(op1)
                     my.xml.append_child(display_element, op1)
-                    #display_element.appendChild(op2)
                     my.xml.append_child(display_element, op2)
 
                     my.xml.append_child(table, element)

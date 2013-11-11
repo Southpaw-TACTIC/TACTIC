@@ -891,14 +891,14 @@ class SnapshotIsLatestTrigger(Trigger):
 
         # if the current snapshot is already the latest, then don't bother
         # doing anything
-        update_data = input.get("update_data")
-        if update_data.get("is_latest") == True:
+        sobject = input.get("sobject")
+        #update_data = input.get("update_data")
+        if sobject.get("is_latest") == True:
             snapshot.set_latest(commit=True)
 
 
-        if update_data.get("is_current") == True:
+        if sobject.get("is_current") == True:
             snapshot.set_current(commit=True)
-
 
 
 

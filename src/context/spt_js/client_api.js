@@ -661,7 +661,7 @@ TacticServerStub = function() {
     }
 
 
-    // DEPRECATED
+    // DEPRECATED: use checkout_snapshot
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -759,7 +759,7 @@ TacticServerStub = function() {
             throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
         }
 
-        var file_types
+        var file_types;
         if (! kwargs.file_types ) {
             file_types = [];
         }
@@ -767,10 +767,17 @@ TacticServerStub = function() {
             file_types = kwargs.file_types;
         }
 
+        var expand_paths;
+        if (! kwargs.expand_paths ) {
+            expand_paths = true;
+        }
+        else {
+            expand_paths = kwargs.expand_paths;
+        }
 
         // get the server paths and the client paths to copy
-        var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types});
-        var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types});
+        var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types, expand_paths: expand_paths});
+        var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types, expand_paths: expand_paths});
 
         var dst_paths = [];
         var applet = spt.Applet.get();
@@ -802,6 +809,7 @@ TacticServerStub = function() {
              
             }
             else if (filename_mode == 'source') {
+                console.log(dst);
                 basename = spt.path.get_basename(dst);
             }
 
@@ -812,7 +820,7 @@ TacticServerStub = function() {
             if (sandbox_dir){
                 dst = sandbox_dir + "/" + basename;
             }
-          
+
             dst_paths.push(dst)
 
             if (kwargs.mode == 'client_repo'){
@@ -947,8 +955,8 @@ TacticServerStub = function() {
         return this._delegate("reactivate_sobject", arguments);
     }
 
-    this.delete_sobject = function(search_key) {
-        return this._delegate("delete_sobject", arguments);
+    this.delete_sobject = function(search_key, kwargs) {
+        return this._delegate("delete_sobject", arguments, kwargs);
     }
 
     this.clone_sobject = function(search_key, data) {

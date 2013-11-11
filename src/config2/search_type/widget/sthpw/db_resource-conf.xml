@@ -22,6 +22,28 @@
     <element name="vendor"/>
     <element name="login"/>
     <element name="password"/>
+    <element name="projects">
+        <display class="tactic.ui.table.HiddenRowElementWdg">
+            <class_name>tactic.ui.panel.TableLayoutWdg</class_name>
+            <search_type>sthpw/project</search_type>
+            <view>db_resource_list</view>
+            <show_shelf>false</show_shelf>
+            <width>800</width>
+        </display>
+    </element>
+    <element name="add_project">
+        <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>ADD</icon>
+            <cbjs_action>
+            var class_name = 'tactic.ui.panel.EditWdg';
+            var kwargs = {
+                search_type: 'sthpw/project',
+                view: 'db_resource'
+            }
+            spt.panel.load_popup("Add database to resource", class_name, kwargs);
+            </cbjs_action>
+        </display>
+    </element>
 </definition>
 
 
@@ -32,6 +54,8 @@
     <element name="vendor"/>
     <element name="login"/>
     <element name="password"/>
+    <element name="projects"/>
+    <element name="add_project"/>
 </table>
 
 <edit>
@@ -47,8 +71,8 @@
     <element name="port"/>
     <element name="vendor">
         <display class="SelectWdg">
-            <values>PostgreSQL|MySQL|Sqlite|SQLServer|Oracle</values>
-            <labels>PostgreSQL|MySQL|SQLite|SQLServer|Oracle</labels>
+            <values>PostgreSQL|MySQL|Sqlite|SQLServer|Oracle|MongoDb</values>
+            <labels>PostgreSQL|MySQL|SQLite|SQLServer|Oracle|MongoDb</labels>
         </display>
     </element>
     <element name="login">

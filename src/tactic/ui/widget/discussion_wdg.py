@@ -476,14 +476,12 @@ class DiscussionWdg(BaseRefreshWdg):
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
-                spt.panel.load(container, class_name, kwargs, {}, {fade: false});
+                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
+                spt.toggle_show_hide(add_note);
             }
 
-            //container.setStyle("overflow-y", "hidden")
-            //add_note.setStyle("margin-top", -200)
             //new Fx.Tween(add_note,{duration:"short"}).start('margin-top', 0);
-            spt.toggle_show_hide(add_note);
 
             // select the appropriate context or process
             var select = add_note.getElement(".spt_add_note_process");
@@ -1861,67 +1859,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         add_button.add_style("float: right")
         add_button.add_class("spt_discussion_submit")
 
-        # this has been moved handle_layout_behavior
-        """
-        add_button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-
-        var note_top = bvr.src_el.getParent(".spt_add_note_top");
-        var values = spt.api.get_input_values(note_top, null, false);
-        if (values.note == '') {
-            spt.alert("Please enter a note before saving");
-            return;
-        }
-
-        var top = bvr.src_el.getParent(".spt_discussion_add_note");
-        var attach_top = top.getElement(".spt_attachment_top");
-        var files = attach_top.files;
-        var server = TacticServerStub.get();
-        var ticket_key = server.start({title: 'New Note'})
-        if (typeof(files) != 'undefined') {
-            for (var i = 0; i < files.length; i++) {
-                spt.app_busy.show("Uploading ...", files[i]);
-                server.upload_file(files[i], ticket_key);
-            }
-
-            spt.app_busy.hide()
-
-            values['files'] = files;
-            values['ticket'] = ticket_key;
-        }
-        else {
-            values['files'] = [];
-        }
-
-        // rename add_process and add_context for the Cmd
-        var process = values.add_process;
-        values['process'] = process;
-        var context = values.add_context;
-        values['context'] = context;
-        delete values.add_process;
-        delete values.add_context;
-
-        var cmd = 'tactic.ui.widget.DiscussionAddNoteCmd';
-        
-        try{
-            server.execute_cmd(cmd, values);
-            server.finish();
-        }
-        catch (e) {
-            spt.alert(spt.exception.handler(e));
-            server.abort();
-        }
-
-
-    
-        spt.discussion.refresh(top);
-        '''
-        } )
-        """
-
-
-
 
         # attachments
         attachment_div = DivWdg()
@@ -1977,8 +1914,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         attachment_div.add(HtmlElement.br(2))
         attachment_div.add(attach_list)
         attach_list.add_class("spt_attachment_list")
-        # too verbose man
-        #attach_list.add("<i>-- no attachments --</i>")
 
 
         attachment_div.add(HtmlElement.br())
