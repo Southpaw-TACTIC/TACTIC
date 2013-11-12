@@ -762,8 +762,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
-
-        if temp != True: 
+        # refresh columns have init_load_num = -1 and temp = True
+        if init_load_num < 0 or temp != True: 
             my.add_table_bottom(table)
             my.postprocess_groups()
 
@@ -4175,7 +4175,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
              tgt_cell.destroy();
          }
     }
-
     // add bottom row
     if (bottom_row && data_bottom_row) {
         rows.push(bottom_row);
@@ -4208,6 +4207,9 @@ spt.table.modify_columns = function(element_names, mode, values) {
     }
 
     for ( var i = 0; i < group_rows.length; i++ ) {
+        var data_group_row = data_group_rows[i];
+        if (!data_group_row) continue;
+
         var cells = data_group_rows[i].getElements('.spt_group_cell');
         for (var j = 0; j < cells.length; j++) {
             if (mode=='refresh') {
