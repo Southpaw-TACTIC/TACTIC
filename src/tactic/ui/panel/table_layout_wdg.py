@@ -4104,7 +4104,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
     //if (group_elements)
     //    element_names.push(group_elements);
         
@@ -4117,7 +4117,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         show_shelf: false,
         element_names: element_names,
         do_search: 'false',
-        group_elements: group_elements
+        group_elements: group_elements,
+        init_load_num : -1
     }
 
     
@@ -4148,7 +4149,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
     spt.behavior.replace_inner_html(data, widget_html);
 
     // FIXME: might be just faster to refresh the whole page
-
     var data_rows = data.getElements(".spt_table_row");
     var data_header_row = data.getElement(".spt_table_header_row");
     var data_group_rows = data.getElements(".spt_group_row");
