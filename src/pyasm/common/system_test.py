@@ -14,6 +14,7 @@
 
 __all__ = ["SystemTest"]
 
+import tacticenv
 import unittest
 
 import os
