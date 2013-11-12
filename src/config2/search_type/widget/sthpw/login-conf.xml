@@ -24,8 +24,7 @@
     <element name="email"/>
     <element name="project_code"/>
     <element name="license_type"/>
-    <element name="password" type="password">
-    </element>
+    <element name="password" type="password"/>
 </definition>
 
 
@@ -39,7 +38,14 @@
     <element name="project_code"/>
     <element name="license_type"/>
     <element name="password" type="password">
+        <display class="PasswordWdg"/>
+        <action class="PasswordAction"/>
     </element>
+    <element name="password re-enter">
+        <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
 </edit_definition>
 
 
@@ -203,11 +209,11 @@
     </element>
 
 
-    <!--<element name="login_groups"/>-->
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="email"/>
 
+    <element name="department"/>
     <!--
     <element name="project_code"/>
     -->
@@ -255,6 +261,7 @@
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="email"/>
+    <element name="department"/>
 
 </edit_account>
 
@@ -279,13 +286,10 @@
         <action class="NullAction"/>
     </element>
 
-
-
-
-    <!--<element name="login_groups"/>-->
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="email"/>
+    <element name="department"/>
 
     <!--
     <element name="project_code"/>
