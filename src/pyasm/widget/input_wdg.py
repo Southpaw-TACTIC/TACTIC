@@ -1267,6 +1267,10 @@ class SelectWdg(BaseInputWdg):
         return my.labels, my.values
 
     def get_display(my):
+        class_name = my.kwargs.get('class')
+        if class_name:
+            my.add_class(class_name)
+
         if my.is_read_only():
             # don't disable it, just have to look disabled
             my.set_attr('disabled', 'disabled')
