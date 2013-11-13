@@ -1124,7 +1124,7 @@ class MethodMode(ExpressionParser):
         results = []
         method = method.upper()
 
-        if method == 'GET':
+        if method in ['GET', 'GETALL']:
             format = None
             if len(args) == 1:
                 parts = my._split_arg(args[0])
@@ -1144,7 +1144,8 @@ class MethodMode(ExpressionParser):
             if not search_types:
                 raise SyntaxError("Improper arguments in method [%s] definition in expression [%s]" % (method, my.expression))
 
-            sobjects = my.get_sobjects(search_types)
+            unique = method == 'GET'
+            sobjects = my.get_sobjects(search_types, unique=unique)
 
 
             return_mode = Container.get("Expression::return_mode")
@@ -1792,7 +1793,7 @@ class MethodMode(ExpressionParser):
 
         return reg_filters, context_filters
 
-    def get_sobjects(my, related_types, is_count=False, is_search=False):
+    def get_sobjects(my, related_types, is_count=False, is_search=False, unique=True):
         # FIXME: not sure why id() does not work. It seems to return the same
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
@@ -2062,7 +2063,7 @@ class MethodMode(ExpressionParser):
                     ids = set()
                     for sobject in tmp_list:
                         sobject_id = sobject.get_id()
-                        if sobject_id in ids:
+                        if unique and sobject_id in ids:
                             continue
                         list.append(sobject)
                         ids.add(sobject_id)
