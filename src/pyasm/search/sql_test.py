@@ -451,10 +451,9 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         database_type = Project.get_by_code("unittest").get_database_type()
         db_resource = DbResource.get_default('unittest')
         table_info = cache_dict.get("%s:%s" % (db_resource, "country"))
-        #table_info = cache_dict.get('DbResource:PostgreSQL:localhost:5432:unittest:country')
-        my.assertEquals(table_info != None, True)
+        my.assertEquals(table_info == None, True)
 
-        #key = "%s:%s" % ('DbResource:PostgreSQL:localhost:5432:unittest', 'country')
+
         key = "%s:%s" % (db_resource, "country")
         cache_dict[key] = None
         exists = SearchType.column_exists(search_type, 'special_place')

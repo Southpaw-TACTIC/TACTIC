@@ -5139,7 +5139,9 @@ class SearchType(SObject):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             key2 = "%s:%s" % (db_resource, table)
-            cache_dict[key2] = None
+            #cache_dict[key2] = None
+            del(cache_dict[key2])
+
 
     clear_column_cache = classmethod(clear_column_cache)
 

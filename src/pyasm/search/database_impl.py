@@ -1758,7 +1758,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if cache_dict == None:
             cache_dict = {}
             Container.put(key, cache_dict)
-        
+       
         if use_cache:    
             cache = cache_dict.get(key2)
             if cache != None:
@@ -1766,6 +1766,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
         cache = {}
         cache_dict[key2] = cache
+
 
 
         # get directly from the database
@@ -1808,7 +1809,6 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
                 cache[name] = info_dict
 
-      
 
         return cache
 
