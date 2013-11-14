@@ -2008,7 +2008,18 @@ class ExpressionTest(unittest.TestCase):
             pass
         else:
             my.fail("Expression [%s] did not produce a syntax error" % expression)
+        
+        # test @GETALL vs @GET
+        expression = "@GET(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        my.assertEquals(['USA'], result)
 
+        expression = "@GETALL(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        # there should be 3 tasks pointing to 3 USA
+        my.assertEquals(['USA','USA','USA'], result)
 
         # test comparisons
         expression = "@GET(.age) * 2.0 > 0.0"

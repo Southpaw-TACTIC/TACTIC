@@ -762,8 +762,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
-
-        if temp != True: 
+        # refresh columns have init_load_num = -1 and temp = True
+        if init_load_num < 0 or temp != True: 
             my.add_table_bottom(table)
             my.postprocess_groups()
 
@@ -4104,7 +4104,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
     //if (group_elements)
     //    element_names.push(group_elements);
         
@@ -4117,7 +4117,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         show_shelf: false,
         element_names: element_names,
         do_search: 'false',
-        group_elements: group_elements
+        group_elements: group_elements,
+        init_load_num : -1
     }
 
     
@@ -4148,7 +4149,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
     spt.behavior.replace_inner_html(data, widget_html);
 
     // FIXME: might be just faster to refresh the whole page
-
     var data_rows = data.getElements(".spt_table_row");
     var data_header_row = data.getElement(".spt_table_header_row");
     var data_group_rows = data.getElements(".spt_group_row");
@@ -4175,7 +4175,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
              tgt_cell.destroy();
          }
     }
-
     // add bottom row
     if (bottom_row && data_bottom_row) {
         rows.push(bottom_row);
@@ -4208,6 +4207,9 @@ spt.table.modify_columns = function(element_names, mode, values) {
     }
 
     for ( var i = 0; i < group_rows.length; i++ ) {
+        var data_group_row = data_group_rows[i];
+        if (!data_group_row) continue;
+
         var cells = data_group_rows[i].getElements('.spt_group_cell');
         for (var j = 0; j < cells.length; j++) {
             if (mode=='refresh') {

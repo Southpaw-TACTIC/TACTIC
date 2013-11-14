@@ -2176,15 +2176,27 @@ class SecurityBuilder(object):
 
 
     def add_process(my, process, access="allow", project_code=None, pipeline_code=None):
-        rule = my.xml.create_element("rule")
-        my.xml.set_attribute(rule, "group", "process")
-        my.xml.set_attribute(rule, "process", process)
-        if project_code:
-            my.xml.set_attribute(rule, "project", project_code)
+        '''check before adding a new node since the user can uncheck and check again'''
+
+        pipeline_code_expr = ''
         if pipeline_code:
-            my.xml.set_attribute(rule, "pipeline", pipeline_code)
-        my.xml.set_attribute(rule, "access", access)
-        my.xml.append_child(my.root, rule)
+            pipeline_code_expr = "and @pipeline='%s'"%pipeline_code
+
+        project_code_expr = ''
+        if project_code:
+            project_code_expr = "and @project='%s'"%project_code
+
+        check_node = my.xml.get_node("rules/rule[@group='process' and @process='%s' %s %s]" % (process, pipeline_code_expr, project_code_expr))
+        if check_node is None:
+            rule = my.xml.create_element("rule")
+            my.xml.set_attribute(rule, "group", "process")
+            my.xml.set_attribute(rule, "process", process)
+            if project_code:
+                my.xml.set_attribute(rule, "project", project_code)
+            if pipeline_code:
+                my.xml.set_attribute(rule, "pipeline", pipeline_code)
+            my.xml.set_attribute(rule, "access", access)
+            my.xml.append_child(my.root, rule)
 
 
     def remove_process(my, process, project_code=None, pipeline_code=None):
@@ -2195,8 +2207,8 @@ class SecurityBuilder(object):
         if project_code:
             nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
         else:
-            # for backward comaptibilty, || 
-            check_node = my.xml.get_nodes("rules/rule[@pipeline]")
+            # for backward comaptibilty when the concept of @pipeline doesn't exist at all 
+            check_node = my.xml.get_node("rules/rule[@pipeline]")
             if check_node is not None:
                 nodes = my.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
             else:
