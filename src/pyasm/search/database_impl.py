@@ -530,8 +530,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     def __init__(my):
 
-        # FIXME: this will not work in mixed db cases because it assumes a global
-        # single database
+        # NOTE: This will not work in mixed db cases because it assumes a
+        # global single database
         my.server   = Config.get_value("database", "server")
         my.port     = Config.get_value("database", "port")
         my.user     = Config.get_value("database", "user")
