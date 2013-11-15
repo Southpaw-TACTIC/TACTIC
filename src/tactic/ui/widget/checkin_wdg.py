@@ -677,7 +677,6 @@ spt.checkin.switch_sandbox = function(dirname) {
 // if is_sandbox is false, it does direct browse for files or dir for check-in
 spt.checkin.browse_folder = function(current_dir, is_sandbox, refresh, select_dir) {
     var applet = spt.Applet.get();
-    var select_dir = true;
     var file_paths = applet.open_file_browser(current_dir, select_dir);
 
     if (file_paths.length == 0) {
@@ -3209,29 +3208,64 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         web = WebContainer.get_web() 
         client_os = web.get_client_os()
-
+        browser = web.get_browser()
+        
         menu = Menu(width=220)
         menu_item = MenuItem(type='title', label='Navigate to ...')
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Browse ...')
-        menu.add(menu_item)
-        behavior = {
-        'type': 'click_up',
-        'base_dir': my.base_dir,
-        'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_checkin_top");
-            spt.checkin.set_top(top);
-            var current_dir = bvr.base_dir;
-            var is_sandbox = true;
-            var select_dir = true;
-            spt.checkin.browse_folder(current_dir, is_sandbox, true, select_dir);
-        '''
-        }
-        menu_item.add_behavior( behavior )
+        if browser == 'Qt':
+            menu_item = MenuItem(type='action', label='Quick Select File')
+            menu.add(menu_item)
+            behavior = {
+            'type': 'click_up',
+            'base_dir': my.base_dir,
+            'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_checkin_top");
+                spt.checkin.set_top(top);
+                var current_dir = bvr.base_dir;
+                var is_sandbox = false;
+                var select_dir = false;
+                spt.checkin.browse_folder(current_dir, is_sandbox, true, select_dir);
+            '''
+            }
+            menu_item.add_behavior( behavior )
 
+            menu_item = MenuItem(type='action', label='Quick Select Directory')
+            menu.add(menu_item)
+            behavior = {
+            'type': 'click_up',
+            'base_dir': my.base_dir,
+            'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_checkin_top");
+                spt.checkin.set_top(top);
+                var current_dir = bvr.base_dir;
+                var is_sandbox = true;
+                var select_dir = true;
+                spt.checkin.browse_folder(current_dir, is_sandbox, true, select_dir);
+            '''
+            }
+            menu_item.add_behavior( behavior )
 
+        else:
+            menu_item = MenuItem(type='action', label='Quick Select')
+            menu.add(menu_item)
+            behavior = {
+            'type': 'click_up',
+            'base_dir': my.base_dir,
+            'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_checkin_top");
+                spt.checkin.set_top(top);
+                var current_dir = bvr.base_dir;
+                var is_sandbox = false;
+                var select_dir = false;
+                spt.checkin.browse_folder(current_dir, is_sandbox, true, select_dir);
+            '''
+            }
+            menu_item.add_behavior( behavior )
 
         menu_item = MenuItem(type='action', label='My Documents')
         menu.add(menu_item)
