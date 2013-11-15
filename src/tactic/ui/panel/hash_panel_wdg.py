@@ -301,7 +301,6 @@ class HashPanelWdg(BaseRefreshWdg):
             xml.read_string(config)
             node = xml.get_node("element/display")
 
-            options = {}
             options.update(xml.get_node_values_of_children(node))
 
             class_name = xml.get_value("element/display/@class")
@@ -342,7 +341,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
-
+    """
     def get_widget_from_hashXX(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
         from pyasm.web import DivWdg
@@ -584,6 +583,7 @@ class HashPanelWdg(BaseRefreshWdg):
             widget.set_name(name)
 
             return widget
+    """
 
 
 

@@ -3753,7 +3753,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                 var top = activator.getParent(".spt_checkin_top");
                 spt.checkin.set_top(top);
                 var current_dir = bvr.base_dir;
-                var is_sandbox = true;
+                var is_sandbox = false;
                 var select_dir = true;
                 spt.checkin.browse_folder(current_dir, is_sandbox, true, select_dir);
             '''
