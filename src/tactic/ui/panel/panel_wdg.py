@@ -2738,7 +2738,7 @@ class ViewPanelWdg(BaseRefreshWdg):
     }
 
     def get_display(my):
-
+        print "KWARGS ", my.kwargs
         target_id = my.kwargs.get("target_id")
         if not target_id:
             target_id = 'main_body'
@@ -2784,8 +2784,10 @@ class ViewPanelWdg(BaseRefreshWdg):
                 except Exception:
                     filter = None
 
+        has_view = True
         if not view:
             view = "table"
+            has_view = False
 
 
 
@@ -2793,7 +2795,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         my.element_names = my.kwargs.get('element_names')
         if not my.element_names:
             if not search_type:
-                raise SetupException('Empty search_type is passed in')
+                # this could be the old default layout, just return
+                if not search_view and not has_view:
+                    return
+                else:
+                    raise SetupException('Empty search_type is passed in')
             try:
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
