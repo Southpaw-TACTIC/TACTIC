@@ -1459,6 +1459,14 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                 value = "now()"
                 return {"value": value, "quoted": quoted}
 
+        elif column_type == 'boolean':
+            quoted = False
+            if value in ['true', 'True', 1 ,'1', True]:
+                value = True
+            else:
+                value = False
+            return {"value": value, "quoted": quoted}
+
         elif column_type in ['decimal', 'numeric']:
             quoted = False
             if isinstance(value, basestring):
