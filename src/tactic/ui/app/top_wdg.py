@@ -236,6 +236,7 @@ class TopWdg(Widget):
         #content_div.add(button)
 
 
+
         if my.widgets:
             content_wdg = my.get_widget('content')
         else:
@@ -805,11 +806,17 @@ class SitePage(AppServer):
 
         # if there is a custom url, then handle it separately
         if my.custom_url:
-            web = WebContainer.get_web()
-            hash = "/".join(my.hash)
-            hash = "/%s" % hash
-            my.top = CustomTopWdg(url=my.custom_url, hash=hash)
-            return my.top
+            xml = my.custom_url.get_xml_value("widget")
+            index = xml.get_value("element/@index")
+            admin = xml.get_value("element/@admin")
+            if index == 'true' or admin == 'true':
+                pass
+            else:
+                web = WebContainer.get_web()
+                hash = "/".join(my.hash)
+                hash = "/%s" % hash
+                my.top = CustomTopWdg(url=my.custom_url, hash=hash)
+                return my.top
 
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
@@ -823,7 +830,6 @@ class CustomTopWdg(BaseRefreshWdg):
 
         # Custom URLs have the ability to send out different content types
         url = my.kwargs.get("url")
-
 
         web = WebContainer.get_web()
 

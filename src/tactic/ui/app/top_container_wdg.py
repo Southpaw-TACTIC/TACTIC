@@ -33,6 +33,7 @@ class TopContainerWdg(BaseRefreshWdg):
         hash = my.kwargs.get("hash")
         Container.put("url_hash", hash)
 
+
         if not hash:
             # NOTE: this really doesn't get call anymore because an empty
             # hash gets remapped to "/index"
