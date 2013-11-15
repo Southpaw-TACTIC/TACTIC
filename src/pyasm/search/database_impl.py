@@ -530,8 +530,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     def __init__(my):
 
-        # FIXME: this will not work in mixed db cases because it assumes a global
-        # single database
+        # NOTE: This will not work in mixed db cases because it assumes a
+        # global single database
         my.server   = Config.get_value("database", "server")
         my.port     = Config.get_value("database", "port")
         my.user     = Config.get_value("database", "user")
@@ -1459,6 +1459,14 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                 value = "now()"
                 return {"value": value, "quoted": quoted}
 
+        elif column_type == 'boolean':
+            quoted = False
+            if value in ['true', 'True', 1 ,'1', True]:
+                value = True
+            else:
+                value = False
+            return {"value": value, "quoted": quoted}
+
         elif column_type in ['decimal', 'numeric']:
             quoted = False
             if isinstance(value, basestring):
@@ -1758,7 +1766,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if cache_dict == None:
             cache_dict = {}
             Container.put(key, cache_dict)
-        
+       
         if use_cache:    
             cache = cache_dict.get(key2)
             if cache != None:
@@ -1766,6 +1774,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
         cache = {}
         cache_dict[key2] = cache
+
 
 
         # get directly from the database
@@ -1808,7 +1817,6 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
                 cache[name] = info_dict
 
-      
 
         return cache
 

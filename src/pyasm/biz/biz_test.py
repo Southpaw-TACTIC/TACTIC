@@ -57,6 +57,7 @@ class BizTest(unittest.TestCase):
                     "ComputerWorld", "Fake Unittest Person")
             my.search_type = my.person.get_search_type()
             my.search_id = my.person.get_id()
+            my.search_code = my.person.get_value("code")
             my.context = "test"
             my.full_context = "test/subtest"
 
@@ -162,7 +163,13 @@ class BizTest(unittest.TestCase):
             checkin = FileCheckin(my.person, my.file_path, "main", context=my.context)
             checkin.execute()
 
-            snapshot = checkin.get_snapshot()
+            # get snapshot from database
+            #snapshot = checkin.get_snapshot()
+            code = snapshot.get_value("code")
+            s = Search("sthpw/snapshot")
+            s.add_filter("code", code)
+            snapshot = s.get_sobject()
+
 
         # get version -1
         snapshot = Snapshot.get_by_version(my.search_type, my.search_id, context=my.context, version=-1, use_cache=False)
@@ -188,8 +195,16 @@ class BizTest(unittest.TestCase):
             checkin.execute()
             snapshot = checkin.get_snapshot()
 
+            # get snapshot from database
+            #snapshot = checkin.get_snapshot()
+            code = snapshot.get_value("code")
+            s = Search("sthpw/snapshot")
+            s.add_filter("code", code)
+            snapshot = s.get_sobject()
+
+
         # get current version and revision latest
-        snapshot = Snapshot.get_by_version(my.search_type, my.search_id, context=my.context, version=0, revision=-1, use_cache=False)
+        snapshot = Snapshot.get_by_version(my.search_type, my.search_code, context=my.context, version=0, revision=-1, use_cache=False)
         version = snapshot.get_version()
         my.assertEquals(4, version)
         revision = snapshot.get_value('revision')

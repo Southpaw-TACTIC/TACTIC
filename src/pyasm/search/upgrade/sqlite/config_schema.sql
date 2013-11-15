@@ -148,5 +148,21 @@ CREATE TABLE spt_plugin (
     rel_dir text,
     s_status varchar(256),
     CONSTRAINT "spt_plugin_code_idx" UNIQUE (code)
-)
+);
+
+
+
+CREATE TABLE spt_pipeline (
+    id integer PRIMARY KEY AUTOINCREMENT,
+    code varchar(256),
+    pipeline text,
+    timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+    search_type varchar(256),
+    description text,
+    s_status varchar(32),
+    color character varying(256),
+    autocreate_tasks boolean,
+    CONSTRAINT "spt_pipeline_code_idx" UNIQUE (code)
+);
+
 

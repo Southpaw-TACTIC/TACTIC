@@ -10,6 +10,8 @@
 #
 #
 
+__all__ = ['UnittestEnvironment', 'Sample3dEnvironment']
+
 import tacticenv
 
 from pyasm.common import TacticException
@@ -52,7 +54,17 @@ class UnittestEnvironment(object):
         delete_cmd = DeleteProjectCmd(project_code=my.project_code, related_types=related_types)
         delete_cmd.execute()
 
+
+
+
+
 class Sample3dEnvironment(UnittestEnvironment):
+
+    def __init__(my, **kwargs):
+        my.project_code = kwargs.get('project_code')
+        if not my.project_code:
+            my.project_code = 'sample3d'
+
 
     def create(my):
 

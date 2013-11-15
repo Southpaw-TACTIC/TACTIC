@@ -211,7 +211,7 @@ class ShelfEditWdg(BaseRefreshWdg):
 
 
         if not Container.get_dict("JSLibraries", "spt_script_editor"):
-            top.add_behavior( {
+            div.add_behavior( {
                 'type': 'load',
                 'cbjs_action': my.get_onload_js()
             } )
@@ -595,11 +595,9 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     {
         spt.ace_editor.set_editor(editor_id);
     }
-    var editor = spt.ace_editor.editor;
-    var document = editor.getSession().getDocument()
 
     if (script_text) {
-        document.setValue(script_text);
+        spt.ace_editor.set_value(script_text);
     }
 
     //editAreaLoader.setValue("shelf_script", script_text);
@@ -660,12 +658,12 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
     
     // refresh
     var panel = bvr.src_el.getParent(".spt_panel");
-    spt.panel.refresh(panel);
-
-    bvr.script = script_sobj;
-    var bvr2 = {script: script_sobj};
-    bvr2.top = top;
-    spt.script_editor.display_script_cbk({}, bvr2);
+    spt.panel.refresh(panel, null, { callback: function() {
+        bvr.script = script_sobj;
+        var bvr2 = {script: script_sobj};
+        bvr2.top = top;
+        spt.script_editor.display_script_cbk({}, bvr2);
+    } } );
 }
 
 
@@ -807,7 +805,9 @@ class AceEditorWdg(BaseRefreshWdg):
                 var func = function() {
                     var editor = spt.ace_editor.editor;
                     var document = editor.getSession().getDocument();
-                    document.setValue(bvr.code);
+                    if (bvr.code) {
+                        spt.ace_editor.set_value(bvr.code);
+                    }
                     spt.ace_editor.set_language(bvr.language);
                     editor.setReadOnly(bvr.readonly);
 
@@ -990,6 +990,19 @@ spt.ace_editor.set_value = function(value) {
     var editor = spt.ace_editor.editor;
     var document = editor.getSession().getDocument()
     document.setValue(value);
+    editor.gotoLine(2);
+    editor.resize();
+    editor.focus();
+}
+
+spt.ace_editor.goto_line = function(number) {
+    var editor = spt.ace_editor.editor;
+    var document = editor.getSession().getDocument()
+    editor.gotoLine(2);
+    editor.resize();
+    editor.focus();
+ 
+
 }
 
 
