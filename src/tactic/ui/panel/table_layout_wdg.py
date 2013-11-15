@@ -992,7 +992,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         reverse=False
         if my.group_by_time:
             reverse = True
-        elif my.order_element.endswith(' desc'):
+        elif my.order_element and my.order_element.endswith(' desc'):
             reverse = True
        
         sobjects = Common.sort_dict(my.group_dict, reverse=reverse)
