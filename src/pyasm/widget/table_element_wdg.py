@@ -279,7 +279,7 @@ class BaseTableElementWdg(HtmlElement):
         my.value = value
 
 
-    def get_value(my):
+    def get_value(my, name=None):
         '''convenience function for getting the value of the current sobject'''
 
         if my.value:
@@ -288,8 +288,10 @@ class BaseTableElementWdg(HtmlElement):
         sobject = my.get_current_sobject()
         if not sobject:
             return ''
-
-        value = sobject.get_value(my.name, no_exception=True)
+        
+        if not name:
+            name = my.name
+        value = sobject.get_value(name, no_exception=True)
         return value
     
         '''

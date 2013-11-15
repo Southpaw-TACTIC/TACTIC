@@ -14,7 +14,7 @@
 __all__ = ['SearchTypeInputWdg']
 
 from pyasm.search import Search, SearchType
-from pyasm.biz import Project
+from pyasm.biz import Project, Schema
 from pyasm.web import WebContainer, Widget, DivWdg
 from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWdg
 
@@ -24,8 +24,13 @@ class SearchTypeInputWdg(SelectWdg):
 
     def get_display(my):
 
-        project = Project.get()
-        search_types = project.get_search_types()
+        #project = Project.get()
+        schema = Schema.get()
+        # no hierarchy to prevent all sthpw and parent sTypes 
+        search_type_names = schema.get_search_types(hierarchy=False)
+        search = Search('sthpw/search_object')
+        search.add_filters('search_type', search_type_names)
+        search_types = search.get_sobjects()
 
         task_search_type = SearchType.get("sthpw/task")
         search_types.append(task_search_type)
