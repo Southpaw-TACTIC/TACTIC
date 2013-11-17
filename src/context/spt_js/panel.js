@@ -368,7 +368,9 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
         wdg_kwargs.cbjs_action = function(widget_html) {
             spt.behavior.replace_inner_html(element, widget_html);
-            callback();
+            if (callback) {
+                callback();
+            }
             if (fade) {
                 element.fade('in');
             }
