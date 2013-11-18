@@ -104,6 +104,21 @@ class ExpressionParser(object):
         project = Project.get_project_code()
         my.vars['PROJECT'] = project
 
+
+        try:
+            from pyasm.web import WebContainer
+            web = WebContainer.get_web()
+        except Exception, e:
+            web = None
+        if web:
+            url = web.get_base_url()
+            my.vars['BASE_URL'] = url.to_string()
+
+            url.append_to_base(project)
+            my.vars['PROJECT_URL'] = url.to_string()
+
+
+
         if vars:
             my.vars.update(vars)
  
