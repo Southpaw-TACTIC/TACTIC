@@ -393,6 +393,8 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 }
 
 
+
+
 spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {
 
     alert("spt.panel.set_hash is DEPRECATED");

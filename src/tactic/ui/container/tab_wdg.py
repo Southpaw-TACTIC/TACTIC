@@ -193,7 +193,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
     var top = spt.tab.top;
 
-    if (kwargs.hash) {
+    if (!hash && kwargs.hash) {
         hash = kwargs.hash;
     }
     if (hash == "__link__") {
