@@ -652,7 +652,12 @@ class TitleTopWdg(TopWdg):
         head.add(my.get_css_wdg())
 
         # add the title in the header
-        project = Project.get()
+        try:
+            project = Project.get()
+        except Exception, e:
+            print "ERROR: ", e
+            # if the project doesn't exist, then use the admin project
+            project = Project.get_by_code("admin")
         project_code = project.get_code()
         project_title = project.get_value("title")
 

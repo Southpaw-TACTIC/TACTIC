@@ -2829,6 +2829,71 @@ class ExceptionWdg(Widget):
 
 
 
+__all__.append("ExceptionMinimalWdg")
+class ExceptionMinimalWdg(Widget):
+
+    def __init__(my, e):
+        my.exception = e
+        super(ExceptionMinimalWdg, my).__init__(my)
+
+    def add_style(my, name, value=None):
+        my.top.add_style(name, value)
+        
+
+    def init(my):
+        widget = DivWdg()
+        my.top = widget
+
+        my.add(widget)
+
+        message = str(my.exception)
+
+        widget.add_style("text-align: center")
+
+        widget.add_attr("spt_error", "true")
+        widget.set_round_corners()
+        widget.set_box_shadow()
+        widget.add_border()
+        widget.add_color("background", "background3")
+        widget.add_color("color", "color3")
+        widget.add_style("margin: 10px")
+        widget.add_style("padding: 10px 20px 30px 20px")
+        widget.add_style("max-width: 400px")
+ 
+        pat1 = re.compile('Errno 1|Errno 3|Errno 4')
+        pat2 = re.compile('Errno 2')
+        pat3 = re.compile('SELECT')
+        from icon_wdg import IconWdg
+        h3 = DivWdg()
+        h3.add(IconWdg("Error: %s" % message, IconWdg.WARNING, False))
+        h3.add("TACTIC has encountered an error.<br/><br/>")
+        h3.add("Reported Error: \"%s\"" % message)
+        h3.add_style("font-style: bold")
+        h3.add_style("font-size: 12px")
+        widget.add(HtmlElement.br())
+        widget.add(h3)
+        # url 
+
+
+        web = WebContainer.get_web()
+        url = '/admin'
+
+        h3.add('<br/><br/>')
+
+
+        # show stack trace
+        from tactic.ui.widget import ActionButtonWdg
+
+
+        # ignore
+        button = ActionButtonWdg(title="Go to Admin")
+        widget.add(button)
+        button.add_style("margin: 0 auto")
+
+        # click the top layout and jump to default page
+        button.add_event('onclick', '''window.location='%s' '''%url )
+
+
 
 
 

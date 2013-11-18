@@ -2877,7 +2877,8 @@ spt.table.set_data = function(row, data) {
     if (changed) 
         spt.add_class(row, "spt_row_changed");
 }
-    
+
+
 
 // Extra data functions
 
