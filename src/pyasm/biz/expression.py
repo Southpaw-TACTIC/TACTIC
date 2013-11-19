@@ -14,7 +14,7 @@ __all__ = ['ExpressionParser']
 
 
 import os, re, types, math
-import dateutil, datetime
+import dateutil
 from dateutil import parser
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
