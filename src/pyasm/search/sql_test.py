@@ -46,11 +46,14 @@ class SqlTest(unittest.TestCase):
             impl = sql.get_database_impl()
             db_type = impl.get_database_type()
             if db_type == "PostgreSQL":
-                my.prefix = '''"unittest"."public"'''
-                my.sthpw_prefix = '''"sthpw"."public"'''
+                my.prefix = '''"unittest"."public".'''
+                my.sthpw_prefix = '''"sthpw"."public".'''
+            elif db_type == "Sqlite":
+                my.prefix = ""
+                my.sthpw_prefix = ""
             else:
-                my.prefix = '''"unittest"'''
-                my.sthpw_prefix = '''"sthpw"'''
+                my.prefix = '''"unittest".'''
+                my.sthpw_prefix = '''"sthpw".'''
 
 
             my._test_get_connect()
@@ -95,7 +98,7 @@ class SqlTest(unittest.TestCase):
         impl = sql.get_database_impl()
         db_type = impl.get_database_type()
 
-        expected = '''SELECT %s."person".* FROM %s."person" WHERE "name_first" = 'megumi' ORDER BY "person"."name_last"''' % (my.prefix, my.prefix)
+        expected = '''SELECT %s"person".* FROM %s"person" WHERE "name_first" = 'megumi' ORDER BY "person"."name_last"''' % (my.prefix, my.prefix)
 
         my.assertEquals( expected, statement )
 
@@ -106,7 +109,7 @@ class SqlTest(unittest.TestCase):
         select.add_filter('name_last', "john's", op='!=')
         statement = select.get_statement()
 
-        expected = """SELECT %s."person".* FROM %s."person" WHERE "person"."name_last" != 'john''s'""" % (my.prefix, my.prefix)
+        expected = """SELECT %s"person".* FROM %s"person" WHERE "person"."name_last" != 'john''s'""" % (my.prefix, my.prefix)
         my.assertEquals( expected, statement )
 
 
@@ -181,7 +184,7 @@ class SqlTest(unittest.TestCase):
         insert.set_value("name_first", "Bugs")
         insert.set_value("name_last", "Bunny")
         statement = insert.get_statement()
-        expected = '''INSERT INTO %s."person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')''' % my.prefix
+        expected = '''INSERT INTO %s"person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')''' % my.prefix
         my.assertEquals(expected, statement)
 
 
@@ -299,7 +302,7 @@ class SqlTest(unittest.TestCase):
         select.add_table("asset")
         select.add_enum_order_by("code", ['cow', 'dog', 'horse'])
 
-        expected = '''SELECT %s."asset".* FROM %s."asset" ORDER BY ( CASE "code"
+        expected = '''SELECT %s"asset".* FROM %s"asset" ORDER BY ( CASE "code"
 WHEN 'cow' THEN 1 
 WHEN 'dog' THEN 2 
 WHEN 'horse' THEN 3 
@@ -326,7 +329,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_where("and")
         statement = select.get_statement()
 
-        expected = """SELECT %s."asset".* FROM %s."asset" WHERE ( "code" = 'chr001' OR "code" = 'chr002' OR "code" = 'chr003' ) AND "status" = 'complete'""" % (my.prefix, my.prefix)
+        expected = """SELECT %s"asset".* FROM %s"asset" WHERE ( "code" = 'chr001' OR "code" = 'chr002' OR "code" = 'chr003' ) AND "status" = 'complete'""" % (my.prefix, my.prefix)
         my.assertEquals(expected, statement)
 
 
@@ -392,7 +395,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
             search.add_startswith_keyword_filter(column, values) 
 
         statement = search.get_statement()
-        expected = '''SELECT %s."sobject_list".* FROM %s."sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (my.sthpw_prefix, my.sthpw_prefix)
+        expected = '''SELECT %s"sobject_list".* FROM %s"sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (my.sthpw_prefix, my.sthpw_prefix)
         my.assertEquals(expected, statement)
 
     def _test_search_filter(my):
@@ -410,7 +413,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select2.add_table("request")
         select2.add_select_filter("id", select)
         statement = select2.get_statement()
-        expected = '''SELECT %s."request".* FROM %s."request" WHERE "request"."id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
+        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
         my.assertEquals(expected, statement)
 
         select3 = Select()
@@ -420,7 +423,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select3.add_select_filter("id", select)
 
         statement = select3.get_statement()
-        expected = '''SELECT %s."request".* FROM %s."request" WHERE "request"."id" in ( SELECT %s."job"."request_id" FROM %s."job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
+        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
         my.assertEquals(expected, statement)
  
     def _test_add_drop_column(my):
@@ -471,22 +474,22 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_order_by("name_last")
 
         statement = select.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s."country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
 
 
         search = Search('unittest/person')
         search.add_join('unittest/city', 'unittest/person')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code"''' % (my.prefix,my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (my.prefix,my.prefix, my.prefix))
 
         statement = search.get_statement()
         # this one has no schema connection, so will be ignored
         search.add_join('sthpw/login', 'unittest/person')
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code"''' % (my.prefix, my.prefix, my.prefix))
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (my.prefix, my.prefix, my.prefix))
 
         search.add_join('unittest/country', 'unittest/city')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s."person".* FROM %s."person" LEFT OUTER JOIN %s."city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s."country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
+        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
 
 
 

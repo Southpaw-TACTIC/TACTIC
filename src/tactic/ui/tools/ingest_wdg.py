@@ -90,6 +90,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         # create the help button
         help_button_wdg = DivWdg()
         div.add(help_button_wdg)
+        help_button_wdg.add_style("margin-top: -3px")
         help_button_wdg.add_style("float: right")
         help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
         help_button_wdg.add(help_button)
