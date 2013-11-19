@@ -4893,9 +4893,6 @@ class CellEditWdg(BaseRefreshWdg):
         if not element_name:
             return widget
 
-        # TODO: comment out for non debug
-        #div.add(my.element_type)
-        #print "element_name: ", element_name
         try:
             element_attrs = my.config.get_element_attributes(element_name)
             edit_script = element_attrs.get("edit_script")
