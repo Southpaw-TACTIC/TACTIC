@@ -2361,9 +2361,11 @@ class SqliteImpl(PostgresImpl):
             else:
                 value = 0
         elif column_type == 'timestamp':
-            if value == "NOW":
+            if value  == "NOW":
                 quoted = False
                 value = my.get_timestamp_now()
+            elif value.startswith(("CURRENT_TIMESTAMP","DATETIME(")):
+                quoted = False
 
         return {"value": value, "quoted": quoted}
 
@@ -2475,7 +2477,9 @@ class SqliteImpl(PostgresImpl):
         for result in results:
             name = result[1]
             data_type = result[2]
-            nullable = True
+            # notnull could be 1 or 99 which equals True
+            nullable = result[3] not in [1, 99]
+            #nullable = True
 
             if data_type.startswith("character varying"):
                 size = data_type.replace("character varying", "")
