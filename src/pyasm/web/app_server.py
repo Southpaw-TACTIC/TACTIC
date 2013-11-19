@@ -243,7 +243,14 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
-                        web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
+                        try:
+                            web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
+                        except Exception, e:
+                            from pyasm.widget import ExceptionMinimalWdg
+                            web_wdg = ExceptionMinimalWdg(e)
+                            web_wdg.add_style("margin: 50px auto")
+
+
                         if web_wdg:
                             web_wdg = web_wdg.get_buffer_display()
                             top.add(web_wdg)
@@ -253,6 +260,7 @@ class BaseAppServer(Base):
                 # display default web login
                 if not web_wdg:
                     top.add(WebLoginWdg(allow_change_admin=allow_change_admin) )
+
             finally:
                 # sudo out of scope here
                 sudo.exit()

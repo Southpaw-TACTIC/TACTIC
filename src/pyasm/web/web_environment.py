@@ -156,6 +156,7 @@ class WebEnvironment(Environment):
         host = my.get_env("HTTP_HOST")
         return host
 
+
     def get_base_url(my):
         host = my.get_http_host()
 
@@ -171,6 +172,7 @@ class WebEnvironment(Environment):
             base_url = "%s://%s" % (protocol, host)
 
         return Url(base_url)
+
 
     
     def get_context_url(my):

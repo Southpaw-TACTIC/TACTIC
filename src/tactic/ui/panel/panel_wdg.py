@@ -2840,6 +2840,13 @@ class ViewPanelWdg(BaseRefreshWdg):
         top.add_class("spt_view_panel_top");
 
 
+        if not Container.get_dict("JSLibraries", "spt_view_panel"):
+            inner.add_behavior({
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            });
+
+
         # add refresh information
         top.set_attr("spt_node", "true")
         my.set_as_panel(top, class_name='spt_view_panel')
@@ -3207,6 +3214,47 @@ class ViewPanelWdg(BaseRefreshWdg):
             title_box_wdg.add("<br/>"*2)
 
         return title_box_wdg
+
+
+
+    def get_onload_js(my):
+
+        return r'''
+
+spt.Environment.get().add_library("spt_view_panel");
+
+spt.view_panel = {}
+
+spt.view_panel.switch_layout = function() {
+          
+    var table_top = top.getElement(".spt_table_top");
+    var table = table_top.getElement(".spt_table_table");
+
+    var layout = top.getAttribute("spt_layout");
+    var layout_el = top.getElement(".spt_layout");
+
+    var version = layout_el.getAttribute("spt_version");
+    if (version =='2') {
+        var table = table_top.getElement(".spt_table_table");
+    } else {
+        var table = table_top.getElement(".spt_table");
+    }
+
+
+    top.setAttribute("spt_layout", layout);
+    var last_view = top.getAttribute("spt_view");
+    top.setAttribute("spt_last_view", last_view);
+    top.setAttribute("spt_view", bvr.view);
+    table_top.setAttribute("spt_class_name", bvr.class_name);
+    table_top.setAttribute("spt_view", bvr.view);
+    
+    table.setAttribute("spt_view", bvr.view);
+    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
+
+}
+
+        '''
+
 
 
 
