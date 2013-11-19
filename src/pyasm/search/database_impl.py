@@ -1200,29 +1200,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             column_dict[key] = value.get('nullable')
         return column_dict 
 
-    def get_columns(cls, db_resource, table):
-        '''SQLServer get ordered column names'''
-        
-        from sql import DbContainer
-        sql = DbContainer.get(db_resource)
-
-        statement = "EXEC sp_columns @table_name = '%s'"%table
-        results = sql.do_query(statement)
-
-        columns = []
-        if len(results) > 0:
-            for k in range(len(results)):
-                name = results[k][3]
-                columns.append(name)
-
-
-        # remove temp columns
-        columns = my.remove_temp_column(columns, sql) 
-        
-
-        return columns
-
-    get_columns = classmethod(get_columns)
+   
 
     def set_savepoint(my, name='save_pt'):
         '''set a savepoint'''
@@ -1246,8 +1224,31 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_temp_column_name(my):
         return "_tmp_spt_rownum"
 
+    def get_columns(cls, db_resource, table):
+        '''SQLServer get ordered column names'''
+        
+        from sql import DbContainer
+        sql = DbContainer.get(db_resource)
 
-    def remove_temp_column(my, columns, sql):
+        statement = "EXEC sp_columns @table_name = '%s'"%table
+        results = sql.do_query(statement)
+
+        columns = []
+        if len(results) > 0:
+            for k in range(len(results)):
+                name = results[k][3]
+                columns.append(name)
+
+
+        # remove temp columns
+        columns = cls.remove_temp_column(columns, sql) 
+        
+
+        return columns
+
+    get_columns = classmethod(get_columns)
+
+    def remove_temp_column(cls, columns, sql):
         # SQL Server temp columns are put in by ROW_NUMBER()
         # in database_impl.handle_pagination()
         impl = sql.get_database_impl()
@@ -1256,6 +1257,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             columns.remove(temp_column_name)
 
         return columns
+
+    remove_temp_column = classmethod(remove_temp_column)
+
 
 
 
