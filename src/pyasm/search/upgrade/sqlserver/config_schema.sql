@@ -144,10 +144,26 @@ CREATE TABLE spt_plugin (
     code nvarchar(256),
     description nvarchar(max),
     manifest nvarchar(max),
-    datetime2(6) datetime2(6),
+    "timestamp" datetime2(6),
     version nvarchar(256),
     rel_dir nvarchar(max),
     s_status nvarchar(256),
     CONSTRAINT "spt_plugin_code_idx" UNIQUE (code)
-)
+);
+
+
+
+CREATE TABLE spt_pipeline (
+    id integer IDENTITY PRIMARY KEY,
+    code nvarchar(256),
+    pipeline nvarchar(max),
+    "timestamp" datetime2(6) DEFAULT (getdate()),
+    search_type nvarchar(256),
+    description nvarchar(max),
+    s_status nvarchar(32),
+    color nvarchar(256),
+    autocreate_tasks BIT,
+    CONSTRAINT "spt_pipeline_code_idx" UNIQUE (code)
+);
+
 
