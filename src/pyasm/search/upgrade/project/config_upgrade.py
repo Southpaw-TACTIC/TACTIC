@@ -420,7 +420,8 @@ class ConfigUpgrade(BaseUpgrade):
             pipeline_code varchar(256),
             process varchar(256),
             sort_order integer,
-            timestamp timestamp,
+           
+            "timestamp" timestamp,
             s_status varchar(256)
         )
         ''')
@@ -437,7 +438,8 @@ class ConfigUpgrade(BaseUpgrade):
             description text,
             event varchar(256),
             mode varchar(256),
-            timestamp timestamp,
+          
+            "timestamp" timestamp,
             s_status varchar(256)
         )
         ''')
@@ -469,7 +471,8 @@ class ConfigUpgrade(BaseUpgrade):
             code varchar(256),
             description text,
             manifest text,
-            timestamp timestamp,
+          
+            "timestamp" timestamp,
             s_status varchar(256)
         )
         ''')
@@ -486,7 +489,8 @@ class ConfigUpgrade(BaseUpgrade):
             event varchar(256),
             callback varchar(256),
             description text,
-            timestamp timestamp,
+         
+            "timestamp" timestamp,
             s_status varchar(256)
         )
         ''')
@@ -503,7 +507,8 @@ class ConfigUpgrade(BaseUpgrade):
             url varchar(256),
             widget text,
             description text,
-            timestamp timestamp,
+            
+            "timestamp" timestamp,
             s_status varchar(256)
         )
         ''')
@@ -537,7 +542,8 @@ class ConfigUpgrade(BaseUpgrade):
             folder varchar(1024),
             script text,
             login varchar(256),
-            timestamp timestamp,
+           
+            "timestamp" timestamp,
             s_status varchar(256)
         );
         ''')
@@ -562,7 +568,8 @@ class ConfigUpgrade(BaseUpgrade):
             id serial,
             code varchar(256),
             pipeline text,
-            timestamp timestamp DEFAULT now(),
+            
+            "timestamp" timestamp DEFAULT now(),
             search_type varchar(256),
             description text,
             s_status varchar(32),
