@@ -1776,6 +1776,8 @@ class Select(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 
@@ -2693,6 +2695,8 @@ class Insert(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 
@@ -2901,6 +2905,8 @@ class Update(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 
