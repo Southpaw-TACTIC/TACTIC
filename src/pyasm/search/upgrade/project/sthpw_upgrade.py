@@ -460,8 +460,7 @@ IMPORTANT NOTICE:
 
 
 
-    def upgrade_v4_0_0_a01_031(my):
-        my.run_sql('''ALTER TABLE search_object ADD COLUMN code varchar(256);''')
+   
 
     def upgrade_v4_0_0_a01_030(my):
         my.run_sql('''ALTER TABLE sync_job ADD COLUMN error_log text;''')
@@ -638,9 +637,12 @@ IMPORTANT NOTICE:
 
 
 
-    def critical_v4_0_0_a01_000b(my):
-        my.run_sql('''INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/change_timestamp', 'sthpw', 'Change Timestamp', 'sthpw', 'change_timestamp', 'pyasm.search.SObject', 'Change Timestamp', 'public');
+    def critical_v4_0_0_a01_000c(my):
+        my.run_sql('''INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/change_timestamp', 'sthpw/change_timestamp', 'sthpw', 'Change Timestamp', 'sthpw', 'change_timestamp', 'pyasm.search.SObject', 'Change Timestamp', 'public');
         ''')
+
+    def critical_v4_0_0_a01_000b(my):
+        my.run_sql('''ALTER TABLE search_object ADD COLUMN code varchar(256);''')
 
     def critical_v4_0_0_a01_000a(my):
         my.run_sql('''
@@ -1893,7 +1895,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v3_1_0_b01_001(my):
         my.run_sql('''
-        ALTER TABLE search_object ADD COLUMN color varchar(32);
+        ALTER TABLE search_object ADD COLUMN color varchar(256);
         ''')
 
 
