@@ -244,7 +244,7 @@ IMPORTANT NOTICE:
         python = sys.executable
 
         install_dir = Environment.get_install_dir()
-        path = "%s/src/bin/fixes/fix_search_code.py" % install_dir
+        path = '"%s/src/bin/fixes/fix_search_code.py"' % install_dir
 
         print "Running ..."
         print
@@ -357,7 +357,7 @@ IMPORTANT NOTICE:
             status varchar(256),
             error varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             project_code varchar(256)
         );
         ''')
@@ -545,7 +545,7 @@ IMPORTANT NOTICE:
             code varchar(256),
             host varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             state varchar(256)
         );
         ''')
@@ -561,7 +561,7 @@ IMPORTANT NOTICE:
             id serial PRIMARY KEY,
             code varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             command text,
             data text,
             state varchar(256),
@@ -1757,7 +1757,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             search_type varchar(256),
             search_id integer,
             keywords text,
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             project_code varchar(256)
         );
         ''')
@@ -2463,7 +2463,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             code varchar(256),
             script text,
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             s_status varchar(256)
         );
         ''')
