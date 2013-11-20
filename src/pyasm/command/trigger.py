@@ -34,13 +34,14 @@ class Trigger(Command):
     TRIGGER_EVENT_KEY = "triggers:cache"
     NOTIFICATION_EVENT_KEY = "notifications:cache"
 
-    def __init__(my):
+    def __init__(my, **kwargs):
         my.caller = None
         my.message = None
         my.trigger_sobj = None
         my.input = {}
         my.output = {}
         my.description = ''
+        my.kwargs = kwargs
         super(Trigger,my).__init__()
 
     def get_title(my):
