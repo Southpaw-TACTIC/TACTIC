@@ -809,7 +809,7 @@ class AceEditorWdg(BaseRefreshWdg):
         options_div.add(select)
         select.set_option("labels", "Eclipse|Twilight|TextMate|Vibrant Ink|Merbivore|Clouds")
         select.set_option("values", "eclipse|twilight|textmate|vibrant_ink|merbivore|clouds")
-        select.set_value("10pt")
+        select.set_value("twilight")
         select.add_behavior( {
             'type': 'change',
             'editor_id': my.get_editor_id(),
@@ -1088,20 +1088,23 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
         var core_js_files = [
         "ace/ace-0.2.0/src/mode-javascript.js",
-        "ace/ace-0.2.0/src/theme-eclipse.js"
-        ];
-        var supp_js_files = [
-            "ace/ace-0.2.0/src/mode-xml.js",
+         "ace/ace-0.2.0/src/mode-xml.js",
             "ace/ace-0.2.0/src/mode-python.js",
-            "ace/ace-0.2.0/src/theme-twilight.js",
+             "ace/ace-0.2.0/src/theme-twilight.js",
+               
             "ace/ace-0.2.0/src/theme-textmate.js",
             "ace/ace-0.2.0/src/theme-vibrant_ink.js",
             "ace/ace-0.2.0/src/theme-merbivore.js",
             "ace/ace-0.2.0/src/theme-clouds.js",
+            "ace/ace-0.2.0/src/theme-eclipse.js"
         ];
+        //var supp_js_files = [];
+           
+         
+        
 
         spt.dom.load_js(core_js_files, ace_setup);
-        spt.dom.load_js(supp_js_files);      
+        //spt.dom.load_js(supp_js_files);      
         });
    
 
