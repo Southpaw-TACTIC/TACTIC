@@ -198,10 +198,12 @@ class WebEnvironment(Environment):
 
 
     def get_project_url(my):
-        site_url = my.get_site_url()
+        base_url = my.get_base_url()
+        site_url = my.get_site_url().to_string()
+        base_url.append_to_base(site_url)
         project_code = Project.get_project_code()
-        site_url.append_to_base( project_code )
-        return site_url
+        base_url.append_to_base( project_code )
+        return base_url
 
 
 

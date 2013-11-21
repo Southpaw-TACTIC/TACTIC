@@ -1180,6 +1180,8 @@ class SelectWdg(BaseInputWdg):
             labels_expr = my.kwargs.get("labels_expr")
 
         mode_expr = my.get_option("mode_expr")
+        if not mode_expr:
+            mode_expr = my.kwargs.get("mode_expr")
         if values_expr:
             if mode_expr == 'relative':
                 sobjects = my.sobjects
@@ -1188,6 +1190,10 @@ class SelectWdg(BaseInputWdg):
                     if parent_wdg:
                         # use the search_key as a starting point if applicable
                         sk = parent_wdg.kwargs.get('search_key')
+                        if sk:
+                            sobjects = [Search.get_by_search_key(sk)]
+                    else:
+                        sk = my.kwargs.get('search_key')
                         if sk:
                             sobjects = [Search.get_by_search_key(sk)]
 

@@ -1804,7 +1804,7 @@ class SignOutLinkWdg(Widget):
     def init(my):
 
         web = WebContainer.get_web()
-        base_url = WebContainer.get_web().get_project_url().to_string()
+        base_url = web.get_project_url().to_string()
 
         href = SpanWdg()
         href.add( "[sign-out]")
@@ -2747,8 +2747,7 @@ class ExceptionWdg(Widget):
 
 
         web = WebContainer.get_web()
-        base_url = web.get_base_url().to_string()
-        url = '%s%s' %(base_url, web.get_project_url().to_string())
+        url = web.get_project_url().to_string()
 
         h3.add('<br/><br/>')
 

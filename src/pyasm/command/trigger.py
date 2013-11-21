@@ -839,8 +839,9 @@ class SnapshotIsLatestTrigger(Trigger):
     def execute(my):
         input = my.get_input()
         mode = input.get("mode")
-        if mode == 'insert':
-            return
+        # NOTE: this could be run during update and insert of snapshot
+        # during insert, for simple snapshot creation like server.create_snaphot()
+        # during update, is_latest, is_current and update_versionless are handled together for check-in
 
         if mode in ['delete','retire']:
             sobject_dict = input.get("sobject")
@@ -881,7 +882,7 @@ class SnapshotIsLatestTrigger(Trigger):
         sobject_dict = input.get("sobject_dict")
         search_key = input.get("search_key")
         snapshot = Search.get_by_search_key(search_key)
-
+        
 
         #print "mode: ", mode
         #print "snapshot: ", snapshot.get("version"), snapshot.get("context")
@@ -889,16 +890,16 @@ class SnapshotIsLatestTrigger(Trigger):
         #print
 
 
-        # if the current snapshot is already the latest, then don't bother
-        # doing anything
-        sobject = input.get("sobject")
-        #update_data = input.get("update_data")
-        if sobject.get("is_latest") == True:
-            snapshot.set_latest(commit=True)
+        # if the current snapshot is already the latest, don't do anything
+        update_data = input.get("update_data")
+        update_versionless = mode == 'update'
+
+        if update_data.get("is_latest") == True:
+            snapshot.set_latest(commit=True, update_versionless=update_versionless)
 
 
-        if sobject.get("is_current") == True:
-            snapshot.set_current(commit=True)
+        if update_data.get("is_current") == True:
+            snapshot.set_current(commit=True, update_versionless=update_versionless)
 
 
 

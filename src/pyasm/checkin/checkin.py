@@ -35,8 +35,9 @@ class BaseCheckin(Command):
 
         my.to_paths = []
 
-        my.is_current = True
-        my.is_latest = False
+        # these booleans should be undefined to start to prevent accidental commit in append checkin
+        my.is_current = None
+        my.is_latest = None
 
         my.is_revision = False
         my.version = None
@@ -256,8 +257,10 @@ class BaseCheckin(Command):
 
     def handle_file_naming(my):
         # this is meant for SnapshotIsLatestTrigger to run smoothly
-        if my.is_latest:
-            my.snapshot.set_value("is_latest", True)
+        # these booleans should be set in the post-insert time of snapshot creation
+        
+        Snapshot.set_booleans(my.sobject, my.snapshot, my.is_latest, my.is_current)
+
         if my.keep_file_name:
             return
 
