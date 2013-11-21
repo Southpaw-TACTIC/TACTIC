@@ -58,8 +58,8 @@ class FileDetailWdg(BaseRefreshWdg):
         td.add_style("overflow-x: auto")
 
 
-        file_type = "web"
-        web_path = snapshot.get_web_path_by_type(file_type)
+        file_type = "icon"
+        thumb_path = snapshot.get_web_path_by_type(file_type)
 
         file_type = "main"
         src = snapshot.get_web_path_by_type(file_type)
@@ -87,7 +87,7 @@ class FileDetailWdg(BaseRefreshWdg):
             href.add_class("hand")
 
         else:
-            embed_wdg = EmbedWdg(src=src, thumb_path=web_path)
+            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path)
             td.add(embed_wdg)
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
