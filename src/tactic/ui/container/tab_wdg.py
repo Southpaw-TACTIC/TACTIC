@@ -602,7 +602,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
           alias: alias
         }
         spt.named_events.fire_event("tab|select", bvr);
-        //spt.api.app_busy_hide();
+        spt.api.app_busy_hide();
 
       }, 10 );
 
