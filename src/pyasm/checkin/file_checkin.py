@@ -374,7 +374,7 @@ class FileCheckin(BaseCheckin):
             my.context, my.column, my.description, snapshot_xml,
             is_current=my.is_current, is_revision=my.is_revision,
             level_type=my.level_type, level_id=my.level_id, is_latest=is_latest,
-            is_synced=is_synced, version=my.version, triggers="integral")
+            is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False)
 
 
     def postprocess_snapshot(my):

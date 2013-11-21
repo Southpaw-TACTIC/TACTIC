@@ -1374,18 +1374,24 @@ class ClientApiTest(unittest.TestCase):
         snapshot = my.server.add_file(snapshot_code, path2, "second")
         assert snapshot
 
+        filters = [('search_type','unittest/person?project=unittest'), ('search_code','joe'), ('revision','0'), ('context','publish'), ('is_latest','1')]
+        query_snap = my.server.query_snapshots(filters=filters, include_files=False, single=True)
         #test multi file add_file using upload
         paths = [path3, path4]
         snapshot = my.server.add_file(snapshot_code, paths, ["third", "fourth"], mode='upload')
         res_snap = my.server.get_snapshot(search_key, include_files=True)
-        files = res_snap.get('__files__')
-        for file in files:
-            if file.get('type')=='third':
-                my.assertEquals(file.get('source_path'), path3)
-                my.assertEquals(file.get('file_name'), 'miso_ramen.0003_v002.jpg')
+        
+        my.assertEquals(query_snap[0].get('code'), res_snap.get('code'))
 
-            elif file.get('type')=='fourth':
-                my.assertEquals(file.get('source_path'), path4)
+        files = res_snap.get('__files__')
+        if files:
+            for file in files:
+                if file.get('type')=='third':
+                    my.assertEquals(file.get('source_path'), path3)
+                    my.assertEquals(file.get('file_name'), 'miso_ramen.0003_v002.jpg')
+
+                elif file.get('type')=='fourth':
+                    my.assertEquals(file.get('source_path'), path4)
         # TODO: parse the xml to make sure the files are there
 
         # test mode='preallocate'
