@@ -75,7 +75,7 @@ class Scheduler(object):
         my.tasks[task.get_name()] = scheduler_task
 
 
-    def add_daily_task(my, task, time, mode="threaded", weekdays=range(1,7)):
+    def add_daily_task(my, task, time, mode="threaded", weekdays=range(1,8)):
 
         if isinstance(time, basestring):
             hour, minute = time.split(":")
