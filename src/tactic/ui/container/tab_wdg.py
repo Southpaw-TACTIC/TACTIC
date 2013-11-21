@@ -172,7 +172,6 @@ spt.tab.set_attribute = function(element_name, name, value) {
 spt.tab.add_new = function(element_name, title, class_name, kwargs,
         values, hash) {
 
-
     if (typeof(title) == 'undefined') {
         title = '(Untitled)';
     }
@@ -193,7 +192,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
     var top = spt.tab.top;
 
-    if (!hash && kwargs.hash) {
+    if (!hash && hash != false && kwargs.hash) {
         hash = kwargs.hash;
     }
     if (hash == "__link__") {

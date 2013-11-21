@@ -296,6 +296,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
 
         }
         else {
+            alert("DEPRECATD: set hash in sidebar load_display");
             var kwargs = {'predefined': true};
             spt.panel.set_hash(panel_id, widget_class, options, kwargs)
         }
