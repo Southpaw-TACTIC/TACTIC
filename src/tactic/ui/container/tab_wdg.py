@@ -532,7 +532,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     var header_top = top.getElement(".spt_tab_header_top");
     var top_id = top.getAttribute("id");
 
-    spt.api.app_busy_show("Loading " + title, '');
+    //spt.api.app_busy_show("Loading " + title, '');
 
     setTimeout( function() {
 
@@ -602,7 +602,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
           alias: alias
         }
         spt.named_events.fire_event("tab|select", bvr);
-        spt.api.app_busy_hide();
+        //spt.api.app_busy_hide();
 
       }, 10 );
 
