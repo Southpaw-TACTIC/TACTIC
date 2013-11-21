@@ -446,9 +446,12 @@ class TacticMonitor(object):
         tactic_threads.append(tactic_timed_thread)
 
         # create a separate thread for scheduler processes
-        tactic_scheduler_thread = TacticSchedulerThread()
-        tactic_scheduler_thread.start()
-        tactic_threads.append(tactic_scheduler_thread)
+
+        use_scheduler = Config.get_value("services", "scheduler")
+        if use_scheduler == 'true':
+            tactic_scheduler_thread = TacticSchedulerThread()
+            tactic_scheduler_thread.start()
+            tactic_threads.append(tactic_scheduler_thread)
 
 
 
