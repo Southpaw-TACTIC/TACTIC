@@ -142,7 +142,8 @@ class TacticTimedThread(threading.Thread):
 
 
     def run(my):
-        print "starting timed thread"
+        # DEPRECATED: use TacticSchedulerThread
+        #print "Starting Timed Trigger"
 
         # checks are done every 60 seconds
         chunk = 60
@@ -216,8 +217,9 @@ class TacticSchedulerThread(threading.Thread):
 
 
     def run(my):
+        print "Starting Scheduler ...."
 
-        # FIXME: not sure why we have to do a batch here
+        # NOTE: not sure why we have to do a batch here
         from pyasm.security import Batch
         Batch(login_code="admin")
 
@@ -266,6 +268,9 @@ class TacticSchedulerThread(threading.Thread):
                     trigger_class = 'tactic.command.PythonTrigger'
 
                 data = trigger_sobj.get_json_value("data")
+
+                data['project_code'] = trigger_sobj.get_project_code()
+
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
                     timed_trigger.set_input(data)
@@ -281,7 +286,33 @@ class TacticSchedulerThread(threading.Thread):
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
-        for timed_trigger in timed_triggers:
+
+        scheduler.start_thread()
+
+
+
+        class TimedTask(SchedulerTask):
+            def __init__(my, **kwargs):
+                super(TimedTask, my).__init__(**kwargs)
+                my.index = kwargs.get("index")
+                my.project_code = kwargs.get("project_code")
+
+            def execute(my):
+                try:
+                    #Batch()
+                    #Command.execute_cmd(timed_trigger)
+                    Project.set_project(my.project_code)
+                    timed_triggers[my.index].execute()
+                except Exception, e:
+                    print "Error running trigger"
+                    raise
+                finally:
+                    DbContainer.close_thread_sql()
+                    DbContainer.commit_thread_sql()
+                    DbContainer.close_all()
+
+
+        for idx, timed_trigger in enumerate(timed_triggers):
 
             data = timed_trigger.get_input()
             if not data:
@@ -296,24 +327,8 @@ class TacticSchedulerThread(threading.Thread):
             }
             """
 
-            class TimedTask(SchedulerTask):
-                def execute(my):
-                    print "Running trigger"
-                    try:
-                        #Batch()
-                        #Command.execute_cmd(timed_trigger)
-                        Project.set_project("test3")
-                        timed_trigger.execute()
-                    except Exception, e:
-                        print "Error running trigger"
-                        raise
-                    finally:
-                        DbContainer.close_thread_sql()
-                        DbContainer.commit_thread_sql()
-                        DbContainer.close_all()
-
-
-            task = TimedTask()
+            project_code = data.get("project_code")
+            task = TimedTask(index=idx, project_code=project_code)
 
             args = {}
             if data.get("mode"):
@@ -340,8 +355,7 @@ class TacticSchedulerThread(threading.Thread):
 
                 if data.get("weekdays"):
                     args['weekdays'] = eval( data.get("weekdays") )
-                print "args: ", args
-                args['weekdays'] = range(1,8)
+
                 scheduler.add_daily_task(task, **args)
 
                 #scheduler.add_daily_task(task, time, mode="threaded", weekdays=range(1,7))
@@ -355,8 +369,6 @@ class TacticSchedulerThread(threading.Thread):
 
                 scheduler.add_weekly_task(task, **args)
 
-        print "Starting Scheduler ...."
-        scheduler.start_thread()
 
 
       
