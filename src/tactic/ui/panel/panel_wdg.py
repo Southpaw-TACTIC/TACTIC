@@ -233,7 +233,7 @@ spt.side_bar._display_link_action = function(target_id, title, options, values, 
     }
 
     //show busy message
-    spt.app_busy.show( busy_title, busy_msg );
+    //spt.app_busy.show( busy_title, busy_msg );
 
     setTimeout( function() {
                         spt.side_bar._load_for_display_link_change(target_id, title, options, values, is_popup);
@@ -296,6 +296,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
 
         }
         else {
+            alert("DEPRECATD: set hash in sidebar load_display");
             var kwargs = {'predefined': true};
             spt.panel.set_hash(panel_id, widget_class, options, kwargs)
         }
