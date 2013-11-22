@@ -23,12 +23,15 @@ class CKEditorWdg(BaseRefreshWdg):
         name = my.kwargs.get("name")
         assert(name)
         my.text = TextAreaWdg(name)
-        my.text_id = my.text.set_unique_id()
-
+        my.text_id = my.kwargs.get("text_id")
+        if not my.text_id:
+            my.text_id = my.text.set_unique_id()
     def get_display(my):
 
         top = my.top
         top.add_style("min-width: 600px")
+		top.add_class("spt_ckeditor_top")
+      	top.add_attr("text_id", my.text_id)
 
         top.add(my.text)
 
@@ -53,8 +56,6 @@ class CKEditorWdg(BaseRefreshWdg):
         js_el.setAttribute("src", url);
         var head = document.getElementsByTagName("head")[0];
         head.appendChild(js_el);
-
-
         setTimeout( function() {
 
 
@@ -109,6 +110,8 @@ config.toolbar_Full =
 ];
 
 
+config.entities = false;
+config.basicEntities = false;
 CKEDITOR.replace(bvr.text_id, config );
 bvr.src_el.setStyle("display", "");
 
