@@ -2738,7 +2738,6 @@ class ViewPanelWdg(BaseRefreshWdg):
     }
 
     def get_display(my):
-        print "KWARGS ", my.kwargs
         target_id = my.kwargs.get("target_id")
         if not target_id:
             target_id = 'main_body'
