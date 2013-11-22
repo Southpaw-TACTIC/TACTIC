@@ -142,10 +142,10 @@ class PythonTrigger(Trigger):
                 search.add_filter("title", basename)
                 script_sobj = search.get_sobject()
                 if not script_sobj:
-                    print("WARNING: Script with path [%s] does not exist in this project or Admin Site" % my.script_path)
+                    print("WARNING: Script with path [%s] does not exist in this project [%s] or Admin Site" % (my.script_path, project.get_code()))
                     return {}
             except:
-                print("WARNING: Script with path [%s] does not exist in this project or Admin Site" % my.script_path)
+                print("WARNING: Script with path [%s] does not exist in this project [%s] or Admin Site" % (my.script_path, project.get_code()))
                 return
 
         script = script_sobj.get_value("script")
