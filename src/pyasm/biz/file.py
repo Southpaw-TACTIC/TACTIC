@@ -40,6 +40,8 @@ else:
 
 
 
+
+
 import subprocess
 
 class FileException(TacticException):
@@ -47,6 +49,12 @@ class FileException(TacticException):
 
 
 class File(SObject):
+
+    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani']
+
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax',
+                'wm','wvx','ogg','webm','mkv','m4v','mxf'] 
+
 
     SEARCH_TYPE = "sthpw/file"
     BASE_TYPE_SEQ = "sequence"
@@ -459,16 +467,14 @@ class IconCreator(object):
         # check file name
         file_name = os.path.basename(my.file_path)
 
-        base, ext = os.path.splitext(file_name)
+        ext = File.get_extension(file_name)
         type = string.lower(ext)
 
 
-        if type == ".pdf":
+        if type == "pdf":
             my._process_pdf( file_name )
-        elif type in ['.gz','.max','.ma','.xls' ,'.xlsx', '.doc','.docx','.txt', '.fla','.psd','.mov', '.avi', '.xsi', '.scn', '.hip', '.xml','.eani']:
-            # treat as normal files
-            pass
-        elif type.endswith(('.mov', '.mpg', '.mp4', '.wmv', '.mxf')):
+        elif type in File.NORMAL_EXT or type in File.VIDEO_EXT:
+            # skip icon generation for normal or video files
             pass
         else:
             # assume it is an image

@@ -16,7 +16,7 @@ __all__ = ['CheckinMetadataHandler', 'PILMetadataParser', 'ExifMetadataParser', 
 import os, sys, re, subprocess
 
 from pyasm.common import Common
-
+from pyasm.biz import File
 
 try:
     from PIL import Image
@@ -68,14 +68,14 @@ class CheckinMetadataHandler():
 
         for i, file in enumerate(files):
             path = file
-            base, ext = os.path.splitext(path)
+            ext = File.get_extension(path)
             file_object = file_objects[i]
 
             if not os.path.exists(path):
                 continue
-            elif ext in ['.mov','.wmv','.mpg','.mpeg','.m1v','.m2v','.mp2','.mpa','.mpe','.mp4','.wma','.asf','.asx','.avi','.wax','.wm','.wvx','.ogg','.webm','.mkv']:
+            elif ext in File.VIDEO_EXT:
                 parser_type = "FFMPEG"
-            elif ext in ['.txt','.doc','.docx','.xls','.rtf','.odt']:
+            elif ext in File.NORMAL_EXT:
                 continue
             else:
                 if HAS_IMAGEMAGICK:                    
@@ -417,8 +417,14 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
     def get_metadata(my):
         path = my.kwargs.get("path")
-        out = my.probe_file(path)
+        
+        try:
+            out = my.probe_file(path)
+        except:
+            out = ''
+
         # sanitize output
+        
         out = my.sanitize_data(out)
 
         metadata = my.parse_output(out)

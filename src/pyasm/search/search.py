@@ -219,9 +219,9 @@ class Search(Base):
 
         my.select = Select()
         my.select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
 
         assert isinstance(my.db_resource, DbResource)
-        my.select.set_database(my.db_resource)
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
@@ -1116,6 +1116,7 @@ class Search(Base):
 
         select = Select()
         select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
         select.add_table(table)
         select.add_column("id")
 
