@@ -1845,7 +1845,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             if (edit) {
                 var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
                 // dynamically toggle edit widget ui based on chosen widget key
-                if (['hidden_row','gantt','button','custom_layout','expression',''].contains(value))           
+                if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
                 {
                     edit.checked = false;
                     if (value != 'expression')
