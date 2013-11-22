@@ -1460,7 +1460,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 xml += '  </display>\n';
                 xml += '</element>\n';
 
-                alert(xml);
+                spt.alert(xml);
 
                 '''
             } )
