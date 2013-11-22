@@ -30,8 +30,8 @@ class CKEditorWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_style("min-width: 600px")
-		top.add_class("spt_ckeditor_top")
-      	top.add_attr("text_id", my.text_id)
+        top.add_class("spt_ckeditor_top")
+        top.add_attr("text_id", my.text_id)
 
         top.add(my.text)
 
