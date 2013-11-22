@@ -163,7 +163,7 @@ class ProdUpgrade(BaseUpgrade):
             folder varchar(1024),
             script text,
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             s_status varchar(256)
         );
         ''')
@@ -215,7 +215,7 @@ class ProdUpgrade(BaseUpgrade):
             id serial,
             code varchar(256),
             pipeline text,
-            timestamp timestamp DEFAULT now(),
+            "timestamp" timestamp DEFAULT now(),
             search_type varchar(256),
             description text,
             s_status varchar(32),
@@ -795,7 +795,7 @@ class ProdUpgrade(BaseUpgrade):
 
     def upgrade_20070430(my):
         my.run_sql('''
-        ALTER TABLE art_reference ADD COLUMN timestamp timestamp DEFAULT now();
+        ALTER TABLE art_reference ADD COLUMN "timestamp" timestamp DEFAULT now();
         ''')
 
 
@@ -830,7 +830,7 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
             id serial PRIMARY KEY,
             shot_code varchar(30),
             description text,
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             s_status varchar(30)
         );
         ''')
@@ -856,7 +856,7 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
             perf int2,
             take int2,
 
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             s_status varchar(30)
         );
         ''')
@@ -901,7 +901,7 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
             id serial PRIMARY KEY,
             shot_code varchar(30),
             type varchar(30),
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             s_status varchar(30)
         );
 
@@ -948,7 +948,7 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
             version int4,
             description text,
             login varchar(30),
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             s_status varchar(30)
         );
 

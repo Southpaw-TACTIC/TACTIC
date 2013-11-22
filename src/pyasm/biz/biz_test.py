@@ -30,7 +30,7 @@ from naming import *
 from note import Note
 from pipeline import Context, Pipeline
 from expression import ExpressionParser
-from pyasm.unittest import UnittestEnvironment
+from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 
 class BizTest(unittest.TestCase):
@@ -47,6 +47,10 @@ class BizTest(unittest.TestCase):
         Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
+    
+        #TODO add the schema entry to the sample3d plugin first
+        #sample3d_test_env = Sample3dEnvironment()
+        #sample3d_test_env.create()
 
         test_env = UnittestEnvironment()
         test_env.create()
@@ -76,8 +80,27 @@ class BizTest(unittest.TestCase):
             Project.set_project('unittest')
 
             test_env.delete()
+            #sample3d_test_env.delete()
 
     def _test_add_tasks(my):
+
+        pipe = Pipeline.create('person','person','unittest/person')
+        xml = '''
+        <pipeline>
+  <process name="design1"/>
+  <process name="design2"/>
+  <process name="design3"/>
+  <connect to="design2" from="design1"/>
+  <connect to="design3" from="design2"/>
+</pipeline>'''
+        pipe.set_value('pipeline', xml)
+        
+        pipe.set_pipeline(xml)
+        pipe.commit()
+        Pipeline.clear_cache()
+        pipeline = Pipeline.get_by_code('person')
+        my.assertEquals(pipeline != None, True)
+
         # add bunch of dummy initial tasks to the person
         initial_tasks = Task.add_initial_tasks(my.person, 'person', processes=['design1','design2'], mode='simple process', skip_duplicate=True)
         context_list = []
@@ -164,7 +187,7 @@ class BizTest(unittest.TestCase):
             checkin.execute()
 
             # get snapshot from database
-            #snapshot = checkin.get_snapshot()
+            snapshot = checkin.get_snapshot()
             code = snapshot.get_value("code")
             s = Search("sthpw/snapshot")
             s.add_filter("code", code)
@@ -708,6 +731,10 @@ class BizTest(unittest.TestCase):
 
         Project.set_project('unittest')
 
+        
+
+
+
     def _test_sobject_hierarchy(my):
 
         # FIXME: this functionality has been disabled until further notice
@@ -722,8 +749,6 @@ class BizTest(unittest.TestCase):
         snapshot_type.commit()
 
         snapshot_type = SnapshotType.get_by_code("maya_model")
-        #print "wowowow"
-        #print snapshot_type.get_value("wow")
 
     def _test_naming_util(my):
         ''' there is more naming test in naming_test.py'''

@@ -3798,6 +3798,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         parents = {}
+
+        if single:
+            snapshots = [snapshots]
+
         parent_search_type = snapshots[0].get_value("search_type")
         if include_parent:
             # check to see if the parents are of all the same search_type
@@ -3923,7 +3927,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         search_type = sobject.get_search_type() 
         search_id = sobject.get_id()
-        search_code = sobject.get_value("code")
+        search_code = sobject.get_value("code", no_exception=True)
+        search_combo = search_code
+        if not search_code:
+            search_combo = search_id
 
         # get the level object
         if level_key:
@@ -3937,7 +3944,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
+            snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'

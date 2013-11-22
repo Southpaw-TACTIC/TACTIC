@@ -65,15 +65,26 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
     def upgrade_v4_1_0_a01_013(my):
-        my.run_sql('''
-        ALTER TABLE "snapshot" ALTER COLUMN "search_id" DROP NOT NULL;
-        ''')
+        if my.get_database_type() == 'MySQL':
+            my.run_sql(''' ALTER TABLE "snapshot" MODIFY "search_id" integer NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql(''' ALTER TABLE "snapshot" ALTER COLUMN "search_id" integer NULL;''');
+        else:
+            my.run_sql('''
+            ALTER TABLE "snapshot" ALTER COLUMN "search_id" DROP NOT NULL;
+            ''')
 
 
     def upgrade_v4_1_0_a01_012(my):
-        my.run_sql('''
-        ALTER TABLE "sobject_log" ALTER COLUMN "search_id" DROP NOT NULL;
-        ''')
+        if my.get_database_type() == 'MySQL':
+            my.run_sql(''' ALTER TABLE  "sobject_log" MODIFY "search_id" integer NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql(''' ALTER TABLE "sobject_log" ALTER COLUMN "search_id" integer NULL;''');
+        else:
+            my.run_sql('''
+            ALTER TABLE "sobject_log" ALTER COLUMN "search_id" DROP NOT NULL;
+            ''')
+
 
 
     def upgrade_v4_1_0_a01_011(my):
@@ -83,7 +94,12 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_1_0_a01_010(my):
-        my.run_sql('''
+        if my.get_database_type() == 'MySQL':
+            my.run_sql(''' ALTER TABLE "file" MODIFY "file_name" varchar(512) NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql(''' ALTER TABLE "file" ALTER COLUMN "file_name" varchar(512) NULL;''');
+        else:
+            my.run_sql('''
         ALTER TABLE "file" ALTER COLUMN "file_name" DROP NOT NULL;
         ''')
 
@@ -228,7 +244,7 @@ IMPORTANT NOTICE:
         python = sys.executable
 
         install_dir = Environment.get_install_dir()
-        path = "%s/src/bin/fixes/fix_search_code.py" % install_dir
+        path = '"%s/src/bin/fixes/fix_search_code.py"' % install_dir
 
         print "Running ..."
         print
@@ -285,6 +301,8 @@ IMPORTANT NOTICE:
     def upgrade_v4_0_0_a09_002(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE file MODIFY search_id integer NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''ALTER TABLE file ALTER COLUMN search_id integer NULL;''')
         else:
             my.run_sql('''
             ALTER TABLE file ALTER COLUMN search_id DROP NOT NULL;
@@ -339,7 +357,7 @@ IMPORTANT NOTICE:
             status varchar(256),
             error varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             project_code varchar(256)
         );
         ''')
@@ -442,8 +460,7 @@ IMPORTANT NOTICE:
 
 
 
-    def upgrade_v4_0_0_a01_031(my):
-        my.run_sql('''ALTER TABLE search_object ADD COLUMN code varchar(256);''')
+   
 
     def upgrade_v4_0_0_a01_030(my):
         my.run_sql('''ALTER TABLE sync_job ADD COLUMN error_log text;''')
@@ -466,6 +483,8 @@ IMPORTANT NOTICE:
     def upgrade_v4_0_0_a01_026(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE snapshot MODIFY column_name varchar(100) NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name varchar(100) NULL;''')
         else:
             my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name DROP NOT NULL;''')
 
@@ -526,7 +545,7 @@ IMPORTANT NOTICE:
             code varchar(256),
             host varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             state varchar(256)
         );
         ''')
@@ -542,7 +561,7 @@ IMPORTANT NOTICE:
             id serial PRIMARY KEY,
             code varchar(256),
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             command text,
             data text,
             state varchar(256),
@@ -618,9 +637,12 @@ IMPORTANT NOTICE:
 
 
 
-    def critical_v4_0_0_a01_000b(my):
-        my.run_sql('''INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/change_timestamp', 'sthpw', 'Change Timestamp', 'sthpw', 'change_timestamp', 'pyasm.search.SObject', 'Change Timestamp', 'public');
+    def critical_v4_0_0_a01_000c(my):
+        my.run_sql('''INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/change_timestamp', 'sthpw/change_timestamp', 'sthpw', 'Change Timestamp', 'sthpw', 'change_timestamp', 'pyasm.search.SObject', 'Change Timestamp', 'public');
         ''')
+
+    def critical_v4_0_0_a01_000b(my):
+        my.run_sql('''ALTER TABLE search_object ADD COLUMN code varchar(256);''')
 
     def critical_v4_0_0_a01_000a(my):
         my.run_sql('''
@@ -1735,7 +1757,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             search_type varchar(256),
             search_id integer,
             keywords text,
-            timestamp timestamp default now(),
+            "timestamp" timestamp default now(),
             project_code varchar(256)
         );
         ''')
@@ -1786,6 +1808,10 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         if my.get_database_type() == 'MySQL':
             my.run_sql('''
             ALTER table snapshot modify lock_login varchar(100) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER table snapshot alter column lock_login varchar(100) NULL;
             ''')
         else:
             my.run_sql('''
@@ -1869,7 +1895,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v3_1_0_b01_001(my):
         my.run_sql('''
-        ALTER TABLE search_object ADD COLUMN color varchar(32);
+        ALTER TABLE search_object ADD COLUMN color varchar(256);
         ''')
 
 
@@ -2437,7 +2463,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             code varchar(256),
             script text,
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             s_status varchar(256)
         );
         ''')

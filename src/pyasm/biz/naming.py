@@ -336,13 +336,21 @@ class NamingUtil(object):
             if test != result:
                return result
         '''
-        file_name = file.get_value("file_name")
-        base_type = file.get_value("base_type")
-        if base_type =='directory':
-            base = file_name
-            ext = None
-        else:
-            base, ext = os.path.splitext(file_name)
+       
+        base = None
+
+        if file:
+            file_name = file.get_value("file_name")
+            base_type = file.get_value("base_type")
+            if base_type =='directory':
+                base = file_name
+                ext = None
+            else:
+                base, file_ext = os.path.splitext(file_name)
+                # passed in ext takes prescedence
+                if not ext:
+                    ext = file_ext
+
         if not ext:
             value = None
         else:

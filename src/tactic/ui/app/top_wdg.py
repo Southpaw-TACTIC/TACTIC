@@ -728,6 +728,7 @@ class IndexWdg(Widget):
             else {
                 spt.hash.hash = "/index";
             }
+            spt.hash.set_index_hash("link/_startup");
             '''
         } )
 

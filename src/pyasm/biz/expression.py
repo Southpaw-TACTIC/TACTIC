@@ -114,7 +114,7 @@ class ExpressionParser(object):
             url = web.get_base_url()
             my.vars['BASE_URL'] = url.to_string()
 
-            url.append_to_base(project)
+            url = web.get_project_url()
             my.vars['PROJECT_URL'] = url.to_string()
 
 
