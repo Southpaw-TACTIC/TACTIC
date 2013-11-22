@@ -934,19 +934,18 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         #Login.get_security_level_group(access_level)
         my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
-
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['low', 'medium', 'high']:
+        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
             if my.project_code and sobject.get_value("code") == my.project_code:
                 is_set = True
             else:
                 is_set = False
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['low', 'medium','high']:
+        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium','high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['high']:
+        elif my.security_type == 'process' and my.access_level in ['low', 'medium','high']:
             is_set = True
 
 
@@ -1038,10 +1037,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
 
         my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
-
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['low', 'medium', 'high']:
+        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
             if my.project_code and sobject.get_value("code") == my.project_code:
                 is_set = True
             else:
@@ -1049,9 +1047,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
  
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['low', 'medium','high']:
+        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['high']:
+        elif my.security_type == 'process' and my.access_level in ['low', 'medium', 'high']:
             is_set = True
 
 
