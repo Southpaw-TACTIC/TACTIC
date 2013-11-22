@@ -1004,6 +1004,8 @@ class ThumbWdg(BaseTableElementWdg):
         if not file_path:
             return ThumbWdg.get_no_image()
         ext = File.get_extension(file_path)
+        ext = ext.lower()
+
         if ext == "xls":
             icon = "gnome-application-vnd.ms-excel.png"
         elif ext == "mp3" or ext == "wav":
@@ -1012,7 +1014,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "gnome-audio-x-aiff.png"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"
-        elif ext in ["mov", "MOV"] or ext == "mp4":
+        elif ext in ["mov","mp4"]:
             icon = "quicktime-logo.png"    
         elif ext == "ma" or ext == "mb" or ext == "anim":
             icon = "maya.png"
@@ -1042,7 +1044,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "gnome-textfile.png"
         elif ext == "obj":
             icon = "3d_obj.png"
-        elif ext in ["rdc", "RDC"]:
+        elif ext == "rdc":
             icon = "red_camera.png"
         elif ext == 'ps':
             icon = "ps_icon.jpg"
@@ -1054,6 +1056,8 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "unity_icon.jpg"
         elif repo_path and os.path.isdir(repo_path):
             icon = "folder.png"
+        elif ext in File.VIDEO_EXT:
+            icon = "general_video.png"
         else:
             icon = "default_doc.png"
         return "%s/%s" % ( base,icon)

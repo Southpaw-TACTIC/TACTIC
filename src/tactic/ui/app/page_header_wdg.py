@@ -398,7 +398,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 spt.tab.add_new("create_project", "Create Project", class_name);
             }
             else {
-                document.location = "/tactic/admin/#/link/create_project";
+                document.location = "/tactic/admin/link/create_project";
             }
             '''
             } )
@@ -1310,7 +1310,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
                     location = "/tactic/" + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + project_code + "/admin/_startup";
+                    location = "/tactic/" + project_code + "/admin/link/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

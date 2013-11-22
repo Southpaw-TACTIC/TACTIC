@@ -159,7 +159,7 @@ class QuickBoxWdg(BaseRefreshWdg):
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
-            document.location = "/tactic/admin/#/link/create_project";
+            document.location = "/tactic/admin/link/create_project";
             spt.named_events.fire_event("hotbox|close");
             '''
         }

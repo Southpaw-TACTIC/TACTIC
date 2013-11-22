@@ -279,6 +279,13 @@ class SearchTest(unittest.TestCase):
         my.assertEquals(SObject.get_values(persons, 'id'), SObject.get_values(persons_fast, 'id'))
         my.assertEquals(SObject.get_values(persons_fast, 'name_first'), ['pete'])
 
+        # test add_filters() with an empty array
+        task_search = Search('sthpw/task')
+        task_search.add_filters('process', [])
+        tasks = task_search.get_sobjects()
+        my.assertEquals(tasks, [])
+        expected = '''SELECT "sthpw"."public"."task".* FROM "sthpw"."public"."task" WHERE id is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''
+        my.assertEquals(task_search.get_statement(), expected)
 
         
             

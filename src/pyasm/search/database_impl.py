@@ -1159,6 +1159,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
                 elif data_type == 'uniqueidentifier':
                     data_type = "uniqueidentifier"
+                # sqlserver handles timestamp different and is *not the same
+                # timestamp from other databases
+                elif data_type == 'timestamp':
+                    data_type = "sqlserver_timestamp"
                 elif data_type.startswith('int identity'):
                     data_type = "serial"
 

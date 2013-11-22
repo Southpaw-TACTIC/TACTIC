@@ -2849,11 +2849,12 @@ spt.table.set_connect_key = function(connect_key) {
 spt.table.get_data = function(row) {
     var data = {};
     if (row) {
-        var cells = row.getElements('td.spt_cell_edit'); 
+        var cells = row.getElements('.spt_cell_edit'); 
+        var element_nams = spt.table.get_element_names();
+        console.log(cells);
         for (var k = 0; k < cells.length; k++) {
             var cell = cells[k];
-           
-            data[cell.getAttribute('spt_element_name')] = cell.getAttribute('spt_input_value');   
+            data[element_names[k]] = cell.getAttribute('spt_input_value');   
         }
     }
     return data   

@@ -1627,6 +1627,7 @@ class Select(object):
 
     def __init__(my):
         my.tables = []
+        my.id_col = 'id'
         my.columns = []
         my.as_columns = []
         my.column_tables = []
@@ -1789,7 +1790,7 @@ class Select(object):
         my.set_statement = statement
 
 
-
+    
     def add_table(my, table):
         if table == "": return
         my.tables.append(table)
@@ -1799,7 +1800,9 @@ class Select(object):
         
     def get_table(my):
         return my.tables[0]
-
+    
+    def set_id_col(my, id_col):
+        my.id_col = id_col
 
     def add_join(my, table1, table2=None, column=None, column2=None, join="LEFT OUTER", database=None, database2=None):
         '''
@@ -2072,8 +2075,8 @@ class Select(object):
         assert op in ['in', 'not in']
         filter = ''
         if not values or values == ['']:
-            #where = "%s is NULL" % column
-            where = "NULL"
+            where = "%s is NULL" %my.id_col
+            #where = "NULL"
         else:
             list = [ Sql.quote(value) for value in values ]
             if table:
