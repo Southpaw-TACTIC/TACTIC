@@ -582,7 +582,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             for name, edit_wdg in my.edit_wdgs.items():
                 # each BaseInputWdg knows about this FastTableLayoutWdg
                 edit_display = edit_wdg.get_display_wdg()
-                edit_display.set_parent_wdg(my)
+                if edit_display:
+                    edit_display.set_parent_wdg(my)
                 edit_div.add(edit_wdg)
         else:
             my.edit_wdgs = {}
