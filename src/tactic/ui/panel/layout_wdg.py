@@ -954,7 +954,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
                     if (!context)
                         context = "icon";
 
-
                     var applet = spt.Applet.get();
                     var files = applet.open_file_browser();
 

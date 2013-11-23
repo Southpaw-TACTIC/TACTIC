@@ -2247,11 +2247,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.app_busy.show("Uploading preview image ...", file);
 
 
-                    // add the file name to the context
-                    if (context == "publish") {
-                        context = context + "/" + file;
-                    }
-
                     var server = TacticServerStub.get();
                     try {
                         spt.app_busy.show(bvr.description, file);                   
@@ -2340,11 +2335,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         
                         var has_error = false;
 
-                        // add the file name to the context
-                        if (context == "publish") {
-                            context = context + "/" + file;
-                        }
-     
                         try {
                             
                             if (search_key.search('sthpw/snapshot')!= -1){                       
@@ -2354,8 +2344,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 server.add_file( snapshot_code, file, kwargs );                                              
                             }
                             else {
-                                var kwargs = {mode: 'uploaded'};  
-                                server.simple_checkin( search_key, context, file, kwargs);
+
+                                file = file.replace(/\\/g, "/");
+                                var parts = file.split("/");
+                                var filename = parts[parts.length-1];
+                                var kwargs;
+                                if (context != "icon") {
+                                    context = context + "/" + filename;
+                                    kwargs = {mode: 'upload', checkin_mode: 'auto'};
+                                }
+                                else {
+                                    kwargs = {mode: 'upload'};
+                                }
+                                server.simple_checkin( search_key, context, file);
                             }
                         } catch(e) {
                             var error_str = spt.exception.handler(e);
