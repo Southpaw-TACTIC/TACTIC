@@ -43,12 +43,15 @@ class CopyFileToAssetTempCmd(Command):
         icon_path = icon_creator.get_icon_path()
 
         to_path = "%s/%s" % (asset_temp_dir, filename)
-        shutil.copy(icon_path, to_path)
-
-        my.info = {
-            "web_path": "/assets/temp/%s/%s" % (ticket, filename),
-            "lib_path": to_path
-        }
+        
+        if icon_path:
+            shutil.copy(icon_path, to_path)
+            my.info = {
+                "web_path": "/assets/temp/%s/%s" % (ticket, filename),
+                "lib_path": to_path
+            }
+        else:
+            my.info = {}
 
         
 class CreateProjectCmd(Command):
