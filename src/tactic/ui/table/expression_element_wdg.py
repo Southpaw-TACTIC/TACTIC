@@ -359,7 +359,11 @@ class ExpressionElementWdg(TypeTableElementWdg):
             if my.cache_results == None:
                 my.cache_results = parser.eval(expression, my.sobjects, vars=my.vars, dictionary=True, show_retired=my.show_retired)
                 if isinstance(my.cache_results, basestring):
-                    my.cache_results = eval(my.cache_results)
+                    if my.cache_results:
+                        my.cache_results = eval(my.cache_results)
+                    else:
+                        my.cache_results = {}
+
             search_key = sobject.get_search_key()
             result = my.cache_results.get(search_key)
             if single:
