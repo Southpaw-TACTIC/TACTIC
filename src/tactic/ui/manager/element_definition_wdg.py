@@ -716,11 +716,13 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
             # this is required if one is changing the View mode definition post creation
             # while making its editability info intact
-            # add a hidden Enable edit here when not in insert mode
+            # add a hidden View Mode Enable edit here when not in insert mode
             editable_wdg = CheckboxWdg("attr|editable")
             editable_wdg.add_style('display: none')
             if editable:
                 editable_wdg.set_checked()
+                # set a original state to remember it is checked initially
+                editable_wdg.set_attr('orig', 'true')
             td.add(editable_wdg)
 
 
@@ -1843,6 +1845,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             var edit = ui_top.getElement('input[name=attr|editable]');
             // Manage Side Bar doesn't run the following
             if (edit) {
+                var edit_orig_state = edit.getAttribute('orig');
                 var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
                 // dynamically toggle edit widget ui based on chosen widget key
                 if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
@@ -1850,8 +1853,11 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
                     edit.checked = false;
                     if (value != 'expression')
                         edit.setAttribute('disabled', 'disabled');
-                    else
+                    else {
                         edit.removeAttribute('disabled');
+                        if (edit_orig_state == 'true')
+                            edit.checked = true;
+                    }
                     spt.hide(form_top);
                 }
                 else {

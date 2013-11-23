@@ -200,6 +200,12 @@ class RawTableElementWdg(BaseTableElementWdg):
         name = my.get_name()
         return name
 
+    def get_required_columns(my):
+        '''method to get the require columns for this'''
+        return [
+        my.get_name()
+        ]
+    
     def get_display(my):
         sobject = my.get_current_sobject()
         name = my.get_name()
