@@ -2252,12 +2252,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             var kwargs;
                             if (context != "icon") {
                                 context = context + "/" + filename;
-                                kwargs = {mode: 'upload', checkin_mode: 'auto'};
+                                kwargs = {mode: 'upload', checkin_type: 'auto'};
                             }
                             else {
                                 kwargs = {mode: 'upload'};
                             }
-                            server.simple_checkin( search_key, context, file);
+                            server.simple_checkin( search_key, context, file, kwargs);
                         }
                     } catch(e) {
                         var error_str = spt.exception.handler(e);
@@ -2333,7 +2333,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 server.add_file( snapshot_code, file, kwargs );                                              
                             }
                             else {
-                                var kwargs = {mode: 'uploaded'};  
+
+                                file = file.replace(/\\/g, "/");
+                                var parts = file.split("/");
+                                var filename = parts[parts.length-1];
+                                var kwargs;
+                                if (context != "icon") {
+                                    context = context + "/" + filename;
+                                    kwargs = {mode: 'uploaded', checkin_type: 'auto'};
+                                }
+                                else {
+                                    kwargs = {mode: 'uploaded'};
+                                }
+                                
                                 server.simple_checkin( search_key, context, file, kwargs);
                             }
                         } catch(e) {
