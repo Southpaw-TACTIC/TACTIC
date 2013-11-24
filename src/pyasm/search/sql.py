@@ -1850,6 +1850,9 @@ class Select(object):
         if my.schema:
             parts.append('"%s"' % my.schema)
         prefix1 = ".".join(parts)
+
+        if prefix1:
+            prefix1 = "%s." % prefix1
  
 
         # handle the database scoping
@@ -1862,10 +1865,13 @@ class Select(object):
             parts.append('"%s"' % my.schema)
         prefix2 = ".".join(parts)
  
-
+        # add a trailing point.  this is needed so that implementations with
+        # not prefix can be accomodated (ie: Sqlite)
+        if prefix2:
+            prefix2 = "%s." % prefix2
  
 
-        expr = '''%s JOIN %s."%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
+        expr = '''%s JOIN %s"%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
 
         # NOTE: there should be no need to database specfic joins
         """
