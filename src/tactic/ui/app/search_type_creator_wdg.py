@@ -1957,7 +1957,8 @@ class SearchTypeCreatorCmd(Command):
         naming.set_value("dir_naming", naming_expr)
 
         if not has_file_naming:
-            file_naming_expr = "{basefile}.{ext}"
+            file_naming_expr = "{sobject.name}_v{version}.{ext}"
+
         naming.set_value("file_naming", file_naming_expr)
 
 

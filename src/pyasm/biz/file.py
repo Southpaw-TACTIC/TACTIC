@@ -22,11 +22,18 @@ import sys, os, string, re, stat
 try:
     #import Image
     from PIL import Image
-    HAS_PIL = True
     # Test to see if imaging actually works
     import _imaging
+    HAS_PIL = True
 except:
     HAS_PIL = False
+    try:
+        import Image
+        # Test to see if imaging actually works
+        import _imaging
+        HAS_PIL = True
+    except:
+        HAS_PIL = False
 
 if Common.which("convert"):
     HAS_IMAGE_MAGICK = True
@@ -37,8 +44,6 @@ if Common.which("ffprobe"):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
-
-
 
 
 
