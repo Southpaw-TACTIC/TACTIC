@@ -1041,7 +1041,7 @@ class ActionButtonWdg(DivWdg):
         is_Qt_OSX = web.is_Qt_OSX()
         my.browser = web.get_browser()
 
-        is_Qt_OSX = False
+        #is_Qt_OSX = False
         if is_Qt_OSX:
             my.redirect = ActionButtonWdgOld(**kwargs)
         else:
@@ -1070,6 +1070,15 @@ class ActionButtonWdg(DivWdg):
             return my.redirect.add_style(name, value)
 
         super(ActionButtonWdg,my).add_style(name, value)
+
+    def add_class(my, value):
+        if my.redirect:
+            return my.redirect.add_class(value)
+
+        super(ActionButtonWdg,my).add_class(value)
+
+
+
 
 
     def add_top_behaviors(my, top):
