@@ -1041,6 +1041,7 @@ class ActionButtonWdg(DivWdg):
         is_Qt_OSX = web.is_Qt_OSX()
         my.browser = web.get_browser()
 
+        is_Qt_OSX = False
         if is_Qt_OSX:
             my.redirect = ActionButtonWdgOld(**kwargs)
         else:
