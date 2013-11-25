@@ -315,7 +315,8 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 
             except:
                 print "Error in opening image path:", path
-                continue
+                #continue
+                size = [0,0]
 
             style = xml.get_attribute(node, "style")
             if style:
@@ -354,6 +355,9 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 new_src = "/doc/%s" % (src)
 
+            print "src: ", src
+            print "new_src: ", new_src
+            print "---"
             xml.set_attribute(node, "src", new_src)
 
 
