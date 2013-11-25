@@ -997,7 +997,9 @@ class EditWdg(BaseRefreshWdg):
             input.set_options(display_options)
 
         elif element_type =="sqlserver_timestamp":
-            input = None
+            # better then set it to None
+            input = TextWdg()
+            input.add_attr('disabled','disabled')
         else:
             # else try to instantiate it as a class
             print "WARNING: EditWdg handles type [%s] as default TextWdg" %element_type

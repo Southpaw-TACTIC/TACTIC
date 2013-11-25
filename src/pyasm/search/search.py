@@ -3631,7 +3631,10 @@ class SObject(object):
                 "sthpw/change_timestamp",
                 "sthpw/transaction_log",
                 "sthpw/sync_job",
-                "sthpw/sync_log"
+                "sthpw/sync_log",
+                'sthpw/message',
+                'sthpw/message_log',
+
         ] \
                 and sobject and sobject.has_value("code"):
 
@@ -3724,7 +3727,9 @@ class SObject(object):
                     'sthpw/search_object',
                     'sthpw/wdg_settings',
                     'sthpw/sync_log',
-                    'sthpw/sync_job'
+                    'sthpw/sync_job',
+                    'sthpw/message',
+                    'sthpw/message_log',
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -5851,7 +5856,10 @@ class SObjectUndo:
                 "sthpw/sync_job",
                 "sthpw/sync_log",
                 "sthpw/sync_server",
-                "sthpw/cache"
+                "sthpw/cache",
+
+                'sthpw/message',
+                'sthpw/message_log',
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":
