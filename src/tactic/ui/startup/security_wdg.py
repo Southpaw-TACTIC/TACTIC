@@ -2211,7 +2211,10 @@ class SecurityBuilder(object):
                 nodes = my.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
             else:
                 nodes = my.xml.get_nodes("rules/rule[@group='process']")
-        
+                
+        if not nodes and process =='*':
+            nodes = my.xml.get_nodes("rules/rule[@group='process' and @process='*']")
+
         for node in nodes:
             if my.xml.get_attribute(node, 'process') == process:
                 my.xml.remove_child(my.root, node)
