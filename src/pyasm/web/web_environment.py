@@ -342,6 +342,13 @@ class WebEnvironment(Environment):
         else:
             return False
 
+    def is_Qt_OSX(my):
+        user_agent = my.get_env("HTTP_USER_AGENT")
+        if user_agent.find("Qt") != -1 and user_agent.find("Safari") != -1:
+            return True
+        else:
+            return False
+
 
     # define the context information
     def get_context_name(my):
