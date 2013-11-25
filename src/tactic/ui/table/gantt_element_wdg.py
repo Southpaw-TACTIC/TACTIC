@@ -130,6 +130,9 @@ class GanttElementWdg(BaseTableElementWdg):
     is_editable = classmethod(is_editable)
 
 
+    def can_async_load(cls):
+        return False
+    can_async_load = classmethod(can_async_load)
 
 
     def get_colors(my, sobject, mode):
