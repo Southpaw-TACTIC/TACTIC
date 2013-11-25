@@ -549,8 +549,6 @@ class TaskElementWdg(BaseTableElementWdg):
                     continue
 
                 access_key = [
-                    {'process': status},
-                    {'process': '*'},
                     {'process': '*' ,'pipeline':  pipeline_code},
                     {'process': status , 'pipeline':  pipeline_code}
                     ]

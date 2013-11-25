@@ -113,6 +113,12 @@ class BaseTableElementWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
+    def can_async_load(cls):
+        return True
+    can_async_load = classmethod(can_async_load)
+
+
+
     # This should be a widget that is very high up in the hierarchy
     # where global behaviors can be put in
     def set_layout_wdg(my, widget):

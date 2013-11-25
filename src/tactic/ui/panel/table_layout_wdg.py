@@ -691,9 +691,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # override init_load_num if group column has group_bottom
         if my.has_group_bottom():
             init_load_num = -1
+
+
+        # check the widgets if there are any that can't be async loaded
+        can_async_load = True
+        for widget in my.widgets:
+            if can_async_load and widget.can_async_load():
+                can_async_load = False
+                break
+        if not can_async_load:
+            init_load_num = -1
+
+
            
         # minus 1 since row starts at 0
         init_load_num -= 1
+
+
+
 
         chunk_size = 20
 
