@@ -18,6 +18,8 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
 
+    def upgrade_v4_1_0_v01_001(my):
+        my.run_sql('''UPDATE "search_object" SET code = search_type;''')
     #
     # 4.1.0.b03
     #
