@@ -143,13 +143,13 @@ class ColumnAddCmd(Command):
             elif sql.get_database_type() == "Oracle":
                 statement = 'ALTER TABLE "%s" ADD("%s" %s)' % \
                     (table, column, type)
-            else:
-                if sql.get_database_type() == 'SQLServer':
-                    statement = 'ALTER TABLE [%s] ADD "%s" %s' % \
-                        (table, column, type)
-                else: 
-                    statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
-                        (table, column, type)
+
+            elif sql.get_database_type() == 'SQLServer':
+                statement = 'ALTER TABLE [%s] ADD "%s" %s' % \
+                    (table, column, type)
+            else: 
+                statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
+                    (table, column, type)
 
             if statement:
                 if not my.nullable:
