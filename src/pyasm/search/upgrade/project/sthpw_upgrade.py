@@ -174,7 +174,7 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_1_0_a01_002(my):
-        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message', 'sthpw', 'Messages', 'sthpw', 'message', 'pyasm.search.SObject', 'Message', 'public');
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message', 'sthpw/message', 'sthpw', 'Messages', 'sthpw', 'message', 'pyasm.search.SObject', 'Message', 'public');
         ''')
 
 
