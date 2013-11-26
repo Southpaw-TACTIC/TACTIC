@@ -152,7 +152,12 @@ class Config(Base):
         #print "config: ", config_path
 
         xml_data = Xml()
-        xml_data.read_file(config_path, cache=use_cache)
+
+        if not os.path.exists(config_path):
+            config = "<config/>"
+            xml_data.read_string(config)
+        else:
+            xml_data.read_file(config_path, cache=use_cache)
 
         return xml_data
 
