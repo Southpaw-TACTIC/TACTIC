@@ -139,6 +139,8 @@ class ColumnAddCmd(Command):
             elif sql.get_database_type() == "MySQL":
                 if type == "varchar":
                     type = "varchar(256)"
+                statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
+                    (table, column, type)
 
             elif sql.get_database_type() == "Oracle":
                 statement = 'ALTER TABLE "%s" ADD("%s" %s)' % \
