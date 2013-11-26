@@ -691,9 +691,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # override init_load_num if group column has group_bottom
         if my.has_group_bottom():
             init_load_num = -1
+
+
+        # check the widgets if there are any that can't be async loaded
+        can_async_load = True
+        for widget in my.widgets:
+            if can_async_load and widget.can_async_load():
+                can_async_load = False
+                break
+        if not can_async_load:
+            init_load_num = -1
+
+
            
         # minus 1 since row starts at 0
         init_load_num -= 1
+
+
+
 
         chunk_size = 20
 
@@ -2264,6 +2279,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_load_behaviors(my, table):
 
+        if my.kwargs.get('temp') != True:
+            cbjs_action = '''
+            // set the current table layout on load
+            if (spt.table) {
+                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
+            }
+            '''
+            table.add_behavior({
+                'type': 'load',
+                'cbjs_action': cbjs_action
+                })
+
+
+
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
 
@@ -2851,8 +2882,7 @@ spt.table.get_data = function(row) {
     var data = {};
     if (row) {
         var cells = row.getElements('.spt_cell_edit'); 
-        var element_nams = spt.table.get_element_names();
-        console.log(cells);
+        var element_names = spt.table.get_element_names();
         for (var k = 0; k < cells.length; k++) {
             var cell = cells[k];
             data[element_names[k]] = cell.getAttribute('spt_input_value');   
@@ -4915,10 +4945,10 @@ spt.table.open_ingest_tool = function(search_type) {
         if my.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table on load
-            
             // just load it once and set the table if loaded already
             if (spt.table) {
-                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
                 return;
             }
 
@@ -4934,6 +4964,7 @@ spt.table.open_ingest_tool = function(search_type) {
             spt.table.shadow_color = bvr.shadow_color;
             %s
             spt.table.set_table(bvr.src_el);
+            
             
             ''' %cbjs_action
 
