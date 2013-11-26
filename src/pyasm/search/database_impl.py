@@ -849,17 +849,20 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         if column_type in ['timestamp','datetime']:
             quoted = False
-            lower_value = value.lower()
+            lower_value = ''
+            if isinstance(value, datetime.datetime):
+                pass
+            elif not value:
+                pass
+            else:
+                lower_value = value.lower()
+            
             if value == "NOW":
                 value = "getdate()"
                 #return {"value": value, "quoted": quoted}
             # FIXME: this is implemented this way because set_value 
             # can be called twice.  This method should called from commit
             # and not set_value
-            elif isinstance(value, datetime.datetime):
-                pass
-            elif not value:
-                pass
             elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
                 if value == 'NULL':
                     pass
@@ -867,6 +870,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                     value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
+
           
 
 
