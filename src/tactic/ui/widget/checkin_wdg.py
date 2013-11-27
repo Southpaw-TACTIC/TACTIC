@@ -828,14 +828,22 @@ spt.checkin.get_checkin_data = function() {
 
 
     var range = '';
-    alert('1');
     var type = top.getElement(".spt_checkin_type").value;
-    alert('2');
     var is_current_el = top.getElement(".spt_is_current");
     is_current = is_current_el.checked || is_current_el.value=='true';
 
-    var process = top.getElement(".spt_checkin_process").value;
-    var context = top.getElement(".spt_checkin_context").value;
+    var process_el = top.getElement(".spt_checkin_process");
+    var process = '';
+    if (process_el) {
+        process = process_el.value;
+    }
+
+    var context_el = top.getElement(".spt_checkin_context");
+    var context = '';
+    if (context_el) {
+        context = context_el.value;
+    }
+
     if (context == '') {
         context = process;
     }
@@ -2089,7 +2097,6 @@ spt.app_busy.hide();
 
 spt.checkin.html5_checkin = function(files) {
     var server = TacticServerStub.get();
-    alert("upload");
 
     var options = spt.checkin.get_checkin_data();
     var search_key = options.search_key;
