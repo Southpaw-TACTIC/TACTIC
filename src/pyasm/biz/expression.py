@@ -1479,7 +1479,6 @@ class MethodMode(ExpressionParser):
                 delimiter = args[2]
                 results = delimiter.join(results)
                 
-                
 
 
         elif method == 'JOIN':
@@ -1492,6 +1491,26 @@ class MethodMode(ExpressionParser):
 
             delimiter = args[1]
             results = delimiter.join(results)
+
+
+        elif method == 'SUBSTITUTE':
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            values_list = []
+            for arg in args[1:]:
+                expression = arg
+                mode = my.get_mode(expression)
+                values = my.dive(mode, expression=expression)
+                values_list.append(values)
+
+            # transpose the values
+            values_list = zip(*values_list)
+            results = []
+            for values in values_list:
+                result = args[0] % values
+                results.append(result)
+
 
 
         elif method == 'UPDATE':
