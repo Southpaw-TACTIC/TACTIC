@@ -142,6 +142,10 @@ class TacticTimedThread(threading.Thread):
 
 
     def run(my):
+
+        import time
+        time.sleep(6)
+
         # DEPRECATED: use TacticSchedulerThread
         #print "Starting Timed Trigger"
 
@@ -217,6 +221,9 @@ class TacticSchedulerThread(threading.Thread):
 
 
     def run(my):
+        import time
+        time.sleep(3)
+
         print "Starting Scheduler ...."
 
         # NOTE: not sure why we have to do a batch here
