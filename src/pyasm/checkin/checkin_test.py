@@ -80,9 +80,10 @@ class CheckinTest(unittest.TestCase, Command):
         my._test_file_owner()
 
         my._test_symlink()
+        my._test_with_naming()
+        
         my._test_auto_checkin()
         my._test_strict_checkin()
-        my._test_with_naming()
    
 
     def clear_naming(my):
@@ -488,7 +489,7 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_strict_checkin(my):
 
         server = Config.get_value("install", "server")
-        process = "process"
+        #process = "process"
         person_code = my.person.get_code()
 
         filename = "filename.jpg"
@@ -522,13 +523,39 @@ class CheckinTest(unittest.TestCase, Command):
             checkin = FileCheckin(my.person, file_path, context=context, checkin_type='strict')
             checkin.execute()
             snapshot = checkin.get_snapshot()
-
             #print "time: ", time.time() - start
             #print "---"
 
-            # make sure there is no versionless
+            # make sure there is no latest versionless except for process/low
             versionless = Snapshot.get_versionless(my.person.get_search_type(), my.person.get_id(), context, mode='latest', create=False)
-            my.assertEquals(None, versionless)
+
+            versionless_current = Snapshot.get_versionless(my.person.get_search_type(), my.person.get_id(), context, mode='current', create=False)
+
+            if context == 'strict/low':
+                my.assertNotEquals(None, versionless)
+                file_objects = versionless.get_all_file_objects()
+                my.assertEquals(1, len(file_objects))
+
+                file_object = file_objects[0]
+                relative_dir = file_object.get_value("relative_dir")
+                file_name = file_object.get_value("file_name")
+                my.assertEquals(file_name ,'filename_latest.jpg')
+            else:
+                my.assertEquals(None, versionless)
+
+            # make sure there is no current versionless except for process/hi
+            if context == 'strict/hi':
+                my.assertNotEquals(None, versionless_current)
+                file_objects = versionless_current.get_all_file_objects()
+                my.assertEquals(1, len(file_objects))
+
+                file_object = file_objects[0]
+                relative_dir = file_object.get_value("relative_dir")
+                file_name = file_object.get_value("file_name")
+                my.assertEquals(file_name, 'filename_current.jpg')
+                
+            else:
+                my.assertEquals(None, versionless_current)
 
             
             path = snapshot.get_path_by_type("main")
@@ -573,6 +600,24 @@ class CheckinTest(unittest.TestCase, Command):
         naming.set_value("context", "naming/empty_dir_test")
         naming.set_value("file_naming", "TEST{basefile}_v{version}.{ext}")
         naming.set_value("dir_naming", "{@GET(.description)}")
+        naming.commit()
+
+        # create 3rd latest_versionless naming where 
+        naming = SearchType.create("config/naming")
+        naming.set_value("search_type", "unittest/person")
+        naming.set_value("context", "strict/low")
+        naming.set_value("file_naming", "{basefile}_latest.{ext}")
+        naming.set_value("dir_naming", "{@GET(.description)}")
+        naming.set_value("latest_versionless", "1")
+        naming.commit()
+
+        # create 4th current_versionless naming where 
+        naming = SearchType.create("config/naming")
+        naming.set_value("search_type", "unittest/person")
+        naming.set_value("context", "strict/hi")
+        naming.set_value("file_naming", "{basefile}_current.{ext}")
+        naming.set_value("dir_naming", "{@GET(.description)}")
+        naming.set_value("current_versionless", "1")
         naming.commit()
 
         my.clear_naming()
