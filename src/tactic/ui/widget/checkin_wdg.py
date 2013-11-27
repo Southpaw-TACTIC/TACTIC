@@ -828,7 +828,9 @@ spt.checkin.get_checkin_data = function() {
 
 
     var range = '';
+    alert('1');
     var type = top.getElement(".spt_checkin_type").value;
+    alert('2');
     var is_current_el = top.getElement(".spt_is_current");
     is_current = is_current_el.checked || is_current_el.value=='true';
 
@@ -2087,6 +2089,7 @@ spt.app_busy.hide();
 
 spt.checkin.html5_checkin = function(files) {
     var server = TacticServerStub.get();
+    alert("upload");
 
     var options = spt.checkin.get_checkin_data();
     var search_key = options.search_key;
@@ -2097,8 +2100,6 @@ spt.checkin.html5_checkin = function(files) {
     var is_current = true;
     var checkin_type = 'file';
     var mode = 'uploaded';
-
-    console.log(options);
 
     var upload_complete = function() {
 

@@ -694,16 +694,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # check the widgets if there are any that can't be async loaded
-        can_async_load = True
         for widget in my.widgets:
-            if can_async_load and widget.can_async_load():
-                can_async_load = False
+            if not widget.can_async_load():
+                init_load_num = -1
                 break
-        if not can_async_load:
-            init_load_num = -1
 
-
-           
         # minus 1 since row starts at 0
         init_load_num -= 1
 
