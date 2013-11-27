@@ -832,8 +832,18 @@ spt.checkin.get_checkin_data = function() {
     var is_current_el = top.getElement(".spt_is_current");
     is_current = is_current_el.checked || is_current_el.value=='true';
 
-    var process = top.getElement(".spt_checkin_process").value;
-    var context = top.getElement(".spt_checkin_context").value;
+    var process_el = top.getElement(".spt_checkin_process");
+    var process = '';
+    if (process_el) {
+        process = process_el.value;
+    }
+
+    var context_el = top.getElement(".spt_checkin_context");
+    var context = '';
+    if (context_el) {
+        context = context_el.value;
+    }
+
     if (context == '') {
         context = process;
     }
@@ -2097,8 +2107,6 @@ spt.checkin.html5_checkin = function(files) {
     var is_current = true;
     var checkin_type = 'file';
     var mode = 'uploaded';
-
-    console.log(options);
 
     var upload_complete = function() {
 

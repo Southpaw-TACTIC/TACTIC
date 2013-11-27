@@ -50,6 +50,26 @@
          </p>
          <div class="sidebar">
             <p class="title"><b></b></p><pre class="screen">@GET(.assigned)</pre></div>
+         <p><span class="bold"><strong>GETALL</strong></span></p>
+         <p>@GETALL( [search]:nav )</p>
+         <p>v4.1.0+</p>
+         <p>The GETALL method works in a similar way to GET; this method also returns a list of the
+                    values. Both work identically if the expression given is as simple as (sthpw/login.id). The
+                    difference lies in more complex queries:
+         </p>
+         <div class="sidebar">
+            <p class="title"><b></b></p><pre class="screen">@GETALL(sthpw/task.sthpw/login.first_name)</pre></div>
+         <p>The above query returns the name of the user associated with each task. Unlike GET, GETALL
+                    will show each user's name for as many tasks as they are associated with. GET does not
+                    display any duplicates. 
+         </p>
+         <p>Example use of GETALL:</p>
+         <div class="sidebar">
+            <p class="title"><b></b></p><pre class="screen">@SUM(@GETALL(sthpw/task.sthpw/work_hour.sthpw/login.hourly_wage) * 
+     @GETALL(sthpw/task.sthpw/work_hour.straight_time))</pre></div>
+         <p>This example retursns the total cost of a task based on the hours logged and the hourly
+                    wage of each employee.
+         </p>
          <p><span class="bold"><strong>SOBJECT</strong></span></p>
          <p>v2.5.0+</p>
          <p>The SOBJECT method is similar to the GET SObject except that the entire search object is
@@ -269,6 +289,34 @@ for task in tasks:
 
 return '''
 '''.join(dates)</pre></div>
+         <p><span class="bold"><strong>COLOR</strong></span></p>
+         <p>@COLOR(attribute[,offset])</p>
+         <p>v4.1.0+</p>
+         <p>Returns the current palette's color for the chosen attribute plus an offset. Offset is a
+                    number that can be used to make the color lighter or darker. The attribute can also be a hex
+                    value.
+         </p>
+         <p>Ex: @COLOR('color2', 2) will return the second color for this palette.</p>
+         <p><span class="bold"><strong>GRADIENT</strong></span></p>
+         <p>@GRADIENT(attribute[,offset,gradient_range])</p>
+         <p>v4.1.0+</p>
+         <p>Returns a CSS gradient value that starts at the attribute + offset and transitions to
+                    attribute + offset + gradient_range.
+         </p>
+         <p>Ex: "@GRADIENT('#777777','3','-4')" will return ['-webkit-gradient(linear, 0% 0%, 0% 100%,
+                    from(#7e7e7e), to(#747474))']
+         </p>
+         <p><span class="bold"><strong>PALETTE</strong></span></p>
+         <p>@PALETTE([palette_name])</p>
+         <p>v4.1.0+</p>
+         <p>Returns a dictionary representing the current palette or a specific palette if the
+                    optional argument palette_name is included.
+         </p>
+         <p>Example return value:</p>
+         <p>{'color': '#000', 'background2': '#777777', 'color3': '#333', 'color2': '#333',
+                    'background': '#DDDDDD', 'shadow': 'rgba(0,0,0,0.6)', 'border': '#888888', 'table_border':
+                    '#DDD', 'background3': '#999999', 'side_bar_title': '#3C76C2', 'theme': 'default'}
+         </p>
       </div>
       <div class="navfooter">
          <hr>

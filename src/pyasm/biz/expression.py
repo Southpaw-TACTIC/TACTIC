@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config
 from pyasm.search import Search, SObject, SearchKey, SearchType
 
 from project import Project
@@ -116,7 +116,11 @@ class ExpressionParser(object):
 
             url = web.get_project_url()
             my.vars['PROJECT_URL'] = url.to_string()
-
+        else:
+            base_url = Config.get_value("services", "mail_base_url")
+            if base_url:
+                my.vars['BASE_URL'] = base_url
+                my.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
 
 
         if vars:

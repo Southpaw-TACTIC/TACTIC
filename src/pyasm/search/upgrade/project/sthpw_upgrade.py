@@ -18,6 +18,8 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
 
+    def upgrade_v4_1_0_v01_001(my):
+        my.run_sql('''UPDATE "search_object" SET code = search_type;''')
     #
     # 4.1.0.b03
     #
@@ -174,7 +176,7 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_1_0_a01_002(my):
-        my.run_sql('''INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message', 'sthpw', 'Messages', 'sthpw', 'message', 'pyasm.search.SObject', 'Message', 'public');
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/message', 'sthpw/message', 'sthpw', 'Messages', 'sthpw', 'message', 'pyasm.search.SObject', 'Message', 'public');
         ''')
 
 
