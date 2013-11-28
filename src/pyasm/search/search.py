@@ -765,7 +765,10 @@ class Search(Base):
                 if not multi_stypes:
                     col_values  = [x.get_value(to_col) for x in sobjects]
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    my.add_filters(from_col, col_values, op=op )
+                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
+                        my.add_filters(from_col, col_values, op=op )
+                    else:
+                        my.add_filters("search_code", col_values, op=op)
                 else:
                     if op != 'in':
                         raise SearchException("For searches with multi_stypes, op = 'in' must be used.");
