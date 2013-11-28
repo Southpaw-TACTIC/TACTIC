@@ -817,7 +817,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int):
+                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
                         my.add_filters(from_col, col_values, op=op )
                     else:
                         my.add_filters("search_code", col_values, op=op)
