@@ -222,6 +222,7 @@ class Login(SObject):
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="link" element="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
 
 
         elif access_level == MED:
@@ -233,6 +234,7 @@ class Login(SObject):
 
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
 
 
         elif access_level == LOW:
@@ -241,6 +243,7 @@ class Login(SObject):
                     xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" access="allow"/>''')
+            xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
 
         elif access_level == MIN:
             if project_codes:

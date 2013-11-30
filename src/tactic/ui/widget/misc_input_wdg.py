@@ -321,6 +321,7 @@ class TaskStatusSelectWdg(SelectWdg):
                     {'process': process},
                     {'process': '*'},
                     {'process': '*' ,'pipeline':  pipeline.get_code()},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': process , 'pipeline':  pipeline.get_code()}
                     ]
 

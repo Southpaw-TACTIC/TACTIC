@@ -471,11 +471,12 @@ class TaskElementWdg(BaseTableElementWdg):
             for status in existing_statuses:
                 if status in my.allowed_statuses:
                     continue
-
+                
                 access_key = [
                     {'process': status},
                     {'process': '*'},
                     {'process': '*' ,'pipeline':  pipeline_code},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': status , 'pipeline':  pipeline_code}
                     ]
                 if security.check_access('process', access_key, "view", default="deny"):
