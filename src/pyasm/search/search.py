@@ -3789,6 +3789,7 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data):
+        data = unicode(data)
 
         record_message = True
         if not record_message:
