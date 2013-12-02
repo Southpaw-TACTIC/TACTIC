@@ -319,6 +319,7 @@ class TaskStatusSelectWdg(SelectWdg):
                 # use the new access rule process here
                 access_key = [
                     {'process': '*' ,'pipeline':  pipeline.get_code()},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': process , 'pipeline':  pipeline.get_code()}
                     ]
 
