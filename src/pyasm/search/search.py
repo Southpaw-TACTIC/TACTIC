@@ -3274,10 +3274,11 @@ class SObject(object):
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 info = column_info.get(key)
-                if is_postgres and not info.get("time_zone"):
-                    value = SPTDate.convert_to_local(value)
-                else:
-                    value = SPTDate.add_gmt_timezone(value)
+                if value:
+                    if is_postgres and not info.get("time_zone"):
+                        value = SPTDate.convert_to_local(value)
+                    else:
+                        value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S')
