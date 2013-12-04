@@ -108,18 +108,26 @@ class GanttElementWdg(BaseTableElementWdg):
         'order': 5,
         'category': 'Display'
     },
+    'week_start': {
+        'type': 'SelectWdg',
+        'description': 'Day the week starts',
+        'labels': 'MO|TU|WE|TH|FR|SA|SU',
+        'values': '0|1|2|3|4|5|6',
+        'order': 6,
+        'category': 'Display'
+    },
     'bar_height': {
         'type': 'SelectWdg',
         'description': 'Determines the height of the bars',
         'values': '6|12|18|24',
-        'order': 6,
+        'order': 7,
         'category': 'Display'
     },
     'color_mode': {
         'type': 'SelectWdg',
         'description': 'Special color mode for display of tasks',
         'values': 'status|process',
-        'order': 7,
+        'order': 8,
         'category': 'Display'
     },
     }
@@ -1668,7 +1676,14 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-        dates = list(rrule.rrule(rrule.WEEKLY, byweekday=5, dtstart=my.start_date, until=my.end_date))
+        week_start = my.get_option('week_start') or "6"
+        week_start = int(week_start) - 1
+        if week_start == -1:
+            week_start = 6
+
+        dates = list(rrule.rrule(rrule.WEEKLY, byweekday=week_start, dtstart=my.start_date, until=my.end_date))
+
+
         if len(dates) > 75:
             dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=my.start_date, until=my.end_date))
         if len(dates) > 75:
