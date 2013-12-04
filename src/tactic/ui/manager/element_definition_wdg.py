@@ -2535,7 +2535,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     edit_wdg.set_value(value)
 
                 labels = option.get('labels')
-                edit_wdg.set_option('labels', labels)
+                if labels:
+                    edit_wdg.set_option('labels', labels)
 
             elif widget_type == 'TextAreaWdg':
                 edit_wdg = TextAreaWdg(name)
