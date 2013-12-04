@@ -81,35 +81,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("The item to be deleted has a number of dependencies as described below:<br/>", 'heading')
 
         # find all the relationships
-        schema = Schema.get()
-        related_types = schema.get_related_search_types(search_type, direction="children")
-        parent_type = schema.get_parent_type(search_type)
-        child_types = schema.get_child_types(search_type)
-
-
-        # some special considerations
-        # FIXME: this needs to be more automatic.  Should only be
-        # deletable children (however, that will be defined)
-        if search_type in ['sthpw/task','sthpw/note', 'sthpw/snapshot']:
-            if "sthpw/project" in related_types:
-                related_types.remove("sthpw/project")
-
-            if "sthpw/login" in related_types:
-                related_types.remove("sthpw/login")
-
-            if "config/process" in related_types:
-                related_types.remove("config/process")
-
-
-
-        if parent_type in related_types:
-            related_types.remove(parent_type)
-
-        related_types.append('sthpw/note')
-        related_types.append('sthpw/task')
-        related_types.append('sthpw/snapshot')
-        if 'sthpw/work_hour' not in related_types:
-            related_types.append('sthpw/work_hour')
+        related_types = SearchType.get_related_types(search_type, direction='children') 
        
         items_div = DivWdg()
         content.add( items_div )
@@ -292,14 +264,21 @@ class DeleteCmd(Command):
         for sobject in sobjects:
             my.delete_sobject(sobject)
 
+            
+    
 
     def delete_sobject(my, sobject):
 
         search_type = sobject.get_base_search_type()
 
+        # this is used by API method delete_sobject
+        auto_discover = my.kwargs.get("auto_discover")
+        
         values = my.kwargs.get("values")
         if values:
             related_types = values.get("related_types")
+        elif auto_discover:
+            related_types = SearchType.get_related_types(search_type, direction="children")
         else:
             related_types = None
 
@@ -804,7 +783,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             total_items += count
             search_type_wdg.add("&nbsp; - &nbsp; %s item(s)" % count)
 
-
+            # TODO: this is similar to SearchType.get_related_types(). streamline at some point. 
             related_types = my.get_related_types(search_type)
             for related_type in related_types:
 
@@ -1029,8 +1008,9 @@ class DeleteProjectCmd(DeleteCmd):
         sql = DbContainer.get(db_resource, connect=True)
         if sql:
             try:
-                if sql.get_connection() and sql.connect():
-                    raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
+                if sql.get_database_type() != 'Sqlite':
+                    if sql.get_connection() and sql.connect():
+                        raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
             except SqlException, e:
                 pass
         # remove the project entry

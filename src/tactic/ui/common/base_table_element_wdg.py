@@ -54,14 +54,16 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
 
 
 
-    def _add_css_style(my, element, prefix):
+    def _add_css_style(my, element, prefix, name=None, value=None):
         # skip the edit/ insert row
-        sobject = my.get_current_sobject()
-        if not sobject or sobject.get_id() == -1:
-            return
+        #sobject = my.get_current_sobject()
+        #if not sobject or sobject.get_id() == -1:
+        #    return
 
-        value = my.get_value()
-        name = my.get_name()
+        if value is None:
+            value = my.get_value()
+        if name is None:
+            name = my.get_name()
 
         if not value:
             value = 0
@@ -76,17 +78,22 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
                 continue
 
             if expr:
+                sobject = my.get_current_sobject()
                 prefix, property = key.split("_", 1)
                 value = Search.eval(expr, sobject, vars=vars)
                 if value:
                     element.add_style("%s: %s" % (property, value) )
  
     def handle_td(my, td):
-        my._add_css_style(td, 'css_')
+        name = my.name
+        value = my.value
+        my._add_css_style(td, 'css_', name, value)
        
 
     def handle_tr(my, tr):
-        my._add_css_style(tr, 'rowcss_')
+        name = my.name
+        value = my.value
+        my._add_css_style(tr, 'rowcss_', name, value)
 
 
     def get_title(my):
@@ -193,6 +200,12 @@ class RawTableElementWdg(BaseTableElementWdg):
         name = my.get_name()
         return name
 
+    def get_required_columns(my):
+        '''method to get the require columns for this'''
+        return [
+        my.get_name()
+        ]
+    
     def get_display(my):
         sobject = my.get_current_sobject()
         name = my.get_name()
@@ -225,18 +238,23 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
     ARGS_KEYS = {
-    'type': {
-        'description': 'Determines the type it should be displayed as',
-        'type': 'SelectWdg',
-        'values': 'string|text|integer|float|boolean|timestamp',
-        'category': 'Database'
-    },
-    'total_summary': {
-        'description': 'Determines a calculation for the bottom row',
-        'type': 'SelectWdg',
-        'values': 'count|total|average',
-        'category': 'Summary'
-    }
+        'type': {
+            'description': 'Determine the type it should be displayed as',
+            'type': 'SelectWdg',
+            'values': 'string|text|integer|float|boolean|timestamp',
+            'category': 'Database'
+        },
+        'total_summary': {
+            'description': 'Determine a calculation for the bottom row',
+            'type': 'SelectWdg',
+            'values': 'count|total|average',
+            'category': 'Summary'
+        },
+        'column': {
+            'description': 'Determine the database column to display',
+            'type': 'TextWdg',
+            'category': 'Display'
+        }
     }
 
 
@@ -437,8 +455,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(my):
         sobject = my.get_current_sobject()
-        name = my.get_name()
-        value = my.get_value()
+        
+        column =  my.kwargs.get('column')
+        if column:
+            name = column
+        else:
+            name = my.get_name()
+        
+        value = my.get_value(name=name)
 
         if sobject:
             data_type = SearchType.get_column_type(sobject.get_search_type(), name)
@@ -451,7 +475,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         if name == 'id' and value == -1:
             value = ''
 
-        elif data_type == "timestamp" or my.name == "timestamp":
+        elif data_type == "timestamp" or name == "timestamp":
 	    if value == 'now':
                 value = ''
             elif value:

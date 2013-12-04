@@ -14,7 +14,7 @@ __all__ = ['ExpressionElementWdg', "ExpressionValueElementWdg"]
 
 import types, re
 
-from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps
+from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, CheckboxWdg
@@ -251,9 +251,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache:
             return True
 
-        group_by = my.get_option("group_by")
-        if group_by:
-            return True
 
         group_by = my.get_option("group_by")
         if group_by:
@@ -354,35 +351,32 @@ class ExpressionElementWdg(TypeTableElementWdg):
         calc_mode = my.get_option("calc_mode")
         if not calc_mode:
             calc_mode = 'slow'
- 
+        #calc_mode = 'fast'
         # parse the expression
         parser = ExpressionParser()
-        try:
-            if calc_mode == 'fast':
-                if my.cache_results == None:
-                    my.cache_results = parser.eval(expression, my.sobjects, vars=my.vars, dictionary=True, show_retired=my.show_retired)
-                    if isinstance(my.cache_results, basestring):
+        
+        if calc_mode == 'fast':
+            if my.cache_results == None:
+                my.cache_results = parser.eval(expression, my.sobjects, vars=my.vars, dictionary=True, show_retired=my.show_retired)
+                if isinstance(my.cache_results, basestring):
+                    if my.cache_results:
                         my.cache_results = eval(my.cache_results)
-                search_key = sobject.get_search_key()
-                result = my.cache_results.get(search_key)
-                if single:
-                    if result and len(result):
-                        result = result[0]
                     else:
-                        result = ''
-            else:
-              
-                result = parser.eval(expression, sobject, vars=my.vars, single=single, list=list, show_retired=my.show_retired)
+                        my.cache_results = {}
+
+            search_key = sobject.get_search_key()
+            result = my.cache_results.get(search_key)
+            if single:
+                if result and len(result):
+                    result = result[0]
+                else:
+                    result = ''
+        else:
+          
+            result = parser.eval(expression, sobject, vars=my.vars, single=single, list=list, show_retired=my.show_retired)
 
 
-        except Exception, e:
-            print "Expression error: ", e
-            print "    in column [%s] with [%s]" % (my.get_name(), expression)
-            from pyasm.widget import ExceptionWdg
-            widget = ExceptionWdg(e)
-            return widget
-
-            result = ""
+        
 
         # FIXME: don't know how to do this any other way
         try:
@@ -395,7 +389,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
             # turn non basestring into string
             encoded_result = []
             for res in result:
-                if not isinstance(res, basestring): 
+                if isinstance(res, datetime.datetime):
+                    res = SPTDate.convert_to_local(res)
+                elif not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
                 encoded_result.append(res)
             result = ','.join(encoded_result)
@@ -405,7 +401,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if result == None or result == []:
             result = ''
 
-        
+       
+        if isinstance(result, datetime.datetime):
+            result = SPTDate.convert_to_local(result)
         return result
 
 
@@ -504,22 +502,32 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return div
 
 
-        use_cache = my.get_option("use_cache") in ['true', True]
-        if use_cache:
-            result = my.sobject.get_value(my.get_name())
-        else:
-            result = my._get_result(my.sobject, my.expression)
+        try:
+            use_cache = my.get_option("use_cache") in ['true', True]
+            if use_cache:
+                result = my.sobject.get_value(my.get_name())
+            else:
+                result = my._get_result(my.sobject, my.expression)
 
 
 
 
 
-        # calculte the alt expression if defined
-        # DEPRECATED: use format expression instead
-        if my.alt_expression:
-            my.alt_result = my._get_result(my.sobject, my.alt_expression)
-        else:
-            my.alt_result = result
+            # calculte the alt expression if defined
+            # DEPRECATED: use format expression instead
+            if my.alt_expression:
+                my.alt_result = my._get_result(my.sobject, my.alt_expression)
+            else:
+                my.alt_result = result
+        except Exception, e:
+            print "Expression error: ", e
+            print "    in column [%s] with [%s]" % (my.get_name(), my.expression)
+            #from pyasm.widget import ExceptionWdg
+            #widget = ExceptionWdg(e)
+            #return widget
+            widget = DivWdg()
+            widget.add("Expression error: %s" % e)
+            return widget
 
         my.value = result
 
@@ -554,7 +562,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     single = True
                     list = False
-                display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+
+                try:
+                    display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+                except Exception, e:
+                    print "WARNING in display expression [%s]: " % display_expr, e
+                    display_result = "ERROR: %s" % e
 
             elif format_str:
                 # This import needs to be here because of a deep

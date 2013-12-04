@@ -101,55 +101,6 @@ class ColumnAddCmd(Command):
         data_type = my.get_data_type(my.search_type, my.attr_type)
 
 
-        """
-        # SearchType Manager and Add Widget Column use mixed upper and
-        # lowercases for the following attr_type, so fix it at some point
-        if not my.attr_type:
-            my.attr_type = "varchar"
-
-        if my.attr_type == "integer":
-            type = impl.get_int() 
-        elif my.attr_type == "float":
-            type = "float"
-        elif my.attr_type == "boolean":
-            type = impl.get_boolean()
-        elif my.attr_type == "link":
-            type = "text"
-        elif my.attr_type.startswith('varchar'):
-            type = my.attr_type
-
-        elif my.attr_type == 'time':
-            type = impl.get_timestamp()
-        elif my.attr_type in ["Date", "date"]:
-            type = impl.get_timestamp()
-        elif my.attr_type == "Category":
-            type = "varchar(256)"
-        elif my.attr_type in ["text", "Text"]:
-            type = impl.get_text()
-        elif my.attr_type in ["Date Range", 'timestamp']:
-            type = impl.get_timestamp()
-        elif my.attr_type == "Checkbox":
-            type = "varchar(256)"
-        elif my.attr_type in ["Foreign Key", "foreign_key"]:
-            type = "varchar(256)"
-        elif my.attr_type in ["List", "list"]:
-            type = "varchar(512)"
-        elif my.attr_type == "Name/Code":
-            type = "varchar(256)"
-        elif my.attr_type == "Number":
-            type = impl.get_int() 
-
-        elif my.attr_type in ["currency", "scientific", "percent"]:
-            type = "float"
-        elif my.attr_type == "timecode":
-            type = impl.get_int() 
-
-        else:
-            #type = "varchar(256)"
-            type = impl.get_varchar()
-        """
-
-
         # if there is no type, then no column is created for widget_config
         if my.attr_type == "Date Range":
             column1 = "%s_start_date" % my.attr_name
@@ -181,29 +132,32 @@ class ColumnAddCmd(Command):
                 raise TacticException('[%s] already existed in this table [%s]'%(column, table))
                 return
 
-            if sql.get_database_type() == "MySQL":
+            # FIXME: database dependency should be in DatabaseImpl
+            if sql.get_database_type() == "MongoDb":
+                statement = None
+
+            elif sql.get_database_type() == "MySQL":
                 if type == "varchar":
                     type = "varchar(256)"
+                statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
+                    (table, column, type)
 
-            # FIXME: database dependency should be in DatabaseImpl
-            if sql.get_database_type() == "Oracle":
+            elif sql.get_database_type() == "Oracle":
                 statement = 'ALTER TABLE "%s" ADD("%s" %s)' % \
                     (table, column, type)
-            else:
-                if sql.get_database_type() == 'SQLServer':
-                    statement = 'ALTER TABLE [%s] ADD "%s" %s' % \
-                        (table, column, type)
-                else: 
-                    statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
-                        (table, column, type)
-            if not my.nullable:
-                statement = '%s NOT NULL' %statement
-            sql.do_update(statement)
 
-            # FIXME: should we be storing just the database ... or maybe the
-            # project?
-            #database = sql.get_database_name()
-            AlterTableUndo.log_add(db_resource,table,column,type)
+            elif sql.get_database_type() == 'SQLServer':
+                statement = 'ALTER TABLE [%s] ADD "%s" %s' % \
+                    (table, column, type)
+            else: 
+                statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
+                    (table, column, type)
+
+            if statement:
+                if not my.nullable:
+                    statement = '%s NOT NULL' %statement
+                sql.do_update(statement)
+                AlterTableUndo.log_add(db_resource,table,column,type)
 
 
 

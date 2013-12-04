@@ -157,15 +157,13 @@ class FolderTrigger(Trigger):
         mkdirs = False
         ext = 'jpg'
 
-        path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext)
+        path = virtual_snapshot.get_preallocated_path(file_type, file_name, mkdirs, ext=ext, parent=sobject)
         dirname = os.path.dirname(path)
 
         if isinstance(path, unicode):
             path = path.encode('utf-8')
         else:
             path = unicode(path, errors='ignore').encode('utf-8')
-        print "path: ", path
-        print "search_key: ", sobject.get_search_key()
 
         #dirname = "%s/%s/%s/" % (base_dir, project_code, root_dir)
 

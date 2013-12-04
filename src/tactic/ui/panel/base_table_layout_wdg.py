@@ -287,7 +287,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         web = WebContainer.get_web()
         my.skin = web.get_skin()
 
-
         # Set up default row looks ...
         my.look_row = 'dg_row'
         my.look_row_hilite = 'dg_row_hilite'
@@ -325,7 +324,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def set_items_found(my, number):
         my.items_found = number
-
+    
+    def set_search_wdg(my, search_wdg):
+        my.search_wdg = search_wdg
 
 
     def is_expression_element(my, element_name):
@@ -375,7 +376,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
-
         keyword_values = filter_data.get_values_by_prefix("keyword")
         if keyword_values:
             column = "keywords"
@@ -396,11 +396,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
         # passed in filter overrides
+        """
         if state_filter:
             filter_data.set_data(state_filter)
+        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
-      
+        
         # user-chosen order has top priority
         if order:
             my.order_element = order
@@ -420,7 +422,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # the group element is always ordered first
             my.group_element = group_values.get("group")
-            
 
             if my.group_element == 'true':
                 my.group_element = True
@@ -530,21 +531,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # don't set the view here, it affects the logic in SearchWdg
-        from tactic.ui.app import SearchWdg
-        filter_xml = ''
-        if my.kwargs.get('filter_xml'):
-            filter_xml = my.kwargs.get('filter_xml')
-        
+        filter_json = ''
+        if my.kwargs.get('filter'):
+            filter_json = my.kwargs.get('filter')
+            
         # turn on user_override since the user probably would alter the saved search 
         limit = my.kwargs.get('search_limit')
         custom_search_view = my.kwargs.get('custom_search_view')
         if not custom_search_view:
             custom_search_view = ''
 
+        run_search_bvr = my.kwargs.get('run_search_bvr')
+
         #my.search_wdg = None
         if not my.search_wdg:
+            my.search_wdg = my.kwargs.get("search_wdg")
+        if not my.search_wdg:
+            from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
-            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_xml, view=my.search_view, user_override=True, parent_key=None, limit=limit, custom_search_view=custom_search_view)
+            # custom_filter_view and custom_search_view are less used, so excluded here
+            my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         search = my.search_wdg.get_search()
         if my.no_results:
@@ -605,7 +611,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s":
+        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -1121,22 +1127,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
-            } )
-            # no need for app_busy.. since it's built-in to search_cbk()
-            button.add_behavior( {
-                'type': 'listen',
-                'event_name': 'search_table_%s' % my.table_id,
-                'cbjs_action': '''
-                    var top = bvr.src_el.getParent(".spt_layout");
-                    var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    } 
-                '''
             } )
 
 
@@ -2257,11 +2247,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.app_busy.show("Uploading preview image ...", file);
 
 
-                    // add the file name to the context
-                    if (context == "publish") {
-                        context = context + "/" + file;
-                    }
-
                     var server = TacticServerStub.get();
                     try {
                         spt.app_busy.show(bvr.description, file);                   
@@ -2278,12 +2263,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             var kwargs;
                             if (context != "icon") {
                                 context = context + "/" + filename;
-                                kwargs = {mode: 'upload', checkin_mode: 'auto'};
+                                kwargs = {mode: 'upload', checkin_type: 'auto'};
                             }
                             else {
                                 kwargs = {mode: 'upload'};
                             }
-                            server.simple_checkin( search_key, context, file);
+                            server.simple_checkin( search_key, context, file, kwargs);
                         }
                     } catch(e) {
                         var error_str = spt.exception.handler(e);
@@ -2350,11 +2335,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         
                         var has_error = false;
 
-                        // add the file name to the context
-                        if (context == "publish") {
-                            context = context + "/" + file;
-                        }
-     
                         try {
                             
                             if (search_key.search('sthpw/snapshot')!= -1){                       
@@ -2364,7 +2344,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 server.add_file( snapshot_code, file, kwargs );                                              
                             }
                             else {
-                                var kwargs = {mode: 'uploaded'};  
+
+                                file = file.replace(/\\/g, "/");
+                                var parts = file.split("/");
+                                var filename = parts[parts.length-1];
+                                var kwargs;
+                                if (context != "icon") {
+                                    context = context + "/" + filename;
+                                    kwargs = {mode: 'uploaded', checkin_type: 'auto'};
+                                }
+                                else {
+                                    kwargs = {mode: 'uploaded'};
+                                }
+                                
                                 server.simple_checkin( search_key, context, file, kwargs);
                             }
                         } catch(e) {

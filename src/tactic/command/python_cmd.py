@@ -15,6 +15,7 @@ import tacticenv
 
 from pyasm.common import TacticException, Environment, Config, jsondumps, jsonloads
 from pyasm.command import Command
+from pyasm.biz import Project
 from pyasm.search import Search
 from tactic_client_lib import TacticServerStub
 
@@ -129,6 +130,8 @@ class PythonTrigger(Trigger):
         dirname = os.path.dirname(my.script_path)
         basename = os.path.basename(my.script_path)
 
+        project = Project.get()
+
         # treat the code as a python
         search = Search("config/custom_script")
         search.add_filter("folder", dirname)
@@ -142,10 +145,10 @@ class PythonTrigger(Trigger):
                 search.add_filter("title", basename)
                 script_sobj = search.get_sobject()
                 if not script_sobj:
-                    print("WARNING: Script with path [%s] does not exist in this project or Admin Site" % my.script_path)
+                    print("WARNING: Script with path [%s] does not exist in this project [%s] or Admin Site" % (my.script_path, project.get_code()))
                     return {}
             except:
-                print("WARNING: Script with path [%s] does not exist in this project or Admin Site" % my.script_path)
+                print("WARNING: Script with path [%s] does not exist in this project [%s] or Admin Site" % (my.script_path, project.get_code()))
                 return
 
         script = script_sobj.get_value("script")

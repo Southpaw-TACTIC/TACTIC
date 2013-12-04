@@ -83,8 +83,8 @@ class TaskElementWdg(BaseTableElementWdg):
     },
 
 
-    'autocreate_tasks': {
-        'description': 'Flag to determine tasks are created dynamically',
+    'show_filler_tasks': {
+        'description': 'Flag to determine filler tasks are shown dynamically',
         'type': 'SelectWdg',
         'values': 'true|false',
         'category': 'Mode',
@@ -547,11 +547,10 @@ class TaskElementWdg(BaseTableElementWdg):
             for status in existing_statuses:
                 if status in my.allowed_statuses:
                     continue
-
+                
                 access_key = [
-                    {'process': status},
-                    {'process': '*'},
                     {'process': '*' ,'pipeline':  pipeline_code},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': status , 'pipeline':  pipeline_code}
                     ]
                 if security.check_access('process', access_key, "view", default="deny"):
@@ -923,8 +922,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # fill in any missing tasks
-        autocreate_tasks = my.kwargs.get("autocreate_tasks")
-        if autocreate_tasks in ["true", True]:
+        show_filler_tasks = my.kwargs.get("show_filler_tasks")
+        if show_filler_tasks in ["true", True]:
             pipeline = Pipeline.get_by_code(pipeline_code)
             if not pipeline:
                 pipeline = Pipeline.get_by_code("task")
@@ -1971,7 +1970,7 @@ __all__.append("TaskSummaryElementWdg")
 class TaskSummaryElementWdg(TaskElementWdg):
     def get_display(my):
 
-        my.kwargs["autocreate_tasks"] = True
+        my.kwargs["show_filler_tasks"] = True
 
         my.tasks = my.get_tasks()
         sobject = my.get_current_sobject()

@@ -14,13 +14,13 @@ __all__ = ['ExpressionParser']
 
 
 import os, re, types, math
-import dateutil, datetime
+import dateutil
 from dateutil import parser
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config
 from pyasm.search import Search, SObject, SearchKey, SearchType
 
 from project import Project
@@ -103,6 +103,25 @@ class ExpressionParser(object):
 
         project = Project.get_project_code()
         my.vars['PROJECT'] = project
+
+
+        try:
+            from pyasm.web import WebContainer
+            web = WebContainer.get_web()
+        except Exception, e:
+            web = None
+        if web:
+            url = web.get_base_url()
+            my.vars['BASE_URL'] = url.to_string()
+
+            url = web.get_project_url()
+            my.vars['PROJECT_URL'] = url.to_string()
+        else:
+            base_url = Config.get_value("services", "mail_base_url")
+            if base_url:
+                my.vars['BASE_URL'] = base_url
+                my.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
+
 
         if vars:
             my.vars.update(vars)
@@ -323,7 +342,6 @@ class ExpressionParser(object):
 
             flat_cache_sobjects[search_key] = leaf_sobjects
 
-       
         return flat_cache_sobjects
 
 
@@ -1124,7 +1142,7 @@ class MethodMode(ExpressionParser):
         results = []
         method = method.upper()
 
-        if method == 'GET':
+        if method in ['GET', 'GETALL']:
             format = None
             if len(args) == 1:
                 parts = my._split_arg(args[0])
@@ -1144,7 +1162,8 @@ class MethodMode(ExpressionParser):
             if not search_types:
                 raise SyntaxError("Improper arguments in method [%s] definition in expression [%s]" % (method, my.expression))
 
-            sobjects = my.get_sobjects(search_types)
+            unique = method == 'GET'
+            sobjects = my.get_sobjects(search_types, unique=unique)
 
 
             return_mode = Container.get("Expression::return_mode")
@@ -1464,7 +1483,6 @@ class MethodMode(ExpressionParser):
                 delimiter = args[2]
                 results = delimiter.join(results)
                 
-                
 
 
         elif method == 'JOIN':
@@ -1477,6 +1495,26 @@ class MethodMode(ExpressionParser):
 
             delimiter = args[1]
             results = delimiter.join(results)
+
+
+        elif method == 'SUBSTITUTE':
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            values_list = []
+            for arg in args[1:]:
+                expression = arg
+                mode = my.get_mode(expression)
+                values = my.dive(mode, expression=expression)
+                values_list.append(values)
+
+            # transpose the values
+            values_list = zip(*values_list)
+            results = []
+            for values in values_list:
+                result = args[0] % values
+                results.append(result)
+
 
 
         elif method == 'UPDATE':
@@ -1792,7 +1830,7 @@ class MethodMode(ExpressionParser):
 
         return reg_filters, context_filters
 
-    def get_sobjects(my, related_types, is_count=False, is_search=False):
+    def get_sobjects(my, related_types, is_count=False, is_search=False, unique=True):
         # FIXME: not sure why id() does not work. It seems to return the same
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
@@ -2062,7 +2100,7 @@ class MethodMode(ExpressionParser):
                     ids = set()
                     for sobject in tmp_list:
                         sobject_id = sobject.get_id()
-                        if sobject_id in ids:
+                        if unique and sobject_id in ids:
                             continue
                         list.append(sobject)
                         ids.add(sobject_id)
@@ -2116,6 +2154,16 @@ class MethodMode(ExpressionParser):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
+                """
+                # special case where leaf = [sobject].  This is used to
+                # designate a leaf value.  Look at get_flat_cache() for
+                # code and explanation
+                if key and values and values[0].get_search_key() == key:
+                    # The result is empty
+                    results[key] = [None]
+                else:
+                    results[key] = my.get(values, column)
+                """
                 results[key] = my.get(values, column)
             return results
 
@@ -2162,7 +2210,8 @@ class MethodMode(ExpressionParser):
 
         total = 0
         for sobject in sobjects:
-            value = sobject.get_value(column)
+            
+            value = sobject.get_value(column, no_exception=True)
             if not value:
                 continue
             if type(value) in types.StringTypes:

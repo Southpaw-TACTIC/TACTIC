@@ -22,11 +22,18 @@ import sys, os, string, re, stat
 try:
     #import Image
     from PIL import Image
-    HAS_PIL = True
     # Test to see if imaging actually works
     import _imaging
+    HAS_PIL = True
 except:
     HAS_PIL = False
+    try:
+        import Image
+        # Test to see if imaging actually works
+        import _imaging
+        HAS_PIL = True
+    except:
+        HAS_PIL = False
 
 if Common.which("convert"):
     HAS_IMAGE_MAGICK = True
@@ -47,6 +54,12 @@ class FileException(TacticException):
 
 
 class File(SObject):
+
+    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani']
+
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax',
+                'wm','wvx','ogg','webm','mkv','m4v','mxf'] 
+
 
     SEARCH_TYPE = "sthpw/file"
     BASE_TYPE_SEQ = "sequence"
@@ -459,16 +472,14 @@ class IconCreator(object):
         # check file name
         file_name = os.path.basename(my.file_path)
 
-        base, ext = os.path.splitext(file_name)
+        ext = File.get_extension(file_name)
         type = string.lower(ext)
 
 
-        if type == ".pdf":
+        if type == "pdf":
             my._process_pdf( file_name )
-        elif type in ['.gz','.max','.ma','.xls', '.doc', '.txt', '.fla','.psd','.mov', '.avi', '.xsi', '.scn', '.hip', '.xml','.eani']:
-            # treat as normal files
-            pass
-        elif type.endswith(('.mov', '.mpg', '.mp4', '.wmv', '.mxf')):
+        elif type in File.NORMAL_EXT or type in File.VIDEO_EXT:
+            # skip icon generation for normal or video files
             pass
         else:
             # assume it is an image
@@ -545,14 +556,21 @@ class IconCreator(object):
 
                 # create the icon
                 thumb_size = (120,100)
-                my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
-
-                my.icon_path = tmp_icon_path
+                try:
+                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                except TacticException:
+                    my.icon_path = None
+                else:
+                    my.icon_path = tmp_icon_path
             elif my.icon_mode: # just icon, no web
                 # create the icon only
                 thumb_size = (120,100)
-                my._resize_image(my.file_path, tmp_icon_path, thumb_size)
-                my.icon_path = tmp_icon_path
+                try:
+                    my._resize_image(my.file_path, tmp_icon_path, thumb_size)
+                except TacticException:
+                    my.icon_path = None
+                else:
+                    my.icon_path = tmp_icon_path
 
 
             else:
@@ -568,16 +586,21 @@ class IconCreator(object):
                             thumb_size = (int(parts[0]), int(parts[1]))
                         except ValueError:
                             thumb_size = (640, 480)
-                
-                my._resize_image(my.file_path, tmp_web_path, thumb_size)
-
-                my.web_path = tmp_web_path
+                try:
+                    my._resize_image(my.file_path, tmp_web_path, thumb_size)
+                except TacticException:
+                    my.web_path = None
+                else:
+                    my.web_path = tmp_web_path
 
                 # create the icon
                 thumb_size = (120,100)
-                my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
-
-                my.icon_path = tmp_icon_path
+                try:
+                    my._resize_image(tmp_web_path, tmp_icon_path, thumb_size)
+                except TacticException:
+                    my.icon_path = None
+                else:
+                    my.icon_path = tmp_icon_path
 
             # check icon file size, reset to none if it is empty
             # TODO: use finally in Python 2.5
@@ -647,11 +670,15 @@ class IconCreator(object):
    
             large_path = large_path.encode('utf-8')
             import subprocess
-            subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+            try:
+                subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
+            except:
+                pass
             #os.system(cmd)
+            # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
-                raise
+                raise TacticException('Icon generation failed')
 
 
 

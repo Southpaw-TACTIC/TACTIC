@@ -51,6 +51,15 @@ class PythonElementWdg(TypeTableElementWdg):
         'type': 'TextWdg',
         'order': 5,
         'category': 'Options'
+    },
+
+    'group_by': {
+        'description': 'Turn on Group by',
+        'type': 'SelectWdg',
+        'values': 'true|',
+        'labels': 'true|false',
+        'order': 6,
+        'category': 'Options'
     }
     }
   

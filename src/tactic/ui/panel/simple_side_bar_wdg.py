@@ -220,8 +220,8 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             if target[0] not in [".", "#"]:
                 target = ".%s" % target
 
-        link = "/tab/%s" % (element_name)
         #link = "/link/%s" % (element_name)
+        link = "/tab/%s" % (element_name)
         li.add_attr("spt_link", link)
 
         if link_mode == 'href':
@@ -230,6 +230,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
                 'type': 'click_up',
+                'bvr_repeat_interval': 3,
                 'title': title,
                 'link': link,
                 'target': target,
@@ -245,6 +246,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             li.add("<a>%s</a>" % title)
             li.add_behavior( {
                 'type': 'click_up',
+                'bvr_repeat_interval': 3,
                 'title': title,
                 'link': link,
                 'element_name': element_name,
@@ -269,7 +271,9 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     var kwargs = {
                         hash: link
                     }
-                    spt.tab.add_new(bvr.element_name,bvr.title,class_name,kwargs);
+                    // not hash is different from link
+                    hash = "/link/" + bvr.element_name;
+                    spt.tab.add_new(bvr.element_name,bvr.title,class_name,kwargs, null, hash);
                 }
                 else {
                     spt.app_busy.show("Loading link "+bvr.title);

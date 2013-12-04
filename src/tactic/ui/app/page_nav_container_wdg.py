@@ -116,12 +116,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             <config>
             <application>
             <element name="main_body">
-              <display class="tactic.ui.panel.ViewPanelWdg">
-                <search_key></search_key>
-                <search_type></search_type>
-                <search_view></search_view>
-                <view></view>
-              </display>
+              <display class="tactic.ui.startup.MainWdg"/>
               <web/>
             </element>
             </application>
@@ -138,12 +133,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             </element>
 
             <element name="main_body">
-              <display class="tactic.ui.panel.ViewPanelWdg">
-                <search_key></search_key>
-                <search_type></search_type>
-                <search_view></search_view>
-                <view></view>
-              </display>
+              <display class="tactic.ui.startup.MainWdg"/>
               <web/>
             </element>
             </application>
@@ -479,9 +469,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
                 element_name = main_body_options.get("element_name")
                 title = main_body_options.get("title")
 
-
                 main_body_content = Common.create_from_class_path(main_body_handler, [], main_body_options)
-
                 # get the web values from top_layout
                 main_body_values = config.get_web_options("main_body")
                 web = WebContainer.get_web()

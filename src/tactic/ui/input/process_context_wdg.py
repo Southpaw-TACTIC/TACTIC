@@ -140,7 +140,8 @@ class ProcessInputWdg(BaseInputWdg):
                    'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'
                 } )
             
-
+            if not pipeline:
+                continue
             # get the sub-pipeline processes as well
             processes = pipeline.get_processes(recurse=True)
             values = []

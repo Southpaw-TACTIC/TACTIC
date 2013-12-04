@@ -219,12 +219,13 @@ class Search(Base):
 
         my.select = Select()
         my.select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
 
         assert isinstance(my.db_resource, DbResource)
-        my.select.set_database(my.db_resource)
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
+
         if not search_type == 'sthpw/virtual' and not exists:
             raise SearchException('This table [%s] does not exist for database [%s]' %(table, my.database))
 
@@ -816,7 +817,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int):
+                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
                         my.add_filters(from_col, col_values, op=op )
                     else:
                         my.add_filters("search_code", col_values, op=op)
@@ -1115,6 +1116,7 @@ class Search(Base):
 
         select = Select()
         select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
         select.add_table(table)
         select.add_column("id")
 
@@ -1297,7 +1299,6 @@ class Search(Base):
 
 
     def add_join(my, to_search_type, from_search_type=None, path=None, join=None):
-
         to_search_type_obj = SearchType.get(to_search_type)
         to_search_type = to_search_type_obj.get_base_key()
 
@@ -1401,7 +1402,6 @@ class Search(Base):
         
         if "connect" in parts:
             return
-        my.order_bys.append(column)
 
 
         if len(parts) >= 2:
@@ -1426,16 +1426,29 @@ class Search(Base):
                 if search_type == prev_search_type:
                     continue
 
-                my.add_join(search_type, prev_search_type, join=join)
+
+                can_join = DatabaseImpl.can_search_types_join( \
+                        search_type, prev_search_type)
+                if can_join:
+                    my.add_join(search_type, prev_search_type, join=join)
+                else:
+                    return False
+
 
                 prev_search_type = search_type
 
+
+            my.order_bys.append(column)
 
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             column = parts[-1]
             my.select.add_order_by(column, direction=direction, table=table)
+
+            return True
         else:
+            my.order_bys.append(column)
+
             table = my.search_type_obj.get_table()
 
             impl = my.get_database_impl()
@@ -1526,6 +1539,8 @@ class Search(Base):
         #TODO: Revisit and fix for SQL Server.
         if not my.security_filter:
             security.alter_search(my)
+
+
 
 
         # build an sql object
@@ -1823,12 +1838,12 @@ class Search(Base):
     get_by_value = staticmethod(get_by_value)
 
     
-    def get_by_id(search_type, search_id):
+    def get_by_id(search_type, search_id, show_retired=True):
         # allow search_id = 0
         if not search_type or search_id in [None, '']:
             return None
         search = Search(search_type)
-        search.set_show_retired(True)
+        search.set_show_retired(show_retired)
         if isinstance(search_id, list):
             # assuming idential search_type
             search.add_filters(search.get_id_col(), search_id)
@@ -1871,7 +1886,7 @@ class Search(Base):
 
    
     def get_by_search_keys(search_keys, keep_order=False):
-        return SearchKey.get_by_search_keys(search_keys)
+        return SearchKey.get_by_search_keys(search_keys, keep_order=keep_order)
     get_by_search_keys = staticmethod(get_by_search_keys)
 
     def get_compound_filter(text_value, columns):
@@ -3193,19 +3208,22 @@ class SObject(object):
         if relationship in ['search_type', 'search_code', 'search_id']:
 
             my.set_value("search_type", sobject.get_search_type() )
-
             # fill in search_id only if it is an integer: this may not be the
             # case, such as in MongoDb, where the id is an object
             if SearchType.column_exists(my.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
-                if isinstance(sobj_id, int):
+            
+                if isinstance(sobj_id, int) or isinstance(sobj_id, long):
                     my.set_value("search_id", sobj_id )
                 else:
                     my.set_value("search_code", sobj_id )
 
-
             if SearchType.column_exists(my.full_search_type, "search_code") and SearchType.column_exists(sobject.get_search_type(), "code"):
-                my.set_value("search_code", sobject.get_value("code") )
+
+                if sobject.get_database_type() == "MongoDb":
+                    my.set_value("search_code", sobject.get_id() )
+                else:
+                    my.set_value("search_code", sobject.get_value("code") )
 
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
@@ -3230,7 +3248,6 @@ class SObject(object):
             full_search_type2 = sobject.get_search_type()
             relationship = schema.get_relationship(full_search_type, full_search_type2)
             #relationship = schema.get_relationship(search_type, search_type2)
-
 
 
         if relationship in ["search_type", "search_code", "search_id"]:
@@ -3454,10 +3471,11 @@ class SObject(object):
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 info = column_info.get(key)
-                if is_postgres and not info.get("time_zone"):
-                    value = SPTDate.convert_to_local(value)
-                else:
-                    value = SPTDate.add_gmt_timezone(value)
+                if value:
+                    if is_postgres and not info.get("time_zone"):
+                        value = SPTDate.convert_to_local(value)
+                    else:
+                        value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S')
@@ -3527,7 +3545,6 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                #sequence = impl.get_sequence_name(table, database=database)
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
@@ -3615,7 +3632,10 @@ class SObject(object):
                 "sthpw/change_timestamp",
                 "sthpw/transaction_log",
                 "sthpw/sync_job",
-                "sthpw/sync_log"
+                "sthpw/sync_log",
+                'sthpw/message',
+                'sthpw/message_log',
+
         ] \
                 and sobject and sobject.has_value("code"):
 
@@ -3708,7 +3728,9 @@ class SObject(object):
                     'sthpw/search_object',
                     'sthpw/wdg_settings',
                     'sthpw/sync_log',
-                    'sthpw/sync_job'
+                    'sthpw/sync_job',
+                    'sthpw/message',
+                    'sthpw/message_log',
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -3768,6 +3790,7 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data):
+        data = unicode(data)
 
         record_message = True
         if not record_message:
@@ -4082,10 +4105,16 @@ class SObject(object):
         if id == -1:
             return
 
-        base_search_type = my.get_base_search_type()
+        # remember the data
+        data = my.data.copy()
 
-        #where = my.get_id_col() + " = " + str(id)
-        where = '"%s" = %s' % (my.get_id_col(),id)
+        base_search_type = my.get_base_search_type()
+        database_impl = my.get_database_impl()
+        database_type = database_impl.get_database_type()
+
+        db_resource = my.get_db_resource()
+        sql = DbContainer.get(db_resource)
+
 
         # make sure we have the right table for search types
         is_search_type = isinstance(my,SearchType)
@@ -4096,26 +4125,25 @@ class SObject(object):
             database = my.get_database()
             table = my.search_type_obj.get_table()
 
-        # perform the update
-        assert where != "" or where != 0 or where != 1
+        if database_type == 'MongoDb':
 
-        # remember the data
-        data = my.data.copy()
+            database_impl.execute_delete(sql, table, id)
 
-        database_type = my.get_database_impl().get_database_type()
-        if database_type == 'Oracle':
-            # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
-            # for use with set-ups that use a service user to access the Oracle DB
-            statement = 'DELETE FROM %s."%s" WHERE %s' % (database, table, where )
-        elif database_type == 'SQLServer':
-            statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
+
         else:
-            statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
+            where = '"%s" = %s' % (my.get_id_col(),id)
+
+            if database_type == 'Oracle':
+                # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
+                # for use with set-ups that use a service user to access the Oracle DB
+                statement = 'DELETE FROM %s."%s" WHERE %s' % (database, table, where )
+            elif database_type == 'SQLServer':
+                statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
+            else:
+                statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
 
 
-        db_resource = my.get_db_resource()
-        sql = DbContainer.get(db_resource)
-        sql.do_update(statement)
+            sql.do_update(statement)
 
         # record the delete unless specifically not requested (for undo)
         if log:
@@ -4595,7 +4623,8 @@ class SObject(object):
 
     def get_reference(my, search_type):
         return my.get_parent(search_type)
-   
+  
+    
 
     def get_icon_context(cls, context=None):
         '''gives various widgets (namely the ThumbWdg) and indication of
@@ -4868,14 +4897,6 @@ class SearchType(SObject):
             search_type = search_type.SEARCH_TYPE
 
 
-        # MongoDb Test
-        #if search_type.startswith("mongodb/"):
-        #    my.base_key = search_type
-        #else:
-        #    my.base_key = ""
-
-
-
         super(SearchType,my).__init__(search_type,columns,result, fast_data=fast_data)
 
         # cache this value as it gets called a lot
@@ -5136,7 +5157,9 @@ class SearchType(SObject):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             key2 = "%s:%s" % (db_resource, table)
-            cache_dict[key2] = None
+            #cache_dict[key2] = None
+            del(cache_dict[key2])
+
 
     clear_column_cache = classmethod(clear_column_cache)
 
@@ -5748,6 +5771,43 @@ class SearchType(SObject):
 
     breakup_search_type = staticmethod(breakup_search_type)
 
+    def get_related_types(cls, search_type, direction="children"):
+        '''find all the downstream related types for delete purpose in delete_sobject() or DeleteToolWdg'''
+        
+        from pyasm.biz import Schema
+        schema = Schema.get()
+        related_types = schema.get_related_search_types(search_type, direction=direction)
+        parent_type = schema.get_parent_type(search_type)
+
+
+        # some special considerations
+        # FIXME: this needs to be more automatic.  Should only be
+        # deletable children (however, that will be defined)
+        if search_type in ['sthpw/task','sthpw/note', 'sthpw/snapshot']:
+            if "sthpw/project" in related_types:
+                related_types.remove("sthpw/project")
+
+            if "sthpw/login" in related_types:
+                related_types.remove("sthpw/login")
+
+            if "config/process" in related_types:
+                related_types.remove("config/process")
+
+
+
+        if parent_type in related_types:
+            related_types.remove(parent_type)
+
+        related_types.append('sthpw/note')
+        related_types.append('sthpw/task')
+        related_types.append('sthpw/snapshot')
+        if 'sthpw/work_hour' not in related_types:
+            related_types.append('sthpw/work_hour')
+    
+        return related_types
+
+    get_related_types = classmethod(get_related_types)
+
 
 class SObjectFactory(Base):
     '''DEPRECATED: use SearchType'''
@@ -5798,7 +5858,10 @@ class SObjectUndo:
                 "sthpw/sync_job",
                 "sthpw/sync_log",
                 "sthpw/sync_server",
-                "sthpw/cache"
+                "sthpw/cache",
+
+                'sthpw/message',
+                'sthpw/message_log',
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":
@@ -5928,11 +5991,11 @@ class SObjectUndo:
         sobject_node = transaction.create_log_node("sobject")
         Xml.set_attribute(sobject_node,"search_type",sobject.get_search_type())
 
-        search_code = sobject.get_value("code")
+        search_code = sobject.get_value("code", no_exception=True)
         if search_code:
             Xml.set_attribute(sobject_node,"search_code", search_code)
         else:
-            search_id = sobject.get_value("id")
+            search_id = sobject.get_id()
             Xml.set_attribute(sobject_node,"search_id", search_id)
 
 
@@ -6288,6 +6351,15 @@ class SearchKey(object):
             name, value = expr.split("=")
             data[name] = value
 
+        project = data.get("project")
+        if project:
+            search_type = "%s?project=%s" % (base_search_type, project)
+        else:
+            search_type = base_search_type
+
+        data["search_type"] = search_type
+        data["base_search_type"] = base_search_type
+
 
         return base_search_type, data
     _get_data = classmethod(_get_data)
@@ -6308,34 +6380,18 @@ class SearchKey(object):
     def extract_project(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("project")
-
-        #if "project=" in search_key:
-        #    return search_key.split("project=")[1].split("&")[0]
-        #else:
-        #    return None
     extract_project = classmethod(extract_project)
 
 
     def extract_code(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("code")
-
-        #try:
-        #    tmp, code = search_key.split("code=", 1)
-        #except ValueError:
-        #    return ""
-        #return code
     extract_code = classmethod(extract_code)
 
 
     def extract_id(cls, search_key):
         base_search_type, data = cls._get_data(search_key)
         return data.get("id")
-        #try:
-        #    tmp, id = search_key.split("id=", 1)
-        #except ValueError:
-        #    return ""
-        #return id
     extract_id = classmethod(extract_id)
 
 
@@ -6454,7 +6510,7 @@ class SearchKey(object):
 
 
  
-    def get_by_search_keys(cls, search_keys):
+    def get_by_search_keys(cls, search_keys, keep_order=False):
         '''get all the sobjects in a more effective way, assuming same search_type'''
 
         if not search_keys:
@@ -6475,15 +6531,12 @@ class SearchKey(object):
 
             search_type_list.append(SearchKey.extract_search_type(sk))
             code = SearchKey.extract_code(sk)
-            if code:    
+            if code:
                 search_code_list.append(code)
             else:
                 id = SearchKey.extract_id(sk)
-                try:
-                    # if possible, set as an integer
-                    id = int(id)
-                except:
-                    pass
+                # convert to a string for ocmparison
+                id = str(id)
                 search_id_list.append(id)
        
         single_search_type = False
@@ -6491,14 +6544,47 @@ class SearchKey(object):
             single_search_type=True
         if single_search_type:
             if search_code_list and len(search_keys)==len(search_code_list):
-                return Search.get_by_code(search_type_list[0], search_code_list)
+                sobjs = Search.get_by_code(search_type_list[0], search_code_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_code = sobj.get_code()
+                        sort_dict[sobj] = search_code_list.index(sobj_code)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             elif search_id_list and len(search_keys)==len(search_id_list):
-                return Search.get_by_id(search_type_list[0], search_id_list)
+                sobjs = Search.get_by_id(search_type_list[0], search_id_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_id = str(sobj.get_id())
+                        sort_dict[sobj] = search_id_list.index(sobj_id)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             else:
                 raise SetupException('A mixed code and id search keys detected.')
         else:
-            raise SetupException('Single search type expected.')
-
+            # multiple sTypes, rearrange them first in order
+            search_key_dict = {}
+            for sk in search_keys:
+                search_type = SearchKey.extract_search_type(sk)
+                search_key_list = search_key_dict.get(search_type)
+                if search_key_list == None:
+                    search_key_dict[search_type] = [sk]
+                else:
+                    search_key_list.append(sk)
+                
+            results = []
+            for key, sk_list in search_key_dict.items():
+                result = SearchKey.get_by_search_keys(sk_list, keep_order=keep_order)
+                results.extend(result)
+            return results
+                
+            #raise SetupException('Single search type expected.')
     get_by_search_keys = classmethod(get_by_search_keys)
 
 

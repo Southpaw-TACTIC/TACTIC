@@ -1125,6 +1125,20 @@ class PluginInstaller(PluginBase):
                         if sobject == None:
                             continue
 
+
+                    # if the search type is in sthpw namespace, then change
+                    # the project code to the current project
+                    base_search_type = sobject.get_base_search_type()
+                    if base_search_type.startswith("sthpw/"):
+                        project = Project.get()
+                        project_code = project.get_value("code")
+                        if SearchType.column_exists(sobject.get_search_type(), "project_code"):
+                            sobject.set_value("project_code", project_code)
+
+                        if base_search_type == "sthpw/schema":
+                            sobject.set_value("code", project_code)
+
+
                     try:
                         if commit:
                             sobject.commit(triggers=False)

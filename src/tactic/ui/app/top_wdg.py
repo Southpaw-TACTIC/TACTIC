@@ -229,11 +229,12 @@ class TopWdg(Widget):
 
         # add a dummy button for global behaviors
         from tactic.ui.widget import ButtonNewWdg, IconButtonWdg
-        ButtonNewWdg(title="WOW", icon=IconWdg.FILM)
-        IconButtonWdg(title="WOW", icon=IconWdg.FILM)
+        ButtonNewWdg(title="DUMMY", icon=IconWdg.FILM)
+        IconButtonWdg(title="DUMMY", icon=IconWdg.FILM)
         # NOTE: it does not need to be in the DOM.  Just needs to be
         # instantiated
         #content_div.add(button)
+
 
 
         if my.widgets:
@@ -243,7 +244,13 @@ class TopWdg(Widget):
             my.add(content_wdg)
 
         content_div.add( content_wdg )
-
+        
+        # add a calendar wdg
+        
+        from tactic.ui.widget import CalendarWdg
+        cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
+        cal_wdg.top.add_style('display: none')
+        content_div.add(cal_wdg)
 
         if web.is_admin_page():
             from tactic_branding_wdg import TacticCopyrightNoticeWdg
@@ -325,7 +332,7 @@ class TopWdg(Widget):
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                var url = "/tactic/%s/link/_startup";
+                var url = "/tactic/%s/admin/link/_startup";
                 window.open(url);
 
                 ''' % project_code
@@ -468,7 +475,6 @@ class TopWdg(Widget):
         div.add(popup_div)
 
 
-        # popup parent
         inner_html_div = DivWdg()
         inner_html_div.set_id("inner_html")
         div.add(inner_html_div)
@@ -525,8 +531,6 @@ class TopWdg(Widget):
             widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % css_file )
 
        
-        # TEST TEST TEST
-        widget.add('<link rel="stylesheet" href="/assets/_video/video-js.min.css" type="text/css" />\n')
         return widget
 
 
@@ -547,9 +551,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         # FIXME: this logic should not be located here.
         # no reason to have the edit_area_full.js
-        if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
-            if "edit_area/edit_area_full.js" in third_party:
-                third_party.remove("edit_area/edit_area_full.js")
+        #if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
+        #    if "edit_area/edit_area_full.js" in third_party:
+        #        third_party.remove("edit_area/edit_area_full.js")
 
 
         for include in js_includes.third_party:
@@ -574,9 +578,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
         #Container.append_seq("Page:js", "/context/spt_js/UnityObject.js")
 
 
-        #widget = DivWdg()
-        #widget.set_id("javascript")
-        #my.set_as_panel(widget)
         widget = Widget()
 
         js_files = Container.get("Page:js")
@@ -649,7 +650,12 @@ class TitleTopWdg(TopWdg):
         head.add(my.get_css_wdg())
 
         # add the title in the header
-        project = Project.get()
+        try:
+            project = Project.get()
+        except Exception, e:
+            print "ERROR: ", e
+            # if the project doesn't exist, then use the admin project
+            project = Project.get_by_code("admin")
         project_code = project.get_code()
         project_title = project.get_value("title")
 
@@ -720,6 +726,7 @@ class IndexWdg(Widget):
             else {
                 spt.hash.hash = "/index";
             }
+            spt.hash.set_index_hash("link/_startup");
             '''
         } )
 
@@ -803,11 +810,17 @@ class SitePage(AppServer):
 
         # if there is a custom url, then handle it separately
         if my.custom_url:
-            web = WebContainer.get_web()
-            hash = "/".join(my.hash)
-            hash = "/%s" % hash
-            my.top = CustomTopWdg(url=my.custom_url, hash=hash)
-            return my.top
+            xml = my.custom_url.get_xml_value("widget")
+            index = xml.get_value("element/@index")
+            admin = xml.get_value("element/@admin")
+            if index == 'true' or admin == 'true':
+                pass
+            else:
+                web = WebContainer.get_web()
+                hash = "/".join(my.hash)
+                hash = "/%s" % hash
+                my.top = CustomTopWdg(url=my.custom_url, hash=hash)
+                return my.top
 
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
@@ -821,7 +834,6 @@ class CustomTopWdg(BaseRefreshWdg):
 
         # Custom URLs have the ability to send out different content types
         url = my.kwargs.get("url")
-
 
         web = WebContainer.get_web()
 

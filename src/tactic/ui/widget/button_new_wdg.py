@@ -10,7 +10,6 @@
 #
 #
 
-
 __all__ = ['ButtonRowWdg', 'ButtonNewWdg', 'ActionButtonWdg', 'IconButtonWdg', 'IconButtonElementWdg', 'SingleButtonWdg']
 
 import os
@@ -773,6 +772,10 @@ class ButtonNewWdg(BaseRefreshWdg):
  
 
 
+
+
+
+
 class ActionButtonWdgOld(DivWdg):
 
 
@@ -806,7 +809,7 @@ class ActionButtonWdgOld(DivWdg):
         my.table.add_style("color", "#333")
         my.td = my.table.add_cell()
         my.td.add_class("spt_action_button")
-        super(ActionButtonWdg,my).__init__()
+        super(ActionButtonWdgOld,my).__init__()
 
         web = WebContainer.get_web() 
         my.browser = web.get_browser()
@@ -997,7 +1000,7 @@ class ActionButtonWdgOld(DivWdg):
         text_div.add_class("hand")
 
 
-        return super(ActionButtonWdg,my).get_display()
+        return super(ActionButtonWdgOld,my).get_display()
 
 
 
@@ -1009,6 +1012,12 @@ class ActionButtonWdg(DivWdg):
     ARGS_KEYS = {
     'title': {
         'description': 'Value to show on actual button',
+        'type': 'TextWdg',
+        'order': 0,
+        'category': 'Options'
+    },
+    'title2': {
+        'description': 'Alt Value to show on actual button when clicked on',
         'type': 'TextWdg',
         'order': 0,
         'category': 'Options'
@@ -1028,6 +1037,16 @@ class ActionButtonWdg(DivWdg):
     }
  
     def __init__(my, **kwargs):
+        web = WebContainer.get_web() 
+        is_Qt_OSX = web.is_Qt_OSX()
+        my.browser = web.get_browser()
+
+        #is_Qt_OSX = False
+        if is_Qt_OSX:
+            my.redirect = ActionButtonWdgOld(**kwargs)
+        else:
+            my.redirect = None
+
         #my.top = DivWdg()
         my.kwargs = kwargs
         my.text_wdg = DivWdg()
@@ -1038,24 +1057,40 @@ class ActionButtonWdg(DivWdg):
         my.td.add_class("spt_action_button")
         super(ActionButtonWdg,my).__init__()
 
-        web = WebContainer.get_web() 
-        my.browser = web.get_browser()
-        
 
     def add_behavior(my, behavior):
+        if my.redirect:
+            return my.redirect.add_behavior(behavior)
+
         my.td.add_behavior(behavior)
 
-    """
+
     def add_style(my, name, value=None):
-        my.add_style(name, value)
-    """
+        if my.redirect:
+            return my.redirect.add_style(name, value)
+
+        super(ActionButtonWdg,my).add_style(name, value)
+
+    def add_class(my, value):
+        if my.redirect:
+            return my.redirect.add_class(value)
+
+        super(ActionButtonWdg,my).add_class(value)
+
+
+
+
 
     def add_top_behaviors(my, top):
-        pass
-
+        if my.redirect:
+            return my.redirect.add_top_behavior(top)
 
 
     def get_display(my):
+        if my.redirect:
+            return my.redirect.get_display()
+
+
         my.add_class("spt_button_top")
         # no need to define top
         #my.add(top)
@@ -1075,14 +1110,20 @@ class ActionButtonWdg(DivWdg):
         if not size:
             size = 'medium'
         size = size[:1]
- 
-        top_width = 40
-        if size == 'm':
-            top_width = 83
-            my.add_style("width: %spx"%top_width)
-        if size == 'l':
-            top_width = 127
-            my.add_style("width: %spx"%top_width)
+
+
+        width = my.kwargs.get("width")
+        if width:
+            top_width = int(width)
+            my.add_style("width: %s"%top_width)
+        else:
+            top_width = 40
+            if size == 'm':
+                top_width = 83
+                my.add_style("width: %spx"%top_width)
+            if size == 'l':
+                top_width = 127
+                my.add_style("width: %spx"%top_width)
 
         
 
@@ -1146,6 +1187,8 @@ class ActionButtonWdg(DivWdg):
 
         from pyasm.widget import ButtonWdg
         button = ButtonWdg()
+        button.add_style("width: %s" % top_width)
+        button.add_class('spt_label')
 
         icon = my.kwargs.get("icon")
         if icon:

@@ -660,6 +660,15 @@ class WidgetConfigView(Base):
         return element_names
 
 
+    def get_element_xml(my, element_name):
+        for config in my.configs:
+            element_xml = config.get_element_xml(element_name)
+            if element_xml:
+                return element_xml
+
+
+
+
     def get_definition_config(my):
         '''gets the first definition config'''
         for config in my.configs:
@@ -1359,8 +1368,10 @@ class WidgetConfigView(Base):
                     # look at config xml for layout definition
                     attributes = config.get_view_attributes()
                     layout = attributes.get("layout")
-                    if layout == "EditWdg" or view in ['edit','insert','edit_item']:
+                    if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert','edit_item']:
                         default_definition = 'edit_definition'
+
+
             
                     # only add a definition if the db config actualy exists
                     def_db_config = WidgetDbConfig.get_by_search_type(search_type, default_definition)
@@ -1405,7 +1416,7 @@ class WidgetConfigView(Base):
             # look at config xml for layout definition
             attributes = config.get_view_attributes()
             layout = attributes.get("layout")
-            if layout == "EditWdg" or view in ['edit','insert', 'edit_item']:
+            if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert', 'edit_item']:
                 default_definition = 'edit_definition'
 
             # add db definiition if it hasn't been searched yet
@@ -1482,7 +1493,7 @@ class WidgetConfigView(Base):
 
         # look at the database for definitions
         if view not in ['edit', 'insert', 'preview']:
-            db_config = WidgetDbConfig.get_by_search_type(search_type,"definition")
+            db_config = WidgetDbConfig.get_by_search_type(search_type,default_definition)
             if db_config:
                 xml = db_config.get_xml_value("config")
                 config = WidgetConfig.get("definition", xml=xml)

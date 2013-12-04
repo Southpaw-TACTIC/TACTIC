@@ -672,7 +672,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 search_key = search_key.replace("&amp;", "&")
 
 
-            print "search_key: ", search_key
+            #print "search_key: ", search_key
             sobject = SearchKey.get_by_search_key(search_key)
             if not sobject:
                 if no_exception:
@@ -2015,7 +2015,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # delete this sobject
         if include_dependencies:
             from tactic.ui.tools import DeleteCmd
-            cmd = DeleteCmd(sobject=sobject)
+            cmd = DeleteCmd(sobject=sobject, auto_discover=True)
             cmd.execute()
         else:
             sobject.delete()
@@ -2716,14 +2716,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        #expand_paths = True
-
         if file_types:
             paths = []
             for file_type in file_types:
-                path = snapshot.get_path_by_type(file_type, mode=mode, filename_mode=filename_mode)
-                if path:
-                    paths.append(path)
+                paths = snapshot.get_paths_by_type(file_type, mode=mode, filename_mode=filename_mode)
         else:
             paths = snapshot.get_all_lib_paths(expand_paths=expand_paths, mode=mode, filename_mode=filename_mode)
 
@@ -3802,6 +3798,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         parents = {}
+
+        if single:
+            snapshots = [snapshots]
+
         parent_search_type = snapshots[0].get_value("search_type")
         if include_parent:
             # check to see if the parents are of all the same search_type
@@ -3927,7 +3927,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         search_type = sobject.get_search_type() 
         search_id = sobject.get_id()
-        search_code = sobject.get_value("code")
+        search_code = sobject.get_value("code", no_exception=True)
+        search_combo = search_code
+        if not search_code:
+            search_combo = search_id
 
         # get the level object
         if level_key:
@@ -3941,7 +3944,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             level_id = None
 
         if not versionless:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
+            snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'

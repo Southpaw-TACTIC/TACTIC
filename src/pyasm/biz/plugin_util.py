@@ -30,7 +30,6 @@ class PluginUtil(object):
         manifest_path = "%s/%s/manifest.xml" % (my.base_dir, reldir)
         xml = Xml()
         xml.read_file(manifest_path)
-
         node = xml.get_node("manifest/data")
         data = xml.get_node_values_of_children(node)
 
@@ -43,9 +42,9 @@ class PluginUtil(object):
 
         plugins_data = {}
         for root, dirnames, basenames in os.walk(my.base_dir):
-
+            # for windows
+            root = root.replace("\\", "/")
             reldir = root.replace(my.base_dir + "/", "")
-
             if "manifest.xml" in basenames:
 
                 manifest_path = "%s/manifest.xml" % root

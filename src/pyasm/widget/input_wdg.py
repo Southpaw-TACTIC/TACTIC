@@ -859,7 +859,6 @@ class CheckboxWdg(BaseInputWdg):
         else:
             cb = BaseInputWdg.get_class_display(my)
             span = SpanWdg(cb, css=my.css)
-            span.add_style("vertical-align: center")
             span.add(my.label)
             return span
 
@@ -1181,6 +1180,8 @@ class SelectWdg(BaseInputWdg):
             labels_expr = my.kwargs.get("labels_expr")
 
         mode_expr = my.get_option("mode_expr")
+        if not mode_expr:
+            mode_expr = my.kwargs.get("mode_expr")
         if values_expr:
             if mode_expr == 'relative':
                 sobjects = my.sobjects
@@ -1189,6 +1190,10 @@ class SelectWdg(BaseInputWdg):
                     if parent_wdg:
                         # use the search_key as a starting point if applicable
                         sk = parent_wdg.kwargs.get('search_key')
+                        if sk:
+                            sobjects = [Search.get_by_search_key(sk)]
+                    else:
+                        sk = my.kwargs.get('search_key')
                         if sk:
                             sobjects = [Search.get_by_search_key(sk)]
 
@@ -1275,6 +1280,10 @@ class SelectWdg(BaseInputWdg):
         return my.labels, my.values
 
     def get_display(my):
+        class_name = my.kwargs.get('class')
+        if class_name:
+            my.add_class(class_name)
+
         if my.is_read_only():
             # don't disable it, just have to look disabled
             my.set_attr('disabled', 'disabled')

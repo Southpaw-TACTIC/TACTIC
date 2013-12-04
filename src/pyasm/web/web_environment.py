@@ -156,6 +156,7 @@ class WebEnvironment(Environment):
         host = my.get_env("HTTP_HOST")
         return host
 
+
     def get_base_url(my):
         host = my.get_http_host()
 
@@ -171,6 +172,7 @@ class WebEnvironment(Environment):
             base_url = "%s://%s" % (protocol, host)
 
         return Url(base_url)
+
 
     
     def get_context_url(my):
@@ -196,10 +198,12 @@ class WebEnvironment(Environment):
 
 
     def get_project_url(my):
-        site_url = my.get_site_url()
+        base_url = my.get_base_url()
+        site_url = my.get_site_url().to_string()
+        base_url.append_to_base(site_url)
         project_code = Project.get_project_code()
-        site_url.append_to_base( project_code )
-        return site_url
+        base_url.append_to_base( project_code )
+        return base_url
 
 
 
@@ -334,6 +338,13 @@ class WebEnvironment(Environment):
 
     def is_IE(my):
         if my.get_browser() == "IE":
+            return True
+        else:
+            return False
+
+    def is_Qt_OSX(my):
+        user_agent = my.get_env("HTTP_USER_AGENT")
+        if user_agent.find("Qt") != -1 and user_agent.find("Safari") != -1:
             return True
         else:
             return False

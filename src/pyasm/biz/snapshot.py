@@ -80,8 +80,10 @@ class Snapshot(SObject):
             return None
 
         sobject = None
-        if search_code:
+        if search_code and isinstance(search_code, basestring):
             sobject = Search.get_by_code(search_type, search_code, show_retired=True)
+        else:
+            sobject = Search.get_by_id(search_type, search_id, show_retired=True)
         if sobject == None:
             if search_id:
                 sobject = Search.get_by_id(search_type, search_id)
@@ -562,18 +564,77 @@ class Snapshot(SObject):
             file_code = xml.get_attribute(node, "file_code")
             context = my.get_value("context")
 
-            # in auto mode, you can get the path from the context
-            #parts = context.split("/")
-            #file_name = "/".join(parts[1:])
-
             file_object = Search.get_by_code("sthpw/file", file_code)
-            file_name = os.path.basename(file_object.get_value("source_path"))
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+ 
+
         else:
             file_name = my._get_file_name(node)
 
         file_path = "%s/%s" % (dirname,file_name)
         
         return file_path
+
+
+
+    def get_paths_by_type(my, type, mode="lib", filename_mode=None, expand_paths=True):
+        dirname = my.get_dir(mode, file_type=type, file_object=None)
+        repo_dirname = my.get_dir("lib", file_type=type, file_object=None)
+
+        xml = my.get_snapshot_xml()
+
+        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if node is None:
+            return ''
+
+ 
+        # get the source file name
+        if filename_mode == 'source':
+            file_code = xml.get_attribute(node, "file_code")
+            context = my.get_value("context")
+
+            file_object = Search.get_by_code("sthpw/file", file_code)
+
+            basename = os.path.basename(file_object.get_value("source_path"))
+            context = my.get_value("context")
+            parts = context.split("/")
+
+            rel_dir = "/".join(parts[1:-1])
+            file_name = "%s/%s" % (rel_dir, basename)
+            #file_name = os.path.basename(file_object.get_value("source_path"))
+
+            repo_file_name = my._get_file_name(node)
+        else:
+            file_name = my._get_file_name(node)
+            repo_file_name = file_name
+
+        file_paths = []
+
+        if expand_paths:
+            repo_file_path = "%s/%s" % (repo_dirname, repo_file_name)
+            if os.path.isdir(repo_file_path):
+                for root, dirnames, basenames in os.walk(repo_file_path):
+                    for basename in basenames:
+                        path = "%s/%s" % (root, basename)
+                        rel_path = path.replace(repo_file_path, "")
+                        path = "%s/%s/%s" % (dirname, file_name, rel_path)
+                        file_paths.append(path)
+            else:
+                file_path = "%s/%s" % (dirname,file_name)
+                file_paths.append(file_path)
+        else:
+            file_path = "%s/%s" % (dirname,file_name)
+            file_paths.append(file_path)
+        
+        return file_paths
+
 
 
 
@@ -863,7 +924,7 @@ class Snapshot(SObject):
             return False
 
 
-    def set_latest(my, commit=True):
+    def set_latest(my, commit=True, update_versionless=True):
         # Set the snapshot to be the latest and find the last latest and
         # remove it as the latest
         search_type = my.get_value("search_type")
@@ -900,7 +961,8 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
         # if there is a versionless, point it to this snapshot
-        my.update_versionless("latest")
+        if update_versionless:
+            my.update_versionless("latest")
 
         my.set_value("is_latest", True)
         if commit:
@@ -944,7 +1006,7 @@ class Snapshot(SObject):
 
 
 
-    def set_current(my, commit=True):
+    def set_current(my, commit=True, update_versionless=True):
         # Set the snapshot to be the current and find the last current and
         # remove it as the current
         search_type = my.get_value("search_type")
@@ -992,7 +1054,8 @@ class Snapshot(SObject):
             last_current.commit()
 
         # if there is a versionless, point it to this snapshot
-        my.update_versionless("current")
+        if update_versionless:
+            my.update_versionless("current")
 
         my.set_value("is_current", True)
         if commit:
@@ -1041,9 +1104,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext=''):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
 
 
 
@@ -1195,8 +1258,6 @@ class Snapshot(SObject):
 
         return search.do_search()
     get_by_search_type = staticmethod(get_by_search_type)
-
-
 
 
 
@@ -1359,7 +1420,10 @@ class Snapshot(SObject):
         if level_type and level_id:
             key = "%s:%s:%s" % (key, level_type, level_id )
         if process != None:
-            search.add_filter("process", process)
+            if isinstance(process, list):
+                search.add_enum_order_by("process", process)
+            else:
+                search.add_filter("process", process)
             key = '%s:process=%s' %(key, process)
         if context not in [None, '']:
             search.add_filter("context", context)
@@ -1391,6 +1455,7 @@ class Snapshot(SObject):
         search.add_order_by("version desc")
         search.add_order_by("revision desc")
         search.add_order_by("timestamp desc")
+
         if not isinstance(search_id, list):
             # only cache if search_id is not a list
             if use_cache:
@@ -1420,20 +1485,23 @@ class Snapshot(SObject):
 
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
-            level_type=None, level_id=None, show_retired=False):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False)
+            level_type=None, level_id=None, show_retired=False, \
+            process=None):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
-    def get_latest_by_sobject(sobject, context=None, show_retired=False):
+    def get_latest_by_sobject(sobject, context=None, show_retired=False, \
+            process=None):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired)
+                context=context, show_retired=show_retired, process=process \
+        )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
 
@@ -1645,7 +1713,12 @@ class Snapshot(SObject):
 
     def get_current_by_sobject(sobject, context=None):
         search_type = sobject.get_search_type()
-        search_code = sobject.get_value("code")
+        code_exists = SearchType.column_exists(search_type, "code")
+        if code_exists:
+            search_code = sobject.get_value("code")
+        else:
+            search_code = sobject.get_id()
+
         snapshot = Snapshot.get_current(search_type, search_code, context)
         return snapshot
     get_current_by_sobject = staticmethod(get_current_by_sobject)
@@ -1670,7 +1743,6 @@ class Snapshot(SObject):
         search.add_filter("search_type", search_type)
 
         code_exists = SearchType.column_exists(search_type, "code")
-
         if code_exists:
             search.add_filter("search_code", search_code)
         else:
@@ -1779,7 +1851,7 @@ class Snapshot(SObject):
             description="No description", \
             snapshot_data=None, is_current=None, is_revision=False, \
             level_type=None, level_id=None, commit=True, is_latest=True,
-            is_synced=True, process=None, version=None, triggers=True):
+            is_synced=True, process=None, version=None, triggers=True, set_booleans=True):
 
         # Provide a default empty snapshot definition
         if snapshot_data == None:
@@ -1797,8 +1869,11 @@ class Snapshot(SObject):
 
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
-        search_code = sobject.get_code()
-
+        search_code = sobject.get_value("code", no_exception=True)
+        # temp var
+        search_combo = search_code
+        if not search_code:
+            search_combo = search_id
         """
         rev = None
         if is_revision:
@@ -1808,7 +1883,7 @@ class Snapshot(SObject):
         rev = -1
         # to find the version number, we have to find the highest number
         # of a particular snapshot
-        old_snapshot = Snapshot._get_by_version(search_type, search_code, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
+        old_snapshot = Snapshot._get_by_version(search_type, search_combo, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
         # have to clear the cache here, because after it is created
         # it shouldn't be None anymore
         if not old_snapshot:
@@ -1900,9 +1975,24 @@ class Snapshot(SObject):
         # any of the latest or current code.
         if not commit:
             return snapshot
+       
+        # if this is a simple snapshot create like API method create_snapshot(),
+        # it defaults to running set_boolean
+        if set_booleans:
+            Snapshot.set_booleans(sobject, snapshot, is_latest=is_latest, is_current=is_current)
 
-        # set the new snapshot as the current (must be done after setting
-        # context)
+        snapshot.commit(triggers=triggers)
+
+        return snapshot
+
+    create = staticmethod(create)
+
+    def set_booleans(sobject, snapshot, is_latest=True, is_current=None):
+        '''Set the is_latest and is_current booleans. 
+           This method should not contain any snapshot.commit() since this is an in-between step'''
+
+        # set the new snapshot as the current 
+        # (must be done after setting context)
         if is_latest:
             if is_current != None:
                 if is_current:
@@ -1920,17 +2010,14 @@ class Snapshot(SObject):
                     #snapshot.set_current(commit=False)
                     snapshot.set_value("is_current", True)
 
-
-
         if is_latest:
             snapshot.set_value("is_latest", True)
-        else:
+        elif is_latest == False:
             snapshot.set_value("is_latest", False)
 
-
-        snapshot.commit(triggers=triggers)
         return snapshot
-    create = staticmethod(create)
+
+    set_booleans = staticmethod(set_booleans)
 
 
 
@@ -2006,16 +2093,21 @@ class Snapshot(SObject):
 
         # get the versionless snapshot
         search_type = sobject.get_search_type()
-        search_id = sobject.get_value("code")
-        if not search_id:
-            search_id = sobject.get_id()
+        search_code = sobject.get_value("code", no_exception=True)
+        search_id = sobject.get_id()
+
+
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
         snapshot_type = my.get_value('snapshot_type')
 
         # Get the versionless snapshot.  This is used as a template to build
         # the next snapshot definition. 
-        versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        if search_code:
+            versionless = Snapshot.get_versionless(search_type, search_code, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+        elif search_id:
+            versionless = Snapshot.get_versionless(search_type, search_id, context, mode=snapshot_mode, snapshot_type=snapshot_type, commit=False)
+
         v_snapshot_xml = versionless.get_xml_value("snapshot")
 
         #assert versionless.get_id() != -1
@@ -2085,8 +2177,7 @@ class Snapshot(SObject):
             file_objects.append(file_object)
             file_object.set_value("search_type", sobject.get_search_type() )
 
-            search_code = sobject.get_value("code")
-            search_id = sobject.get_id()
+            
             if search_code:
                 file_object.set_value("search_code", search_code )
             if search_id and isinstance(search_id, int):

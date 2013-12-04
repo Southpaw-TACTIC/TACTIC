@@ -287,6 +287,7 @@ class ChatSessionWdg(BaseRefreshWdg):
 
         search = Search("sthpw/message_log")
         search.add_filter("message_code", key)
+        search.add_order_by("timestamp")
         message_logs = search.get_sobjects()
         last_login = None;
         last_date = None;
@@ -300,10 +301,10 @@ class ChatSessionWdg(BaseRefreshWdg):
             date_str = timestamp.strftime("%b %d, %Y")
         
             msg = "";
-            msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
+            msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td colspan='2'>";
 
             if date_str != last_date:
-                msg += "<hr/><b>"+date_str+"</b><hr/></td></tr>";
+                msg += "<br/><b style='font-size: 1.0em'>"+date_str+"</b><hr/></td></tr>";
                 msg += "<tr><td>";
                 last_login = None
 
@@ -325,6 +326,16 @@ class ChatSessionWdg(BaseRefreshWdg):
             bvr.src_el.scrollTop = bvr.src_el.scrollHeight;
             '''
         } )
+
+
+        if message_logs:
+            last_message = message_logs[-1].get("message")
+            last_login = message_logs[-1].get("login")
+        else:
+            last_message = ""
+            last_login = ""
+        div.add_attr("spt_last_message", last_message)
+        div.add_attr("spt_last_login", last_login)
 
 
 
@@ -352,9 +363,19 @@ class ChatSessionWdg(BaseRefreshWdg):
 
                 var tmp = message.message || "";
 
+                var last_message = bvr.src_el.getAttribute("spt_last_message");
+                var last_login = bvr.src_el.getAttribute("spt_last_login");
+                if (tmp == last_message && login == last_login) {
+                    return;
+                }
+                bvr.src_el.setAttribute("spt_last_message", tmp);
+                bvr.src_el.setAttribute("spt_last_login", login);
+
                 var msg = "";
                 msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
-                msg += "<b>"+login+"</b><br/>";
+                if (login != last_login) {
+                    msg += "<b>"+login+"</b><br/>";
+                }
                 msg += tmp.replace(/\n/g,'<br/>');
                 msg += "</td><td style='text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top'>";
                 msg += timestamp;
@@ -495,6 +516,13 @@ class SubscriptionWdg(BaseRefreshWdg):
             'interval': interval,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_subscription_top");
+            var dialog = top.getElement(".spt_dialog_top");
+            if (dialog && dialog.getStyle("display") == "none") {
+                top.setAttribute("spt_dialog_open", "false");
+            }
+            else {
+                top.setAttribute("spt_dialog_open", "true");
+            }
             timeout_id = setTimeout( function() {
                 spt.panel.refresh(top, {async: true});
             }, bvr.interval );
@@ -896,10 +924,18 @@ class SubscriptionBarWdg(SubscriptionWdg):
         if not mode:
             mode = "tab"
 
+        dialog_open = my.kwargs.get("dialog_open")
+        if dialog_open in [True, 'true']:
+            dialog_open = True
+        else:
+            dialog_open = False
+
+
         mode = "dialog"
         if mode == "dialog":
+
             from tactic.ui.container import DialogWdg
-            dialog = DialogWdg(display=False, show_title=False)
+            dialog = DialogWdg(display=dialog_open, show_title=False)
             inner.add(dialog)
             dialog.set_as_activator(inner)
             subscription_wdg = SubscriptionWdg()

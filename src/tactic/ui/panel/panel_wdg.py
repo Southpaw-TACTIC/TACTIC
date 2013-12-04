@@ -13,7 +13,7 @@ __all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPan
 
 import os, types
 import random
-from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config
+from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config, SetupException
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
@@ -233,7 +233,7 @@ spt.side_bar._display_link_action = function(target_id, title, options, values, 
     }
 
     //show busy message
-    spt.app_busy.show( busy_title, busy_msg );
+    //spt.app_busy.show( busy_title, busy_msg );
 
     setTimeout( function() {
                         spt.side_bar._load_for_display_link_change(target_id, title, options, values, is_popup);
@@ -280,21 +280,23 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         var server = TacticServerStub.get();
         server.set_application_state(key, panel_id, widget_class, options, values);
 
-        // also set the breadcrumb
-        //$("breadcrumb").innerHTML = path
-        //$("breadcrumb").innerHTML = title
-
         // set the url hash
         if (typeof(options.element_name) != "undefined") {
             var hash = "/link/"+options.element_name;
             if( ! spt.browser.is_Firefox() && ! spt.browser.is_Opera() ) {
                 hash = encodeURI( hash );
             }
-            spt.last_hash = hash;
-            window.location.hash = hash;
+            var state = {
+                hash: hash,
+                element_name: options.element_name,
+                title: title
+            };
+            var url = "link/"+options.element_name;
+            spt.hash.set_hash( {hash: hash}, title, url );
+
         }
         else {
-            
+            alert("DEPRECATD: set hash in sidebar load_display");
             var kwargs = {'predefined': true};
             spt.panel.set_hash(panel_id, widget_class, options, kwargs)
         }
@@ -1885,9 +1887,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if personal:
                 login = Environment.get_user_name()
             
-            
             search.add_filter("login", login)
-           
+
             config = search.get_sobject()
             if config:
                 configs.append(config)
@@ -1933,6 +1934,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
             # then look for a definition in the definition file
             SideBarBookmarkMenuWdg.add_internal_config(configs, ['definition'])
+
         widget_config_view = WidgetConfigView(config_search_type, view, configs)
 
         return widget_config_view
@@ -2441,6 +2443,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         values = config.get_web_options(element_name)
         behavior = {
             'type':         'click_up',
+            'bvr_repeat_interval': 3,
             'cbjs_action':  '''spt.side_bar.display_link_cbk(evt, bvr)''',
             'target_id':    target_id,
             'title':        header_title,
@@ -2686,9 +2689,16 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 9,
+            'order': '9',
             'category': 'Display'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '9a'
+        },    
 
 
         "link": {
@@ -2729,7 +2739,6 @@ class ViewPanelWdg(BaseRefreshWdg):
     }
 
     def get_display(my):
-
         target_id = my.kwargs.get("target_id")
         if not target_id:
             target_id = 'main_body'
@@ -2741,8 +2750,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         order_by = my.kwargs.get('order_by')
         element_name = my.kwargs.get('element_name')
 
-        my.element_names = my.kwargs.get('element_names')
         mode = my.kwargs.get('mode')
+
 
 
         if link_view:   
@@ -2775,9 +2784,31 @@ class ViewPanelWdg(BaseRefreshWdg):
                 except Exception:
                     filter = None
 
+        has_view = True
         if not view:
             view = "table"
-            
+            has_view = False
+
+
+
+        from pyasm.search import SearchException
+        my.element_names = my.kwargs.get('element_names')
+        if not my.element_names:
+            if not search_type:
+                # this could be the old default layout, just return
+                if not search_view and not has_view:
+                    return
+                else:
+                    raise SetupException('Empty search_type is passed in')
+            try:
+                impl = SearchType.get_database_impl_by_search_type(search_type)
+                if impl.get_database_type() == "MongoDb":
+                    my.element_names = impl.get_default_columns()
+            except SearchException:
+                raise
+
+
+           
          
         # this is needed so that each custom made view can have its own last-search settings
         if not search_view:
@@ -2809,6 +2840,13 @@ class ViewPanelWdg(BaseRefreshWdg):
         top.add_class("spt_view_panel_top");
 
 
+        if not Container.get_dict("JSLibraries", "spt_view_panel"):
+            inner.add_behavior({
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            });
+
+
         # add refresh information
         top.set_attr("spt_node", "true")
         my.set_as_panel(top, class_name='spt_view_panel')
@@ -2825,7 +2863,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # set up a search
-        from pyasm.search import SearchException
         try:
             search_type_obj = SearchType.get(search_type)
         except SearchException, e:
@@ -2864,33 +2901,49 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.app import SearchWdg, SearchBoxPopupWdg
+        
 
         # Search box
         inline_search = "true"
         search = None
         use_last_search = my.kwargs.get('use_last_search')
-
+        
         show_search = my.kwargs.get('show_search')
         if show_search in [False,'false']:
             show_search = 'false'
         else:
             show_search = 'true'
 
-       
+        search_limit = my.kwargs.get("search_limit")
         run_search_bvr = my.kwargs.get('run_search_bvr') 
 
 
         search_dialog_id = 0
         search_wdg = None
+        can_search = True
 
         show_shelf = my.kwargs.get("show_shelf")
-        # FIXME: this doesn't work yet because the filter information is not
-        # passed through
+
+
+        # make some checks to see if search will actually work
+        try:
+            search = Search(search_type)
+            search.set_null_filter()
+            sobjects = search.get_sobjects()
+        except Exception, e:
+            impl = SearchType.get_database_impl_by_search_type(search_type)
+            if impl.get_database_type() == "MongoDb":
+                can_search = False
+
+
+        # FIXME: this doesn't work yet because the filter information
+        # is not passed through
         #if show_shelf not in [False, 'false']:
-        if True:
+        #if True:
+        if can_search:
             try:
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=parent_key, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, skip_search=True)
+                from tactic.ui.app import SearchWdg
+                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit, user_override=True )
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -2967,8 +3020,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
+        init_load_num = my.kwargs.get("init_load_num")
 
-        search_limit = my.kwargs.get("search_limit")
+       
 
         save_inputs = my.kwargs.get("save_inputs")
         no_results_mode = my.kwargs.get("no_results_mode")
@@ -3018,10 +3072,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
+            "init_load_num": init_load_num, 
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
-            "search_wdg": search_wdg,
+            #"search_wdg": search_wdg
             
         }
         if run_search_bvr:
@@ -3076,6 +3131,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
+        layout_table.set_search_wdg(search_wdg)
+
         # add the search in the table
         #search_container = layout_table.search_container_wdg
         #if not show_search:
@@ -3097,7 +3154,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             # not be fatal, so we catch the exception here
             from pyasm.search import SqlException
             try:
-                layout_table.handle_search()
+                if can_search:
+                    layout_table.handle_search()
             except SqlException, e:
                 from pyasm.widget import ExceptionWdg
                 exception_wdg = ExceptionWdg(e)
@@ -3156,6 +3214,47 @@ class ViewPanelWdg(BaseRefreshWdg):
             title_box_wdg.add("<br/>"*2)
 
         return title_box_wdg
+
+
+
+    def get_onload_js(my):
+
+        return r'''
+
+spt.Environment.get().add_library("spt_view_panel");
+
+spt.view_panel = {}
+
+spt.view_panel.switch_layout = function() {
+          
+    var table_top = top.getElement(".spt_table_top");
+    var table = table_top.getElement(".spt_table_table");
+
+    var layout = top.getAttribute("spt_layout");
+    var layout_el = top.getElement(".spt_layout");
+
+    var version = layout_el.getAttribute("spt_version");
+    if (version =='2') {
+        var table = table_top.getElement(".spt_table_table");
+    } else {
+        var table = table_top.getElement(".spt_table");
+    }
+
+
+    top.setAttribute("spt_layout", layout);
+    var last_view = top.getAttribute("spt_view");
+    top.setAttribute("spt_last_view", last_view);
+    top.setAttribute("spt_view", bvr.view);
+    table_top.setAttribute("spt_class_name", bvr.class_name);
+    table_top.setAttribute("spt_view", bvr.view);
+    
+    table.setAttribute("spt_view", bvr.view);
+    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
+
+}
+
+        '''
+
 
 
 

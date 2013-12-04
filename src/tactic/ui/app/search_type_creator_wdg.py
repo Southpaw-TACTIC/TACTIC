@@ -520,11 +520,11 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
-        titles = ['Tile', 'Workflow', 'File Browser', 'Check-in', 'Card']
-        values = ['tile', 'table', 'browser', 'check-in', 'card']
+        titles = ['Table', 'Tile', 'File Browser', 'Check-in', 'Card']
+        values = ['table', 'tile', 'browser', 'check-in', 'card']
         images = [
+            "/context/images/table_layout.jpg",
             "/context/images/tile_layout.jpg",
-            "",
             "/context/images/browser_layout.jpg",
             "/context/images/checkin_layout.jpg",
             "/context/images/card_layout.jpg",
@@ -536,7 +536,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             div.add(option_div)
             radio = RadioWdg("layout")
             option_div.add(radio)
-            if value == "tile":
+            if value == "table":
                 radio.set_checked()
             radio.add_style("margin-top: -5px")
             option_div.add("%s" % title)
@@ -887,7 +887,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
     def get_submit_input(my):
-        submit_input = ActionButtonWdg(title='Register >>', tip="Register New sType", icon=IconWdg.CREATE)
+        submit_input = ActionButtonWdg(title='Register >>', tip="Register New sType")
 
         behavior = {
             'type':         'click_up',
@@ -1537,6 +1537,11 @@ class SearchTypeCreatorCmd(Command):
 
 
             for column in columns:
+
+                # skip relative_dir
+                if column == 'relative_dir':
+                    continue
+
                 # skip pipeline
                 if column in ['pipeline_code'] or column in default_columns:
                     continue
@@ -1952,7 +1957,8 @@ class SearchTypeCreatorCmd(Command):
         naming.set_value("dir_naming", naming_expr)
 
         if not has_file_naming:
-            file_naming_expr = "{basefile}.{ext}"
+            file_naming_expr = "{sobject.name}_v{version}.{ext}"
+
         naming.set_value("file_naming", file_naming_expr)
 
 

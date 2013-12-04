@@ -60,16 +60,16 @@
                               operations that is not undo-able in TACTIC, so it is recommended to be careful when
                               proceeding with the following steps. It is also recommended that a complete backup of
                               TACTIC is performed before carrying out this process.</strong></span></p>
-         <h5><a name="d0e5427"></a>Remove the project directory
+         <h5><a name="d0e5771"></a>Remove the project directory
          </h5><pre class="screen">cd &lt;project_install_dir&gt;/sites
-rm -rf &lt;project_code&gt;</pre><h5><a name="d0e5431"></a>Remove the database
+rm -rf &lt;project_code&gt;</pre><h5><a name="d0e5775"></a>Remove the database
          </h5><pre class="screen">psql -U postgres sthpw
-drop database "&lt;project_code&gt;";</pre><h5><a name="d0e5435"></a>Remove the assets directory
+drop database "&lt;project_code&gt;";</pre><h5><a name="d0e5779"></a>Remove the assets directory
          </h5><pre class="screen">cd &lt;project_asset_dir&gt;
-rm -rf &lt;project_code&gt;</pre><h5><a name="d0e5439"></a>Remove the entry in the projects table in the
+rm -rf &lt;project_code&gt;</pre><h5><a name="d0e5783"></a>Remove the entry in the projects table in the
                     database
          </h5><pre class="screen">psql -U postgres sthpw
-delete from project where code='&lt;project_code&gt;';</pre><h5><a name="d0e5443"></a>Remove connected entities in the sthpw
+delete from project where code='&lt;project_code&gt;';</pre><h5><a name="d0e5787"></a>Remove connected entities in the sthpw
                     database;
          </h5>
          <p>In this process, Tactic may not allow removing a particular project due to there being

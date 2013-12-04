@@ -29,7 +29,7 @@ app_server = "cherrypy"
 
 
 from pyasm.common import Environment, Common, Date, Config
-from pyasm.search import Search, DbContainer
+from pyasm.search import Search, DbContainer, SearchType
 
 python = Config.get_value("services", "python")
 if not python:
@@ -142,7 +142,12 @@ class TacticTimedThread(threading.Thread):
 
 
     def run(my):
-        print "starting timed thread"
+
+        import time
+        time.sleep(6)
+
+        # DEPRECATED: use TacticSchedulerThread
+        #print "Starting Timed Trigger"
 
         # checks are done every 60 seconds
         chunk = 60
@@ -158,7 +163,7 @@ class TacticTimedThread(threading.Thread):
         search.add_filter("event", "timed")
         timed_trigger_sobjs = search.get_sobjects()
         timed_triggers = []
-        
+
 
         
         for trigger_sobj in timed_trigger_sobjs:
@@ -169,6 +174,7 @@ class TacticTimedThread(threading.Thread):
                 raise Exception("WARNING: [%s] does not exist" % trigger_class)
                 
             timed_triggers.append(timed_trigger)
+
 
         while 1:
             time.sleep(chunk)
@@ -204,7 +210,175 @@ class TacticTimedThread(threading.Thread):
                 break
 
 
-       
+ 
+class TacticSchedulerThread(threading.Thread):
+
+    def __init__(my):
+        super(TacticSchedulerThread,my).__init__()
+
+    def check(my):
+        pass
+
+
+    def run(my):
+        import time
+        time.sleep(3)
+
+        print "Starting Scheduler ...."
+
+        # NOTE: not sure why we have to do a batch here
+        from pyasm.security import Batch
+        Batch(login_code="admin")
+
+        timed_triggers = []
+
+        from pyasm.biz import Project
+        search = Search("sthpw/project")
+        projects = search.get_sobjects()
+
+        # get the all of the timed triggers
+        #search = Search("sthpw/timed_trigger")
+        #search.add_filter("type", "timed")
+        for project in projects:
+
+            project_code = project.get_code()
+            try:
+                search = Search("config/trigger?project=%s" % project_code)
+                search.add_filter("event", "schedule")
+                timed_trigger_sobjs = search.get_sobjects()
+            except Exception, e:
+                print "WARNING: ", e
+                continue
+
+            # example
+            """
+            if project_code == 'broadcast2':
+                tt = SearchType.create("config/trigger")
+                tt.set_value("class_name", "tactic.command.PythonTrigger")
+
+                # data = timed_trigges.get("data")
+                tt.set_value("data", '''{
+                    "type": "interval",
+                    "interval": 5,
+                    "delay": 5,
+                    "mode": "threaded",
+                    "script_path": "trigger/scheduled"
+                } ''')
+                timed_trigger_sobjs.append(tt)
+            """
+
+
+            has_triggers = False
+            for trigger_sobj in timed_trigger_sobjs:
+                trigger_class = trigger_sobj.get_value("class_name")
+                if not trigger_class and trigger_sobj.get_value("script_path"):
+                    trigger_class = 'tactic.command.PythonTrigger'
+
+                data = trigger_sobj.get_json_value("data")
+
+                data['project_code'] = trigger_sobj.get_project_code()
+
+                try:
+                    timed_trigger = Common.create_from_class_path(trigger_class, [], data)
+                    timed_trigger.set_input(data)
+                    has_triggers = True
+
+                except ImportError:
+                    raise Exception("WARNING: [%s] does not exist" % trigger_class)
+                    
+                timed_triggers.append(timed_trigger)
+
+            if has_triggers:
+                print "Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code)
+
+        from tactic.command import Scheduler, SchedulerTask
+        scheduler = Scheduler.get()
+
+        scheduler.start_thread()
+
+
+
+        class TimedTask(SchedulerTask):
+            def __init__(my, **kwargs):
+                super(TimedTask, my).__init__(**kwargs)
+                my.index = kwargs.get("index")
+                my.project_code = kwargs.get("project_code")
+
+            def execute(my):
+                try:
+                    #Batch()
+                    #Command.execute_cmd(timed_trigger)
+                    Project.set_project(my.project_code)
+                    timed_triggers[my.index].execute()
+                except Exception, e:
+                    print "Error running trigger"
+                    raise
+                finally:
+                    DbContainer.close_thread_sql()
+                    DbContainer.commit_thread_sql()
+                    DbContainer.close_all()
+
+
+        for idx, timed_trigger in enumerate(timed_triggers):
+
+            data = timed_trigger.get_input()
+            if not data:
+                continue
+
+            """
+            data = {
+                'type': 'interval',
+                'interval': 10,
+                'delay': 0,
+                'mode': 'threaded'
+            }
+            """
+
+            project_code = data.get("project_code")
+            task = TimedTask(index=idx, project_code=project_code)
+
+            args = {}
+            if data.get("mode"):
+                args['mode'] = data.get("mode")
+
+            trigger_type = data.get("type")
+
+            if trigger_type == 'interval':
+                #scheduler.add_interval_task(task, interval=interval, mode='threaded', delay=0)
+
+                args = {
+                    'interval': int( data.get("interval") ),
+                    'delay': int( data.get("delay") ),
+                }
+
+                scheduler.add_interval_task(task, **args)
+
+
+            elif trigger_type == "daily":
+
+                from dateutil import parser
+
+                args['time'] = parser.parse( data.get("time") )
+
+                if data.get("weekdays"):
+                    args['weekdays'] = eval( data.get("weekdays") )
+
+                scheduler.add_daily_task(task, **args)
+
+                #scheduler.add_daily_task(task, time, mode="threaded", weekdays=range(1,7))
+
+            elif trigger_type == "weekly":
+                #scheduler.add_weekly_task(task, weekday, time, mode='threaded'):
+                args['time'] = parser.parse( data.get("time") )
+
+                if data.get("weekday"):
+                    args['weekday'] = eval( data.get("weekday") )
+
+                scheduler.add_weekly_task(task, **args)
+
+
+
+      
 
 class TacticMonitor(object):
 
@@ -273,16 +447,22 @@ class TacticMonitor(object):
 
 
 
-
-        # start up scheduled triggers
-        #from tactic.command import ScheduledTriggerMonitor
-        #ScheduledTriggerMonitor.start()
-
         # create a separate thread for timed processes
         tactic_timed_thread = TacticTimedThread()
         tactic_timed_thread.start()
-
         tactic_threads.append(tactic_timed_thread)
+
+        # create a separate thread for scheduler processes
+
+        use_scheduler = Config.get_value("services", "scheduler")
+        if use_scheduler == 'true':
+            tactic_scheduler_thread = TacticSchedulerThread()
+            tactic_scheduler_thread.start()
+            tactic_threads.append(tactic_scheduler_thread)
+
+
+
+
 
         DbContainer.close_thread_sql()
 

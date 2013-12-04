@@ -210,8 +210,6 @@ class EditCmd(Command):
             if my.search_type == "":
                 raise EditCmdException( "Search type not found" )
             search_id = web.get_form_value("search_id")
-            if search_id == "":
-                raise EditCmdException( "Search id not found" )
      
             # get the search object based on these parameters
             if search_id == "" or search_id == "-1":
@@ -301,6 +299,7 @@ class EditCmd(Command):
         my.sobjects.append(sobject)
         my.info['action'] = action
         my.info['search_key'] = SearchKey.get_by_sobject(sobject, use_id=True)
+        my.info['sobject'] = sobject.get_sobject_dict()
 
         return sobject
 

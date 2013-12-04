@@ -552,13 +552,15 @@ class DirNaming(object):
         if not naming_expr:
             naming_expr = naming.get_value("dir_naming")
 
+        # so it can take the default
         if not naming_expr:
-            return ""
+            return None
 
         file_type = my.get_file_type()
 
         # build the dir name
         dir_name = naming_util.naming_to_dir(naming_expr, my.sobject, my.snapshot, file=my._file_object, file_type=file_type)
+
         return dir_name
 
 

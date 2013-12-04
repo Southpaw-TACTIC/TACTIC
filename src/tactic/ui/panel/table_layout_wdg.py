@@ -13,6 +13,7 @@ __all__ = ["FastTableLayoutWdg", "TableLayoutWdg"]
 
 import os
 import re
+import types
 from dateutil import parser, rrule
 from datetime import datetime, timedelta
 
@@ -129,6 +130,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '8'
+        },
+
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -159,6 +167,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not my.search_type.startswith("sthpw/sobject_list"):
             return
 
+        # don't remap if it's the default table view when the user is
+        # viewing raw data
+        if my.view == 'table':
+            return
+
         search_types_dict = {}
         for row, sobject in enumerate(my.sobjects):
 
@@ -183,7 +196,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 search_types_dict[search_type] = search_types_list
 
             search_types_list.append((row,sobject))
-
 
         deleted = {}
         for search_type, sobjects in search_types_dict.items():
@@ -347,6 +359,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # fast table should use 0 chunk size
         my.chunk_size = 0
 
+        my.timer = 0
+
         my.edit_permission = True
         
         view_editable = my.view_attributes.get("edit")
@@ -411,60 +425,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # set some grouping parameters
         my.process_groups()
-        """
-        my.current_groups = []
-        if my.group_element:
-            if my.group_element in [True, False, '']: # Backwards compatibiity
-                my.group_columns = []
-            else:
-                my.group_columns = [my.group_element]
-        else:
-            my.group_columns = my.kwargs.get("group_elements")
-            
-            if not my.group_columns or my.group_columns == ['']: # Backwards compatibility
-                my.group_columns = []
-            if isinstance(my.group_columns, basestring):
-                if not my.group_columns.startswith('['):
-                    my.group_columns = [my.group_columns]
-                else:
-                    eval(my.group_columns)
 
-        #my.group_columns = ['timestamp']
-        #my.group_interval = TableLayoutWdg.GROUP_WEEKLY
-        if not my.group_columns:
-            from tactic.ui.filter import FilterData
-            filter = my.kwargs.get("filter")
-            values = {}
-            if filter:
-                filter_data = FilterData(filter)
-                values_list = filter_data.get_values_by_prefix("group")
-                if values_list:
-                    values = values_list[0]
-
-            if values.get("group"):
-                my.group_columns = [values.get("group")]
-                my.group_interval = values.get("interval")
-        my.is_grouped = len(my.group_columns) > 0
-        my.table.add_attr("spt_group_elements", ",".join(my.group_columns))
-
-        # grouping preprocess , check the type of grouping  
-        if my.is_grouped and my.sobjects:
-            search_type = my.sobjects[0].get_search_type()
-            element_type = SearchType.get_tactic_type(my.search_type, my.group_columns[0])
-            my.group_by_time = element_type in ['time', 'date', 'datetime']
-        """
-
-
-        my.order_sobjects()
-        my.remap_sobjects()
-
-        # TEST
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.sobjects.extend(my.sobjects)
-        #my.items_found = len(my.sobjects)
-        #my.handle_sub_search()
+        if my.kwargs.get('temp') != True:
+            my.order_sobjects()
+            my.remap_sobjects()
 
         for sobject in my.sobjects:
             my.sobject_levels.append(0)
@@ -618,7 +582,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             for name, edit_wdg in my.edit_wdgs.items():
                 # each BaseInputWdg knows about this FastTableLayoutWdg
                 edit_display = edit_wdg.get_display_wdg()
-                edit_display.set_parent_wdg(my)
+                if edit_display:
+                    edit_display.set_parent_wdg(my)
                 edit_div.add(edit_wdg)
         else:
             my.edit_wdgs = {}
@@ -712,46 +677,125 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.handle_table_behaviors(table)
 
-
-        
+        temp = my.kwargs.get("temp")
      
-        # draw all of the rows
+        # draw 4 (even) rows initially by default
+        has_loading = False
+        init_load_num = my.kwargs.get('init_load_num')
+
+        if not init_load_num:
+            init_load_num = 4
+        else:
+            init_load_num = int(init_load_num)
+       
+        # override init_load_num if group column has group_bottom
+        if my.has_group_bottom():
+            init_load_num = -1
+
+
+        # check the widgets if there are any that can't be async loaded
+        for widget in my.widgets:
+            if not widget.can_async_load():
+                init_load_num = -1
+                break
+
+        # minus 1 since row starts at 0
+        init_load_num -= 1
+
+
+
+
+        chunk_size = 20
+
         for row, sobject in enumerate(my.sobjects):
 
             # put in a group row
             if my.is_grouped:
                 my.handle_groups(table, row, sobject)
+            start_point = row - init_load_num
+            mod = start_point % chunk_size
+
+            if not temp and init_load_num >= 0  and row > init_load_num: 
+                tr, td = table.add_row_cell()
+                td.add_style("height: 30px")
+                td.add_style("padding: 20px")
+                td.add_style("text-align: center")
+                if mod == 1:
+                    td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                    td.add("Loading ...")
+                
+                tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+                tr.add_class("spt_loading")
+                has_loading = True
+                continue
+
 
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
+
+        if has_loading:
+            table.add_behavior( {
+            'type': 'load',
+            'chunk': chunk_size,
+            'cbjs_action': '''
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            var rows = layout.getElements(".spt_loading");
+
+            var jobs = [];
+            var count = 0;
+            var chunk = bvr.chunk;
+            while (true) {
+                var job_item = rows.slice(count, count+chunk);
+                if (job_item.length == 0) {
+                    break;
+                }
+                jobs.push(job_item);
+                count += chunk;
+            }
+
+            var count = -1;
+            var func = function() {
+                count += 1;
+                var rows = jobs[count];
+                if (! rows || rows.length == 0) {
+                    return;
+                }
+                spt.table.refresh_rows(rows, null, null, {on_complete: func});
+            }
+            func();
+
+            '''
+            } )
+
 
 
 
         if not my.sobjects:
             my.handle_no_results(table)
+        # refresh columns have init_load_num = -1 and temp = True
+        if init_load_num < 0 or temp != True: 
+            my.add_table_bottom(table)
+            my.postprocess_groups()
 
 
-        my.add_table_bottom(table)
-        my.postprocess_groups()
+            # extra stuff to make it work with ViewPanelWdg
+            top.add_class("spt_table_top");
+            class_name = Common.get_full_class_name(my)
+            top.add_attr("spt_class_name", class_name)
 
+            my.table.add_class("spt_table_content");
+            inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
+            inner.add_attr("spt_view", my.kwargs.get('view'))
 
-        # extra stuff to make it work with ViewPanelWdg
-        top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
-        top.add_attr("spt_class_name", class_name)
-
-        my.table.add_class("spt_table_content");
-        inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
-        inner.add_attr("spt_view", my.kwargs.get('view'))
-
-        # extra ?? Doesn't really work to keep the mode
-        inner.add_attr("spt_mode", my.mode)
-        top.add_attr("spt_mode", my.mode)
+            # extra ?? Doesn't really work to keep the mode
+            inner.add_attr("spt_mode", my.mode)
+            top.add_attr("spt_mode", my.mode)
 
 
 
-        # add a hidden insert table
-        inner.add( my.get_insert_wdg() )
+            # add a hidden insert table
+            inner.add( my.get_insert_wdg() )
      
         if my.search_limit:
             limit_span = DivWdg()
@@ -959,7 +1003,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         reverse=False
         if my.group_by_time:
             reverse = True
-        elif my.order_element.endswith(' desc'):
+        elif my.order_element and my.order_element.endswith(' desc'):
             reverse = True
        
         sobjects = Common.sort_dict(my.group_dict, reverse=reverse)
@@ -976,6 +1020,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.handle_load_behaviors(table)
 
+        # add the search_table_<table_id> listener used by widgets 
+        # like Add Task to Selected
+	if my.kwargs.get('temp') != True:
+            table.add_behavior( {
+                'type': 'listen',
+                'event_name': 'search_table_%s' % my.table_id,
+                'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_layout");
+                    var version = top.getAttribute("spt_version");
+                    if (version == "2") {
+                        spt.table.set_layout(top);
+                        spt.table.run_search();
+                    }
+                    else {
+                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+                    }
+                '''
+            } )
 
         widths = my.kwargs.get("column_widths")
         """
@@ -995,6 +1057,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         """
+
+        # all for collapsing of columns
+        table.add_behavior( {
+            #'type': 'double_click',
+            'type': 'smart_click_up',
+            'modkeys': 'SHIFT',
+            'bvr_match_class': 'spt_table_header',
+            'cbjs_action': '''
+            spt.table.set_table(bvr.src_el);
+            var element_name = bvr.src_el.getAttribute("spt_element_name");
+            spt.table.toggle_collapse_column(element_name);
+            '''
+        } )
+
 
 
         # column resizing behavior
@@ -1040,68 +1116,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                                                 ' text-align: left; padding: 10px;'
                                } )
 
-        # all for collapsing of columns
-        table.add_behavior( {
-            #'type': 'double_click',
-            'type': 'smart_click_up',
-            'modkeys': 'SHIFT',
-            'bvr_match_class': 'spt_table_header',
-            'cbjs_action': '''
-            spt.table.set_table(bvr.src_el);
-            var element_name = bvr.src_el.getAttribute("spt_element_name");
-            spt.table.toggle_collapse_column(element_name);
-            '''
-        } )
-
-
-
-
-
-        # indicator that a cell is editable
-
-        # TEST: event delegation with MooTools
-        table.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
-                function(event, src_el) {
-                    if (src_el.hasClass("spt_cell_insert_no_edit")) {
-                        src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
-                    }
-                    else if (!src_el.hasClass("spt_cell_no_edit")) {
-                        src_el.setStyle("background-image", "url(/context/icons/silk/page_white_edit.png)" );
-                        src_el.setStyle("background-repeat", "no-repeat" );
-                        src_el.setStyle("background-position", "bottom right");
-                    }
-
-                } )
-
-            bvr.src_el.addEvent('mouseout:relay(.spt_cell_edit)',
-                function(event, src_el) {
-                    src_el.setStyle("background-image", "" );
-                } )
-            '''
-        } )
-
-        # row highlighting
-
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
-            function(event, src_el) {
-                // remember the original color
-                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
-                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
-            } )
-
-        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
-            function(event, src_el) {
-                src_el.setAttribute("spt_hover_background", "");
-                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
-            } )
-        '''
-        } )
 
 
 
@@ -1169,6 +1183,51 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
+        # indicator that a cell is editable
+
+        # TEST: event delegation with MooTools
+        table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
+                function(event, src_el) {
+                    if (src_el.hasClass("spt_cell_insert_no_edit")) {
+                        src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
+                    }
+                    else if (!src_el.hasClass("spt_cell_no_edit")) {
+                        src_el.setStyle("background-image", "url(/context/icons/silk/page_white_edit.png)" );
+                        src_el.setStyle("background-repeat", "no-repeat" );
+                        src_el.setStyle("background-position", "bottom right");
+                    }
+
+                } )
+
+            bvr.src_el.addEvent('mouseout:relay(.spt_cell_edit)',
+                function(event, src_el) {
+                    src_el.setStyle("background-image", "" );
+                } )
+            '''
+        } )
+
+        # row highlighting
+
+        table.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+        bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
+            function(event, src_el) {
+                // remember the original color
+                src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
+                spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
+            } )
+
+        bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
+            function(event, src_el) {
+                src_el.setAttribute("spt_hover_background", "");
+                spt.mouse.table_layout_hover_out({}, {src_el: src_el});
+            } )
+        '''
+        } )
 
 
         # set styles at the table level to be relayed down
@@ -1523,6 +1582,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not width_set:
             table.add_style('width', '100%')
 
+    def has_group_bottom(my):
+        '''return True if group_column has group_bottom'''
+        if not my.group_columns:
+            return False
+        
+        for widget in my.widgets:
+            if widget.get_name() == my.group_columns[0]:
+                expression = widget.get_option("group_bottom")
+                if expression:
+                    return True
+            
+        return False
 
     def postprocess_groups(my):
 
@@ -1627,12 +1698,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             last_value = my.group_values.get(group_column)
             
             if last_value == None or group_value != last_value:
-
                 my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
-
 
 
         # what does this do?
@@ -1652,7 +1721,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.group_rows.append(tr)
         
         if group_value == '__NONE__':
-            label = '(unknown)'
+            label = '---'
         else:
             label = Common.process_unicode_string(group_value)
 
@@ -1816,7 +1885,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # add extra data if it exists
         extra_data = sobject.get_value("_extra_data", no_exception=True)
-        if extra_data is not None:
+        if extra_data is not None and extra_data:
             tr.add_behavior( {
                 'type': 'load',
                 'data': extra_data,
@@ -1824,14 +1893,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 bvr.src_el.extra_data = bvr.data;
                 '''
             } )
-
-        
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
-
         if sobject.is_retired():
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
@@ -1850,6 +1916,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
+        my.is_insert = sobject.is_insert()
+
+
 
         # handle the grouping
         #for group_column in my.group_columns:
@@ -1863,12 +1932,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.kwargs.get("show_select") not in [False, 'false']:
             my.handle_select(table, sobject)
 
-
         for i, widget in enumerate(my.widgets):
             element_name = widget.get_name()
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
+            #td.add(element_name)
 
             # Qt webkit ignores these
             if my.browser == 'Qt':
@@ -1889,7 +1959,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         html = widget.get_buffer_display()
                         if not html:
-                            html = "<div sytle='height: 30px'>&nbsp;</div>"
+                            html = "<div style='height: 30px'>&nbsp;</div>"
                         td.add(html)
                 except Exception, e:
 
@@ -1908,7 +1978,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 value = sobject.get_value(element_name, no_exception=True)
                 td.add(value)
 
-            if my.mode == 'widget':
+
+            my.name = widget.get_name()
+            my.value = sobject.get_value(element_name, no_exception=True)
+
+            if not my.is_insert and my.mode == 'widget':
                 my.handle_color(td, widget, i)
 
                 # provide an opportunity for the widget to affect the td and tr
@@ -1917,41 +1991,44 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             is_editable = True
-            security = Environment.get_security()
-            if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+
+            if not widget.is_editable():
                 is_editable = False
+            else:
+                security = Environment.get_security()
+                if not security.check_access('element', {'name': element_name}, "edit", default='edit'):
+                    is_editable = False
 
 
             # This is only neccesary if the table is editable
             if my.view_editable:
+
                 edit = my.edit_wdgs.get(element_name)
 
-                # FIXME: an edit should be always defined
-                if not edit:
-                    value = sobject.get_value(element_name, no_exception=True)
-                else:
-                    import types
+                # insert rows have no edits defined yet
+                if my.is_insert:
+                    if not is_editable:
+                        td.add_class("spt_cell_insert_no_edit")
+
+                elif not edit or not is_editable:
+                    td.add_class("spt_cell_no_edit")
+
+
+                #get the value from the widget, else use my.value
+                if edit:
                     edit.set_sobject(sobject)
                     values = edit.get_values()
                     column = edit.get_column()
                     value = values.get('main')
                     if not value and value != False:
                         value = ''
+                else:
+                    value = my.value
 
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
-                # insert rows have no edits defined yet
-                if sobject.is_insert():
-                    if not widget.is_editable():
-                        td.add_class("spt_cell_insert_no_edit")
 
-                elif not edit or not is_editable or not widget.is_editable():
-                    td.add_class("spt_cell_no_edit")
-
-                #if isinstance(value, basestring):
-                #    value = value.replace('"', "&quot;")
-                # lower the boolean to better match when clicking on checkboxes
                 if isinstance(value, bool):
                     value = str(value).lower()
                 td.add_attr("spt_input_value", value)
@@ -1960,10 +2037,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td.add_class("spt_cell_no_edit")
 
 
+            """
+            import time
+            start = time.time()
+            diff = time.time() - start
+            my.timer += diff
+            print diff, my.timer
+            """
+
 
 
             # if this is an insert, then set the element name
-            if sobject.is_insert():
+            if my.is_insert:
                 td.add_attr("spt_element_name", element_name)
 
 
@@ -2037,18 +2122,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         bg_color = None
         text_color = None
 
-        name = widget.get_name()
+        if my.name is None:
+            name = widget.get_name()
+        else:
+            name = my.name
+
         try:
-            widget_value = widget.get_value()
-            if not isinstance(widget_value, basestring):
-                widget_value = str(widget_value)
+            if my.value is None:
+                value = widget.get_value()
+            else:
+                value = my.value
+
+            if not isinstance(value, basestring):
+                value = str(value)
             bg_color_map, text_color_map = my.color_maps.get(name)
             if bg_color_map:
-                bg_color = bg_color_map.get(widget_value)
+                bg_color = bg_color_map.get(value)
                 if bg_color:
                     td.add_style("background-color", bg_color)
             if text_color_map:
-                text_color = text_color_map.get(widget_value)
+                text_color = text_color_map.get(value)
                 if text_color:
                     td.add_style("color", text_color)
         except Exception, e:
@@ -2181,11 +2274,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_load_behaviors(my, table):
 
+        if my.kwargs.get('temp') != True:
+            cbjs_action = '''
+            // set the current table layout on load
+            if (spt.table) {
+                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
+            }
+            '''
+            table.add_behavior({
+                'type': 'load',
+                'cbjs_action': cbjs_action
+                })
+
+
+
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
 
         if Container.get_dict("JSLibraries", "spt_table"):
             return
+
 
         select_color = table.get_color("background3")
         shadow_color = table.get_color("shadow")
@@ -2766,11 +2876,11 @@ spt.table.set_connect_key = function(connect_key) {
 spt.table.get_data = function(row) {
     var data = {};
     if (row) {
-        var cells = row.getElements('td.spt_cell_edit'); 
+        var cells = row.getElements('.spt_cell_edit'); 
+        var element_names = spt.table.get_element_names();
         for (var k = 0; k < cells.length; k++) {
             var cell = cells[k];
-           
-            data[cell.getAttribute('spt_element_name')] = cell.getAttribute('spt_input_value');   
+            data[element_names[k]] = cell.getAttribute('spt_input_value');   
         }
     }
     return data   
@@ -2794,7 +2904,8 @@ spt.table.set_data = function(row, data) {
     if (changed) 
         spt.add_class(row, "spt_row_changed");
 }
-    
+
+
 
 // Extra data functions
 
@@ -3486,7 +3597,7 @@ spt.table.set_display = function( el, value, input_type ) {
         return;
     }
 
-    if (input_type == 'xml') {
+    if (input_type == 'xml' || value.substr(0,6) == '<?xml ') {
 
         var label = value;
         //var is_xml = label.substr(0,6) == '<?xml ';
@@ -3831,7 +3942,7 @@ spt.table.get_refresh_kwargs = function(row) {
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
-    if (typeof(search_keys) == 'undefined') {
+    if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
             var search_key = rows[i].getAttribute("spt_search_key");
@@ -3855,6 +3966,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
+
     
     var table_top = layout.getParent('.spt_table_top');
     
@@ -3863,9 +3975,16 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var server = TacticServerStub.get();
 
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
-    group_elements = group_elements.split(",");
+    if (group_elements) {
+        group_elements = group_elements.split(",");
+    }
+    else {
+        group_elements = [];
+    }
 
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.TableLayoutWdg';
+    //var class_name = 'tactic.ui.panel.TileLayoutWdg';
+
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
     // there is no need to pass in variables that affects the drawing of the shelf here.
@@ -3899,7 +4018,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           'args': kwargs,
           'cbjs_action': function(widget_html) {
             //spt.behavior.replace_inner_html(hidden_row, widget_html);
-            spt.app_busy.show("Replacing changed rows ...");
+            //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
@@ -3923,6 +4042,12 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 var bottom_row = spt.table.get_bottom_row(); 
                 if (bottom_row)
                     bottom_row.setStyle('background', '#E6CB81');
+            }
+
+
+            if (kw['on_complete']) {
+                var on_complete = kw['on_complete'];
+                on_complete();
             }
             
             spt.app_busy.hide();
@@ -4007,7 +4132,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
     //if (group_elements)
     //    element_names.push(group_elements);
         
@@ -4020,7 +4145,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         show_shelf: false,
         element_names: element_names,
         do_search: 'false',
-        group_elements: group_elements
+        group_elements: group_elements,
+        init_load_num : -1
     }
 
     
@@ -4051,7 +4177,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
     spt.behavior.replace_inner_html(data, widget_html);
 
     // FIXME: might be just faster to refresh the whole page
-
     var data_rows = data.getElements(".spt_table_row");
     var data_header_row = data.getElement(".spt_table_header_row");
     var data_group_rows = data.getElements(".spt_group_row");
@@ -4078,7 +4203,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
              tgt_cell.destroy();
          }
     }
-
     // add bottom row
     if (bottom_row && data_bottom_row) {
         rows.push(bottom_row);
@@ -4111,6 +4235,9 @@ spt.table.modify_columns = function(element_names, mode, values) {
     }
 
     for ( var i = 0; i < group_rows.length; i++ ) {
+        var data_group_row = data_group_rows[i];
+        if (!data_group_row) continue;
+
         var cells = data_group_rows[i].getElements('.spt_group_cell');
         for (var j = 0; j < cells.length; j++) {
             if (mode=='refresh') {
@@ -4813,10 +4940,10 @@ spt.table.open_ingest_tool = function(search_type) {
         if my.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table on load
-            
             // just load it once and set the table if loaded already
             if (spt.table) {
-                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
                 return;
             }
 
@@ -4832,6 +4959,7 @@ spt.table.open_ingest_tool = function(search_type) {
             spt.table.shadow_color = bvr.shadow_color;
             %s
             spt.table.set_table(bvr.src_el);
+            
             
             ''' %cbjs_action
 
@@ -4852,6 +4980,9 @@ spt.table.open_ingest_tool = function(search_type) {
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
         } )
+
+
+
 
 
     #

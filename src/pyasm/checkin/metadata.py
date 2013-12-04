@@ -16,7 +16,7 @@ __all__ = ['CheckinMetadataHandler', 'PILMetadataParser', 'ExifMetadataParser', 
 import os, sys, re, subprocess
 
 from pyasm.common import Common
-
+from pyasm.biz import File
 
 try:
     from PIL import Image
@@ -68,24 +68,23 @@ class CheckinMetadataHandler():
 
         for i, file in enumerate(files):
             path = file
-            base, ext = os.path.splitext(path)
+            ext = File.get_extension(path)
             file_object = file_objects[i]
 
-            if HAS_FFMPEG:
-                parser_type = "FFMPEG"
-            elif HAS_IMAGEMAGICK:
-                parser_type = "ImageMagick"
-            else:
-                parser_type = "PIL"
-
-            metadata = {}
             if not os.path.exists(path):
-                pass
+                continue
+            elif ext in File.VIDEO_EXT:
+                parser_type = "FFMPEG"
+            elif ext in File.NORMAL_EXT:
+                continue
+            else:
+                if HAS_IMAGEMAGICK:                    
+                    parser_type = "ImageMagick" 
+                else:
+                    parser_type = "PIL"
+            metadata = {}
 
-            elif ext in ['.txt','.doc','.docx','.xls','.rtf','.odt']:
-                pass
-
-            elif parser_type == "FFMPEG":
+            if parser_type == "FFMPEG":
                 parser = FFProbeMetadataParser(path=path)
                 metadata = parser.get_metadata()
             elif parser_type == "ImageMagick":
@@ -94,7 +93,6 @@ class CheckinMetadataHandler():
             else:
                 parser = PILMetadataParser(path=path)
                 metadata = parser.get_metadata()
-
 
             metadata['__parser__'] = parser_type
 
@@ -169,7 +167,8 @@ class CheckinMetadataHandler():
             name = name.lower()
             name = name.replace(" ", "_")
             name = name.replace(":", "_")
-      
+            
+            keys = [] 
             # otherwise it could an int or float
             if isinstance(value, basestring):
                 value = value.lower()
@@ -327,7 +326,7 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
 
-class ImageMagickMetadataParser:
+class ImageMagickMetadataParser(BaseMetadataParser):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
@@ -357,16 +356,22 @@ class ImageMagickMetadataParser:
         names = []
         curr_ret = ret
         for line in ret_val.split("\n"):
+            line = line.strip()
             if not line:
                 continue
 
             index = 0
             while 1:
-                if  line[index] != ' ':
+                if index >= len(line):
+                    break
+                if line[index] != ' ':
                     break
                 index += 1
             level = index / 2
             line = line.strip()
+
+            if not line:
+                continue
 
             if line.endswith(":"):
                 name = line.rstrip(":")
@@ -375,12 +380,22 @@ class ImageMagickMetadataParser:
                 continue
 
             parts = re.split(p, line)
+            if len(parts) < 2:
+                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
+                continue
             name = parts[0]
             value = parts[1]
-            value = value.encode('utf8', 'ignore')
-            ret[name] = value
+            try:
+                if isinstance(value, unicode):
+                   value = value.encode('utf-8', 'ignore')
+                else:
+                   value = unicode(value, errors='ignore').encode('utf-8')
 
-            names.append(name)
+                ret[name] = value
+                names.append(name)
+            except Exception, e:
+                print "WARNING: Cannot handle line [%s] with error: " % line, e
+
 
         if names:
             ret['__keys__'] = names
@@ -402,8 +417,14 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
     def get_metadata(my):
         path = my.kwargs.get("path")
-        out = my.probe_file(path)
+        
+        try:
+            out = my.probe_file(path)
+        except:
+            out = ''
+
         # sanitize output
+        
         out = my.sanitize_data(out)
 
         metadata = my.parse_output(out)

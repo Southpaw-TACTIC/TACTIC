@@ -108,7 +108,7 @@ class WidgetDbConfig(SObject):
 
 
 
-    # HACK for backwards compatibility
+    # for backwards compatibility
     def has_view(my, view=None):
         # check that this view actually exists in this file
 
@@ -162,6 +162,14 @@ class WidgetDbConfig(SObject):
             ordered_nodes.append(name)
 
         return ordered_nodes
+
+
+    def get_element_xml(my, element_name):
+        node = my.get_element_node(element_name)
+        if node is None:
+            return ''
+        return my.xml.to_string(node)
+
 
 
     def get_element_node(my, element_name):

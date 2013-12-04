@@ -124,10 +124,16 @@ class SPTDate(object):
             if offset:
                 date = date - date.utcoffset()
             date = date.replace(tzinfo=TZGMT)
-
-        utc = date.astimezone(TZUTC)
-        naive = utc.replace(tzinfo=None)
+        
+        #FIXME: it errors out on time before epoch
+        try:
+            utc = date.astimezone(TZUTC)
+        except Exception, e:
+            naive = date.replace(tzinfo=None)
+        else:
+            naive = utc.replace(tzinfo=None)
         return naive
+
     convert = classmethod(convert)
 
 

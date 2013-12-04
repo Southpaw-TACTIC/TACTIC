@@ -11,7 +11,7 @@
 
 __all__ = ['ShelfWdg', 'ShelfEditWdg']
 
-from pyasm.common import Environment, Common, SecurityException
+from pyasm.common import Environment, Common, SecurityException, Container
 from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
 from pyasm.widget import TextAreaWdg, ButtonWdg, TextWdg, HiddenWdg, ProdIconButtonWdg, SelectWdg, IconWdg
@@ -208,10 +208,13 @@ class ShelfEditWdg(BaseRefreshWdg):
 
         editor = AceEditorWdg(custom_script=script_sobj)
         my.editor_id = editor.get_editor_id()
-        top.add_behavior( {
-            'type': 'load',
-            'cbjs_action': my.get_onload_js()
-        } )
+
+
+        if not Container.get_dict("JSLibraries", "spt_script_editor"):
+            div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': my.get_onload_js()
+            } )
 
 
         # create the insert button
@@ -530,6 +533,13 @@ class ShelfEditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         
         return r'''
+
+if (spt.script_editor) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_script_editor");
+
 spt.script_editor = {}
 
 spt.script_editor.display_script_cbk = function(evt, bvr)
@@ -558,7 +568,8 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     if (!script) {
         script = server.query(search_type, {filters:filters, single:true} );
     }
-   
+  
+
     var script_text = script['script'];
     var script_folder = script['folder'];
     var script_title = script['title'];
@@ -584,9 +595,10 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
     {
         spt.ace_editor.set_editor(editor_id);
     }
-    var editor = spt.ace_editor.editor;
-    var document = editor.getSession().getDocument()
-    document.setValue(script_text);
+
+    if (script_text) {
+        spt.ace_editor.set_value(script_text);
+    }
 
     //editAreaLoader.setValue("shelf_script", script_text);
     //editAreaLoader.setSelectionRange("shelf_script", 0, 0);
@@ -646,12 +658,12 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
     
     // refresh
     var panel = bvr.src_el.getParent(".spt_panel");
-    spt.panel.refresh(panel);
-
-    bvr.script = script_sobj;
-    var bvr2 = {script: script_sobj};
-    bvr2.top = top;
-    spt.script_editor.display_script_cbk({}, bvr2);
+    spt.panel.refresh(panel, null, { callback: function() {
+        bvr.script = script_sobj;
+        var bvr2 = {script: script_sobj};
+        bvr2.top = top;
+        spt.script_editor.display_script_cbk({}, bvr2);
+    } } );
 }
 
 
@@ -793,7 +805,9 @@ class AceEditorWdg(BaseRefreshWdg):
                 var func = function() {
                     var editor = spt.ace_editor.editor;
                     var document = editor.getSession().getDocument();
-                    document.setValue(bvr.code);
+                    if (bvr.code) {
+                        spt.ace_editor.set_value(bvr.code);
+                    }
                     spt.ace_editor.set_language(bvr.language);
                     editor.setReadOnly(bvr.readonly);
 
@@ -822,7 +836,7 @@ class AceEditorWdg(BaseRefreshWdg):
         options_div.add(select)
         select.set_option("labels", "Eclipse|Twilight|TextMate|Vibrant Ink|Merbivore|Clouds")
         select.set_option("values", "eclipse|twilight|textmate|vibrant_ink|merbivore|clouds")
-        select.set_value("10pt")
+        select.set_value("twilight")
         select.add_behavior( {
             'type': 'change',
             'editor_id': my.get_editor_id(),
@@ -976,6 +990,19 @@ spt.ace_editor.set_value = function(value) {
     var editor = spt.ace_editor.editor;
     var document = editor.getSession().getDocument()
     document.setValue(value);
+    editor.gotoLine(2);
+    editor.resize();
+    editor.focus();
+}
+
+spt.ace_editor.goto_line = function(number) {
+    var editor = spt.ace_editor.editor;
+    var document = editor.getSession().getDocument()
+    editor.gotoLine(2);
+    editor.resize();
+    editor.focus();
+ 
+
 }
 
 
@@ -1120,20 +1147,23 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
         var core_js_files = [
         "ace/ace-0.2.0/src/mode-javascript.js",
-        "ace/ace-0.2.0/src/theme-eclipse.js"
-        ];
-        var supp_js_files = [
-            "ace/ace-0.2.0/src/mode-xml.js",
+         "ace/ace-0.2.0/src/mode-xml.js",
             "ace/ace-0.2.0/src/mode-python.js",
-            "ace/ace-0.2.0/src/theme-twilight.js",
+             "ace/ace-0.2.0/src/theme-twilight.js",
+               
             "ace/ace-0.2.0/src/theme-textmate.js",
             "ace/ace-0.2.0/src/theme-vibrant_ink.js",
             "ace/ace-0.2.0/src/theme-merbivore.js",
             "ace/ace-0.2.0/src/theme-clouds.js",
+            "ace/ace-0.2.0/src/theme-eclipse.js"
         ];
+        //var supp_js_files = [];
+           
+         
+        
 
         spt.dom.load_js(core_js_files, ace_setup);
-        spt.dom.load_js(supp_js_files);      
+        //spt.dom.load_js(supp_js_files);      
         });
    
 

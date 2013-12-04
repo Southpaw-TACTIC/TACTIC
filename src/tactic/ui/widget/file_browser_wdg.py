@@ -29,6 +29,24 @@ import os
 
 class DirListWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+    'base_dir': {
+        'description': 'Base Directory of the file list',
+        'type': 'TextWdg',
+        'order': 1,
+        'category': 'Options'
+    },
+ 
+
+    'location': {
+        'description': 'Determines whether files are relative to the client or the server',
+        'type': 'SelectWdg',
+        'values': 'server|client',
+        'order': 2,
+        'category': 'Options'
+    },
+    }
+ 
 
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
@@ -56,7 +74,7 @@ class DirListWdg(BaseRefreshWdg):
         elif my.paths is None and location == 'server':
             my.directory = Directory(base_dir=base_dir, depth=depth)
             my.paths = my.directory.get_all_paths()
-            my.paths = []
+            #my.paths = []
         elif location == 'scm':
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
         else:
@@ -120,7 +138,7 @@ class DirListWdg(BaseRefreshWdg):
         select_all_wdg.add(checkbox)
 
         select_all_wdg.add_color("background", "background3")
-        select_all_wdg.add_style("padding: 2px")
+        select_all_wdg.add_style("padding: 3px")
         select_all_wdg.add_style("margin-top: -8px")
         select_all_wdg.add_border()
 
@@ -388,6 +406,7 @@ class DirListWdg(BaseRefreshWdg):
         top.add_attr("ondragenter", "return false")
         top.add_attr("ondragover", "return false")
         top.add_attr("ondrop", "spt.drag.noop(event, this)")
+        top.add_style("border: solid 1px green")
         top.add_behavior( {
             'type': 'load',
             'base_dir': my.kwargs.get("base_dir"),
@@ -483,6 +502,7 @@ class DirListWdg(BaseRefreshWdg):
 
         if dynamic:
             dir_list = DirListPathHandler(
+                location=location,
                 level=0,
                 base_dir=my.base_dir,
                 handler_class=handler_class,
@@ -496,6 +516,7 @@ class DirListWdg(BaseRefreshWdg):
             top.add(dir_list)
         else:
             dir_list = DirListPathHandler(
+                location=location,
                 level=0,
                 base_dir=my.base_dir,
                 #handler_class=handler_class,
@@ -628,7 +649,7 @@ class DirListWdg(BaseRefreshWdg):
 
                 }
 
-                spt.panel.load(sibling, class_name, kwargs);
+                spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
         else {
@@ -1090,6 +1111,7 @@ class DirListPathHandler(BaseRefreshWdg):
             if isinstance(handler_kwargs, basestring):
                 handler_kwargs = eval(handler_kwargs)
 
+            handler_kwargs['location'] = my.kwargs.get("location")
             handler_kwargs['all_open'] = my.kwargs.get("all_open")
             handler_kwargs['depth'] = my.kwargs.get("depth")
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")

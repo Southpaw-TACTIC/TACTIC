@@ -35,7 +35,10 @@ class BaseCheckin(Command):
 
         my.to_paths = []
 
-        my.is_current = True
+        # these booleans should be undefined to start to prevent accidental commit in append checkin
+        my.is_current = None
+        my.is_latest = None
+
         my.is_revision = False
         my.version = None
 
@@ -151,7 +154,13 @@ class BaseCheckin(Command):
 
         # add a note to the parent
         my.add_publish_note()
+        
+        my.call_triggers()
 
+    def get_trigger_prefix(my):
+        return "checkin"
+
+    def call_triggers(my):
 
         # call the done trigger for checkin
         from pyasm.command import Trigger
@@ -159,21 +168,20 @@ class BaseCheckin(Command):
         snapshot = my.get_snapshot()
         output['search_key'] = SearchKey.build_by_sobject(snapshot)
         output['update_data'] = snapshot.data.copy()
-
         output['snapshot'] = snapshot.get_sobject_dict()
         output['files'] = [x.get_sobject_dict() for x in my.file_objects]
 
 
         # DEPRECATED
         #Trigger.call(my, "checkin/done", output)
-
+        prefix = my.get_trigger_prefix()
         # Add the checkin triggers
         base_search_type = my.sobject.get_base_search_type()
-        Trigger.call(my, "checkin", output)
-        Trigger.call(my, "checkin|%s" % base_search_type, output)
-        Trigger.call(my, "checkin|%s|%s" % (base_search_type, my.context), output)
+        Trigger.call(my, prefix, output)
+        Trigger.call(my, "%s|%s" % (prefix, base_search_type), output)
+        Trigger.call(my, "%s|%s|%s" % (prefix, base_search_type, my.context), output)
         # get the process (assumption here)
-        Trigger.call(my, "checkin|%s" % base_search_type, output, process=my.process)
+        Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=my.process)
 
     def update_metadata(my, snapshot, files, file_objects):
 
@@ -248,6 +256,11 @@ class BaseCheckin(Command):
 
 
     def handle_file_naming(my):
+        # this is meant for SnapshotIsLatestTrigger to run smoothly
+        # these booleans should be set in the post-insert time of snapshot creation
+        
+        Snapshot.set_booleans(my.sobject, my.snapshot, my.is_latest, my.is_current)
+
         if my.keep_file_name:
             return
 

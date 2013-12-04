@@ -401,13 +401,13 @@ class ExpressionTest(unittest.TestCase):
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
 
-        expected = '''SELECT "task".* FROM "task" WHERE "search_type" = 'unittest/person?project=unittest' AND "task"."search_code" in ('''
+        expected = '''SELECT "sthpw"."public"."task".* FROM "sthpw"."public"."task" WHERE "task"."search_type" = 'unittest/person?project=unittest' AND "task"."search_code" in ('''
 
         my.assertEquals(search.get_statement().startswith(expected), True)
         expression = "@SEARCH(unittest/person.unittest/person)"
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
-        expected = 'SELECT "person".* FROM "person"'
+        expected = 'SELECT "unittest"."public"."person".* FROM "unittest"."public"."person"'
         my.assertEquals(search.get_statement(), expected)
 
         expression = "@SEARCH(sthpw/login['login', @GET(sthpw/login['login','ben'].login)])"
@@ -2008,7 +2008,18 @@ class ExpressionTest(unittest.TestCase):
             pass
         else:
             my.fail("Expression [%s] did not produce a syntax error" % expression)
+        
+        # test @GETALL vs @GET
+        expression = "@GET(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        my.assertEquals(['USA'], result)
 
+        expression = "@GETALL(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        # there should be 3 tasks pointing to 3 USA
+        my.assertEquals(['USA','USA','USA'], result)
 
         # test comparisons
         expression = "@GET(.age) * 2.0 > 0.0"

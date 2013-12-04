@@ -138,6 +138,18 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 
+    #
+    # Column type functions
+    #
+    def get_text(my, not_null=False):
+        parts = []
+        parts.append("text")
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
+
 
     #
     # Schema functions
@@ -518,8 +530,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     def __init__(my):
 
-        # FIXME: this will not work in mixed db cases because it assumes a global
-        # single database
+        # NOTE: This will not work in mixed db cases because it assumes a
+        # global single database
         my.server   = Config.get_value("database", "server")
         my.port     = Config.get_value("database", "port")
         my.user     = Config.get_value("database", "user")
@@ -837,24 +849,28 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         if column_type in ['timestamp','datetime']:
             quoted = False
-            lower_value = value.lower()
-            if value == "NOW":
-                value = "getdate()"
-                #return {"value": value, "quoted": quoted}
-            # FIXME: this is implemented this way because set_value 
-            # can be called twice.  This method should called from commit
-            # and not set_value
-            elif isinstance(value, datetime.datetime):
+            lower_value = ''
+            if isinstance(value, datetime.datetime):
                 pass
             elif not value:
                 pass
-            elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
-                if value == 'NULL':
-                    pass
-                else:
-                    value = "convert(datetime2, '%s', 0)" % value
+            else:
+                lower_value = value.lower()
+            
+                if value == "NOW":
+                    value = "getdate()"
+                    #return {"value": value, "quoted": quoted}
+                # FIXME: this is implemented this way because set_value 
+                # can be called twice.  This method should called from commit
+                # and not set_value
+                elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
+                    if value == 'NULL':
+                        pass
+                    else:
+                        value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
+
           
 
 
@@ -1147,6 +1163,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
                 elif data_type == 'uniqueidentifier':
                     data_type = "uniqueidentifier"
+                # sqlserver handles timestamp different and is *not the same
+                # timestamp from other databases
+                elif data_type == 'timestamp':
+                    data_type = "sqlserver_timestamp"
                 elif data_type.startswith('int identity'):
                     data_type = "serial"
 
@@ -1188,29 +1208,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             column_dict[key] = value.get('nullable')
         return column_dict 
 
-    def get_columns(cls, db_resource, table):
-        '''SQLServer get ordered column names'''
-        
-        from sql import DbContainer
-        sql = DbContainer.get(db_resource)
-
-        statement = "EXEC sp_columns @table_name = '%s'"%table
-        results = sql.do_query(statement)
-
-        columns = []
-        if len(results) > 0:
-            for k in range(len(results)):
-                name = results[k][3]
-                columns.append(name)
-
-
-        # remove temp columns
-        columns = my.remove_temp_column(columns, sql) 
-        
-
-        return columns
-
-    get_columns = classmethod(get_columns)
+   
 
     def set_savepoint(my, name='save_pt'):
         '''set a savepoint'''
@@ -1234,8 +1232,31 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_temp_column_name(my):
         return "_tmp_spt_rownum"
 
+    def get_columns(cls, db_resource, table):
+        '''SQLServer get ordered column names'''
+        
+        from sql import DbContainer
+        sql = DbContainer.get(db_resource)
 
-    def remove_temp_column(my, columns, sql):
+        statement = "EXEC sp_columns @table_name = '%s'"%table
+        results = sql.do_query(statement)
+
+        columns = []
+        if len(results) > 0:
+            for k in range(len(results)):
+                name = results[k][3]
+                columns.append(name)
+
+
+        # remove temp columns
+        columns = cls.remove_temp_column(columns, sql) 
+        
+
+        return columns
+
+    get_columns = classmethod(get_columns)
+
+    def remove_temp_column(cls, columns, sql):
         # SQL Server temp columns are put in by ROW_NUMBER()
         # in database_impl.handle_pagination()
         impl = sql.get_database_impl()
@@ -1244,6 +1265,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             columns.remove(temp_column_name)
 
         return columns
+
+    remove_temp_column = classmethod(remove_temp_column)
+
 
 
 
@@ -1446,6 +1470,14 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             if value == "NOW":
                 value = "now()"
                 return {"value": value, "quoted": quoted}
+
+        elif column_type == 'boolean':
+            quoted = False
+            if value in ['true', 'True', 1 ,'1', True]:
+                value = True
+            else:
+                value = False
+            return {"value": value, "quoted": quoted}
 
         elif column_type in ['decimal', 'numeric']:
             quoted = False
@@ -2524,9 +2556,11 @@ class SqliteImpl(PostgresImpl):
             else:
                 value = 0
         elif column_type == 'timestamp':
-            if value == "NOW":
+            if value  == "NOW":
                 quoted = False
                 value = my.get_timestamp_now()
+            elif value.startswith(("CURRENT_TIMESTAMP","DATETIME(")):
+                quoted = False
 
         return {"value": value, "quoted": quoted}
 
@@ -2638,7 +2672,9 @@ class SqliteImpl(PostgresImpl):
         for result in results:
             name = result[1]
             data_type = result[2]
-            nullable = True
+            # notnull could be 1 or 99 which equals True
+            nullable = result[3] not in [1, 99]
+            #nullable = True
 
             if data_type.startswith("character varying"):
                 size = data_type.replace("character varying", "")

@@ -47,7 +47,7 @@ spt.tab.top = null;
 
 spt.tab.set_main_body_tab = function() {
     spt.tab.top = $(document.body).getElement(".spt_tab_top");
-    return spt.tab_top;
+    return spt.tab.top;
 }
 
 // this is to be deprecated
@@ -169,7 +169,9 @@ spt.tab.set_attribute = function(element_name, name, value) {
 
 
 
-spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
+spt.tab.add_new = function(element_name, title, class_name, kwargs,
+        values, hash) {
+
     if (typeof(title) == 'undefined') {
         title = '(Untitled)';
     }
@@ -190,16 +192,15 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
 
     var top = spt.tab.top;
 
-    // register the hash
-    /*
-    var hash = "/element" + element_name;
-    spt.hash.add( hash, function() {
-        spt.tab.set_main_body_tab();
-        //spt.tab.add_new(element_name, title, class_name, kwargs, values);
-        spt.tab.add_new(element_name);
-    } );
-    */
+    if (!hash && hash != false && kwargs.hash) {
+        hash = kwargs.hash;
+    }
+    if (hash == "__link__") {
+        hash = "link/" + element_name;
+    }
 
+
+    var orig_element_name = element_name;
 
     var mode = top.getAttribute("spt_tab_mode");
     if (mode == "hidden") {
@@ -309,6 +310,19 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values) {
     // FIXME: this should only move on the main table
     //var top_pos = spt.tab.getY(header_top);
     //scroll(0,top_pos-20);
+
+
+    // register the hash
+    if (hash) {
+        var state = {
+            element_name: orig_element_name,
+            title: title,
+            class_name: class_name,
+            kwargs: kwargs,
+            hash: hash
+        }
+        spt.hash.set_hash(state, title, hash);
+    }
 
     return header;
 }
@@ -518,7 +532,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     var header_top = top.getElement(".spt_tab_header_top");
     var top_id = top.getAttribute("id");
 
-    spt.api.app_busy_show("Loading " + title, '');
+    //spt.api.app_busy_show("Loading " + title, '');
 
     setTimeout( function() {
 
@@ -1445,7 +1459,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 xml += '  </display>\n';
                 xml += '</element>\n';
 
-                alert(xml);
+                spt.alert(xml);
 
                 '''
             } )

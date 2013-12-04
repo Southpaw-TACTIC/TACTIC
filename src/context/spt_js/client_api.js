@@ -660,6 +660,8 @@ TacticServerStub = function() {
         return this._delegate("add_file", arguments, kwargs )
     }
 
+
+    // DEPRECATED: use checkout_snapshot
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -740,6 +742,8 @@ TacticServerStub = function() {
    
     }
 
+
+
     this.checkout_snapshot = function(search_key, sandbox_dir, kwargs) {
         // get the files for this snapshot
         if (!kwargs) {
@@ -755,7 +759,7 @@ TacticServerStub = function() {
             throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
         }
 
-        var file_types
+        var file_types;
         if (! kwargs.file_types ) {
             file_types = [];
         }
@@ -763,10 +767,17 @@ TacticServerStub = function() {
             file_types = kwargs.file_types;
         }
 
+        var expand_paths;
+        if (! kwargs.expand_paths ) {
+            expand_paths = true;
+        }
+        else {
+            expand_paths = kwargs.expand_paths;
+        }
 
         // get the server paths and the client paths to copy
-        var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types});
-        var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types});
+        var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types, expand_paths: expand_paths});
+        var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types, expand_paths: expand_paths});
 
         var dst_paths = [];
         var applet = spt.Applet.get();
@@ -798,6 +809,7 @@ TacticServerStub = function() {
              
             }
             else if (filename_mode == 'source') {
+                console.log(dst);
                 basename = spt.path.get_basename(dst);
             }
 
@@ -808,7 +820,7 @@ TacticServerStub = function() {
             if (sandbox_dir){
                 dst = sandbox_dir + "/" + basename;
             }
-          
+
             dst_paths.push(dst)
 
             if (kwargs.mode == 'client_repo'){
@@ -943,8 +955,8 @@ TacticServerStub = function() {
         return this._delegate("reactivate_sobject", arguments);
     }
 
-    this.delete_sobject = function(search_key) {
-        return this._delegate("delete_sobject", arguments);
+    this.delete_sobject = function(search_key, kwargs) {
+        return this._delegate("delete_sobject", arguments, kwargs);
     }
 
     this.clone_sobject = function(search_key, data) {
@@ -1036,7 +1048,7 @@ TacticServerStub = function() {
      * Widget methods
      */
     this.get_widget = function(class_name, kwargs) {
-        libraries = spt.Environment.get().get_libraries();
+        var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
         try {
@@ -1169,13 +1181,22 @@ TacticServerStub = function() {
     // async functions
 
     this.async_get_widget = function(class_name, kwargs) {
+        var libraries = spt.Environment.get().get_libraries();
+        kwargs.libraries = libraries;
+
         var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
         this._delegate("get_widget", arguments, kwargs, "string", callback);
         return;
     }
 
     this.async_eval = function(class_name, kwargs) {
         var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
         this._delegate("eval", arguments, kwargs, null, callback);
         return;
     }
@@ -1282,8 +1303,12 @@ TacticServerStub = function() {
     this.async_callback = function(client, request) {
         if (request.readyState == 4) {
             if (request.status == 200) {
-                var data = this._handle_ret_val(client.func_name, request, client.ret_type);
-                client.callback(data);
+                try {
+                    var data = this._handle_ret_val(client.func_name, request, client.ret_type);
+                    client.callback(data);
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
             } else {
                 //alert("status is " + request.status);
                 throw("status is " + request.status);

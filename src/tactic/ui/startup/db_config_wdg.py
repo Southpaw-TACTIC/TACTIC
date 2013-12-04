@@ -46,7 +46,9 @@ DEFAULTS['MySQL'] = {
     'server': 'localhost',
     'port': None,
     'user': 'root',   # This should be hidden from the user?
-    'password': ''
+    'password': '',
+    'encoding': '',
+    'charset': ''
 }
 DEFAULTS['SQLServer'] = {
     'server': 'localhost',
@@ -158,10 +160,12 @@ class DbConfigContentWdg(BaseRefreshWdg):
         if (bvr.src_el.value == 'Sqlite') {
             key = 'Sqlite';
         }
+        else if (bvr.src_el.value == 'MySQL') {
+            key = 'MySQL';
+        }
         else {
             key = 'Other';
         }
-
         var top = bvr.src_el.getParent(".spt_db_config_top");
         var options_els = top.getElements(".spt_db_options");
         for (var i = 0; i < options_els.length; i++) {
@@ -185,16 +189,25 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         sqlite_wdg = my.get_sqlite_wdg()
         option_div.add(sqlite_wdg)
+        mysql_wdg = my.get_mysql_wdg()
+        option_div.add(mysql_wdg)        
         otherdb_wdg = my.get_otherdb_wdg()
         option_div.add(otherdb_wdg)
 
         if vendor == 'Sqlite':
-            otherdb_wdg.add_style("display: none")
             sqlite_wdg.add_style("display", "")
+            otherdb_wdg.add_style("display: none")
+            mysql_wdg.add_style("display: none")
+
+        if vendor == 'MySQL':
+            mysql_wdg.add_style("display", "")
+            otherdb_wdg.add_style("display: none")
+            sqlite_wdg.add_style("display: none")
+            
         else:
             otherdb_wdg.add_style("display", "")
+            mysql_wdg.add_style("display: none")
             sqlite_wdg.add_style("display: none")
-
 
         test_button = ActionButtonWdg(title="<< Test >>", tip="Test connecting to database")
         option_div.add(test_button)
@@ -235,6 +248,8 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         if 'tmp_dir' not in options:
             options.append('tmp_dir')
+
+
 
         top.add( my.configure_category(title, category, options) )
 
@@ -350,14 +365,20 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         return div
 
+    def get_mysql_wdg(my):
+        div = my.common_wdg(vendor='MySQL')
+        return div
 
     def get_otherdb_wdg(my):
+        div = my.common_wdg(vendor='')
+        return div
 
+    def common_wdg(my,vendor):
         div = DivWdg()
         div.add_class("spt_db_options")
-        div.add_attr("spt_vendor", "Other")
         div.add_style("margin: 20px")
-
+        if vendor !='MySQL':
+            div.add_attr("spt_vendor", "Other")
         table = Table()
         div.add(table)
         table.add_color("color", "color")
@@ -396,6 +417,23 @@ class DbConfigContentWdg(BaseRefreshWdg):
         if password:
             text.set_value(password)
 
+        if vendor == 'MySQL':
+            div.add_attr("spt_vendor", "MySQL")
+            table.add_row()
+            text = TextInputWdg(name="encoding")
+            table.add_cell("Encoding: ")
+            table.add_cell(text)
+            encoding = Config.get_value("database", "encoding")
+            if encoding:
+                text.set_value(encoding)
+
+            table.add_row()
+            text = TextInputWdg(name="charset")
+            table.add_cell("Charset: ")
+            table.add_cell(text)
+            charset = Config.get_value("database", "charset")
+            if charset:
+                text.set_value(charset)
         #from pyasm.search import Sql
         #sql.connect()
 
@@ -424,11 +462,18 @@ class DbConfigContentWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.startup.DbConfigSaveCbk';
             var server = TacticServerStub.get();
             var kwargs = {checkin_options:bvr.checkin_options};
+            try {
+                var ret_val = server.execute_cmd(class_name, kwargs, values);
+                var info = ret_val.info;
+            }
+            catch(e) {
+                log.critical(spt.exception.handler(e));
+            }
 
-            var ret_val = server.execute_cmd(class_name, kwargs, values);
-            var info = ret_val.info;
+           
             
             // This means TACTIC was restarted
+            
             if (typeof(info) == 'undefined' || bvr.os == 'nt' ) {
                 spt.app_busy.show("Restarting TACTIC ...");
                 var id = setInterval( function() {
@@ -443,10 +488,12 @@ class DbConfigContentWdg(BaseRefreshWdg):
             }
             else if (info.error) {
                 spt.alert(info.error);
+                spt.app_busy.hide();
             }
             else {
                 window.location = '/tactic';
             }
+
             '''
             } )
         return save_button
@@ -513,7 +560,6 @@ class DbConfigCbk(Command):
         password = web.get_form_value("password")
         if not password:
             password = default_password
-
 
         # Need to access remote database
         create = False
@@ -660,18 +706,16 @@ class DbConfigSaveCbk(Command):
 
         default_project = web.get_form_value("install/default_project")
         tmp_dir = web.get_form_value("install/tmp_dir")
-        if tmp_dir:
-            Config.set_value("install", "tmp_dir", tmp_dir)
-        else:
-            Config.set_value("install", "tmp_dir", '')
 
         if default_project:
             Config.set_value("install", "default_project", default_project)
         else:
             Config.remove("install", "default_project")
 
-
-
+        if tmp_dir:
+            Config.set_value("install", "tmp_dir", tmp_dir)
+        else:
+            Config.set_value("install", "tmp_dir", '')
 
 
     def configure_db(my):
@@ -679,6 +723,8 @@ class DbConfigSaveCbk(Command):
         web = WebContainer.get_web()
 
         vendor = web.get_form_value("database/vendor")
+        if not vendor:
+            raise TacticException("A vendor needs to be passed in.")
 
         if vendor == 'Sqlite':
             # take the current files and copy them to the database folder
@@ -706,6 +752,7 @@ class DbConfigSaveCbk(Command):
 
 
         else:
+
             defaults = DEFAULTS[vendor]
 
             default_server = defaults['server']
@@ -714,6 +761,26 @@ class DbConfigSaveCbk(Command):
             default_password = defaults['password']
 
             Config.remove("database", "sqlite_db_dir")
+
+            if vendor == 'MySQL':
+                default_encoding = defaults['encoding']
+                default_charset= defaults['charset']
+
+                encoding = web.get_form_value("encoding")
+                if not encoding:
+                    encoding = default_encoding
+                if encoding:
+                    Config.set_value("database", "encoding", encoding)
+                else:
+                    Config.set_value("database", "encoding", "")
+
+                charset = web.get_form_value("charset")
+                if not charset:
+                    charset = default_charset
+                if charset:
+                    Config.set_value("database", "charset", charset)
+                else:
+                    Config.set_value("database", "charset", "")                    
 
             # get the info
             server = web.get_form_value("server")

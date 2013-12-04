@@ -43,7 +43,7 @@
     <linux_local_repo_dir></linux_local_repo_dir>
     <win32_sandbox_dir>C:/sthpw/sandbox</win32_sandbox_dir>
     <linux_sandbox_dir>/tmp/sthpw/sandbox</linux_sandbox_dir>
-    <win32_client_repo_dir></win32_client_repo_dir>
+    <win32_client_repo_dir>C:/ProgramData/Tactic/data/assets</win32_client_repo_dir>
     <linux_client_repo_dir></linux_client_repo_dir>
     <win32_client_handoff_dir></win32_client_handoff_dir>
     <linux_client_handoff_dir></linux_client_handoff_dir>

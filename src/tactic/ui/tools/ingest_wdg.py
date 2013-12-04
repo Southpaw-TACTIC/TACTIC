@@ -87,13 +87,24 @@ class IngestUploadWdg(BaseRefreshWdg):
         data_div.add_style("float: left")
         div.add(data_div)
 
+        # create the help button
+        help_button_wdg = DivWdg()
+        div.add(help_button_wdg)
+        help_button_wdg.add_style("margin-top: -3px")
+        help_button_wdg.add_style("float: right")
+        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+        help_button_wdg.add(help_button)
 
-
-
+        help_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+        } )
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         div.add(upload)
+
+
         button = ActionButtonWdg(title="Add")
         button.add_style("float: right")
         button.add_style("margin-top: -3px")
@@ -636,8 +647,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
 
-            %s
+            %s;
 
+            spt.html5upload.set_form( top );
             spt.html5upload.upload_file(upload_file_kwargs);
 
             ''' % (upload_progress, on_complete, upload_init)
