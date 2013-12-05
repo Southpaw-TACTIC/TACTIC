@@ -2568,7 +2568,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 if value:
                     cal_wdg.set_value(value)
                 edit_wdg = DivWdg(cal_wdg)
-                edit_wdg.add(HtmlElement.br())
+                edit_wdg.add(HtmlElement.br(clear="all"))
             elif not widget_type:
                 edit_wdg = None
 
