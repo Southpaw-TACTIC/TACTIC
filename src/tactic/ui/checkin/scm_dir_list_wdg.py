@@ -1181,12 +1181,17 @@ class ScmSignInWdg(BaseRefreshWdg):
         tr = table.add_row()
         table.add_row_cell("&nbsp;")
 
+
+
+
         tr = table.add_row()
+        tr.add_class("spt_workspaces")
+        tr.add_style("display: none")
         td = table.add_cell("Workspace: ")
         td.add_style("vertical-align: top")
         text = TextInputWdg(name="workspace")
+        text.add_class("spt_workspaces_input")
         td = table.add_cell(text)
-        text.add_class("spt_workspace")
 
 
         text.add_behavior( {
@@ -1195,6 +1200,17 @@ class ScmSignInWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_sign_in_top");
             var values = spt.api.get_input_values(top);
 
+            var is_logged_in = spt.scm.is_logged_in();
+            if (!is_logged_in) {
+                return;
+            }
+
+            var el = bvr.src_el.getParent(".spt_workspaces");
+            el.setStyle("display", "");
+
+            return;
+
+            /*
             var port = values.port[0];
             var user = values.user[0];
             var password = values.password[0];
@@ -1218,8 +1234,8 @@ class ScmSignInWdg(BaseRefreshWdg):
                 }
                 return;
             }
+            */
             ''' } )
-
 
 
 
@@ -1240,29 +1256,50 @@ class ScmSignInWdg(BaseRefreshWdg):
             var port = values.port[0];
             var user = values.user[0];
             var password = values.password[0];
-            var client = values.workspace[0];
 
-
-            if (!client) {
-                alert("No client selected");
-                return;
-            }
 
             // login in user
             spt.scm.port = port;
             spt.scm.user = user;
             spt.scm.password = password;
-            spt.scm.client = client;
 
-
+            //spt.scm.client = client;
 
             // test the connection
             var ping = spt.scm.ping();
             if (ping != "OK") {
+                spt.scm.signout_user();
                 spt.scm.show_login();
                 return;
             }
+            else {
+                try {
+                    var workspaces = spt.scm.get_workspaces();
+                    var workspace = workspaces[0];
+                    console.log(workspaces);
+                    var workspaces_el = top.getElement(".spt_workspaces");
+                    var workspaces_input = top.getElement(".spt_workspaces_input");
+                    workspaces_el.setStyle("display", "");
+                    workspaces_input.value = workspace.client;
+                }
+                catch(e) {
+                    spt.scm.signout_user();
+                    spt.scm.show_login();
+                }
 
+            }
+
+            '''
+        } )
+
+
+        button = ActionButtonWdg(title="OK >>", size='medium')
+        top.add(button)
+        button.add_style("display: none")
+
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
 
             // check the workspaces
             if (!spt.scm.check_workspace()) {
@@ -1430,6 +1467,12 @@ spt.scm.is_logged_in = function() {
     // This condition is removed because of empty passwords
     //if (!spt.scm.password) return false;
     return true;
+}
+
+spt.scm.signout_user = function() {
+    spt.scm.host = null;
+    spt.scm.user = null;
+    spt.scm.password = null;
 }
 
 
