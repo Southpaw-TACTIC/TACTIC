@@ -755,8 +755,8 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 display_class = my.kwargs.get('display_handler')
 
             # add the widget information
-            class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', '-- Class Path --']
-            class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', '__class__']
+            class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', 'Python', '-- Class Path --']
+            class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', 'python', '__class__']
             default_class='format'
             widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name)
             attr_wdg.add(widget_class_wdg)
@@ -2533,6 +2533,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg.set_option('values', values)
                 if value:
                     edit_wdg.set_value(value)
+
+                labels = option.get('labels')
+                if labels:
+                    edit_wdg.set_option('labels', labels)
 
             elif widget_type == 'TextAreaWdg':
                 edit_wdg = TextAreaWdg(name)
