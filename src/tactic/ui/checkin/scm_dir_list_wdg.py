@@ -527,9 +527,7 @@ class ScmFileSelectorWdg(FileSelectorWdg):
             if (!confirm("Are you sure you wish to sign out of Perforce?")) {
                 return;
             }
-            spt.scm.host = null;
-            spt.scm.user = null;
-            spt.scm.password = null;
+            spt.scm.signout_user();
 
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_checkin_top");
@@ -1182,60 +1180,50 @@ class ScmSignInWdg(BaseRefreshWdg):
         table.add_row_cell("&nbsp;")
 
 
-
-
         tr = table.add_row()
         tr.add_class("spt_workspaces")
-        tr.add_style("display: none")
+        #tr.add_style("display: none")
         td = table.add_cell("Workspace: ")
         td.add_style("vertical-align: top")
-        text = TextInputWdg(name="workspace")
-        text.add_class("spt_workspaces_input")
-        td = table.add_cell(text)
 
+        workspaces = my.kwargs.get("workspaces")
+        td = table.add_cell()
+        button = ActionButtonWdg(width='55', title="Lookup")
+        td.add(button)
+        button.add_style("float: right")
 
-        text.add_behavior( {
-            'type': 'load',
+        button.add_behavior( {
+            'type': 'click_up',
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_sign_in_top");
-            var values = spt.api.get_input_values(top);
-
-            var is_logged_in = spt.scm.is_logged_in();
-            if (!is_logged_in) {
-                return;
-            }
-
-            var el = bvr.src_el.getParent(".spt_workspaces");
-            el.setStyle("display", "");
-
-            return;
-
-            /*
-            var port = values.port[0];
-            var user = values.user[0];
-            var password = values.password[0];
-            var client = values.workspace[0];
-
-            // TODO: get the workspaces and use this as a list
-            // For now, just fill it in with the first one
-            if (!client) {
+            try {
                 var workspaces = spt.scm.get_workspaces();
-                if (workspaces.length > 0) {
-                    var workspace = workspaces[0];
-                    var Root = workspace.root;
-                    // TODO: make sure Root == snapshot_dir
 
-                    console.log("workspace");
-                    console.log(workspace);
-
-                    var client = workspace.client;
-                    var workspace_el = top.getElement(".spt_workspace");
-                    workspace_el.value = client;
+                var clients = [];
+                for (var i = 0; i < workspaces.length; i++) {
+                    clients.push(workspaces[i].client);
                 }
-                return;
+                clients = clients.join("|");
+                var kwargs = {
+                    workspaces: clients
+                }
+                spt.scm.show_login(kwargs);
             }
-            */
-            ''' } )
+            catch(e) {
+                spt.scm.signout_user();
+                spt.scm.show_login();
+            }
+            '''
+        } )
+
+        if not workspaces:
+            text = TextInputWdg(name="workspace")
+            text.add_style("width: 165px")
+            td.add(text)
+
+        else:
+            select = SelectWdg("workspace")
+            td.add(select)
+            select.set_option("values", workspaces)
 
 
 
@@ -1256,6 +1244,22 @@ class ScmSignInWdg(BaseRefreshWdg):
             var port = values.port[0];
             var user = values.user[0];
             var password = values.password[0];
+            var client = values.workspace[0];
+
+
+            if (!port) {
+                alert("No port specified");
+                return;
+            }
+            if (!user) {
+                alert("No user specified");
+                return;
+            }
+            if (!client) {
+                alert("No workspace specified");
+                return;
+            }
+
 
 
             // login in user
@@ -1263,62 +1267,26 @@ class ScmSignInWdg(BaseRefreshWdg):
             spt.scm.user = user;
             spt.scm.password = password;
 
-            //spt.scm.client = client;
-
             // test the connection
             var ping = spt.scm.ping();
             if (ping != "OK") {
+                alert("Cannot connect to Perforce")
                 spt.scm.signout_user();
                 spt.scm.show_login();
-                return;
             }
             else {
-                try {
-                    var workspaces = spt.scm.get_workspaces();
-                    var workspace = workspaces[0];
-                    console.log(workspaces);
-                    var workspaces_el = top.getElement(".spt_workspaces");
-                    var workspaces_input = top.getElement(".spt_workspaces_input");
-                    workspaces_el.setStyle("display", "");
-                    workspaces_input.value = workspace.client;
-                }
-                catch(e) {
-                    spt.scm.signout_user();
-                    spt.scm.show_login();
+                spt.scm.client = client;
+
+                // close the popup
+                var popup = bvr.src_el.getParent(".spt_popup");
+                if (popup) {
+                    spt.popup.destroy(popup);
                 }
 
+                // NOTE: this is global: find a check-in widget and refresh
+                var checkin_el = $(document.body).getElement(".spt_checkin_top");
+                spt.panel.refresh(checkin_el);
             }
-
-            '''
-        } )
-
-
-        button = ActionButtonWdg(title="OK >>", size='medium')
-        top.add(button)
-        button.add_style("display: none")
-
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-
-            // check the workspaces
-            if (!spt.scm.check_workspace()) {
-                alert("There was a problem with the given workspace");
-                spt.scm.show_login();
-                return;
-            }
-
-            // close the popup
-            var popup = bvr.src_el.getParent(".spt_popup");
-            if (popup) {
-                spt.popup.destroy(popup);
-            }
-
-
-
-            // NOTE: this is global: find a check-in widget and refresh
-            var checkin_el = $(document.body).getElement(".spt_checkin_top");
-            spt.panel.refresh(checkin_el);
 
             '''
         } )
@@ -1473,6 +1441,7 @@ spt.scm.signout_user = function() {
     spt.scm.host = null;
     spt.scm.user = null;
     spt.scm.password = null;
+    spt.scm.client = "";
 }
 
 
@@ -1493,10 +1462,15 @@ spt.scm.check_workspace = function() {
 
 
 
-spt.scm.show_login = function(el) {
+spt.scm.show_login = function(kwargs) {
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    var el = null;
+
     spt.app_busy.hide();
     var class_name = 'tactic.ui.checkin.ScmSignInWdg';
-    var kwargs = {};
     if (el) {
         spt.panel.load(el, class_name, kwargs);
     }
