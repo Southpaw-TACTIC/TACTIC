@@ -162,6 +162,10 @@ class WidgetClassHandler(object):
             <display class="tactic.ui.table.MetadataElementWdg"/>
         </element>
 
+        <element name='python'>
+            <display class="tactic.ui.table.PythonElementWdg"/>
+        </element>
+
 
         </widget_definition>
         </config>
