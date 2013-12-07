@@ -817,7 +817,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int):
+                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
                         my.add_filters(from_col, col_values, op=op )
                     else:
                         my.add_filters("search_code", col_values, op=op)
@@ -3471,10 +3471,11 @@ class SObject(object):
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 info = column_info.get(key)
-                if is_postgres and not info.get("time_zone"):
-                    value = SPTDate.convert_to_local(value)
-                else:
-                    value = SPTDate.add_gmt_timezone(value)
+                if value:
+                    if is_postgres and not info.get("time_zone"):
+                        value = SPTDate.convert_to_local(value)
+                    else:
+                        value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S')
@@ -3789,6 +3790,7 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data):
+        data = unicode(data)
 
         record_message = True
         if not record_message:

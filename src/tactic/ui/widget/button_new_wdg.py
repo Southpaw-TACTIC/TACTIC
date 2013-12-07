@@ -1110,14 +1110,20 @@ class ActionButtonWdg(DivWdg):
         if not size:
             size = 'medium'
         size = size[:1]
- 
-        top_width = 40
-        if size == 'm':
-            top_width = 83
-            my.add_style("width: %spx"%top_width)
-        if size == 'l':
-            top_width = 127
-            my.add_style("width: %spx"%top_width)
+
+
+        width = my.kwargs.get("width")
+        if width:
+            top_width = int(width)
+            my.add_style("width: %s"%top_width)
+        else:
+            top_width = 40
+            if size == 'm':
+                top_width = 83
+                my.add_style("width: %spx"%top_width)
+            if size == 'l':
+                top_width = 127
+                my.add_style("width: %spx"%top_width)
 
         
 

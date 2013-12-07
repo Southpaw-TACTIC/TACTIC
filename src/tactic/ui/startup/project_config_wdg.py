@@ -263,6 +263,7 @@ class SearchTypePanel(BaseRefreshWdg):
         project = Project.get()
         search_type_objs = project.get_search_types(include_multi_project=show_multi_project)
 
+
         top = my.top
         top.add_class("spt_panel_stype_list_top")
         #top.add_style("min-width: 400px")
@@ -443,12 +444,19 @@ class SearchTypePanel(BaseRefreshWdg):
             title = search_type_obj.get_title()
 
             table.add_cell(title)
-            search = Search(search_type)
-            count = search.get_count()
-            if count:
-                table.add_cell("%s item/s" % count)
-            else:
-                table.add_cell("&nbsp;")
+
+            try:
+                search = Search(search_type)
+                count = search.get_count()
+                if count:
+                    table.add_cell("%s item/s" % count)
+                else:
+                    table.add_cell("&nbsp;")
+            except:
+                td = table.add_cell("&lt; No table &gt;")
+                td.add_style("font-style: italic")
+                td.add_style("color: #F00")
+                continue
 
 
 
