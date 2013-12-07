@@ -1494,6 +1494,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 select = SelectWdg(name)
                 #select = SelectWdg('status_%s'%task_id)
+                select.set_option('empty','true')
                 select.add_attr("spt_context", context)
 
 
