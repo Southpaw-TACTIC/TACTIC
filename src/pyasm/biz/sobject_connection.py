@@ -91,7 +91,7 @@ class SObjectConnection(SObject):
 
 
 
-    def get_sobjects(my, connections, direction='dst', filters=None):
+    def get_sobjects(my, connections, direction='dst', filters=None, return_search=False):
 
         if not connections:
             return []
@@ -110,6 +110,9 @@ class SObjectConnection(SObject):
         if filters:
             search.add_op_filters(filters)
 
+        if return_search:
+            return search
+
         sobjects = search.get_sobjects()
 
         return sobjects
@@ -117,6 +120,12 @@ class SObjectConnection(SObject):
     get_sobjects = classmethod(get_sobjects)
 
 
+    def get_search(my, connections, direction='dst', filters=None):
+ 
+        search = my.get_sobjects(connections, direction=direction, filters=filters, return_search=True)
+        return search
+
+    get_search = classmethod(get_search)
 
 
     def get_connected_sobjects(cls, sobjects, direction="dst", order_by=None, context='', filters=None):

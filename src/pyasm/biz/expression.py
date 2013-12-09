@@ -1165,6 +1165,14 @@ class MethodMode(ExpressionParser):
             unique = method == 'GET'
             sobjects = my.get_sobjects(search_types, unique=unique)
 
+            """
+            #TOOO: make this work with @CASE or @IF statements
+            sobjects_search = my.get_sobjects(search_types, unique=unique, is_search=True)
+            if sobjects_search:
+                sobjects = sobjects_search.get_sobjects()
+            else:
+                sobjects = []
+            """
 
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
@@ -1864,7 +1872,6 @@ class MethodMode(ExpressionParser):
             related_types_filters[related_type] = filters
             related_types_paths[related_type] = path
 
-
         # handle some absolute sobjects
         if len(related_types) == 1:
             # support some shorthand here?
@@ -1891,9 +1898,16 @@ class MethodMode(ExpressionParser):
                 from pyasm.biz import SObjectConnection
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
-                connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
-                related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
-                return related_sobjects
+                
+                if is_search:
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_search = SObjectConnection.get_search(connections, filters=reg_filters)
+                    return related_search
+                else:
+
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                    return related_sobjects
 
 
             elif related_type == 'date':
@@ -1936,7 +1950,6 @@ class MethodMode(ExpressionParser):
         # the first search type as a starting point
         if not my.sobjects:
             related_type = related_types[0]
-
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -1958,9 +1971,14 @@ class MethodMode(ExpressionParser):
                 else:
                     related_sobjects = []
 
+                if is_search:
+                    related_search = None
+
 
             elif not related_type:
                 related_sobjects = []
+                if is_search:
+                    related_search = None
             else:
                 related_sobjects = []
                 # do the full search
