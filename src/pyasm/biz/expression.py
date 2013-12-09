@@ -1798,7 +1798,7 @@ class MethodMode(ExpressionParser):
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
         #key = "%s|%s" % (related_types, id(my.sobjects))
-        key = "%s|%s" % (related_types, str(my.sobjects))
+        key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
         results = Container.get_dict(my.EXPRESSION_KEY, key)
@@ -1873,8 +1873,8 @@ class MethodMode(ExpressionParser):
                 palette = Palette.get()
                 sobject = SearchType.create("sthpw/virtual")
                 keys = palette.get_keys()
-                for key in keys:
-                    sobject.set_value(key, palette.color(key))
+                for tmp_key in keys:
+                    sobject.set_value(tmp_key, palette.color(tmp_key))
                 related_sobjects = [sobject]
                 return related_sobjects
  
