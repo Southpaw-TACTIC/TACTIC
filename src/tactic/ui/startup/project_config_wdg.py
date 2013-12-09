@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ProjectConfigWdg", "UserConfigWdg"]
+__all__ = ["ProjectConfigWdg", "UserConfigWdg", "UserPanelWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey, SearchType
@@ -210,7 +210,7 @@ class UserConfigWdg(ProjectConfigWdg):
         user_panel = DivWdg()
         user_panel.add_style("padding-top: 3px")
         user_panel.add_style("overflow-y: auto")
-        user_panel.add( UserPanel() )
+        user_panel.add( UserPanelWdg() )
         user_panel.add_style("min-height: 100px")
         user_panel.add_style("height: 400px")
         user_panel.add_class("spt_resizable")
@@ -793,7 +793,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
 
-class UserPanel(BaseRefreshWdg):
+class UserPanelWdg(BaseRefreshWdg):
 
     def get_help_alias(my):
         return 'project-startup-manage-users'

@@ -393,6 +393,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             for res in result:
                 if isinstance(res, datetime.datetime):
                     res = SPTDate.convert_to_local(res)
+                    res = str(res)
                 elif not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
                 encoded_result.append(res)
