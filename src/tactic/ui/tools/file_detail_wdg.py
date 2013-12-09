@@ -38,7 +38,8 @@ class FileDetailWdg(BaseRefreshWdg):
             # if it is a file object
             snapshot = sobject.get_parent()
         else:
-            snapshot = Snapshot.get_by_sobject(sobject)
+            snapshots = Snapshot.get_by_sobject(sobject)
+            snapshot = snapshots[0]
 
         #parent = snapshot.get_parent()
 
