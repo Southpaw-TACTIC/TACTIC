@@ -681,6 +681,11 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             my.apache_conf = 'tactic_win32.conf'
             my.tactic_conf = 'tactic_win32-conf.xml'
 
+
+
+
+
+
         try:
             src = '%s/src/install/apache/%s' %(current_dir, my.apache_conf)
             dst_dir= '%s/config' % my.tactic_data_dir
@@ -709,6 +714,11 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             src_dir = my.tactic_src_dir
         else:
             src_dir = my.tactic_install_dir
+
+
+
+
+
 
         # prevent copying to itself
         #print "SRC_DIR ", src_dir

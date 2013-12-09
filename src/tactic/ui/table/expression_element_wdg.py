@@ -328,7 +328,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         my.vars = {
             'ELEMENT_NAME': element_name,
-            'ELEMENT': element_name
+            'ELEMENT': element_name,
+            'SOBJECT_ID': sobject.get_id(),
+            'SOBJECT_CODE': sobject.get_code(),
         }
 
         return_type = my.kwargs.get("return")

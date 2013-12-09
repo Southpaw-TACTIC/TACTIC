@@ -21,6 +21,7 @@ except:
 import pprint
 
 
+
 from subversion import Subversion
 from perforce import PerforceImpl
 
@@ -67,7 +68,6 @@ class DelegateCmd(BaseCmd):
 
 
 
-<<<<<<< HEAD
 __all__.append('CmdWrapper')
 class CmdWrapper():
     def __init__(my, **kwargs):
@@ -79,12 +79,8 @@ class CmdWrapper():
 
 
 
-
-
 def run(kwargs=None):
-=======
-def main():
->>>>>>> 4.1-hash
+
     if os.name == "nt":
         tactic_data = "C:/ProgramData/Tactic"
     else:
@@ -183,6 +179,3 @@ def main():
 
 if __name__ == '__main__':
     run()
-
-
-

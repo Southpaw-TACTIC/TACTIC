@@ -103,9 +103,8 @@ class CheckinDirListWdg(DirListWdg):
         my.context_options = my.kwargs.get("context_options")
 
         my.subcontext_options = my.kwargs.get("subcontext_options")
-        # do not set default here, let FileCheckin determine it
-        #if not my.subcontext_options:
-        #    my.subcontext_options = ["(auto)"]
+        if not my.subcontext_options:
+            my.subcontext_options = []
 
 
         my.preselected = my.kwargs.get("preselected")
