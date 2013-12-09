@@ -533,6 +533,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         my.search_type = ''
         my.columns = []
+        
+        my.relevant = my.get_option("relevant")
         my.mode = my.get_option("mode")
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
@@ -904,6 +906,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 filter_search_type=my.filter_search_type,
                 search_type=search_type,
                 column=my.columns,
+                relevant = my.relevant,
                 width ='230',
                 hint_text=hint_text
         )
@@ -1855,6 +1858,7 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
 
 class ButtonFilterElementWdg(CheckboxFilterElementWdg):
     pass
+
 
 
 
