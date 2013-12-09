@@ -64,6 +64,7 @@ class FileDetailWdg(BaseRefreshWdg):
         file_type = "main"
         src = snapshot.get_web_path_by_type(file_type)
 
+
         #src = my.sobject.get_web_path()
         parts = os.path.splitext(src)
         ext = parts[1]
@@ -116,17 +117,29 @@ class FileDetailWdg(BaseRefreshWdg):
 
 
         table.add_row()
-
-
-        from tactic.ui.checkin import SnapshotMetadataWdg
-        metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
         td = table.add_cell()
+
+
+        from tactic.ui.checkin import PathMetadataWdg
+        from tactic.ui.checkin import SnapshotMetadataWdg
+
+
         metadata_div = DivWdg()
         td.add(metadata_div)
         metadata_div.add_style("max-height: 400px")
         metadata_div.add_style("overflow-y: auto")
         metadata_div.add_style("overflow-x: hidden")
-        metadata_div.add(metadata_wdg)
+
+        parser = my.kwargs.get("parser")
+        if parser:
+            file_type = "main"
+            server_src = snapshot.get_lib_path_by_type(file_type)
+
+            metadata_wdg = PathMetadataWdg(path=server_src, parser=parser)
+            metadata_div.add(metadata_wdg)
+        else:
+            metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
+            metadata_div.add(metadata_wdg)
 
 
         top.add("<br/>")
