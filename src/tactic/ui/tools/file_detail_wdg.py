@@ -16,6 +16,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.web import DivWdg, WebContainer, Table, WebState, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey
+from pyasm.biz import Snapshot
 from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ThumbWdg
@@ -33,9 +34,11 @@ class FileDetailWdg(BaseRefreshWdg):
 
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
-        else:
+        elif sobject.get_base_search_type() == "sthpw/file":
             # if it is a file object
             snapshot = sobject.get_parent()
+        else:
+            snapshot = Snapshot.get_by_sobject(sobject)
 
         #parent = snapshot.get_parent()
 
