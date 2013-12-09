@@ -1165,6 +1165,14 @@ class MethodMode(ExpressionParser):
             unique = method == 'GET'
             sobjects = my.get_sobjects(search_types, unique=unique)
 
+            """
+            #TOOO: make this work with @CASE or @IF statements
+            sobjects_search = my.get_sobjects(search_types, unique=unique, is_search=True)
+            if sobjects_search:
+                sobjects = sobjects_search.get_sobjects()
+            else:
+                sobjects = []
+            """
 
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
@@ -1835,7 +1843,7 @@ class MethodMode(ExpressionParser):
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
         #key = "%s|%s" % (related_types, id(my.sobjects))
-        key = "%s|%s" % (related_types, str(my.sobjects))
+        key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
         results = Container.get_dict(my.EXPRESSION_KEY, key)
@@ -1864,7 +1872,6 @@ class MethodMode(ExpressionParser):
             related_types_filters[related_type] = filters
             related_types_paths[related_type] = path
 
-
         # handle some absolute sobjects
         if len(related_types) == 1:
             # support some shorthand here?
@@ -1891,10 +1898,16 @@ class MethodMode(ExpressionParser):
                 from pyasm.biz import SObjectConnection
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
+                
+                if is_search:
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_search = SObjectConnection.get_search(connections, filters=reg_filters)
+                    return related_search
+                else:
 
-                connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
-                related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
-                return related_sobjects
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                    return related_sobjects
 
 
             elif related_type == 'date':
@@ -1911,8 +1924,8 @@ class MethodMode(ExpressionParser):
                 palette = Palette.get()
                 sobject = SearchType.create("sthpw/virtual")
                 keys = palette.get_keys()
-                for key in keys:
-                    sobject.set_value(key, palette.color(key))
+                for tmp_key in keys:
+                    sobject.set_value(tmp_key, palette.color(tmp_key))
                 related_sobjects = [sobject]
                 return related_sobjects
  
@@ -1937,7 +1950,6 @@ class MethodMode(ExpressionParser):
         # the first search type as a starting point
         if not my.sobjects:
             related_type = related_types[0]
-
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -1959,9 +1971,14 @@ class MethodMode(ExpressionParser):
                 else:
                     related_sobjects = []
 
+                if is_search:
+                    related_search = None
+
 
             elif not related_type:
                 related_sobjects = []
+                if is_search:
+                    related_search = None
             else:
                 related_sobjects = []
                 # do the full search
@@ -2041,8 +2058,21 @@ class MethodMode(ExpressionParser):
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
 
-                connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
-                list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                if is_search:
+                    related_search.add_column('id')
+                    # assume dst direction, pass in a src_search and empty sobject list to return a search
+                    direction = 'dst'
+                    connection_search = SObjectConnection.get_connections([], direction=direction,\
+                        context_filters=context_filters, src_search=related_search)
+                    if connection_search:
+                        connection_search.add_column('%s_search_id'% direction)
+                        related_search = connection_search
+                else:
+                    #connections, list = SObjectConnection.get_connected_sobjects(related_sobjects, filters=reg_filters)
+                    connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
+                    list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+
+
                 # TODO: caching is not implemented on connect
                 #my.cache_sobjects(related_sobject.get_search_key(), sobjects)
 
@@ -2091,9 +2121,9 @@ class MethodMode(ExpressionParser):
 
                     # collapse the list and make it unique
                     tmp_list = []
-                    for key, items in tmp_dict.items():
+                    for tmp_key, items in tmp_dict.items():
                         tmp_list.extend(items)
-                        my.cache_sobjects(key, items)
+                        my.cache_sobjects(tmp_key, items)
 
 
                     list = []
