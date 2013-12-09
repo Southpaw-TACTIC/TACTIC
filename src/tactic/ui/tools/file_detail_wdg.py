@@ -29,9 +29,15 @@ class FileDetailWdg(BaseRefreshWdg):
     def get_display(my):
 
         my.search_key = my.kwargs.get("search_key")
-        my.sobject = Search.get_by_search_key(my.search_key)
-        snapshot = my.sobject.get_parent()
-        parent = snapshot.get_parent()
+        sobject = Search.get_by_search_key(my.search_key)
+
+        if sobject.get_base_search_type() == "sthpw/snapshot":
+            snapshot = sobject
+        else:
+            # if it is a file object
+            snapshot = sobject.get_parent()
+
+        #parent = snapshot.get_parent()
 
         top = my.top
 
@@ -41,14 +47,6 @@ class FileDetailWdg(BaseRefreshWdg):
         table.add_row()
         table.add_style("width: 100%")
 
-        #td = table.add_cell()
-        #thumb_div = DivWdg()
-        #td.add(thumb_div)
-        #thumb = ThumbWdg()
-        #thumb_div.add(thumb)
-        #thumb_div.add_class("spt_resizable")
-        #thumb.set_sobject(parent)
-        #thumb.set_icon_size(120)
 
         from tactic.ui.widget import EmbedWdg
         td = table.add_cell()
@@ -65,7 +63,6 @@ class FileDetailWdg(BaseRefreshWdg):
         src = snapshot.get_web_path_by_type(file_type)
 
 
-        #src = my.sobject.get_web_path()
         parts = os.path.splitext(src)
         ext = parts[1]
         ext = ext.lower()
