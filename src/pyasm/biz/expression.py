@@ -1891,7 +1891,6 @@ class MethodMode(ExpressionParser):
                 from pyasm.biz import SObjectConnection
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
-
                 connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
                 related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
                 return related_sobjects
@@ -2041,8 +2040,21 @@ class MethodMode(ExpressionParser):
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
 
-                connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
-                list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                if is_search:
+                    related_search.add_column('id')
+                    # assume dst direction, pass in a src_search and empty sobject list to return a search
+                    direction = 'dst'
+                    connection_search = SObjectConnection.get_connections([], direction=direction,\
+                        context_filters=context_filters, src_search=related_search)
+                    if connection_search:
+                        connection_search.add_column('%s_search_id'% direction)
+                        related_search = connection_search
+                else:
+                    #connections, list = SObjectConnection.get_connected_sobjects(related_sobjects, filters=reg_filters)
+                    connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
+                    list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+
+
                 # TODO: caching is not implemented on connect
                 #my.cache_sobjects(related_sobject.get_search_key(), sobjects)
 
@@ -2091,9 +2103,9 @@ class MethodMode(ExpressionParser):
 
                     # collapse the list and make it unique
                     tmp_list = []
-                    for key, items in tmp_dict.items():
+                    for tmp_key, items in tmp_dict.items():
                         tmp_list.extend(items)
-                        my.cache_sobjects(key, items)
+                        my.cache_sobjects(tmp_key, items)
 
 
                     list = []

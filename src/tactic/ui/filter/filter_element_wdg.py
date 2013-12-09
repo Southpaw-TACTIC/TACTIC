@@ -156,7 +156,12 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 
         value = my.values.get("value")
-        #print "value: ", value
+        if isinstance(value, unicode):
+            value = value.encode('utf-8','ignore')
+        elif isinstance(value, basestring):
+            value = unicode(value, errors='ignore').encode('utf-8')
+
+        #print "value: ", value, type(value)
         if not value:
             default =  my.kwargs.get('default')
             if not my.values and default:
@@ -175,6 +180,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         # go through the hierarchy
         search2 = None
         sobjects = None
+        sub_search = None
         if len(search_types) > 1:
 
             """
@@ -191,6 +197,14 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
             """
             search_types.reverse()
+            top_search_type = search_types[0]
+            search_type_str = '.'.join(search_types[1:])
+            if search_type_str:
+                expr = '''@SEARCH(%s["%s","%s"].%s)'''%(top_search_type, column, value, search_type_str)
+                sub_search = Search.eval(expr)
+               
+         
+            '''
             for search_type in search_types:
                 if sobjects == None:
                     search2 = Search(search_type)
@@ -217,7 +231,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                     # if the trail ends, then set the null filter and exit
                     search.set_null_filter()
                     return
-                
+           ''' 
 
         elif not search_types:
             if op == '!=':
@@ -264,12 +278,18 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
             return
 
+        if op == '=':
+            op = 'in'
+        else:
+            op = 'not in'
         if sobjects:
-            if op == '=':
-                op = 'in'
-            else:
-                op = 'not in'
             search.add_relationship_filters(sobjects, op=op)
+        elif sub_search:
+            # column starts with connect
+            if search_types[-1] =='connect':
+                search.add_search_filter('id', sub_search, op=op)
+            else:
+                search.add_relationship_search_filter(sub_search, op=op)
         else:
             search.set_null_filter()
 

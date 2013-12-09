@@ -1873,6 +1873,8 @@ class Select(object):
 
         expr = '''%s JOIN %s"%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
 
+        if my.impl.get_database_type() == 'SQLServer':
+            expr = '''%s JOIN %s"%s" ON "%s"."%s" = %s"%s"."%s"''' % (join, prefix2, table2, table1, column1, prefix2, table2, column2)
         # NOTE: there should be no need to database specfic joins
         """
         if my.impl.get_database_type() == 'Oracle':
@@ -2111,6 +2113,8 @@ class Select(object):
         http://www.xaprb.com/blog/2006/12/07/how-to-select-the-firstleastmax-row-per-group-in-sql/
 
         '''
+        if not group_cols:
+            return
 
         if isinstance(group_cols, basestring):
             group_cols = [group_cols]
@@ -2309,6 +2313,7 @@ class Select(object):
             else:
                 quoted_cols = []
                 for i, column in enumerate(my.columns):
+                    #FIXME: distinct in SQLServer should only appear once before the column names
                     if column == my.distinct_col:
 
                         parts = []
