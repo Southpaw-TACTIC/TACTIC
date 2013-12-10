@@ -104,6 +104,14 @@ class DirListWdg(BaseRefreshWdg):
 
 
         my.base_dir = my.kwargs.get("base_dir")
+
+        # root directory is starts at the first base_dir
+        my.root_dir = my.kwargs.get("root_dir")
+        if not my.root_dir:
+            my.root_dir = my.base_dir
+
+
+
         my.paths = my.kwargs.get("paths")
         if not my.paths:
             my.paths = []
@@ -346,9 +354,6 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-
-
-
         base_dir = my.kwargs.get("base_dir")
 
         location = my.kwargs.get("location")
@@ -491,11 +496,14 @@ class DirListWdg(BaseRefreshWdg):
             search_keys = []
         top.add_attr("spt_search_keys", "|".join(search_keys) )
 
+
         handler_kwargs = {
-            'base_dir':my.base_dir,
+            'base_dir': my.base_dir,
+            'root_dir': my.root_dir,
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
+
 
 
         if dynamic:
@@ -503,13 +511,14 @@ class DirListWdg(BaseRefreshWdg):
                 location=location,
                 level=0,
                 base_dir=my.base_dir,
+                root_dir=my.root_dir,
                 handler_class=handler_class,
                 handler_kwargs=handler_kwargs,
                 depth=0,
                 all_open=False,
                 # This is not really supported on dynamic mode yet
                 #open_depth=open_depth,
-                dynamic=True
+                dynamic=True,
             )
             top.add(dir_list)
         else:
@@ -517,6 +526,7 @@ class DirListWdg(BaseRefreshWdg):
                 location=location,
                 level=0,
                 base_dir=my.base_dir,
+                root_dir=my.root_dir,
                 #handler_class=handler_class,
                 #handler_kwargs=handler_kwargs,
                 handler=my,
@@ -524,7 +534,7 @@ class DirListWdg(BaseRefreshWdg):
                 all_open=all_open,
                 open_depth=open_depth,
                 paths=my.paths,
-                dynamic=False
+                dynamic=False,
             )
             top.add(dir_list)
 
@@ -581,6 +591,7 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_reldir", reldir)
 
         div.add_attr("spt_dir", path)
+        div.add_attr("spt_root_dir", my.root_dir)
 
         dynamic = my.kwargs.get("dynamic")
         if dynamic in ["true", True]:
@@ -618,6 +629,7 @@ class DirListWdg(BaseRefreshWdg):
                 sibling.setStyle("display", "");
 
                 var base_dir = item_top.getAttribute("spt_dir");
+                var root_dir = item_top.getAttribute("spt_root_dir");
 
                 // get the search_keys, if any
                 var top = bvr.src_el.getParent(".spt_dir_list_top");
@@ -640,8 +652,9 @@ class DirListWdg(BaseRefreshWdg):
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: {
+                        root_dir: root_dir,
                         base_dir: base_dir,
-                        search_keys: search_keys
+                        search_keys: search_keys,
                     }
 
                 }
@@ -1083,6 +1096,10 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
+
+        test = my.kwargs.get("test")
+        print "test: ", test
+
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
@@ -1098,7 +1115,6 @@ class DirListPathHandler(BaseRefreshWdg):
             all_open = False
         elif all_open == None:
             all_open = False
-
 
 
         my.level = my.kwargs.get("level")
