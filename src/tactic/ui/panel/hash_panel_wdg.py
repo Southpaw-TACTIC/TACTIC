@@ -231,6 +231,7 @@ class HashPanelWdg(BaseRefreshWdg):
  
 
             config = sobject.get_value("widget")
+            config = config.replace('&','&amp;')
             xml = Xml()
             xml.read_string(config)
 
