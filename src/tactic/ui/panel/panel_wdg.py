@@ -2951,7 +2951,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         if can_search:
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit, user_override=True )
+                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
