@@ -1510,9 +1510,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
-            header_div.add_style("width: 1000%")
-            #header_div.add_style("whitespace: nowrap")
-            #header_div.add_border()
+
+
+            if my.kwargs.get("wrap_headers") not in ["true", True]:
+                header_div.add_style("width: 1000%")
+                #header_div.add_style("whitespace: nowrap")
 
 
 
