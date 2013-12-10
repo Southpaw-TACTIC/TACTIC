@@ -1,5 +1,7 @@
 
-from exifread.utils import make_string, make_string_uc
+#from exifread.utils import make_string, make_string_uc
+from pyasm.checkin.exifread.utils import make_string, make_string_uc
+
 
 # Main Exif tag names
 EXIF_TAGS = {

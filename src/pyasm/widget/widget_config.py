@@ -475,6 +475,10 @@ class WidgetConfigView(Base):
         if my.configs:
             return my.configs[0]
 
+    def add_config(my, config):
+        my.configs.append(config)
+
+
     def get_views(my, layout="TableWdg"):
 
         views = []

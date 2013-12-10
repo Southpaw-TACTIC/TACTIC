@@ -1660,7 +1660,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         return xml
 
 
-    def get_schema_snippet(my, view, schema, config_xml):
+    def get_schema_snippet(cls, view, schema, config_xml):
         schema_xml = schema.get_xml_value("schema")
         search_types = schema_xml.get_values("schema/search_type/@name")
         if not search_types:
@@ -1695,6 +1695,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         config_xml.append( '''
         </%s>
         ''' % view)
+    get_schema_snippet = classmethod(get_schema_snippet)
 
 
 

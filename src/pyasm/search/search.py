@@ -2269,7 +2269,8 @@ class SObject(object):
                         if value:
                             # convert to UTC (NOTE: are we sure that this
                             # is always coming from the database?)
-                            value = SPTDate.convert(value, is_gmt=is_gmt)
+                            if not SObject.is_day_column(col):
+                                value = SPTDate.convert(value, is_gmt=is_gmt)
                             my.data[col] = str(value)
                     
 
@@ -3470,8 +3471,8 @@ class SObject(object):
             # For Postgres, if there is no timestamp, then the value
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
-                info = column_info.get(key)
-                if value:
+                if value and not SObject.is_day_column(key):
+                    info = column_info.get(key)
                     if is_postgres and not info.get("time_zone"):
                         value = SPTDate.convert_to_local(value)
                     else:
@@ -4879,7 +4880,11 @@ class SObject(object):
         return result
 
 
-
+    def is_day_column(col):
+        '''a rough way of differentiating a timestamp column used solely 
+           for date. Time portion is set to 00:00:00 usually'''
+        return col.endswith('day')
+    is_day_column = staticmethod(is_day_column)
 
 
 class SearchType(SObject):
