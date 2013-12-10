@@ -468,8 +468,6 @@ class DirListWdg(BaseRefreshWdg):
             dynamic = False
 
 
-        #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
-
 
         handler_class = Common.get_full_class_name(my)
 
@@ -560,19 +558,18 @@ class DirListWdg(BaseRefreshWdg):
         path = "%s/%s" % (dir, item)
 
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg.get_triangle_wdg()
+        swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
         #swap = SwapDisplayWdg(title=path, icon='FILM')
         #top.add(swap)
         #swap.set_behavior_top(top)
         div.add(swap)
 
-
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
 
-        if is_open:
-            swap.set_off()
+        #if is_open:
+        #    swap.set_off()
 
         reldir = dir.replace(my.base_dir, "")
         reldir = reldir.lstrip("/")
@@ -1093,6 +1090,17 @@ class DirListPathHandler(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
+
+        all_open = my.kwargs.get("all_open")
+        if all_open in ["True", 'true']:
+            all_open = True
+        elif all_open in ["False", 'false']:
+            all_open = False
+        elif all_open == None:
+            all_open = False
+
+
+
         my.level = my.kwargs.get("level")
         if not my.level:
             my.level = 0
@@ -1112,7 +1120,7 @@ class DirListPathHandler(BaseRefreshWdg):
                 handler_kwargs = eval(handler_kwargs)
 
             handler_kwargs['location'] = my.kwargs.get("location")
-            handler_kwargs['all_open'] = my.kwargs.get("all_open")
+            handler_kwargs['all_open'] = all_open
             handler_kwargs['depth'] = my.kwargs.get("depth")
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
             handler_kwargs['search_type'] = my.kwargs.get("search_type")
@@ -1149,10 +1157,6 @@ class DirListPathHandler(BaseRefreshWdg):
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
-
-        all_open = my.kwargs.get("all_open")
-        if all_open == None:
-            all_open = False
 
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
@@ -1285,17 +1289,18 @@ class DirListPathHandler(BaseRefreshWdg):
                 level_div = level_divs[-1]
 
                 dir_item_div = my.handler._get_dir_item(dirname, basename, is_open=xis_open)
-                dir_item_div.add_style("padding-left: %spx" % ((level)*11))
-                level_div.add( dir_item_div )
+                if dir_item_div:
+                    dir_item_div.add_style("padding-left: %spx" % ((level)*11))
+                    level_div.add( dir_item_div )
 
-                # create a new items div
-                items_div = DivWdg()
-                items_div.add_class("spt_dir_content")
-                level_div.add( items_div )
-                level_divs.append(items_div)
+                    # create a new items div
+                    items_div = DivWdg()
+                    items_div.add_class("spt_dir_content")
+                    level_div.add( items_div )
+                    level_divs.append(items_div)
 
-                if not xis_open:
-                    items_div.add_style("display: none")
+                    if not xis_open:
+                        items_div.add_style("display: none")
 
                 current_dir = path
 
