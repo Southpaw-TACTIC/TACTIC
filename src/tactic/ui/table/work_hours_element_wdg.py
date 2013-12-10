@@ -393,10 +393,9 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 td.add(text)
                 text.add_class('spt_day%s' % (over_time_prefix))
                 text.add_styles("width: 100%;text-align: right;padding-right: 3px")
-
                 if day == today:
                     text.add_style("border: solid 1px black")
-                elif idx in [0,6]:
+                if idx in [0,6]:
                     # MAIN: Overtime, weekend
                     if row_to_draw == my.OT_ROW:
                         text.add_color("background", "background2", modifier=[-15,0,5])
