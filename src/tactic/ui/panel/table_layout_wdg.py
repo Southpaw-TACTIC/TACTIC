@@ -130,11 +130,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'show_context_menu': {
+            'description': 'Flag to determine whether to show the context menu',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '8'
+        },
         'init_load_num': {
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Optional',
-            'order': '8'
+            'order': '9'
         },
 
 
@@ -1510,9 +1517,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
-            header_div.add_style("width: 1000%")
-            #header_div.add_style("whitespace: nowrap")
-            #header_div.add_border()
+
+
+            if my.kwargs.get("wrap_headers") not in ["true", True]:
+                header_div.add_style("width: 1000%")
+                #header_div.add_style("whitespace: nowrap")
 
 
 
