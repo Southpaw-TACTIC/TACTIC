@@ -20,12 +20,20 @@ import sys, os, string, re, stat
 
 
 try:
-    import Image
-    HAS_PIL = True
+    #import Image
+    from PIL import Image
     # Test to see if imaging actually works
     import _imaging
+    HAS_PIL = True
 except:
     HAS_PIL = False
+    try:
+        import Image
+        # Test to see if imaging actually works
+        import _imaging
+        HAS_PIL = True
+    except:
+        HAS_PIL = False
 
 if Common.which("convert"):
     HAS_IMAGE_MAGICK = True
