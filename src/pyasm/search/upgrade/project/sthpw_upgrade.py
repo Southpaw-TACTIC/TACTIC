@@ -123,6 +123,8 @@ IMPORTANT NOTICE:
     def upgrade_v4_0_0_a09_002(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE file MODIFY search_id integer NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''ALTER TABLE file ALTER COLUMN search_id integer NULL;''')
         else:
             my.run_sql('''
             ALTER TABLE file ALTER COLUMN search_id DROP NOT NULL;
@@ -304,6 +306,8 @@ IMPORTANT NOTICE:
     def upgrade_v4_0_0_a01_026(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''ALTER TABLE snapshot MODIFY column_name varchar(100) NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name varchar(100) NULL;''')
         else:
             my.run_sql('''ALTER TABLE snapshot ALTER COLUMN column_name DROP NOT NULL;''')
 
@@ -1624,6 +1628,10 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         if my.get_database_type() == 'MySQL':
             my.run_sql('''
             ALTER table snapshot modify lock_login varchar(100) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER table snapshot alter column lock_login varchar(100) NULL;
             ''')
         else:
             my.run_sql('''
