@@ -111,7 +111,9 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
+        #title = title.replace(" ", "<br/>")
         div.add(title)
+
         return div
 
         # FIXME: not sure about autofit here?  This should be a mode
