@@ -2899,6 +2899,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_gear = target.getAttribute("spt_show_gear");
     var show_column_manager = target.getAttribute("spt_show_column_manager");
     var show_layout_switcher = target.getAttribute("spt_show_layout_switcher");
+    var show_context_menu = target.getAttribute("spt_show_context_menu");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
     var class_name = target.getAttribute("spt_class_name");
@@ -2963,6 +2964,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_shelf': show_shelf,
         'show_gear': show_gear,
         'show_column_manager': show_column_manager,
+        'show_context_menu': show_context_menu,
         'show_layout_switcher': show_layout_switcher,
         'insert_view': insert_view,
         'edit_view': edit_view,

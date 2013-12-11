@@ -129,6 +129,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'show_context_menu': {
+            'description': 'Flag to determine whether to show the context menu',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '8'
+        },
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -620,11 +627,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         
 
         # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        show_context_menu = my.kwargs.get("show_context_menu")
+        if show_context_menu in ['false', False]:
+            show_context_menu = False
+        else:
+            show_context_menu = True
+
+        menus_in = {}
+        if show_context_menu:
+            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
+            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        if menus_in:
+            SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
