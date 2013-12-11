@@ -130,11 +130,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'show_context_menu': {
+            'description': 'Flag to determine whether to show the context menu',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '8'
+        },
         'init_load_num': {
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Optional',
-            'order': '8'
+            'order': '9'
         },
 
 

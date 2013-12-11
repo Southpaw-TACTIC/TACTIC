@@ -2669,6 +2669,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': 7,
             'category': 'Display'
         },
+        "show_context_menu": {
+            'description': "determines whether or not to show the context menu",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 8,
+            'category': 'Display'
+        },
 
 
 
@@ -3010,6 +3017,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_search_limit = my.kwargs.get("show_search_limit")
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
         show_column_manager = my.kwargs.get("show_column_manager")
+        show_context_menu = my.kwargs.get("show_context_menu")
         show_insert = my.kwargs.get("show_insert")
         insert_view = my.kwargs.get("insert_view")
         edit_view = my.kwargs.get("edit_view")
@@ -3051,6 +3059,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_search_limit": show_search_limit,
             "show_layout_switcher": show_layout_switcher,
             "show_column_manager": show_column_manager,
+            "show_context_menu": show_context_menu,
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
