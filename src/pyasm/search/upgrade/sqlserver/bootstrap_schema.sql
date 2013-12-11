@@ -26,8 +26,6 @@ CREATE TABLE search_object (
     title nvarchar(100),
     "schema" nvarchar(100),
     color nvarchar(256),
-    "id_column" nvarchar(256),
-    "default_layout" nvarchar(32),
     CONSTRAINT "search_object_code_idx" UNIQUE (code),
     CONSTRAINT "search_object_search_type_idx" UNIQUE (search_type)
 );

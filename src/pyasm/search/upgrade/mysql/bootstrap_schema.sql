@@ -26,8 +26,6 @@ CREATE TABLE search_object (
     title character varying(100),
     "schema" character varying(100),
     color character varying(256),
-    "id_column" character varying(256),
-    "default_layout" character varying(32),
     CONSTRAINT "search_object_code_idx" UNIQUE (code),
     CONSTRAINT "search_object_search_type_idx" UNIQUE (search_type)
 );
