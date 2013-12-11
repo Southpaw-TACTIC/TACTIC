@@ -251,9 +251,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if use_cache:
             return True
 
-        group_by = my.get_option("group_by")
-        if group_by:
-            return True
 
         group_by = my.get_option("group_by")
         if group_by:
@@ -354,7 +351,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         calc_mode = my.get_option("calc_mode")
         if not calc_mode:
             calc_mode = 'slow'
- 
+        #calc_mode = 'fast'
         # parse the expression
         parser = ExpressionParser()
         try:
@@ -362,7 +359,11 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 if my.cache_results == None:
                     my.cache_results = parser.eval(expression, my.sobjects, vars=my.vars, dictionary=True, show_retired=my.show_retired)
                     if isinstance(my.cache_results, basestring):
-                        my.cache_results = eval(my.cache_results)
+                        if my.cache_results:
+                            my.cache_results = eval(my.cache_results)
+                        else:
+                            my.cache_results = {}
+                        
                 search_key = sobject.get_search_key()
                 result = my.cache_results.get(search_key)
                 if single:
@@ -383,6 +384,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return widget
 
             result = ""
+
         # FIXME: don't know how to do this any other way
         try:
             if not list:
@@ -396,6 +398,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             for res in result:
                 if isinstance(res, datetime.datetime):
                     res = SPTDate.convert_to_local(res)
+                    res = str(res)
                 elif not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
                 encoded_result.append(res)
@@ -507,7 +510,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
             return div
 
 
-       
         try:
             use_cache = my.get_option("use_cache") in ['true', True]
             if use_cache:
@@ -519,7 +521,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-      
             # calculte the alt expression if defined
             # DEPRECATED: use format expression instead
             if my.alt_expression:
@@ -569,7 +570,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     single = True
                     list = False
-                display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+
+                try:
+                    display_result = Search.eval(display_expr, my.sobject, list=list, single=single, vars={'VALUE': display_result }, show_retired=my.show_retired)
+                except Exception, e:
+                    print "WARNING in display expression [%s]: " % display_expr, e
+                    display_result = "ERROR: %s" % e
 
             elif format_str:
                 # This import needs to be here because of a deep
