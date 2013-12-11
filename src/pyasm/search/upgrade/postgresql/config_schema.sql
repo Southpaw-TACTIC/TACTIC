@@ -143,11 +143,10 @@ CREATE TABLE spt_plugin (
     code varchar(256),
     description text,
     manifest text,
-    
     "timestamp" timestamp,
     version varchar(256),
     rel_dir text,
     s_status varchar(256),
     CONSTRAINT "spt_plugin_code_idx" UNIQUE (code)
-
+);
 

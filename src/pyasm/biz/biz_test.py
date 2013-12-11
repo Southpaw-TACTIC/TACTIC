@@ -21,6 +21,7 @@ from pyasm.security import *
 from pyasm.search import Transaction, SearchType, Search
 from pyasm.unittest import Person
 from pyasm.checkin import FileCheckin
+from pyasm.biz import Pipeline
 
 from project import *
 from snapshot import *

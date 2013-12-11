@@ -72,6 +72,7 @@ class FileCheckin(BaseCheckin):
         my.snapshot_type = snapshot_type
 
         my.is_current = is_current
+
         my.is_revision = is_revision
         my.version = version
 
@@ -363,6 +364,7 @@ class FileCheckin(BaseCheckin):
             is_latest = True
             is_synced = True
 
+        my.is_latest = is_latest
 
         # copy the snapshot and put it in the snapshot history
         my.snapshot = Snapshot.create( my.sobject, snapshot_type,

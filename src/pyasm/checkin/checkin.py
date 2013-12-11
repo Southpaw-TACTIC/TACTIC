@@ -156,6 +156,13 @@ class BaseCheckin(Command):
         # add a note to the parent
         my.add_publish_note()
 
+          
+        my.call_triggers()
+
+    def get_trigger_prefix(my):
+        return "checkin"
+
+    def call_triggers(my):
 
         # call the done trigger for checkin
         from pyasm.command import Trigger
@@ -227,7 +234,6 @@ class BaseCheckin(Command):
                 requires_file = True
 
             
-            file_type = my.file_types[i]
 
             # create file_object
             file_object = File.create(
@@ -236,8 +242,7 @@ class BaseCheckin(Command):
                 my.sobject.get_id(),
                 search_code=my.sobject.get_code(),
                 requires_file=requires_file,
-                repo_type=my.repo_type,
-                file_type=file_type
+                repo_type=my.repo_type
             )
 
             if not file_object:
@@ -253,7 +258,6 @@ class BaseCheckin(Command):
       
         # this is meant for SnapshotIsLatestTrigger to run smoothly
         # these booleans should be set in the post-insert time of snapshot creation
-        
         Snapshot.set_booleans(my.sobject, my.snapshot, my.is_latest, my.is_current)
 
         if my.keep_file_name:
