@@ -924,7 +924,7 @@ class Snapshot(SObject):
             return False
 
 
-    def set_latest(my, commit=True):
+    def set_latest(my, commit=True, update_versionless=True):
         # Set the snapshot to be the latest and find the last latest and
         # remove it as the latest
         search_type = my.get_value("search_type")
@@ -961,7 +961,8 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
         # if there is a versionless, point it to this snapshot
-        my.update_versionless("latest")
+        if update_versionless:
+            my.update_versionless("latest")
 
         my.set_value("is_latest", True)
         if commit:
@@ -1005,7 +1006,7 @@ class Snapshot(SObject):
 
 
 
-    def set_current(my, commit=True):
+    def set_current(my, commit=True, update_versionless=True):
         # Set the snapshot to be the current and find the last current and
         # remove it as the current
         search_type = my.get_value("search_type")
@@ -1053,7 +1054,8 @@ class Snapshot(SObject):
             last_current.commit()
 
         # if there is a versionless, point it to this snapshot
-        my.update_versionless("current")
+        if update_versionless:
+            my.update_versionless("current")
 
         my.set_value("is_current", True)
         if commit:
@@ -1219,10 +1221,9 @@ class Snapshot(SObject):
     get_default_context = staticmethod(get_default_context)
 
 
-    def get_by_sobject(sobject, context=None):
-        return Snapshot.get_by_sobject( sobject, context )
-
-    get_by_sobject = staticmethod(get_by_sobject)
+    #def get_by_sobject(sobject, context=None):
+    #    return Snapshot.get_by_sobject( sobject, context )
+    #get_by_sobject = staticmethod(get_by_sobject)
 
 
     def get_by_sobject(sobject, context=None):
@@ -1453,7 +1454,6 @@ class Snapshot(SObject):
         search.add_order_by("version desc")
         search.add_order_by("revision desc")
         search.add_order_by("timestamp desc")
-
 
         if not isinstance(search_id, list):
             # only cache if search_id is not a list
@@ -1850,7 +1850,7 @@ class Snapshot(SObject):
             description="No description", \
             snapshot_data=None, is_current=None, is_revision=False, \
             level_type=None, level_id=None, commit=True, is_latest=True,
-            is_synced=True, process=None, version=None, triggers=True):
+            is_synced=True, process=None, version=None, triggers=True, set_booleans=True):
 
         # Provide a default empty snapshot definition
         if snapshot_data == None:
@@ -1974,9 +1974,24 @@ class Snapshot(SObject):
         # any of the latest or current code.
         if not commit:
             return snapshot
+       
+        # if this is a simple snapshot create like API method create_snapshot(),
+        # it defaults to running set_boolean
+        if set_booleans:
+            Snapshot.set_booleans(sobject, snapshot, is_latest=is_latest, is_current=is_current)
 
-        # set the new snapshot as the current (must be done after setting
-        # context)
+        snapshot.commit(triggers=triggers)
+
+        return snapshot
+
+    create = staticmethod(create)
+
+    def set_booleans(sobject, snapshot, is_latest=True, is_current=None):
+        '''Set the is_latest and is_current booleans. 
+           This method should not contain any snapshot.commit() since this is an in-between step'''
+
+        # set the new snapshot as the current 
+        # (must be done after setting context)
         if is_latest:
             if is_current != None:
                 if is_current:
@@ -1994,17 +2009,14 @@ class Snapshot(SObject):
                     #snapshot.set_current(commit=False)
                     snapshot.set_value("is_current", True)
 
-
-
         if is_latest:
             snapshot.set_value("is_latest", True)
-        else:
+        elif is_latest == False:
             snapshot.set_value("is_latest", False)
 
-
-        snapshot.commit(triggers=triggers)
         return snapshot
-    create = staticmethod(create)
+
+    set_booleans = staticmethod(set_booleans)
 
 
 

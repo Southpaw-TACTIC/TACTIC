@@ -936,19 +936,18 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         #Login.get_security_level_group(access_level)
         my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
-
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['low', 'medium', 'high']:
+        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
             if my.project_code and sobject.get_value("code") == my.project_code:
                 is_set = True
             else:
                 is_set = False
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['low', 'medium','high']:
+        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium','high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['high']:
+        elif my.security_type == 'process' and my.access_level in ['low', 'medium','high']:
             is_set = True
 
 
@@ -1040,10 +1039,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
 
         my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
-
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['low', 'medium', 'high']:
+        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
             if my.project_code and sobject.get_value("code") == my.project_code:
                 is_set = True
             else:
@@ -1051,9 +1049,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
  
         elif my.security_type == 'link' and my.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['low', 'medium','high']:
+        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['high']:
+        elif my.security_type == 'process' and my.access_level in ['low', 'medium', 'high']:
             is_set = True
 
 
@@ -1810,27 +1808,32 @@ class TaskSecurityWdg(ProjectSecurityWdg):
                     access_rules = group.get_xml_value("access_rules")
                     rules_dict[group_name] = access_rules
 
-                old_xpath = "rules/rule[@group='process' and @process='%s']" % sobject.get_value("process")
+                old_xpath = "rules/rule[@group='process' and @process]"
                 xpath = "rules/rule[@group='process' and @pipeline]"
                 node = access_rules.get_node(xpath)
                 old_node = access_rules.get_node(old_xpath)
                 
                 if node is not None:
-                    further_path = "rules/rule[@process='%s' and @pipeline='%s']" % (sobject.get_value("process"),sobject.get_value("pipeline_code"))
+                    further_path = "rules/rule[@process='%s' and @pipeline='%s'] | rules/rule[@process='*' and @pipeline='*']" % (sobject.get_value("process"),sobject.get_value("pipeline_code"))
                     new_node = access_rules.get_node(further_path)
 
                     if new_node is not None:
                         sobject.set_value("_%s" % group_name, True)
+   
                     else:
                         sobject.set_value("_%s" % group_name, False)
 
                 else:
                     # backward compatibility
-                    old_node = access_rules.get_node(old_xpath)
+                    further_path = "rules/rule[@process='%s'] | rules/rule[@process='*']" % (sobject.get_value("process"))  
+                    old_node = access_rules.get_node(further_path)
+
                     if old_node is not None:
                         sobject.set_value("_%s" % group_name, True)
+       
                     else:
                         sobject.set_value("_%s" % group_name, False)
+
 
         return sobjects
 
@@ -2176,15 +2179,27 @@ class SecurityBuilder(object):
 
 
     def add_process(my, process, access="allow", project_code=None, pipeline_code=None):
-        rule = my.xml.create_element("rule")
-        my.xml.set_attribute(rule, "group", "process")
-        my.xml.set_attribute(rule, "process", process)
-        if project_code:
-            my.xml.set_attribute(rule, "project", project_code)
+        '''check before adding a new node since the user can uncheck and check again'''
+
+        pipeline_code_expr = ''
         if pipeline_code:
-            my.xml.set_attribute(rule, "pipeline", pipeline_code)
-        my.xml.set_attribute(rule, "access", access)
-        my.xml.append_child(my.root, rule)
+            pipeline_code_expr = "and @pipeline='%s'"%pipeline_code
+
+        project_code_expr = ''
+        if project_code:
+            project_code_expr = "and @project='%s'"%project_code
+
+        check_node = my.xml.get_node("rules/rule[@group='process' and @process='%s' %s %s]" % (process, pipeline_code_expr, project_code_expr))
+        if check_node is None:
+            rule = my.xml.create_element("rule")
+            my.xml.set_attribute(rule, "group", "process")
+            my.xml.set_attribute(rule, "process", process)
+            if project_code:
+                my.xml.set_attribute(rule, "project", project_code)
+            if pipeline_code:
+                my.xml.set_attribute(rule, "pipeline", pipeline_code)
+            my.xml.set_attribute(rule, "access", access)
+            my.xml.append_child(my.root, rule)
 
 
     def remove_process(my, process, project_code=None, pipeline_code=None):
@@ -2195,13 +2210,16 @@ class SecurityBuilder(object):
         if project_code:
             nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
         else:
-            # for backward comaptibilty, || 
-            check_node = my.xml.get_nodes("rules/rule[@pipeline]")
+            # for backward comaptibilty when the concept of @pipeline doesn't exist at all 
+            check_node = my.xml.get_node("rules/rule[@pipeline]")
             if check_node is not None:
                 nodes = my.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
             else:
                 nodes = my.xml.get_nodes("rules/rule[@group='process']")
-        
+                
+        if not nodes and process =='*':
+            nodes = my.xml.get_nodes("rules/rule[@group='process' and @process='*']")
+
         for node in nodes:
             if my.xml.get_attribute(node, 'process') == process:
                 my.xml.remove_child(my.root, node)

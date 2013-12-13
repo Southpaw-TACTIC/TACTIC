@@ -10,7 +10,7 @@
 #
 #
 
-from pyasm.common import Environment
+from pyasm.common import Environment, jsonloads, jsondumps
 from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
@@ -33,7 +33,9 @@ __all__ = ['IngestUploadWdg', 'IngestUploadCmd']
 class IngestUploadWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
-        'search_type': 'Search Type to ingest into'
+        'search_type': 'Search Type to ingest into',
+        'parent_key': 'Parent search key to relate create sobject to',
+        'extra_data': 'Extra data (JSON) to be added to created sobjects'
     }
 
 
@@ -90,6 +92,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         # create the help button
         help_button_wdg = DivWdg()
         div.add(help_button_wdg)
+        help_button_wdg.add_style("margin-top: -3px")
         help_button_wdg.add_style("float: right")
         help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
         help_button_wdg.add(help_button)
@@ -532,6 +535,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         //var category = values.category[0];
         var keywords = values.keywords[0];
 
+        var extra_data = values.extra_data[0];
+        var parent_key = values.parent_key[0];
+
         var convert_el = top.getElement(".spt_image_convert")
         var convert = spt.api.get_input_values(convert_el);
 
@@ -551,8 +557,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             relative_dir: relative_dir,
             filenames: filenames,
             key: key,
+            parent_key: parent_key,
             //category: category,
             keywords: keywords,
+            extra_data: extra_data,
             process: process,
             convert: convert,
         }
@@ -760,12 +768,41 @@ class IngestUploadWdg(BaseRefreshWdg):
             name_div.add("<br/>")
 
 
+ 
+        hidden = HiddenWdg(name="parent_key")
+        dialog_data_div.add(hidden)
+        hidden.add_class("spt_parent_key")
+        parent_key = my.kwargs.get("parent_key") or ""
+        if parent_key:
+            hidden.set_value(parent_key)
+
+
+
+
+ 
         dialog_data_div.add("Keywords:<br/>")
         dialog.add(dialog_data_div)
         text = TextAreaWdg(name="keywords")
         dialog_data_div.add(text)
         text.add_class("spt_keywords")
         text.add_style("padding: 1px")
+
+
+        dialog_data_div.add("<br/>"*2)
+
+
+        extra_data = my.kwargs.get("extra_data")
+        if not isinstance(extra_data, basestring):
+            extra_data = jsondumps(extra_data)
+
+        dialog_data_div.add("Extra Data (JSON):<br/>")
+        text = TextAreaWdg(name="extra_data")
+        dialog_data_div.add(text)
+        if extra_data != "null":
+            text.set_value(extra_data)
+        text.add_class("spt_extra_data")
+        text.add_style("padding: 1px")
+
 
 
         #### TEST Image options
@@ -838,8 +875,15 @@ class IngestUploadCmd(Command):
             relative_dir = "%s/%s" % (project_code, table)
 
         server = TacticServerStub.get()
+
+        parent_key = my.kwargs.get("parent_key")
         category = my.kwargs.get("category")
         keywords = my.kwargs.get("keywords")
+        extra_data = my.kwargs.get("extra_data")
+        if extra_data:
+            extra_data = jsonloads(extra_data)
+        else:
+            extra_data = {}
 
 
         # TODO: use this to generate a category
@@ -927,10 +971,22 @@ class IngestUploadCmd(Command):
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
 
+            if parent_key:
+                parent = Search.get_by_search_key(parent_key)
+                if parent:
+                    sobject.set_sobject_value(sobject)
+
+
+
 
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
                     sobject.set_value("keywords", keywords)
+
+            for key, value in extra_data.items():
+                if SearchType.column_exists(search_type, key):
+                    sobject.set_value(key, value)
+
 
             """
             if category:

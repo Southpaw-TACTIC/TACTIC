@@ -405,7 +405,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         keywords = my.kwargs.get("keywords")
 
         search_types = my.kwargs.get("search_types")
-
         sobjects = my.sobjects
         if not sobjects:
 
@@ -455,8 +454,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         if my.show_files:
 
             search = Search("sthpw/file")
-
-            search.add_filters("search_type", search_types)
+            if search_types:
+                search.add_filters("search_type", search_types)
 
             if relative_dir:
                 search.add_op("begin")

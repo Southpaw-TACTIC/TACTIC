@@ -311,7 +311,7 @@ CREATE TABLE snapshot (
 
 CREATE TABLE "file" (
     id integer IDENTITY PRIMARY KEY,
-    file_name nvarchar(512) NOT NULL,
+    file_name nvarchar(512),
     search_type nvarchar(100) NOT NULL,
     search_id integer NOT NULL,
     "timestamp" datetime2(6) DEFAULT (getdate()) NOT NULL,
@@ -684,6 +684,9 @@ INSERT INTO search_object (code, search_type, "namespace", "description", "datab
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES('sthpw/milestone','sthpw/milestone','sthpw','Project Milestones','sthpw','milestone','pyasm.biz.Milestone','Project Milestones','public');
 
 INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public'); 
+
+INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/pipeline', 'config/pipeline', 'config', 'Pipelines', '{project}', 'spt_pipeline', 'pyasm.search.SObject', 'Pipelines', 'public');
+
 
 -- This is still needed for VFX template.
 

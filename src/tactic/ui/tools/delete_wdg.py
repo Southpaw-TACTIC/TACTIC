@@ -1008,8 +1008,9 @@ class DeleteProjectCmd(DeleteCmd):
         sql = DbContainer.get(db_resource, connect=True)
         if sql:
             try:
-                if sql.get_connection() and sql.connect():
-                    raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
+                if sql.get_database_type() != 'Sqlite':
+                    if sql.get_connection() and sql.connect():
+                        raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
             except SqlException, e:
                 pass
         # remove the project entry

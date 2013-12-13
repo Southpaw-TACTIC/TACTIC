@@ -178,6 +178,7 @@ class NamingTest(unittest.TestCase):
             my._test_file_naming_manual_version()
             my._test_get_naming()
             my._test_checkin_type()
+            my._test_naming_util()
         finally:
             my.transaction.rollback()
             Project.set_project('unittest')
@@ -201,6 +202,41 @@ class NamingTest(unittest.TestCase):
         Container.put("Naming:cache:unittest", None)
         Container.put("Naming:namings", None)
 
+    def _test_naming_util(my):
+       
+        #my.clear_naming()
+        naming_util = NamingUtil()
+        # these should evaluate to be the same
+        file_naming_expr1 = ['{$PROJECT}__{context[0]}__hi_{$BASEFILE}.{$EXT}','{project.code}__{context[0]}__hi_{basefile}.{ext}']
+        dir_naming_expr2 = ['{$PROJECT}/{context[1]}/somedir/{@GET(.name_first)}','{project.code}/{snapshot.context[1]}/somedir/{sobject.name_first}']
+
+        process= 'light'
+        context = 'light/special'
+        type = 'ma'
+        version = 2
+
+        virtual_snapshot = Snapshot.create_new()
+        virtual_snapshot_xml = '<snapshot process=\'%s\'><file type=\'%s\'/></snapshot>' % (process, type)
+        virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
+        virtual_snapshot.set_value("process", process)
+        virtual_snapshot.set_value("context", context)
+        virtual_snapshot.set_value("snapshot_type", 'file')
+
+        virtual_snapshot.set_sobject(my.person)
+        virtual_snapshot.set_value("version", version)
+
+        file_name = "abc.txt"
+        file_obj = File(File.SEARCH_TYPE)
+        file_obj.set_value("file_name", file_name)
+        
+        for naming_expr in file_naming_expr1:
+            file_name = naming_util.naming_to_file(naming_expr, my.person, virtual_snapshot, file=file_obj, file_type="main")
+            my.assertEquals(file_name,'unittest__light__hi_abc.txt')
+
+        for naming_expr in dir_naming_expr2:
+            dir_name = naming_util.naming_to_dir(naming_expr, my.person, virtual_snapshot, file=file_obj, file_type="main")
+            my.assertEquals(dir_name,'unittest/special/somedir/Philip')
+    
     def _test_file_naming_manual_version(my):
        
         my.clear_naming()
@@ -212,9 +248,11 @@ class NamingTest(unittest.TestCase):
         naming.set_value('file_naming', '{sobject.code}_v{snapshot.version}.{ext}')
         naming.commit()
 
+        from pyasm.common import Environment
+        base_dir = Environment.get_asset_dir()
         
         preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v001.ma', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v001.ma'%base_dir, preallocated)
 
         # now turn on manual_version
         naming.set_value('manual_version', True)
@@ -222,11 +260,11 @@ class NamingTest(unittest.TestCase):
 
         my.clear_naming()
         preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v005.ma', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v005.ma'%base_dir, preallocated)
         
         # Uppercase V and more digits
         preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_V0010.ma',ext='ma')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v010.ma', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v010.ma'%base_dir, preallocated)
         #my.snapshot.commit()
 
         # zero or negative version is ignored
@@ -282,21 +320,19 @@ class NamingTest(unittest.TestCase):
 
         # auto_snapshot is at v2
         preallocated = my.auto_snapshot.get_preallocated_path(file_type='some_dir', file_name='racoon',ext=None)
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v002_racoon', preallocated)
+        from pyasm.common import Environment
+        base_dir = Environment.get_asset_dir()
+        my.assertEquals('%s/unittest/cut/phil/phil_v002_racoon'%base_dir, preallocated)
         
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon',ext=None)
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v001_racoon', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon'%base_dir, preallocated)
         
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon.jpg',ext='jpg')
-        #TODO: just get the base asset_path for the os first
-        if os.name == 'nt':
-            my.assertEquals('C:/spt/assets/unittest/cut/phil/phil_v001_racoon.jpg', preallocated)
-        else:
-            my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v001_racoon.jpg', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon.jpg'%base_dir, preallocated)
 
 
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon2.PNG')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v001_racoon2.PNG', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon2.PNG'%base_dir, preallocated)
 
         
         # test file expression
@@ -305,10 +341,10 @@ class NamingTest(unittest.TestCase):
         my.clear_naming()
 
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon3.jpg',ext='jpg')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v1_racoon3.jpg', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v1_racoon3.jpg'%base_dir, preallocated)
 
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon4.PNG')
-        my.assertEquals('/home/apache/assets/unittest/cut/phil/phil_v1_racoon4.PNG', preallocated)
+        my.assertEquals('%s/unittest/cut/phil/phil_v1_racoon4.PNG'%base_dir, preallocated)
 
 
         # test dir expression
@@ -317,11 +353,11 @@ class NamingTest(unittest.TestCase):
         my.clear_naming()
 
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
-        my.assertEquals('/home/apache/assets/unittest/exp_cut/phil/phil_v1_racoon same.iff', preallocated)
+        my.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon_same.iff'%base_dir, preallocated)
 
         # note: the actual check-in logic would replace " " with "_"
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon 5.PNG')
-        my.assertEquals('/home/apache/assets/unittest/exp_cut/phil/phil_v1_racoon 5.PNG', preallocated)
+        my.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon_5.PNG'%base_dir, preallocated)
 
 
         # test dir expression 2
@@ -336,7 +372,7 @@ class NamingTest(unittest.TestCase):
         today = datetime.datetime.today()
         today = datetime.datetime(today.year, today.month, today.day)
         today = today.strftime("%Y-%m-%d")
-        my.assertEquals('/home/apache/assets/unittest/3D/QC/ShotWork/playblast/ByDate/%s/Philip/phil_v1_racoon same.iff'%today, preallocated)
+        my.assertEquals('%s/unittest/3D/QC/ShotWork/playblast/ByDate/%s/Philip/phil_v1_racoon_same.iff'%(base_dir, today), preallocated)
 
         naming.delete()
 

@@ -19,7 +19,7 @@ from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
 from pyasm.common import SPTDate
 from pyasm.common import Date, Common, TacticException
-from pyasm.search import Search, SearchType
+from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
 from base_refresh_wdg import BaseRefreshWdg
@@ -111,7 +111,9 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
+        #title = title.replace(" ", "<br/>")
         div.add(title)
+
         return div
 
         # FIXME: not sure about autofit here?  This should be a mode
@@ -200,6 +202,12 @@ class RawTableElementWdg(BaseTableElementWdg):
         name = my.get_name()
         return name
 
+    def get_required_columns(my):
+        '''method to get the require columns for this'''
+        return [
+        my.get_name()
+        ]
+    
     def get_display(my):
         sobject = my.get_current_sobject()
         name = my.get_name()
@@ -232,18 +240,23 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
     ARGS_KEYS = {
-    'type': {
-        'description': 'Determines the type it should be displayed as',
-        'type': 'SelectWdg',
-        'values': 'string|text|integer|float|boolean|timestamp',
-        'category': 'Database'
-    },
-    'total_summary': {
-        'description': 'Determines a calculation for the bottom row',
-        'type': 'SelectWdg',
-        'values': 'count|total|average',
-        'category': 'Summary'
-    }
+        'type': {
+            'description': 'Determine the type it should be displayed as',
+            'type': 'SelectWdg',
+            'values': 'string|text|integer|float|boolean|timestamp',
+            'category': 'Database'
+        },
+        'total_summary': {
+            'description': 'Determine a calculation for the bottom row',
+            'type': 'SelectWdg',
+            'values': 'count|total|average',
+            'category': 'Summary'
+        },
+        'column': {
+            'description': 'Determine the database column to display',
+            'type': 'TextWdg',
+            'category': 'Display'
+        }
     }
 
 
@@ -444,8 +457,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(my):
         sobject = my.get_current_sobject()
-        name = my.get_name()
-        value = my.get_value()
+        
+        column =  my.kwargs.get('column')
+        if column:
+            name = column
+        else:
+            name = my.get_name()
+        
+        value = my.get_value(name=name)
 
         if sobject:
             data_type = SearchType.get_column_type(sobject.get_search_type(), name)
@@ -458,14 +477,15 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         if name == 'id' and value == -1:
             value = ''
 
-        elif data_type == "timestamp" or my.name == "timestamp":
+        elif data_type == "timestamp" or name == "timestamp":
 	    if value == 'now':
                 value = ''
             elif value:
                 # This date is assumed to be GMT
                 date = parser.parse(value)
                 # convert to local
-                date = SPTDate.convert_to_local(date)
+                if not SObject.is_day_column(name):
+                    date = SPTDate.convert_to_local(date)
 		try:
 		   encoding = locale.getlocale()[1]		
 		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)

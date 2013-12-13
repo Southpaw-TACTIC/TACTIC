@@ -65,8 +65,10 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
     def get_display(my):
+
+
+        # NOTE: need to add this to fit as a table layout
         my.chunk_size = 10000
-        # FIXME: need to add this
         my.edit_permission = True
         my.view_editable = True
 
@@ -78,10 +80,6 @@ class EditLayoutWdg(TableLayoutWdg):
 
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
-            #my.sobjects.extend(my.sobjects)
-            #my.sobjects.extend(my.sobjects)
-            #my.sobjects.extend(my.sobjects)
-            #my.items_found = len(my.sobjects)
 
 
         top = DivWdg()
@@ -93,7 +91,7 @@ class EditLayoutWdg(TableLayoutWdg):
         top.add(inner)
         inner.add_color("background", "background")
         inner.add_color("color", "color")
-        # FIXME: this is not the table and is called this for backwards
+        # NOTE: this is not the table and is called this for backwards
         # compatibility
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
@@ -156,25 +154,29 @@ class EditLayoutWdg(TableLayoutWdg):
                 widget.set_current_index(i)
                 title = widget.get_title()
 
-                table.add_row()
+                tr = table.add_row()
+                title.add_style("float: left")
                 th = table.add_header(title)
+                th.add(" : ")
                 th.add_class("spt_header")
                 td = table.add_cell(widget.get_buffer_display())
                 td.add_class("spt_cell_edit")
 
 
                 if j % 2 == 0:
-                    th.add_color("background-color", "background", -10)
-                    td.add_color("background-color", "background", -5)
+                    #th.add_color("background-color", "background", -10)
+                    #td.add_color("background-color", "background", -5)
+                    tr.add_color("background-color", "background", -5)
                 else:
-                    th.add_color("background-color", "background", -10)
-                    td.add_color("background-color", "background")
+                    #th.add_color("background-color", "background", -10)
+                    #td.add_color("background-color", "background")
+                    tr.add_color("background-color", "background")
 
 
                 # indicator that a cell is editable
-                td.add_event( "onmouseover", "$(this).setStyle('background-image', " \
-                                  "'url(/context/icons/silk/page_white_edit.png)')" )
-                td.add_event( "onmouseout",  "$(this).setStyle('background-image', '')")
+                #td.add_event( "onmouseover", "$(this).setStyle('background-image', " \
+                #                  "'url(/context/icons/silk/page_white_edit.png)')" )
+                #td.add_event( "onmouseout",  "$(this).setStyle('background-image', '')")
 
 
 

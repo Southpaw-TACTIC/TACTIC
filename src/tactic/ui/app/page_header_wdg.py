@@ -398,7 +398,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 spt.tab.add_new("create_project", "Create Project", class_name);
             }
             else {
-                document.location = "/tactic/admin/#/link/create_project";
+                document.location = "/tactic/admin/link/create_project";
             }
             '''
             } )
@@ -741,6 +741,10 @@ class ProjectCreateWdg(BaseRefreshWdg):
         info_page.add(checkbox)
         if default_project_code:
             default_project = Project.get_by_code(default_project_code)
+        else:
+            default_project = None
+
+        if default_project:
             default_title = default_project.get_value("title")
             info_span = SpanWdg()
             info_page.add(info_span)
@@ -1310,7 +1314,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
                     location = "/tactic/" + project_code + "/";
                 }
                 else {
-                    location = "/tactic/" + project_code + "/admin/_startup";
+                    location = "/tactic/" + project_code + "/admin/link/_startup";
                 }
                 setTimeout( function() {
                     document.location = location;

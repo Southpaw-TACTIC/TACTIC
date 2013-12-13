@@ -219,9 +219,9 @@ class Search(Base):
 
         my.select = Select()
         my.select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
 
         assert isinstance(my.db_resource, DbResource)
-        my.select.set_database(my.db_resource)
 
         table = my.search_type_obj.get_table()
         exists = my.database_impl.table_exists(my.db_resource, table)   
@@ -817,7 +817,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     my.add_filter("search_type", sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int):
+                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
                         my.add_filters(from_col, col_values, op=op )
                     else:
                         my.add_filters("search_code", col_values, op=op)
@@ -1116,6 +1116,7 @@ class Search(Base):
 
         select = Select()
         select.set_database(my.db_resource)
+        my.select.set_id_col(my.get_id_col())
         select.add_table(table)
         select.add_column("id")
 
@@ -1298,7 +1299,6 @@ class Search(Base):
 
 
     def add_join(my, to_search_type, from_search_type=None, path=None, join=None):
-
         to_search_type_obj = SearchType.get(to_search_type)
         to_search_type = to_search_type_obj.get_base_key()
 
@@ -1402,7 +1402,6 @@ class Search(Base):
         
         if "connect" in parts:
             return
-        my.order_bys.append(column)
 
 
         if len(parts) >= 2:
@@ -1427,16 +1426,29 @@ class Search(Base):
                 if search_type == prev_search_type:
                     continue
 
-                my.add_join(search_type, prev_search_type, join=join)
+
+                can_join = DatabaseImpl.can_search_types_join( \
+                        search_type, prev_search_type)
+                if can_join:
+                    my.add_join(search_type, prev_search_type, join=join)
+                else:
+                    return False
+
 
                 prev_search_type = search_type
 
+
+            my.order_bys.append(column)
 
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             column = parts[-1]
             my.select.add_order_by(column, direction=direction, table=table)
+
+            return True
         else:
+            my.order_bys.append(column)
+
             table = my.search_type_obj.get_table()
 
             impl = my.get_database_impl()
@@ -2257,7 +2269,8 @@ class SObject(object):
                         if value:
                             # convert to UTC (NOTE: are we sure that this
                             # is always coming from the database?)
-                            value = SPTDate.convert(value, is_gmt=is_gmt)
+                            if not SObject.is_day_column(col):
+                                value = SPTDate.convert(value, is_gmt=is_gmt)
                             my.data[col] = str(value)
                     
 
@@ -3458,11 +3471,12 @@ class SObject(object):
             # For Postgres, if there is no timestamp, then the value
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
-                info = column_info.get(key)
-                if is_postgres and not info.get("time_zone"):
-                    value = SPTDate.convert_to_local(value)
-                else:
-                    value = SPTDate.add_gmt_timezone(value)
+                if value and not SObject.is_day_column(key):
+                    info = column_info.get(key)
+                    if is_postgres and not info.get("time_zone"):
+                        value = SPTDate.convert_to_local(value)
+                    else:
+                        value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S')
@@ -3532,7 +3546,6 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                #sequence = impl.get_sequence_name(table, database=database)
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
@@ -3620,7 +3633,10 @@ class SObject(object):
                 "sthpw/change_timestamp",
                 "sthpw/transaction_log",
                 "sthpw/sync_job",
-                "sthpw/sync_log"
+                "sthpw/sync_log",
+                'sthpw/message',
+                'sthpw/message_log',
+
         ] \
                 and sobject and sobject.has_value("code"):
 
@@ -3713,7 +3729,9 @@ class SObject(object):
                     'sthpw/search_object',
                     'sthpw/wdg_settings',
                     'sthpw/sync_log',
-                    'sthpw/sync_job'
+                    'sthpw/sync_job',
+                    'sthpw/message',
+                    'sthpw/message_log',
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -3773,6 +3791,7 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data):
+        data = unicode(data)
 
         record_message = True
         if not record_message:
@@ -4861,7 +4880,11 @@ class SObject(object):
         return result
 
 
-
+    def is_day_column(col):
+        '''a rough way of differentiating a timestamp column used solely 
+           for date. Time portion is set to 00:00:00 usually'''
+        return col.endswith('day')
+    is_day_column = staticmethod(is_day_column)
 
 
 class SearchType(SObject):
@@ -5139,7 +5162,9 @@ class SearchType(SObject):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             key2 = "%s:%s" % (db_resource, table)
-            cache_dict[key2] = None
+            #cache_dict[key2] = None
+            del(cache_dict[key2])
+
 
     clear_column_cache = classmethod(clear_column_cache)
 
@@ -5838,7 +5863,10 @@ class SObjectUndo:
                 "sthpw/sync_job",
                 "sthpw/sync_log",
                 "sthpw/sync_server",
-                "sthpw/cache"
+                "sthpw/cache",
+
+                'sthpw/message',
+                'sthpw/message_log',
         ]:
             return
         if sobject.get_search_type() == "sthpw/transaction_log":

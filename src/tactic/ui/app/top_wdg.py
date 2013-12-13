@@ -236,6 +236,7 @@ class TopWdg(Widget):
         #content_div.add(button)
 
 
+
         if my.widgets:
             content_wdg = my.get_widget('content')
         else:
@@ -530,8 +531,6 @@ class TopWdg(Widget):
             widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % css_file )
 
        
-        # TEST TEST TEST
-        widget.add('<link rel="stylesheet" href="/assets/_video/video-js.min.css" type="text/css" />\n')
         return widget
 
 
@@ -651,7 +650,12 @@ class TitleTopWdg(TopWdg):
         head.add(my.get_css_wdg())
 
         # add the title in the header
-        project = Project.get()
+        try:
+            project = Project.get()
+        except Exception, e:
+            print "ERROR: ", e
+            # if the project doesn't exist, then use the admin project
+            project = Project.get_by_code("admin")
         project_code = project.get_code()
         project_title = project.get_value("title")
 
@@ -722,6 +726,7 @@ class IndexWdg(Widget):
             else {
                 spt.hash.hash = "/index";
             }
+            spt.hash.set_index_hash("link/_startup");
             '''
         } )
 
@@ -805,11 +810,17 @@ class SitePage(AppServer):
 
         # if there is a custom url, then handle it separately
         if my.custom_url:
-            web = WebContainer.get_web()
-            hash = "/".join(my.hash)
-            hash = "/%s" % hash
-            my.top = CustomTopWdg(url=my.custom_url, hash=hash)
-            return my.top
+            xml = my.custom_url.get_xml_value("widget")
+            index = xml.get_value("element/@index")
+            admin = xml.get_value("element/@admin")
+            if index == 'true' or admin == 'true':
+                pass
+            else:
+                web = WebContainer.get_web()
+                hash = "/".join(my.hash)
+                hash = "/%s" % hash
+                my.top = CustomTopWdg(url=my.custom_url, hash=hash)
+                return my.top
 
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
@@ -823,7 +834,6 @@ class CustomTopWdg(BaseRefreshWdg):
 
         # Custom URLs have the ability to send out different content types
         url = my.kwargs.get("url")
-
 
         web = WebContainer.get_web()
 

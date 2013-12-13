@@ -327,7 +327,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         full_search_type = SearchType.build_search_type(my.search_type, project_code)
         titles = config.get_element_titles() 
         for i, element_name in enumerate(element_names):
-
+            attrs = config.get_element_attributes(element_name)
             if i % 2 == 0:
                 table.add_row()
 
@@ -343,6 +343,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             element_wdg = DivWdg()
+            if attrs.get('view') == 'false':
+                element_wdg.add_style('display: none')
             element_td.add(element_wdg)
 
             #title_td.add_style("border: solid 1px red")
@@ -423,7 +425,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
             if isinstance(widget, KeywordFilterElementWdg) and not full_search_type.startswith('sthpw/sobject_list'):
                 widget.set_option('filter_search_type', full_search_type)
             try:
-                title_td.add(widget.get_title_wdg())
+                if attrs.get('view') != 'false':
+                    title_td.add(widget.get_title_wdg())
 
                 element_wdg.add(widget.get_buffer_display())
             except Exception, e:

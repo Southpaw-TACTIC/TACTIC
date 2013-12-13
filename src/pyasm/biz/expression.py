@@ -14,13 +14,13 @@ __all__ = ['ExpressionParser']
 
 
 import os, re, types, math
-import dateutil, datetime
+import dateutil
 from dateutil import parser
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config
 from pyasm.search import Search, SObject, SearchKey, SearchType
 
 from project import Project
@@ -104,6 +104,25 @@ class ExpressionParser(object):
         project = Project.get_project_code()
         my.vars['PROJECT'] = project
 
+
+        try:
+            from pyasm.web import WebContainer
+            web = WebContainer.get_web()
+        except Exception, e:
+            web = None
+        if web:
+            url = web.get_base_url()
+            my.vars['BASE_URL'] = url.to_string()
+
+            url = web.get_project_url()
+            my.vars['PROJECT_URL'] = url.to_string()
+        else:
+            base_url = Config.get_value("services", "mail_base_url")
+            if base_url:
+                my.vars['BASE_URL'] = base_url
+                my.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
+
+
         if vars:
             my.vars.update(vars)
  
@@ -114,8 +133,10 @@ class ExpressionParser(object):
         keys.reverse()
         #for name, value in my.vars.items():
         for name in keys:
+
             value = my.vars.get(name)
-            new_value = "'%s'" % str(value)
+            #new_value = "'%s'" % str(value)
+            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
             my.expression = my.expression.replace("'$%s'" % name, new_value)
@@ -1123,7 +1144,7 @@ class MethodMode(ExpressionParser):
         results = []
         method = method.upper()
 
-        if method == 'GET':
+        if method in ['GET', 'GETALL']:
             format = None
             if len(args) == 1:
                 parts = my._split_arg(args[0])
@@ -1143,8 +1164,17 @@ class MethodMode(ExpressionParser):
             if not search_types:
                 raise SyntaxError("Improper arguments in method [%s] definition in expression [%s]" % (method, my.expression))
 
-            sobjects = my.get_sobjects(search_types)
+            unique = method == 'GET'
+            sobjects = my.get_sobjects(search_types, unique=unique)
 
+            """
+            #TOOO: make this work with @CASE or @IF statements
+            sobjects_search = my.get_sobjects(search_types, unique=unique, is_search=True)
+            if sobjects_search:
+                sobjects = sobjects_search.get_sobjects()
+            else:
+                sobjects = []
+            """
 
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
@@ -1463,7 +1493,6 @@ class MethodMode(ExpressionParser):
                 delimiter = args[2]
                 results = delimiter.join(results)
                 
-                
 
 
         elif method == 'JOIN':
@@ -1476,6 +1505,26 @@ class MethodMode(ExpressionParser):
 
             delimiter = args[1]
             results = delimiter.join(results)
+
+
+        elif method == 'SUBSTITUTE':
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            values_list = []
+            for arg in args[1:]:
+                expression = arg
+                mode = my.get_mode(expression)
+                values = my.dive(mode, expression=expression)
+                values_list.append(values)
+
+            # transpose the values
+            values_list = zip(*values_list)
+            results = []
+            for values in values_list:
+                result = args[0] % values
+                results.append(result)
+
 
 
         elif method == 'UPDATE':
@@ -1791,12 +1840,12 @@ class MethodMode(ExpressionParser):
 
         return reg_filters, context_filters
 
-    def get_sobjects(my, related_types, is_count=False, is_search=False):
+    def get_sobjects(my, related_types, is_count=False, is_search=False, unique=True):
         # FIXME: not sure why id() does not work. It seems to return the same
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
         #key = "%s|%s" % (related_types, id(my.sobjects))
-        key = "%s|%s" % (related_types, str(my.sobjects))
+        key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
         results = Container.get_dict(my.EXPRESSION_KEY, key)
@@ -1825,7 +1874,6 @@ class MethodMode(ExpressionParser):
             related_types_filters[related_type] = filters
             related_types_paths[related_type] = path
 
-
         # handle some absolute sobjects
         if len(related_types) == 1:
             # support some shorthand here?
@@ -1852,10 +1900,16 @@ class MethodMode(ExpressionParser):
                 from pyasm.biz import SObjectConnection
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
+                
+                if is_search:
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_search = SObjectConnection.get_search(connections, filters=reg_filters)
+                    return related_search
+                else:
 
-                connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
-                related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
-                return related_sobjects
+                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                    return related_sobjects
 
 
             elif related_type == 'date':
@@ -1872,8 +1926,8 @@ class MethodMode(ExpressionParser):
                 palette = Palette.get()
                 sobject = SearchType.create("sthpw/virtual")
                 keys = palette.get_keys()
-                for key in keys:
-                    sobject.set_value(key, palette.color(key))
+                for tmp_key in keys:
+                    sobject.set_value(tmp_key, palette.color(tmp_key))
                 related_sobjects = [sobject]
                 return related_sobjects
  
@@ -1898,7 +1952,6 @@ class MethodMode(ExpressionParser):
         # the first search type as a starting point
         if not my.sobjects:
             related_type = related_types[0]
-
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -1920,9 +1973,14 @@ class MethodMode(ExpressionParser):
                 else:
                     related_sobjects = []
 
+                if is_search:
+                    related_search = None
+
 
             elif not related_type:
                 related_sobjects = []
+                if is_search:
+                    related_search = None
             else:
                 related_sobjects = []
                 # do the full search
@@ -2002,8 +2060,21 @@ class MethodMode(ExpressionParser):
                 filters = related_types_filters.get(related_type)
                 reg_filters, context_filters = my.group_filters(filters)
 
-                connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
-                list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+                if is_search:
+                    related_search.add_column('id')
+                    # assume dst direction, pass in a src_search and empty sobject list to return a search
+                    direction = 'dst'
+                    connection_search = SObjectConnection.get_connections([], direction=direction,\
+                        context_filters=context_filters, src_search=related_search)
+                    if connection_search:
+                        connection_search.add_column('%s_search_id'% direction)
+                        related_search = connection_search
+                else:
+                    #connections, list = SObjectConnection.get_connected_sobjects(related_sobjects, filters=reg_filters)
+                    connections = SObjectConnection.get_connections(related_sobjects, context_filters=context_filters)
+                    list = SObjectConnection.get_sobjects(connections, filters=reg_filters)
+
+
                 # TODO: caching is not implemented on connect
                 #my.cache_sobjects(related_sobject.get_search_key(), sobjects)
 
@@ -2052,16 +2123,16 @@ class MethodMode(ExpressionParser):
 
                     # collapse the list and make it unique
                     tmp_list = []
-                    for key, items in tmp_dict.items():
+                    for tmp_key, items in tmp_dict.items():
                         tmp_list.extend(items)
-                        my.cache_sobjects(key, items)
+                        my.cache_sobjects(tmp_key, items)
 
 
                     list = []
                     ids = set()
                     for sobject in tmp_list:
                         sobject_id = sobject.get_id()
-                        if sobject_id in ids:
+                        if unique and sobject_id in ids:
                             continue
                         list.append(sobject)
                         ids.add(sobject_id)

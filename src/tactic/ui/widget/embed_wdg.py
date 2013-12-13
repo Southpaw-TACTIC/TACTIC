@@ -72,9 +72,13 @@ class EmbedWdg(BaseRefreshWdg):
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
 
+            thumb_path = my.kwargs.get("thumb_path")
+            if not thumb_path:
+                thumb_path = "/context/icons/logo/tactic_sml.png"
+
             video_id = None
             sources = [src]
-            poster = 'http://video-js.zencoder.com/oceans-clip.png'
+            poster = thumb_path
             width = '100%'
             height = '100%'
             video = VideoWdg(video_id=video_id, sources=sources, poster=poster, preload="auto", controls="true", width=width, height=height)

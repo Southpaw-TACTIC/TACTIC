@@ -169,7 +169,8 @@ spt.tab.set_attribute = function(element_name, name, value) {
 
 
 
-spt.tab.add_new = function(element_name, title, class_name, kwargs, values, set_hash) {
+spt.tab.add_new = function(element_name, title, class_name, kwargs,
+        values, hash) {
 
     if (typeof(title) == 'undefined') {
         title = '(Untitled)';
@@ -191,8 +192,14 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values, set_
 
     var top = spt.tab.top;
 
+    if (!hash && hash != false && kwargs.hash) {
+        hash = kwargs.hash;
+    }
+    if (hash == "__link__") {
+        hash = "link/" + element_name;
+    }
 
-    var hash = "link/" + element_name;
+
     var orig_element_name = element_name;
 
     var mode = top.getAttribute("spt_tab_mode");
@@ -305,15 +312,15 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs, values, set_
     //scroll(0,top_pos-20);
 
 
-    // register the hash (DISABLE for now)
-    var state = {
-        element_name: orig_element_name,
-        title: title,
-        class_name: class_name,
-        kwargs: kwargs,
-        hash: hash
-    }
-    if (set_hash != false) {
+    // register the hash
+    if (hash) {
+        var state = {
+            element_name: orig_element_name,
+            title: title,
+            class_name: class_name,
+            kwargs: kwargs,
+            hash: hash
+        }
         spt.hash.set_hash(state, title, hash);
     }
 
@@ -525,7 +532,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     var header_top = top.getElement(".spt_tab_header_top");
     var top_id = top.getAttribute("id");
 
-    spt.api.app_busy_show("Loading " + title, '');
+    //spt.api.app_busy_show("Loading " + title, '');
 
     setTimeout( function() {
 
@@ -1452,7 +1459,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 xml += '  </display>\n';
                 xml += '</element>\n';
 
-                alert(xml);
+                spt.alert(xml);
 
                 '''
             } )

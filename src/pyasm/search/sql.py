@@ -1627,6 +1627,7 @@ class Select(object):
 
     def __init__(my):
         my.tables = []
+        my.id_col = 'id'
         my.columns = []
         my.as_columns = []
         my.column_tables = []
@@ -1776,6 +1777,8 @@ class Select(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 
@@ -1787,7 +1790,7 @@ class Select(object):
         my.set_statement = statement
 
 
-
+    
     def add_table(my, table):
         if table == "": return
         my.tables.append(table)
@@ -1797,7 +1800,9 @@ class Select(object):
         
     def get_table(my):
         return my.tables[0]
-
+    
+    def set_id_col(my, id_col):
+        my.id_col = id_col
 
     def add_join(my, table1, table2=None, column=None, column2=None, join="LEFT OUTER", database=None, database2=None):
         '''
@@ -1845,6 +1850,9 @@ class Select(object):
         if my.schema:
             parts.append('"%s"' % my.schema)
         prefix1 = ".".join(parts)
+
+        if prefix1:
+            prefix1 = "%s." % prefix1
  
 
         # handle the database scoping
@@ -1857,11 +1865,16 @@ class Select(object):
             parts.append('"%s"' % my.schema)
         prefix2 = ".".join(parts)
  
-
+        # add a trailing point.  this is needed so that implementations with
+        # not prefix can be accomodated (ie: Sqlite)
+        if prefix2:
+            prefix2 = "%s." % prefix2
  
 
-        expr = '''%s JOIN %s."%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
+        expr = '''%s JOIN %s"%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
 
+        if my.impl.get_database_type() == 'SQLServer':
+            expr = '''%s JOIN %s"%s" ON "%s"."%s" = %s"%s"."%s"''' % (join, prefix2, table2, table1, column1, prefix2, table2, column2)
         # NOTE: there should be no need to database specfic joins
         """
         if my.impl.get_database_type() == 'Oracle':
@@ -1985,12 +1998,12 @@ class Select(object):
             table = my.tables[0]
 
         if column == 'id' and value == None:
-            where = "\"%s\" is NULL" % column
+            where = "\"%s\".\"%s\" is NULL" % (table, column)
             my.add_where(where)
             return
 
         if value == None:
-            where = "\"%s\" is NULL" % column
+            where = "\"%s\".\"%s\" is NULL" % (table, column)
             my.add_where(where)
             return
 
@@ -2070,8 +2083,8 @@ class Select(object):
         assert op in ['in', 'not in']
         filter = ''
         if not values or values == ['']:
-            #where = "%s is NULL" % column
-            where = "NULL"
+            where = "%s is NULL" %my.id_col
+            #where = "NULL"
         else:
             list = [ Sql.quote(value) for value in values ]
             if table:
@@ -2100,6 +2113,8 @@ class Select(object):
         http://www.xaprb.com/blog/2006/12/07/how-to-select-the-firstleastmax-row-per-group-in-sql/
 
         '''
+        if not group_cols:
+            return
 
         if isinstance(group_cols, basestring):
             group_cols = [group_cols]
@@ -2298,6 +2313,7 @@ class Select(object):
             else:
                 quoted_cols = []
                 for i, column in enumerate(my.columns):
+                    #FIXME: distinct in SQLServer should only appear once before the column names
                     if column == my.distinct_col:
 
                         parts = []
@@ -2693,6 +2709,8 @@ class Insert(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 
@@ -2901,6 +2919,8 @@ class Update(object):
         database_type = my.impl.get_database_type()
         if database_type == 'PostgreSQL':
             my.schema = "public"
+        elif database_type == 'SQLServer':
+            my.schema = "dbo"
         elif database_type == 'Sqlite':
             my.database = None
 

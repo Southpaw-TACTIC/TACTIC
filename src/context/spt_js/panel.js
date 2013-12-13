@@ -329,7 +329,12 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
     var fade = kwargs ? kwargs.fade : false;
     var async = kwargs ? kwargs.async : true;
-    
+
+    var callback = kwargs ? kwargs.callback : null;
+    if (callback) {
+        async = true;
+    }
+
     var element = $(element_id);
     if (! element) {
         log.warning("_refresh_widget " + element_id +  " not found ");
@@ -360,14 +365,18 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var wdg_kwargs = {'args': options, 'values': values};
 
     if (async) {
+
         wdg_kwargs.cbjs_action = function(widget_html) {
             spt.behavior.replace_inner_html(element, widget_html);
+            if (callback) {
+                callback();
+            }
             if (fade) {
                 element.fade('in');
             }
             spt.panel.is_refreshing = false;
         }
-        var widget_html = server.async_get_widget(widget_class, wdg_kwargs);
+        server.async_get_widget(widget_class, wdg_kwargs);
     }
     else {
         var widget_html = server.get_widget(widget_class, wdg_kwargs);
@@ -382,6 +391,8 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         spt.panel.is_refreshing = false;
     }
 }
+
+
 
 
 spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {

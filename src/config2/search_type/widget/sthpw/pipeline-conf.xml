@@ -34,6 +34,11 @@
     
     <element name="description"/>
     <element name="search_type"/>
+    <element name="stype">
+        <display class="tactic.ui.common.SimpleTableElementWdg">
+            <column>search_type</column>
+        </display>
+    </element>
 
     <element name="color">
     </element>
@@ -83,7 +88,7 @@
     <element name="code"/>
     <element name="description" width='300px'/>
     <element name="pipeline_hidden"/>
-    <element name="search_type"/>
+    <element name="stype"/>
     <element name="color"/>
     <element name='num_processes'>
       <display class='tactic.ui.table.ExpressionElementWdg'>
@@ -104,7 +109,7 @@
     <element name="editor"/>
     <element name="description"/>
     <element name="pipeline_hidden"/>
-    <element name="search_type"/>
+    <element name="stype"/>
     <element name="project_code"/>
 </manage>
 
@@ -121,7 +126,7 @@
 <insert>
     <element name="code"/>
     <element name="description"/>
-    <element name="search_type">
+    <element name="stype">
         <display class="tactic.ui.input.SearchTypeInputWdg"/>
     </element>
     <element name="color">
@@ -136,6 +141,12 @@
     <element name="description"/>
     <element name="search_type">
         <display class="tactic.ui.input.SearchTypeInputWdg"/>
+    </element>
+    <element name="stype">
+        <display class="tactic.ui.input.SearchTypeInputWdg"/>
+        <action class="DatabaseAction">
+            <column>search_type</column>
+        </action>
     </element>
 <!--
     <element name="pipeline">

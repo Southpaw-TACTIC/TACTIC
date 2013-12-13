@@ -31,7 +31,7 @@ class SimpleUpgrade(BaseUpgrade):
             folder varchar(1024),
             script text,
             login varchar(256),
-            timestamp timestamp,
+            "timestamp" timestamp,
             s_status varchar(256)
         );
         ''')
