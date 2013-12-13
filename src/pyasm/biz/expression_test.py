@@ -1220,13 +1220,18 @@ class ExpressionTest(unittest.TestCase):
         my.assertEquals("ers", result)
 
         vars = {
-            'VALUE': 'foo foo'
+            'VALUE': 'foo foo',
+            'SOBJECT_CODE': u'\u30EBSOME CHINESE CHAR'
             }
 
         #print "foo" , Search.eval("$VALUE == 'foo foo'", vars=vars)
         #print "fo2", Search.eval("'foo fo2' == $VALUE", vars=vars) 
 
+        # ensure non-ascii characters work with eval and vars
+        sobj_code = Search.eval("$SOBJECT_CODE", vars=vars) 
+        my.assertEquals(sobj_code.endswith('SOME CHINESE CHAR'), True)
 
+        
 
         # test regex comparisons
         vars = {'VALUE': 'foo Test'}
@@ -2008,7 +2013,18 @@ class ExpressionTest(unittest.TestCase):
             pass
         else:
             my.fail("Expression [%s] did not produce a syntax error" % expression)
+        
+        # test @GETALL vs @GET
+        expression = "@GET(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        my.assertEquals(['USA'], result)
 
+        expression = "@GETALL(sthpw/task.unittest/country.code)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, my.country)
+        # there should be 3 tasks pointing to 3 USA
+        my.assertEquals(['USA','USA','USA'], result)
 
         # test comparisons
         expression = "@GET(.age) * 2.0 > 0.0"

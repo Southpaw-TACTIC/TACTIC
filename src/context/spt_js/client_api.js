@@ -1185,12 +1185,18 @@ TacticServerStub = function() {
         kwargs.libraries = libraries;
 
         var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
         this._delegate("get_widget", arguments, kwargs, "string", callback);
         return;
     }
 
     this.async_eval = function(class_name, kwargs) {
         var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
         this._delegate("eval", arguments, kwargs, null, callback);
         return;
     }

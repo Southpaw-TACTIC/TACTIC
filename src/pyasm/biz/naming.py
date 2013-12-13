@@ -294,19 +294,24 @@ class NamingUtil(object):
         project = sobject.get_project()
 
         # parse the pattern string
-        expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
+        expression = re.compile(r'{(.*?)}')
+        #expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
         temp_list = expression.findall(template)
 
+        result = template
+        from pyasm.biz import ExpressionParser
+        xp = ExpressionParser()
         # if nothing is found, then just return parse through an expression
+        '''
         if not temp_list:
             #return template
             # put in the ability to add expressions
-            from pyasm.biz import ExpressionParser
-            xp = ExpressionParser()
             env_sobjects = {
                 'snapshot': snapshot,
                 'file': file
             }
+
+            
             file_name = file.get_value("file_name")
             base_type = file.get_value("base_type")
             if base_type =='directory':
@@ -329,12 +334,42 @@ class NamingUtil(object):
             # don't allow / in filename
             test = test.replace("/", "_")
             if test != result:
-                return result
+               return result
+        '''
+       
+        base = None
 
-        result = template
+        if file:
+            file_name = file.get_value("file_name")
+            base_type = file.get_value("base_type")
+            if base_type =='directory':
+                base = file_name
+                ext = None
+            else:
+                base, file_ext = os.path.splitext(file_name)
+                # passed in ext takes prescedence
+                if not ext:
+                    ext = file_ext
+
+        if not ext:
+            value = None
+        else:
+            # external ext starts with a .
+            ext = ext.lstrip(".")
+            value = ext
+
+        vars = {'EXT': value, 'BASEFILE': base}
+
+
         for part in temp_list:
             index = -1
-            if part.find(".") != -1:
+            if part.startswith(("@","$")):
+                env_sobjects = {
+                    'snapshot': snapshot,
+                    'file': file
+                }
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, vars=vars, single=True)
+            elif part.find(".") != -1:
                 # explict declarations
                 object, attr = part.split(".")
                 
@@ -503,21 +538,18 @@ class NamingUtil(object):
         project = sobject.get_project()
 
         # parse the pattern string
-        expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
-        temp_list = expression.findall(template)
-
-
         expression = re.compile(r'{(.*?)}')
         temp_list = expression.findall(template)
 
 
+        from pyasm.biz import ExpressionParser
+        xp = ExpressionParser()
+        ''' 
         # if nothing is found, then just return parse through an expression
         if not temp_list:
             #return template
 
             # put in the ability to add expressions
-            from pyasm.biz import ExpressionParser
-            xp = ExpressionParser()
             env_sobjects = {
                 'snapshot': snapshot,
                 'file': file
@@ -528,7 +560,7 @@ class NamingUtil(object):
             test = test.replace("}", "")
             if test != result:
                 return result
-
+        '''
 
         # version padding defaults
         version_padding = Config.get_value("checkin", "version_padding")
@@ -542,18 +574,18 @@ class NamingUtil(object):
 
         # use simplified expressions
         result = template
+
         for part in temp_list:
              
             index = -1
 
-
-            if part.startswith("@"):
+            if part.startswith(("@","$")):
                 env_sobjects = {
                     'snapshot': snapshot,
                     'file': file
                 }
-     
-                value = Search.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+            
             elif part.find(".") != -1:
                 # explict declarasions
                 object, attr = part.split(".")
@@ -721,19 +753,21 @@ class NamingUtil(object):
 
 
     def eval_template(template, sobject=None, parent=None, snapshot=None):
-        ''' generic method to values an sobject template expression'''
+        ''' generic method to values an sobject template expression. '''
+        #NOTE: no file kwarg
         # parse the pattern string
-        expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
+        #expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
+        expression = re.compile(r'{(.*?)}')
         temp_list = expression.findall(template)
 
         # if nothing is found, then just return parse through an expression
+        xp = ExpressionParser()
         if not temp_list:
             #return template
             # put in the ability to add expressions
             env_sobjects = {
                 'snapshot': snapshot
             }
-            xp = ExpressionParser()
             result = xp.eval(template, sobject, mode='string', env_sobjects=env_sobjects)
           
             test = template
@@ -757,12 +791,18 @@ class NamingUtil(object):
 
         result = template
         for part in temp_list:
+            index = -1
 
-            if part.find(".") != -1:
+            if part.startswith(("@","$")):
+                env_sobjects = {
+                    'snapshot': snapshot,
+                }
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, vars=vars, single=True)
+            
+            elif part.find(".") != -1:
                 # explict declarasions
                 object, attr = part.split(".")
 
-                index = -1
                 if attr.endswith(']'):
                     # ugly, but it works
                     attr, index = attr.split("[")

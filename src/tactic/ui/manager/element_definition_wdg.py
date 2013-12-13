@@ -716,11 +716,13 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
             # this is required if one is changing the View mode definition post creation
             # while making its editability info intact
-            # add a hidden Enable edit here when not in insert mode
+            # add a hidden View Mode Enable edit here when not in insert mode
             editable_wdg = CheckboxWdg("attr|editable")
             editable_wdg.add_style('display: none')
             if editable:
                 editable_wdg.set_checked()
+                # set a original state to remember it is checked initially
+                editable_wdg.set_attr('orig', 'true')
             td.add(editable_wdg)
 
 
@@ -753,8 +755,8 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 display_class = my.kwargs.get('display_handler')
 
             # add the widget information
-            class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', '-- Class Path --']
-            class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', '__class__']
+            class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', 'Python', '-- Class Path --']
+            class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', 'python', '__class__']
             default_class='format'
             widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name)
             attr_wdg.add(widget_class_wdg)
@@ -1843,15 +1845,19 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             var edit = ui_top.getElement('input[name=attr|editable]');
             // Manage Side Bar doesn't run the following
             if (edit) {
+                var edit_orig_state = edit.getAttribute('orig');
                 var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
                 // dynamically toggle edit widget ui based on chosen widget key
-                if (['hidden_row','gantt','button','custom_layout','expression',''].contains(value))           
+                if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
                 {
                     edit.checked = false;
                     if (value != 'expression')
                         edit.setAttribute('disabled', 'disabled');
-                    else
+                    else {
                         edit.removeAttribute('disabled');
+                        if (edit_orig_state == 'true')
+                            edit.checked = true;
+                    }
                     spt.hide(form_top);
                 }
                 else {
@@ -2528,6 +2534,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 if value:
                     edit_wdg.set_value(value)
 
+                labels = option.get('labels')
+                if labels:
+                    edit_wdg.set_option('labels', labels)
+
             elif widget_type == 'TextAreaWdg':
                 edit_wdg = TextAreaWdg(name)
                 if value:
@@ -2558,7 +2568,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 if value:
                     cal_wdg.set_value(value)
                 edit_wdg = DivWdg(cal_wdg)
-                edit_wdg.add(HtmlElement.br())
+                edit_wdg.add(HtmlElement.br(clear="all"))
             elif not widget_type:
                 edit_wdg = None
 

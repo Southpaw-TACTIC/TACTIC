@@ -112,18 +112,18 @@ class SObjectDetailWdg(BaseRefreshWdg):
         thumb_table.add_row()
 
         thumb = ThumbWdg()
-
         # use a larger version for clearer display
         thumb.set_icon_type('web')
+
         # prefer to see the original image, then web
-        thumb.set_option('image_link_order', 'main|web|.swf')
+        thumb.set_option('image_link_order', 'main|web|icon')
         thumb.set_option("detail", "false")
         thumb.set_option("icon_size", "100%")
 
         td = thumb_table.add_cell(thumb)
         td.add_style("vertical-align: top")
-        td.add_style("width: 200px")
-        td.add_style("padding: 20px")
+        td.add_style("width: 240px")
+        td.add_style("padding: 15px")
 
         if my.parent:
             thumb.set_sobject(my.parent)
@@ -143,11 +143,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             td = table.add_cell()
             td.add(sobject_info_wdg)
             td.add_style("vertical-align: top")
-            #td.add_color("background", "background", -10)
             td.add_style("overflow: hidden")
-            #td.add_style("border-style: solid")
-            #td.add_style("border-width: 1px 1px 1px 0px")
-            #td.add_color("border-color", "border")
 
 
         # right
@@ -405,56 +401,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div.add_style("padding-top: 5px")
 
 
-        """
-        button_div.add_class("spt_left")
-        div.add(button_div)
-        button = IconButtonWdg(title="Show More Details", icon=IconWdg.RIGHT)
-        button_div.add(button)
-        button_div.add_style("position: absolute")
-        button_div.add_style("margin-left: -30px")
-        button_div.add_style("margin-top: -2px")
-        button_div.add_style("display: none")
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_detail_top");
-        var detail = top.getElement(".spt_sobject_detail");
-        spt.toggle_show_hide(detail);
-        var left = top.getElement(".spt_left");
-        spt.hide(left);
-        var right = top.getElement(".spt_right");
-        spt.show(right);
-        '''
-        } )
-
-
-        button_div = DivWdg()
-        button_div.add_class("spt_right")
-        div.add(button_div)
-        button = IconButtonWdg(title="Show More Details", icon=IconWdg.LEFT)
-        button_div.add(button)
-        button_div.add_style("position: absolute")
-        button_div.add_style("margin-left: -30px")
-        button_div.add_style("margin-top: -2px")
-        #button_div.add_style("display: none")
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_detail_top");
-        var detail = top.getElement(".spt_sobject_detail");
-        spt.toggle_show_hide(detail);
-        var left = top.getElement(".spt_left");
-        spt.show(left);
-        var right = top.getElement(".spt_right");
-        spt.hide(right);
-        '''
-        } )
-        """
-
-
-
         info_div = DivWdg()
         div.add( info_div )
         #info_div.add_style("display: none")
@@ -505,6 +451,27 @@ class SObjectDetailWdg(BaseRefreshWdg):
         from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
         edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
         edit_div.add(edit)
+
+
+
+
+        # TEST extra data from a related sobject
+        """
+        related_search_type = "jobs/photo"
+        element_names = ['photographer']
+
+        related = Search.eval("@SOBJECT(%s)" % related_search_type, my.sobject, single=True)
+
+        if related:
+            related_key = related.get_search_key()
+
+            from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
+            edit = EditLayoutWdg(search_type=search_type, mode='view', view="detail", search_key=related_key, width=400, title=' ', element_names=element_names)
+            edit_div.add(edit)
+        """
+
+ 
+
 
         return div
 

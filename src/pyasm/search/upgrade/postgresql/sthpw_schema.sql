@@ -310,7 +310,7 @@ CREATE TABLE snapshot (
 
 CREATE TABLE file (
     id serial PRIMARY KEY,
-    file_name character varying(512) NOT NULL,
+    file_name character varying(512),
     search_type character varying(100) NOT NULL,
     search_id integer NOT NULL,
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,

@@ -113,6 +113,12 @@ class BaseTableElementWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
+    def can_async_load(cls):
+        return True
+    can_async_load = classmethod(can_async_load)
+
+
+
     # This should be a widget that is very high up in the hierarchy
     # where global behaviors can be put in
     def set_layout_wdg(my, widget):
@@ -279,7 +285,7 @@ class BaseTableElementWdg(HtmlElement):
         my.value = value
 
 
-    def get_value(my):
+    def get_value(my, name=None):
         '''convenience function for getting the value of the current sobject'''
 
         if my.value:
@@ -288,8 +294,10 @@ class BaseTableElementWdg(HtmlElement):
         sobject = my.get_current_sobject()
         if not sobject:
             return ''
-
-        value = sobject.get_value(my.name, no_exception=True)
+        
+        if not name:
+            name = my.name
+        value = sobject.get_value(name, no_exception=True)
         return value
     
         '''
@@ -2079,7 +2087,10 @@ class ExpandableTextWdg(BaseTableElementWdg):
     def init(my):
         my.max_length_txt = None
         my.id = None
-        
+
+    def is_editable(my):
+        return True
+ 
         
     def get_prefs(my):
         search_type = None

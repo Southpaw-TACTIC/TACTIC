@@ -49,6 +49,7 @@ class TransactionTest(unittest.TestCase):
             my._test_undo()
             my._test_file_undo()
             my._test_debug_log()
+        except:
             
             Project.set_project('unittest')
             my.test_env.delete()

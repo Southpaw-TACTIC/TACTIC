@@ -16,6 +16,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.web import DivWdg, WebContainer, Table, WebState, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey
+from pyasm.biz import Snapshot
 from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ThumbWdg
@@ -29,9 +30,18 @@ class FileDetailWdg(BaseRefreshWdg):
     def get_display(my):
 
         my.search_key = my.kwargs.get("search_key")
-        my.sobject = Search.get_by_search_key(my.search_key)
-        snapshot = my.sobject.get_parent()
-        parent = snapshot.get_parent()
+        sobject = Search.get_by_search_key(my.search_key)
+
+        if sobject.get_base_search_type() == "sthpw/snapshot":
+            snapshot = sobject
+        elif sobject.get_base_search_type() == "sthpw/file":
+            # if it is a file object
+            snapshot = sobject.get_parent()
+        else:
+            snapshots = Snapshot.get_by_sobject(sobject)
+            snapshot = snapshots[0]
+
+        #parent = snapshot.get_parent()
 
         top = my.top
 
@@ -41,14 +51,6 @@ class FileDetailWdg(BaseRefreshWdg):
         table.add_row()
         table.add_style("width: 100%")
 
-        #td = table.add_cell()
-        #thumb_div = DivWdg()
-        #td.add(thumb_div)
-        #thumb = ThumbWdg()
-        #thumb_div.add(thumb)
-        #thumb_div.add_class("spt_resizable")
-        #thumb.set_sobject(parent)
-        #thumb.set_icon_size(120)
 
         from tactic.ui.widget import EmbedWdg
         td = table.add_cell()
@@ -58,7 +60,13 @@ class FileDetailWdg(BaseRefreshWdg):
         td.add_style("overflow-x: auto")
 
 
-        src = my.sobject.get_web_path()
+        file_type = "icon"
+        thumb_path = snapshot.get_web_path_by_type(file_type)
+
+        file_type = "main"
+        src = snapshot.get_web_path_by_type(file_type)
+
+
         parts = os.path.splitext(src)
         ext = parts[1]
         ext = ext.lower()
@@ -81,7 +89,7 @@ class FileDetailWdg(BaseRefreshWdg):
             href.add_class("hand")
 
         else:
-            embed_wdg = EmbedWdg(src=src)
+            embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path)
             td.add(embed_wdg)
             embed_wdg.add_style("margin: auto auto")
             embed_wdg.add_class("spt_resizable")
@@ -110,17 +118,29 @@ class FileDetailWdg(BaseRefreshWdg):
 
 
         table.add_row()
-
-
-        from tactic.ui.checkin import SnapshotMetadataWdg
-        metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
         td = table.add_cell()
+
+
+        from tactic.ui.checkin import PathMetadataWdg
+        from tactic.ui.checkin import SnapshotMetadataWdg
+
+
         metadata_div = DivWdg()
         td.add(metadata_div)
         metadata_div.add_style("max-height: 400px")
         metadata_div.add_style("overflow-y: auto")
         metadata_div.add_style("overflow-x: hidden")
-        metadata_div.add(metadata_wdg)
+
+        parser = my.kwargs.get("parser")
+        if parser:
+            file_type = "main"
+            server_src = snapshot.get_lib_path_by_type(file_type)
+
+            metadata_wdg = PathMetadataWdg(path=server_src, parser=parser)
+            metadata_div.add(metadata_wdg)
+        else:
+            metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
+            metadata_div.add(metadata_wdg)
 
 
         top.add("<br/>")

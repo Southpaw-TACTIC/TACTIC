@@ -14,6 +14,7 @@
 
 __all__ = ["ConfigTest"]
 
+import tacticenv
 import unittest
 
 

@@ -31,7 +31,7 @@ class UnittestUpgrade(BaseUpgrade):
 
     def upgrade_v2_5_0_v01_003(my):
         my.run_sql('''
-        ALTER TABLE person add column timestamp timestamp default now();
+        ALTER TABLE person add column "timestamp" timestamp default now();
         ''')
 
     def upgrade_v2_5_0_v01_002(my):

@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ProjectConfigWdg", "UserConfigWdg"]
+__all__ = ["ProjectConfigWdg", "UserConfigWdg", "UserPanelWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey, SearchType
@@ -210,7 +210,7 @@ class UserConfigWdg(ProjectConfigWdg):
         user_panel = DivWdg()
         user_panel.add_style("padding-top: 3px")
         user_panel.add_style("overflow-y: auto")
-        user_panel.add( UserPanel() )
+        user_panel.add( UserPanelWdg() )
         user_panel.add_style("min-height: 100px")
         user_panel.add_style("height: 400px")
         user_panel.add_class("spt_resizable")
@@ -262,6 +262,7 @@ class SearchTypePanel(BaseRefreshWdg):
         show_multi_project = web.get_form_value('show_multi_project')
         project = Project.get()
         search_type_objs = project.get_search_types(include_multi_project=show_multi_project)
+
 
         top = my.top
         top.add_class("spt_panel_stype_list_top")
@@ -443,12 +444,19 @@ class SearchTypePanel(BaseRefreshWdg):
             title = search_type_obj.get_title()
 
             table.add_cell(title)
-            search = Search(search_type)
-            count = search.get_count()
-            if count:
-                table.add_cell("%s item/s" % count)
-            else:
-                table.add_cell("&nbsp;")
+
+            try:
+                search = Search(search_type)
+                count = search.get_count()
+                if count:
+                    table.add_cell("%s item/s" % count)
+                else:
+                    table.add_cell("&nbsp;")
+            except:
+                td = table.add_cell("&lt; No table &gt;")
+                td.add_style("font-style: italic")
+                td.add_style("color: #F00")
+                continue
 
 
 
@@ -785,7 +793,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
 
-class UserPanel(BaseRefreshWdg):
+class UserPanelWdg(BaseRefreshWdg):
 
     def get_help_alias(my):
         return 'project-startup-manage-users'

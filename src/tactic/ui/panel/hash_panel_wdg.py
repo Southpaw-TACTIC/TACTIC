@@ -173,10 +173,39 @@ class HashPanelWdg(BaseRefreshWdg):
                 personal = True
 
 
+
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
             options = config.get_display_options(link)
             if not options:
-                return None
+
+                from pyasm.biz import Schema
+                config_xml = []
+                config_xml.append( '''
+                <config>
+                ''')
+         
+                config_schema = Schema.get_predefined_schema('config')
+                SideBarBookmarkMenuWdg.get_schema_snippet("_config_schema", config_schema, config_xml)
+                schema = Schema.get_admin_schema()
+                SideBarBookmarkMenuWdg.get_schema_snippet("_admin_schema", schema, config_xml)
+
+                config_xml.append( '''
+                </config>
+                ''')
+
+                xml = "".join(config_xml)
+
+                from pyasm.widget import WidgetConfig
+                schema_config = WidgetConfig.get(view="_admin_schema", xml=xml)
+                options = schema_config.get_display_options(link)
+                if not options:
+                    schema_config.set_view("_config_schema")
+                    options = schema_config.get_display_options(link)
+
+                if not options:
+                    return None
+
+
 
 
             class_name = options.get("class_name")
@@ -301,7 +330,6 @@ class HashPanelWdg(BaseRefreshWdg):
             xml.read_string(config)
             node = xml.get_node("element/display")
 
-            options = {}
             options.update(xml.get_node_values_of_children(node))
 
             class_name = xml.get_value("element/display/@class")
@@ -342,7 +370,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
-
+    """
     def get_widget_from_hashXX(cls, hash, return_none=False, force_no_index=False, kwargs={}):
 
         from pyasm.web import DivWdg
@@ -584,6 +612,7 @@ class HashPanelWdg(BaseRefreshWdg):
             widget.set_name(name)
 
             return widget
+    """
 
 
 

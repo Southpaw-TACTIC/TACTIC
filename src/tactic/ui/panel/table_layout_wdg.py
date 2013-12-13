@@ -130,11 +130,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '7'
         },
+        'show_context_menu': {
+            'description': 'Flag to determine whether to show the context menu',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '8'
+        },
         'init_load_num': {
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Optional',
-            'order': '8'
+            'order': '9'
         },
 
 
@@ -582,7 +589,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             for name, edit_wdg in my.edit_wdgs.items():
                 # each BaseInputWdg knows about this FastTableLayoutWdg
                 edit_display = edit_wdg.get_display_wdg()
-                edit_display.set_parent_wdg(my)
+                if edit_display:
+                    edit_display.set_parent_wdg(my)
                 edit_div.add(edit_wdg)
         else:
             my.edit_wdgs = {}
@@ -690,9 +698,19 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # override init_load_num if group column has group_bottom
         if my.has_group_bottom():
             init_load_num = -1
-           
+
+
+        # check the widgets if there are any that can't be async loaded
+        for widget in my.widgets:
+            if not widget.can_async_load():
+                init_load_num = -1
+                break
+
         # minus 1 since row starts at 0
         init_load_num -= 1
+
+
+
 
         chunk_size = 20
 
@@ -762,8 +780,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
-
-        if temp != True: 
+        # refresh columns have init_load_num = -1 and temp = True
+        if init_load_num < 0 or temp != True: 
             my.add_table_bottom(table)
             my.postprocess_groups()
 
@@ -992,7 +1010,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         reverse=False
         if my.group_by_time:
             reverse = True
-        elif my.order_element.endswith(' desc'):
+        elif my.order_element and my.order_element.endswith(' desc'):
             reverse = True
        
         sobjects = Common.sort_dict(my.group_dict, reverse=reverse)
@@ -1499,9 +1517,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
-            header_div.add_style("width: 1000%")
-            #header_div.add_style("whitespace: nowrap")
-            #header_div.add_border()
+
+
+            if my.kwargs.get("wrap_headers") not in ["true", True]:
+                header_div.add_style("width: 1000%")
+                #header_div.add_style("whitespace: nowrap")
 
 
 
@@ -2263,6 +2283,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_load_behaviors(my, table):
 
+        if my.kwargs.get('temp') != True:
+            cbjs_action = '''
+            // set the current table layout on load
+            if (spt.table) {
+                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
+            }
+            '''
+            table.add_behavior({
+                'type': 'load',
+                'cbjs_action': cbjs_action
+                })
+
+
+
         if my.kwargs.get("load_init_js") in [False, 'false']:
             return
 
@@ -2849,11 +2885,11 @@ spt.table.set_connect_key = function(connect_key) {
 spt.table.get_data = function(row) {
     var data = {};
     if (row) {
-        var cells = row.getElements('td.spt_cell_edit'); 
+        var cells = row.getElements('.spt_cell_edit'); 
+        var element_names = spt.table.get_element_names();
         for (var k = 0; k < cells.length; k++) {
             var cell = cells[k];
-           
-            data[cell.getAttribute('spt_element_name')] = cell.getAttribute('spt_input_value');   
+            data[element_names[k]] = cell.getAttribute('spt_input_value');   
         }
     }
     return data   
@@ -2877,7 +2913,8 @@ spt.table.set_data = function(row, data) {
     if (changed) 
         spt.add_class(row, "spt_row_changed");
 }
-    
+
+
 
 // Extra data functions
 
@@ -4104,7 +4141,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var group_elements = spt.table.get_table().getAttribute("spt_group_elements");
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
     //if (group_elements)
     //    element_names.push(group_elements);
         
@@ -4117,7 +4154,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         show_shelf: false,
         element_names: element_names,
         do_search: 'false',
-        group_elements: group_elements
+        group_elements: group_elements,
+        init_load_num : -1
     }
 
     
@@ -4148,7 +4186,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
     spt.behavior.replace_inner_html(data, widget_html);
 
     // FIXME: might be just faster to refresh the whole page
-
     var data_rows = data.getElements(".spt_table_row");
     var data_header_row = data.getElement(".spt_table_header_row");
     var data_group_rows = data.getElements(".spt_group_row");
@@ -4175,7 +4212,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
              tgt_cell.destroy();
          }
     }
-
     // add bottom row
     if (bottom_row && data_bottom_row) {
         rows.push(bottom_row);
@@ -4208,6 +4244,9 @@ spt.table.modify_columns = function(element_names, mode, values) {
     }
 
     for ( var i = 0; i < group_rows.length; i++ ) {
+        var data_group_row = data_group_rows[i];
+        if (!data_group_row) continue;
+
         var cells = data_group_rows[i].getElements('.spt_group_cell');
         for (var j = 0; j < cells.length; j++) {
             if (mode=='refresh') {
@@ -4910,10 +4949,10 @@ spt.table.open_ingest_tool = function(search_type) {
         if my.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table on load
-            
             // just load it once and set the table if loaded already
             if (spt.table) {
-                spt.table.set_table(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(top);
                 return;
             }
 
@@ -4929,6 +4968,7 @@ spt.table.open_ingest_tool = function(search_type) {
             spt.table.shadow_color = bvr.shadow_color;
             %s
             spt.table.set_table(bvr.src_el);
+            
             
             ''' %cbjs_action
 

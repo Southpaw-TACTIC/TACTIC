@@ -40,7 +40,6 @@ spt.onload_startup = function()
     // handle hash changes
     spt.hash.onload_first();
 
-    //spt.hash.set_interval();
 
 }
 
@@ -48,6 +47,7 @@ spt.onload_startup = function()
 spt.hash = {};
 
 spt.hash.hash;
+spt.hash.index_hash = null;
 
 spt.hash.set_hash = function(state, title, url) {
 
@@ -55,6 +55,10 @@ spt.hash.set_hash = function(state, title, url) {
     var project = env.get_project();
 
     var pathname = document.location.pathname;
+    // if this is the root, the set the whole path
+    if (pathname == "/") {
+        pathname = "tactic/" + project;
+    }
     var parts = pathname.split("/");
 
     var base_url = [];
@@ -77,20 +81,41 @@ spt.hash.set_hash = function(state, title, url) {
         url = base_url + "/" + url;
     }
 
-    window.history.pushState(state, title, url);
+    try {
+        window.history.pushState(state, title, url);
+    }
+    catch(e) {
+        console.log("Error with pushing state");
+        console.log(title);
+        console.log(url);
+        console.log(state);
+        console.log(e);
+    }
 }
 
+spt.hash.set_index_hash = function(url) {
+
+    spt.hash.index_hash = url;
+}
+
+
+// for some reason, onpopstate gets called on initial load on Chrome
+spt.hash.ignore = false;
 
 
 spt.hash.onpopstate = function(evt) {
     var state = evt.state;
-    if (!state) {
-        //document.location.refresh();
-        return;
 
-        //var hash = "/index";
-        //var title = "index";
-        //var name = "index";
+    if (spt.hash.ignore) {
+        spt.hash.ignore = false;
+        return;
+    }
+
+
+    if (!state) {
+        var hash = "";
+        var title = "";
+        var name = "";
     }
 
     else {
@@ -104,12 +129,24 @@ spt.hash.onpopstate = function(evt) {
     }
 
 
+    if (hash == "/" || hash == "") {
+        if (spt.hash.index_hash) {
+            hash = spt.hash.index_hash;
+        }
+        else {
+            return;
+        }
+    }
+    if (hash.substr(0,1) != "/") {
+        hash = "/" + hash;
+    }
+
     var class_name = "tactic.ui.panel.HashPanelWdg";
     var tab = spt.tab.set_main_body_tab();
     if (tab) {
         var set_hash = false;
         var kwargs = {
-            hash: "/" + hash,
+            hash: hash,
             use_index: false
         }
         spt.tab.add_new(name, title, class_name, kwargs, {}, set_hash);
@@ -121,8 +158,13 @@ spt.hash.onpopstate = function(evt) {
 }
 
 
+spt.hash.first_load = true;
 
 spt.hash.onload_first = function() {
+
+    if (spt.browser.is_Chrome()) {
+        spt.hash.ignore = true;
+    }
 
     
     var hash = window.location.hash;
@@ -157,6 +199,7 @@ spt.hash.onload_first = function() {
     if (spt.side_bar) {
         spt.side_bar.restore_state();
     }
+
 }
 
 

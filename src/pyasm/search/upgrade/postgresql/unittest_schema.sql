@@ -37,7 +37,7 @@ CREATE TABLE person (
     city_code character varying(256),
     metadata text,
     age integer,
-    timestamp timestamp DEFAULT now(),
+    "timestamp" timestamp DEFAULT now(),
     birth_date timestamp,
     pipeline_code character varying(256),
     CONSTRAINT "person_code_idx" UNIQUE (code)

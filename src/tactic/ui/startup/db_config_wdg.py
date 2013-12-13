@@ -462,11 +462,18 @@ class DbConfigContentWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.startup.DbConfigSaveCbk';
             var server = TacticServerStub.get();
             var kwargs = {checkin_options:bvr.checkin_options};
+            try {
+                var ret_val = server.execute_cmd(class_name, kwargs, values);
+                var info = ret_val.info;
+            }
+            catch(e) {
+                log.critical(spt.exception.handler(e));
+            }
 
-            var ret_val = server.execute_cmd(class_name, kwargs, values);
-            var info = ret_val.info;
+           
             
             // This means TACTIC was restarted
+            
             if (typeof(info) == 'undefined' || bvr.os == 'nt' ) {
                 spt.app_busy.show("Restarting TACTIC ...");
                 var id = setInterval( function() {
@@ -481,10 +488,12 @@ class DbConfigContentWdg(BaseRefreshWdg):
             }
             else if (info.error) {
                 spt.alert(info.error);
+                spt.app_busy.hide();
             }
             else {
                 window.location = '/tactic';
             }
+
             '''
             } )
         return save_button
@@ -714,6 +723,8 @@ class DbConfigSaveCbk(Command):
         web = WebContainer.get_web()
 
         vendor = web.get_form_value("database/vendor")
+        if not vendor:
+            raise TacticException("A vendor needs to be passed in.")
 
         if vendor == 'Sqlite':
             # take the current files and copy them to the database folder
@@ -741,6 +752,7 @@ class DbConfigSaveCbk(Command):
 
 
         else:
+
             defaults = DEFAULTS[vendor]
 
             default_server = defaults['server']
