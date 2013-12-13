@@ -16,7 +16,7 @@ from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
-from pyasm.widget import WidgetConfigView
+from pyasm.widget import WidgetConfigView, WidgetConfig
 from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
 
 
@@ -210,9 +210,35 @@ class EditWdg(BaseRefreshWdg):
         else:
             my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
 
+        # for inline config definitions
+        config_xml = my.kwargs.get("config_xml")
+        if config_xml:
+            #from pyasm.common import Xml
+            #xml = Xml()
+            #xml.read_string(config_xml)
+            #node = xml.get_node("config/%s" % my.view)
+            #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
+            #config = WidgetConfig.get(view=my.view, xml=xml)
+            config = WidgetConfig.get(view="tab", xml=config_xml)
+
+            my.config.get_configs().insert(0, config)
+ 
+
         
         my.skipped_element_names = []
-        my.element_names = my.config.get_element_names()
+
+        # if there is a layout view, then find the element names using that
+        layout_view = my.kwargs.get("layout_view")
+        if layout_view:
+            layout_view = layout_view.replace("/", ".")
+            search = Search("config/widget_config")
+            search.add_filter("view", layout_view)
+            layout_config = search.get_sobject()
+             
+            xml = layout_config.get_xml_value("config")
+            my.element_names = xml.get_values("config//html//element/@name")
+        else:
+            my.element_names = my.config.get_element_names()
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -220,8 +246,14 @@ class EditWdg(BaseRefreshWdg):
         if not ignore:
             ignore = []
 
-        my.element_titles = my.config.get_element_titles()  
-        my.element_descriptions = my.config.get_element_descriptions()  
+        my.element_titles = []
+        my.element_descriptions = []
+        for element_name in my.element_names:
+            my.element_titles.append( my.config.get_element_title(element_name) )
+            my.element_descriptions.append( my.config.get_element_description(element_name) )
+
+        #my.element_titles = my.config.get_element_titles()  
+        #my.element_descriptions = my.config.get_element_descriptions()  
 
 
         # MongoDb
@@ -243,6 +275,7 @@ class EditWdg(BaseRefreshWdg):
         security = Environment.get_security()
         default_access = "edit"
         project_code = Project.get_project_code()
+
 
         for i, element_name in enumerate(my.element_names):
 
@@ -303,8 +336,8 @@ class EditWdg(BaseRefreshWdg):
             title = my.element_titles[i]
             if title:
                 widget.set_title(title)
-            my.widgets.append(widget)
 
+            my.widgets.append(widget)
 
             description = my.element_descriptions[i]
             widget.add_attr("title", description)
@@ -365,7 +398,6 @@ class EditWdg(BaseRefreshWdg):
 
 
         top_div = my.top
-        # TEST
         top_div.add_class("spt_edit_top")
 
         if not my.is_refresh:
@@ -379,6 +411,15 @@ class EditWdg(BaseRefreshWdg):
                 'type': 'load',
                 'cbjs_action': my.get_onload_js()
             } )
+
+
+
+        layout_view = my.kwargs.get("layout_view")
+        if layout_view:
+            layout_wdg = my.get_custom_layout_wdg(layout_view)
+            content_div.add(layout_wdg)
+
+            return content_div
 
 
 
@@ -631,7 +672,65 @@ class EditWdg(BaseRefreshWdg):
         top_div.add(content_div) 
         return top_div
 
-    
+
+    def get_custom_layout_wdg(my, layout_view):
+
+        content_div = DivWdg()
+
+        from tactic.ui.panel import CustomLayoutWdg
+        layout = CustomLayoutWdg(view=layout_view)
+        content_div.add(layout)
+
+        for widget in my.widgets:
+            name = widget.get_name()
+            if my.input_prefix:
+                widget.set_input_prefix(my.input_prefix)
+
+            layout.add_widget(widget, name)
+
+
+
+        search_key = SearchKey.get_by_sobject(my.sobjects[0], use_id=True)
+        search_type = my.sobjects[0].get_base_search_type()
+
+
+        element_names = my.element_names[:]
+        for element_name in my.skipped_element_names:
+            element_names.remove(element_name)
+
+
+        bvr =  {
+            'type': 'click_up',
+            'mode': my.mode,
+            'element_names': element_names,
+            'search_key': search_key,
+            'input_prefix': my.input_prefix,
+            'view': my.view
+        }
+
+        if my.mode == 'insert':
+            bvr['refresh'] = 'true'
+            # for adding parent relationship in EditCmd
+            if my.parent_key:
+                bvr['parent_key'] = my.parent_key
+
+
+        hidden_div = DivWdg()
+        hidden_div.add_style("display: none")
+        content_div.add(hidden_div)
+
+        hidden = TextAreaWdg("__data__")
+        hidden_div.add(hidden)
+        hidden.set_value( jsondumps(bvr) )
+
+        show_action = my.kwargs.get("show_action")
+        if show_action in [True, 'true']:
+            content_div.add( my.get_action_html() )
+
+        return content_div
+
+
+   
     def get_header_context_menu(my):
 
         menu = Menu(width=180)
@@ -1014,13 +1113,15 @@ class EditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         return r'''
 
-spt.Environment.get().add_library("spt_edit");
+//spt.Environment.get().add_library("spt_edit");
 
 spt.edit = {}
 
 
 spt.edit.save_changes = function(content) {
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+
+    console.log(values);
 
     bvr = JSON.parse(values.__data__);
     console.log(bvr);

@@ -280,9 +280,15 @@ class WidgetDbConfig(SObject):
 
 
 
-    def get_display_widget(my, element_name):
+    def get_display_widget(my, element_name, extra_options={}):
         display_handler = my.get_display_handler(element_name)
         display_options = my.get_display_options(element_name)
+
+        if not display_handler:
+            raise Exception("No display handler found for [%s]" % element_name)
+
+        for name, value in display_options.items():
+            display_options[name] = value
 
         try:
             widget = Common.create_from_class_path(display_handler, [], display_options)

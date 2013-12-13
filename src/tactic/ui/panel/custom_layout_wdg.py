@@ -1123,6 +1123,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
 
+        widget = my.get_widget(element_name)
+        if widget:
+            return widget
+
 
         if not element_name:
             import random
@@ -1142,6 +1146,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     return None
 
                 widgets[element_name] = True
+
 
         # provide the ability to have shorthand format 
         # ie: <element display_class="tactic.ui..." />
@@ -1168,10 +1173,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
-
-
-
-
 
 
 
