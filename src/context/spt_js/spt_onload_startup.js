@@ -55,6 +55,10 @@ spt.hash.set_hash = function(state, title, url) {
     var project = env.get_project();
 
     var pathname = document.location.pathname;
+    // if this is the root, the set the whole path
+    if (pathname == "/") {
+        pathname = "tactic/" + project;
+    }
     var parts = pathname.split("/");
 
     var base_url = [];
@@ -77,7 +81,16 @@ spt.hash.set_hash = function(state, title, url) {
         url = base_url + "/" + url;
     }
 
-    window.history.pushState(state, title, url);
+    try {
+        window.history.pushState(state, title, url);
+    }
+    catch(e) {
+        console.log("Error with pushing state");
+        console.log(title);
+        console.log(url);
+        console.log(state);
+        console.log(e);
+    }
 }
 
 spt.hash.set_index_hash = function(url) {
