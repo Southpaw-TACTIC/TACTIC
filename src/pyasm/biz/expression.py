@@ -133,8 +133,10 @@ class ExpressionParser(object):
         keys.reverse()
         #for name, value in my.vars.items():
         for name in keys:
+
             value = my.vars.get(name)
-            new_value = "'%s'" % str(value)
+            #new_value = "'%s'" % str(value)
+            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
             my.expression = my.expression.replace("'$%s'" % name, new_value)
