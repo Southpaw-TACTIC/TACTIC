@@ -58,6 +58,9 @@ class DirListWdg(BaseRefreshWdg):
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
+        elif isinstance(depth, basestring):
+            depth = int(depth)
+
         location = my.kwargs.get("location")
         my.paths = my.kwargs.get("paths")
 
@@ -863,6 +866,7 @@ class DirListWdg(BaseRefreshWdg):
         # add the file name
         filename_div = DivWdg()
         item_div.add(filename_div)
+        filename_div.add_class("spt_file_value")
         filename_div.add(basename)
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
