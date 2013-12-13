@@ -1715,7 +1715,7 @@ class Search(Base):
 
    
     def get_by_search_keys(search_keys, keep_order=False):
-        return SearchKey.get_by_search_keys(search_keys)
+        return SearchKey.get_by_search_keys(search_keys, keep_order=keep_order)
     get_by_search_keys = staticmethod(get_by_search_keys)
 
     def get_compound_filter(text_value, columns):
@@ -6097,11 +6097,15 @@ class SearchKey(object):
 
 
  
-    def get_by_search_keys(cls, search_keys):
+    def get_by_search_keys(cls, search_keys, keep_order=False):
         '''get all the sobjects in a more effective way, assuming same search_type'''
 
         if not search_keys:
             return []
+
+
+        if isinstance(search_keys, basestring):
+            search_keys = search_keys.split(",")
 
         search_type_list = []
         search_code_list = []
@@ -6114,25 +6118,60 @@ class SearchKey(object):
 
             search_type_list.append(SearchKey.extract_search_type(sk))
             code = SearchKey.extract_code(sk)
-            if code:    
+            if code:
                 search_code_list.append(code)
             else:
                 id = SearchKey.extract_id(sk)
-                search_id_list.append(int(id))
-        
+                # convert to a string for ocmparison
+                id = str(id)
+                search_id_list.append(id)
+       
         single_search_type = False
         if len(Common.get_unique_list(search_type_list)) == 1:
             single_search_type=True
         if single_search_type:
             if search_code_list and len(search_keys)==len(search_code_list):
-                return Search.get_by_code(search_type_list[0], search_code_list)
+                sobjs = Search.get_by_code(search_type_list[0], search_code_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_code = sobj.get_code()
+                        sort_dict[sobj] = search_code_list.index(sobj_code)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             elif search_id_list and len(search_keys)==len(search_id_list):
-                return Search.get_by_id(search_type_list[0], search_id_list)
+                sobjs = Search.get_by_id(search_type_list[0], search_id_list)
+                if keep_order:
+                    sort_dict = {}
+                    for sobj in sobjs:
+                        sobj_id = str(sobj.get_id())
+                        sort_dict[sobj] = search_id_list.index(sobj_id)
+                    sorted_sobjs = sorted(sobjs, key=sort_dict.__getitem__)
+                    return sorted_sobjs
+                else:
+                    return sobjs
             else:
                 raise SetupException('A mixed code and id search keys detected.')
         else:
-            raise SetupException('Single search type expected.')
-
+            # multiple sTypes, rearrange them first in order
+            search_key_dict = {}
+            for sk in search_keys:
+                search_type = SearchKey.extract_search_type(sk)
+                search_key_list = search_key_dict.get(search_type)
+                if search_key_list == None:
+                    search_key_dict[search_type] = [sk]
+                else:
+                    search_key_list.append(sk)
+                
+            results = []
+            for key, sk_list in search_key_dict.items():
+                result = SearchKey.get_by_search_keys(sk_list, keep_order=keep_order)
+                results.extend(result)
+            return results
+                
+            #raise SetupException('Single search type expected.')
     get_by_search_keys = classmethod(get_by_search_keys)
 
 
