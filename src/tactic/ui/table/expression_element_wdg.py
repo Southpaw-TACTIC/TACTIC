@@ -467,6 +467,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
             format_val = FormatValue()
             format_value = format_val.get_format_value( result, format_str )
             result = format_value
+
+        name = my.get_name()
+        my.sobject.set_value(name, result)
         return result
 
 

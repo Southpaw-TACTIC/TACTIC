@@ -1220,13 +1220,18 @@ class ExpressionTest(unittest.TestCase):
         my.assertEquals("ers", result)
 
         vars = {
-            'VALUE': 'foo foo'
+            'VALUE': 'foo foo',
+            'SOBJECT_CODE': u'\u30EBSOME CHINESE CHAR'
             }
 
         #print "foo" , Search.eval("$VALUE == 'foo foo'", vars=vars)
         #print "fo2", Search.eval("'foo fo2' == $VALUE", vars=vars) 
 
+        # ensure non-ascii characters work with eval and vars
+        sobj_code = Search.eval("$SOBJECT_CODE", vars=vars) 
+        my.assertEquals(sobj_code.endswith('SOME CHINESE CHAR'), True)
 
+        
 
         # test regex comparisons
         vars = {'VALUE': 'foo Test'}
