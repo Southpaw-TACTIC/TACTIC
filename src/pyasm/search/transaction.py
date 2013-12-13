@@ -630,6 +630,10 @@ class FileUndo:
             dst_dir = os.path.dirname(dst)
             os.chdir(dst_dir)
             # while it seems like you can join any 2 paths, it is based on working directory
+            if isinstance(prev, unicode):
+                prev = prev.encode('utf-8')
+            if isinstance(dst_dir, unicode):
+                dst_dir = dst_dir.encode('utf-8')
             prev = os.path.join(dst_dir, os.path.abspath(prev))
             extra['prev'] = prev
             os.unlink(dst)
@@ -724,8 +728,9 @@ class FileUndo:
         Xml.set_attribute(file_node,"type",type)
         Xml.set_attribute(file_node,"src",src)
         Xml.set_attribute(file_node,"dst",dst)
-        
         for name,value in extra.items():
+            if isinstance(value, str):
+                value = unicode(value, errors='ignore').encode('utf-8')
             Xml.set_attribute(file_node,name,value)
 
     _add_to_transaction_log = staticmethod(_add_to_transaction_log)
