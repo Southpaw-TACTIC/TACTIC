@@ -2105,7 +2105,7 @@ class TacticServerStub(object):
         return my.server.add_dependency_by_code(my.ticket, to_snapshot_code, from_snapshot_code, type, tag)
 
 
-    def add_file(my, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming=''):
+    def add_file(my, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming='', checkin_type='strict'):
         '''API Function: add_file(snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False)
         Add a file to an already existing snapshot.  This method is used in
         piecewise checkins.  A blank snapshot can be created using
@@ -2144,6 +2144,7 @@ class TacticServerStub(object):
             snapshot.
         dir_naming - explicitly set a dir_naming expression to use
         file_naming - explicitly set a file_naming expression to use
+        checkin_type - auto or strict which controls whether to auto create versionless and adopt some default dir/file naming
 
         @return:
         dictionary - the resulting snapshot
@@ -2229,7 +2230,7 @@ class TacticServerStub(object):
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
 
-        return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming)
+        return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming, checkin_type)
 
 
     def remove_file(my, snapshot_code, file_type):
