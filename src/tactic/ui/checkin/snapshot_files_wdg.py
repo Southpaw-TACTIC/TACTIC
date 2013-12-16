@@ -995,6 +995,124 @@ class SnapshotMetadataWdg(BaseRefreshWdg):
 
 
 
+__all__.append("PathMetadataWdg")
+class PathMetadataWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        search_key = my.kwargs.get("search_key")
+        path = my.kwargs.get("path")
+        parser_str = my.kwargs.get("parser")
+
+        from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser
+
+        if parser_str == "EXIF":
+            parser = ExifMetadataParser(path=path)
+        elif parser_str == "ImageMagick":
+            parser = ImageMagickMetadataParser(path=path)
+        elif parser_str == "PIL":
+            parser = PILMetadataParser(path=path)
+        else:
+            parser = None
+
+        if parser:
+            metadata = parser.get_metadata()
+        else:
+            metadata = {}
+
+
+        top = my.top
+        top.add_color("background", "background")
+
+
+        table = Table()
+        table.set_max_width()
+        top.add(table)
+        table.set_unique_id()
+        table.add_border()
+
+        table.add_smart_styles("spt_cell", {
+            'padding': '3px'
+        } )
+
+
+
+        tr = table.add_row()
+        tr.add_gradient("background", "background3")
+        th = table.add_header("Property")
+        th.add_style("min-width: 200px")
+        th.add_style("padding: 5px")
+        th = table.add_header("Value")
+        th.add_style("min-width: 400px")
+        th.add_style("padding: 5px")
+
+        keys = metadata.get("__keys__")
+        if not keys:
+            keys = metadata.keys()
+
+        empty = False
+        if not keys:
+            empty = True
+            keys = ['','','','','','','']
+            table.add_smart_styles("spt_cell", {
+                'height': '20px'
+            } )
+
+
+        for i, key in enumerate(keys):
+            value = metadata.get(key)
+
+            title = Common.get_display_title(key)
+
+            tr = table.add_row()
+
+            if i % 2:
+                tr.add_color("background", "background")
+                tr.add_color("color", "color")
+            else:
+                tr.add_color("background", "background", -8)
+                tr.add_color("color", "color")
+
+            td = table.add_cell()
+            td.add_class("spt_cell")
+            td.add(title)
+
+            td = table.add_cell()
+            td.add_class("spt_cell")
+
+            if len(str(value)) > 500:
+                inside = DivWdg()
+                td.add(inside)
+                value = value[:500]
+                inside.add(value)
+                inside.add_style("max-width: 600px")
+            else:
+                td.add(value)
+
+
+        if empty:
+            div = DivWdg()
+            top.add(div)
+            div.add_style("height: 30px")
+            div.add_style("width: 150px")
+            div.add_style("margin-top: -110px")
+            div.center()
+            div.add("<b>No Metadata</b>")
+            div.add_border()
+            div.add_color("background", "background3")
+            div.add_color("color", "color3")
+            div.add_style("padding: 20px")
+            div.add_style("text-align: center")
+
+            top.add_style("min-height: 200px")
+
+        return top
+
+
+
+
+
+
 
 
 

@@ -857,17 +857,17 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             else:
                 lower_value = value.lower()
             
-            if value == "NOW":
-                value = "getdate()"
-                #return {"value": value, "quoted": quoted}
-            # FIXME: this is implemented this way because set_value 
-            # can be called twice.  This method should called from commit
-            # and not set_value
-            elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
-                if value == 'NULL':
-                    pass
-                else:
-                    value = "convert(datetime2, '%s', 0)" % value
+                if value == "NOW":
+                    value = "getdate()"
+                    #return {"value": value, "quoted": quoted}
+                # FIXME: this is implemented this way because set_value 
+                # can be called twice.  This method should called from commit
+                # and not set_value
+                elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
+                    if value == 'NULL':
+                        pass
+                    else:
+                        value = "convert(datetime2, '%s', 0)" % value
                 
             return {"value": value, "quoted": quoted}
 
@@ -2559,6 +2559,8 @@ class SqliteImpl(PostgresImpl):
             if value  == "NOW":
                 quoted = False
                 value = my.get_timestamp_now()
+            elif isinstance(value, datetime.datetime):
+                pass
             elif value.startswith(("CURRENT_TIMESTAMP","DATETIME(")):
                 quoted = False
 

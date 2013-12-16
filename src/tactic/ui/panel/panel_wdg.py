@@ -1660,7 +1660,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         return xml
 
 
-    def get_schema_snippet(my, view, schema, config_xml):
+    def get_schema_snippet(cls, view, schema, config_xml):
         schema_xml = schema.get_xml_value("schema")
         search_types = schema_xml.get_values("schema/search_type/@name")
         if not search_types:
@@ -1695,6 +1695,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         config_xml.append( '''
         </%s>
         ''' % view)
+    get_schema_snippet = classmethod(get_schema_snippet)
 
 
 
@@ -2668,6 +2669,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': 7,
             'category': 'Display'
         },
+        "show_context_menu": {
+            'description': "determines whether or not to show the context menu",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 8,
+            'category': 'Display'
+        },
 
 
 
@@ -2943,7 +2951,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         if can_search:
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit, user_override=True )
+                search_wdg = SearchWdg(search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
             except SearchException, e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -3009,6 +3017,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_search_limit = my.kwargs.get("show_search_limit")
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
         show_column_manager = my.kwargs.get("show_column_manager")
+        show_context_menu = my.kwargs.get("show_context_menu")
         show_insert = my.kwargs.get("show_insert")
         insert_view = my.kwargs.get("insert_view")
         edit_view = my.kwargs.get("edit_view")
@@ -3050,6 +3059,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_search_limit": show_search_limit,
             "show_layout_switcher": show_layout_switcher,
             "show_column_manager": show_column_manager,
+            "show_context_menu": show_context_menu,
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,

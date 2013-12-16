@@ -29,6 +29,24 @@ import os
 
 class DirListWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+    'base_dir': {
+        'description': 'Base Directory of the file list',
+        'type': 'TextWdg',
+        'order': 1,
+        'category': 'Options'
+    },
+ 
+
+    'location': {
+        'description': 'Determines whether files are relative to the client or the server',
+        'type': 'SelectWdg',
+        'values': 'server|client',
+        'order': 2,
+        'category': 'Options'
+    },
+    }
+ 
 
     def add_style(my, name, value=None):
         my.top.add_style(name, value)
@@ -56,7 +74,7 @@ class DirListWdg(BaseRefreshWdg):
         elif my.paths is None and location == 'server':
             my.directory = Directory(base_dir=base_dir, depth=depth)
             my.paths = my.directory.get_all_paths()
-            my.paths = []
+            #my.paths = []
         elif location == 'scm':
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
         else:
@@ -86,6 +104,14 @@ class DirListWdg(BaseRefreshWdg):
 
 
         my.base_dir = my.kwargs.get("base_dir")
+
+        # root directory is starts at the first base_dir
+        my.root_dir = my.kwargs.get("root_dir")
+        if not my.root_dir:
+            my.root_dir = my.base_dir
+
+
+
         my.paths = my.kwargs.get("paths")
         if not my.paths:
             my.paths = []
@@ -328,9 +354,6 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-
-
-
         base_dir = my.kwargs.get("base_dir")
 
         location = my.kwargs.get("location")
@@ -450,8 +473,6 @@ class DirListWdg(BaseRefreshWdg):
             dynamic = False
 
 
-        #my.handle_paths(my.paths, base_dir, top, depth=-1, all_open=all_open, open_depth=open_depth)
-
 
         handler_class = Common.get_full_class_name(my)
 
@@ -475,30 +496,37 @@ class DirListWdg(BaseRefreshWdg):
             search_keys = []
         top.add_attr("spt_search_keys", "|".join(search_keys) )
 
+
         handler_kwargs = {
-            'base_dir':my.base_dir,
+            'base_dir': my.base_dir,
+            'root_dir': my.root_dir,
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
 
 
+
         if dynamic:
             dir_list = DirListPathHandler(
+                location=location,
                 level=0,
                 base_dir=my.base_dir,
+                root_dir=my.root_dir,
                 handler_class=handler_class,
                 handler_kwargs=handler_kwargs,
                 depth=0,
                 all_open=False,
                 # This is not really supported on dynamic mode yet
                 #open_depth=open_depth,
-                dynamic=True
+                dynamic=True,
             )
             top.add(dir_list)
         else:
             dir_list = DirListPathHandler(
+                location=location,
                 level=0,
                 base_dir=my.base_dir,
+                root_dir=my.root_dir,
                 #handler_class=handler_class,
                 #handler_kwargs=handler_kwargs,
                 handler=my,
@@ -506,7 +534,7 @@ class DirListWdg(BaseRefreshWdg):
                 all_open=all_open,
                 open_depth=open_depth,
                 paths=my.paths,
-                dynamic=False
+                dynamic=False,
             )
             top.add(dir_list)
 
@@ -540,19 +568,18 @@ class DirListWdg(BaseRefreshWdg):
         path = "%s/%s" % (dir, item)
 
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg.get_triangle_wdg()
+        swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
         #swap = SwapDisplayWdg(title=path, icon='FILM')
         #top.add(swap)
         #swap.set_behavior_top(top)
         div.add(swap)
 
-
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
 
-        if is_open:
-            swap.set_off()
+        #if is_open:
+        #    swap.set_off()
 
         reldir = dir.replace(my.base_dir, "")
         reldir = reldir.lstrip("/")
@@ -564,6 +591,7 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_reldir", reldir)
 
         div.add_attr("spt_dir", path)
+        div.add_attr("spt_root_dir", my.root_dir)
 
         dynamic = my.kwargs.get("dynamic")
         if dynamic in ["true", True]:
@@ -601,6 +629,7 @@ class DirListWdg(BaseRefreshWdg):
                 sibling.setStyle("display", "");
 
                 var base_dir = item_top.getAttribute("spt_dir");
+                var root_dir = item_top.getAttribute("spt_root_dir");
 
                 // get the search_keys, if any
                 var top = bvr.src_el.getParent(".spt_dir_list_top");
@@ -623,13 +652,14 @@ class DirListWdg(BaseRefreshWdg):
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
                     handler_kwargs: {
+                        root_dir: root_dir,
                         base_dir: base_dir,
-                        search_keys: search_keys
+                        search_keys: search_keys,
                     }
 
                 }
 
-                spt.panel.load(sibling, class_name, kwargs);
+                spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
         else {
@@ -1066,12 +1096,26 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
+
+        test = my.kwargs.get("test")
+        print "test: ", test
+
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
 
         inner = DivWdg()
         top.add(inner)
+
+
+        all_open = my.kwargs.get("all_open")
+        if all_open in ["True", 'true']:
+            all_open = True
+        elif all_open in ["False", 'false']:
+            all_open = False
+        elif all_open == None:
+            all_open = False
+
 
         my.level = my.kwargs.get("level")
         if not my.level:
@@ -1091,7 +1135,8 @@ class DirListPathHandler(BaseRefreshWdg):
             if isinstance(handler_kwargs, basestring):
                 handler_kwargs = eval(handler_kwargs)
 
-            handler_kwargs['all_open'] = my.kwargs.get("all_open")
+            handler_kwargs['location'] = my.kwargs.get("location")
+            handler_kwargs['all_open'] = all_open
             handler_kwargs['depth'] = my.kwargs.get("depth")
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
             handler_kwargs['search_type'] = my.kwargs.get("search_type")
@@ -1128,10 +1173,6 @@ class DirListPathHandler(BaseRefreshWdg):
         depth = my.kwargs.get("depth")
         if depth == None:
             depth = -1
-
-        all_open = my.kwargs.get("all_open")
-        if all_open == None:
-            all_open = False
 
         open_depth = my.kwargs.get("open_depth")
         if open_depth == None:
@@ -1264,17 +1305,18 @@ class DirListPathHandler(BaseRefreshWdg):
                 level_div = level_divs[-1]
 
                 dir_item_div = my.handler._get_dir_item(dirname, basename, is_open=xis_open)
-                dir_item_div.add_style("padding-left: %spx" % ((level)*11))
-                level_div.add( dir_item_div )
+                if dir_item_div:
+                    dir_item_div.add_style("padding-left: %spx" % ((level)*11))
+                    level_div.add( dir_item_div )
 
-                # create a new items div
-                items_div = DivWdg()
-                items_div.add_class("spt_dir_content")
-                level_div.add( items_div )
-                level_divs.append(items_div)
+                    # create a new items div
+                    items_div = DivWdg()
+                    items_div.add_class("spt_dir_content")
+                    level_div.add( items_div )
+                    level_divs.append(items_div)
 
-                if not xis_open:
-                    items_div.add_style("display: none")
+                    if not xis_open:
+                        items_div.add_style("display: none")
 
                 current_dir = path
 
