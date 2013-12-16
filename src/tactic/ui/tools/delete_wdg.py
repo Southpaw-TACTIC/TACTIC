@@ -992,7 +992,8 @@ class DeleteProjectCmd(DeleteCmd):
         sql = DbContainer.get(db_resource)
         sql.close()
 
-       
+      
+        DbContainer.release_thread_sql()
         result = impl.drop_database(db_resource)
 
         # this is just extra check
