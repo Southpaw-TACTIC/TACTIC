@@ -148,6 +148,14 @@ class TaskElementWdg(BaseTableElementWdg):
         'category': 'Display'
     },
 
+     'assigned_values_expr': {
+        'description': '''A an expression controlling what login values to show, e.g. @SOBJECT(sthpw/login['department','design'])''',
+        'type': 'TextWdg',
+        'order': '12',
+        'category': 'Display'
+    },
+
+
     'edit_assigned': {
         'description': 'Flag for editing the assigned user of the tasks',
         'type': 'SelectWdg',
@@ -346,29 +354,34 @@ class TaskElementWdg(BaseTableElementWdg):
         my.assigned_label = None
         # e.g. first_name|last_name
         my.assigned_label_attr = my.kwargs.get('assigned_label_attr')
+        my.assigned_values_expr = my.kwargs.get('assigned_values_expr')
+        if not my.assigned_values_expr:
+            my.assigned_values_expr = "@SOBJECT(sthpw/login)"
+
         if assigned == 'true':
             if my.assigned_label_attr:
                 # maybe we can apply this filter to filter out disabled users ['license_type','is','NULL']['license_type','!=','disabled']['or']
-                users = Search.eval("@SOBJECT(sthpw/login)")
+                users = Search.eval(my.assigned_values_expr)
                 user_names = [x.get_value('login') for x in users]
                 my.assigned_label_attr = my.assigned_label_attr.split('|')
                 my.assigned_label = [x.strip() for x in my.assigned_label_attr if x]
-
                 if my.assigned_label:
                     for user in users:
                         user_labels = [user.get_value(x) for x in my.assigned_label]
                         label = ' '.join(user_labels)
                         my.assignee_labels.append(label)
                         my.assignee_dict[user.get_value('login')] = label
+                        
                 
             else:
-                user_names = Search.eval("@GET(sthpw/login.login)")
+                users = Search.eval(my.assigned_values_expr)
+                user_names = SObject.get_values(users, 'login')
                 my.assignee_labels = user_names
 
             my.assignee = user_names
         else:
             if my.assigned_label_attr:
-                users = Search.eval("@SOBJECT(sthpw/login)")
+                users = Search.eval(my.assigned_values_expr)
                 my.assigned_label_attr = my.assigned_label_attr.split('|')
                 my.assigned_label = [x.strip() for x in my.assigned_label_attr if x]
 
