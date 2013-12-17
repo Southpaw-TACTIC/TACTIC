@@ -2163,7 +2163,15 @@ spt.dom.load_js = function(js_files, cbk) {
         for (var i = 0; i < js_files.length; i++) {
             var js_file = js_files[i];
             // use full path if it's starting with /
-            var url = js_file.test(/^\//) ? js_file : "/context/spt_js/" + js_file;
+            var url;
+            if (js_file.substr(0,4) == "http") {
+                url = js_file;
+            } else if (js_file.substr(0,1) == "/") {
+                url = js_file;
+            } else {
+                url = js_file.test(/^\//) ? js_file : "/context/spt_js/" + js_file;
+            }
+
             if (spt.dom.loaded_js[url] == true) {
                 cbk();
                 continue;
