@@ -208,21 +208,13 @@ class EditWdg(BaseRefreshWdg):
             # is set
             my.config = my.get_config()
         else:
-            my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+            my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view, use_cache=False)
 
         # for inline config definitions
         config_xml = my.kwargs.get("config_xml")
         if config_xml:
-            #from pyasm.common import Xml
-            #xml = Xml()
-            #xml.read_string(config_xml)
-            #node = xml.get_node("config/%s" % my.view)
-            #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
-            #config = WidgetConfig.get(view=my.view, xml=xml)
             config = WidgetConfig.get(view="tab", xml=config_xml)
-
-            my.config.get_configs().insert(0, config)
- 
+            my.config.insert_config(0, config)
 
         
         my.skipped_element_names = []
@@ -1113,24 +1105,25 @@ class EditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         return r'''
 
-//spt.Environment.get().add_library("spt_edit");
+spt.Environment.get().add_library("spt_edit");
 
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content) {
+spt.edit.save_changes = function(content, search_key) {
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
-    console.log(values);
-
     bvr = JSON.parse(values.__data__);
-    console.log(bvr);
 
     var class_name = "tactic.ui.panel.EditCmd";
     var kwargs = {};
 
     kwargs['element_names'] = bvr.element_names;
-    kwargs['search_key'] = bvr.search_key;
+
+    if (!search_key) {
+        search_key = bvr.search_key;
+    }
+    kwargs['search_key'] = search_key;
     if (bvr.parent_key)
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;

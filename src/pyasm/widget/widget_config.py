@@ -485,6 +485,8 @@ class WidgetConfigView(Base):
     def add_config(my, config):
         my.configs.append(config)
 
+    def insert_config(my, index, config):
+        my.configs.insert(index, config)
 
     def get_views(my, layout="TableWdg"):
 
