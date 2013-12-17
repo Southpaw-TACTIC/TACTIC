@@ -28,7 +28,7 @@ class Directory(object):
 
         my.depth = my.kwargs.get("depth")
         if isinstance(my.depth, basestring):
-            my.depth = int(depth)
+            my.depth = int(my.depth)
         if not my.depth:
             my.depth = 0
 
@@ -97,9 +97,12 @@ class Directory(object):
         for root, xdirs, files in os.walk(unicode(my.base_dir)):
 
             if my.depth != -1:
-                test = root.strip("/")
+                test = root.replace(my.base_dir, "")
+                test = test.strip("/")
                 parts = test.split("/")
                 if len(parts) > my.depth + 1:
+                    for xdir in xdirs:
+                        xdirs.remove(xdir)
                     continue
 
             for ignore in ignore_dirs:
@@ -122,6 +125,10 @@ class Directory(object):
                 count += 1
                 if count > max_count:
                     break
+
+            # special consideration for when depth is 0
+            if my.depth == 0:
+                break
 
             if count > max_count:
                 break

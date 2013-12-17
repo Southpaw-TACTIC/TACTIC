@@ -19,7 +19,7 @@ from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
 from pyasm.common import SPTDate
 from pyasm.common import Date, Common, TacticException
-from pyasm.search import Search, SearchType
+from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
 from base_refresh_wdg import BaseRefreshWdg
@@ -111,7 +111,9 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
+        #title = title.replace(" ", "<br/>")
         div.add(title)
+
         return div
 
         # FIXME: not sure about autofit here?  This should be a mode
@@ -482,7 +484,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 # This date is assumed to be GMT
                 date = parser.parse(value)
                 # convert to local
-                date = SPTDate.convert_to_local(date)
+                if not SObject.is_day_column(name):
+                    date = SPTDate.convert_to_local(date)
 		try:
 		   encoding = locale.getlocale()[1]		
 		   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)

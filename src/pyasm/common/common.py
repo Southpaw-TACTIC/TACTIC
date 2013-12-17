@@ -608,8 +608,11 @@ class Common(Base):
 
 
     def process_unicode_string( in_string ):
-        if isinstance(in_string, basestring):
+        if isinstance(in_string, unicode):
             return in_string.encode('utf-8')
+        elif isinstance(in_string, basestring):
+            return in_string
+
         else:
             # for integer and floats
             return str(in_string)

@@ -319,6 +319,7 @@ class TaskStatusSelectWdg(SelectWdg):
                 # use the new access rule process here
                 access_key = [
                     {'process': '*' ,'pipeline':  pipeline.get_code()},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': process , 'pipeline':  pipeline.get_code()}
                     ]
 
@@ -326,6 +327,7 @@ class TaskStatusSelectWdg(SelectWdg):
                 if security.check_access('process', access_key, "view", default="deny"):
                     allowed_processes.append(process)
                 
+
             select = SelectWdg(my.get_input_name())
             select.add_empty_option('-- Select --')
             if cur_value in allowed_processes:
