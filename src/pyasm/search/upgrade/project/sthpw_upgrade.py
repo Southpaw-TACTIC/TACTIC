@@ -2228,9 +2228,12 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     # 2.5.0.rc18
     #
     def upgrade_v2_5_0_rc18_001(my):
-        my.run_sql('''
-        ALTER TABLE "file" alter column file_name drop NOT NULL; 
-        ''')
+        if my.get_database_type() == 'MySQL':
+            my.run_sql('''ALTER TABLE file MODIFY file_name varchar(512) NULL;''')
+        else:
+            my.run_sql('''
+            ALTER TABLE "file" alter column file_name drop NOT NULL; 
+            ''')
     def upgrade_v2_5_0_rc18_002(my):
         my.run_sql('''
         ALTER TABLE "file" add column base_type varchar(256); 

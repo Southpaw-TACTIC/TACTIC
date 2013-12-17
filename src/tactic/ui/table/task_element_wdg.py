@@ -547,9 +547,10 @@ class TaskElementWdg(BaseTableElementWdg):
             for status in existing_statuses:
                 if status in my.allowed_statuses:
                     continue
-
+                
                 access_key = [
                     {'process': '*' ,'pipeline':  pipeline_code},
+                    {'process': '*' ,'pipeline':  '*'},
                     {'process': status , 'pipeline':  pipeline_code}
                     ]
                 if security.check_access('process', access_key, "view", default="deny"):
@@ -1493,6 +1494,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 select = SelectWdg(name)
                 #select = SelectWdg('status_%s'%task_id)
+                select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
 
 
@@ -1576,7 +1578,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
                     select.add_class('spt_task_status_select')
-                    select.set_option('empty','true')
+                    select.add_empty_option('-- Assigned --')
                     select.set_option('values', my.assignee) 
                     select.set_option('labels', my.assignee_labels) 
                     select.set_value(assigned)

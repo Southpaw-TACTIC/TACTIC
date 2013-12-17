@@ -190,17 +190,32 @@ class SearchTest(unittest.TestCase):
     def _test_get_by_statement(my):
         types = ['admin','ben','beth']
         joined_statements = []
+        
+        db_res = DbResource.get_default('unittest')
+        sql = DbContainer.get(db_res)
+        impl = sql.get_database_impl()
+        db_type = impl.get_database_type()
+        
+        
         for type in types:
             select = Search('sthpw/login')
             select.add_filter('login', type)
             select.set_show_retired(False)
-            select.add_order_by("login")
+
+            if db_type != 'Sqlite':
+                select.add_order_by("login")
             statement = select.get_statement()
             joined_statements.append(statement)
 
- 
+        
+        
+
         if len(joined_statements) > 1:
-            joined_statements = ["(%s)"%x for x in joined_statements]
+            
+            if db_type == 'Sqlite':
+                joined_statements = ["%s"%x for x in joined_statements]
+            else:
+                joined_statements = ["(%s)"%x for x in joined_statements]
             statement = ' union all '.join(joined_statements)
         elif len(joined_statements) == 1:
             statement = joined_statements[0]
@@ -210,8 +225,13 @@ class SearchTest(unittest.TestCase):
         # This assumes these users actually exist in the database, which they
         # often don't
         #my.assertEquals(len(logins), 3)
+       
+       
+        if db_type =='Sqlite':
+            my.assertEquals(statement, """SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth'""".format(my.sthpw_prefix))
+        else:
 
-        my.assertEquals(statement, '''(SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth' ORDER BY "login"."login")'''.format(my.sthpw_prefix))
+            my.assertEquals(statement, '''(SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth' ORDER BY "login"."login")'''.format(my.sthpw_prefix))
 
         
     def _test_add_column_search(my):
@@ -284,7 +304,7 @@ class SearchTest(unittest.TestCase):
         task_search.add_filters('process', [])
         tasks = task_search.get_sobjects()
         my.assertEquals(tasks, [])
-        expected = '''SELECT "sthpw"."public"."task".* FROM "sthpw"."public"."task" WHERE id is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''
+        expected = '''SELECT %s"task".* FROM %s"task" WHERE id is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''%(my.sthpw_prefix, my.sthpw_prefix)
         my.assertEquals(task_search.get_statement(), expected)
 
         

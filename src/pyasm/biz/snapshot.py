@@ -1221,10 +1221,9 @@ class Snapshot(SObject):
     get_default_context = staticmethod(get_default_context)
 
 
-    def get_by_sobject(sobject, context=None):
-        return Snapshot.get_by_sobject( sobject, context )
-
-    get_by_sobject = staticmethod(get_by_sobject)
+    #def get_by_sobject(sobject, context=None):
+    #    return Snapshot.get_by_sobject( sobject, context )
+    #get_by_sobject = staticmethod(get_by_sobject)
 
 
     def get_by_sobject(sobject, context=None):

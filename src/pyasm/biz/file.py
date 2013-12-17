@@ -55,7 +55,7 @@ class FileException(TacticException):
 
 class File(SObject):
 
-    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani']
+    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf']
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax',
                 'wm','wvx','ogg','webm','mkv','m4v','mxf'] 
@@ -505,19 +505,23 @@ class IconCreator(object):
         if sys.platform == 'darwin':
             return
         else:
-            #cmd = "convert -geometry 80 -raise 2x2 %s[0] %s" \
-            #    % (my.file_path, tmp_icon_path)
-            #os.system(cmd)
-            my.file_path = my.file_path.encode('utf-8')
-            import shlex, subprocess
-            subprocess.call(['convert', '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
-                    "%s"%tmp_icon_path]) 
-
+            if not Common.which("convert"):
+                return
+            try:
+                my.file_path = my.file_path.encode('utf-8')
+                import shlex, subprocess
+                subprocess.call(['convert', '-geometry','80','-raise','2x2','%s[0]'%my.file_path,\
+                        "%s"%tmp_icon_path]) 
+            except Exception, e:
+                print "Error extracting from pdf [%s]" % e
+                return
 
 
         # check that it actually got created
         if os.path.exists(tmp_icon_path):
             my.icon_path = tmp_icon_path
+        else:
+            print "Warning: [%s] did not get created from pdf" % tmp_icon_path
 
 
 

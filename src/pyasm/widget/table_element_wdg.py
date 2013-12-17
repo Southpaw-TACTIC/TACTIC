@@ -2087,7 +2087,10 @@ class ExpandableTextWdg(BaseTableElementWdg):
     def init(my):
         my.max_length_txt = None
         my.id = None
-        
+
+    def is_editable(my):
+        return True
+ 
         
     def get_prefs(my):
         search_type = None
