@@ -3428,7 +3428,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def add_file(my, ticket, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming=None, file_naming=None):
+    def add_file(my, ticket, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming=None, file_naming=None, checkin_type='strict'):
         '''method to add a file to an already existing snapshot
 
         @param:
@@ -3438,6 +3438,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         file_type - type of the file to be added.
         dir_naming - explicitly set a dir_naming expression to use
         file_naming - explicitly set a file_naming expression to use
+        checkin_type - auto or strict which controls whether to auto create versionless or some default file/dir naming
 
         @return:
         the resulting snapshot
@@ -3537,7 +3538,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         source_paths.append('')
                         source_paths.append('')
 
-            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming)
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type)
             checkin.execute()
             snapshot = checkin.get_snapshot()
 

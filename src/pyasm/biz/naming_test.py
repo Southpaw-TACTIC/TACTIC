@@ -336,10 +336,10 @@ class NamingTest(unittest.TestCase):
 
         
         # test file expression
-        naming.set_value('file_naming', '{@GET(.code)}_v{@GET(sthpw/snapshot.version)}_{$BASEFILE}.{$EXT}')
+        naming.set_value('file_naming', '{@GET(.code)}_v{@GET(snapshot.version)}_{$BASEFILE}.{$EXT}')
         naming.commit()
         my.clear_naming()
-
+        
         preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon3.jpg',ext='jpg')
         my.assertEquals('%s/unittest/cut/phil/phil_v1_racoon3.jpg'%base_dir, preallocated)
 

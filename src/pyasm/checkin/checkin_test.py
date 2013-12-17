@@ -356,13 +356,22 @@ class CheckinTest(unittest.TestCase, Command):
         file.write("symlink test")
         file.close()
 
+        file_path2 = "./symlink_append.txt"
+        file = open(file_path2, 'w')
+        file.write("append test")
+        file.close()
+
+
         checkin = FileCheckin(my.person, file_path, context="sym_test", checkin_type='auto')
         checkin.execute()
+        snap = checkin.get_snapshot()
+        versionless_snap = Snapshot.get_versionless(my.person.get_search_type(), my.person.get_id(), "sym_test", mode='latest', create=False)
+        my.assertEquals(True, isinstance(versionless_snap, Snapshot))
 
-        snap = Snapshot.get_versionless(my.person.get_search_type(), my.person.get_id(), "sym_test", mode='latest', create=False)
-        my.assertEquals(True, isinstance(snap, Snapshot))
-        if snap:
-            lib_path =snap.get_lib_path_by_type('main')
+        main_lib_path = snap.get_lib_path_by_type('main')
+        my.assertEquals(main_lib_path.endswith('/sym_test/.versions/symlink_sym_test_v001.txt'), True)
+        if versionless_snap:
+            lib_path =versionless_snap.get_lib_path_by_type('main')
             my.assertEquals(True, os.path.exists(lib_path)) 
             rel_path = os.readlink(lib_path)
             lib_dir = os.path.dirname(lib_path)
@@ -377,6 +386,20 @@ class CheckinTest(unittest.TestCase, Command):
             my.assertEquals(True, os.path.exists(real_path))
             my.assertEquals(expected_rel_path, rel_path)
             os.chdir(wd)
+
+        # if not inplace or preallocate mode, keep_file_name should be False
+        checkin = FileAppendCheckin(snap.get_code(), [file_path2], file_types=['add'], keep_file_name=False, checkin_type='auto')
+        checkin.execute()
+        snap = checkin.get_snapshot()
+        main_lib_path = snap.get_lib_path_by_type('add')
+        my.assertEquals(snap.get_value('is_current'), True)
+        my.assertEquals(snap.get_value('is_latest'), True)
+        my.assertEquals(main_lib_path.endswith('/sym_test/.versions/symlink_append_sym_test_v001.txt'), True)
+        versionless_snap = Snapshot.get_versionless(my.person.get_search_type(), my.person.get_id(), "sym_test", mode='latest', create=False)
+        if versionless_snap:
+            lib_path = versionless_snap.get_lib_path_by_type('add')
+            my.assertEquals(lib_path.endswith('/sym_test/symlink_append_sym_test.txt'), True)
+            my.assertEquals(os.path.exists(lib_path), True)
 
 
 

@@ -1446,7 +1446,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         button.add_style("float: right")
         button.add_style("margin-right: 5px")
         button.add_style("margin-top: 15px")
-        button.add_attr("Check-out to Sandbox")
+        button.add_attr("title", "Check-out to Sandbox")
 
 
         button.add_behavior( {
@@ -1487,7 +1487,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         button.add_style("float: right")
         button.add_style("margin-right: 5px")
         button.add_style("margin-top: 15px")
-        button.add_attr("Check-out clipboard to Sandbox")
+        button.add_attr("title", "Check-out clipboard to Sandbox")
 
         button.add_behavior( {
             'type': 'click_up',

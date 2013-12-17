@@ -2559,6 +2559,8 @@ class SqliteImpl(PostgresImpl):
             if value  == "NOW":
                 quoted = False
                 value = my.get_timestamp_now()
+            elif isinstance(value, datetime.datetime):
+                pass
             elif value.startswith(("CURRENT_TIMESTAMP","DATETIME(")):
                 quoted = False
 
