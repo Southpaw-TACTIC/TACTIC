@@ -564,6 +564,7 @@ class DirListWdg(BaseRefreshWdg):
         div.add_style("height: 18px")
         div.add_style("padding-top: 2px")
 
+        div.add_class("spt_item")
         div.add_class("spt_dir_item")
         div.add_attr("spt_dirname", dir)
         div.add_attr("spt_basename", item)
@@ -772,6 +773,7 @@ class DirListWdg(BaseRefreshWdg):
     def _get_file_item(my, dirname, basename):
 
         item_div = DivWdg()
+        item_div.add_class("spt_item");
         item_div.add_class("spt_file_item");
         item_div.add_attr("spt_path", "%s/%s" % (dirname, basename) )
         item_div.add_attr("spt_dirname", dirname)
@@ -842,6 +844,7 @@ class DirListWdg(BaseRefreshWdg):
     def handle_dir_div(my, dir_div, dirname, basename):
         span = SpanWdg()
         span.add(basename)
+        span.add_class("spt_value")
         span.add_class("spt_dir_value")
         dir_div.add(span)
 
@@ -866,6 +869,7 @@ class DirListWdg(BaseRefreshWdg):
         # add the file name
         filename_div = DivWdg()
         item_div.add(filename_div)
+        filename_div.add_class("spt_value")
         filename_div.add_class("spt_file_value")
         filename_div.add(basename)
         filename_div.add_style("float: left")
