@@ -491,7 +491,8 @@ class Sql(Base):
                 encoding = Config.get_value("database", "encoding")
                 charset = Config.get_value("database", "charset")
                 if not encoding:
-                    encoding = 'utf8mb4'
+                    #encoding = 'utf8mb4'
+                    encoding = 'utf8'
                 if not charset:
                     charset = 'utf8'
                 my.conn = MySQLdb.connect(  db=my.database_name,
