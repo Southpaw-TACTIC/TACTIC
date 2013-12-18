@@ -1441,11 +1441,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         input_div.add_class("spt_inputs_top")
 
 
-        button = ActionButtonWdg(title="Copy")
+        button = ActionButtonWdg(title="Check-out")
         input_div.add(button)
         button.add_style("float: right")
         button.add_style("margin-right: 5px")
         button.add_style("margin-top: 15px")
+        button.add_attr("title", "Check-out to Sandbox")
 
 
         button.add_behavior( {
@@ -1486,6 +1487,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         button.add_style("float: right")
         button.add_style("margin-right: 5px")
         button.add_style("margin-top: 15px")
+        button.add_attr("title", "Check-out clipboard to Sandbox")
 
         button.add_behavior( {
             'type': 'click_up',

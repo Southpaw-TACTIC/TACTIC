@@ -46,6 +46,8 @@ class SwapDisplayWdg(BaseRefreshWdg):
     def set_on(my, flag=True):
         my.kwargs["is_on"] = flag
 
+    def set_off(my, flag=False):
+        my.kwargs["is_on"] = flag
 
     def set_title_wdg(my, title):
         my.title_wdg = title

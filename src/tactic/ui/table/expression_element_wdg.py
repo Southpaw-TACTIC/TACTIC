@@ -14,7 +14,7 @@ __all__ = ['ExpressionElementWdg', "ExpressionValueElementWdg"]
 
 import types, re
 
-from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps
+from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, CheckboxWdg
@@ -328,7 +328,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         my.vars = {
             'ELEMENT_NAME': element_name,
-            'ELEMENT': element_name
+            'ELEMENT': element_name,
+            'SOBJECT_ID': sobject.get_id(),
+            'SOBJECT_CODE': sobject.get_code(),
         }
 
         return_type = my.kwargs.get("return")
@@ -389,7 +391,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
             # turn non basestring into string
             encoded_result = []
             for res in result:
-                if not isinstance(res, basestring): 
+                if isinstance(res, datetime.datetime):
+                    res = SPTDate.convert_to_local(res)
+                    res = str(res)
+                elif not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
                 encoded_result.append(res)
             result = ','.join(encoded_result)
@@ -399,7 +404,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if result == None or result == []:
             result = ''
 
-        
+       
+        if isinstance(result, datetime.datetime):
+            result = SPTDate.convert_to_local(result)
         return result
 
 
@@ -460,6 +467,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
             format_val = FormatValue()
             format_value = format_val.get_format_value( result, format_str )
             result = format_value
+
+        name = my.get_name()
+        my.sobject.set_value(name, result)
         return result
 
 
