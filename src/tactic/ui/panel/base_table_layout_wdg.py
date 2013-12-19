@@ -472,10 +472,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     limit = stated_limit
                 if not limit:
                     limit = 100
-
+            """
             my.chunk_num = my.kwargs.get("chunk_num")
 
-            #print "init count: ", count
             if my.chunk_num:
                 my.chunk_num = int(my.chunk_num)
             else:
@@ -490,7 +489,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 my.search_limit.set_chunk(my.chunk_size, my.chunk_num, diff)
             else:
                 my.search_limit.set_chunk(my.chunk_size, my.chunk_num)
-
+            """
             # alter the search
             my.search_limit.set_search(search)
             my.search_limit.alter_search(search)
