@@ -154,6 +154,7 @@ class HashPanelWdg(BaseRefreshWdg):
             if not link:
                 return None
 
+
             # test link security
             project_code = Project.get_project_code()
             security = Environment.get_security()
@@ -269,6 +270,14 @@ class HashPanelWdg(BaseRefreshWdg):
             print "Cannot parse hash[%s]" % hash
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
+
+
+        # guest user should never be able to see admin site
+        security = Environment.get_security()
+        login = security.get_user_name()
+        if login == "guest" and key == 'admin':
+            from pyasm.widget import Error403Wdg
+            return Error403Wdg().get_buffer_display()
 
 
         sobject = cls._get_predefined_url(key, hash)
