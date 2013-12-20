@@ -404,7 +404,9 @@ class CheckinDirListWdg(DirListWdg):
 
             else:
                 if is_select:
-                    subcontext_val = '(auto)'
+                    if my.subcontext_options:
+                        subcontext_val = my.subcontext_options[0]
+                    #subcontext_val = '(auto)'
                     cat_input.set_value(subcontext_val)
                 else:
                     subcontext_val = ''
