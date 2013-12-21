@@ -2179,7 +2179,7 @@ spt.dom.load_js = function(js_files, cbk) {
             var js_el = document.createElement("script");
             js_el.setAttribute("type", "text/javascript");
             js_el.setAttribute("src", url);
-            
+
             head.appendChild(js_el);
 
             if (js_el.readyState) {
