@@ -1120,7 +1120,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 content_div.add_style("display: none")
             content_div.add(widget)
             content_div.add_style("width: 100%")
-            content_div.add_style("height: 100%")
+            #content_div.add_style("height: 100%")
             content_div.add_style("text-align: left")
             content_top.add(content_div)
 
@@ -1144,7 +1144,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         content_div.add_attr("spt_tab_id", my.unique_id)
         content_div.add("")
         content_div.add_style("width: 100%")
-        content_div.add_style("height: 100%")
+        #content_div.add_style("height: 100%")
         content_div.add_style("text-align: left")
         template_div.add(content_div)
 
