@@ -2485,7 +2485,22 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
         code = my.kwargs.get("code")
         plugin = Search.eval("@SOBJECT(config/plugin_content['search_code','%s'].config/plugin)" % code, single=True)
 
-
+        if plugin:
+            if isinstance(plugin, dict):
+                pass
+            else:
+                plugin = plugin.get_sobject_dict()
+            from tactic_client_lib import TacticServerStub
+            my.server = TacticServerStub.get(protocol='local')
+            plugin_code = plugin.get("code")
+            plugin_dir = my.server.get_plugin_dir(plugin)
+        else:
+            plugin_code = ""
+            plugin_dir = ""
+            plugin = {}
+        #my.kwargs['plugin_dir'] = plugin_dir
+        #my.kwargs['plugin_code'] = plugin_code
+ 
 
         from tactic.ui.panel import CustomLayoutWdg
         top = my.top
