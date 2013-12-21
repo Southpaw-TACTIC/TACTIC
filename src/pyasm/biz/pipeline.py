@@ -180,6 +180,12 @@ class ProcessConnect(Base):
     def __init__(my, node):
         my.node = node
 
+    def get_from_expression(my, name):
+        return Xml.get_attribute(my.node, name)
+
+    def get_attr(my, name):
+        return Xml.get_attribute(my.node, name)
+
     def get_to(my):
         return Xml.get_attribute(my.node, "to")
 

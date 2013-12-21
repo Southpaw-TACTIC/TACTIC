@@ -1,4 +1,3 @@
-
 ###########################################################
 #
 # Copyright (c) 2005, Southpaw Technology
@@ -1437,7 +1436,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             return
 
         input_div = DivWdg()
-        input_div.set_name("Received")
+        input_div.set_name("Source")
         input_div.add_class("spt_inputs_top")
 
 
@@ -1530,6 +1529,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             from_sobjects = []
 
+
             if from_expression:
                 try:
                     from_sobjects = Search.eval(from_expression, my.sobject)
@@ -1548,6 +1548,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             table = Table()
             table.set_max_width()
+
+            title = connect.get_attr("title")
+            if title:
+                table.add_row()
+                table.add_row_cell("<b>%s</b>" % title)
 
 
             for count, sobject in enumerate(from_sobjects):
@@ -1587,8 +1592,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 info_div = DivWdg()
                 td.add(info_div)
 
-                info_div.add( sobject.get_name() )
-                info_div.add( " <i style='font-size: 0.8em'>(%s)</i>" % sobject.get_code() )
+                #info_div.add( sobject.get_name() )
+                #info_div.add( " <i style='font-size: 0.8em; opacity: 0.5'>(%s)</i>" % sobject.get_code() )
+                #info_div.add("<hr/>")
 
                 search = Search("sthpw/snapshot")
                 search.add_sobject_filter(sobject)
@@ -1598,15 +1604,29 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                 snapshot_codes = []
 
+
                 # list each snaphot
                 for snapshot in snapshots:
-                    info_div.add("<br/>")
+
+                    filename = snapshot.get_name_by_type("main")
+                    web_dir = snapshot.get_web_dir()
+                    web_path = "%s/%s" % (web_dir, filename)
+
+                    info_div.add("<a href='%s' target='_blank'>" % web_path)
+                    info_div.add("%s" % filename)
+
+                    info_div.add(" <i style='opacity: 0.5; font-size: 0.8em'> - ")
                     info_div.add(snapshot.get_value("process"))
-                    info_div.add(" - ")
                     context = snapshot.get_value("context")
                     version = snapshot.get_value("version")
-                    info_div.add("<i>(v%0.3d)</i>" % version)
+                    info_div.add(" (v%0.3d)" % version)
+
+
                     snapshot_codes.append(snapshot.get_value("code"))
+
+
+                    info_div.add("</i></a><br/>")
+
 
 
                 if not snapshots:
