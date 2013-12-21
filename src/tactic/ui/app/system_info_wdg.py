@@ -123,12 +123,12 @@ class SystemInfoWdg(BaseRefreshWdg):
         table.add_cell( web.get_user_name() )
 
 
-        top.add('<br>')
+        top.add('<br/>')
         my.handle_load_balancing(top)
 
  
         # performance test
-        top.add('<br>')
+        top.add('<br/>')
         title_div = DivWdg()
         top.add(title_div)
         title_div.add("Performance Test")
@@ -138,7 +138,7 @@ class SystemInfoWdg(BaseRefreshWdg):
         top.add(performance_wdg)
 
       
-        top.add('<br>')
+        top.add('<br/>')
 
         # mail server
         title_div = DivWdg()
@@ -183,7 +183,7 @@ class SystemInfoWdg(BaseRefreshWdg):
 
 
         button = ActionButtonWdg(title='Email Send Test')
-        table.add_row_cell('<br>')
+        table.add_row_cell('<br/>')
         table.add_row()
 
         table.add_cell(button)
@@ -222,7 +222,7 @@ class SystemInfoWdg(BaseRefreshWdg):
 
     
     
-        top.add('<br>')
+        top.add('<br/>')
         my.handle_directories(top)
 
 
@@ -230,14 +230,14 @@ class SystemInfoWdg(BaseRefreshWdg):
         #td = table.add_cell("TACTIC User: ")
         #table.add_cell( web.get_user_name() )
 
-        top.add('<br>')
+        top.add('<br/>')
         top.add(DivWdg('Link Test', css='spt_info_title'))
-        top.add('<br>')
+        top.add('<br/>')
         top.add(LinkLoadTestWdg())
 
-        top.add('<br>')
+        top.add('<br/>')
         my.handle_python_script_test(top)
-        top.add('<br>')
+        top.add('<br/>')
         my.handle_sidebar_clear(top)
 
 
@@ -329,7 +329,7 @@ class SystemInfoWdg(BaseRefreshWdg):
             }
             else {
                 env.set_transfer_mode("copy");
-                spt.info('<div>client handoff directory: ' + bvr.handoff_dir + '</div><br><div>client repo directory :' + bvr.asset_dir +  '</div><br><div> can be successfully accessed.</div>', {type:'html'});
+                spt.info('<div>client handoff directory: ' + bvr.handoff_dir + '</div><br/><div>client repo directory :' + bvr.asset_dir +  '</div><br/><div> can be successfully accessed.</div>', {type:'html'});
             }
             '''
             } )
@@ -503,7 +503,7 @@ class LinkLoadTestWdg(BaseRefreshWdg):
 	
 	span =SpanWdg('This loads all the pages defined in the Project views in popups. It will take a few minutes.')
 	widget.add(span)
-	widget.add('<br>')
+	widget.add('<br/>')
         div = ActionButtonWdg(title='Run')
         web = WebContainer.get_web()
         base_url = web.get_base_url().to_string()
@@ -536,7 +536,7 @@ class LinkLoadTestWdg(BaseRefreshWdg):
 
             }
             ''' %(element_names, all_element_names, base_url)})
-        widget.add('<br>')
+        widget.add('<br/>')
         
         cb = CheckboxWdg('include_internal', label='include built-in pages')
         
@@ -545,8 +545,8 @@ class LinkLoadTestWdg(BaseRefreshWdg):
         widget.add(span)
         widget.add(div)
 
-        widget.add('<br>')
-        widget.add('<br>')
+        widget.add('<br/>')
+        widget.add('<br/>')
 	
         return widget
 

@@ -1343,7 +1343,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         table.add_style("width: 100%")
         if my.warning_msg:
             top.add_behavior( {'type': 'load',
-                        'msg': "Warning: %s" %'<br>'.join(my.warning_msg),
+                        'msg': "Warning: %s" %'<br/>'.join(my.warning_msg),
                         'cbjs_action' : 'spt.alert(bvr.msg, {type: "html"})'})
 
 

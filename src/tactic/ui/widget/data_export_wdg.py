@@ -622,7 +622,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
         if not my.file_path.endswith(".csv"):
-            div.add('<br>')
+            div.add('<br/>')
             div.add( "Uploaded file [%s] is not a csv file. Refreshing in 3 seconds. . ."% os.path.basename(my.file_path))
             div.add_behavior( {'type': 'load', \
                                   'cbjs_action': "setTimeout(function() {spt.panel.load('csv_import_main','%s', {}, {\

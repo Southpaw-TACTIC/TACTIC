@@ -569,7 +569,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             xml_wdg.add_style("display: none")
 
         config_wdg = my.get_definition_configs(config_view, element_name)
-        xml_wdg.add('<br>')
+        xml_wdg.add('<br/>')
         xml_wdg.add(config_wdg)
 
         xml_wdg.add_class("spt_xml_top")
@@ -1546,7 +1546,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         #tr, td = table.add_row_cell()
 
         config_wdg = my.get_definition_configs(edit_config_view, element_name)
-        xml_wdg.add('<br>')
+        xml_wdg.add('<br/>')
         xml_wdg.add(config_wdg)
 
 

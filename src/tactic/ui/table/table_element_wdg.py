@@ -366,7 +366,7 @@ class NotificationTriggerElementWdg(BaseTableElementWdg):
 
                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
 
-                   msg= msg.replace(/\\n/g, '<br>');
+                   msg= msg.replace(/\\n/g, '<br/>');
 
                    var options = { 'html': '<div><div style="background:%s; padding: 5px">' + msg + '</div></div>'};
                    var kwargs = {'width':'600px'};

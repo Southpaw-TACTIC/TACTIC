@@ -1656,7 +1656,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 
                 var content = 'No record';
                 if (result.__search_key__)
-                    content = '<span>status: </span>' + result.from_status + '<br>' + '<span style="padding-left: 20px">by:</span> ' + result.login; 
+                    content = '<span>status: </span>' + result.from_status + '<br/>' + '<span style="padding-left: 20px">by:</span> ' + result.login; 
                 
                 bvr.src_el.store('tip:text', content)
                 tips.fill(text_elem, content);
