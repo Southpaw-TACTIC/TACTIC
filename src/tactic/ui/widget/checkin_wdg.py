@@ -3347,7 +3347,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
-            depth = 1
+            depth = 2 
+            open_depth = 0 
 
             folder_mode = my.kwargs.get("folder_mode")
             if folder_mode == "thumb":
@@ -3375,6 +3376,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                         subcontext_options=subcontext_options,
                         context_options=context_options,
                         depth=depth,
+                        open_depth=open_depth,
                         sizes=sizes,
                         preselected=my.preselected,
                         show_selection=True,
