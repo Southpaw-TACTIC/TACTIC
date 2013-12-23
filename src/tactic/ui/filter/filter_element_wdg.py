@@ -1156,28 +1156,18 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
     def alter_search(my, search):
 
-        prefix = my.values.get("prefix")
+        #prefix = my.values.get("prefix")
         #column = my.values.get("%s_column" % prefix)
+        if not my.values.get('option'):
+            return
 
+        expr = my.get_option("expression")
+        # e.g. @SEARCH(vfx/asset['code','EQ','002'])
+        from pyasm.biz import ExpressionParser
+        parser = ExpressionParser()
+        expr_search = parser.eval(expr)
+        search.add_relationship_search_filter(expr_search)
 
-
-
-        option = my.values.get("option")
-        if option == 'my_items':
-            expr = my.get_option("expression")
-            column = my.get_option("column")
-
-
-            from pyasm.biz import ExpressionParser
-            parser = ExpressionParser()
-            value = my.values.get("value")
-            if results:
-                search.add_filters(column, results)
-            else:
-                search.add_filter(column, 'NULL')
-
-        elif option == 'all_items':
-            pass
        
 
     def get_display(my):
@@ -1189,13 +1179,8 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
         div = SpanWdg()
         div.add("%s: " % title)
         checkbox = CheckboxWdg("option")
-        checkbox.set_attr("value", "my_items")
+        checkbox.set_attr("value", "expr_items")
         checkbox.set_checked()
-        div.add(checkbox)
-        div.add("&nbsp;&nbsp;")
-        div.add("All")
-        checkbox = CheckboxWdg("option")
-        checkbox.set_attr("value", "all_items")
         div.add(checkbox)
 
         return div
