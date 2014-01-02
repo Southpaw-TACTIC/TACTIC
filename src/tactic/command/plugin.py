@@ -44,8 +44,6 @@ class PluginBase(Command):
         relative_dir = my.kwargs.get("relative_dir")
 
         my.verbose = my.kwargs.get("verbose") not in [False, 'false']
-
-
         # at the end of this, the following variables are needed in order to
         # define the plugin
         #
@@ -82,7 +80,6 @@ class PluginBase(Command):
                 shutil.move(unzip_dir, my.plugin_dir)
 
             manifest_path = "%s/manifest.xml" % my.plugin_dir
-
             f = open(manifest_path, 'r')
             my.manifest = f.read()
             f.close()
@@ -93,14 +90,12 @@ class PluginBase(Command):
             # "local" file (such as one uploaded)
             upload_dir = Environment.get_upload_dir()
             upload_path = "%s/%s" % (upload_dir, upload_file_name)
-
             plugin_base_dir = Environment.get_plugin_dir()
             dist_dir = Environment.get_dist_dir()
             if not os.path.exists(dist_dir):
                 os.makedirs(dist_dir)
 
             basename = os.path.basename(upload_path)
-
             #if os.path.exists("%s/%s" % (plugin_base_dir, basename)):
             #    os.unlink("%s/%s" % (plugin_base_dir, basename) )
             #shutil.move(upload_path, plugin_base_dir)
@@ -169,22 +164,29 @@ class PluginBase(Command):
             search = Search("config/plugin")
             search.add_filter("code", my.code)
             plugin = search.get_sobject()
-            relative_dir = plugin.get_value("code")
-
+            # In case there is extra plugins folder which is the case when the user 
+            # is developing. 
+            relative_dir = plugin.get_value("rel_dir")
+             
             plugin_base_dir = Environment.get_plugin_dir()
             my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+            
+            # TODO: fix the ZipUtil.zip_dir()
             manifest_path = "%s/manifest.xml" % my.plugin_dir
             if not os.path.exists(manifest_path):
                 plugin_base_dir = Environment.get_builtin_plugin_dir()
                 my.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
                 manifest_path = "%s/manifest.xml" % my.plugin_dir
-
-            f = open(manifest_path, 'r')
-            my.manifest = f.read()
-            f.close()
-
-            #my.manifest = plugin.get_value("manifest")
-
+                
+            if os.path.exists(manifest_path):
+                f = open(manifest_path, 'r')
+                my.manifest = f.read()
+                f.close()
+            else:
+                # this condition happens likely for a versioned installed plugin from a zip file
+                # where it starts with an extra folder "plugins" and the rel_dir has not been recorded properly
+                my.manifest = plugin.get_value("manifest") 
+            
             my.code = plugin.get_code()
             my.version = plugin.get_value("version")
 
@@ -426,7 +428,7 @@ class PluginCreator(PluginBase):
             # first check if a plugin with this code already exists
             plugin = Search.get_by_code("config/plugin", my.code)
             if plugin:
-                raise TacticException("Plugin [%s] already exist in project" % my.code)
+                raise TacticException("Plugin [%s] already existed in the project." % my.code)
             # create a new one
             plugin = SearchType.create("config/plugin")
             plugin.set_value("code", my.code)
@@ -445,7 +447,7 @@ class PluginCreator(PluginBase):
 
             plugin.commit()
 
-
+        # TODO: consider updating the manifest if plugin sobject exists
 
         # record all of the sobject exported
         for sobject in sobjects:                    
@@ -1186,6 +1188,7 @@ class PluginUninstaller(PluginBase):
 
         # uninstall the plugin
         nodes = my.xml.get_nodes("manifest/*")
+
         nodes.reverse()
 
         my.handle_nodes(nodes)

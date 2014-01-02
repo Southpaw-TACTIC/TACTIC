@@ -3429,6 +3429,8 @@ class DropTable(Base):
             raise
 
         sql.do_update(my.statement)
+        sql.clear_table_cache()
+
 
 
 

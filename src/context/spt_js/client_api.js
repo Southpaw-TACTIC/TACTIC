@@ -871,6 +871,31 @@ TacticServerStub = function() {
     this.get_all_dependencies = function(snapshot_code, kwargs) {
         return this._delegate("get_all_dependencies", arguments, kwargs);
     }
+
+
+
+    /* 
+     * Task methods
+     */ 
+    this.create_task = function(search_key, kwargs) {
+        return this._delegate("create_task", arguments, kwargs);
+    } 
+
+
+    this.add_initial_tasks = function(search_key, kwargs) {
+        return this._delegate("add_initial_tasks", arguments, kwargs);
+    }
+
+
+    this.get_input_tasks = function(search_key, kwargs) {
+        return this._delegate("get_input_tasks", arguments, kwargs);
+    }
+
+    this.get_output_tasks = function(search_key, kwargs) {
+        return this._delegate("get_output_tasks", arguments, kwargs);
+    }
+
+
     
     /*
      * Low Level Database methods
