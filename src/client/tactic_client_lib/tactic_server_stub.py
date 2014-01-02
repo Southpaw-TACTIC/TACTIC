@@ -2675,7 +2675,41 @@ class TacticServerStub(object):
         list - tasks created
         '''
         return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes)
-        
+
+
+
+    def get_input_tasks(my, search_key):
+        '''This methods gets the input tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of input tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
+    def get_output_tasks(my, search_key):
+        '''This methods gets the output tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of output tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
 
     #
     # Note methods
