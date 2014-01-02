@@ -1644,15 +1644,18 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         #header.add(remove_wdg)
 
 
-        remove_wdg.add_style("float: right")
+        remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
         from pyasm.widget import IconButtonWdg
         icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
         icon.add_class("spt_icon_inactive")
+        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
         icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
         icon.add_class("spt_icon_active")
         icon.add_style("display: none")
+        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
+        
 
         remove_wdg.add_behavior( {
         'type': 'hover',
