@@ -219,6 +219,7 @@ class EditWdg(BaseRefreshWdg):
             #node = xml.get_node("config/%s" % my.view)
             #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
             #config = WidgetConfig.get(view=my.view, xml=xml)
+            config_xml = config_xml.replace("&", "&amp;")
             config = WidgetConfig.get(view="tab", xml=config_xml)
 
             my.config.get_configs().insert(0, config)
