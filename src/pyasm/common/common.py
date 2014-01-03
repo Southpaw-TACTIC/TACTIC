@@ -97,7 +97,7 @@ class Common(Base):
         return object
     create_from_class_path = staticmethod(create_from_class_path)
 
-    def create_from_method(class_path, method):
+    def create_from_method(class_path, method, kwargs=None):
         '''dynamically creates an object from a string class path and its
         method.
         Note: this assumes an empty constructor'''
@@ -106,7 +106,10 @@ class Common(Base):
        
         # instantiate the object
         obj = Common.create_from_class_path(class_path)
-        obj = eval('obj.%s()' %method)
+        if kwargs:
+            obj = eval('obj.%s(**kwargs)' %method)
+        else:
+            obj = eval('obj.%s()' %method)
         return obj
     
     create_from_method = staticmethod(create_from_method)

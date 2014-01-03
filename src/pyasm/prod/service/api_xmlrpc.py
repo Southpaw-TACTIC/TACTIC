@@ -4788,6 +4788,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return ret_val
 
 
+    @xmlrpc_decorator
+    def execute_class_method(my, ticket, class_name, method, kwargs):
+        ret_val = Common.create_from_method(class_name, method, kwargs)
+        return ret_val
+
+
 
     #@xmlrpc_decorator
     #def execute(my, ticket, code):

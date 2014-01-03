@@ -1106,11 +1106,20 @@ TacticServerStub = function() {
         return ret_val;
     }
 
+
+    this.execute_class_method = function(class_name, method, kwargs) {
+        return this._delegate("execute_class_method", arguments);
+    }
+
+
     this.execute_python_script = function(script_path, script_kwargs, kwargs) {
         if (kwargs) callback = kwargs.on_complete;
         else callback = null;
         return this._delegate("execute_python_script", arguments, kwargs, null, callback);
     }
+
+
+
 
     this.execute = function(code) {
         return this._delegate("execute", arguments, null);
