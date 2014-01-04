@@ -1460,7 +1460,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 xml += '</element>\n';
 
                 spt.alert(xml);
-
                 '''
             } )
             menu.add(menu_item)

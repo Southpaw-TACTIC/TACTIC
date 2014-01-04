@@ -277,6 +277,15 @@ class CherryPyAdapter(WebEnvironment):
             return ""
 
 
+    def get_cookies(my):
+        '''get a cookies'''
+        try:
+            return cherrypy.request.simpleCookie
+            
+        except KeyError, e:
+            return ""
+
+
 
 
     # environment functions

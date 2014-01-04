@@ -323,6 +323,14 @@ class Login(SObject):
                     password = "39195b0707436a7ecb92565bf3411ab1"
                 login.set_value("password", password)
 
+
+            elif not login.get("password"):
+                password = Config.get_value("security", "password")
+                if not password:
+                    password = "39195b0707436a7ecb92565bf3411ab1"
+                login.set_value("password", password)
+
+
         else:
             search = Search("sthpw/login")
             # make sure it's case insensitive
