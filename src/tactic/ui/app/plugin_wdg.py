@@ -1100,6 +1100,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 class_name = 'tactic.command.PluginCreator';
             }
 
+            
             var kwargs = {
                 clean: false,
                 code: code,
@@ -1397,7 +1398,7 @@ class PluginEditWdg(BaseRefreshWdg):
             spt.notify.show_message('Plugin "' + title + '" installed.')
         }
         catch(err) {
-            alert(err.message);
+            spt.alert(spt.exception.handler(err));
         }
         spt.panel.refresh(top);
 

@@ -2105,7 +2105,7 @@ class TacticServerStub(object):
         return my.server.add_dependency_by_code(my.ticket, to_snapshot_code, from_snapshot_code, type, tag)
 
 
-    def add_file(my, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming=''):
+    def add_file(my, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming='', checkin_type='strict'):
         '''API Function: add_file(snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False)
         Add a file to an already existing snapshot.  This method is used in
         piecewise checkins.  A blank snapshot can be created using
@@ -2144,6 +2144,7 @@ class TacticServerStub(object):
             snapshot.
         dir_naming - explicitly set a dir_naming expression to use
         file_naming - explicitly set a file_naming expression to use
+        checkin_type - auto or strict which controls whether to auto create versionless and adopt some default dir/file naming
 
         @return:
         dictionary - the resulting snapshot
@@ -2229,7 +2230,7 @@ class TacticServerStub(object):
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
 
-        return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming)
+        return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming, checkin_type)
 
 
     def remove_file(my, snapshot_code, file_type):
@@ -2674,7 +2675,41 @@ class TacticServerStub(object):
         list - tasks created
         '''
         return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes)
-        
+
+
+
+    def get_input_tasks(my, search_key):
+        '''This methods gets the input tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of input tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
+    def get_output_tasks(my, search_key):
+        '''This methods gets the output tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of output tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
 
     #
     # Note methods
