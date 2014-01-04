@@ -686,7 +686,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             config_div = DivWdg()
             folder_content.add(config_div)
             if folder != "/":
-                config_div.add_style("padding-left: 32px")
+                config_div.add_style("padding-left: 28px")
             else:
                 config_div.add_style("padding-left: 5px")
 
