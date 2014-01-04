@@ -393,13 +393,15 @@ class CheckinDirListWdg(DirListWdg):
 
                     elif isinstance(cat_input,  HiddenWdg):
                         subcontext_val =  ''
-					# the Text field will adopt the subcontext value of the last check-in
+                    # the Text field will adopt the subcontext value of the last check-in
                     subcontext.set_value(subcontext_val)
                     item_div.add_attr("spt_subcontext", subcontext_val)
 
             else:
                 if is_select:
-                    subcontext_val = '(auto)'
+                    if my.subcontext_options:
+                        subcontext_val = my.subcontext_options[0]
+                    #subcontext_val = '(auto)'
                     cat_input.set_value(subcontext_val)
                 else:
                     subcontext_val = ''
