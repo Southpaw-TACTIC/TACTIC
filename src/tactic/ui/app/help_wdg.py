@@ -368,8 +368,22 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         for node in link_nodes:
 
             href = xml.get_attribute(node, "href")
+
             if not href:
+                # Test link to GitHub docs
+                """
+                # add a link to github
+                github_node = xml.create_text_element("div", "edit >>")
+                xml.insert_after(github_node, node)
+                xml.set_attribute(github_node, "style", "float: right; font-size: 0.8em; opacity: 0.3")
+                xml.set_attribute(github_node, "class", "hand")
+                url = '''https://github.com/Southpaw-TACTIC/Docs/tree/master/section/doc/tactic-end-user/end-user/creating-tasks'''
+                xml.set_attribute(github_node, "onclick", "window.open('%s', 'TACTIC Docs')" % url)
+                """
+
                 continue
+
+
 
             if dirname:
                 link_rel_path = "%s/%s" % (dirname, href)
