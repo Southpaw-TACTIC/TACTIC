@@ -355,9 +355,9 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 new_src = "/doc/%s" % (src)
 
-            print "src: ", src
-            print "new_src: ", new_src
-            print "---"
+            #print "src: ", src
+            #print "new_src: ", new_src
+            #print "---"
             xml.set_attribute(node, "src", new_src)
 
 
@@ -672,6 +672,7 @@ class HelpWdg(BaseRefreshWdg):
         content = DivWdg()
         help_div.add(content)
         content.add_class("spt_help_content");
+        content.add_style("position: relative")
         content.add_style("overflow_x: auto")
         content.add_style("overflow_y: auto")
         content.add_style("margin-bottom: 10px")
@@ -892,6 +893,17 @@ spt.help.load_rel_path = function(rel_path, history) {
         spt.help.show();
     }
 
+    var saved_path = rel_path;
+
+    if (rel_path.indexOf("#") != -1) {
+        var parts = rel_path.split("#");
+        rel_path = parts[0];
+        tag = parts[1];
+    }
+    else {
+        tag = null;
+    }
+
     var class_name = 'tactic.ui.app.HelpContentWdg'; 
     var kwargs = {
         rel_path: rel_path
@@ -906,6 +918,25 @@ spt.help.load_rel_path = function(rel_path, history) {
     var dialog = bvr.src_el.getParent(".spt_dialog_content");
     dialog.setStyle("height", size.y - 100);
     dialog.setStyle("width", 650);
+
+
+    var help_top = bvr.src_el.getElement(".spt_help_content");
+    if (help_top && tag) {
+        help_top = help_top.getChildren()[0];
+        var tag_els = help_top.getElements('a');
+        var tag_el = null;
+        for ( var i = 0; i < tag_els.length; i++) {
+            var id = tag_els[i].getAttribute("id");
+            if (id == tag) {
+                tag_el = tag_els[i];
+                break;
+            }
+        }
+        var pos = tag_el.getPosition(help_top);
+        setTimeout( function() {
+            help_top.scrollTo(0, pos.y-30);
+        }, 0 );
+    }
 
 
 
@@ -925,7 +956,7 @@ spt.help.load_rel_path = function(rel_path, history) {
         return;
     }
 
-    spt.help.history.push( ['rel_path', rel_path]);
+    spt.help.history.push( ['rel_path', saved_path]);
 }
 
 
