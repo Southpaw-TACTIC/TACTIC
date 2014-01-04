@@ -1120,7 +1120,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 content_div.add_style("display: none")
             content_div.add(widget)
             content_div.add_style("width: 100%")
-            content_div.add_style("height: 100%")
+            #content_div.add_style("height: 100%")
             content_div.add_style("text-align: left")
             content_top.add(content_div)
 
@@ -1144,7 +1144,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         content_div.add_attr("spt_tab_id", my.unique_id)
         content_div.add("")
         content_div.add_style("width: 100%")
-        content_div.add_style("height: 100%")
+        #content_div.add_style("height: 100%")
         content_div.add_style("text-align: left")
         template_div.add(content_div)
 
@@ -1460,7 +1460,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 xml += '</element>\n';
 
                 spt.alert(xml);
-
                 '''
             } )
             menu.add(menu_item)
@@ -1644,15 +1643,18 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         #header.add(remove_wdg)
 
 
-        remove_wdg.add_style("float: right")
+        remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
         from pyasm.widget import IconButtonWdg
         icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
         icon.add_class("spt_icon_inactive")
+        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
         icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
         icon.add_class("spt_icon_active")
         icon.add_style("display: none")
+        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
+        
 
         remove_wdg.add_behavior( {
         'type': 'hover',

@@ -4683,20 +4683,33 @@ class SwitchLayoutMenu(object):
             '''
 
 
+        from layout_util import LayoutUtil
 
         for i, view in enumerate(views):
+            #data = LayoutUtil.get_layout_data(search_type=my.search_type, layout=view)
+            #layout = view
+            #class_name = data.get("class_name")
+            #element_names = data.get("element_names")
+            #label = data.get("label")
 
-            menu_item = MenuItem(type='action', label=labels[i])
+            # TODO: use old method for now until we can ensure the stability
+            # of the new method
+            class_name = class_names[i]
+            element_name_list = element_names[i]
+            layout = layouts[i]
+            label = labels[i]
+
+            menu_item = MenuItem(type='action', label=label)
             if my.view == views[i]:
                 menu_item.set_icon(IconWdg.DOT_GREEN)
             menu.add(menu_item)
             menu_item.add_behavior( {
             'type': 'click_up',
             'view': view,
-            'class_name': class_names[i],
-            'element_names': element_names[i],
+            'class_name': class_name,
+            'element_names': element_name_list,
+            'layout': layout,
             'search_type': my.search_type,
-            'layout': layouts[i],
             'cbjs_action': cbk
             } )
 

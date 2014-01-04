@@ -168,14 +168,14 @@ class CherryPyAdapter(CherryPyAdapter20):
     # cookie functions
 
     def set_cookie(my, name, value):
-        """set a cookie"""
+        '''set a cookie'''
         cherrypy.response.cookie[name] = value
         cherrypy.response.cookie[name]['path'] = '/'
         cherrypy.response.cookie[name]['max-age'] = 120*3600
 
 
     def get_cookie(my, name):
-        """get a cookie"""
+        '''get a cookie'''
         try:
             return cherrypy.request.cookie[name].value
             
@@ -183,6 +183,11 @@ class CherryPyAdapter(CherryPyAdapter20):
             return ""
 
 
+
+    def get_cookies(my):
+        '''get a cookies'''
+        return cherrypy.request.cookie
+            
 
 
     # environment functions

@@ -213,6 +213,14 @@ class EditWdg(BaseRefreshWdg):
         # for inline config definitions
         config_xml = my.kwargs.get("config_xml")
         if config_xml:
+            #from pyasm.common import Xml
+            #xml = Xml()
+            #xml.read_string(config_xml)
+            #node = xml.get_node("config/%s" % my.view)
+            #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
+            #config = WidgetConfig.get(view=my.view, xml=xml)
+            config_xml = config_xml.replace("&", "&amp;")
+
             config = WidgetConfig.get(view="tab", xml=config_xml)
             my.config.insert_config(0, config)
 
@@ -1224,7 +1232,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         var options = {}
         options.cancel_args = bvr;
            
-        spt.confirm( "Error: " + spt.exception.handler(e) + "<br>Try again?", ok, cancel, options);
+        spt.confirm( "Error: " + spt.exception.handler(e) + "<br/>Try again?", ok, cancel, options);
     }
     return info;
 

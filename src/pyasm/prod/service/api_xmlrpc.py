@@ -4118,7 +4118,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params:
         ticket - authentication ticket
-        search_key - the key identifying a type of sobject as registered in
+        search_key - the key identifying an sobject as registered in
                     the search_type table.
         pipeline_code - (optional) override the sobject's pipeline and use this                     one instead
         processes - (optional) create tasks for the give list of processes
@@ -4143,6 +4143,76 @@ class ApiXMLRPC(BaseApiXMLRPC):
             ret_tasks.append(task_dict)
 
         return ret_tasks
+
+
+
+    @xmlrpc_decorator
+    def get_input_tasks(my, ticket, search_key):
+        '''This methods gets the input tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of input_tasks
+        '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
+        task = SearchKey.get_by_search_key(search_key)
+        if not task:
+            raise ApiException("SObject for [%s] does not exist" % search_key)
+
+
+        search_type = task.get_base_search_type()
+        assert search_type == "sthpw/task"
+
+        input_tasks = task.get_input_tasks()
+
+        ret_tasks = []
+        for task in input_tasks:
+            task_dict = my._get_sobject_dict(task)
+            ret_tasks.append(task_dict)
+
+        return ret_tasks
+
+
+
+    @xmlrpc_decorator
+    def get_output_tasks(my, ticket, search_key):
+        '''This methods gets the output tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of output
+        '''
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+
+        task = SearchKey.get_by_search_key(search_key)
+        if not task:
+            raise ApiException("SObject for [%s] does not exist" % search_key)
+
+
+        search_type = task.get_base_search_type()
+        assert search_type == "sthpw/task"
+
+        input_tasks = task.get_output_tasks()
+
+        ret_tasks = []
+        for task in input_tasks:
+            task_dict = my._get_sobject_dict(task)
+            ret_tasks.append(task_dict)
+
+        return ret_tasks
+
+
 
 
 
@@ -4715,6 +4785,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             info = cmd.get_info()
             ret_val['info'] = info
+        return ret_val
+
+
+    @xmlrpc_decorator
+    def execute_class_method(my, ticket, class_name, method, kwargs):
+        ret_val = Common.create_from_method(class_name, method, kwargs)
         return ret_val
 
 
