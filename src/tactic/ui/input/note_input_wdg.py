@@ -43,7 +43,7 @@ class NoteInputWdg(BaseInputWdg):
         else:
             search_key = sobject.get_search_key()
 
-        if search_key or not sobject.is_insert():
+        if search_key or (sobject and not sobject.is_insert()):
 
             search = Search("sthpw/note") 
             #search.add_relationship_filters(my.filtered_parents, type='hierarchy')
