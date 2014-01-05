@@ -67,7 +67,10 @@ class SqlTest(unittest.TestCase):
             my._test_rpn_filters()
             my._test_search_filter()
             my._test_join()
-            my._test_add_drop_column()
+
+            # it doesn't allow dropping of a column
+            if db_type != 'Sqlite':
+                my._test_add_drop_column()
        
         finally:
             Project.set_project('unittest')

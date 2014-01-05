@@ -56,7 +56,7 @@ class TopContainerWdg(BaseRefreshWdg):
 
             if hash == "/index" and not widget:
                 widget = my.get_default_wdg()
-            elif hash == '/admin':
+            elif hash == '/admin' and not widget:
                 widget = my.get_default_wdg()
 
 
