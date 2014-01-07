@@ -1207,7 +1207,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
         div.add(HtmlElement.b(head1))
         #div.add(HtmlElement.b(head2))
-        div.add('<br>')
+        div.add('<br/>')
         group_wdg.add(div)
 
         from pyasm.security import AccessManager, get_security_version

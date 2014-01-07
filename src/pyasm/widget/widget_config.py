@@ -319,14 +319,17 @@ class WidgetConfig(Base):
                     value = value.replace("&amp;", "&")
                 values[name] = value
                  
-        elif handler == 'tactic.ui.container.TabWdg':
+        elif handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg']:
             children = my.xml.get_children(node)
             values = {}
             for child in children:
                 name = my.xml.get_node_name(child)
                 if name == 'config':
                     value = my.xml.to_string(child)
-                    value = value.replace("<config>", "<config><tab>")
+                    if handler.endswith(".EditWdg"):
+                        value = value.replace("<config>", "<config><tab layout='%s'>" % handler)
+                    else:
+                        value = value.replace("<config>", "<config><tab>")
                     value = value.replace("</config>", "</tab></config>")
                     value = value.strip()
                     name = 'config_xml'
@@ -380,12 +383,16 @@ class WidgetConfig(Base):
     #    return type
 
 
-    def get_display_widget(my, element_name):
+    def get_display_widget(my, element_name, extra_options={}):
         display_handler = my.get_display_handler(element_name)
         if not display_handler:
             return None
 
         display_options = my.get_display_options(element_name)
+        for name, value in extra_options.items():
+            display_options[name] = value
+
+
         widget = Common.create_from_class_path(display_handler, [], display_options)
         from input_wdg import BaseInputWdg
         if isinstance(widget, BaseInputWdg):
@@ -478,6 +485,8 @@ class WidgetConfigView(Base):
     def add_config(my, config):
         my.configs.append(config)
 
+    def insert_config(my, index, config):
+        my.configs.insert(index, config)
 
     def get_views(my, layout="TableWdg"):
 
@@ -1000,6 +1009,25 @@ class WidgetConfigView(Base):
                 node_title = Common.get_display_title(element_name)
 
         return node_title
+
+
+    def get_element_description(my, element_name):
+        '''get the name of each element in a list '''
+        # we have a list of configs ... go through each to find the element
+        node_desc = ''
+        for config in my.configs:
+            # get the element node
+            node = config.get_element_node(element_name)
+            if node is not None:
+                # get all of the attributes
+                node_desc = Xml.get_attribute(node, 'description')
+                if node_desc:
+                    break
+            else:
+                node_desc = Common.get_display_title(element_name)
+
+        return node_desc
+
 
 
     def get_action_handler(my, element_name):

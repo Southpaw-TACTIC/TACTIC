@@ -314,7 +314,7 @@ class DiscussionEditWdg(BaseRefreshWdg):
             if (note.note.length > 50 ) 
                 note_sum =  note.note.substring(0,50) + '...';
             
-            spt.confirm('Delete this note?<br><br><div style="padding: 10px;border: 1px #aaa dotted">' + note_sum + '</div>' , ok, cancel);
+            spt.confirm('Delete this note?<br/><br/><div style="padding: 10px;border: 1px #aaa dotted">' + note_sum + '</div>' , ok, cancel);
 
         '''
 
@@ -1845,7 +1845,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add("<br/>")
 
 
-        content_div.add("<br>Note:<br/>")
+        content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
         text.add_style("width: 100%")
         content_div.add(text)

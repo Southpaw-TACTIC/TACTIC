@@ -3235,31 +3235,51 @@ spt.Environment.get().add_library("spt_view_panel");
 
 spt.view_panel = {}
 
-spt.view_panel.switch_layout = function() {
+spt.view_panel.top = null;
+
+spt.view_panel.set_top = function(top_el) {
+    spt.view_panel.top = top_el;
+}
+
+
+spt.view_panel.switch_layout = function(layout) {
           
+    var top = spt.view_panel.top;
+    if (!top) {
+        alert("Error: spt_view_panel_top not found");
+        return;
+    }
+
+    var search_type = top.getAttribute("spt_search_type");
+
+    var kwargs = {
+        search_type: search_type,
+        layout: layout,
+    }
+    var server = TacticServerStub.get();
+    var data = server.execute_class_method("tactic.ui.panel.LayoutUtil", "get_layout_data", kwargs);
+
+    var class_name = data.class_name;
+    var element_names = data.element_names;
+    var view = data.view;
+
     var table_top = top.getElement(".spt_table_top");
     var table = table_top.getElement(".spt_table_table");
-
     var layout = top.getAttribute("spt_layout");
     var layout_el = top.getElement(".spt_layout");
 
-    var version = layout_el.getAttribute("spt_version");
-    if (version =='2') {
-        var table = table_top.getElement(".spt_table_table");
-    } else {
-        var table = table_top.getElement(".spt_table");
-    }
 
+    var last_view = top.getAttribute("spt_view");
 
     top.setAttribute("spt_layout", layout);
-    var last_view = top.getAttribute("spt_view");
     top.setAttribute("spt_last_view", last_view);
-    top.setAttribute("spt_view", bvr.view);
-    table_top.setAttribute("spt_class_name", bvr.class_name);
-    table_top.setAttribute("spt_view", bvr.view);
-    
-    table.setAttribute("spt_view", bvr.view);
-    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
+    top.setAttribute("spt_view", view);
+
+    table_top.setAttribute("spt_class_name", class_name);
+    table_top.setAttribute("spt_view", view);
+    table.setAttribute("spt_view", view);
+
+    spt.dg_table.search_cbk( {}, {src_el: table, element_names: element_names, widths:[]} );
 
 }
 

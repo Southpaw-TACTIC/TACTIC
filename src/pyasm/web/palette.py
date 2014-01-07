@@ -276,15 +276,20 @@ class Palette(object):
         if not category:
             category = 'background'
 
-        color = my.colors.get(category)
+
+        # make default adjustments
+        if category.startswith("#"):
+            color = category
+            category = "color"
+        else:
+            color = my.colors.get(category)
+
         if not color:
             color = my.colors.get(default)
         if not color:
             color = category
 
 
-
-        # make default adjustments
         if category == 'background2' and not color:
             category = 'background'
             modifier += 10
