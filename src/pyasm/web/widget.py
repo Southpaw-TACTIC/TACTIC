@@ -38,6 +38,14 @@ class Widget(object):
         my._widgets = widgets
     widgets = property(_get_my_widgets, _set_my_widgets)
 
+    def _get_my_named_widgets(my):
+        if my._named_widgets == None:
+            my._named_widgets = {}
+        return my._named_widgets
+    def _set_my_named_widgets(my, named_widgets):
+        my._named_widgets = named_widgets
+    named_widgets = property(_get_my_named_widgets, _set_my_named_widgets)
+
     def _get_my_sobjects(my):
         if my._sobjects == None:
             my._sobjects = []
@@ -68,7 +76,7 @@ class Widget(object):
         my.current_index = -1
         #my.widgets = []
         my._widgets = None
-        my.named_widgets = None
+        my._named_widgets = None
         my.typed_widgets = None
         my.is_top = False
 

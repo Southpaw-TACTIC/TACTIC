@@ -686,7 +686,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             config_div = DivWdg()
             folder_content.add(config_div)
             if folder != "/":
-                config_div.add_style("padding-left: 32px")
+                config_div.add_style("padding-left: 28px")
             else:
                 config_div.add_style("padding-left: 5px")
 
@@ -825,7 +825,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     # check for user error of putting behavior nodes inside html
                     if xml.get_node_name(node) == 'behavior':
                         bvr_html = xml.to_string(node)
-                        error_msgs.append("behavior node found inside html node [%s]. <br><br>It should be on the same level as the html node. Please put them in the Behaviors section in the Custom Layout Editor.<br> "%bvr_html)
+                        error_msgs.append("behavior node found inside html node [%s]. <br/><br/>It should be on the same level as the html node. Please put them in the Behaviors section in the Custom Layout Editor.<br/> "%bvr_html)
                         #continue
 
                     html = xml.to_string(node, pretty=pretty)
@@ -846,7 +846,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         value = Xml.to_html(raw_data)
                         pre = HtmlElement.pre(value)
                         pre.add_attr("wrap", "true")
-                        error_msgs.append("Syntax error found: <br> %s<br><br> %s" %(e.__str__(), pre.get_buffer_display()))
+                        error_msgs.append("Syntax error found: <br/> %s<br/><br/> %s" %(e.__str__(), pre.get_buffer_display()))
 
 
 
@@ -860,7 +860,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 left_div.add_behavior({
                     'type': 'load',
                     'error_msg' : error_msgs,
-                    'cbjs_action' : '''spt.alert(bvr.error_msg.join('<br>'), {type : 'html'});'''
+                    'cbjs_action' : '''spt.alert(bvr.error_msg.join('<br/>'), {type : 'html'});'''
                 })
 
 

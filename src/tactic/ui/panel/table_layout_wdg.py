@@ -4192,7 +4192,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
   
     var data_bottom_row = data.getElement(".spt_table_bottom_row");
     if (!data_header_row) {
-        spt.error("There may have been an error:<br>" + widget_html, {type: 'html'});
+        spt.error("There may have been an error:<br/>" + widget_html, {type: 'html'});
         return;
     }
 
