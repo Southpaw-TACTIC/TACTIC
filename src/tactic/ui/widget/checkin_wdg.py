@@ -564,27 +564,6 @@ class CheckinWdg(BaseRefreshWdg):
                         my.process = my.processes[0]
 
 
-                #TODO: do not apply but some mode rely on it. clean up later
-                """
-                context_div = DivWdg()
-                context_wdg = ContextPanelWdg(process=my.process, search_type=my.search_type, context=my.context, show_context=my.show_context, show_sub_context=show_sub_context)
-                context_div.add(context_wdg)
-                context_div.add_style("padding-top: 5px")
-                 
-                my.context = context_wdg.get_context()
-                if my.show_context:
-                    context_title_div = FloatDivWdg('Context: &nbsp;')
-                    context_title_div.add_style("margin: 5px 0 0 0")
-                    context_title_div.add_style("font-weight: bold")
-                    context_title_div.add_style("font-size: 14px")
-                    # since it is now on the right, have to line break
-                    div.add(HtmlElement.br(2))
-                    div.add(context_title_div)
-                    div.add_style("height: 65px")
-
-                div.add(context_div)
-                """
-
             div.add_style("margin-bottom: 20px")
 
 
@@ -593,7 +572,6 @@ class CheckinWdg(BaseRefreshWdg):
 
 
 
-    # FIXME: this method is defined twice in this file!!!!!
     def _get_sandbox_dir(my, use_default=False):
         '''get the sandbox directory'''
 
@@ -602,28 +580,44 @@ class CheckinWdg(BaseRefreshWdg):
             if sandbox_dir:
                 return sandbox_dir
 
-        cb = CheckboxWdg('link_sandbox', label='link')
-        cb.set_persistence()
-        if not cb.is_checked():
-            # find current snapshot for this:
-            snapshot = Snapshot.get_current_by_sobject(my.sobject, context=my.context)
-            if snapshot:
-                sandbox_dir = snapshot.get_sandbox_dir(file_type='main')
-            else:
-                type ='main'
-                virtual_snapshot = Snapshot.create_new()
-                virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(type)
-                virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
-                virtual_snapshot.set_value("process", my.process)
 
-                # for purposes of the sandbox folder for the checkin widget,
-                # the context is the process
-                virtual_snapshot.set_value("context", my.process)
-                virtual_snapshot.set_sobject(my.sobject)
-                sandbox_dir = virtual_snapshot.get_sandbox_dir(file_type='main')
-        else:
-            sandbox_dir = my.kwargs.get('sandbox_dir')
+        search_key = my.sobject.get_search_key()
+        key = "sandbox_dir:%s" % search_key
+        from pyasm.web import WidgetSettings
+        sandbox_dir = WidgetSettings.get_value_by_key(key)
+        if sandbox_dir:
+            return sandbox_dir
+
+        sandbox_dir = CheckinWdg.get_sandbox_dir(my.sobject, my.process, my.context)
+
         return sandbox_dir
+
+
+
+    def get_sandbox_dir(cls, sobject, process, context):
+
+        # find current snapshot for this:
+        snapshot = Snapshot.get_current_by_sobject(sobject, context= context)
+        if snapshot:
+            sandbox_dir = snapshot.get_sandbox_dir(file_type='main')
+        else:
+            type ='main'
+            virtual_snapshot = Snapshot.create_new()
+            virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(type)
+            virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
+            virtual_snapshot.set_value("process", process)
+
+            # for purposes of the sandbox folder for the checkin widget,
+            # the context is the process
+            virtual_snapshot.set_value("context", process)
+            virtual_snapshot.set_sobject(sobject)
+            sandbox_dir = virtual_snapshot.get_sandbox_dir(file_type='main')
+
+        return sandbox_dir
+
+    get_sandbox_dir = classmethod(get_sandbox_dir)
+
+
 
 
 
@@ -1149,7 +1143,6 @@ class CheckoutWdg(CheckinWdg):
 
 
 class CheckinInfoPanelWdg(BaseRefreshWdg):
-    '''stores the 3 components for CheckinWdg'''
 
     def init(my):
         my.search_key = my.kwargs.get('search_key')
@@ -1276,7 +1269,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         my.checkout_script_path = my.kwargs.get('checkout_script_path')
 
         # get the sandbox directory
-        my.sandbox_dir = my._get_sandbox_dir()
+        my.sandbox_dir = my.kwargs.get("sandbox_dir")
 
         my.checkin_relative_dir = my.kwargs.get('checkin_relative_dir')
         my.checkin_ui_options = my.kwargs.get('checkin_ui_options')
@@ -1291,36 +1284,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-    def _get_sandbox_dir(my):
-        '''get sandbox dir thru the currently selected process instead of the passed-in one
-            if necessary'''
 
-        sandbox_dir = my.kwargs.get("sandbox_dir")
-        if sandbox_dir:
-            return sandbox_dir
-
-        cb = CheckboxWdg('link_sandbox', label='link')
-        cb.set_persistence()
-        if not cb.is_checked():
-            # find current snapshot for this:
-            snapshot = Snapshot.get_current_by_sobject(my.sobject, context= my.context)
-            if snapshot:
-                sandbox_dir = snapshot.get_sandbox_dir(file_type='main')
-            else:
-                type ='main'
-                virtual_snapshot = Snapshot.create_new()
-                virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(type)
-                virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
-                virtual_snapshot.set_value("process", my.process)
-
-                # for purposes of the sandbox folder for the checkin widget,
-                # the context is the process
-                virtual_snapshot.set_value("context", my.process)
-                virtual_snapshot.set_sobject(my.sobject)
-                sandbox_dir = virtual_snapshot.get_sandbox_dir(file_type='main')
-        else:
-            sandbox_dir = my.kwargs.get('sandbox_dir')
-        return sandbox_dir
 
     def get_display(my):
         top = DivWdg()
@@ -1931,20 +1895,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                     for to_sobject in to_sobjects:
                         name = "%s - %s" % (to_sobject.get_name(), to_process)
-
-                        # get the latest snapshot for this process
-                        """
-                        to_search_type = to_sobject.get_search_type()
-                        to_search_code = to_sobject.get_value("code", no_exception=True)
-                        if not to_search_code:
-                            to_search_code = to_sobject.get_id()
-                        snapshot = Snapshot.get_snapshot(to_search_type, to_search_code, process=to_process)
-
-                        if snapshot:
-                            name += " - (v%0.3d)" % snapshot.get_value("version")
-                        """
-
-
 
                         to_search_key = to_sobject.get_search_key()
                         process_names.append("%s|%s" % (to_search_key, to_process))
@@ -3345,6 +3295,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         dir_div.add_attr("ondragover", "return false")
         dir_div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
 
+        print "paths: ", paths
+
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
             depth = 2 
@@ -3398,93 +3350,31 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             msg_div = DivWdg()
             dir_div.add(msg_div)
 
-            #arrow_div = DivWdg()
-            #msg_div.add(arrow_div)
-            #arrow_div.add(IconWdg("", IconWdg.ARROW_UP_GREEN))
-            #arrow_div.add("&nbsp;"*10)
-            #arrow_div.add(IconWdg("", IconWdg.ARROW_UP_GREEN))
-            #arrow_div.add("&nbsp;"*10)
-            #arrow_div.add(IconWdg("", IconWdg.ARROW_UP_GREEN))
-            #arrow_div.add_style("margin: -10 0 10px 120px")
 
+            # look at the list of available namings
+            #search_type = my.sobject.get_base_search_type()
+            #search = Search("config/naming")
+            #search.add_filter("search_type",search_type)
+            #search.add_filter("process", my.process)
+            #num_base_dirs = search.get_count()
 
-            msg_div.add(IconWdg("", IconWdg.ARROW_UP_LEFT_32))
-            msg_div.add("Use the above buttons to browse for files or folders to be checked in.")
-            msg_div.add_style("padding: 20px")
-            msg_div.add_style("margin: 20px")
-            msg_div.add_border()
-            msg_div.add_color("background", "background3")
+            alias_dict = Config.get_dict_value("checkin", "sandbox_dir_alias")
+            if len(alias_dict.keys()) > 0:
+                from tactic.ui.checkin import SandboxSelectWdg
+                sandbox_wdg = SandboxSelectWdg(
+                        sobject=my.sobject,
+                        process=my.process
+                )
 
+            else:
+                sandbox_wdg = CheckinSandboxNotExistsWdg(
+                        process=my.process,
+                        sandbox_dir=my.base_dir
+                )
 
+            dir_div.add(sandbox_wdg)
 
-
-
-            # toggle collapsed by default
-            content_div = DivWdg()
-            dir_div.add(content_div)
-            content_div.add_style("padding: 20px")
-            content_div.add_style("margin: 20px")
-            content_div.add_border()
-            content_div.add_color("background", "background3")
-
-            content_div.add("<b style='font-size: 15px'>OR</b>")
-            content_div.add("&nbsp;"*5)
-            content_div.add("work in the Sandbox Folder for this process:</b>" )
-
-            table = Table()
-            content_div.add(table)
-            table.add_row()
-            td = table.add_cell()
-            icon = IconWdg("Sandbox Folder does not exist", IconWdg.SANDBOX_32)
-            td.add(icon)
-
-            td = table.add_cell()
-
-            title_div = DivWdg()
-            td.add(title_div)
-
-            msg_div = DivWdg()
-            td.add(msg_div)
-            msg_div.add('<b>"%s"</b><br/><br/>' % my.base_dir)
-            msg_div.add('The sandbox folder is a work folder allocated for this process.  It does not yet exist.  If you wish to work in the sandbox folder, press the "Create" button.')
-            msg_div.add_styles("margin-top: 8px;margin-left: 16px")
-
-
-            checkin = ActionButtonWdg(title="Create >>")
-            checkin_div = FloatDivWdg(checkin)
-            checkin_div.add_style('margin-left: 12px')
-            checkin_div.add_style('margin-top: 5px')
-            checkin_div.add_style('float: right')
-            content_div.add(checkin_div)
-
-
-            checkin.add_behavior( {
-            'type': 'click_up',
-            'sandbox_dir': my.base_dir,
-            'create_sandbox_script': my.create_sandbox_script_path,
-            'cbjs_action': '''
-
-            if (bvr.create_sandbox_script){
-                var script = spt.CustomProject.get_script_by_path(bvr.create_sandbox_script);
-                bvr['script'] = script;
-                spt.CustomProject.exec_custom_script(evt, bvr);
-            } 
-            else {
-                var applet = spt.Applet.get();
-                applet.makedirs(bvr.sandbox_dir);
-            }
-
-            var top = bvr.src_el.getParent(".spt_checkin_top");
-            spt.panel.refresh(top);
-            '''
-            } )
-
-
-            content_div.add("<br clear='all'/>")
-
-            dir_div.add("<br clear='all'/>")
-
-
+            
 
         return top
 
@@ -4841,27 +4731,6 @@ class CheckinHistoryWdg(BaseRefreshWdg):
         my.set_state(state)
 
 
-        # this links the sandbox to the original task, regardless if the user has switched to another
-        # process in the Checkin/out Wdg
-        cb = CheckboxWdg('link_sandbox', label='link')
-        cb.add_class('link_sandbox')
-        cb.set_persistence()
-        cb.add_behavior({'type': 'click_up',
-            'cbjs_action': '''
-                if (bvr.src_el.checked)
-                    spt.app_busy.show("Refreshing", "Linking to original sandbox...");
-                else
-                    spt.app_busy.show("Refreshing", "Unlinking from original sandbox...");
-
-            setTimeout( function(){
-                var top = bvr.src_el.getParent(".spt_checkin_top");
-                spt.panel.refresh(top);
-                spt.app_busy.hide();
-                })
-
-            '''})
-
-
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
         client_lib_dir = server.get_client_dir(parent_key, mode='client_repo')
@@ -4908,33 +4777,6 @@ class CheckinHistoryWdg(BaseRefreshWdg):
 
         hist_table = SObjectCheckinHistoryWdg(search_key=parent_key, history_context=context)
         hist_div.add(hist_table)
-
-        """
-        #NOTE: connection feature commented out for now
-        title_div = DivWdg()
-        title = "Connection"
-        swap = NewSwapDisplayWdg(title=title, icon='CONNECT')
-        title_div.add(swap)
-        content.add(title_div)
-
-        connect_div = DivWdg()
-        unique_id = connect_div.set_unique_id("content")
-        swap.set_content_id(unique_id)
-
-        connect_div.add_style("padding-top: 5px")
-        connect_div.add_style("overflow-x: hidden")
-        connect_div.add_style("overflow-y: auto")
-        connect_div.add_style("max-height: 600px")
-        connect_div.add_style("display: none")
-        content.add(connect_div)
-        connect_div.add_color("background", "background")
-        connect_div.add_color("color", "color")
-
-
-        from tactic.ui.panel import ViewPanelWdg
-        depend_table = ViewPanelWdg(search_type="sthpw/connection", view="table")
-        connect_div.add(depend_table)
-        """
 
 
         if my.kwargs.get("is_refresh"):
@@ -4999,6 +4841,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_checkin_top");
             var table = top.getElement(".spt_table");
+            // link_sandbox is DEPRECATED
             var link = top.getElement(".link_sandbox");
             var search_keys = spt.dg_table.get_selected_search_keys(table);
             if (search_keys.length == 0) {
@@ -5030,6 +4873,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_checkin_top");
+            // link_sandbox is DEPRECATED
             var link = top.getElement(".link_sandbox");
             var table = top.getElement(".spt_table");
             var search_keys = spt.dg_table.get_selected_search_keys(table);
@@ -5443,7 +5287,6 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         # find all of the contexts that have been checked in
         
         contexts = my.get_snapshot_contexts(search_type, search_id)
-        
 
 
         # set the context if one has been passed in

@@ -399,9 +399,24 @@ class Environment(Base):
 
 
 
-    def get_sandbox_dir():
+    def get_sandbox_dir(alias=None):
+
         from pyasm.biz import PrefSetting
         base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+
+        if not base_dir:
+
+            if alias:
+                if Environment.get_env_object().get_client_os() =='nt':
+                    alias_dict = Config.get_value("checkin", "win32_snapshot_dir_alias", sub_key=alias)
+                else:
+                    alias_dict = Config.get_value("checkin", "linux_snapshot_dir_alias", sub_key=alias)
+
+                if not alias_dict:
+                    alias_dict = Config.get_value("checkin", "snapshot_dir_alias", sub_key=alias)
+
+                base_dir = alias_dict.get("default")
+
         if not base_dir:
 
             if Environment.get_env_object().get_client_os() =='nt':

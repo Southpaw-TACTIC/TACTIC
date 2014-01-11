@@ -75,6 +75,10 @@ class DirNaming(object):
         my.protocol = "file"
         return my.get_dir()
 
+    def get_sandbox_dir(my):
+        my.protocol = "sandbox"
+        return my.get_dir()
+
 
     def _get_recorded_dir(my):
         '''get the recorded dir info in the file table'''
@@ -120,7 +124,11 @@ class DirNaming(object):
             from pyasm.biz import File 
             my._file_object = File.get_by_code(file_code)
 
-    def get_dir(my):
+    def get_dir(my, protocol=None, alias=None):
+
+        if protocol:
+            my.protocol = protocol
+
         assert my.protocol != None
         assert my.sobject != None
         
@@ -128,7 +136,7 @@ class DirNaming(object):
         my._init_file_object()
 
         dirs = []
-        dirs.extend( my.get_base_dir() )
+        dirs.extend( my.get_base_dir(alias=alias) )
         if not my.create:
            dir_dict = my._get_recorded_dir()
            if dir_dict.get('relative_dir'):
@@ -303,7 +311,7 @@ class DirNaming(object):
 
 
 
-    def get_base_dir(my, protocol=None):
+    def get_base_dir(my, protocol=None, alias=None):
         '''get the default base directory for this sobject'''
         dirs = []
         base_dir = ''
@@ -321,7 +329,7 @@ class DirNaming(object):
 
 
         elif protocol == "remote":
-            # TODO: currently needs web to do this
+            # NOTE: currently needs web to do this
             base_dir = Environment.get_env_object().get_base_url().to_string()
 
             repo_handler = my.sobject.get_repo_handler(my.snapshot)
@@ -396,12 +404,20 @@ class DirNaming(object):
 
 
         elif protocol == "sandbox":
+
             remote_repo = my.get_remote_repo()
             if remote_repo:
                 base_dir = remote_repo.get_value("sandbox_base_dir")
             else:
 
-                base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+                if not base_dir:
+                    base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+
+                if not base_dir and alias:
+                    alias_dict = Config.get_dict_value("checkin", "sandbox_dir_alias")
+                    base_dir = alias_dict.get(alias)
+
+
                 if not base_dir:
 
                     if Environment.get_env_object().get_client_os() =='nt':

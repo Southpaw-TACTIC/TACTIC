@@ -2885,6 +2885,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
     // handle state
     var state = target.getAttribute("spt_state");
+    if (!state) {
+        state = {};
+    }
     var view_attrs = target.getAttribute("spt_view_attrs");
     var expr = target.getAttribute("spt_expression");
     var search_limit = target.getAttribute("spt_search_limit");
