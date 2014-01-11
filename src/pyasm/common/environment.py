@@ -493,15 +493,20 @@ class Environment(Base):
 
 
 
-    def get_asset_dir(file_object=None):
+    def get_asset_dir(file_object=None, alias=None):
         '''get base asset directory'''
-        asset_dir = Config.get_value("checkin","asset_base_dir")
-
         if file_object:
-            base_dir_alias = file_object.get_value('base_dir_alias')
-            if base_dir_alias:
-                alias_dict = Config.get_value("checkin", "base_dir_alias", sub_key=base_dir_alias)
-                asset_dir = alias_dict.get("asset_base_dir")
+            alias = file_object.get_value('base_dir_alias')
+
+        if alias:
+            alias_dict = Config.get_dict_value("checkin", "base_dir_alias")
+            asset_dir = alias_dict.get(alias)
+        else:
+            asset_dir = None
+
+
+        if not asset_dir:
+            asset_dir = Config.get_value("checkin","asset_base_dir")
 
         if not asset_dir:
             data_dir = Environment.get_data_dir()

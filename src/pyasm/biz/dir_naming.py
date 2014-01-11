@@ -124,6 +124,7 @@ class DirNaming(object):
             from pyasm.biz import File 
             my._file_object = File.get_by_code(file_code)
 
+
     def get_dir(my, protocol=None, alias=None):
 
         if protocol:
@@ -134,6 +135,12 @@ class DirNaming(object):
         
         # this is needed first
         my._init_file_object()
+
+        # get the alias from the naming, if it exists
+        if not alias:
+            naming = Naming.get(my.sobject, my.snapshot)
+            if naming:
+                alias = naming.get_value("base_dir_alias")
 
         dirs = []
         dirs.extend( my.get_base_dir(alias=alias) )
@@ -342,7 +349,7 @@ class DirNaming(object):
 
         elif protocol == "file":
             #base_dir = Config.get_value("checkin", "asset_base_dir")
-            base_dir = Environment.get_asset_dir(my._file_object)
+            base_dir = Environment.get_asset_dir(alias=alias)
 
         elif protocol == "env":
             base_dir = "$TACTIC_ASSET_DIR"
@@ -410,13 +417,10 @@ class DirNaming(object):
                 base_dir = remote_repo.get_value("sandbox_base_dir")
             else:
 
-                if not base_dir:
-                    base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
-
+                base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
                 if not base_dir and alias:
                     alias_dict = Config.get_dict_value("checkin", "sandbox_dir_alias")
                     base_dir = alias_dict.get(alias)
-
 
                 if not base_dir:
 
@@ -573,6 +577,8 @@ class DirNaming(object):
             return None
 
         file_type = my.get_file_type()
+
+        alias = naming.get_value("base_dir_alias", no_exception=True)
 
         # build the dir name
         dir_name = naming_util.naming_to_dir(naming_expr, my.sobject, my.snapshot, file=my._file_object, file_type=file_type)
