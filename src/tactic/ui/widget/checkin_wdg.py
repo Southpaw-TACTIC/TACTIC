@@ -597,7 +597,7 @@ class CheckinWdg(BaseRefreshWdg):
     def get_sandbox_dir(cls, sobject, process, context):
 
         # find current snapshot for this:
-        snapshot = Snapshot.get_current_by_sobject(sobject, context= context)
+        snapshot = Snapshot.get_current_by_sobject(sobject, context=context)
         if snapshot:
             sandbox_dir = snapshot.get_sandbox_dir(file_type='main')
         else:

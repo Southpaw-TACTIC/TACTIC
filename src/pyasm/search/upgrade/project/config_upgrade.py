@@ -19,6 +19,25 @@ from pyasm.search.upgrade.project import *
 class ConfigUpgrade(BaseUpgrade):
 
     #
+    # 4.2.0.a01
+    #
+
+    def upgrade_v4_2_0_a01_002(my):
+        my.run_sql('''
+        ALTER TABLE "naming" ADD "sandbox_dir_alias" varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_2_0_a01_001(my):
+        my.run_sql('''
+        ALTER TABLE "naming" ADD "base_dir_alias" varchar(256);
+        ''')
+
+
+
+
+    #
     # 4.1.0.b02
     #
 
