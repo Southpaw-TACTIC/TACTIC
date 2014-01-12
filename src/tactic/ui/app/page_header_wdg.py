@@ -278,7 +278,8 @@ class PageHeaderWdg(Widget):
                 'cbjs_action': '''
                  var ok = function(){
                  var server = TacticServerStub.get();
-                    server.execute_cmd("SignOutCmd", {login: bvr.login} );
+                    var login = spt.Environment.get().get_user();
+                    server.execute_cmd("SignOutCmd", {login: login} );
                     //var href = document.location.href;
                     //var parts = href.split("#");
                     //window.location.href=parts[0];
