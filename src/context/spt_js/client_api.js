@@ -1034,14 +1034,6 @@ TacticServerStub = function() {
     }
 
 
-    /* 
-     * Task methods
-     */ 
-    this.create_task = function(search_key, kwargs) {
-        return this._delegate("create_task", arguments, kwargs);
-    }
- 
-
 
     /* 
      * Note methods

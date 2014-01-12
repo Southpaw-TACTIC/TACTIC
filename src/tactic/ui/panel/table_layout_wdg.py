@@ -475,16 +475,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # can key on this
         inner.add_attr("spt_version", "2")
 
-        # add an upload_wdg
-        from tactic.ui.input import Html5UploadWdg
-        upload_wdg = Html5UploadWdg()
-        inner.add(upload_wdg)
-        my.upload_id = upload_wdg.get_upload_id()
-        inner.add_attr('upload_id',my.upload_id)
 
 
 
         if my.kwargs.get('temp') != True:
+            
+            if not Container.get_dict("JSLibraries", "spt_html5upload"):
+                # add an upload_wdg
+                from tactic.ui.input import Html5UploadWdg
+                upload_wdg = Html5UploadWdg()
+                inner.add(upload_wdg)
+                my.upload_id = upload_wdg.get_upload_id()
+                inner.add_attr('upload_id',my.upload_id)
             
             # get all client triggers
             exp = "@SOBJECT(config/client_trigger['event','EQ','%s$'])" %my.search_type
@@ -571,13 +573,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        is_refresh = my.kwargs.get("is_refresh")
+        #is_refresh = my.kwargs.get("is_refresh")
 
         if my.kwargs.get("show_shelf") not in ['false', False]:
             # draws the row of buttons to insert and refresh
             action = my.get_action_wdg()
             inner.add(action)
-
         # get all the edit widgets
         if my.view_editable and my.edit_permission:
             my.edit_wdgs = my.get_edit_wdgs()
@@ -661,12 +662,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
             show_context_menu = True
 
-        menus_in = {}
-        if show_context_menu:
-            menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
-            menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
-        if menus_in:
-            SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        
+        temp = my.kwargs.get("temp")
+        
+        if temp != True:
+            menus_in = {}
+            if show_context_menu:
+                menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
+                menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+            if menus_in:
+                SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
@@ -684,7 +689,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.handle_table_behaviors(table)
 
-        temp = my.kwargs.get("temp")
      
         # draw 4 (even) rows initially by default
         has_loading = False

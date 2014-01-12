@@ -318,6 +318,7 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
       <search_type>sthpw/note</search_type>
+      <simple_search_view>simple_filter</simple_search_view>
       <view>table</view>
       <filter>
       [
