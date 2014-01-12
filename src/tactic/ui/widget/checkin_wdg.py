@@ -3296,8 +3296,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         dir_div.add_attr("ondragover", "return false")
         dir_div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
 
-        print "paths: ", paths
-
         if paths or paths == []:
             dir_div.add_style("overflow-y: auto")
             depth = 2 
@@ -3359,11 +3357,18 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             #search.add_filter("process", my.process)
             #num_base_dirs = search.get_count()
 
-            alias_dict = Config.get_dict_value("checkin", "win32_sandbox_dir")
+            client_os = Environment.get_env_object().get_client_os()
+            if client_os == 'nt':
+                prefix = "win32"
+            else:
+                prefix = "linux"
+
+            alias_dict = Config.get_dict_value("checkin", "%s_sandbox_dir" % prefix)
             if len(alias_dict.keys()) > 1:
+                search_key = my.sobject.get_search_key()
                 from tactic.ui.checkin import SandboxSelectWdg
                 sandbox_wdg = SandboxSelectWdg(
-                        sobject=my.sobject,
+                        search_key=my.search_key,
                         process=my.process
                 )
 
@@ -3806,6 +3811,34 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         '''
         }
         menu_item.add_behavior( behavior )
+
+
+        title = "Select Sandbox Folder"
+        menu_item = MenuItem(type='action', label=title)
+        menu.add(menu_item)
+        behavior = {
+        'type': 'click_up',
+        'search_key': my.search_key,
+        'process': my.process,
+        'cbjs_action': '''
+
+        var class_name = 'tactic.ui.checkin.SandboxSelectWdg';
+        var kwargs = {
+            search_key: bvr.search_key,
+            process: bvr.process
+        }
+
+        var activator = spt.smenu.get_activator(bvr);
+        var top = activator.getParent(".spt_checkin_top");
+        var el = top.getElement(".spt_checkin_content");
+        spt.panel.load(el, class_name, kwargs);
+
+
+
+        '''
+        }
+        menu_item.add_behavior( behavior )
+
 
 
 

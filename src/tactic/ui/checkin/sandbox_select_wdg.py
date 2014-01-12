@@ -28,7 +28,6 @@ class SandboxSelectWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
-        my.set_as_panel(top)
         top.add_class("spt_sandbox_select_top")
 
         sandbox_options = [
@@ -47,10 +46,19 @@ class SandboxSelectWdg(BaseRefreshWdg):
         ]
 
         process = my.kwargs.get("process")
-        sobject = my.kwargs.get("sobject")
+
+        search_key = my.kwargs.get("search_key")
+        sobject = Search.get_by_search_key(search_key)
+
+
         search_type = sobject.get_base_search_type()
 
-        alias_dict = Config.get_dict_value("checkin", "sandbox_dir_alias")
+        client_os = Environment.get_env_object().get_client_os()
+        if client_os == 'nt':
+            prefix = "win32"
+        else:
+            prefix = "linux"
+        alias_dict = Config.get_dict_value("checkin", "%s_sandbox_dir" % prefix)
 
         search_key = sobject.get_search_key()
         key = "sandbox_dir:%s" % search_key
@@ -68,6 +76,7 @@ class SandboxSelectWdg(BaseRefreshWdg):
             var last_background = bvr.src_el.getStyle("background-color");
             bvr.src_el.setAttribute("spt_last_background", last_background);
             bvr.src_el.setStyle("background-color", "#E0E0E0");
+            bvr.src_el.setStyle("opacity", "1.0");
             '''
         } )
 
@@ -77,6 +86,9 @@ class SandboxSelectWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var last_background = bvr.src_el.getAttribute("spt_last_background");
             bvr.src_el.setStyle("background-color", last_background);
+            if (!bvr.src_el.hasClass("spt_selected")) {
+                bvr.src_el.setStyle("opacity", "0.5");
+            }
             '''
         } )
 
@@ -92,8 +104,14 @@ class SandboxSelectWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             server.set_widget_setting(bvr.key, sandbox_dir);
 
-            var top = bvr.src_el.getParent(".spt_sandbox_select_top");
-            top.setStyle("border", "solid 1px blue");
+
+            var applet = spt.Applet.get();
+
+            applet.makedirs(sandbox_dir);
+
+            //var top = bvr.src_el.getParent(".spt_sandbox_select_top");
+            var top = bvr.src_el.getParent(".spt_checkin_top");
+            spt.panel.refresh(top);
             '''
         } )
 
@@ -116,7 +134,9 @@ class SandboxSelectWdg(BaseRefreshWdg):
 
         naming_expr = naming.get_value("sandbox_dir_naming")
         alias_options = naming.get_value("sandbox_dir_alias")
-        if alias_options:
+        if alias_options == "__all__":
+            alias_options = alias_dict.keys()
+        elif alias_options:
             alias_options = alias_options.split("|")
         else:
             alias_options = ['default']
@@ -137,15 +157,16 @@ class SandboxSelectWdg(BaseRefreshWdg):
             if value == base_dir:
                 sandbox_div.add_color("background", "background3")
                 #sandbox_div.set_box_shadow()
+                sandbox_div.add_class("spt_selected")
             else:
-                sandbox_div.add_style("opacity", "0.6")
+                sandbox_div.add_style("opacity", "0.5")
 
 
             sandbox_div.add_style("width: auto")
-            sandbox_div.add_style("height: 75px")
-            sandbox_div.add_style("padding: 10px")
+            sandbox_div.add_style("height: 55px")
+            sandbox_div.add_style("padding: 5px")
             #sandbox_div.add_style("float: left")
-            sandbox_div.add_style("margin: 20px")
+            sandbox_div.add_style("margin: 15px")
 
             sandbox_div.add_border()
 
