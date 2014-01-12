@@ -18,4 +18,5 @@ from file_properties_wdg import *
 from changelist_wdg import *
 from workspace_wdg import *
 from simple_checkin_wdg import *
+from sandbox_select_wdg import *
 

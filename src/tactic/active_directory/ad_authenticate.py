@@ -88,10 +88,14 @@ class ADAuthenticate(Authenticate):
     def get_user_mapping(my):
         '''returns a dictionary of the mappings between AD attributes to
         login table attributes'''
+        # NOTE: ensure this syncs up with the map in get_user_info() 
+        # in ad_get_user_info.py
         attrs_map = {
             'dn':               'dn',
             'displayName':      'display_name',
             'name':             'name',
+            'sn':               'last_name',
+            'givenName':        'first_name',
             'mail':             'email',
             'telephoneNumber':  'phone_number',
             'department':       'department',
@@ -180,13 +184,17 @@ class ADAuthenticate(Authenticate):
 
         # split up display name into first and last name
         display_name = data.get('display_name')
-	try:
-	    first_name, last_name = display_name.split(' ', 1)
-            first_name = first_name.replace(",","")
-            last_name = last_name.replace(",", "")
-        except:
-            first_name = display_name
-	    last_name = ''
+        if data.get('first_name') and data.get('last_name'):
+            first_name = data.get('first_name')
+            last_name = data.get('last_name')
+        else:
+            try:
+                first_name, last_name = display_name.split(' ', 1)
+                first_name = first_name.replace(",","")
+                last_name = last_name.replace(",", "")
+            except:
+                first_name = display_name
+                last_name = ''
 
         # alter so that it works for now
         data = {
