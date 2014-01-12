@@ -88,7 +88,12 @@ class Config(Base):
     def get_dict_value(cls, module_name, key, no_exception=True, default="", use_cache=True):
         value = cls.get_value(module_name, key, no_exception, default, use_cache)
         if value:
-            value = eval(value)
+            try:
+                value = jsonloads(value)
+            except ValueError, e:
+                value = {
+                    'default': value.strip()
+                }
         else:
             value = {}
         return value

@@ -3359,8 +3359,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             #search.add_filter("process", my.process)
             #num_base_dirs = search.get_count()
 
-            alias_dict = Config.get_dict_value("checkin", "sandbox_dir_alias")
-            if len(alias_dict.keys()) > 0:
+            alias_dict = Config.get_dict_value("checkin", "win32_sandbox_dir")
+            if len(alias_dict.keys()) > 1:
                 from tactic.ui.checkin import SandboxSelectWdg
                 sandbox_wdg = SandboxSelectWdg(
                         sobject=my.sobject,
