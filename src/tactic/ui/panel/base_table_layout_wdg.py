@@ -11,7 +11,7 @@
 #
 __all__ = ["BaseTableLayoutWdg"]
 
-from pyasm.common import Common, Environment, jsondumps, jsonloads, TacticException
+from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
@@ -2314,7 +2314,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         context = "icon";
 
                     // set the form
-                    spt.html5upload.set_form( $(bvr.upload_id) );
+                    
+                    if (!spt.html5upload.form) {
+                        spt.html5upload.set_form( $(bvr.upload_id) );
+                    }
                     spt.html5upload.clear();
 
                     var server = TacticServerStub.get();
@@ -2422,6 +2425,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
 
             bvr_cb["description"] = "Checking in preview ..."
+            # set a dummy
+            if Container.get_dict("JSLibraries", "spt_html5upload"):
+                my.upload_id = '0'
             bvr_cb["upload_id"] = my.upload_id
             spec_list.append( {
                 "type": "action",

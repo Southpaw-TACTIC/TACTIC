@@ -68,6 +68,7 @@ class Html5UploadWdg(BaseRefreshWdg):
         if not Container.get_dict("JSLibraries", "spt_html5upload"):
             form.add_behavior( {
             'type': 'load',
+            'form_id': my.form_id,
             'cbjs_action': '''
 
 if (spt.html5upload)
@@ -76,7 +77,7 @@ if (spt.html5upload)
 spt.Environment.get().add_library("spt_html5upload")
 
 spt.html5upload = {};
-spt.html5upload.form = null;
+spt.html5upload.form = $(bvr.form_id);
 spt.html5upload.files = [];
 spt.html5upload.events = {};
 
@@ -137,8 +138,11 @@ spt.html5upload.select_files = function(onchange) {
         alert('remove')
     }
     */
+   
+    var event_name = 'select_file';
     // ensure this listener is only added once
-    if (!spt.html5upload.events['select_file']){
+    if (!spt.html5upload.events[event_name]){
+     
         el.addEventListener("change", onchange, true);
     }
 
@@ -146,12 +150,13 @@ spt.html5upload.select_files = function(onchange) {
     if (spt.browser.is_Qt() || spt.browser.is_Safari()) {
         setTimeout( function() {
             el.click();
-            spt.html5upload.events['select_file'] = onchange;
+            spt.html5upload.events[event_name] = onchange;
         }, 100 );
     }
     else {
+        
         el.click();
-        spt.html5upload.events['select_file'] = onchange;
+        spt.html5upload.events[event_name] = onchange;
     }
 
     // FIXME: this is not very useful as the select file is async, but
@@ -170,7 +175,9 @@ spt.html5upload.clear = function() {
     var new_element = el.cloneNode(true);
     el.parentNode.replaceChild(new_element, el);
 
-    spt.html5upload.events['select_file'] = null;
+    var event_name = 'select_file';
+
+    spt.html5upload.events[event_name] = null;
     
 }
 
@@ -380,7 +387,9 @@ class UploadButtonWdg(BaseRefreshWdg):
             var search_key = bvr.search_key;
 
             // set the form
-            spt.html5upload.set_form( $(bvr.upload_id) );
+            if (!spt.html5upload.form) {
+                spt.html5upload.set_form( $(bvr.upload_id) );
+            }
             spt.html5upload.clear();
             spt.html5upload.kwargs = bvr.kwargs;
 
