@@ -176,7 +176,7 @@ class CheckinWdg(BaseRefreshWdg):
         
         title_div = DivWdg()
         #title_div.add_class("maq_search_bar")
-        title_div.add_gradient("background", "background", -10)
+        title_div.add_color("background", "background", -10)
         title_div.add_style("height: 20px")
         title_div.add_style("padding: 5px")
         title_div.add_style("font-weight: bold")
@@ -3283,7 +3283,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         dir_div = DivWdg()
         td.add(dir_div)
         dir_div.add_style("min-height: 300px")
-        dir_div.add_style("height: 300px")
+        #dir_div.add_style("height: 300px")
+        dir_div.add_style("max-height: 700px")
         dir_div.add_class("spt_checkin_content")
         dir_div.add_class("spt_resizable")
         dir_div.add_style("min-width: 500px")

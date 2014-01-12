@@ -328,11 +328,18 @@ class DirNaming(object):
 
         if protocol == "http":
 
-            repo_handler = my.sobject.get_repo_handler(my.snapshot)
-            if repo_handler.is_tactic_repo():
-                base_dir = Config.get_value("checkin", "web_base_dir")
-            else:
-                base_dir = Config.get_value("perforce", "web_base_dir")
+            if alias:
+                base_dir = '/data/assets/%s' % alias
+
+            if not base_dir:
+                repo_handler = my.sobject.get_repo_handler(my.snapshot)
+                if repo_handler.is_tactic_repo():
+                    base_dir = Config.get_value("checkin", "web_base_dir")
+                else:
+                    base_dir = Config.get_value("perforce", "web_base_dir")
+
+            if not base_dir:
+                base_dir = "/assets"
 
 
         elif protocol == "remote":

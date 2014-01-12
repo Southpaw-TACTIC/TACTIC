@@ -491,7 +491,19 @@ class Environment(Base):
     get_upgrade_dir = classmethod(get_upgrade_dir)
 
 
+    def get_asset_dirs():
+        alias_dict = Config.get_dict_value("checkin", "base_dir_alias")
+        
+        if not alias_dict.get('default'):
+            asset_dir = Config.get_value("checkin","asset_base_dir")
+            if not asset_dir:
+                data_dir = Environment.get_data_dir()
+                if data_dir:
+                    asset_dir = "%s/assets" % data_dir
+            alias_dict['default'] = asset_dir
 
+        return alias_dict
+    get_asset_dirs = staticmethod(get_asset_dirs)
 
     def get_asset_dir(file_object=None, alias=None):
         '''get base asset directory'''
