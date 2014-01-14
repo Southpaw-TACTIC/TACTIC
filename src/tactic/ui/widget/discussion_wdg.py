@@ -1241,36 +1241,39 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':5})
 
 
-                shelf_wdg = DivWdg()
-                note_dialog.add(shelf_wdg)
-                shelf_wdg.add_style("height: 30px")
-                shelf_wdg.add_color("background", "background3")
+                show_add = my.kwargs.get("show_add")
+                if show_add not in ['false', False]:
 
-                add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
-                shelf_wdg.add(add_wdg)
-                add_wdg.add_style("float: right")
-                add_wdg.add_style("margin-right: -3px")
+                    shelf_wdg = DivWdg()
+                    note_dialog.add(shelf_wdg)
+                    shelf_wdg.add_style("height: 30px")
+                    shelf_wdg.add_color("background", "background3")
 
-                add_wdg.add_attr("spt_process", process)
-                add_wdg.add_attr("spt_context", context)
-                add_class = my.get_note_class(my.hidden) 
-                add_wdg.add_class(add_class)
+                    add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
+                    shelf_wdg.add(add_wdg)
+                    add_wdg.add_style("float: right")
+                    add_wdg.add_style("margin-right: -3px")
 
-                sk = my.parent.get_search_key(use_id=True)
-                if isinstance(sk, unicode):
-                    sk = sk.encode('utf-8')
-                kwargs = {
-                        'search_key': sk,
-                        'context': context_choices,
-                        'process': process_choice,
-                        'use_parent': my.use_parent,
-                        'append_process': my.append_processes
-                }
+                    add_wdg.add_attr("spt_process", process)
+                    add_wdg.add_attr("spt_context", context)
+                    add_class = my.get_note_class(my.hidden) 
+                    add_wdg.add_class(add_class)
 
-                add_note_wdg = DivWdg()
-                add_note_wdg.add_class("spt_add_note_container")
-                add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
-                note_dialog.add(add_note_wdg)
+                    sk = my.parent.get_search_key(use_id=True)
+                    if isinstance(sk, unicode):
+                        sk = sk.encode('utf-8')
+                    kwargs = {
+                            'search_key': sk,
+                            'context': context_choices,
+                            'process': process_choice,
+                            'use_parent': my.use_parent,
+                            'append_process': my.append_processes
+                    }
+
+                    add_note_wdg = DivWdg()
+                    add_note_wdg.add_class("spt_add_note_container")
+                    add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+                    note_dialog.add(add_note_wdg)
 
 
                 note_content = DivWdg()
@@ -1368,48 +1371,21 @@ class DiscussionWdg(BaseRefreshWdg):
         
         div.add_behavior(bvr)
 
+        show_add = my.kwargs.get("show_add")
+        if show_add not in ['false', False]:
+            add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
+            div.add(add_wdg)
+            add_wdg.add_style("float: right")
+            add_wdg.add_style("margin-top: -7px")
+            add_wdg.add_style("margin-right: -3px")
+            #dialog.set_as_activator(add_wdg)
 
-        add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
-        div.add(add_wdg)
-        add_wdg.add_style("float: right")
-        add_wdg.add_style("margin-top: -7px")
-        add_wdg.add_style("margin-right: -3px")
-        #dialog.set_as_activator(add_wdg)
+            add_class = my.get_note_class(my.hidden) 
+            add_wdg.add_class(add_class)
 
-        add_class = my.get_note_class(my.hidden) 
-        add_wdg.add_class(add_class)
-
-        add_wdg.add_attr("spt_process", process)
-        add_wdg.add_attr("spt_context", context)
+            add_wdg.add_attr("spt_process", process)
+            add_wdg.add_attr("spt_context", context)
        
-        """
-        add_wdg.add_behavior( {
-        'type': 'click_up',
-        #'dialog_id': dialog_id,
-        'process': process,
-        'context': context,
-        'cbjs_action': '''
-
-        var top = bvr.src_el.getParent(".spt_discussion_context_top");
-        var add_note = top.getElement(".spt_discussion_add_note");
-        spt.toggle_show_hide(add_note);
-
-        var select = add_note.getElement(".spt_add_note_process");
-        
-        if (!select) return;
-
-        var match = bvr.process ? bvr.process : bvr.context;
-        for(var i = 0; i < select.options.length; i++) {
-          
-            if (select.options[i].value == match) {
-                select.selectedIndex = i;
-                break;
-            }
-        }
-
-        '''
-        } )
-        """
 
         div.add_color("color", "color")
         div.add_style("padding", "4px")

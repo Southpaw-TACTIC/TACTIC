@@ -399,9 +399,24 @@ class Environment(Base):
 
 
 
-    def get_sandbox_dir():
+    def get_sandbox_dir(alias=None):
+
         from pyasm.biz import PrefSetting
         base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+
+        if not base_dir:
+
+            if alias:
+                if Environment.get_env_object().get_client_os() =='nt':
+                    alias_dict = Config.get_value("checkin", "win32_snapshot_dir_alias", sub_key=alias)
+                else:
+                    alias_dict = Config.get_value("checkin", "linux_snapshot_dir_alias", sub_key=alias)
+
+                if not alias_dict:
+                    alias_dict = Config.get_value("checkin", "snapshot_dir_alias", sub_key=alias)
+
+                base_dir = alias_dict.get("default")
+
         if not base_dir:
 
             if Environment.get_env_object().get_client_os() =='nt':
@@ -476,17 +491,31 @@ class Environment(Base):
     get_upgrade_dir = classmethod(get_upgrade_dir)
 
 
+    def get_asset_dirs():
+        alias_dict = Config.get_dict_value("checkin", "asset_base_dir")
 
+        # for backwards compatibility:
+        alias_dict2 = Config.get_dict_value("checkin", "base_dir_alias")
+        if alias_dict2:
+            for key,value in alias_dict2.items():
+                alias_dict[key] = value
 
-    def get_asset_dir(file_object=None):
+        return alias_dict
+    get_asset_dirs = staticmethod(get_asset_dirs)
+
+    def get_asset_dir(file_object=None, alias=None):
         '''get base asset directory'''
-        asset_dir = Config.get_value("checkin","asset_base_dir")
-
         if file_object:
-            base_dir_alias = file_object.get_value('base_dir_alias')
-            if base_dir_alias:
-                alias_dict = Config.get_value("checkin", "base_dir_alias", sub_key=base_dir_alias)
-                asset_dir = alias_dict.get("asset_base_dir")
+            alias = file_object.get_value('base_dir_alias')
+
+        if not alias:
+            alias = "default"
+
+        alias_dict = Config.get_dict_value("checkin", "asset_base_dir")
+        if not alias_dict:
+            alias_dict = Config.get_dict_value("checkin", "base_dir_alias")
+
+        asset_dir = alias_dict.get(alias)
 
         if not asset_dir:
             data_dir = Environment.get_data_dir()

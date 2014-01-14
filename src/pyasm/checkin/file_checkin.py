@@ -424,18 +424,22 @@ class FileCheckin(BaseCheckin):
 
                 relative_dir = relative_dir.strip("/")
                 file_object.set_value("relative_dir", relative_dir)
-                if my.base_dir_alias:
-                    file_object.set_value("base_dir_alias", my.base_dir_alias)
-
             else:
-                # TODO: maybe we need to support multiple base dirs
-                # This will allow another directory to be incorporated
-                # into TACTIC ... the only requirement is that base dir
-                # is registered in TACTIC
-
                 # all other modes use the lib dir
                 lib_dir = my.snapshot.get_lib_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
                 file_object.set_value("checkin_dir", lib_dir)
+
+                # determine base_dir alias
+                asset_dirs = Environment.get_asset_dirs()
+                my.base_dir_alias = None
+                for name, asset_dir in asset_dirs.items():
+                    # leave default blank (for now)
+                    if name == 'default':
+                        continue
+                    if lib_dir.startswith("%s/" % asset_dir):
+                        my.base_dir_alias = name
+                        break
+
 
                 # set the relative dir
                 relative_dir = my.snapshot.get_relative_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
@@ -445,6 +449,8 @@ class FileCheckin(BaseCheckin):
                 relative_dir = file_object.get_value("relative_dir")
                 assert(relative_dir)
 
+            if my.base_dir_alias:
+                file_object.set_value("base_dir_alias", my.base_dir_alias)
 
             # make sure checkin_dir and relative_dir are filled out
             checkin_dir = file_object.get_value("checkin_dir")

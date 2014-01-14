@@ -41,7 +41,7 @@ class Config(Base):
 
     CONFIG_KEY = "Config:data"
 
-    def get_value(module_name, key, no_exception=True, default="", use_cache=True, sub_key=None):
+    def get_value(cls, module_name, key, no_exception=True, default="", use_cache=True, sub_key=None):
         '''get configuration file value'''
 
         data = Container.get(Config.CONFIG_KEY)
@@ -83,7 +83,22 @@ class Config(Base):
 
         return value
 
-    get_value = staticmethod(get_value)
+    get_value = classmethod(get_value)
+
+    def get_dict_value(cls, module_name, key, no_exception=True, default="", use_cache=True):
+        value = cls.get_value(module_name, key, no_exception, default, use_cache)
+        if value:
+            try:
+                value = jsonloads(value)
+            except ValueError, e:
+                value = {
+                    'default': value.strip()
+                }
+        else:
+            value = {}
+        return value
+    get_dict_value = classmethod(get_dict_value)
+
 
 
     def reload_config():
