@@ -16,6 +16,7 @@ __all__ = ['UploadServerWdg']
 import os, string, sys
 
 from pyasm.common import Environment, TacticException
+from pyasm.biz import File
 from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
@@ -36,6 +37,8 @@ class UploadServerWdg(Widget):
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
                 file_name = web.get_form_value("file_name%s"% i)
+                if not file_name:
+                    file_name = my.get_file_name(field_storage)
                 items = my.dump(field_storage, file_name)
                 files.extend(items)
 
@@ -43,6 +46,9 @@ class UploadServerWdg(Widget):
         else:
             field_storage = web.get_form_value("file")
             file_name = web.get_form_value("file_name0")
+            if not file_name:
+                file_name = my.get_file_name(field_storage)
+
             files = my.dump(field_storage, file_name)
 
         print "files: ", files
@@ -50,7 +56,30 @@ class UploadServerWdg(Widget):
 
 
 
-    def dump(my, field_storage=None, file_name=None):
+    def get_file_name(my, field_storage):
+
+        file_name = field_storage.filename
+
+        # depending how the file is uploaded. If it's uploaded thru Python,
+        # it has been JSON dumped as unicode code points, so this decode
+        # step would be necessary
+        try:
+            file_name = file_name.decode('unicode-escape')
+        except UnicodeEncodeError, e:
+            pass
+        except UnicodeError,e:
+            pass
+        file_name = file_name.replace("\\", "/")
+        file_name = os.path.basename(file_name)
+
+        # Not sure if this is really needed anymore
+        file_name = File.get_filesystem_name(file_name)
+
+        return file_name
+
+
+
+    def dump(my, field_storage, file_name):
 
         web = WebContainer.get_web()
 
@@ -68,11 +97,12 @@ class UploadServerWdg(Widget):
             file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
 
 
+
         # With some recent change done in cherrypy._cpreqbody line 294
         # we can use the field storage directly and just move the file
         # without using FileUpload
         path = field_storage.get_path()
-        if path:
+        if path and file_name:
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
@@ -83,7 +113,7 @@ class UploadServerWdg(Widget):
 
 
         # This may be DEPRECATED
-        raise Excpetion("Upload method is DEPRECATED")
+        raise Exception("Upload method is DEPRECATED")
 
 
 
@@ -122,12 +152,6 @@ class UploadServerWdg(Widget):
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
 
-        #if file_name:
-        #    file_path = "%s/%s" % (file_dir, file_name)
-        #    upload.set_file_path(file_path)
-        #else:
-        #    upload.set_file_dir(file_dir)
-        #print "file_dir: ", file_dir
         upload.set_file_dir(file_dir)
 
         upload.execute()
