@@ -869,12 +869,13 @@ class Sql(Base):
 
 
     # static functions
-    def quote(value, has_outside_quotes=True, escape=False):
+    def quote(value, has_outside_quotes=True, escape=False, unicode_escape=False):
         '''prepares a value so that it can be entered as a value in the
         database
             @param: 
                 has_outside_quotes - refer to having single_quotes
-                escape - if escape=True, set has_outsite_quotes=False'''
+                escape - if escape=True, set has_outside_quotes=False
+                unicode_escape - N'some str' for SQLServer '''
         if value == None:
             return "NULL"
 
@@ -923,14 +924,16 @@ class Sql(Base):
                 raise
 
         if has_outside_quotes:
-            return "'%s'" % value
+            if unicode_escape:
+                return "N'%s'"% value
+            else:
+                return "'%s'" % value
         elif escape:
             # this is more for postgres.. If other db impl needs it, it can be added to DatabaseImpl
             return "E'%s'"% value
         else:
             return value
     quote = staticmethod(quote)
-
 
 
     # FIXME: this is highly PostgreSQL dependent
@@ -2790,6 +2793,7 @@ class Insert(object):
         quoted_values = []
 
         for i in range(0, len(cols)):
+            unicode_escape = False
             value = values[i]
 
             if cols[i] in my.unquoted_cols:
@@ -2797,8 +2801,10 @@ class Insert(object):
             elif cols[i] in my.escape_quoted_cols:
                 quoted_values.append(Sql.quote(values[i], has_outside_quotes=False, escape=True))
             else:
-                quoted_values.append( Sql.quote(values[i]) )
 
+                if database_type == 'SQLServer':
+                    unicode_escape = True
+                quoted_values.append( Sql.quote(values[i], unicode_escape=unicode_escape) )
         # This is Oracle specific.  In Oracle, there is no auto increment
         # without creating triggers all over the place.
         if database_type == "Oracle" and "id" not in cols:
@@ -3039,12 +3045,15 @@ class Update(object):
 
 
         for i in range(0, len(cols)):
+            unicode_escape = False
             if cols[i] in my.unquoted_cols:
                 quoted_values.append(values[i])
             elif cols[i] in my.escape_quoted_cols:
                 quoted_values.append(Sql.quote(values[i], has_outside_quotes=False, escape=True))
             else:
-                quoted_values.append( Sql.quote(values[i]) )
+                if database_type == 'SQLServer':
+                    unicode_escape = True
+                quoted_values.append( Sql.quote(values[i], unicode_escape=unicode_escape) )
 
         pairs = []
         for i in range(0, len(cols)):
@@ -3064,7 +3073,6 @@ class Update(object):
 
         statement = " ".join(statement)
         statement = impl.postprocess_sql(statement)
-
         # build the statement
         return statement
 
@@ -3429,6 +3437,8 @@ class DropTable(Base):
             raise
 
         sql.do_update(my.statement)
+        sql.clear_table_cache()
+
 
 
 

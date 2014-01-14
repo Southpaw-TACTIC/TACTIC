@@ -2635,6 +2635,7 @@ class TacticServerStub(object):
     #
     def create_task(my, search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None):
         '''API Function:  create_task(search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None)
+
         Create a task for a particular sobject
 
         @param:
@@ -2651,7 +2652,7 @@ class TacticServerStub(object):
         assigned - the user assigned to this task
 
         @return:
-        dictionary - task that was created
+        dictionary - task created
         ''' 
 
         return my.server.create_task(my.ticket, search_key, process, subcontext, description, bid_start_date, bid_end_date, bid_duration, assigned)
@@ -2675,13 +2676,51 @@ class TacticServerStub(object):
         list - tasks created
         '''
         return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes)
+
+
+
+    def get_input_tasks(my, search_key):
+        '''API Function: get_input_tasks(search_key)
         
+        Get the input tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of input tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
+    def get_output_tasks(my, search_key):
+        '''API Function: get_output_tasks(search_key)
+        
+        Get the output tasks of a task based on the pipeline
+        associated with the sobject parent of the task
+
+        @param:
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of output tasks
+        '''
+        return my.server.get_input_tasks(my.ticket, search_key)
+
+
+
 
     #
     # Note methods
     #
     def create_note(my, search_key, note, process="publish", subcontext=None, user=None):
-        '''Add a task for a particular sobject
+        ''''API Function: create_note(search_key, note, process="publish", subcontext=None, user=None)
+
+        Add a note for a particular sobject
 
         @params:
         search_key - the key identifying a type of sobject as registered in

@@ -10,7 +10,7 @@
 #
 #
 
-from pyasm.common import Environment, jsonloads, jsondumps
+from pyasm.common import Environment, jsonloads, jsondumps, TacticException
 from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
@@ -903,7 +903,10 @@ class IngestUploadCmd(Command):
     
 
         upload_dir = Environment.get_upload_dir()
- 
+    
+        if not SearchType.column_exists(search_type, "name"):
+            raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
+
         for count, filename in enumerate(filenames):
 
             # first see if this sobjects still exists

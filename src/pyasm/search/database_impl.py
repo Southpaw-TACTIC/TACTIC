@@ -2758,9 +2758,11 @@ class SqliteImpl(PostgresImpl):
         statement = '''SELECT sql FROM sqlite_master where name='%s';''' % table
         results = db.do_query(statement)
 
+        constraints = []
+        if not results:
+            return constraints
         sql = results[0][0]
 
-        constraints = []
         for line in sql.split("\n"):
             line = line.strip()
             if line.startswith("CONSTRAINT"):
