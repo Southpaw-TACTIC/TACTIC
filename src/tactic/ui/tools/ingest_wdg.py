@@ -578,7 +578,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             spt.message.stop_interval(key);
         };
 
-        var class_name = 'tactic.ui.tools.IngestUploadCmd';
+        var class_name = bvr.action_handler;
 
         server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
 
@@ -606,8 +606,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add("<br clear='all'/>")
 
 
+        action_handler = 'tactic.ui.tools.IngestUploadCmd';
+
         button.add_behavior( {
             'type': 'click_up',
+            'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
                 'relative_dir': relative_dir

@@ -20,6 +20,8 @@ from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
 
+import shutil
+
 
 class UploadServerWdg(Widget):
 
@@ -57,12 +59,33 @@ class UploadServerWdg(Widget):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
 
+
+        tmpdir = Environment.get_tmp_dir()
         subdir = web.get_form_value("subdir")
-        #print "subdir: ", subdir
+        if subdir:
+            file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
+        else:
+            file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
 
-        action = web.get_form_value("action")
 
-        #field_storage = web.get_form_value("fileToUpload")
+        # With some recent change done in cherrypy._cpreqbody line 294
+        # we can use the field storage directly and just move the file
+        # without using FileUpload
+        path = field_storage.get_path()
+        if path:
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir)
+            basename = os.path.basename(path)
+            to_path = "%s/%s" % (file_dir, file_name)
+            shutil.move(path, to_path)
+            return [to_path]
+
+
+
+        # This may be DEPRECATED
+        raise Excpetion("Upload method is DEPRECATED")
+
+
 
         #file_name = ''
         if field_storage == "":
@@ -72,7 +95,11 @@ class UploadServerWdg(Widget):
             if not field_storage:
                 file_name = web.get_form_value("Filename")
 
+
+
+
         # set a default for now
+        action = web.get_form_value("action")
         if not action:
             action = "create"
 
@@ -94,14 +121,6 @@ class UploadServerWdg(Widget):
         # set the field storage
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
-
-        # set the directory
-        tmpdir = Environment.get_tmp_dir()
-
-        if subdir:
-            file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
-        else:
-            file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
 
         #if file_name:
         #    file_path = "%s/%s" % (file_dir, file_name)
