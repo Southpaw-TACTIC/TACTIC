@@ -64,7 +64,10 @@ if __name__ == '__main__':
         full_path = os.path.join(dir, file_path)
         pat = re.compile(r'\\|/')
         path_parts = pat.split(full_path)
-        index = path_parts.index('src')
+        # get the last occurance of "src"
+        path_parts.reverse()
+        index = len(path_parts) - 1 - path_parts.index('src')
+        path_parts.reverse()
         # used to be -3
         path_parts = path_parts[0:index]
         f = open('%s/VERSION' %'/'.join(path_parts), 'r')
