@@ -3433,11 +3433,22 @@ class SObject(object):
             my.new_id = -1
             id_override = True
 
+
+
+        # generate a code value for this sobject
+        """
+        if is_insert:
+            if not my.update_data or not my.update_data.get("code"):
+                if SearchType.column_exists(my.full_search_type, "code"):
+                    temp_search_code = Common.generate_random_key()
+                    my.set_value("code", temp_search_code)
+        """
+
         # if not update data is specified
-        if not my.update_data and is_insert:
+        if is_insert and not my.update_data:
             # if there is no update data, an error will result, so give
-            # it a try with code as null ... this will work for most search
-            # types
+            # it a try with code as a random key ...
+            # this will work for most search types
             if SearchType.column_exists(my.full_search_type, "code"):
                 my.set_value("code", "NULL", quoted=False)
 
@@ -3799,6 +3810,11 @@ class SObject(object):
 
 
         search_type = sobject.get_base_search_type()
+
+        # TEST: SKIP MESSAGES
+        #return
+
+
         if search_type in ['sthpw/note','sthpw/task','sthpw/snapshot']:
             search_type = sobject.get_value("search_type")
             search_code = sobject.get_value("search_code")
@@ -3811,6 +3827,14 @@ class SObject(object):
             message_code = sobject.get_search_key()
 
         project_code = Project.get_project_code()
+
+
+        # if there are no subscriptions, don't bother storing
+        #search = Search("sthpw/subscription")
+        #search.add_filter("code", message_code)
+        #search.add_filter("category", "sobject")
+        #if search.get_count() == 0:
+        #    return
 
 
         search = Search("sthpw/message")

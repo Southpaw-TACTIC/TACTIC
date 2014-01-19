@@ -580,6 +580,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var class_name = bvr.action_handler;
 
+
         server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
 
         on_progress = function(message) {
@@ -606,7 +607,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add("<br clear='all'/>")
 
 
-        action_handler = 'tactic.ui.tools.IngestUploadCmd';
+        action_handler = my.kwargs.get("action_handler")
+        if not action_handler:
+            action_handler = 'tactic.ui.tools.IngestUploadCmd';
 
         button.add_behavior( {
             'type': 'click_up',

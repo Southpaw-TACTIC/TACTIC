@@ -450,12 +450,13 @@ class PluginCreator(PluginBase):
         # TODO: consider updating the manifest if plugin sobject exists
 
         # record all of the sobject exported
-        for sobject in sobjects:                    
-            plugin_content = SearchType.create("config/plugin_content")
-            plugin_content.set_value("search_type", sobject.get_search_type())
-            plugin_content.set_value("search_code", sobject.get_code())
-            plugin_content.set_value("plugin_code", my.code)
-            plugin_content.commit()
+        if plugin.get_value("type", no_exception=True) == "config":
+            for sobject in sobjects:                    
+                plugin_content = SearchType.create("config/plugin_content")
+                plugin_content.set_value("search_type", sobject.get_search_type())
+                plugin_content.set_value("search_code", sobject.get_code())
+                plugin_content.set_value("plugin_code", my.code)
+                plugin_content.commit()
 
 
 
@@ -1044,7 +1045,7 @@ class PluginInstaller(PluginBase):
         #f = codecs.open(path, 'r', 'utf-8')
         f = codecs.getreader('utf8')(open(path, 'r'))
         statement = []
-        count = 0
+        count = 1
 
         insert = None
         table = None
@@ -1145,7 +1146,12 @@ class PluginInstaller(PluginBase):
                         if commit:
                             sobject.commit(triggers=False)
 
-                            if my.plugin: 
+                            chunk = 100
+                            if my.verbose and count and count % chunk == 0:
+                                print "\t... handled entry [%s]" % count
+
+
+                            if my.plugin and my.plugin.get_value("type", no_exception=True) == "config":
                                 plugin_content = SearchType.create("config/plugin_content")
                                 plugin_content.set_value("search_type", sobject.get_search_type())
                                 plugin_content.set_value("search_code", sobject.get_code())
@@ -1207,7 +1213,7 @@ class PluginUninstaller(PluginBase):
                 my.handle_include(node)
 
 
-        # remove contents
+        # remove plugin contents
         search = Search("config/plugin_content")
         search.add_filter("plugin_code", my.code)
         plugin_contents = search.get_sobjects()
