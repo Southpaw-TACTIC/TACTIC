@@ -108,6 +108,14 @@
     <element name="project_code" width="100px"/>
 </add_item>
 
+<simple_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>process|note</column>
+        </display>
+    </element>
+</simple_filter>
 
 
 </config>

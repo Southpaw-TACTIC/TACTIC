@@ -75,6 +75,10 @@ class DirNaming(object):
         my.protocol = "file"
         return my.get_dir()
 
+    def get_sandbox_dir(my):
+        my.protocol = "sandbox"
+        return my.get_dir()
+
 
     def _get_recorded_dir(my):
         '''get the recorded dir info in the file table'''
@@ -120,15 +124,29 @@ class DirNaming(object):
             from pyasm.biz import File 
             my._file_object = File.get_by_code(file_code)
 
-    def get_dir(my):
+
+    def get_dir(my, protocol=None, alias=None):
+
+        if protocol:
+            my.protocol = protocol
+
         assert my.protocol != None
         assert my.sobject != None
         
         # this is needed first
         my._init_file_object()
 
+        # get the alias from the naming, if it exists
+        if not alias and my.protocol in ["file", "http"]:
+            if my._file_object:
+                alias = my._file_object.get_value("base_dir_alias")
+            else:
+                naming = Naming.get(my.sobject, my.snapshot)
+                if naming:
+                    alias = naming.get_value("base_dir_alias")
+
         dirs = []
-        dirs.extend( my.get_base_dir() )
+        dirs.extend( my.get_base_dir(alias=alias) )
         if not my.create:
            dir_dict = my._get_recorded_dir()
            if dir_dict.get('relative_dir'):
@@ -303,25 +321,49 @@ class DirNaming(object):
 
 
 
-    def get_base_dir(my, protocol=None):
+    def get_base_dir(my, protocol=None, alias="default"):
         '''get the default base directory for this sobject'''
         dirs = []
         base_dir = ''
-        
+
+        client_os = Environment.get_env_object().get_client_os()
+        if client_os == 'nt':
+            prefix = "win32"
+        else:
+            prefix = "linux"
+
+        if not alias:
+            alias = "default"
+
+
         if not protocol:
             protocol = my.protocol
 
         if protocol == "http":
 
+            alias_dict = Config.get_dict_value("checkin", "web_base_dir")
+
             repo_handler = my.sobject.get_repo_handler(my.snapshot)
             if repo_handler.is_tactic_repo():
-                base_dir = Config.get_value("checkin", "web_base_dir")
+                base_dir = alias_dict.get(alias)
             else:
-                base_dir = Config.get_value("perforce", "web_base_dir")
+                alias_dict = Config.get_dict_value("perforce", "web_base_dir")
+                base_dir = alias_dict.get(alias)
+
+            if not base_dir:
+                asset_alias_dict = alias_dict.get("asset_base_dir")
+                base_dir = asset_alias_dict.get(alias)
+                base_dir = "/%s" % os.path.basename(base_dir)
+
+            if not base_dir:
+                base_dir = alias_dict.get("default")
+
+            if not base_dir:
+                base_dir = alias_dict.get("/assets")
 
 
         elif protocol == "remote":
-            # TODO: currently needs web to do this
+            # NOTE: currently needs web to do this
             base_dir = Environment.get_env_object().get_base_url().to_string()
 
             repo_handler = my.sobject.get_repo_handler(my.snapshot)
@@ -333,38 +375,22 @@ class DirNaming(object):
             base_dir = "%s%s" % (base_dir, sub_dir)
 
         elif protocol == "file":
-            #base_dir = Config.get_value("checkin", "asset_base_dir")
-            base_dir = Environment.get_asset_dir(my._file_object)
+            base_dir = Environment.get_asset_dir(alias=alias)
 
         elif protocol == "env":
             base_dir = "$TACTIC_ASSET_DIR"
 
+
         # This is the central repository as seen from the client
         elif protocol in ["client_lib", "client_repo"]:
-            
-            if Environment.get_env_object().get_client_os() =='nt':
-                base_dir = my.get_custom_setting('win32_client_repo_dir')
-                if not base_dir:
-                    if my._file_object:
-                        base_dir_alias = my._file_object.get_value('base_dir_alias')
-                        if base_dir_alias:
-                            alias_dict = Config.get_value("checkin", "base_dir_alias", sub_key=base_dir_alias)
-                            base_dir = alias_dict.get("win32_client_repo_dir")
-                    if not base_dir:
-                        base_dir = Config.get_value("checkin", "win32_client_repo_dir", no_exception=True)
-            else:
-                base_dir = my.get_custom_setting('linux_client_repo_dir')
-                if not base_dir:
-                    if my._file_object:
-                        base_dir_alias = my._file_object.get_value('base_dir_alias')
-                        if base_dir_alias:
-                            alias_dict = Config.get_value("checkin", "base_dir_alias", sub_key=base_dir_alias)
-                            base_dir = alias_dict.get("linux_client_repo_dir")
-                        if not base_dir:
-                            base_dir = Config.get_value("checkin", "linux_client_repo_dir", no_exception=True)
+            base_dir = my.get_custom_setting('%s_client_repo_dir' % prefix)
             if not base_dir:
-                #base_dir = Config.get_value("checkin", "asset_base_dir")
+                alias_dict = Config.get_dict_value("checkin", "%s_client_repo_dir" % prefix)
+                base_dir = alias_dict.get(alias)
+
+            if not base_dir:
                 base_dir = Environment.get_asset_dir()
+
 
         # DEPRECATED: The local repo.  This one has logic to add "repo" dir
         # at the end.  Use local_repo which does not have this logic.
@@ -396,28 +422,20 @@ class DirNaming(object):
 
 
         elif protocol == "sandbox":
+
             remote_repo = my.get_remote_repo()
             if remote_repo:
                 base_dir = remote_repo.get_value("sandbox_base_dir")
             else:
-
-                base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
                 if not base_dir:
+                    base_dict = Config.get_dict_value("checkin","%s_sandbox_dir" % prefix)
+                    base_dir = base_dict.get(alias)
 
-                    if Environment.get_env_object().get_client_os() =='nt':
-                        base_dir = Config.get_value("checkin","win32_sandbox_dir")
-                        if base_dir == "":
-                            base_dir = Config.get_value("checkin","win32_local_base_dir")
-                            base_dir += "/sandbox"
-                    else:
-                        base_dir = Config.get_value("checkin","linux_sandbox_dir")
-                        if base_dir == "":
-                            base_dir = Config.get_value("checkin","linux_local_base_dir")
-                            base_dir += "/sandbox"
 
         elif protocol == "relative":
             return []
 
+        assert base_dir
         return [base_dir]
 
 
@@ -557,6 +575,8 @@ class DirNaming(object):
             return None
 
         file_type = my.get_file_type()
+
+        alias = naming.get_value("base_dir_alias", no_exception=True)
 
         # build the dir name
         dir_name = naming_util.naming_to_dir(naming_expr, my.sobject, my.snapshot, file=my._file_object, file_type=file_type)

@@ -289,7 +289,21 @@ class Entity(object):
         """Return a file into which the request body will be read.
         
         By default, this will return a TemporaryFile. Override as needed."""
-        return tempfile.TemporaryFile()
+        #return tempfile.TemporaryFile()
+
+        # SOUTHPAW: for efficiency, we need access to file on upload
+        #return tempfile.NamedTemporaryFile()
+        import os
+        fd, path = tempfile.mkstemp()
+        self.path = path
+        fp_out = os.fdopen(fd, 'w')
+        return fp_out
+
+    def get_path(self):
+        try:
+            return self.path
+        except:
+            return None
     
     def fullvalue(self):
         """Return this entity as a string, whether stored in a file or not."""

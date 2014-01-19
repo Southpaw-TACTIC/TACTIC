@@ -16,9 +16,12 @@ __all__ = ['UploadServerWdg']
 import os, string, sys
 
 from pyasm.common import Environment, TacticException
+from pyasm.biz import File
 from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
+
+import shutil
 
 
 class UploadServerWdg(Widget):
@@ -34,6 +37,8 @@ class UploadServerWdg(Widget):
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
                 file_name = web.get_form_value("file_name%s"% i)
+                if not file_name:
+                    file_name = my.get_file_name(field_storage)
                 items = my.dump(field_storage, file_name)
                 files.extend(items)
 
@@ -41,6 +46,9 @@ class UploadServerWdg(Widget):
         else:
             field_storage = web.get_form_value("file")
             file_name = web.get_form_value("file_name0")
+            if not file_name:
+                file_name = my.get_file_name(field_storage)
+
             files = my.dump(field_storage, file_name)
 
         print "files: ", files
@@ -48,7 +56,30 @@ class UploadServerWdg(Widget):
 
 
 
-    def dump(my, field_storage=None, file_name=None):
+    def get_file_name(my, field_storage):
+
+        file_name = field_storage.filename
+
+        # depending how the file is uploaded. If it's uploaded thru Python,
+        # it has been JSON dumped as unicode code points, so this decode
+        # step would be necessary
+        try:
+            file_name = file_name.decode('unicode-escape')
+        except UnicodeEncodeError, e:
+            pass
+        except UnicodeError,e:
+            pass
+        file_name = file_name.replace("\\", "/")
+        file_name = os.path.basename(file_name)
+
+        # Not sure if this is really needed anymore
+        file_name = File.get_filesystem_name(file_name)
+
+        return file_name
+
+
+
+    def dump(my, field_storage, file_name):
 
         web = WebContainer.get_web()
 
@@ -57,12 +88,34 @@ class UploadServerWdg(Widget):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
 
+
+        tmpdir = Environment.get_tmp_dir()
         subdir = web.get_form_value("subdir")
-        #print "subdir: ", subdir
+        if subdir:
+            file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
+        else:
+            file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
 
-        action = web.get_form_value("action")
 
-        #field_storage = web.get_form_value("fileToUpload")
+
+        # With some recent change done in cherrypy._cpreqbody line 294
+        # we can use the field storage directly and just move the file
+        # without using FileUpload
+        path = field_storage.get_path()
+        if path and file_name:
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir)
+            basename = os.path.basename(path)
+            to_path = "%s/%s" % (file_dir, file_name)
+            shutil.move(path, to_path)
+            return [to_path]
+
+
+
+        # This may be DEPRECATED
+        raise Exception("Upload method is DEPRECATED")
+
+
 
         #file_name = ''
         if field_storage == "":
@@ -72,7 +125,11 @@ class UploadServerWdg(Widget):
             if not field_storage:
                 file_name = web.get_form_value("Filename")
 
+
+
+
         # set a default for now
+        action = web.get_form_value("action")
         if not action:
             action = "create"
 
@@ -95,20 +152,6 @@ class UploadServerWdg(Widget):
         if field_storage:
             upload.set_field_storage(field_storage, file_name)
 
-        # set the directory
-        tmpdir = Environment.get_tmp_dir()
-
-        if subdir:
-            file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
-        else:
-            file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
-
-        #if file_name:
-        #    file_path = "%s/%s" % (file_dir, file_name)
-        #    upload.set_file_path(file_path)
-        #else:
-        #    upload.set_file_dir(file_dir)
-        #print "file_dir: ", file_dir
         upload.set_file_dir(file_dir)
 
         upload.execute()
