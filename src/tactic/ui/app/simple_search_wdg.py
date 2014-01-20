@@ -182,27 +182,15 @@ class SimpleSearchWdg(BaseRefreshWdg):
         search_wdg = my.get_search_wdg()
         table.add_row()
         search_wdg.add_style("float: middle")
-        #search_wdg.add_style("padding-left: 370px")
 
         search_wdg.add_style("padding-top: 6px")
         search_wdg.add_style("height: 33px")
-        #search_wdg.add_style("margin-top: -3px")
 
 
         td = table.add_cell()
         td.add_border()
         td.add(search_wdg)
         td.add_color("background", "background", -10)
-
-        #td.add_style("padding-left: 16px")
-        #td.add_style("padding-right: 16px")
-        #td.add_style("padding-bottom: 15px")
-
-        #td.add_style("padding-top: 8px")
-        #td.add_style("border-style: solid")
-        #td.add_style("border-color: %s" % td.get_color("border") )
-        #td.add_style("border-width: 0px 1px 0px 0px" )
-
 
 
 
@@ -320,16 +308,74 @@ class SimpleSearchWdg(BaseRefreshWdg):
         table = Table()
         table.add_color("color", "color")
         elements_wdg.add(table)
+        table.add_class("spt_simple_search_table")
        
         num_rows = int(len(element_names)/2)+1
+        tot_rows = int(len(element_names)/2)+1
         project_code = Project.get_project_code()
         # my.search_type could be the same as my.base_search_type
         full_search_type = SearchType.build_search_type(my.search_type, project_code)
+
+        visible_rows = my.kwargs.get("visible_rows")
+        if visible_rows:
+            visible_rows = int(visible_rows)
+            num_rows = visible_rows
+        else:
+            visible_rows = 0
+
         titles = config.get_element_titles() 
+        row_count = 0
         for i, element_name in enumerate(element_names):
             attrs = config.get_element_attributes(element_name)
             if i % 2 == 0:
-                table.add_row()
+
+                if visible_rows and row_count == visible_rows:
+                    tr, td = table.add_row_cell("+ more ...")
+                    td.add_class("hand")
+                    td.add_class("SPT_DTS")
+                    td.add_class("spt_toggle")
+                    td.add_style("padding-left: 10px")
+
+                    td.add_behavior( {
+                        'type': 'click_up',
+                        'visible_rows': visible_rows,
+                        'cbjs_action': '''
+                        var top = bvr.src_el.getParent(".spt_simple_search_table");
+                        var expand = true;
+                        var rows = top.getElements(".spt_simple_search_row");
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            if (row.getStyle("display") == "none") {
+                                row.setStyle("display", "");
+                            }
+                            else {
+                                row.setStyle("display", "none");
+                                expand = false;
+                            }
+                        }
+                        var spacer = top.getElements(".spt_spacer");
+                        var cell = top.getElement(".spt_toggle");
+                        if (expand) {
+                            spacer.setStyle("height", (rows.length+bvr.visible_rows)*20);
+                            cell.innerHTML = "- less ...";
+                        }
+                        else {
+                            spacer.setStyle("height", bvr.visible_rows*20);
+                            cell.innerHTML = "+ more ...";
+                        }
+
+                        '''
+                    } )
+
+
+                tr = table.add_row()
+                if visible_rows and row_count >= visible_rows:
+
+                    tr.add_class("spt_simple_search_row")
+                    tr.add_style("display: none")
+                    tr.add_style("height: 0px")
+
+                row_count += 1
 
             icon_td = table.add_cell()
             title_td = table.add_cell()
@@ -354,14 +400,16 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             if i == 0 and len(element_names) > 1:
                 spacer = DivWdg()
+                spacer.add_class("spt_spacer")
                 spacer.add_style("border-style: solid")
                 spacer.add_style("border-width: 0 1 0 0")
+                #spacer.add_style("height: %spx" % (num_rows*20))
                 spacer.add_style("height: %spx" % (num_rows*20))
                 spacer.add_style("width: 10px")
                 spacer.add_style("border-color: %s" % spacer.get_color("border") )
                 spacer.add("&nbsp;")
                 td = table.add_cell(spacer)
-                td.add_attr("rowspan", num_rows)
+                td.add_attr("rowspan", tot_rows)
 
             #element_wdg.add_color("color", "color3")
             #element_wdg.add_color("background", "background3")
