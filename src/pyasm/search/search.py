@@ -3386,7 +3386,7 @@ class SObject(object):
             triggers = "all"
         elif triggers == False:
             triggers = "integral"
-        assert(triggers in ["all", "integral", "none"])
+        assert(triggers in ["all", "integral", "ingest", "none"])
 
 
         # to allow for the convenience of a SearchType to be used as an
@@ -3436,13 +3436,11 @@ class SObject(object):
 
 
         # generate a code value for this sobject
-        """
-        if is_insert:
+        if is_insert and triggers == "ingest":
             if not my.update_data or not my.update_data.get("code"):
                 if SearchType.column_exists(my.full_search_type, "code"):
                     temp_search_code = Common.generate_random_key()
                     my.set_value("code", temp_search_code)
-        """
 
         # if not update data is specified
         if is_insert and not my.update_data:
@@ -3546,7 +3544,8 @@ class SObject(object):
                     sql.do_update(id_statement)
 
 
-        Container.increment('Search:sql_commit') 
+        Container.increment('Search:sql_commit')
+
 
 
         # Fill the data back in (autocreate of ids)
@@ -3560,6 +3559,12 @@ class SObject(object):
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
+
+
+        if triggers == "ingest":
+            my.set_id(id)
+            return
+
 
         # Get the updated values and fill it into data.  This handles
         # auto updated values in the database

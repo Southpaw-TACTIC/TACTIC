@@ -76,7 +76,7 @@ class NoteInputWdg(BaseInputWdg):
             table.add_row()
             td = table.add_cell()
             td.add_style("vertical-align: top")
-            td.add_style("padding: 10px 15px 10px 5px")
+            td.add_style("padding: 5px 15px 10px 5px")
             table.add_border()
             table.add_color("background", "background", -5)
 
@@ -91,14 +91,16 @@ class NoteInputWdg(BaseInputWdg):
                 date_str = ""
 
             login = "<i style='opacity: 0.3'>%s</i>" % login
-            td.add("%s<br/>%s<br/>" % (login, date_str))
+            td.add("%s - %s<br/>" % (date_str, login))
 
             note_str_div = DivWdg()
             note_str_div.add(note_str)
+            note_str_div.add_style("padding: 10px 15px 10px 10px")
 
-            td = table.add_cell( note_str_div )
-            td.add_style("vertical-align: top")
-            td.add_style("padding: 10px 15px 10px 10px")
+            #td = table.add_cell( note_str_div )
+            td.add( note_str_div )
+            #td.add_style("vertical-align: top")
+            #td.add_style("padding: 10px 15px 10px 10px")
 
             """
             td.add_behavior( {
