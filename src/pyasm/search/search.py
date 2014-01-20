@@ -3743,6 +3743,10 @@ class SObject(object):
                     'sthpw/sync_job',
                     'sthpw/message',
                     'sthpw/message_log',
+                    'sthpw/change_timestamp',
+                    'sthpw/sobject_list',
+                    'sthpw/sobject_log'
+
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -3803,20 +3807,14 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data, mode):
-        data = unicode(data)
-
-        record_message = True
-        if not record_message:
-            return
-
 
 
         # message types are "insert,update,change"
         search_type_obj = sobject.get_search_type_obj()
-        message = search_type_obj.get_value("message_event", no_exception=True)
-        if not message:
+        events = search_type_obj.get_value("message_event", no_exception=True)
+        if not events:
             return
-        message_events = message.split("|")
+        message_events = events.split("|")
         send_message = False
         for message_event in message_events:
             if message_event in [mode,'change']:
@@ -3858,6 +3856,7 @@ class SObject(object):
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
+        data = unicode(data)
         json_data = jsondumps(data)
         json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
