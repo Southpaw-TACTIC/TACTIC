@@ -3779,8 +3779,9 @@ class SObject(object):
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
 
-                # add message
-                my._add_message(sobject, output)
+                # add message only if triggers is true
+                if triggers:
+                    my._add_message(sobject, output, mode)
 
 
 
@@ -3801,7 +3802,7 @@ class SObject(object):
 
 
 
-    def _add_message(my, sobject, data):
+    def _add_message(my, sobject, data, mode):
         data = unicode(data)
 
         record_message = True
@@ -3809,12 +3810,23 @@ class SObject(object):
             return
 
 
+
+        # message types are "insert,update,change"
+        search_type_obj = sobject.get_search_type_obj()
+        message = search_type_obj.get_value("message_event", no_exception=True)
+        if not message:
+            return
+        message_events = message.split("|")
+        send_message = False
+        for message_event in message_events:
+            if message_event in [mode,'change']:
+                send_message = True
+                break
+        if not send_message:
+            return
+
+
         search_type = sobject.get_base_search_type()
-
-        # TEST: SKIP MESSAGES
-        #return
-
-
         if search_type in ['sthpw/note','sthpw/task','sthpw/snapshot']:
             search_type = sobject.get_value("search_type")
             search_code = sobject.get_value("search_code")

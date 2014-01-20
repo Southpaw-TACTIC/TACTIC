@@ -1119,7 +1119,7 @@ class EditWdg(BaseRefreshWdg):
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content) {
+spt.edit.save_changes = function(content, search_key) {
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
     console.log(values);
@@ -1131,7 +1131,13 @@ spt.edit.save_changes = function(content) {
     var kwargs = {};
 
     kwargs['element_names'] = bvr.element_names;
-    kwargs['search_key'] = bvr.search_key;
+
+    if (!search_key) {
+        search_key = bvr.search_key;
+    }
+    kwargs['search_key'] = search_key;
+
+
     if (bvr.parent_key)
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;
