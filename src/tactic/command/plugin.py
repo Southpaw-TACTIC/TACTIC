@@ -447,16 +447,14 @@ class PluginCreator(PluginBase):
 
             plugin.commit()
 
-        # TODO: consider updating the manifest if plugin sobject exists
-
-        # record all of the sobject exported
-        if plugin.get_value("type", no_exception=True) == "config":
-            for sobject in sobjects:                    
-                plugin_content = SearchType.create("config/plugin_content")
-                plugin_content.set_value("search_type", sobject.get_search_type())
-                plugin_content.set_value("search_code", sobject.get_code())
-                plugin_content.set_value("plugin_code", my.code)
-                plugin_content.commit()
+            # record all of the sobject exported
+            if plugin.get_value("type", no_exception=True) == "config":
+                for sobject in sobjects:                    
+                    plugin_content = SearchType.create("config/plugin_content")
+                    plugin_content.set_value("search_type", sobject.get_search_type())
+                    plugin_content.set_value("search_code", sobject.get_code())
+                    plugin_content.set_value("plugin_code", my.code)
+                    plugin_content.commit()
 
 
 
