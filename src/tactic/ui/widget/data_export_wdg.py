@@ -314,7 +314,6 @@ class CsvImportWdg(BaseRefreshWdg):
         if not my.file_path:
             my.file_path =  web.get_form_value('file_path')
 
-
         if not my.file_path:
             file_name =  web.get_form_value('file_name')
             ticket =  web.get_form_value('html5_ticket')
@@ -323,12 +322,10 @@ class CsvImportWdg(BaseRefreshWdg):
                 
             if file_name:
                 # this is treated the same in FileUplaod class
-                file_name = File.get_filesystem_name(str(file_name))
+                #file_name = File.get_filesystem_name(str(file_name))
                 my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
 
 
-
-       
 
 
     def get_display(my):
@@ -493,7 +490,7 @@ class CsvImportWdg(BaseRefreshWdg):
             if (file) {
                 var file_name = file.name;
                 // clean up the file name the way it is done in the server
-                file_name = spt.path.get_filesystem_name(file_name);    
+                //file_name = spt.path.get_filesystem_name(file_name);    
                 var server = TacticServerStub.get();
 
                 var class_name = 'tactic.ui.widget.CsvImportWdg';

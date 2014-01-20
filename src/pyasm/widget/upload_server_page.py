@@ -73,7 +73,7 @@ class UploadServerWdg(Widget):
         file_name = os.path.basename(file_name)
 
         # Not sure if this is really needed anymore
-        file_name = File.get_filesystem_name(file_name)
+        #file_name = File.get_filesystem_name(file_name)
 
         return file_name
 

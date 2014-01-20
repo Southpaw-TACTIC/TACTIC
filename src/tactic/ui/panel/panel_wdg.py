@@ -2554,8 +2554,6 @@ class ViewPanelWdg(BaseRefreshWdg):
         },
 
 
-
-
         "search_view": "search view to be displayed",
         "order_by": "order by a particular column",
         "search_limit": "The number of items to show on each page",

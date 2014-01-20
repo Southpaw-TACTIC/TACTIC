@@ -160,8 +160,13 @@ class EditCmd(Command):
         action_handlers = []
 
         for element_name in (my.element_names):
-            action_handler_class = \
-                config.get_action_handler(element_name)
+
+            # TEST on some columns
+            if element_name in ['current_status', 'next_steps']:
+                action_handler_class = "tactic.ui.input.note_input_wdg.NoteInputAction"
+            else:
+                action_handler_class = \
+                    config.get_action_handler(element_name)
 
             if action_handler_class == "":
                 action_handler_class = my.get_default_action_handler()

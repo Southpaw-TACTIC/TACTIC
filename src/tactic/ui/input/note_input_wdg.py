@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['NoteInputWdg', 'NoteHistoryWdg']
+__all__ = ['NoteInputWdg', 'NoteHistoryWdg', 'NoteInputAction']
 
 from pyasm.biz import Project
 from pyasm.web import DivWdg, Table
@@ -19,6 +19,7 @@ from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWd
 from pyasm.common import TacticException
 
 from pyasm.search import Search, SearchType
+from pyasm.command import DatabaseAction
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -58,11 +59,11 @@ class NoteInputWdg(BaseInputWdg):
             last_note = None
             count = 0
 
-        if not last_note:
-            last_note = SearchType.create("sthpw/note")
-            last_note.set_value("login", "")
-            last_note.set_value("timestamp", "")
-            last_note.set_value("note", "")
+        #if not last_note:
+        #    last_note = SearchType.create("sthpw/note")
+        #    last_note.set_value("login", "")
+        #    last_note.set_value("timestamp", "")
+        #    last_note.set_value("note", "")
 
         if last_note:
             last_div = DivWdg()
@@ -192,10 +193,10 @@ class NoteHistoryWdg(BaseRefreshWdg):
         search.add_order_by("timestamp desc")
         notes = search.get_sobjects()
 
-        notes.extend(notes)
-        notes.extend(notes)
-        notes.extend(notes)
-        notes.extend(notes)
+        #notes.extend(notes)
+        #notes.extend(notes)
+        #notes.extend(notes)
+        #notes.extend(notes)
 
 
         top.add_smart_style("spt_note", "padding", "15px")
@@ -224,11 +225,28 @@ class NoteHistoryWdg(BaseRefreshWdg):
         date = note.get_datetime_value("timestamp")
         date_str = date.strftime("%Y-%m-%d")
 
-        div.add("%s - %s<br/>" % (login, date_str))
+        div.add("%s - %s<br/>" % (date_str, login))
+        div.add("<br/>")
         div.add(note_str)
 
 
         return div
+
+
+
+class NoteInputAction(DatabaseAction):
+
+    def execute(my):
+        print "name: ", my.get_name()
+        print "input_name: ", my.get_input_name()
+
+        value = my.get_value()
+
+        sobject = my.sobject
+        print "sobject: ", sobject.get_search_key()
+
+        sdffdaf
+
 
 
 
