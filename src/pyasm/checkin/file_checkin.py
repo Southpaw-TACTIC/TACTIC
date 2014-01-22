@@ -79,6 +79,9 @@ class FileCheckin(BaseCheckin):
             my.file_paths = [file_paths]
         else:
             my.file_paths = file_paths
+        for i, file_path in enumerate(my.file_paths):
+            my.file_paths[i] = file_path.rstrip("/")
+            
 
         if source_paths: 
             if type(source_paths) != types.StringType:
@@ -87,7 +90,8 @@ class FileCheckin(BaseCheckin):
                 my.source_paths = [source_paths]
         else:
             my.source_paths = my.file_paths[:]
-
+        for i, source_path in enumerate(my.source_paths):
+            my.source_paths[i] = source_path.rstrip("/")
 
 
         my.sobject = sobject
