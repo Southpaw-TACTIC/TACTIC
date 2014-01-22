@@ -708,7 +708,7 @@ class EditWdg(BaseRefreshWdg):
             'search_key': search_key,
             'input_prefix': my.input_prefix,
             'view': my.view,
-            'config': config_xml
+            'config_xml': config_xml
         }
 
         if my.mode == 'insert':

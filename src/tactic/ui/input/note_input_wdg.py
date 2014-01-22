@@ -53,6 +53,8 @@ class NoteInputWdg(BaseInputWdg):
             search.add_order_by("process")
             search.add_order_by("context")
             search.add_order_by("timestamp desc")
+            search.add_filter("context", context)
+
             count = search.get_count()
             last_note = search.get_sobject()
         else:
@@ -133,11 +135,13 @@ class NoteInputWdg(BaseInputWdg):
             td.add_behavior( {
                 'type': 'click_up',
                 'search_key': search_key,
+                'context': context,
                 'cbjs_action': '''
 
                 var class_name = 'tactic.ui.input.note_input_wdg.NoteHistoryWdg';
                 var kwargs = {
-                    search_key: bvr.search_key
+                    search_key: bvr.search_key,
+                    context: bvr.context
                 }
                 spt.panel.load_popup("Notes Log", class_name, kwargs);
                 
@@ -177,12 +181,15 @@ class NoteHistoryWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
 
-        sobject = my.get_option("sobject")
+        sobject = my.kwargs.get("sobject")
         if not sobject:
-            search_key = my.get_option("search_key")
+            search_key = my.kwargs.get("search_key")
             sobject = Search.get_by_search_key(search_key)
         else:
             search_key = sobject.get_search_key()
+
+
+        context = my.kwargs.get("context")
 
 
         search = Search("sthpw/note") 
@@ -191,12 +198,12 @@ class NoteHistoryWdg(BaseRefreshWdg):
         search.add_order_by("process")
         search.add_order_by("context")
         search.add_order_by("timestamp desc")
+
+        if context:
+            search.add_filter("context", context)
+
         notes = search.get_sobjects()
 
-        #notes.extend(notes)
-        #notes.extend(notes)
-        #notes.extend(notes)
-        #notes.extend(notes)
 
 
         top.add_smart_style("spt_note", "padding", "15px")
@@ -209,6 +216,18 @@ class NoteHistoryWdg(BaseRefreshWdg):
 
             if i % 2 == 0:
                 note_div.add_color("background", "background", -3)
+
+        top.add("<br/><hr/><br/>")
+
+        from tactic.ui.panel import TableLayoutWdg
+        table = TableLayoutWdg(
+                search_type="sthpw/note",
+                show_shelf=False,
+                show_select=False,
+                element_names=['login','timestamp','note','delete'])
+        table.set_sobjects(notes)
+        top.add(table)
+
 
         return top
 
@@ -237,16 +256,23 @@ class NoteHistoryWdg(BaseRefreshWdg):
 class NoteInputAction(DatabaseAction):
 
     def execute(my):
-        print "name: ", my.get_name()
-        print "input_name: ", my.get_input_name()
 
+        name = my.get_name()
         value = my.get_value()
+        if not value:
+            return
+
+        context = name
 
         sobject = my.sobject
-        print "sobject: ", sobject.get_search_key()
 
-        sdffdaf
-
+        # create a new note
+        note = SearchType.create("sthpw/note")
+        note.set_parent(sobject)
+        note.set_value("note", value)
+        note.set_value("context", context)
+        note.set_user()
+        note.commit()
 
 
 
