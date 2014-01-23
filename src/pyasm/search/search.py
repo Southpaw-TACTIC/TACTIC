@@ -3711,7 +3711,7 @@ class SObject(object):
         sql = DbContainer.get(db_resource)
         sql.set_savepoint()
 
-        # NOTE: this is run even if trigges is false because of the need to
+        # NOTE: this is run even if triggers is false because of the need to
         # run integral triggers
         #if triggers and is_undo != True:
         if triggers != "none" and is_undo != True:
