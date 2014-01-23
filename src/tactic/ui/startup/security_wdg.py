@@ -1140,7 +1140,11 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             if project_only in [True, 'true']:
                 groups = LoginGroup.get_by_project()
                 group_names = [x.get_value("login_group") for x in groups]
+                search.add_op("begin")
                 search.add_filters("login_group", group_names)
+                search.add_filter("project_code", "NULL", op="is", quoted=False)
+                search.add_filter("project_code", "")
+                search.add_op("or")
         else:
             groups = LoginGroup.get_by_project()
             group_names = [x.get_value("login_group") for x in groups]
