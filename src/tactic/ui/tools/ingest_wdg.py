@@ -10,7 +10,7 @@
 #
 #
 
-from pyasm.common import Environment, jsonloads, jsondumps
+from pyasm.common import Environment, jsonloads, jsondumps, TacticException
 from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
@@ -578,7 +578,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             spt.message.stop_interval(key);
         };
 
-        var class_name = 'tactic.ui.tools.IngestUploadCmd';
+        var class_name = bvr.action_handler;
+
 
         server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
 
@@ -606,8 +607,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add("<br clear='all'/>")
 
 
+        action_handler = my.kwargs.get("action_handler")
+        if not action_handler:
+            action_handler = 'tactic.ui.tools.IngestUploadCmd';
+
         button.add_behavior( {
             'type': 'click_up',
+            'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
                 'relative_dir': relative_dir
@@ -903,7 +909,10 @@ class IngestUploadCmd(Command):
     
 
         upload_dir = Environment.get_upload_dir()
- 
+    
+        if not SearchType.column_exists(search_type, "name"):
+            raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
+
         for count, filename in enumerate(filenames):
 
             # first see if this sobjects still exists

@@ -42,9 +42,20 @@ class EditCmd(Command):
         my.data = kwargs.get("data")
         if my.data != None:
             my.element_names = my.data.keys()
-
         else:
             my.element_names = kwargs.get("element_names")
+
+
+        # a special variable can be passed through called __data__.  This
+        # comes from the EditWdg form
+        form_data = web.get_form_value("__data__")
+        if form_data:
+            form_data = jsonloads(form_data)
+            my.config_xml = form_data.get("config_xml")
+            my.config_xml = my.config_xml.replace("&", "&amp;")
+        else:
+            form_data = {}
+            my.config_xml = None
 
 
         my.multiplier = 1
@@ -125,8 +136,8 @@ class EditCmd(Command):
         # discover any default handlers
         default_elements = []
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
-        #xxconfig = WidgetConfigView.get_by_search_type(search_type_obj, my.view)
         xxconfig = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+
         xxelement_names = xxconfig.get_element_names()
         for element_name in xxelement_names:
             action_handler = xxconfig.get_action_handler(element_name)
@@ -141,6 +152,11 @@ class EditCmd(Command):
             config = WidgetConfigView.get_by_search_type(search_type_obj, my.view)
             my.element_names = config.get_element_names()
 
+
+        elif my.config_xml:
+            config = WidgetConfigView.get_by_search_type(search_type_obj, my.view)
+            extra_config = WidgetConfig.get(view="tab", xml=my.config_xml)
+            config.get_configs().insert(0, extra_config)
 
         else:
             base_view = my.view
@@ -159,9 +175,10 @@ class EditCmd(Command):
         # create all of the handlers
         action_handlers = []
 
-        for element_name in (my.element_names):
+        for element_name in my.element_names:
+
             action_handler_class = \
-                config.get_action_handler(element_name)
+                    config.get_action_handler(element_name)
 
             if action_handler_class == "":
                 action_handler_class = my.get_default_action_handler()

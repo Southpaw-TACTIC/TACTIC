@@ -4148,7 +4148,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_input_tasks(my, ticket, search_key):
-        '''This methods gets the input tasks of a task based on the pipeline
+        '''Get the input tasks of a task based on the pipeline
         associated with the sobject parent of the task
 
         ticket - authentication ticket
@@ -4182,7 +4182,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_output_tasks(my, ticket, search_key):
-        '''This methods gets the output tasks of a task based on the pipeline
+        '''Get the output tasks of a task based on the pipeline
         associated with the sobject parent of the task
 
         ticket - authentication ticket

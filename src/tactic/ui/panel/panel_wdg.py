@@ -2547,8 +2547,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'category': 'Search'
         },
-
-
+        'simple_search_visible_rows': {
+            'description': 'Number of visible rows in the simple search bar',
+            'type': 'TextWdg',
+            'category': 'Search'
+        },
 
 
         "search_view": "search view to be displayed",
@@ -2996,6 +2999,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
+
+            kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
+
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 
@@ -3241,6 +3247,13 @@ spt.view_panel.set_top = function(top_el) {
     spt.view_panel.top = top_el;
 }
 
+spt.view_panel.get_current_layout = function() {
+    var top = spt.view_panel.top;
+    var layout_el = top.getElement(".spt_layout");
+    var layout = layout_el.getAttribute("spt_layout");
+    return layout;
+}
+
 
 spt.view_panel.switch_layout = function(layout) {
           
@@ -3264,16 +3277,14 @@ spt.view_panel.switch_layout = function(layout) {
     var view = data.view;
 
     var table_top = top.getElement(".spt_table_top");
-    var table = table_top.getElement(".spt_table_table");
-    var layout = top.getAttribute("spt_layout");
+    var table = top.getElement(".spt_table_table");
     var layout_el = top.getElement(".spt_layout");
-
 
     var last_view = top.getAttribute("spt_view");
 
-    top.setAttribute("spt_layout", layout);
-    top.setAttribute("spt_last_view", last_view);
-    top.setAttribute("spt_view", view);
+    layout_el.setAttribute("spt_layout", layout);
+    layout_el.setAttribute("spt_last_view", last_view);
+    layout_el.setAttribute("spt_view", view);
 
     table_top.setAttribute("spt_class_name", class_name);
     table_top.setAttribute("spt_view", view);
@@ -3284,7 +3295,6 @@ spt.view_panel.switch_layout = function(layout) {
 }
 
         '''
-
 
 
 

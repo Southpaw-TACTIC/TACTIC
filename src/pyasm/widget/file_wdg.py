@@ -704,6 +704,7 @@ class ThumbWdg(BaseTableElementWdg):
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 
         elif not repo_path or not os.path.exists(repo_path):
+            print "repo_path: ", repo_path
             return my.get_no_icon_wdg(missing=True)
 
         if my.icon_type == 'default':

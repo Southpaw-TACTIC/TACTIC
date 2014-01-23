@@ -3386,7 +3386,7 @@ class SObject(object):
             triggers = "all"
         elif triggers == False:
             triggers = "integral"
-        assert(triggers in ["all", "integral", "none"])
+        assert(triggers in ["all", "integral", "ingest", "none"])
 
 
         # to allow for the convenience of a SearchType to be used as an
@@ -3433,11 +3433,20 @@ class SObject(object):
             my.new_id = -1
             id_override = True
 
+
+
+        # generate a code value for this sobject
+        if is_insert and triggers == "ingest":
+            if not my.update_data or not my.update_data.get("code"):
+                if SearchType.column_exists(my.full_search_type, "code"):
+                    temp_search_code = Common.generate_random_key()
+                    my.set_value("code", temp_search_code)
+
         # if not update data is specified
-        if not my.update_data and is_insert:
+        if is_insert and not my.update_data:
             # if there is no update data, an error will result, so give
-            # it a try with code as null ... this will work for most search
-            # types
+            # it a try with code as a random key ...
+            # this will work for most search types
             if SearchType.column_exists(my.full_search_type, "code"):
                 my.set_value("code", "NULL", quoted=False)
 
@@ -3535,7 +3544,8 @@ class SObject(object):
                     sql.do_update(id_statement)
 
 
-        Container.increment('Search:sql_commit') 
+        Container.increment('Search:sql_commit')
+
 
 
         # Fill the data back in (autocreate of ids)
@@ -3549,6 +3559,12 @@ class SObject(object):
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
+
+
+        if triggers == "ingest":
+            my.set_id(id)
+            return
+
 
         # Get the updated values and fill it into data.  This handles
         # auto updated values in the database
@@ -3732,6 +3748,10 @@ class SObject(object):
                     'sthpw/sync_job',
                     'sthpw/message',
                     'sthpw/message_log',
+                    'sthpw/change_timestamp',
+                    'sthpw/sobject_list',
+                    'sthpw/sobject_log'
+
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -3768,8 +3788,9 @@ class SObject(object):
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
 
-                # add message
-                my._add_message(sobject, output)
+                # add message only if triggers is true
+                if triggers:
+                    my._add_message(sobject, output, mode)
 
 
 
@@ -3790,11 +3811,21 @@ class SObject(object):
 
 
 
-    def _add_message(my, sobject, data):
-        data = unicode(data)
+    def _add_message(my, sobject, data, mode):
 
-        record_message = True
-        if not record_message:
+
+        # message types are "insert,update,change"
+        search_type_obj = sobject.get_search_type_obj()
+        events = search_type_obj.get_value("message_event", no_exception=True)
+        if not events:
+            return
+        message_events = events.split("|")
+        send_message = False
+        for message_event in message_events:
+            if message_event in [mode,'change']:
+                send_message = True
+                break
+        if not send_message:
             return
 
 
@@ -3813,6 +3844,14 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
+        # if there are no subscriptions, don't bother storing
+        #search = Search("sthpw/subscription")
+        #search.add_filter("code", message_code)
+        #search.add_filter("category", "sobject")
+        #if search.get_count() == 0:
+        #    return
+
+
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
@@ -3822,6 +3861,7 @@ class SObject(object):
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
+        data = unicode(data)
         json_data = jsondumps(data)
         json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )

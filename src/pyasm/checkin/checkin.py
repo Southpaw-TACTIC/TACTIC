@@ -272,20 +272,26 @@ class BaseCheckin(Command):
         # handle the file_naming conventions for each file
         count = 0
         for file_object in my.file_objects:
-            file_naming.set_file_object(file_object)
 
             file_path = my.files[count]
-            dir = os.path.dirname(file_path)
-            new_file_name = file_naming.get_file_name()
 
-            # if nothing is returned from the naming, just use the original
-            # file
-            if not new_file_name:
-                continue
-
+            # inplace does not use naming
             if my.mode in ['inplace']:
                 new_file_path = file_path
+                new_file_name = os.path.basename(file_path)
+
             else:
+
+                file_naming.set_file_object(file_object)
+
+                dir = os.path.dirname(file_path)
+                new_file_name = file_naming.get_file_name()
+
+                # if nothing is returned from the naming, just use the original
+                # file
+                if not new_file_name:
+                    continue
+
                 new_file_path = "%s/%s" % (dir, new_file_name)
 
             # set the new filenames
@@ -304,6 +310,11 @@ class BaseCheckin(Command):
 
 
                 my.files[count] = new_file_path
+
+
+            print "new_file_path: ", new_file_path
+            print "new_file_name: ", new_file_name
+            assert(new_file_name)
 
             file_object.set_value("file_name", new_file_name)
             file_object.commit(triggers=False)

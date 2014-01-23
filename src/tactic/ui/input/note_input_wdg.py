@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['NoteInputWdg', 'NoteHistoryWdg']
+__all__ = ['NoteInputWdg', 'NoteHistoryWdg', 'NoteInputAction']
 
 from pyasm.biz import Project
 from pyasm.web import DivWdg, Table
@@ -19,6 +19,7 @@ from pyasm.widget import BaseInputWdg, SelectWdg, TextWdg, IconButtonWdg, IconWd
 from pyasm.common import TacticException
 
 from pyasm.search import Search, SearchType
+from pyasm.command import DatabaseAction
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -52,17 +53,19 @@ class NoteInputWdg(BaseInputWdg):
             search.add_order_by("process")
             search.add_order_by("context")
             search.add_order_by("timestamp desc")
+            search.add_filter("context", context)
+
             count = search.get_count()
             last_note = search.get_sobject()
         else:
             last_note = None
             count = 0
 
-        if not last_note:
-            last_note = SearchType.create("sthpw/note")
-            last_note.set_value("login", "")
-            last_note.set_value("timestamp", "")
-            last_note.set_value("note", "")
+        #if not last_note:
+        #    last_note = SearchType.create("sthpw/note")
+        #    last_note.set_value("login", "")
+        #    last_note.set_value("timestamp", "")
+        #    last_note.set_value("note", "")
 
         if last_note:
             last_div = DivWdg()
@@ -76,7 +79,7 @@ class NoteInputWdg(BaseInputWdg):
             table.add_row()
             td = table.add_cell()
             td.add_style("vertical-align: top")
-            td.add_style("padding: 10px 15px 10px 5px")
+            td.add_style("padding: 5px 15px 10px 5px")
             table.add_border()
             table.add_color("background", "background", -5)
 
@@ -91,14 +94,16 @@ class NoteInputWdg(BaseInputWdg):
                 date_str = ""
 
             login = "<i style='opacity: 0.3'>%s</i>" % login
-            td.add("%s<br/>%s<br/>" % (login, date_str))
+            td.add("%s - %s<br/>" % (date_str, login))
 
             note_str_div = DivWdg()
             note_str_div.add(note_str)
+            note_str_div.add_style("padding: 10px 15px 10px 10px")
 
-            td = table.add_cell( note_str_div )
-            td.add_style("vertical-align: top")
-            td.add_style("padding: 10px 15px 10px 10px")
+            #td = table.add_cell( note_str_div )
+            td.add( note_str_div )
+            #td.add_style("vertical-align: top")
+            #td.add_style("padding: 10px 15px 10px 10px")
 
             """
             td.add_behavior( {
@@ -130,11 +135,13 @@ class NoteInputWdg(BaseInputWdg):
             td.add_behavior( {
                 'type': 'click_up',
                 'search_key': search_key,
+                'context': context,
                 'cbjs_action': '''
 
                 var class_name = 'tactic.ui.input.note_input_wdg.NoteHistoryWdg';
                 var kwargs = {
-                    search_key: bvr.search_key
+                    search_key: bvr.search_key,
+                    context: bvr.context
                 }
                 spt.panel.load_popup("Notes Log", class_name, kwargs);
                 
@@ -174,12 +181,15 @@ class NoteHistoryWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
 
-        sobject = my.get_option("sobject")
+        sobject = my.kwargs.get("sobject")
         if not sobject:
-            search_key = my.get_option("search_key")
+            search_key = my.kwargs.get("search_key")
             sobject = Search.get_by_search_key(search_key)
         else:
             search_key = sobject.get_search_key()
+
+
+        context = my.kwargs.get("context")
 
 
         search = Search("sthpw/note") 
@@ -188,12 +198,12 @@ class NoteHistoryWdg(BaseRefreshWdg):
         search.add_order_by("process")
         search.add_order_by("context")
         search.add_order_by("timestamp desc")
+
+        if context:
+            search.add_filter("context", context)
+
         notes = search.get_sobjects()
 
-        notes.extend(notes)
-        notes.extend(notes)
-        notes.extend(notes)
-        notes.extend(notes)
 
 
         top.add_smart_style("spt_note", "padding", "15px")
@@ -206,6 +216,18 @@ class NoteHistoryWdg(BaseRefreshWdg):
 
             if i % 2 == 0:
                 note_div.add_color("background", "background", -3)
+
+        top.add("<br/><hr/><br/>")
+
+        from tactic.ui.panel import TableLayoutWdg
+        table = TableLayoutWdg(
+                search_type="sthpw/note",
+                show_shelf=False,
+                show_select=False,
+                element_names=['login','timestamp','note','delete'])
+        table.set_sobjects(notes)
+        top.add(table)
+
 
         return top
 
@@ -222,11 +244,35 @@ class NoteHistoryWdg(BaseRefreshWdg):
         date = note.get_datetime_value("timestamp")
         date_str = date.strftime("%Y-%m-%d")
 
-        div.add("%s - %s<br/>" % (login, date_str))
+        div.add("%s - %s<br/>" % (date_str, login))
+        div.add("<br/>")
         div.add(note_str)
 
 
         return div
+
+
+
+class NoteInputAction(DatabaseAction):
+
+    def execute(my):
+
+        name = my.get_name()
+        value = my.get_value()
+        if not value:
+            return
+
+        context = name
+
+        sobject = my.sobject
+
+        # create a new note
+        note = SearchType.create("sthpw/note")
+        note.set_parent(sobject)
+        note.set_value("note", value)
+        note.set_value("context", context)
+        note.set_user()
+        note.commit()
 
 
 

@@ -18,8 +18,22 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
 
+    #
+    # 4.2.0.a01
+    #
+        my.run_sql('''
+        ALTER TABLE "search_object" ADD "message_event" varchar(256);
+        ''')
+
+
+    #
+    # 4.1.0.v03
+    #
+
+
     def upgrade_v4_1_0_v01_001(my):
         my.run_sql('''UPDATE "search_object" SET code = search_type;''')
+
     #
     # 4.1.0.b03
     #

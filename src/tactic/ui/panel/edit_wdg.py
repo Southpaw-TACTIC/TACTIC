@@ -700,13 +700,15 @@ class EditWdg(BaseRefreshWdg):
             element_names.remove(element_name)
 
 
+        config_xml = my.kwargs.get("config_xml")
         bvr =  {
             'type': 'click_up',
             'mode': my.mode,
             'element_names': element_names,
             'search_key': search_key,
             'input_prefix': my.input_prefix,
-            'view': my.view
+            'view': my.view,
+            'config_xml': config_xml
         }
 
         if my.mode == 'insert':
@@ -1119,19 +1121,22 @@ class EditWdg(BaseRefreshWdg):
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content) {
+spt.edit.save_changes = function(content, search_key) {
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
 
-    console.log(values);
-
     bvr = JSON.parse(values.__data__);
-    console.log(bvr);
 
     var class_name = "tactic.ui.panel.EditCmd";
     var kwargs = {};
 
     kwargs['element_names'] = bvr.element_names;
-    kwargs['search_key'] = bvr.search_key;
+
+    if (!search_key) {
+        search_key = bvr.search_key;
+    }
+    kwargs['search_key'] = search_key;
+
+
     if (bvr.parent_key)
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;

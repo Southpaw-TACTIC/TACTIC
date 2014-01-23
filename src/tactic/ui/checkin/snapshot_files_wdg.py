@@ -93,7 +93,7 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                     my.files[path] = file
                     base_dir_alias =  file.get_value('base_dir_alias')
                     if not my.base_dir and base_dir_alias:
-                        my.base_dir = Environment.get_asset_dir(file)
+                        my.base_dir = Environment.get_asset_dir(alias=base_dir_alias)
 
         return paths
 
@@ -698,7 +698,6 @@ class SObjectDirListWdg(DirListWdg):
             shelf_wdg.add_style("padding: 5px")
             shelf_wdg.add_style("margin: -5px -5px 15px -5px")
             shelf_wdg.add_style("font-weight: bold")
-
 
 
 

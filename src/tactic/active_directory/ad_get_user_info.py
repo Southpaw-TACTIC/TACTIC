@@ -46,6 +46,8 @@ mail: remko@southpawtech.com
         print "WARNING: user [%s] cannot be found" % user_name
         return {}
 
+    # turn the most likely single-item generator back to a list
+    user = list(user)[0]
 
     # TODO: need to find a way to get all properties
     #print "properties: ", user.properties
@@ -54,8 +56,10 @@ mail: remko@southpawtech.com
 
     attrs_map = {
         'dn':               'dn',
-        'displayName':      'first_name',
+        'displayName':      'display_name',
         'name':             'name',
+        'sn':               'last_name',
+        'givenName':        'first_name',
         'mail':             'email',
         'telephoneNumber':  'phone_number',
         'department':       'department',
@@ -68,12 +72,12 @@ mail: remko@southpawtech.com
 
     data = []
     for key in attrs_map.keys():
-	try:
-	    value = eval("user.%s" % key)
-	    data.append("%s: %s" % (key, value))
+        try:
+            value = eval("user.%s" % key)
+            data.append("%s: %s" % (key, value))
         except AttributeError:
             #print "Attribute [%s] does not exist" % key
-	    pass
+            pass
     if hasattr(user,'memberOf'):
         for memberOf in user.memberOf:
             memberOf = str(memberOf).replace("LDAP://", "")
