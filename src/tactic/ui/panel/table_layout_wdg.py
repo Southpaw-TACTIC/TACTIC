@@ -785,7 +785,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             var view_panel = layout.getParent('.spt_view_panel');
             if (view_panel) {
                 var search_top = view_panel.getElement('.spt_search');
-                var search_dict = spt.dg_table.get_search_values(search_top);
+                var search_dict = spt.table.get_search_values(search_top);
             }
             
             var func = function() {
@@ -3937,6 +3937,65 @@ spt.table.save_changes = function(kwargs) {
 
 }
 
+spt.table.get_search_values = function(search_top) {
+
+
+    // get all of the search input values
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+
+        var ops = search_top.getElements(".spt_op");
+
+        // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);
+
+        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);
+
+        // find the table/simple search as well
+        var panel = search_top.getParent(".spt_view_panel");
+        var table_searches = panel.getElements(".spt_table_search");
+        for (var i = 0; i < table_searches.length; i++) {
+            var table_search = table_searches[i];
+            var values = spt.api.Utility.get_input_values(table_search,null,false);
+            new_values.push(values);
+        }
+    }
+
+
+
+
+
+    // convert to json
+    var json_values = JSON.stringify(new_values);
+    return json_values;
+
+}
+
 
 spt.table.get_refresh_kwargs = function(row) {
     var element_names = spt.table.get_element_names();
@@ -4202,7 +4261,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
         search_top = view_panel.getElement('.spt_search');
 
     
-    var search_dict = spt.dg_table.get_search_values(search_top)
+    var search_dict = spt.table.get_search_values(search_top);
     if (!('json' in values)) {
         values['json'] = search_dict;
     }
