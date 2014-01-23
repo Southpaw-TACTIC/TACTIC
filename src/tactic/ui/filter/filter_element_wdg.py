@@ -28,7 +28,7 @@ __all__ = [
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from pyasm.common import Common, TacticException
+from pyasm.common import Common, TacticException, Date
 from pyasm.biz import Project
 from pyasm.web import DivWdg, SpanWdg, Table, WebContainer
 from pyasm.widget import CheckboxWdg, SelectWdg, TextWdg, HiddenWdg
@@ -141,7 +141,14 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             else:
                 return False
         
-        
+    def _day_filter(my, search, column, value):
+        date = Date(db_date=value)
+        value = date.get_db_date()
+        date.add_days(1)
+        end_value = date.get_db_date()
+        search.add_filter(column, value, op='>=')
+        search.add_filter(column, end_value, op='<')
+         
 
     def alter_search(my, search):
         expression = my.kwargs.get("column")
@@ -242,12 +249,13 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             elif op in ['~','EQI']:
                 filters = [[column,'EQI',value]]
                 search.add_op_filters(filters)
+            elif op == 'is on':
+                my._day_filter(search, column, value)               
             else:
                 search.add_filter(column, value, op)
             return
         else:
             search_type = search_types[0]
-
             # get all the sobjects at the appropriate hierarchy
             try:
                 search2 = Search(search_type)
@@ -266,9 +274,11 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                         elif op in ['~','EQI']:
                             filters = [[column,'EQI',value]]
                             search2.add_op_filters(filters)
+                        elif op == 'is on':
+                            my._day_filter(search2, column, value)               
+  
                         else:
                             search2.add_filter(column, value, op)
-
                 use_multidb = False
                 search.add_relationship_search_filter(search2, op="in", use_multidb=use_multidb)
 
@@ -348,6 +358,10 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         op = my.kwargs.get("op")
         if op == 'exists':
             div.add("&nbsp;&nbsp;&nbsp;is&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "exists"))
+        elif op == 'is on':
+            div.add("&nbsp;&nbsp;&nbsp;is on&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "is on"))
         elif op == '~':
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
@@ -439,7 +453,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
 
         value = my.values.get("value")
         if value:
-            select.set_value(value)
+            text.set_value(value)
 
         if my.show_title:
             title_div = DivWdg()
@@ -462,6 +476,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
         op = my.kwargs.get("op")
         if op == 'exists':
             div.add("&nbsp;&nbsp;&nbsp;is&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "exists"))
         elif op == '~':
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
