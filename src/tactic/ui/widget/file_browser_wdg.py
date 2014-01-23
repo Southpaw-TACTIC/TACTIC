@@ -496,10 +496,18 @@ class DirListWdg(BaseRefreshWdg):
             search_keys = []
         top.add_attr("spt_search_keys", "|".join(search_keys) )
 
+        search_types = my.kwargs.get("search_types")
+        if not search_types:
+            search_types = []
+        top.add_attr("spt_search_types", "|".join(search_types) )
 
+
+
+        # This is the package that gets passed around
         handler_kwargs = {
             'base_dir': my.base_dir,
             'root_dir': my.root_dir,
+
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
@@ -516,7 +524,7 @@ class DirListWdg(BaseRefreshWdg):
                 handler_kwargs=handler_kwargs,
                 depth=0,
                 all_open=False,
-                # This is not really supported on dynamic mode yet
+                # Open depth is not really supported on dynamic mode yet
                 #open_depth=open_depth,
                 dynamic=True,
             )
@@ -527,8 +535,6 @@ class DirListWdg(BaseRefreshWdg):
                 level=0,
                 base_dir=my.base_dir,
                 root_dir=my.root_dir,
-                #handler_class=handler_class,
-                #handler_kwargs=handler_kwargs,
                 handler=my,
                 depth=depth,
                 all_open=all_open,
@@ -633,12 +639,21 @@ class DirListWdg(BaseRefreshWdg):
 
                 // get the search_keys, if any
                 var top = bvr.src_el.getParent(".spt_dir_list_top");
+
                 var search_keys = top.getAttribute("spt_search_keys");
                 if (search_keys) {
                     search_keys = search_keys.split("|");
                 }
                 else {
                     search_keys = [];
+                }
+
+                var search_types = top.getAttribute("spt_search_types");
+                if (search_types) {
+                    search_types = search_types.split("|");
+                }
+                else {
+                    search_types = [];
                 }
 
 
@@ -656,6 +671,7 @@ class DirListWdg(BaseRefreshWdg):
                         base_dir: base_dir,
                         // FIXME: this causes files to disappear
                         //search_keys: search_keys,
+                        search_types: search_types,
                     }
 
                 }
@@ -1097,9 +1113,6 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
-
-        test = my.kwargs.get("test")
-        print "test: ", test
 
         top = my.top
         my.set_as_panel(top)

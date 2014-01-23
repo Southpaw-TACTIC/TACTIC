@@ -312,8 +312,6 @@ class BaseCheckin(Command):
                 my.files[count] = new_file_path
 
 
-            print "new_file_path: ", new_file_path
-            print "new_file_name: ", new_file_name
             assert(new_file_name)
 
             file_object.set_value("file_name", new_file_name)

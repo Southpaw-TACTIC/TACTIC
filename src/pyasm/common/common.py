@@ -509,6 +509,9 @@ class Common(Base):
         '''take a name and converts it to a name that can be saved in
         the filesystem. This is different from File.get_filesystem_name()'''
 
+        # FIXME: for now, turn it off
+        return filename
+
         # handle python style
         p = re.compile("^__(\w+)__.py$")
         if p.match(filename):
@@ -516,7 +519,7 @@ class Common(Base):
         
 
         processed = []
-        # remove unwanted mixed delimiters.  Double dlimiters of -- and __ are
+        # remove unwanted mixed delimiters.  Double delimiters of -- and __ are
         # ok, but not double ..
         last_char = None
         length = len(filename)

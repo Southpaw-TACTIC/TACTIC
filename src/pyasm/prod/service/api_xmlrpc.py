@@ -3120,7 +3120,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             source_paths = [source_path]
 
         old_filename = os.path.basename(file_path)
-        filename = File.get_filesystem_name(old_filename)
+        #filename = File.get_filesystem_name(old_filename)
+        filename = old_filename
 
 
         env = Environment.get()
@@ -3478,10 +3479,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_type = file_types[i]
 
             file_path = file_path.replace("\\", "/")
-            #filename = os.path.basename(file_path)
-            #filename = File.get_filesystem_name(filename)
             old_filename = os.path.basename(file_path)
-            filename = File.get_filesystem_name(old_filename)
+            #filename = File.get_filesystem_name(old_filename)
+            filename = old_filename
 
             if mode == 'preallocate':
                 keep_file_name = True
@@ -3599,7 +3599,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         file_path = file_path.replace("\\", "/")
         filename = os.path.basename(file_path)
-        filename = File.get_filesystem_name(filename)
+        #filename = File.get_filesystem_name(filename)
 
         if mode:
             assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
