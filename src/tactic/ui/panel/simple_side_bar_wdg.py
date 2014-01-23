@@ -145,6 +145,12 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
     def get_folder_wdg(my, element_name, config, options, base_path, current_path, info, personal, use_same_config):
+
+        attributes = config.get_element_attributes(element_name)
+        if attributes.get("is_visible") == "false":
+            return
+
+
         li = HtmlElement.li()
         li.add_class("spt_side_bar_link")
         li.add_class("main_li")
@@ -181,6 +187,11 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
     def get_link_wdg(my, element_name, config, options, info):
+        attributes = config.get_element_attributes(element_name)
+        if attributes.get("is_visible") == "false":
+            return
+
+
         li = HtmlElement.li()
         li.add_class("spt_side_bar_link")
 
@@ -191,8 +202,8 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         else:
             li.add_class("sub_li")
 
+
         title = my._get_title(config, element_name)
-        attributes = config.get_element_attributes(element_name)
 
         show_icons = my.kwargs.get("show_icons")
         if show_icons in [True, 'true']:

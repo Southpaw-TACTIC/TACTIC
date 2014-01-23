@@ -487,7 +487,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             if my.sobjects:
                 search.add_sobjects_filter(my.sobjects)
 
-
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -501,7 +500,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
                 path = "%s/%s/%s" % (asset_base_dir, relative_dir, file_name)
-                #print "path: ", path
                 paths.append(path)
 
                 my.file_codes[path] = file_object.get("code")
@@ -660,6 +658,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #print "---"
         #for name, value in num_sobjects.items():
         #    print value, name
+
 
         return paths
 
