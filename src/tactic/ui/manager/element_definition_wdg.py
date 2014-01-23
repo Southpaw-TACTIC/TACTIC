@@ -2971,7 +2971,9 @@ class SimpleElementDefinitionCbk(Command):
         if widget and view != my.EDIT_VIEW:
             try:
                 # TODO: should check if the coluns exist! or only on insert
-                widget.create_required_columns(search_type)
+                project_code = Project.get_project_code()
+                full_st = Project.get_full_search_type(search_type, project_code=project_code)
+                widget.create_required_columns(full_st)
             except (TacticException, AttributeError), e: # for add column sql error
                 if my.is_insert: # will be caught in AlterTableCmd
                     raise
