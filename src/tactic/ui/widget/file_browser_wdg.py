@@ -654,7 +654,8 @@ class DirListWdg(BaseRefreshWdg):
                     handler_kwargs: {
                         root_dir: root_dir,
                         base_dir: base_dir,
-                        search_keys: search_keys,
+                        // FIXME: this causes files to disappear
+                        //search_keys: search_keys,
                     }
 
                 }

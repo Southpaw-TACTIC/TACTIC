@@ -451,7 +451,6 @@ class FileCheckin(BaseCheckin):
                 file_object.set_value("relative_dir", relative_dir)
 
                 relative_dir = file_object.get_value("relative_dir")
-                assert(relative_dir)
 
             if my.base_dir_alias:
                 file_object.set_value("base_dir_alias", my.base_dir_alias)
