@@ -72,28 +72,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 0,
+            'order': 00,
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 1,
+            'order': 01,
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 2,
+            'order': 02,
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determines whether or not to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': 03,
             'category': 'Optional'
         },
 
@@ -102,7 +102,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '4'
+            'order': '04'
         },
 
 
@@ -113,14 +113,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '5'
+            'order': '05'
         },
         'show_layout_switcher': {
             'description': 'Flag to determine whether or not to show the Switch Layout button',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '6'
+            'order': '06'
         },
 
         'show_keyword_search': {
@@ -128,20 +128,35 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '7'
+            'order': '07'
         },
         'show_context_menu': {
             'description': 'Flag to determine whether to show the context menu',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '8'
+            'order': '08'
+        },
+        
+        'checkin_context': {
+            'description': 'override the checkin context for Check-in New File',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'empty': 'true',
+            'values': 'auto|strict',
+            'order': '09'
+        },
+         'checkin_type': {
+            'description': 'override the checkin type for Check-in New File',
+            'category': 'Optional',
+            'type': 'TextWdg',
+            'order': '10'
         },
         'init_load_num': {
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Optional',
-            'order': '9'
+            'order': '11'
         },
 
 
@@ -766,13 +781,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             var count = -1;
+
+            var view_panel = layout.getParent('.spt_view_panel');
+            if (view_panel) {
+                var search_top = view_panel.getElement('.spt_search');
+                var search_dict = spt.dg_table.get_search_values(search_top);
+            }
+            
             var func = function() {
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
                     return;
                 }
-                spt.table.refresh_rows(rows, null, null, {on_complete: func});
+
+               
+                spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict});
             }
             func();
 
@@ -4069,8 +4093,12 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           }
         }
     }
+    kwargs.values = {};
     if (web_data && web_data != "[{}]")
-        kwargs.values = {web_data: web_data};   
+        kwargs.values = {web_data: web_data};  
+
+    if (kw.json)
+        kwargs.values['json'] = kw.json;
     server.async_get_widget(class_name, kwargs);
 }
 

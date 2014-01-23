@@ -476,7 +476,7 @@ class TaskElementWdg(BaseTableElementWdg):
             # get all of the tasks for all of the sobjects
             search = Search("sthpw/task")
             search.add_relationship_filters(my.sobjects)
-
+            
 
             # this serves a shortcut to limit what context to show
             context = my.kwargs.get("context")
@@ -1667,7 +1667,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 var result = s.eval("@SOBJECT(sthpw/status_log['@ORDER_BY','timestamp desc'])",  {search_keys: [bvr.search_key], single:true});
                 
                 var content = 'No record';
-                if (result.__search_key__)
+                if (result && result.__search_key__)
                     content = '<span>status: </span>' + result.from_status + '<br>' + '<span style="padding-left: 20px">by:</span> ' + result.login; 
                 
                 bvr.src_el.store('tip:text', content)

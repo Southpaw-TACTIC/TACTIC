@@ -2588,7 +2588,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'default|tile|static_table|raw_table|fast_table|tool|browser|card|old_table|custom|custom_item',
             'category': 'Layout',
-            'order': 0,
+            'order': '00',
         },
 
 
@@ -2599,42 +2599,42 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': 8,
+            'order': '01',
         },
         'show_refresh': {
             'description': 'Flag to determine whether or not to show the refresh icon',
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': 7
+            'order': '02'
         },
 
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 1,
+            'order': '03',
             'category': 'Display'
         },
         "show_gear": {
             'description': "determines whether or not to show the gear",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": 2,
+            "order": '04',
             'category': 'Display'
         },
         "show_search": {
             'description': "determines whether or not to show the search box",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': '05',
             'category': 'Display'
         },
         "show_keyword_search": {
             'description': "determines whether or not to show keyword search bar",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': '06',
             'category': 'Display'
         },
  
@@ -2643,7 +2643,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not to show the search limit",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 4,
+            'order': '07',
             'category': 'Display'
         },
 
@@ -2652,44 +2652,57 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 5,
+            'order': '08',
             'category': 'Display'
         },
         "show_layout_switcher": {
             'description': "determines whether or not to show the layout switcher",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 6,
+            'order': '09',
             'category': 'Display'
         },
         "show_column_manager": {
             'description': "determines whether or not to show the column manager",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 7,
+            'order': '10',
             'category': 'Display'
         },
         "show_context_menu": {
             'description': "determines whether or not to show the context menu",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 8,
+            'order': '11',
             'category': 'Display'
         },
-
+        'checkin_context': {
+            'description': 'override the checkin context for Check-in New File',
+            'category': 'Check-in',
+            'type': 'TextWdg',
+            'order': '12'
+        },
+        'checkin_type': {
+            'description': 'override the checkin type for Check-in New File',
+            'category': 'Check-in',
+            'type': 'SelectWdg',
+            'empty': 'true',
+            'values': 'auto|strict',
+            'order': '13'
+        },
 
 
         'insert_view': {
             'description': 'Specify a custom insert view other than [insert]',
             'category': 'Display',
             'type': 'TextWdg',
-            'order': '5a'
+            'order': '14'
         },
         'edit_view': {
             'description': 'Specify a custom edit view other than [edit]',
             'category': 'Display',
             'type': 'TextWdg',
-            'order': '5b'
+            'order': '15'
         },
       
         'popup': {
@@ -2697,7 +2710,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '9',
+            'order': '16',
             'category': 'Display'
         },
 
@@ -2705,7 +2718,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '9a'
+            'order': '17'
         },    
 
 

@@ -174,6 +174,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # my.parent_key is used to determine the parent for inline add-new-items purposes
         my.parent_key = my.kwargs.get("parent_key")
         my.parent_path = my.kwargs.get("parent_path")
+        my.checkin_context = my.kwargs.get("checkin_context")
+        my.checkin_type = my.kwargs.get("checkin_type")
+        if not my.checkin_type:
+            my.checkin_type = 'auto'
         my.state = my.kwargs.get("state")
         my.state = BaseRefreshWdg.process_state(my.state)
         my.expr_sobjects = []
@@ -2308,11 +2312,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     search_key = tbody.getAttribute("spt_search_key");
                     
                     var context = bvr.context;
-                    if (!context)
-                        context = tbody.getAttribute("spt_icon_context");
-                    if (!context)
-                        context = "icon";
-
+                    // there are 2 modes: file, icon
+                    if (bvr.mode == 'icon') {
+                        if (!context)
+                            context = tbody.getAttribute("spt_icon_context");
+                        if (!context)
+                            context = "icon";
+                    }
                     // set the form
                     
                     if (!spt.html5upload.form) {
@@ -2351,7 +2357,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 var parts = file.split("/");
                                 var filename = parts[parts.length-1];
                                 var kwargs;
-                                if (context != "icon") {
+
+                                //checkin_context would override the default context
+                                if (bvr.checkin_context)
+                                    context = bvr.checkin_context
+                                else if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
                                     context = context + "/" + filename;
                                     kwargs = {mode: 'uploaded', checkin_type: 'auto'};
                                 }
@@ -2432,6 +2442,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Change Preview Image",
+                "mode": "icon",
                 "icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb,
                 "hover_bvr_cb": {
@@ -2449,7 +2460,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "type": "action",
                 "label": "Check in New File",
                 "upload_id": my.upload_id,
+                "mode": "file",
                 "icon": IconWdg.PHOTOS,
+                "checkin_context" : my.checkin_context,
+                "checkin_type" : my.checkin_type,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
