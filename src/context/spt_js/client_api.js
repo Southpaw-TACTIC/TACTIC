@@ -1036,11 +1036,11 @@ TacticServerStub = function() {
      * Instance methods
      */
     this.add_instance = function(search_key1, search_key2) {
-        return this._delegate("add_instance", search_key1, search_key2);
+        return this._delegate("add_instance", arguments);
     }
  
     this.get_instances = function(search_key, search_type) {
-        return this._delegate("get_instances", search_key, search_type);
+        return this._delegate("get_instances", arguments);
     }
  
     this.remove_instance = function(search_key1, search_key2) {

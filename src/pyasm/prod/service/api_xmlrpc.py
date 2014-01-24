@@ -1821,7 +1821,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_instance(my, ticket, search_key, search_type):
+    def get_instances(my, ticket, search_key, search_type):
         '''Get all the instances of an sobject of a certain stype.  There
         must be an instance relationship between the sobject and the search
         type
@@ -1844,7 +1844,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         instance_dicts = []
         for instance in instances:
-            instance_dict = my._get_instance_dict(instance)
+            instance_dict = my._get_sobject_dict(instance)
+
             instance_dicts.append(instance_dict)
         return instance_dicts
 
