@@ -21,6 +21,7 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
+    def upgrade_v4_2_0_a01_001(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "message_event" varchar(256);
         ''')
