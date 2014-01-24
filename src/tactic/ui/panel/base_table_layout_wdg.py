@@ -2310,7 +2310,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
                     
                     search_key = tbody.getAttribute("spt_search_key");
-                    
+                     
                     var context = bvr.context;
                     // there are 2 modes: file, icon
                     if (bvr.mode == 'icon') {
@@ -2359,6 +2359,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 var kwargs;
 
                                 //checkin_context would override the default context
+                                  
                                 if (bvr.checkin_context)
                                     context = bvr.checkin_context
                                 else if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
@@ -2367,8 +2368,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 }
                                 else {
                                     kwargs = {mode: 'uploaded'};
+                                    
                                 }
-                                
                                 server.simple_checkin( search_key, context, file, kwargs);
                             }
                         } catch(e) {
@@ -2435,6 +2436,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
 
             bvr_cb["description"] = "Checking in preview ..."
+            bvr_cb["mode"] = "icon"
             # set a dummy
             if Container.get_dict("JSLibraries", "spt_html5upload"):
                 my.upload_id = '0'
@@ -2442,7 +2444,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Change Preview Image",
-                "mode": "icon",
                 "icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb,
                 "hover_bvr_cb": {
@@ -2456,6 +2457,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             bvr_cb2 = bvr_cb.copy()
             bvr_cb2["description"] = "Checking in new file ..."
             bvr_cb2["context"] = "publish"
+            bvr_cb2["mode"] = "file"
+            bvr_cb2["checkin_type"] =  my.checkin_type
             spec_list.append( {
                 "type": "action",
                 "label": "Check in New File",
@@ -2463,7 +2466,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "mode": "file",
                 "icon": IconWdg.PHOTOS,
                 "checkin_context" : my.checkin_context,
-                "checkin_type" : my.checkin_type,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
