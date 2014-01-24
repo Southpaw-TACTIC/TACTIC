@@ -4502,6 +4502,57 @@ class SObject(object):
 
 
 
+    # Instance relationships
+    def add_instance(my, sobject):
+        search_type1 = my.get_base_search_type()
+        search_type2 = sobject.get_base_search_type()
+
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        # get the instance
+        instance_type = attrs.get("instance_type")
+
+        instance = SearchType.create(instance_type)
+        instance.add_related_sobject(my)
+        instance.add_related_sobject(sobject)
+        instance.commit()
+
+        return instance
+
+
+
+
+    def get_instances(my, search_type2):
+
+        search_type1 = my.get_base_search_type()
+
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        # get the instance
+        instance_type = attrs.get("instance_type")
+
+        expression = "@SOBJECT(%s)" % (instance_type)
+        instances = Search.eval(expression, my)
+
+        return instances
+
+
+
+    def remove_instance(my, sobject):
+        pass
+
+
+
+
+
 
     # Parent/Child Relationships
     def get_foreign_key(my):

@@ -223,9 +223,9 @@ QUERY_METHODS = {
     'eval': 0,
     'get_column_info': 0,
     'get_related_types': 0,
-    'get_related_sobjects': 0,
-    'get_related_attrs': 0,
-    'get_related_relationship': 0,
+    #'get_related_sobjects': 0,
+    #'get_related_attrs': 0,
+    #'get_related_relationship': 0,
     'test_speed': 0,
     'get_upload_file_size': 0,
     'get_doc_link': 0
@@ -1277,6 +1277,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         schema = Schema.get()
         return schema.get_related_search_types(search_type)
 
+
+
+
     @xmlrpc_decorator
     def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
         return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
@@ -1781,6 +1784,69 @@ class ApiXMLRPC(BaseApiXMLRPC):
         impl = db_resource.get_database_impl()
         table_info = impl.get_table_info(db_resource)
         return table_info
+
+
+    #
+    # Instance methods
+    #
+    @xmlrpc_decorator
+    def add_instance(my, ticket, search_key1, search_key2):
+        '''Add an instance between two sobjects.  This requires that there
+        is a instance relationship between the two sobjects defined in the
+        schema
+
+        @param:
+        search_key1: the search_key to the first sobject
+        search_key2: the search_key to the first sobject
+
+        @return:
+        the instance sobject created
+        '''
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject1 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject2 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key2)
+
+        instance = sobject1.add_instance(sobject2)
+        sobject_dict = my._get_sobject_dict(instance)
+        return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_instance(my, ticket, search_key, search_type):
+        '''Get all the instances of an sobject of a certain stype.  There
+        must be an instance relationship between the sobject and the search
+        type
+
+        @param:
+        search_key: the search_key to the sobject to get the instances
+        search_type: the search_type of the related sobjects that the instances
+            are attached to
+
+        @return:
+        the instance sobject created
+        '''
+        sobjects = my._get_sobjects(search_key)
+        if sobjects:
+            sobject = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        instances = sobject.get_instances(search_type)
+
+        instance_dicts = []
+        for instance in instances:
+            instance_dict = my._get_instance_dict(instance)
+            instance_dicts.append(instance_dict)
+        return instance_dicts
 
 
 
