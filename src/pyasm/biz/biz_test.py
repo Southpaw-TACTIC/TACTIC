@@ -471,7 +471,7 @@ class BizTest(unittest.TestCase):
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
         #print "CHILD TYPES ", child_types
-        expected = ['unittest/person_car_instance', 'unittest/house']
+        expected = ['unittest/person_in_car', 'unittest/house']
         my.assertEquals(True, expected[0] in child_types)
         my.assertEquals(True, expected[1] in child_types)
 
@@ -872,13 +872,11 @@ class BizTest(unittest.TestCase):
         for instance, test_instance in zip(instances, test_instances):
             search_key = instance.get_search_key()
             test_search_key = test_instance.get_search_key()
-            print "     search_key: ", search_key
-            print "test_search_key: ", test_search_key
             my.assertEquals(search_key, test_search_key)
 
 
         # get the instance between two sobjects
-        instance = car.get_instance(person)
+        #instance = car.get_instance(person)
 
 
         #instances = my.person.get_related_sobjects("unittest/car")
@@ -888,14 +886,13 @@ class BizTest(unittest.TestCase):
         my.person.remove_instance(cars[0])
 
         # test remove the other way around
-        car[1].remove_instance(my.person)
+        cars[1].remove_instance(my.person)
 
 
-
-
-        pass
-
-
+        test_instances = my.person.get_instances("unittest/car")
+        my.assertEquals(1, len(test_instances))
+        test_instances = cars[2].get_instances("unittest/person")
+        my.assertEquals(1, len(test_instances))
 
 
 

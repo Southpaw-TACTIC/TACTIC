@@ -1043,6 +1043,9 @@ TacticServerStub = function() {
         return this._delegate("get_instances", search_key, search_type);
     }
  
+    this.remove_instance = function(search_key1, search_key2) {
+        return this._delegate("remove_instance", arguments);
+    }
 
 
 

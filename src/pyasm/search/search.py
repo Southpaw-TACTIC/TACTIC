@@ -4547,8 +4547,34 @@ class SObject(object):
 
 
     def remove_instance(my, sobject):
-        pass
+        search_type1 = my.get_base_search_type()
+        search_type2 = sobject.get_base_search_type()
 
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        instance_type = attrs.get("instance_type")
+
+        expression = "@SOBJECT(%s)" % (instance_type)
+        from_instances = Search.eval(expression, my)
+
+        to_instances = Search.eval(expression, sobject)
+
+        for from_instance in from_instances:
+            from_search_key = from_instance.get_search_key()
+            for to_instance in to_instances:
+                to_search_key = to_instance.get_search_key()
+                if from_search_key == to_search_key:
+                    to_instance.delete()
+
+        # NOTE: need to clear the expression cache.  This may be a little
+        # too heavy, but it is assumed that this operation does not
+        # happen too often
+        from pyasm.biz import ExpressionParser
+        ExpressionParser.clear_cache()
 
 
 

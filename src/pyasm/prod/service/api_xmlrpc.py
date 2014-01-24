@@ -1849,7 +1849,35 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return instance_dicts
 
 
+    @xmlrpc_decorator
+    def remove_instance(my, ticket, search_key1, search_key2):
+        '''Removes the instances between these two sobjects
 
+        @param:
+        search_key1: the search_key to the first sobject
+        search_key2: the search_key to the first sobject
+
+        @return:
+        the instance sobject created
+        '''
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject1 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject2 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key2)
+
+
+        sobject1.remove_instance(sobject2)
+
+
+ 
     #
     # Expression methods
     #
