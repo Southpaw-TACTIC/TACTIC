@@ -870,7 +870,13 @@ class IngestUploadCmd(Command):
 
     def execute(my):
 
+
         filenames = my.kwargs.get("filenames")
+
+        upload_dir = Environment.get_upload_dir()
+        base_dir = upload_dir
+
+
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
@@ -879,6 +885,8 @@ class IngestUploadCmd(Command):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
+
+
 
         server = TacticServerStub.get()
 
@@ -894,8 +902,6 @@ class IngestUploadCmd(Command):
 
         # TODO: use this to generate a category
         category_script_path = my.kwargs.get("category_script_path")
-        # ie:
-        # return blah/
         """
         ie:
             from pyasm.checkin import ExifMetadataParser
@@ -908,7 +914,6 @@ class IngestUploadCmd(Command):
  
     
 
-        upload_dir = Environment.get_upload_dir()
     
         if not SearchType.column_exists(search_type, "name"):
             raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
@@ -931,10 +936,8 @@ class IngestUploadCmd(Command):
 
 
 
-
-
             # extract metadata
-            file_path = "%s/%s" % (upload_dir, File.get_filesystem_name(filename))
+            file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
 
             # TEST: convert on upload
             try:

@@ -778,7 +778,6 @@ class BaseApiXMLRPC(XmlrpcServer):
             result['__search_key__'] = SearchKey.build_by_sobject(sobject, use_id=use_id)
 
             search_type = sobject.get_search_type()
-            print "search_type: ", search_type
             column_info = info.get(search_type)
             if column_info == None:
                 column_info = SearchType.get_column_info(search_type)

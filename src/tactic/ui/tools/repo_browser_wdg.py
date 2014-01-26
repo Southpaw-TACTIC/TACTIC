@@ -441,7 +441,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
                 search_types = [x.get_base_key() for x in search_type_objs]
 
-                print "search_type: ", search_types
+                #print "search_type: ", search_types
 
                 search_types = [SearchType.build_search_type(x) for x in search_types]
                 my.sobjects = []
