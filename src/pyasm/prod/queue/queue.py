@@ -215,7 +215,7 @@ class Queue(SObject):
         queue.set_value("queue", queue_type)
         queue.set_value("state", "pending")
 
-        queue.set_value("login". Environment.get_user_name())
+        queue.set_value("login", Environment.get_user_name())
         if command:
             pickled = pickle.dumps(command)
             queue.set_value("command", command.__class__.__name__)

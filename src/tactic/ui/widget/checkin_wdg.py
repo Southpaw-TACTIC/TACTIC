@@ -613,6 +613,8 @@ class CheckinWdg(BaseRefreshWdg):
             virtual_snapshot.set_sobject(sobject)
             sandbox_dir = virtual_snapshot.get_sandbox_dir(file_type='main')
 
+        sandbox_dir = sandbox_dir.replace("//", "/")
+
         return sandbox_dir
 
     get_sandbox_dir = classmethod(get_sandbox_dir)
@@ -1445,6 +1447,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         } )
 
 
+        # NOTE: this has been moved to the Sandbox Tab under the Checkout
+        # menu
+        """
         button = ActionButtonWdg(title="Clipboard")
         input_div.add(button)
         button.add_style("float: right")
@@ -1472,12 +1477,14 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             '''
         } )
+        """
 
 
 
         input_div.add("<br clear='all'/>")
 
 
+        num_entries = 0
 
         for connect in input_connects:
 
@@ -1500,7 +1507,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 except SearchException, e:
                     print "WARNINIG: expression [%s] gave error: " % from_expression, e
 
-            if from_pipeline:
+            elif from_pipeline:
                 pipeline = Pipeline.get_by_code(from_pipeline)
                 if not pipeline:
                     print "WARNING: pipeline [%s] not found"
@@ -1509,6 +1516,15 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                     search_type = pipeline.get_value("search_type")
                     sobject_expr = "@SOBJECT(%s)" % search_type
                     from_sobjects = Search.eval(sobject_expr, my.sobject)
+
+
+            else:
+                from_expression = "@SOBJECT()"
+                try:
+                    from_sobjects = Search.eval(from_expression, my.sobject)
+                except SearchException, e:
+                    print "WARNINIG: expression [%s] gave error: " % from_expression, e
+
 
             table = Table()
             table.set_max_width()
@@ -1520,6 +1536,24 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
             for count, sobject in enumerate(from_sobjects):
+
+                search = Search("sthpw/snapshot")
+                search.add_sobject_filter(sobject)
+                if from_process == "*":
+                    pass
+                else:
+                    from_processes = from_process.split("|")
+                    search.add_filters("process", from_processes)
+                search.add_filter("is_latest", True)
+                snapshots = search.get_sobjects()
+
+                if not snapshots:
+                    continue
+
+                snapshot_codes = []
+
+
+
                 sobject_div = DivWdg()
                 sobject_div.add_style("padding: 3px")
                 input_div.add(sobject_div)
@@ -1560,14 +1594,6 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 #info_div.add( " <i style='font-size: 0.8em; opacity: 0.5'>(%s)</i>" % sobject.get_code() )
                 #info_div.add("<hr/>")
 
-                search = Search("sthpw/snapshot")
-                search.add_sobject_filter(sobject)
-                search.add_filter("process", from_process)
-                search.add_filter("is_latest", True)
-                snapshots = search.get_sobjects()
-
-                snapshot_codes = []
-
 
                 # list each snaphot
                 for snapshot in snapshots:
@@ -1596,10 +1622,27 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 if not snapshots:
                     info_div.add("<br/>")
                     info_div.add("<i>No Check-ins Available</i>")
-
+                else:
+                    num_entries += 1
 
                 #checkbox.set_option("value", search_key)
                 checkbox.set_option("value", "|".join(snapshot_codes))
+
+
+        if num_entries == 0:
+            return None
+            """
+            input_div = DivWdg()
+            input_div.set_name("Source")
+            input_div.add_class("spt_inputs_top")
+            input_div.add("No source material")
+            input_div.add_style("margin: 50 auto")
+            input_div.add_style("padding: 30")
+            input_div.add_style("width: 200px")
+            input_div.add_style("text-align: center")
+            input_div.add_border()
+            input_div.add_color("background", "background3")
+            """
 
         return input_div
 
@@ -1894,11 +1937,25 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 else:
 
                     for to_sobject in to_sobjects:
-                        name = "%s - %s" % (to_sobject.get_name(), to_process)
+                        if to_process == "*":
+                            to_pipeline_code = to_sobject.get_value("pipeline_code")
+                            if not to_pipeline_code:
+                                to_processes = ['publish']
 
-                        to_search_key = to_sobject.get_search_key()
-                        process_names.append("%s|%s" % (to_search_key, to_process))
-                        label_names.append(name)
+                            else:
+                                to_pipeline = Pipeline.get_by_code(to_pipeline_code)
+                                to_processes = to_pipeline.get_process_names()
+                        else:
+                            to_processes = to_process.split("|")
+
+                        for process in to_processes:
+
+                            name = "%s - %s" % (to_sobject.get_name(), process)
+
+                            to_search_key = to_sobject.get_search_key()
+
+                            process_names.append("%s|%s" % (to_search_key, process))
+                            label_names.append(name)
 
 
             select = SelectWdg("deliver_process")
@@ -3894,7 +3951,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        # Don't specify the sanbox dir at the moment because it will
+        # Don't specify the sandbox dir at the moment because it will
         # remove the relative sub directories
         #'sandbox_dir': my.base_dir,
         'snapshot_codes': snapshot_codes,
@@ -3956,6 +4013,31 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'filename_mode': 'repo'
         } )
 
+
+
+        menu_item = MenuItem(type='action', label='Check-out from Clipboard')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'sandbox_dir': my.base_dir,
+            'cbjs_action': '''
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            spt.app_busy.show("Checking out from Clipboard");
+            var search_keys = spt.clipboard.get_search_keys();
+            for (var i = 0; i < search_keys.length; i++) {
+                var search_key = search_keys[i];
+                var snapshot = server.get_snapshot(search_key, {context: ''});
+                server.checkout_snapshot(snapshot, bvr.sandbox_dir, {file_types: ['main'], filename_mode: 'source'});
+                
+            }
+
+            var top = activator.getParent(".spt_checkin_top");
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+
+            '''
+        } ) 
 
 
 

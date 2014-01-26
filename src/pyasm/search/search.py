@@ -3396,7 +3396,7 @@ class SObject(object):
             triggers = "all"
         elif triggers == False:
             triggers = "integral"
-        assert(triggers in ["all", "integral", "none"])
+        assert(triggers in ["all", "integral", "ingest", "none"])
 
 
         # to allow for the convenience of a SearchType to be used as an
@@ -3443,11 +3443,20 @@ class SObject(object):
             my.new_id = -1
             id_override = True
 
+
+
+        # generate a code value for this sobject
+        if is_insert and triggers == "ingest":
+            if not my.update_data or not my.update_data.get("code"):
+                if SearchType.column_exists(my.full_search_type, "code"):
+                    temp_search_code = Common.generate_random_key()
+                    my.set_value("code", temp_search_code)
+
         # if not update data is specified
-        if not my.update_data and is_insert:
+        if is_insert and not my.update_data:
             # if there is no update data, an error will result, so give
-            # it a try with code as null ... this will work for most search
-            # types
+            # it a try with code as a random key ...
+            # this will work for most search types
             if SearchType.column_exists(my.full_search_type, "code"):
                 my.set_value("code", "NULL", quoted=False)
 
@@ -3545,7 +3554,8 @@ class SObject(object):
                     sql.do_update(id_statement)
 
 
-        Container.increment('Search:sql_commit') 
+        Container.increment('Search:sql_commit')
+
 
 
         # Fill the data back in (autocreate of ids)
@@ -3559,6 +3569,12 @@ class SObject(object):
                 sequence = impl.get_sequence_name(SearchType.get(my.full_search_type), database=database)
                 id = sql.get_value( impl.get_currval_select(sequence))
                 id = int(id)
+
+
+        if triggers == "ingest":
+            my.set_id(id)
+            return
+
 
         # Get the updated values and fill it into data.  This handles
         # auto updated values in the database
@@ -3781,8 +3797,9 @@ class SObject(object):
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
 
-                # add message
-                my._add_message(sobject, output)
+                # add message only if triggers is true
+                if triggers:
+                    my._add_message(sobject, output, mode)
 
 
 
@@ -3803,8 +3820,7 @@ class SObject(object):
 
 
 
-    def _add_message(my, sobject, data):
-        
+    def _add_message(my, sobject, data, mode):
 
         # message types are "insert,update,change"
         search_type_obj = sobject.get_search_type_obj()
@@ -3836,13 +3852,17 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
-
         message = Search.get_by_code("sthpw/message", message_code)
+
         """
-        search = Search("sthpw/message")
-        search.add_filter("code", message_code)
-        message = search.get_sobject()
+        # if there are no subscriptions, don't bother storing
+        #search = Search("sthpw/subscription")
+        #search.add_filter("code", message_code)
+        #search.add_filter("category", "sobject")
+        #if search.get_count() == 0:
+        #    return
         """
+
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
@@ -4491,6 +4511,86 @@ class SObject(object):
 
 
             return sobjects
+
+
+
+    # Instance relationships
+    def add_instance(my, sobject):
+        search_type1 = my.get_base_search_type()
+        search_type2 = sobject.get_base_search_type()
+
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        # get the instance
+        instance_type = attrs.get("instance_type")
+
+        instance = SearchType.create(instance_type)
+        instance.add_related_sobject(my)
+        instance.add_related_sobject(sobject)
+        instance.commit()
+
+        return instance
+
+
+
+
+    def get_instances(my, search_type2):
+
+        search_type1 = my.get_base_search_type()
+
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        # get the instance
+        instance_type = attrs.get("instance_type")
+
+        expression = "@SOBJECT(%s)" % (instance_type)
+        instances = Search.eval(expression, my)
+
+        return instances
+
+
+
+    def remove_instance(my, sobject):
+        search_type1 = my.get_base_search_type()
+        search_type2 = sobject.get_base_search_type()
+
+        from pyasm.biz import Schema
+        attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
+        print "search_type1: ", search_type1
+        print "search_type2: ", search_type2
+        print "attrs: ", attrs
+        relationship = attrs.get("relationship")
+        if relationship != "instance":
+            raise SearchException("Not an instance relationship")
+
+        instance_type = attrs.get("instance_type")
+
+        expression = "@SOBJECT(%s)" % (instance_type)
+        from_instances = Search.eval(expression, my)
+
+        to_instances = Search.eval(expression, sobject)
+
+        for from_instance in from_instances:
+            from_search_key = from_instance.get_search_key()
+            for to_instance in to_instances:
+                to_search_key = to_instance.get_search_key()
+                if from_search_key == to_search_key:
+                    to_instance.delete()
+
+        # NOTE: need to clear the expression cache.  This may be a little
+        # too heavy, but it is assumed that this operation does not
+        # happen too often
+        from pyasm.biz import ExpressionParser
+        ExpressionParser.clear_cache()
+
 
 
 

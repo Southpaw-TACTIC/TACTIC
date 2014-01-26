@@ -94,6 +94,8 @@ class TransactionQueueAppendCmd(Trigger):
 
             # check project security
             rules = server.get_value("access_rules");
+            if not rules:
+                rules = "<rules/>"
             access_manager.add_xml_rules(rules)
 
             namespace = log.get_value("namespace")

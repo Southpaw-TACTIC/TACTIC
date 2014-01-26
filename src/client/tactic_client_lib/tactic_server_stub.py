@@ -3307,6 +3307,36 @@ class TacticServerStub(object):
 
 
 
+    def execute_transaction(my, transaction_xml, file_mode=None):
+        '''Run a tactic transaction a defined by the instructions in the
+        given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
+       
+        @params
+        ticket - authentication ticket
+        transaction_xml - transction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs"
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transaction(transaction_xml)
+
+        '''
+        return my.server.execute_transaction(my.ticket, transaction_xml, file_mode)
+
+
+
+
     #
     # Widget Config methods
     #

@@ -105,7 +105,7 @@ class SnapshotFilesWdg(BaseRefreshWdg):
         top = my.top
         top.add_style("padding: 10px")
         top.add_color("background", "background", -5)
-        top.add_style("min-width: 350px")
+        top.add_style("min-width: 600px")
 
         paths = my.get_files()
 

@@ -227,8 +227,6 @@ class CherryPyStartup(object):
         #JobTask.start()
 
         if Config.get_value("sync", "enabled") == "true":
-            pass
-            """
             # start up the sync system ...
             print "Starting Transaction Sync ..."
             from tactic.command import TransactionQueueManager
@@ -238,7 +236,6 @@ class CherryPyStartup(object):
             print "Starting Watch Folder Service ..."
             from tactic.command import WatchServerFolderTask
             WatchServerFolderTask.start()
-            """
 
         # start up scheduled triggers
         #from tactic.command import ScheduledTriggerMonitor

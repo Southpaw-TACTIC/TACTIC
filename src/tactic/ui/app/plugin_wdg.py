@@ -338,7 +338,22 @@ class PluginWdg(BaseRefreshWdg):
                 data = {}
             else:
                 manifest = Xml()
-                manifest.read_file(manifest_path)
+                try:
+                    manifest.read_file(manifest_path)
+                except Exception, e:
+                    print "Error reading manifest: [%s]" % manifest_path, e
+                    msg = "Error reading manifest [%s]: %s" % (manifest_path, str(e))
+
+                    manifest_xml = """
+                    <manifest>
+                    <data>
+                      <title>ERROR (%s)</title>
+                      <description>%s</description>
+                    </data>
+                    </manifest>
+                    """ % (dirname, msg)
+                    manifest.read_string(manifest_xml)
+
 
                 node = manifest.get_node("manifest/data")
                 data = manifest.get_node_values_of_children(node)
@@ -2304,6 +2319,7 @@ class PluginVersionCreator(Command):
        
         # code is the same as dirname usually
         code = my.kwargs.get('code')
+        new_code = '%s-%s' %(code, version)
         dirname = code
         
         basecode = os.path.basename(code)

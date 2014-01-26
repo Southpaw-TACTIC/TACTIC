@@ -330,15 +330,12 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
      <connect from="unittest/person" to="unittest/city"
             relationship="code" type="hierarchy"/>
 
-     <connect from="unittest/person_car_instance" to="unittest/person"
+
+     <connect from="unittest/person_in_car" to="unittest/person"
             relationship="code" type="hierarchy"/>
-     <connect from="unittest/person_car_instance" to="unittest/car"
+     <connect from="unittest/person_in_car" to="unittest/car"
             relationship="code"/>
-
-
-
-     <!-- COMMENTED OUT: Are instances even necessary any more
-     <connect from="unittest/person" to="unittest/car" type="many_to_many" instance_type="unittest/person_car_instance"/>-->
+     <connect from="unittest/person" to="unittest/car" relationship="instance" instance_type="unittest/person_in_car"/>
 
  </schema>
 '''
@@ -969,6 +966,8 @@ class Schema(SObject):
         connects = my.xml.get_nodes("schema/connect[@from='%s']" % search_type ) 
         for connect in connects:
             relationship_new = Xml.get_attribute(connect, "relationship")
+            if relationship_new == "instance":
+                continue
             if relationship_new:
                 type = Xml.get_attribute(connect, "type")
                 if type == 'hierarchy':
@@ -980,6 +979,9 @@ class Schema(SObject):
         # if there is no "hierarchy" type, use the first one
         if not parent_type:
             for connect in connects:
+                relationship_new = Xml.get_attribute(connect, "relationship")
+                if relationship_new == "instance":
+                    continue
                 from_type = Xml.get_attribute(connect, "from")
                 if from_type == search_type:
                     parent_type = Xml.get_attribute(connect, "to")

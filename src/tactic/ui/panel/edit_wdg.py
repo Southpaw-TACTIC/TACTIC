@@ -699,13 +699,15 @@ class EditWdg(BaseRefreshWdg):
             element_names.remove(element_name)
 
 
+        config_xml = my.kwargs.get("config_xml")
         bvr =  {
             'type': 'click_up',
             'mode': my.mode,
             'element_names': element_names,
             'search_key': search_key,
             'input_prefix': my.input_prefix,
-            'view': my.view
+            'view': my.view,
+            'config_xml': config_xml
         }
 
         if my.mode == 'insert':
@@ -1132,6 +1134,8 @@ spt.edit.save_changes = function(content, search_key) {
         search_key = bvr.search_key;
     }
     kwargs['search_key'] = search_key;
+
+
     if (bvr.parent_key)
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;

@@ -2547,8 +2547,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'category': 'Search'
         },
-
-
+        'simple_search_visible_rows': {
+            'description': 'Number of visible rows in the simple search bar',
+            'type': 'TextWdg',
+            'category': 'Search'
+        },
 
 
         "search_view": "search view to be displayed",
@@ -3009,6 +3012,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
+
+            kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
+
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 

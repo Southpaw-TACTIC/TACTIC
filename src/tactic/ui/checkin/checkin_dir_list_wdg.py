@@ -245,7 +245,8 @@ class CheckinDirListWdg(DirListWdg):
 
     def handle_dir_or_item(my, item_div, dirname, basename):
         spath = "%s/%s" % (dirname, basename)
-        fspath = "%s/%s" % (dirname, File.get_filesystem_name(basename))
+        #fspath = "%s/%s" % (dirname, File.get_filesystem_name(basename))
+        fspath = "%s/%s" % (dirname, basename)
 
         md5 = my.md5s.get(fspath)
         changed = False
