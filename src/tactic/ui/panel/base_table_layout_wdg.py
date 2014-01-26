@@ -829,7 +829,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         spacing_divs = []
-        for i in range(0, 5):
+        for i in range(0, 6):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
             spacing_div.add_style("height: 32px")
@@ -984,6 +984,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[4] } )
             wdg_list.append( { 'wdg': help_wdg } )
 
+
+        shelf_wdg = my.get_shelf_wdg()
+        if shelf_wdg:
+            wdg_list.append( { 'wdg': spacing_divs[5] } )
+            wdg_list.append( { 'wdg': shelf_wdg } )
+
+
         horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
         xx = DivWdg()
         xx.add(horiz_wdg)
@@ -1051,6 +1058,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         return outer
+
+
+
+    def get_shelf_wdg(my):
+        return None
 
 
 
