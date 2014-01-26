@@ -37,13 +37,18 @@ class WorkHoursHeaderWdg(BaseRefreshWdg):
 class WorkHoursElementWdg(SimpleTableElementWdg):
 
     LEFT_WIDTH = 20 
-    DAY_WIDTH = 25
+    DAY_WIDTH = 35
     MONTH_WIDTH = 25
     OT = 'overtime'
     ST = 'regular'
+    STT = 'regular_stt'
+    ENT = 'regular_ent'
     OT_ROW = 'overtime_row'
     ST_ROW = 'regular_row'
-    ROW_DICT = {OT_ROW: OT, ST_ROW: ST}
+    STT_ROW = 'starttime_row'
+    ENT_ROW = 'endtime_row'
+    ROW_DICT = {OT_ROW: OT, ST_ROW: ST, STT_ROW: STT, ENT_ROW: ENT}
+    UNIT_DICT = {'hour' : 3600, 'minute': 60}
 
     ARGS_KEYS = SimpleTableElementWdg.ARGS_KEYS.copy()
     ARGS_KEYS['show_overtime'] = {
@@ -54,14 +59,78 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         'category': 'Display'
         }
 
+    ARGS_KEYS['use_straight_time'] = {
+        'type': 'SelectWdg',
+        'description': 'use straight_time to enter daily hours',
+        'values': 'true|false',
+        'order': 3,
+        'category': 'Display'
+        }
+    ARGS_KEYS['unit'] = {
+        'type': 'SelectWdg',
+        'values': 'minute|hour',
+        'description': 'unit for straight time when using start/end entry mode',
+        'order': 4,
+        'category': 'Display'
+        }
+    ARGS_KEYS['day_width'] = {
+        'type': 'TextWdg',
+        'description': 'Width of each cell to enter time or hours',
+        'order': 5,
+        'category': 'Display'
+        }
+    ARGS_KEYS['width'] = {
+        'type': 'TextWdg',
+        'description': 'Width of overall widget',
+        'order': 6,
+        'category': 'Display'
+        }
+    ARGS_KEYS['days_per_page'] = {
+        'type': 'TextWdg',
+        'description': 'Number of days to show per page',
+        'order': 7,
+        'category': 'Display'
+        }
+
     def init(my):
         my.preprocessed = False
         my.is_refresh = my.kwargs.get("is_refresh")
+
+        my.use_straight_time = my.kwargs.get("use_straight_time")
+        if my.use_straight_time == 'false':
+            my.use_straight_time = False
+        else:
+            my.use_straight_time = True
+
 
         my.start_date = None
         my.summary_st = {}
         my.summary_ot = {}
         my.show_overtime = my.kwargs.get("show_overtime")
+        
+        my.unit = my.kwargs.get("unit")
+        if not my.unit:
+            my.unit = "hour"
+
+        my.days_per_page = my.kwargs.get("days_per_page")
+        my.day_width = my.kwargs.get("day_width")
+        my.table_width = my.kwargs.get("width")
+        if not my.table_width and my.use_straight_time:
+            my.table_width = 360
+
+        if not my.day_width:
+            my.day_width = my.DAY_WIDTH
+        else:
+            my.day_width = int(my.day_width)
+        
+        if not my.days_per_page:
+            my.days_per_page = 7
+        else:
+            my.days_per_page = int(my.days_per_page)
+
+        if not my.table_width:
+            my.table_width = my.days_per_page * my.day_width * 2.2
+        
         if my.show_overtime in [True, "true"]:
             my.show_overtime = True
         else:
@@ -98,11 +167,13 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             start_date = workhour_data.get('start_date')
             start_date = my._get_date_obj(start_date)
         else:
-            start_date = my.today - datetime.timedelta(days=wday)
-
+            if my.days_per_page < 7:
+                start_date = my.today
+            else:
+                start_date = my.today - datetime.timedelta(days=wday)
+        
         my.start_date = start_date
-        end_date = start_date + datetime.timedelta(days=6)
-
+        end_date = start_date + datetime.timedelta(days=my.days_per_page -1)
         # this may not be necessary any more
         """
         if not my.sobjects:
@@ -147,20 +218,29 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         
         # break into 2 categories
         for key, sub_dict in my.entries.items():
-            for key2, entry_list in sub_dict.items():
-                entry_list_dict = {my.OT: [], my.ST: []}
-                for entry in entry_list:
-                    if entry.get_value('category') == my.OT:
-                        entry_list_dict[my.OT].append(entry)
-                    elif entry.get_value('category') == my.ST:
-                        entry_list_dict[my.ST].append(entry)
-                    else: 
-						# in case they haven't run the upgrade script 
-                        # (potentially include some custom-entered category) 
-                        entry_list_dict[my.ST].append(entry)
+            if my.use_straight_time:
+                for key2, entry_list in sub_dict.items():
+                    entry_list_dict = {my.OT: [], my.ST: []}
+                    for entry in entry_list:
+                        if entry.get_value('category') == my.OT:
+                            entry_list_dict[my.OT].append(entry)
+                        elif entry.get_value('category') == my.ST:
+                            entry_list_dict[my.ST].append(entry)
+                        else: 
+                            # in case they haven't run the upgrade script 
+                            # (potentially include some custom-entered category) 
+                            entry_list_dict[my.ST].append(entry)
 
-                sub_dict[key2] = entry_list_dict
+                    sub_dict[key2] = entry_list_dict
         
+            else:
+                for key2, entry_list in sub_dict.items():
+                    entry_list_dict = {my.STT: [], my.ENT: []}
+                    for entry in entry_list:
+                        entry_list_dict[my.STT].append(entry)
+                        entry_list_dict[my.ENT].append(entry)
+
+                    sub_dict[key2] = entry_list_dict
 
                     
 
@@ -207,7 +287,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             else {
                 el = top.getElement(".spt_total");
             }
-            el.value = total;
+            if (el)
+                el.value = total;
     }
 
         '''
@@ -223,18 +304,21 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
         mday = my.today.strftime("%d")
         mmonth = my.today.strftime("%m")
-       
+        
+        my.weekday_dict = {}
         days = []
         for idx, date in enumerate(my.dates):
             day_div = DivWdg()
             days.append( day_div )
-            day_div.add( "%s<br/>%s" % (date.strftime("%a"), date.strftime("%d") ))
+            week_day = date.strftime("%a")
+            day_div.add( "%s<br/>%s" % (week_day, date.strftime("%d") ))
+            my.weekday_dict[idx] = week_day
 
         table = Table()
         div.add(table)
         table.add_row()
         table.add_color("color", "color")
-        table.add_style("width: 300px")
+        table.add_style("width: %spx"%my.table_width)
         table.add_style("float: left")
         
         month_div = FloatDivWdg(my.start_date.strftime("%b"))
@@ -244,10 +328,15 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
         icon = IconButtonWdg(tip="Previous Week", icon=IconWdg.LEFT)
         td = table.add_cell(icon)
-        td.add_style("width: %spx" % my.LEFT_WIDTH)
+        offset = 0
+        if not my.use_straight_time:
+            offset = 12
+        td.add_style("width: %spx" % (my.LEFT_WIDTH + offset) )
+        
+        display_days = my.days_per_page
+        next_start_date = my.start_date + datetime.timedelta(days=display_days)
+        prev_start_date = my.start_date + datetime.timedelta(days=-display_days)
 
-        next_start_date = my.start_date + datetime.timedelta(days=7)
-        prev_start_date = my.start_date + datetime.timedelta(days=-7)
 
         icon.add_behavior( {
         'type': 'click_up',
@@ -274,8 +363,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
             td = table.add_cell()
             td.add(day_wdg)
-            td.add_styles("text-align: center; padding-right: 3px")
-            td.add_style("width: %spx" % my.DAY_WIDTH)
+            td.add_styles("text-align: center; padding-left: 2px;min-width: %spx"%my.day_width)
 
         icon = IconButtonWdg(tip="Next Week", icon=IconWdg.RIGHT)
         icon.add_behavior( {
@@ -297,9 +385,41 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         
         '''
         } )
-        table.add_cell(icon)
+        td = table.add_cell(icon)
+        td.add_style('width: %spx'%my.day_width)
+        # empty total cell
+        td = table.add_blank_cell()
+        td.add_style('width: 100%')
 
         return div
+
+    def get_time_value(my, entry, row):
+        '''get the time value and delta of hours. It returns minutes for delta if it's for start/end time'''
+        value = ''
+        delta = 0
+        
+        if my.use_straight_time:
+            value = entry.get_value("straight_time")
+            delta = value
+        else:
+            end_time_obj = None
+            if row == my.STT_ROW:
+                value = entry.get_value('start_time')
+            else:    
+                value = entry.get_value('end_time')
+                st_value = entry.get_value('start_time')
+                end_time_obj = parser.parse(value)
+                st_time_obj = parser.parse(st_value)
+                delta = (end_time_obj - st_time_obj).seconds / my.UNIT_DICT[my.unit]
+            if value:
+                if end_time_obj:
+                    value = end_time_obj.strftime("%H%M")
+                else:
+                    day = parser.parse(value)
+                    value = day.strftime("%H%M")
+
+                
+        return value, delta
 
     def get_display(my):
 
@@ -345,21 +465,28 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         table = Table()
         top.add(table)
 
-        row_list = [my.ST_ROW]
-        if my.show_overtime:
-            row_list.append(my.OT_ROW)
+        
 
+        if my.use_straight_time:
+            row_list = [my.ST_ROW]
+            if my.show_overtime:
+                row_list.append(my.OT_ROW)
+            prefix_list = ['','ot']    
+        else:
+            row_list = [my.STT_ROW, my.ENT_ROW]
+            prefix_list = ['stt','ent']    
         text = HiddenWdg(my.get_name() )
         text.add_class("spt_data")
-            
-        for row_to_draw in row_list:
-            table.add_row()
-            table.add_color("color", "color")
-            table.add_styles("width: 300px; float: left")
 
-            td = table.add_cell()
-            # this matches with the MONTH label + Last week arrow 25px 
-            td.add_style("width: %spx" % (my.LEFT_WIDTH + my.MONTH_WIDTH + 4))
+        table.add_color("color", "color")
+        table.add_styles("width: %spx; float: left"%my.table_width)
+        for row_to_draw in row_list:
+            tr = table.add_row()
+            tr.add_style('line-height','8px')
+            
+            td = table.add_blank_cell()
+            offset_width = my.MONTH_WIDTH + my.LEFT_WIDTH+8
+            td.add_style("min-width: %spx" % offset_width)
             td.add(text)
 
             # go through each day and draw an input for overtime
@@ -369,33 +496,52 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
             # Add a label to indicate if the row is straight time or overtime
            
-            over_time_prefix = ''
+            time_prefix = ''
             if row_to_draw == my.OT_ROW:
-                over_time_prefix = 'ot'
+                time_prefix = 'ot'
                 div = DivWdg()
                 div.add("OT")
                 div.add_styles('text-align: right; margin-right: 4px')
                 td.add(div)
+            elif row_to_draw == my.STT_ROW:
+                time_prefix = 'stt'
+                div = DivWdg()
+                div.add("ST")
+               
+                div.add_styles('text-align: right; margin: 0 4px 4px 0')
+                td.add(div)
+            elif row_to_draw == my.ENT_ROW:
+                time_prefix = 'ent'
+                div = DivWdg()
+                div.add("ET")
+               
+                div.add_styles('text-align: right; margin: 0 4px 4px 0')
+                td.add(div)
+                
 
             for idx, day in enumerate(days):
                 day_wdg = DivWdg()
                 day_wdg.add(day)
 
                 td = table.add_cell()
-                td.add_style("width: %spx" % my.DAY_WIDTH)
+                td.add_style("width: %spx" % my.day_width)
 
-                text = TextWdg('%sday_%s' % (over_time_prefix, day))
+                
+                text = TextWdg('%sday_%s' % (time_prefix, day))
                 
                 if disabled:
                     text.set_option('read_only','true')
                     text.set_attr('disabled','disabled')
 
                 td.add(text)
-                text.add_class('spt_day%s' % (over_time_prefix))
-                text.add_styles("width: 100%;text-align: right;padding-right: 3px")
+                text.add_class('spt_day%s' % (time_prefix))
+                text.add_styles("width: %spx;text-align: right;padding-left: 2px" %(my.day_width-2))
+                #text.add_styles("width: 100%;text-align: right;padding-left: 2px")
                 if day == today:
                     text.add_style("border: solid 1px black")
-                if idx in [0,6]:
+
+                week_day = my.weekday_dict[idx]
+                if week_day in ['Sat','Sun']:
                     # MAIN: Overtime, weekend
                     if row_to_draw == my.OT_ROW:
                         text.add_color("background", "background2", modifier=[-15,0,5])
@@ -429,33 +575,31 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                                 continue
                        
                         # Check if there exist a value in the straight_time column
-                        value = entry.get_value("straight_time")
+                        value, delta = my.get_time_value(entry, row_to_draw)
                         if value:
+
                             text.set_value(value)
                             text.add_attr('orig_input_value', value)
-
+                            
                             if row_to_draw == my.OT_ROW:
-                                total_hours_ot += float(value)
+                                total_hours_ot += float(delta)
                             else:
-                                total_hours_st += float(value)
+                                total_hours_st += float(delta)
 
-                            daily_sum += value
+                            daily_sum += delta
+
 
                 # we only use value instead of the sum "daily_sum" for now
                 if row_to_draw == my.OT_ROW:
-                    my.summary_ot[idx].update({search_key: value})
+                    my.summary_ot[idx].update({search_key: daily_sum})
                 else:
-                    my.summary_st[idx].update({search_key: value})
-
-                # accept on pressing Enter
-                behavior = {
-                   'type': 'keydown',
-                   'cbjs_action': '''
-                   if (evt.key=='enter') {
+                    my.summary_st[idx].update({search_key: daily_sum})
+                
+                script = '''
                         var orig_value = bvr.src_el.getAttribute("orig_input_value");
                         var input_field_type = bvr.src_el.getAttribute("input_field_type");
+                    
                         bvr.src_el.value = bvr.src_el.value.strip();
-
                         if (bvr.src_el.value == '') {
                             if (orig_value) {
                                 bvr.src_el.value = 0;
@@ -468,34 +612,32 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                             return;
                         }
 
-                        if (input_field_type != 'ot') {
-                            spt.work_hour.update_total(bvr, '.spt_day');
-                        }
-                        else {
-                            spt.work_hour.update_total(bvr, '.spt_dayot');
-                        }
+                       
+                        bvr.prefix_list.splice( bvr.prefix_list.indexOf(bvr.time_prefix),1)
+                        var other_time_prefix = bvr.prefix_list[0];
+                        spt.work_hour.update_total(bvr, '.spt_day' + bvr.time_prefix);
 
                         // register this as changed item
                         var all_top_el = bvr.src_el.getParent(".spt_work_hours_top");
 
-                        var values = spt.api.Utility.get_input_values(all_top_el, '.spt_day', false);
-                        var values_ot = spt.api.Utility.get_input_values(all_top_el, '.spt_dayot', false);
+                        var values1 = spt.api.Utility.get_input_values(all_top_el, '.spt_day'+ bvr.time_prefix, false);
+                        var values2 = spt.api.Utility.get_input_values(all_top_el, '.spt_day'+ other_time_prefix, false);
 
                         // Merge values from straight time and overtime fields in values variable.
-                        for (var attr in values_ot) {
-                            values[attr] = values_ot[attr];
+                        for (var attr in values2) {
+                            values1[attr] = values2[attr];
                         }
 
-                        for (val in values) {
-                            if (values[val] && isNaN(values[val])) {
+                        for (val in values1) {
+                            if (values1[val] && isNaN(values1[val])) {
                                 spt.error('You have non-numeric values in your work hours. Please correct it: ' + values[val]);
                                 return;
                             }
                         }
-                        delete values.data; 
+                        delete values1.data; 
                         var value_wdg = all_top_el.getElement(".spt_data");
 
-                        var value = JSON.stringify(values);
+                        var value = JSON.stringify(values1);
                         value_wdg.value = value;
                         
                         var layout = bvr.src_el.getParent(".spt_layout");
@@ -509,85 +651,39 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                             spt.dg_table.edit.widget = all_top_el;
                             spt.dg_table.inline_edit_cell_cbk( value_wdg, cached_data );
                         }
+                        '''
+                # accept on pressing Enter
+                behavior = {
+                   'type': 'keydown',
+                   'time_prefix': time_prefix,
+                   'prefix_list': prefix_list,
+                   'cbjs_action': '''
+                   if (evt.key=='enter') {
+                       %s
                     }
 
-                '''}     
+                '''%script}     
 
                 text.add_behavior(behavior)
-
-                text.add_behavior( {
-                'type': 'blur',
-                'cbjs_action': '''
-              
-                var orig_value = bvr.src_el.getAttribute("orig_input_value");
-                var input_field_type = bvr.src_el.getAttribute("input_field_type");
-                bvr.src_el.value = bvr.src_el.value.strip();
-
-                if (bvr.src_el.value == '') {
-                    if (orig_value) {
-                        bvr.src_el.value = 0;
-                    }
-                    else {
-                        return;
-                    }
-                }
-                else if (bvr.src_el.value == orig_value) {
-                    return;
-                }
-
-                if (input_field_type != 'ot') {
-                    spt.work_hour.update_total(bvr, '.spt_day');
-                }
-                else {
-                    spt.work_hour.update_total(bvr, '.spt_dayot');
-                }
-
-                // register this as changed item
-                var all_top_el = bvr.src_el.getParent(".spt_work_hours_top");
-                var values    = spt.api.Utility.get_input_values(all_top_el, '.spt_day', false);
-                var values_ot = spt.api.Utility.get_input_values(all_top_el, '.spt_dayot', false);
-
-                // Merge values from straight time and overtime fields in values variable.
-                for (var attr in values_ot) {
-                    values[attr] = values_ot[attr];
-                }
-
-                for (val in values) {
-                    if (values[val] && isNaN(values[val])) {
-                        spt.error('You have non-numeric values in your work hours. Please correct it.');
-                        return;
-                    }
-                }
-
-                delete values.data; 
-                var value_wdg = all_top_el.getElement(".spt_data");
-                var value = JSON.stringify(values);
-                value_wdg.value = value;
                 
-                var layout = bvr.src_el.getParent(".spt_layout");
-                var version = layout.getAttribute("spt_version");
+                behavior = {
+                   'type': 'blur',
+                   'time_prefix': time_prefix,
+                   'prefix_list': prefix_list,
+                   'cbjs_action': '''
+                        %s
 
-                if (version == "2") {
-                    spt.table.set_layout(layout);
-                    spt.table.accept_edit(all_top_el, value, false);
-                }
-                else {
-                    var cached_data = {};
-                    spt.dg_table.edit.widget = all_top_el;
-                    spt.dg_table.inline_edit_cell_cbk( value_wdg, cached_data );
-                }
-
-                '''
-                } )
+                '''%script}     
+                text.add_behavior(behavior)
 
 
             text = TextWdg("total")
             td = table.add_cell(text)
             td.add_style("width: 35px")
 
-            text.add_attr('spt_total', '.spt_total%s' % (over_time_prefix))
-            text.add_class('spt_total%s' % (over_time_prefix))
-            text.add_styles("width: 30px; text-align: right; padding-right: 3px")
+            text.add_attr('spt_total', '.spt_total%s' % (time_prefix))
+            text.add_class('spt_total%s' % (time_prefix))
+            text.add_styles("width: %spx; text-align: right; padding-right: 3px"%my.day_width)
             text.set_attr("readonly", "readonly")
 
             # MAIN: Overtime, total.
@@ -601,6 +697,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 if total_hours_st:
                     text.set_value("%0.1f" % total_hours_st)
                 my.summary_st[7].update({search_key: total_hours_st})
+            td = table.add_blank_cell()
+            td.add_style('width: 100%')
 
         return top
 
@@ -629,10 +727,14 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             entries = {}
 
 
-        row_list = [my.ST_ROW]
-        if my.show_overtime:
-            row_list.append(my.OT_ROW)
 
+        if my.use_straight_time:
+            row_list = [my.ST_ROW]
+            if my.show_overtime:
+                row_list.append(my.OT_ROW)
+        else:
+            row_list = [my.STT_ROW, my.ENT_ROW]
+        
         total_hours_ot = 0 
         total_hours_st = 0
 
@@ -652,9 +754,9 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
             # Add a label to indicate if the row is straight time or overtime
            
-            over_time_prefix = ''
+            time_prefix = ''
             if row_to_draw == my.OT_ROW:
-                over_time_prefix = 'ot'
+                time_prefix = 'ot'
                 total_hours_ot = 0
             else:
                 total_hours_st = 0
@@ -685,9 +787,10 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                                 continue
                        
                         # Check if there exist a value in the straight_time column
-                        value = entry.get_value("straight_time")
+                        value, delta = my.get_time_value(entry, row_to_draw)
                         if value:
 
+                            
                             if row_to_draw == my.OT_ROW:
                                 #total_hours_ot += float(value)
                                 hours_list = month_dict_ot.get(month)
@@ -696,6 +799,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                                 #total_hours_st += float(value)
                                 hours_list = month_dict_st.get(month)
                                 hours_list.append(float(value))
+
+                            
 
                            
                             #daily_sum += value
@@ -730,7 +835,6 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 final_sum = sum(month_dict_ot[month]) +  sum(month_dict_st[month])
             final_sum = str(final_sum)        
             final_display.append(final_sum)
-        
         return ''.join(final_display)
         
 
@@ -778,27 +882,42 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
             table.add_row()
             table.add_color("color", "color")
-            table.add_styles("width: 300px; float: left")
+            table.add_styles("width: %spx; float: left"%my.table_width)
 
-            td = table.add_cell("&nbsp;")
-            td.add_style("width: %spx" % (my.MONTH_WIDTH + my.LEFT_WIDTH+4))
-            over_time_prefix = ''
+            td = table.add_blank_cell()
+            td.add_style("min-width: %spx" % (my.MONTH_WIDTH + my.LEFT_WIDTH+8))
+            time_prefix = ''
             if row_to_draw == my.OT_ROW:
-                over_time_prefix = 'ot'
+                time_prefix = 'ot'
                 div = DivWdg()
                 div.add("OT")
                
                 div.add_styles('text-align: right; margin-right: 4px; margin-bottom: 6px')
                 td.add(div)
+            elif row_to_draw == my.STT_ROW:
+                time_prefix = 'stt'
+                div = DivWdg()
+                div.add("ST")
+               
+                div.add_styles('text-align: right; margin-right: 4px; margin-bottom: 6px')
+                td.add(div)
+            elif row_to_draw == my.ENT_ROW:
+                time_prefix = 'ent'
+                div = DivWdg()
+                div.add("ET")
+               
+                div.add_styles('text-align: right; margin-right: 4px; margin-bottom: 6px')
+                td.add(div)
+
 
             for idx, day in enumerate(days):
                 day_wdg = DivWdg()
                 day_wdg.add(day)
                 
                 td = table.add_cell()
-                td.add_style("width: %spx" % my.DAY_WIDTH)
+                td.add_style("width: %spx" % my.day_width)
                 # keep it as text input for consistent alignment
-                text = TextWdg("%sday_%s" % (over_time_prefix, day) )
+                text = TextWdg("%sday_%s" % (time_prefix, day) )
 
                 if row_to_draw == my.OT_ROW:
                     sobj_daily_dict = my.summary_ot[idx]
@@ -818,10 +937,11 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 text.set_value(daily_total)
                 td.add(text)
 
-                text.add_class("spt_day%s" % (over_time_prefix))
-                text.add_style("width: 100%")
+                text.add_class("spt_day%s" % (time_prefix))
+                text.add_style("width: %spx"%(my.day_width-2))
+                #text.add_style("width: 100%")
                 text.add_style("text-align: right")
-                text.add_style("padding-right: 3px")
+                text.add_style("padding-left: 2px")
                 text.add_style('font-weight: 500')
                 text.set_attr("readonly", "readonly")
                 # grey out the text color
@@ -855,15 +975,13 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             text.set_value(daily_total)
 
             td = table.add_cell(text)
-            text.add_class("spt_total%s" % (over_time_prefix))
+            text.add_class("spt_total%s" % (time_prefix))
             # does not look good in FF
             #td.add_style("border-width: 0 0 0 1")
             #td.add_style("border-style: solid")
-            td.add_style("width: 35px")
-
-            text.add_style("width: 30px")
-            text.add_style("text-align: right")
-            text.add_style('font-weight: 500')
+            td.add_style("width: %spx"%my.day_width)
+            text.add_styles("font-weight: 500;width: %spx; text-align: right; padding-left: 2px"%(my.day_width))
+            
             text.set_attr("readonly", "readonly")
             text.add_color('color', 'color', +40)
 
@@ -873,6 +991,9 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             else:
                 # FOOTER: Straight time, total
                 text.add_color("background", "background2", modifier=[20,0,15])
+
+            td = table.add_blank_cell()
+            td.add_style('width','100%')
 
         return top
 
@@ -891,6 +1012,17 @@ class WorkHoursElementAction(DatabaseAction):
         task = my.sobject
         parent = task.get_parent()
 
+        my.unit = my.get_option("unit")
+        if not my.unit:
+            my.unit = "hour"
+
+        my.use_straight_time = my.get_option("use_straight_time")
+        #my.use_straight_time = 'false'
+        if my.use_straight_time == 'false':
+            my.use_straight_time = False
+        else:
+            my.use_straight_time = True
+
         # Do this for now. EXIT if the parent of task can't be found.. 
         if not parent:
             return
@@ -906,9 +1038,16 @@ class WorkHoursElementAction(DatabaseAction):
         if use_task_code:
             entries = [x for x in entries if x.get_value('task_code') == task.get_code() and x.get_value('login') == user]
 
+        entry_dict = {}
         for key, value in data.items():
-            if not (key.startswith("day_") or key.startswith("otday_")):
-                continue
+            if my.use_straight_time:
+                if not (key.startswith("day_") or key.startswith("otday_")):
+                    continue
+            else:
+                if not (key.startswith("day_") or key.startswith("sttday_") or key.startswith("entday_")):
+                    continue
+                start_value = data
+
 
             tmp, year, month, day = key.split("_")
             date = "%s-%s-%s 00:00:00" % (year,month,day)
@@ -920,43 +1059,99 @@ class WorkHoursElementAction(DatabaseAction):
             for entry in entries:
                 entry_day = entry.get_value("day")
                 if entry_day == date:
-                    if key.startswith("day_"):
-                        if entry.get_value("category") in ['',WorkHoursElementWdg.ST] :
-                            exists = True
-                            break
-                    if key.startswith("otday_"):
-                        if WorkHoursElementWdg.OT == entry.get_value("category"):
-                            exists = True
-                            break
-            
+                    if my.use_straight_time:
+
+                        if key.startswith("day_"):
+                            if entry.get_value("category") in ['',WorkHoursElementWdg.ST] :
+                                exists = True
+                                break
+                        if key.startswith("otday_"):
+                            if WorkHoursElementWdg.OT == entry.get_value("category"):
+                                exists = True
+                                break
+                    else:
+                         # only supports regular hours for start and end time
+                         if key.startswith("sttday_"):
+                            if entry.get_value("category") in ['',WorkHoursElementWdg.ST] :
+                                exists = True
+                                break
+                         elif key.startswith("entday_"):
+                            if entry.get_value("category") in ['',WorkHoursElementWdg.ST] :
+                                exists = True
+                                break
+
+
             if not exists:
-                # create a new one
-                entry = SearchType.create("sthpw/work_hour")
-                if parent:
-                    entry.set_parent(parent)
-                entry.set_value("task_code", task.get_code() )
-                entry.set_value("process", task.get_value('process'))
-                entry.set_value("day", date)
-                entry.set_user()
-                entry.set_project()
+                entry = entry_dict.get(date)
+                if not entry:
+                    # create a new one
+                    entry = SearchType.create("sthpw/work_hour")
+                    if parent:
+                        entry.set_parent(parent)
+                    entry.set_value("task_code", task.get_code() )
+                    entry.set_value("process", task.get_value('process'))
+                    entry.set_value("day", date)
+                    entry.set_user()
+                    entry.set_project()
             
-            if value == '' or value == '0':
-                if exists:
-                    entry.delete()
-
-            elif value == '%s'% entry.get_value('straight_time'):
-                # prevent commit the same value again
-                continue
-            else:
-                # 
-                entry.set_value("straight_time", value)
+            if not my.use_straight_time:
+                # only enter standard time for now
                 entry.set_value("project_code", task.get_value('project_code'))
+                entry.set_value("category", WorkHoursElementWdg.ST)
+                if not value:
+                    continue
 
-                if key.startswith("otday_"):
-                    entry.set_value("category", WorkHoursElementWdg.OT)
+                date_part = ''
+                if key.startswith("entday_"):
+                    date_part = key.replace('entday_','')
+                    date_part = date_part.replace('_','-')
+                    value = value.zfill(4)
+                    time = parser.parse('%s %s' %(date_part, value))
+                    entry.set_value("end_time", time)
+
+                elif key.startswith("sttday_"):
+                    date_part = key.replace('sttday_','')
+                    date_part = date_part.replace('_','-')
+                    value = value.zfill(4)
+                    time = parser.parse('%s %s' %(date_part, value))
+                    entry.set_value("start_time", time)
+                    
+                entry_dict[date] = entry
+
+                #entry.commit()
+
+            else:
+                if value == '' or value == '0':
+                    if exists:
+                        entry.delete()
+
+                elif value == '%s'% entry.get_value('straight_time'):
+                    # prevent commit the same value again
+                    continue
                 else:
-                    entry.set_value("category", WorkHoursElementWdg.ST)
+                    # 
+                    entry.set_value("straight_time", value)
+                    entry.set_value("project_code", task.get_value('project_code'))
 
+                    if key.startswith("otday_"):
+                        entry.set_value("category", WorkHoursElementWdg.OT)
+                    else:
+                        entry.set_value("category", WorkHoursElementWdg.ST)
+
+
+                    entry.commit()
+
+            for key, entry in entry_dict.items():
+
+                # set the straight_time as well
+                st_time = str(entry.get_value('start_time'))
+                end_time = str(entry.get_value('end_time'))
+                if st_time and end_time:
+                    st_time_obj = parser.parse(st_time)
+                    end_time_obj = parser.parse(end_time)
+
+                    delta = (end_time_obj - st_time_obj).seconds / WorkHoursElementWdg.UNIT_DICT[my.unit]
+                    entry.set_value("straight_time", delta)
 
                 entry.commit()
 

@@ -14,6 +14,7 @@ __all__ = ["CsvImportCmd","SimpleCsvImportCmd"]
 
 import os, csv
 import re
+import unicodedata
 
 from pyasm.search import SObjectFactory, SearchType, Search, SqlException
 from pyasm.biz import CsvParser
@@ -26,6 +27,15 @@ class CsvImportCmd(Command):
     def get_title(my):
         return "CSV Import"
 
+    def strip_punctuation(my, word):
+        '''strip punctuation and Cf BOM characters for unicode string'''
+        chars = []
+        for char in word:
+            cat = unicodedata.category(char)
+            if cat == 'Cf' or cat.startswith('P'):
+                continue
+            chars.append(char)
+        return "".join(chars)
 
     def check(my):
         # make this a callback for now
@@ -37,6 +47,11 @@ class CsvImportCmd(Command):
         my.web_url = web.get_form_value("web_url")
         my.test_run = web.get_form_value("test_run")=='true'
 
+        my.triggers_mode = web.get_form_value("triggers_mode")
+        if  my.triggers_mode in ['', 'True']:
+            my.triggers_mode = True
+        elif my.triggers_mode == 'False':
+            my.triggers_mode = False 
 
         if my.web_url:
             import urllib2
@@ -65,6 +80,8 @@ class CsvImportCmd(Command):
         my.columns = []
         my.new_columns = []
         my.new_column_types = []
+
+
         for i in range(0, num_columns):
             enabled =  web.get_form_value("column_enabled_%s" % i)
             if enabled  in ['on','true']:
@@ -74,6 +91,8 @@ class CsvImportCmd(Command):
             my.columns.append(column)
 
             new_column = web.get_form_value("new_column_%s" % i)
+            if isinstance(new_column, unicode):
+                new_column = my.strip_punctuation(new_column)
             new_column_type = web.get_form_value("new_column_type_%s" % i)
             my.new_columns.append(new_column)
             my.new_column_types.append(new_column_type)
@@ -89,7 +108,6 @@ class CsvImportCmd(Command):
 
         my.has_title = web.get_form_value("has_title") == 'on'
         my.lowercase_title = web.get_form_value("lowercase_title") == 'on'
-
         return True
 
     def execute(my):
@@ -229,7 +247,7 @@ class CsvImportCmd(Command):
             
             try:
                 #sobject.commit(triggers=False)
-                sobject.commit(triggers=True)
+                sobject.commit(triggers=my.triggers_mode)
 
                 if note:
                     note_obj = SearchType.create("sthpw/note")
@@ -362,7 +380,7 @@ class SimpleCsvImportCmd(Command):
         updated_entries = []
         error_entries = []
         error = False
-        
+ 
         # create entries or update values
         for row_count, row in enumerate(csv_data):
             sobject = None

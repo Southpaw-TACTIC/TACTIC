@@ -428,6 +428,10 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             #div.set_attr('spt_view', 'new_folder')
             div.add(HtmlElement.b('Create New Folder'))
             div.add(HtmlElement.br(2))
+            item_div = DivWdg(css='spt_new_item')
+            item_div.add_style('display: none')
+            div.add(HtmlElement.br())
+            div.add(item_div)
             """
             # add exisiting views in the div for checking with client's input
              # add exiting views:
