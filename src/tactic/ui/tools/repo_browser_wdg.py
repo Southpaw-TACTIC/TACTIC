@@ -392,10 +392,13 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show files
         # show all files types
         # show totals?
-        my.show_files = True
-        show_latest_only = True
-        show_main_only = True
+
         show_empty_folders = True
+
+        my.show_files = True
+        show_main_only = True
+        show_latest = True
+        show_versionless = False
 
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
@@ -480,14 +483,18 @@ class RepoBrowserDirListWdg(DirListWdg):
             if keywords:
                 search.add_text_search_filter("metadata_search", keywords)
 
-            if show_latest_only:
+            if show_latest or show_versionless:
                 search.add_join("sthpw/snapshot")
                 search.add_op("begin")
-                search.add_filter("is_latest", True, table="snapshot")
-                #search.add_filter("version", -1, table="snapshot")
+                if show_latest:
+                    search.add_filter("is_latest", True, table="snapshot")
+                if show_versionless:
+                    search.add_filter("version", -1, table="snapshot")
                 search.add_filter("file_name", "")
                 search.add_filter("file_name", "NULL", quoted=False, op="is")
                 search.add_op("or")
+            else:
+                pass
 
             if show_main_only:
                 search.add_filter("type", "main")
@@ -572,14 +579,16 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show all folders, except in the case of the base folder of the project
         project_code = Project.get_project_code()
         project_base_dir = "%s/%s" % (asset_base_dir, project_code)
-        if show_empty_folders and os.path.isdir(base_dir) and base_dir != project_base_dir:
+        if os.path.isdir(base_dir) and base_dir != project_base_dir:
             dirnames = os.listdir(base_dir)
-            for dirname in dirnames:
-                full = "%s/%s" % (base_dir, dirname)
-                if not os.path.isdir(full):
-                    continue
+            if show_empty_folders or len(dirnames) > 0:
 
-                paths.append("%s/" % full)
+                for dirname in dirnames:
+                    full = "%s/%s" % (base_dir, dirname)
+                    if not os.path.isdir(full):
+                        continue
+
+                    paths.append("%s/" % full)
 
 
 

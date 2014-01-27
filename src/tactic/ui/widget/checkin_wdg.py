@@ -613,6 +613,8 @@ class CheckinWdg(BaseRefreshWdg):
             virtual_snapshot.set_sobject(sobject)
             sandbox_dir = virtual_snapshot.get_sandbox_dir(file_type='main')
 
+        sandbox_dir = sandbox_dir.replace("//", "/")
+
         return sandbox_dir
 
     get_sandbox_dir = classmethod(get_sandbox_dir)
