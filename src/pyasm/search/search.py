@@ -546,10 +546,20 @@ class Search(Base):
                     # special case for NULL
                     if value == 'NULL':
                         quoted = False
-                    my.add_filter( name, value, op=op, quoted=quoted, table=table)
+                    if op == 'is on':
+                        my.add_day_filter(name, value)
+                    else:
+                        my.add_filter( name, value, op=op, quoted=quoted, table=table)
 
 
-
+    def add_day_filter(my, name, value):
+        ''' is on a particular day'''
+        date = Date(db_date=value)
+        value = date.get_db_date()
+        date.add_days(1)
+        end_value = date.get_db_date()
+        my.add_filter(name, value, op='>=')
+        my.add_filter(name, end_value, op='<')
 
 
     def add_interval_filter(my, name, value):
@@ -3732,6 +3742,9 @@ class SObject(object):
                     'sthpw/sync_job',
                     'sthpw/message',
                     'sthpw/message_log',
+                    'sthpw/change_timestamp',
+                    'sthpw/sobject_list',
+                    'sthpw/sobject_log'
             ]:
 
                 process = my.get_value("process", no_exception=True)
@@ -3791,10 +3804,20 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data):
-        data = unicode(data)
+        
 
-        record_message = True
-        if not record_message:
+        # message types are "insert,update,change"
+        search_type_obj = sobject.get_search_type_obj()
+        events = search_type_obj.get_value("message_event", no_exception=True)
+        if not events:
+            return
+        message_events = events.split("|")
+        send_message = False
+        for message_event in message_events:
+            if message_event in [mode,'change']:
+                send_message = True
+                break
+        if not send_message:
             return
 
 
@@ -3813,15 +3836,19 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
+
+        message = Search.get_by_code("sthpw/message", message_code)
+        """
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
-
+        """
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
+        data = unicode(data)
         json_data = jsondumps(data)
         json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
@@ -3829,7 +3856,7 @@ class SObject(object):
         message.set_value("project_code", project_code)
         message.set_value("status", "complete")
         message.set_user()
-        message.commit()
+        message.commit(triggers=False)
 
 
 
@@ -3842,12 +3869,17 @@ class SObject(object):
         message.set_value("timestamp", "NOW")
         message.set_user()
         message.set_value("status", "complete")
-        message.commit()
+        message.commit(triggers=False)
 
 
 
 
         return message
+        
+
+
+
+
         
 
 

@@ -141,13 +141,6 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             else:
                 return False
         
-    def _day_filter(my, search, column, value):
-        date = Date(db_date=value)
-        value = date.get_db_date()
-        date.add_days(1)
-        end_value = date.get_db_date()
-        search.add_filter(column, value, op='>=')
-        search.add_filter(column, end_value, op='<')
          
 
     def alter_search(my, search):
@@ -250,7 +243,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 filters = [[column,'EQI',value]]
                 search.add_op_filters(filters)
             elif op == 'is on':
-                my._day_filter(search, column, value)               
+                search.add_day_filter(column, value)               
             else:
                 search.add_filter(column, value, op)
             return
@@ -275,7 +268,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                             filters = [[column,'EQI',value]]
                             search2.add_op_filters(filters)
                         elif op == 'is on':
-                            my._day_filter(search2, column, value)               
+                            search2.add_day_filter(column, value)                           
   
                         else:
                             search2.add_filter(column, value, op)
