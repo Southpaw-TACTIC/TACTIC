@@ -966,6 +966,8 @@ class Schema(SObject):
         connects = my.xml.get_nodes("schema/connect[@from='%s']" % search_type ) 
         for connect in connects:
             relationship_new = Xml.get_attribute(connect, "relationship")
+            if relationship_new == "instance":
+                continue
             if relationship_new:
                 type = Xml.get_attribute(connect, "type")
                 if type == 'hierarchy':
@@ -977,6 +979,9 @@ class Schema(SObject):
         # if there is no "hierarchy" type, use the first one
         if not parent_type:
             for connect in connects:
+                relationship_new = Xml.get_attribute(connect, "relationship")
+                if relationship_new == "instance":
+                    continue
                 from_type = Xml.get_attribute(connect, "from")
                 if from_type == search_type:
                     parent_type = Xml.get_attribute(connect, "to")

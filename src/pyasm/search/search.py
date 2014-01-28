@@ -657,9 +657,6 @@ class Search(Base):
         search_type = my.get_search_type()
         related_type = sobject.get_search_type()
 
-        print "xxx: ", base_search_type
-        print "rel: ", related_type
-
         if search_type == related_type:
             print "WARNING: related type and search type are the same for [%s]" % search_type
             my.add_id_filter(sobject.get_id())
