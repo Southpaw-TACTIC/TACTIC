@@ -219,7 +219,12 @@ class DirNaming(object):
 
         # get the default
         dirs = my.get_default(dirs)
-        return "/".join(dirs)
+        dirname = "/".join(dirs)
+
+        # remove repeated /
+        dirname = re.sub('/+', '/', dirname)
+
+        return dirname
 
 
 

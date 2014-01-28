@@ -1447,6 +1447,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         } )
 
 
+        # NOTE: this has been moved to the Sandbox Tab under the Checkout
+        # menu
+        """
         button = ActionButtonWdg(title="Clipboard")
         input_div.add(button)
         button.add_style("float: right")
@@ -1474,6 +1477,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             '''
         } )
+        """
 
 
 
@@ -1564,7 +1568,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                 search = Search("sthpw/snapshot")
                 search.add_sobject_filter(sobject)
-                search.add_filter("process", from_process)
+                if from_process == "*":
+                    pass
+                else:
+                    from_processes = from_process.split("|")
+                    search.add_filters("process", from_processes)
                 search.add_filter("is_latest", True)
                 snapshots = search.get_sobjects()
 
@@ -1896,11 +1904,25 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 else:
 
                     for to_sobject in to_sobjects:
-                        name = "%s - %s" % (to_sobject.get_name(), to_process)
+                        if to_process == "*":
+                            to_pipeline_code = to_sobject.get_value("pipeline_code")
+                            if not to_pipeline_code:
+                                to_processes = ['publish']
 
-                        to_search_key = to_sobject.get_search_key()
-                        process_names.append("%s|%s" % (to_search_key, to_process))
-                        label_names.append(name)
+                            else:
+                                to_pipeline = Pipeline.get_by_code(to_pipeline_code)
+                                to_processes = to_pipeline.get_process_names()
+                        else:
+                            to_processes = to_process.split("|")
+
+                        for process in to_processes:
+
+                            name = "%s - %s" % (to_sobject.get_name(), process)
+
+                            to_search_key = to_sobject.get_search_key()
+
+                            process_names.append("%s|%s" % (to_search_key, process))
+                            label_names.append(name)
 
 
             select = SelectWdg("deliver_process")
@@ -3896,7 +3918,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        # Don't specify the sanbox dir at the moment because it will
+        # Don't specify the sandbox dir at the moment because it will
         # remove the relative sub directories
         #'sandbox_dir': my.base_dir,
         'snapshot_codes': snapshot_codes,
@@ -3958,6 +3980,31 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'filename_mode': 'repo'
         } )
 
+
+
+        menu_item = MenuItem(type='action', label='Check-out from Clipboard')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'sandbox_dir': my.base_dir,
+            'cbjs_action': '''
+            var server = TacticServerStub.get();
+            var activator = spt.smenu.get_activator(bvr);
+            spt.app_busy.show("Checking out from Clipboard");
+            var search_keys = spt.clipboard.get_search_keys();
+            for (var i = 0; i < search_keys.length; i++) {
+                var search_key = search_keys[i];
+                var snapshot = server.get_snapshot(search_key, {context: ''});
+                server.checkout_snapshot(snapshot, bvr.sandbox_dir, {file_types: ['main'], filename_mode: 'source'});
+                
+            }
+
+            var top = activator.getParent(".spt_checkin_top");
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+
+            '''
+        } ) 
 
 
 
