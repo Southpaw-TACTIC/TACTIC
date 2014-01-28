@@ -4896,7 +4896,132 @@ class ApiXMLRPC(BaseApiXMLRPC):
     #    from tactic.command.python_cmd import PythonCmd
     #    cmd = PythonCmd(code=code)
     #    return cmd.execute()
+
+
+
+    @xmlrpc_decorator
+    def execute_transaction(my, ticket, transaction_xml, file_mode=None):
+        '''Run a tactic transaction a defined by the instructions in the
+        given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
         
+        @params
+        ticket - authentication ticket
+        transaction_xml - transaction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs" 
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transaction(transaction_xml)
+
+        '''
+        # find out which server this came from
+        web = WebContainer.get_web()
+        remote_host = web.get_request_host()
+
+        # TODO: verify that the ticket is a sync ticket (by category
+        # in the ticket table
+
+
+        # make a provision for localhost
+        # NOTE: commenting out because the server is registered as a domain
+        # name, but the remote server often sends an IP address
+        """
+        if remote_host not in ['xlocalhost', 'x127.0.0.1']:
+
+            remote_hosts = [remote_host, 'http://%s'%remote_host, 'https://%s'%remote_host]
+
+            # search in the list of hosts to ensure that it is known
+            search = Search("sthpw/sync_server")
+            search.add_filters("host", remote_hosts)
+            servers = search.get_sobjects()
+            if not servers:
+                raise TacticException("No server [%s] is registered to deliver transactions" % remote_host)
+
+            # TODO: need to add security to allow a remote server to push
+            # or pull transactions
+        """
+
+        # actually execute the transaction
+        try:
+            from tactic.command import RunTransactionCmd
+            cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=file_mode)
+            cmd.execute()
+
+            info = {
+                'status': 'OK'
+            }
+        except Exception, e:
+            raise
+
+        return info
+
+        
+
+    @trace_decorator
+    def execute_transactions(my, ticket, transactions, file_mode=None):
+        '''Run a list of tactic transaction a defined by the instructions in
+        the given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
+        
+        @params
+        ticket - authentication ticket
+        transaction_xml - transaction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs" 
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transactions([transaction_xml])
+
+        '''
+        # find out which server this came from
+        web = WebContainer.get_web()
+        remote_host = web.get_request_host()
+
+        # each will run in their own transaction
+        failed = []
+        errors = []
+        try:
+            from tactic.command import RunTransactionCmd
+            for index, transaction_xml in enumerate(transactions):
+                cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=None)
+                Command.execute_cmd()
+
+        except Exception, e:
+            failed.append(index)
+            errors.append(str(e))
+
+        if failed:
+            info = {
+                'status': 'ERROR',
+                'failed': failed,
+                'errors': errors
+            }
+        else:
+            info = {
+                'status': 'OK'
+            }
+        return info
 
 
 

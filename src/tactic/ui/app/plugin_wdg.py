@@ -338,7 +338,22 @@ class PluginWdg(BaseRefreshWdg):
                 data = {}
             else:
                 manifest = Xml()
-                manifest.read_file(manifest_path)
+                try:
+                    manifest.read_file(manifest_path)
+                except Exception, e:
+                    print "Error reading manifest: [%s]" % manifest_path, e
+                    msg = "Error reading manifest [%s]: %s" % (manifest_path, str(e))
+
+                    manifest_xml = """
+                    <manifest>
+                    <data>
+                      <title>ERROR (%s)</title>
+                      <description>%s</description>
+                    </data>
+                    </manifest>
+                    """ % (dirname, msg)
+                    manifest.read_string(manifest_xml)
+
 
                 node = manifest.get_node("manifest/data")
                 data = manifest.get_node_values_of_children(node)

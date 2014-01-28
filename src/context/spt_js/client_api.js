@@ -1118,6 +1118,14 @@ TacticServerStub = function() {
     }
 
 
+    
+    this.execute_execute_transaction = function(transaction_xml, kwargs) {
+        return this._delegate("execute_transaction", arguments, kwargs);
+    }
+
+
+
+
     this.execute_python_script = function(script_path, script_kwargs, kwargs) {
         if (kwargs) callback = kwargs.on_complete;
         else callback = null;
