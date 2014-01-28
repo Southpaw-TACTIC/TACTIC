@@ -4113,15 +4113,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def add_initial_tasks(my, ticket, search_key, pipeline_code=None, processes=[]):
+    def add_initial_tasks(my, ticket, search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0):
         '''This method will add initial task to an sobject
 
         @params:
         ticket - authentication ticket
         search_key - the key identifying an sobject as registered in
                     the search_type table.
-        pipeline_code - (optional) override the sobject's pipeline and use this                     one instead
-        processes - (optional) create tasks for the give list of processes
+        @keyparam:
+        pipeline_code - override the sobject's pipeline and use this one instead
+        processes - create tasks for the given list of processes
+        skip_duplicate - boolean to skip duplicated task
+        offset - a number to offset the start date from today's date
        
         @return:
         list of tasks created
@@ -4135,7 +4138,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException("SObject for [%s] does not exist" % search_key)
 
         from pyasm.biz import Task
-        tasks = Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes)
+        tasks = Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes, skip_duplicate=skip_duplicate, start_offset=offset)
 
         ret_tasks = []
         for task in tasks:
