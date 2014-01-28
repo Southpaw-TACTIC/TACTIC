@@ -12,7 +12,7 @@
 
 __all__ = ["StatusLog"]
 
-from pyasm.search import SObjectFactory, SObject, Search
+from pyasm.search import SearchType, SObject, Search
 
 from pipeline import Pipeline
 from pyasm.common import Environment, Date
@@ -27,11 +27,11 @@ class StatusLog(SObject):
             return
 
         # if this is successful, the store it in the status_log
-        search_type = sobject.get_search_type()
-        search_id = sobject.get_id()
-        search_code = sobject.get_value("code")
+        #search_type = sobject.get_search_type()
+        #search_id = sobject.get_id()
+        #search_code = sobject.get_value("code")
 
-        status_log = SObjectFactory.create("sthpw/status_log")
+        status_log = SearchType.create("sthpw/status_log")
         status_log.set_value("login", Environment.get_user_name() )
 
         status_log.set_sobject_value(sobject)
