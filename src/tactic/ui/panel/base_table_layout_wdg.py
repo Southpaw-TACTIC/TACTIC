@@ -2358,11 +2358,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 var filename = parts[parts.length-1];
                                 var kwargs;
 
+                                if (spt.get_typeof(bvr.checkin_context)=='array')
+                                    bvr.checkin_context= bvr.checkin_context[0];
+                                
                                 //checkin_context would override the default context
-                                  
-                                if (bvr.checkin_context)
-                                    context = bvr.checkin_context
-                                else if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
+                                if (bvr.checkin_context) 
+                                    context = bvr.checkin_context;
+
+                                if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
                                     context = context + "/" + filename;
                                     kwargs = {mode: 'uploaded', checkin_type: 'auto'};
                                 }
@@ -2453,10 +2456,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
             } )
 
-
             bvr_cb2 = bvr_cb.copy()
             bvr_cb2["description"] = "Checking in new file ..."
-            bvr_cb2["context"] = "publish"
+            bvr_cb2["context"] = "publish",
+            bvr_cb2["checkin_context"] = my.checkin_context,
             bvr_cb2["mode"] = "file"
             bvr_cb2["checkin_type"] =  my.checkin_type
             spec_list.append( {
@@ -2465,7 +2468,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "upload_id": my.upload_id,
                 "mode": "file",
                 "icon": IconWdg.PHOTOS,
-                "checkin_context" : my.checkin_context,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',

@@ -3043,6 +3043,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
         init_load_num = my.kwargs.get("init_load_num")
+        checkin_context = my.kwargs.get("checkin_context")
+        checkin_type = my.kwargs.get("checkin_type")
 
        
 
@@ -3096,6 +3098,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
             "init_load_num": init_load_num, 
+            "checkin_context": checkin_context,
+            "checkin_type" : checkin_type,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
