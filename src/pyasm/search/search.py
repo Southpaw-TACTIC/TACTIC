@@ -526,7 +526,7 @@ class Search(Base):
                     table = parts[0]
                     name = parts[1]
 
-                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before')
+                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
                     values =  value.split('|')
