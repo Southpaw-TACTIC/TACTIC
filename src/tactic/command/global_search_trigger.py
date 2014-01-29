@@ -105,6 +105,11 @@ class GlobalSearchTrigger(Trigger):
 class FolderTrigger(Trigger):
 
     def execute(my):
+
+        # DISABLING: this used to be needed for Repo Browser layout, but
+        # is no longer needed
+        return
+
         from pyasm.biz import Snapshot, Naming
 
         input = my.get_input()

@@ -52,7 +52,10 @@ class EditCmd(Command):
         if form_data:
             form_data = jsonloads(form_data)
             my.config_xml = form_data.get("config_xml")
-            my.config_xml = my.config_xml.replace("&", "&amp;")
+            if not my.config_xml:
+                my.config_xml = None
+            else:
+                my.config_xml = my.config_xml.replace("&", "&amp;")
         else:
             form_data = {}
             my.config_xml = None
