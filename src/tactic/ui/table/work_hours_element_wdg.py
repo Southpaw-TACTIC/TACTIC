@@ -124,7 +124,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             my.day_width = int(my.day_width)
         
         if not my.days_per_page:
-            my.days_per_page = 6
+            my.days_per_page = 7
         else:
             my.days_per_page = int(my.days_per_page)
 
@@ -167,8 +167,11 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             start_date = workhour_data.get('start_date')
             start_date = my._get_date_obj(start_date)
         else:
-            start_date = my.today - datetime.timedelta(days=wday)
-
+            if my.days_per_page < 7:
+                start_date = my.today
+            else:
+                start_date = my.today - datetime.timedelta(days=wday)
+        
         my.start_date = start_date
         end_date = start_date + datetime.timedelta(days=my.days_per_page -1)
         # this may not be necessary any more
