@@ -796,7 +796,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 }
 
                
-                spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict});
+                spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
             }
             func();
 
