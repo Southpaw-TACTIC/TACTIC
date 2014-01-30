@@ -1,0 +1,27 @@
+
+
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """unittest/person_in_car""")
+insert.set_value('description', """Unittest Person in Car""")
+insert.set_value('database', """unittest""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Unittest Person in Car""")
+insert.set_value('namespace', """unittest""")
+insert.set_value('search_type', """unittest/person_in_car""")
+insert.set_value('table_name', """person_in_car""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+
+
+#-- Start Entry --#
+table = CreateTable('unittest/person_in_car')
+table.add('id',                       'serial', primary_key=True)
+table.add('code',                     'varchar', length='256' )
+table.add('person_code',              'varchar', length='256' )
+table.add('car_code',                 'varchar', length='256' )
+#-- End Entry --#
+
+
+

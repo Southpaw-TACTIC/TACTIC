@@ -16,7 +16,7 @@ import types
 import re
 from pyasm.common import Xml, Environment
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
-
+from prod_setting import ProdSetting
 from pipeline import Pipeline
 from pyasm.common import Environment, Date
 from project import Project
@@ -291,13 +291,20 @@ class Task(SObject):
         bid_start_date = my.get_value("bid_start_date")
         bid_end_date = my.get_value("bid_end_date")
 
+        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        if not bid_duration_unit:
+            bid_duration_unit = 'hour'
+
         # if there is no end date specified, return
         if not bid_end_date:
             bid_duration = my.get_value("bid_duration")
             if bid_duration and bid_start_date:
                 date = Date(db=bid_start_date)
                 bid_duration = float(bid_duration)
-                date.add_days(bid_duration)
+                if bid_duration_unit == 'minute':
+                    date.add_minutes(bid_duration)
+                else:
+                    date.add_hours(bid_duration)
                 bid_end_date = date.get_db_time()
             else:
                 return
@@ -327,13 +334,17 @@ class Task(SObject):
                 bid_start_date = date.get_db_time()
                 task.set_value("bid_start_date", bid_start_date )
 
-                # check if there is a duration to this date
+                # check if there is a duration in hours to this date
                 bid_duration = task.get_value("bid_duration")
                 if bid_duration:
                     bid_duration = int(bid_duration)
 
                     date = Date(db=bid_start_date)
-                    date.add_days(bid_duration)
+                    if bid_duration_unit == 'minute':
+                        date.add_minutes(bid_duration)
+                    else:
+                        date.add_hours(bid_duration)
+                    
                     bid_end_date = date.get_db_time()
 
                     task.set_value("bid_end_date", bid_end_date)
@@ -413,7 +424,7 @@ class Task(SObject):
 
     # Static methods
 
-    def get_by_sobjects(sobjects, process=None):
+    def get_by_sobjects(sobjects, process=None, order=True):
 
         if not sobjects:
             return []
@@ -486,13 +497,14 @@ class Task(SObject):
 
         # get the pipeline of the sobject
         pipeline = Pipeline.get_by_sobject(sobject)
-        if pipeline:
-            process_names = pipeline.get_process_names(True)
-            search.add_enum_order_by("process", process_names)
-        else:
-            search.add_order_by("process")
+        if order:
+            if pipeline:
+                process_names = pipeline.get_process_names(True)
+                search.add_enum_order_by("process", process_names)
+            else:
+                search.add_order_by("process")
 
-        search.add_order_by("id")
+            search.add_order_by("id")
 
         if process:
            
@@ -506,8 +518,8 @@ class Task(SObject):
     get_by_sobjects = staticmethod(get_by_sobjects)
 
 
-    def get_by_sobject(sobject, process=None):
-        return Task.get_by_sobjects([sobject], process)
+    def get_by_sobject(sobject, process=None, order=True):
+        return Task.get_by_sobjects([sobject], process, order)
     get_by_sobject = staticmethod(get_by_sobject)
 
 
@@ -714,7 +726,7 @@ class Task(SObject):
 
 
         # remember which ones already exist
-        existing_tasks = Task.get_by_sobject(sobject)
+        existing_tasks = Task.get_by_sobject(sobject, order=False)
     
         existing_task_dict = {}
         for x in existing_tasks:
@@ -731,9 +743,16 @@ class Task(SObject):
 
         start_date = Date()
         start_date.add_days(start_offset)
+        
+        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        if not bid_duration_unit:
+            bid_duration_unit = 'hour'
+
         # that's the date range in 5 days (not hours)
         default_duration = 5
-
+        default_bid_duration = 8
+        if bid_duration_unit == 'minute':
+            default_bid_duration = 60
         last_task = None
 
         # this is the explicit mode for creating task for a specific process:context combo
@@ -769,7 +788,7 @@ class Task(SObject):
 
                 bid_duration = attrs.get("bid_duration")
                 if not bid_duration:
-                    bid_duration = 8
+                    bid_duration = default_bid_duration
                 else:
                     bid_duration = int(bid_duration)
 
@@ -815,13 +834,14 @@ class Task(SObject):
                 duration = default_duration
             bid_duration = attrs.get("bid_duration")
             if not bid_duration:
-                bid_duration = 8
+                bid_duration = default_bid_duration
             else:
                 bid_duration = int(bid_duration)
 
             end_date = start_date.copy()
             # for a task to be x days long, we need duration x-1.
             end_date.add_days(duration-1)
+
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':

@@ -2659,23 +2659,26 @@ class TacticServerStub(object):
 
 
 
-    def add_initial_tasks(my, search_key, pipeline_code=None, processes=[]):
-        '''API Function: add_initial_tasks(search_key, pipeline_code=None, processes=[])
+    def add_initial_tasks(my, search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0):
+        '''API Function: add_initial_tasks(search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0)
         
         Add initial tasks to an sobject
 
         @param:
         search_key - the key identifying a type of sobject as registered in
                     the search_type table.
+
         
         @keyparam:
         pipeline_code - override the sobject's pipeline and use this one instead
         processes - create tasks for the given list of processes
-       
+        skip_duplicate - boolean to skip duplicated task
+        offset - a number to offset the start date from today's date
+
         @return:
         list - tasks created
         '''
-        return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes)
+        return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes, skip_duplicate, offset)
 
 
 
@@ -3301,6 +3304,36 @@ class TacticServerStub(object):
             string - description of command
         '''
         return my.server.execute_cmd(my.ticket, class_name, args, values)
+
+
+
+    def execute_transaction(my, transaction_xml, file_mode=None):
+        '''Run a tactic transaction a defined by the instructions in the
+        given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
+       
+        @params
+        ticket - authentication ticket
+        transaction_xml - transction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs"
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transaction(transaction_xml)
+
+        '''
+        return my.server.execute_transaction(my.ticket, transaction_xml, file_mode)
+
 
 
 

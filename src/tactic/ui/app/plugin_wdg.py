@@ -338,7 +338,22 @@ class PluginWdg(BaseRefreshWdg):
                 data = {}
             else:
                 manifest = Xml()
-                manifest.read_file(manifest_path)
+                try:
+                    manifest.read_file(manifest_path)
+                except Exception, e:
+                    print "Error reading manifest: [%s]" % manifest_path, e
+                    msg = "Error reading manifest [%s]: %s" % (manifest_path, str(e))
+
+                    manifest_xml = """
+                    <manifest>
+                    <data>
+                      <title>ERROR (%s)</title>
+                      <description>%s</description>
+                    </data>
+                    </manifest>
+                    """ % (dirname, msg)
+                    manifest.read_string(manifest_xml)
+
 
                 node = manifest.get_node("manifest/data")
                 data = manifest.get_node_values_of_children(node)
@@ -2304,6 +2319,7 @@ class PluginVersionCreator(Command):
        
         # code is the same as dirname usually
         code = my.kwargs.get('code')
+        new_code = '%s-%s' %(code, version)
         dirname = code
         
         basecode = os.path.basename(code)
@@ -2365,13 +2381,20 @@ class PluginVersionCreator(Command):
         zip_util.zip_dir(plugin_base_dir, zip_path=zip_path, include_dirs=include_dirs)
         """
 
-        parts = new_plugin_dir.split("/")
-        include_dirs = [parts[-1]]
-        root_dir = '/'.join(parts[0:-1])
+        # OLD logic to be deleted
+        #parts = new_plugin_dir.split("/")
+        #iinclude_dirs = [parts[-1]]
+        #root_dir = '/'.join(parts[0:-1])
+        parts = new_code.split("/")
+        root_dir = "%s/%s" % (plugin_base_dir, parts[0])
+        if len(parts) >= 2:
+            include_dirs = ["/".join(parts[1:])]
+        else:
+            include_dirs = None
 
         ignore_dirs = ['.svn']
         ZipUtil.zip_dir(root_dir, zip_path, ignore_dirs=ignore_dirs, include_dirs=include_dirs)
-
+        
 
 
 

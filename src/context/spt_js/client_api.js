@@ -289,7 +289,6 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
-        //file_path = spt.path.get_filesystem_path(file_path); 
         var mode = kwargs['mode'];
         if (mode == undefined) mode = "upload";
         if (typeof(file_path) != 'string') {
@@ -313,13 +312,13 @@ TacticServerStub = function() {
             var ticket = this.transaction_ticket;
             
             this.upload_file(file_path, ticket);
-            file_path = spt.path.get_filesystem_path(file_path); 
+            //file_path = spt.path.get_filesystem_path(file_path); 
             kwargs.use_handoff_dir = false;
         }
         // already uploaded
         else if (mode == 'uploaded') {
             kwargs.use_handoff_dir = false;
-            file_path = spt.path.get_filesystem_path(file_path); 
+            //file_path = spt.path.get_filesystem_path(file_path); 
         }
         else if (['copy', 'move'].contains(mode)) {
             var handoff_dir = this.get_handoff_dir();
@@ -619,7 +618,7 @@ TacticServerStub = function() {
             throw("Mode '" + mode + "' must be in [copy, move, preallocate, manual, upload, uploaded]");
         }
         
-        file = spt.path.get_filesystem_path(file); 
+        //file = spt.path.get_filesystem_path(file); 
         var use_handoff_dir;
         var handoff_dir;
 
@@ -809,7 +808,6 @@ TacticServerStub = function() {
              
             }
             else if (filename_mode == 'source') {
-                console.log(dst);
                 basename = spt.path.get_basename(dst);
             }
 
@@ -1034,6 +1032,22 @@ TacticServerStub = function() {
     }
 
 
+    /*
+     * Instance methods
+     */
+    this.add_instance = function(search_key1, search_key2) {
+        return this._delegate("add_instance", arguments);
+    }
+ 
+    this.get_instances = function(search_key, search_type) {
+        return this._delegate("get_instances", arguments);
+    }
+ 
+    this.remove_instance = function(search_key1, search_key2) {
+        return this._delegate("remove_instance", arguments);
+    }
+
+
 
     /* 
      * Note methods
@@ -1102,6 +1116,14 @@ TacticServerStub = function() {
     this.execute_class_method = function(class_name, method, kwargs) {
         return this._delegate("execute_class_method", arguments);
     }
+
+
+    
+    this.execute_execute_transaction = function(transaction_xml, kwargs) {
+        return this._delegate("execute_transaction", arguments, kwargs);
+    }
+
+
 
 
     this.execute_python_script = function(script_path, script_kwargs, kwargs) {

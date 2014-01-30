@@ -151,6 +151,10 @@ class Date(Base):
     def get_utc(my):
         return mktime(my.struct_time)
 
+    def add_minutes(my, mins):
+        utc = mktime(my.struct_time)
+        utc = utc + (60 * mins)
+        my.struct_time = localtime(utc)
 
     def add_hours(my, hours):
         utc = mktime(my.struct_time)

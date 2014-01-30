@@ -18,8 +18,38 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
 
+    #
+    # 4.2.0.a01
+    #
+    def upgrade_v4_2_0_a01_002(my):
+        if my.get_database_type() == 'MySQL':
+            my.run_sql(''' ALTER TABLE "queue" MODIFY "serialized" integer NULL;''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql(''' ALTER TABLE "queue" ALTER COLUMN "serialized" integer NULL;''');
+        else:
+            my.run_sql('''
+            ALTER TABLE "queue" ALTER COLUMN "serialized" DROP NOT NULL;
+            ''')
+
+
+    def upgrade_v4_2_0_a01_001(my):
+        my.run_sql('''
+        ALTER TABLE "search_object" ADD "message_event" varchar(256);
+        ''')
+
+
+    #
+    # 4.1.0.v03
+    #
+    def upgrade_v4_1_0_v03_001(my):
+        my.run_sql('''
+          ALTER TABLE "search_object" ADD "message_event" varchar(256);
+        ''')
+
+
     def upgrade_v4_1_0_v01_001(my):
         my.run_sql('''UPDATE "search_object" SET code = search_type;''')
+
     #
     # 4.1.0.b03
     #

@@ -2380,14 +2380,8 @@ class SchemaSaveCmd(Command):
         namespace, from_table = from_search_type.split("/")
         namespace, to_table = to_search_type.split("/")
 
-        print "from: ", from_search_type
-        print "to: ", to_search_type
-       
         from_search_type_obj = SearchType.get(from_search_type, no_exception=True)
         to_search_type_obj = SearchType.get(to_search_type, no_exception=True)
-        print "FROM obj ", from_search_type_obj
-        print "To obj ", to_search_type_obj
-
 
         # register the search types
         from tactic.ui.app import SearchTypeCreatorCmd

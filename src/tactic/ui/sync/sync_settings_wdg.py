@@ -1031,9 +1031,8 @@ class SyncServerAddCbk(Command):
 
         share.commit()
 
-        my.handle_share_project(share)
-
-        my.handle_manifest(share)
+        #my.handle_share_project(share)
+        #my.handle_manifest(share)
 
 
     def handle_share_project(my, share):

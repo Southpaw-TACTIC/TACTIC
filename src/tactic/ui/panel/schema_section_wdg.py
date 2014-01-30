@@ -84,8 +84,6 @@ class SchemaSectionWdg(BaseRefreshWdg):
         search.add_filter("namespace", '{project}')
         search.add_where("or")
         search_types = search.get_sobjects()
-        #for search_type in search_types:
-        #    print "hhhh: ", search_type
 
         schema_xml = '''
         <schema>

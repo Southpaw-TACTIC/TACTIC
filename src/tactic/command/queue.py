@@ -13,13 +13,87 @@ import tacticenv
 from pyasm.security import Batch
 from pyasm.common import Common, Config, Environment, jsonloads, jsondumps, TacticException
 from pyasm.biz import Project
-from pyasm.search import Search, DbContainer
+from pyasm.search import Search, SearchType, DbContainer
 from pyasm.command import Command
 from tactic.command import Scheduler, SchedulerTask
 
 import os
 
-__all__ = ['JobTask']
+__all__ = ['JobTask', 'Queue']
+
+
+class Queue:
+    def get_next_job(queue_type=None):
+
+        sql = DbContainer.get("sthpw")
+
+        # get the entire queue
+        search = Search("sthpw/queue")
+        if queue_type:
+            search.add_filter("queue", queue_type)
+        search.add_filter("state", "pending")
+        search.add_order_by("timestamp")
+
+        chunk = 10
+        search.add_limit(chunk)
+
+        queues = search.get_sobjects()
+        queue_id = 0
+
+        for queue in queues:
+
+            queue_id = queue.get_id()
+
+            # attempt to lock this queue
+            # have to do this manually
+            update = "UPDATE queue SET state = 'locked' where id = '%s' and state = 'pending'" % queue_id
+
+            sql.do_update(update)
+            row_count = sql.get_row_count()
+
+            if row_count == 1:
+                break
+            else:
+                queue_id = 0
+
+        if queue_id:
+            queue = Search.get_by_id("sthpw/queue", queue_id)
+            return queue
+        else:
+            return None
+
+    get_next_job = staticmethod(get_next_job)
+
+
+    def add(command, kwargs, queue_type, priority, description):
+
+        queue = SearchType.create("sthpw/queue")
+        queue.set_value("project_code", Project.get_project_code())
+        #queue.set_sobject_value(sobject)
+        queue.set_value("queue", queue_type)
+        queue.set_value("state", "pending")
+
+        queue.set_value("login", Environment.get_user_name())
+
+        queue.set_value("command", command)
+        data = jsondumps(kwargs)
+        queue.set_value("serialized", data)
+
+
+        queue.set_value("priority", priority)
+        queue.set_value("description", description)
+
+        queue.set_user()
+        queue.commit()
+
+        return queue
+
+    add = staticmethod(add)
+
+
+
+
+
 
 # create a task from the job
 class JobTask(SchedulerTask):
@@ -29,12 +103,14 @@ class JobTask(SchedulerTask):
         my.job = None
         my.jobs = []
 
-
-        my.check_interval = 1
+        my.check_interval = my.get_check_interval()
         my.max_jobs = 2
 
-
         super(JobTask, my).__init__()
+
+
+    def get_check_interval(my):
+        return 1
 
 
     def set_check_interval(my, interval):
@@ -52,7 +128,7 @@ class JobTask(SchedulerTask):
 
 
     def get_next_job(my):
-        from pyasm.prod.queue import Queue
+        #from pyasm.prod.queue import Queue
         return Queue.get_next_job();
 
 
@@ -160,7 +236,7 @@ class JobTask(SchedulerTask):
         # get some info from the job
         command = my.job.get_value("command")
         job_code = my.job.get_value("code")
-        #print "Grabbing job [%s] ... " % job_code
+        print "Grabbing job [%s] ... " % job_code
 
         try: 
             kwargs = my.job.get_json_value("data")
@@ -169,14 +245,16 @@ class JobTask(SchedulerTask):
                 kwargs = my.job.get_json_value("serialized")
             except:
                 kwargs = {}
+        if not kwargs:
+            kwargs = {}
 
-        project_code = my.job.get_value("project_code")
         login = my.job.get_value("login")
         script_path = my.job.get_value("script_path", no_exception=True)
 
+        project_code = my.job.get_value("project_code")
+        Project.set_project(project_code)
 
         if script_path:
-            Project.set_project(project_code)
             command = 'tactic.command.PythonCmd'
 
             folder = os.path.dirname(script_path)
@@ -206,7 +284,7 @@ class JobTask(SchedulerTask):
             Environment.get_env_object()
         except:
             print "running batch"
-            Batch()
+            Batch(project_code=project_code)
 
 
         queue = my.job.get_value("queue", no_exception=True)
@@ -239,6 +317,7 @@ class JobTask(SchedulerTask):
             while 1:
                 try:
                     #Command.execute_cmd(cmd)
+                    print "OMG: ", Project.get_project_code()
                     cmd.execute()
 
                     # set job to complete

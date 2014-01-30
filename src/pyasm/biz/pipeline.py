@@ -192,6 +192,13 @@ class ProcessConnect(Base):
     def get_from(my):
         return Xml.get_attribute(my.node, "from")
 
+    def get_name(my):
+        return Xml.get_attribute(my.node, "name")
+
+    def get_title(my):
+        return Xml.get_attribute(my.node, "title")
+
+
 
     def get_to_pipeline(my):
         return Xml.get_attribute(my.node, "to_pipeline")

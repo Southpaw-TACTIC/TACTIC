@@ -223,9 +223,9 @@ QUERY_METHODS = {
     'eval': 0,
     'get_column_info': 0,
     'get_related_types': 0,
-    'get_related_sobjects': 0,
-    'get_related_attrs': 0,
-    'get_related_relationship': 0,
+    #'get_related_sobjects': 0,
+    #'get_related_attrs': 0,
+    #'get_related_relationship': 0,
     'test_speed': 0,
     'get_upload_file_size': 0,
     'get_doc_link': 0
@@ -1277,6 +1277,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         schema = Schema.get()
         return schema.get_related_search_types(search_type)
 
+
+
+
     @xmlrpc_decorator
     def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
         return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
@@ -1783,7 +1786,99 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return table_info
 
 
+    #
+    # Instance methods
+    #
+    @xmlrpc_decorator
+    def add_instance(my, ticket, search_key1, search_key2):
+        '''Add an instance between two sobjects.  This requires that there
+        is a instance relationship between the two sobjects defined in the
+        schema
 
+        @param:
+        search_key1: the search_key to the first sobject
+        search_key2: the search_key to the first sobject
+
+        @return:
+        the instance sobject created
+        '''
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject1 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        sobjects = my._get_sobjects(search_key2)
+        if sobjects:
+            sobject2 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key2)
+
+        instance = sobject1.add_instance(sobject2)
+        sobject_dict = my._get_sobject_dict(instance)
+        return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_instances(my, ticket, search_key, search_type):
+        '''Get all the instances of an sobject of a certain stype.  There
+        must be an instance relationship between the sobject and the search
+        type
+
+        @param:
+        search_key: the search_key to the sobject to get the instances
+        search_type: the search_type of the related sobjects that the instances
+            are attached to
+
+        @return:
+        the instance sobject created
+        '''
+        sobjects = my._get_sobjects(search_key)
+        if sobjects:
+            sobject = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        instances = sobject.get_instances(search_type)
+
+        instance_dicts = []
+        for instance in instances:
+            instance_dict = my._get_sobject_dict(instance)
+
+            instance_dicts.append(instance_dict)
+        return instance_dicts
+
+
+    @xmlrpc_decorator
+    def remove_instance(my, ticket, search_key1, search_key2):
+        '''Removes the instances between these two sobjects
+
+        @param:
+        search_key1: the search_key to the first sobject
+        search_key2: the search_key to the first sobject
+
+        @return:
+        the instance sobject created
+        '''
+
+        sobjects = my._get_sobjects(search_key1)
+        if sobjects:
+            sobject1 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key1)
+
+        sobjects = my._get_sobjects(search_key2)
+        if sobjects:
+            sobject2 = sobjects[0]
+        else:
+            raise ApiException("SObject [%s] does not exist" % search_key2)
+
+
+        sobject1.remove_instance(sobject2)
+
+
+ 
     #
     # Expression methods
     #
@@ -3120,7 +3215,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             source_paths = [source_path]
 
         old_filename = os.path.basename(file_path)
-        filename = File.get_filesystem_name(old_filename)
+        #filename = File.get_filesystem_name(old_filename)
+        filename = old_filename
 
 
         env = Environment.get()
@@ -3478,10 +3574,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_type = file_types[i]
 
             file_path = file_path.replace("\\", "/")
-            #filename = os.path.basename(file_path)
-            #filename = File.get_filesystem_name(filename)
             old_filename = os.path.basename(file_path)
-            filename = File.get_filesystem_name(old_filename)
+            #filename = File.get_filesystem_name(old_filename)
+            filename = old_filename
 
             if mode == 'preallocate':
                 keep_file_name = True
@@ -3599,7 +3694,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         file_path = file_path.replace("\\", "/")
         filename = os.path.basename(file_path)
-        filename = File.get_filesystem_name(filename)
+        #filename = File.get_filesystem_name(filename)
 
         if mode:
             assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
@@ -4113,15 +4208,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def add_initial_tasks(my, ticket, search_key, pipeline_code=None, processes=[]):
+    def add_initial_tasks(my, ticket, search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0):
         '''This method will add initial task to an sobject
 
         @params:
         ticket - authentication ticket
         search_key - the key identifying an sobject as registered in
                     the search_type table.
-        pipeline_code - (optional) override the sobject's pipeline and use this                     one instead
-        processes - (optional) create tasks for the give list of processes
+        @keyparam:
+        pipeline_code - override the sobject's pipeline and use this one instead
+        processes - create tasks for the given list of processes
+        skip_duplicate - boolean to skip duplicated task
+        offset - a number to offset the start date from today's date
        
         @return:
         list of tasks created
@@ -4135,7 +4233,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException("SObject for [%s] does not exist" % search_key)
 
         from pyasm.biz import Task
-        tasks = Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes)
+        tasks = Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes, skip_duplicate=skip_duplicate, start_offset=offset)
 
         ret_tasks = []
         for task in tasks:
@@ -4800,7 +4898,132 @@ class ApiXMLRPC(BaseApiXMLRPC):
     #    from tactic.command.python_cmd import PythonCmd
     #    cmd = PythonCmd(code=code)
     #    return cmd.execute()
+
+
+
+    @xmlrpc_decorator
+    def execute_transaction(my, ticket, transaction_xml, file_mode=None):
+        '''Run a tactic transaction a defined by the instructions in the
+        given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
         
+        @params
+        ticket - authentication ticket
+        transaction_xml - transaction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs" 
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transaction(transaction_xml)
+
+        '''
+        # find out which server this came from
+        web = WebContainer.get_web()
+        remote_host = web.get_request_host()
+
+        # TODO: verify that the ticket is a sync ticket (by category
+        # in the ticket table
+
+
+        # make a provision for localhost
+        # NOTE: commenting out because the server is registered as a domain
+        # name, but the remote server often sends an IP address
+        """
+        if remote_host not in ['xlocalhost', 'x127.0.0.1']:
+
+            remote_hosts = [remote_host, 'http://%s'%remote_host, 'https://%s'%remote_host]
+
+            # search in the list of hosts to ensure that it is known
+            search = Search("sthpw/sync_server")
+            search.add_filters("host", remote_hosts)
+            servers = search.get_sobjects()
+            if not servers:
+                raise TacticException("No server [%s] is registered to deliver transactions" % remote_host)
+
+            # TODO: need to add security to allow a remote server to push
+            # or pull transactions
+        """
+
+        # actually execute the transaction
+        try:
+            from tactic.command import RunTransactionCmd
+            cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=file_mode)
+            cmd.execute()
+
+            info = {
+                'status': 'OK'
+            }
+        except Exception, e:
+            raise
+
+        return info
+
+        
+
+    @trace_decorator
+    def execute_transactions(my, ticket, transactions, file_mode=None):
+        '''Run a list of tactic transaction a defined by the instructions in
+        the given transaction xml.  The format of the xml is identical to
+        the format of how transactions are stored internally
+        
+        @params
+        ticket - authentication ticket
+        transaction_xml - transaction instructions
+
+        @return
+        None
+
+        @usage
+        transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
+         <transaction>
+           <sobject search_type="project/asset?project=gbs" 
+                search_code="shot01" action="update">
+             <column name="description" from="" to="Big Money Shot"/>
+           </sobject>
+         </transaction>
+         """
+
+        server.execute_transactions([transaction_xml])
+
+        '''
+        # find out which server this came from
+        web = WebContainer.get_web()
+        remote_host = web.get_request_host()
+
+        # each will run in their own transaction
+        failed = []
+        errors = []
+        try:
+            from tactic.command import RunTransactionCmd
+            for index, transaction_xml in enumerate(transactions):
+                cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=None)
+                Command.execute_cmd()
+
+        except Exception, e:
+            failed.append(index)
+            errors.append(str(e))
+
+        if failed:
+            info = {
+                'status': 'ERROR',
+                'failed': failed,
+                'errors': errors
+            }
+        else:
+            info = {
+                'status': 'OK'
+            }
+        return info
 
 
 

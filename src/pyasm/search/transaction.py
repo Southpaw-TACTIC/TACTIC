@@ -947,7 +947,7 @@ class FileUndo:
         elif type == "mkdir":
             # recreate directory
             if not os.path.exists(src):
-                os.mkdir(src)
+                os.makedirs(src)
         elif type == "create":
 
             security = Environment.get_security()

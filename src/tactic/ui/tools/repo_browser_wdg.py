@@ -366,7 +366,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.search_codes = {}
 
 
-        #dynamic = True
         my.dynamic = my.kwargs.get("dynamic")
         if my.dynamic in ['true', True, 'True']:
             my.dynamic = True
@@ -393,10 +392,13 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show files
         # show all files types
         # show totals?
-        my.show_files = True
-        show_latest_only = True
-        show_main_only = True
+
         show_empty_folders = True
+
+        my.show_files = True
+        show_main_only = True
+        show_latest = True
+        show_versionless = False
 
         asset_base_dir = Environment.get_asset_dir()
         relative_dir = base_dir.replace(asset_base_dir, "")
@@ -427,13 +429,24 @@ class RepoBrowserDirListWdg(DirListWdg):
                 my.sobjects = []
                 parent_ids = []
 
+
+            # This attempts to display all search types, but it causes problems
+            # because it is the default and if any of the above kwargs is
+            # missing, it leads to misleading results.  Disabling for now
+            else:
+                raise Exception("No search_key or search_type/s specified")
+
+            """
             else:
                 search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
                 search_types = [x.get_base_key() for x in search_type_objs]
 
+                #print "search_type: ", search_types
+
                 search_types = [SearchType.build_search_type(x) for x in search_types]
                 my.sobjects = []
                 parent_ids = []
+            """
 
 
         else:
@@ -470,14 +483,18 @@ class RepoBrowserDirListWdg(DirListWdg):
             if keywords:
                 search.add_text_search_filter("metadata_search", keywords)
 
-            if show_latest_only:
+            if show_latest or show_versionless:
                 search.add_join("sthpw/snapshot")
                 search.add_op("begin")
-                search.add_filter("is_latest", True, table="snapshot")
-                #search.add_filter("version", -1, table="snapshot")
+                if show_latest:
+                    search.add_filter("is_latest", True, table="snapshot")
+                if show_versionless:
+                    search.add_filter("version", -1, table="snapshot")
                 search.add_filter("file_name", "")
                 search.add_filter("file_name", "NULL", quoted=False, op="is")
                 search.add_op("or")
+            else:
+                pass
 
             if show_main_only:
                 search.add_filter("type", "main")
@@ -486,7 +503,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
             if my.sobjects:
                 search.add_sobjects_filter(my.sobjects)
-
 
             file_objects = search.get_sobjects()
 
@@ -501,7 +517,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
                 path = "%s/%s/%s" % (asset_base_dir, relative_dir, file_name)
-                #print "path: ", path
                 paths.append(path)
 
                 my.file_codes[path] = file_object.get("code")
@@ -558,22 +573,26 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         num_sobjects = {}
 
+
+
   
-        # show all folders, except the base folder of the project
+        # show all folders, except in the case of the base folder of the project
         project_code = Project.get_project_code()
         project_base_dir = "%s/%s" % (asset_base_dir, project_code)
-        if show_empty_folders and os.path.isdir(base_dir) and base_dir != project_base_dir:
+        if os.path.isdir(base_dir) and base_dir != project_base_dir:
             dirnames = os.listdir(base_dir)
-            for dirname in dirnames:
-                full = "%s/%s/" % (base_dir, dirname)
-                if not os.path.isdir(full):
-                    continue
+            if show_empty_folders or len(dirnames) > 0:
 
-                paths.append(full)
+                for dirname in dirnames:
+                    full = "%s/%s" % (base_dir, dirname)
+                    if not os.path.isdir(full):
+                        continue
+
+                    paths.append("%s/" % full)
 
 
 
-        # get all the directories
+        # only look at folders associated with search types given
         for search_type in search_types:
             #search = Search(search_type)
             #count = search.get_count()
@@ -595,6 +614,8 @@ class RepoBrowserDirListWdg(DirListWdg):
             start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
             full = "%s/" % start_dir
             paths.append(full)
+
+
             search_type = search_type_obj.get_value("search_type")
             search_type = "%s?project=%s" % (search_type, project_code)
             my.search_types_dict[full] = search_type
@@ -602,38 +623,35 @@ class RepoBrowserDirListWdg(DirListWdg):
             if not os.path.exists(start_dir):
                 continue
 
+            # handle the dynamic case and make sure that the paths
+            # are in this search_type's directory
+            if my.dynamic:
+                if base_dir.startswith(start_dir):
 
-
-            # handle the dynamic case
-            if my.dynamic and base_dir.startswith(start_dir):
-
-                if not os.path.exists(base_dir):
-                    continue
-                dirnames = os.listdir(base_dir)
-                for dirname in dirnames:
-                    full = "%s/%s/" % (base_dir, dirname)
-                    if not os.path.isdir(full):
+                    if not os.path.exists(base_dir):
                         continue
+                    dirnames = os.listdir(base_dir)
+                    for dirname in dirnames:
+                        full = "%s/%s/" % (base_dir, dirname)
+                        if not os.path.isdir(full):
+                            continue
 
-                    search_codes_list = my.search_codes.get(full)
-                    if not search_codes_list:
-                        num_sobjects[full] = 0
-                    else:
-                        num_sobjects[full] = len(search_codes_list)
+                        search_codes_list = my.search_codes.get(full)
+                        if not search_codes_list:
+                            num_sobjects[full] = 0
+                        else:
+                            num_sobjects[full] = len(search_codes_list)
 
-                    my.search_types_dict[full] = search_type
+                        my.search_types_dict[full] = search_type
 
-                    if show_empty_folders:
-                        paths.append(full)
-
+                        if show_empty_folders:
+                            paths.append(full)
                 continue
 
 
 
             if not start_dir.startswith(base_dir):
                 continue
-
-
 
 
             # This walks up the folder structure and sets search codes
@@ -660,6 +678,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #print "---"
         #for name, value in num_sobjects.items():
         #    print value, name
+
 
         return paths
 

@@ -457,6 +457,8 @@ spt.Applet = function()
             to_path = to_path + basename;
         }
 
+        url = url.replace(/ /g, "%20");
+
         if (this.client_lang == 'python') 
             applet.download_file(url, to_path);
         else

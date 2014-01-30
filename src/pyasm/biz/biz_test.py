@@ -65,6 +65,8 @@ class BizTest(unittest.TestCase):
             my.context = "test"
             my.full_context = "test/subtest"
 
+            my._test_instances()
+
             my._test_pipeline()
             my._test_pipeline_connects()
 
@@ -469,7 +471,7 @@ class BizTest(unittest.TestCase):
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
         #print "CHILD TYPES ", child_types
-        expected = ['unittest/person_car_instance', 'unittest/house']
+        expected = ['unittest/person_in_car', 'unittest/house']
         my.assertEquals(True, expected[0] in child_types)
         my.assertEquals(True, expected[1] in child_types)
 
@@ -837,6 +839,61 @@ class BizTest(unittest.TestCase):
         sample_name = 'chr001_model_v004.0001.ext'
         naming = naming.build_naming(sample_name)
         my.assertEquals("{0}_{1}_{2}.{3}.{4}", naming)
+
+
+    def _test_instances(my):
+
+        # test many to many relationships
+        # person to car?
+
+        # create 3 cars
+        cars = []
+        instances = []
+
+        # definition
+        # <connect from="unittest/person_in_car" to="unittest/person" relationship="code"/>
+        # <connect from="unittest/person_in_car" to="unittest/car" relationship="code"/>
+        # <connect from="unittest/person" to="unittest/car" instance_type="unittest/person_in_car" relationship="instance"/>
+
+        # test add instances
+        for model in ['Ferrari', 'Bugatti', 'Maserati']:
+            car = SearchType.create("unittest/car")
+            car.set_value("model", model)
+            car.commit()
+            instance = my.person.add_instance(car)
+            cars.append(car)
+            instances.append(instance)
+
+        test_instances = my.person.get_instances("unittest/car")
+        my.assertEquals(len(instances), len(test_instances))
+
+
+        # test search instances
+        for instance, test_instance in zip(instances, test_instances):
+            search_key = instance.get_search_key()
+            test_search_key = test_instance.get_search_key()
+            my.assertEquals(search_key, test_search_key)
+
+
+        # get the instance between two sobjects
+        #instance = car.get_instance(person)
+
+
+        #instances = my.person.get_related_sobjects("unittest/car")
+
+
+        # test remove the first instance
+        my.person.remove_instance(cars[0])
+
+        # test remove the other way around
+        cars[1].remove_instance(my.person)
+
+
+        test_instances = my.person.get_instances("unittest/car")
+        my.assertEquals(1, len(test_instances))
+        test_instances = cars[2].get_instances("unittest/person")
+        my.assertEquals(1, len(test_instances))
+
 
 
 if __name__ == '__main__':

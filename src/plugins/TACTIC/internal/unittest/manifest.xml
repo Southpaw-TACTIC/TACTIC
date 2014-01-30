@@ -8,6 +8,8 @@
   <search_type code="unittest/city"/>
   <search_type code="unittest/country"/>
   <search_type code="unittest/no_id"/>
+  <search_type code="unittest/person_in_car"/>
+  <search_type code="unittest/car"/>
   <sobject search_type="sthpw/pipeline" path="sthpw_pipeline.spt" ignore_columns="timestamp" expression="@SOBJECT(sthpw/pipeline['project_code','unittest'])" unique="true"/>
   <sobject search_type="config/custom_script" path="config_custom_script.spt" ignore_columns="timestamp" expression="@SOBJECT(config/custom_script)" unique="true"/>
 </manifest>

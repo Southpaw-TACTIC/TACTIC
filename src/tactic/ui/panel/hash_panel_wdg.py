@@ -278,6 +278,8 @@ class HashPanelWdg(BaseRefreshWdg):
             if login == "guest" and key == 'admin':
                 from pyasm.widget import Error403Wdg
                 return Error403Wdg().get_buffer_display()
+                #from pyasm.widget import WebLoginWdg
+                #return WebLoginWdg().get_buffer_display()
 
 
         sobject = cls._get_predefined_url(key, hash)

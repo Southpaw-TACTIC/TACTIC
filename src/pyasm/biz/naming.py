@@ -424,9 +424,7 @@ class NamingUtil(object):
                     attr, index = attr.split("[")
                     index = int(index.rstrip("]"))    
 
-                if attr == "context":
-                    value = snapshot.get_value(attr)
-                elif attr == "snapshot_type":
+                if attr in ["context","process","snapshot_type"]:
                     value = snapshot.get_value(attr)
                 elif attr == "version":
                     value = snapshot.get_value(attr)
@@ -649,12 +647,10 @@ class NamingUtil(object):
                     attr, index = attr.split("[")
                     index = int(index.rstrip("]"))
                 
-                if attr in ['context','snapshot_type','version','revision'] \
+                if attr in ['context','process','snapshot_type','version','revision'] \
                     and not snapshot:
                     continue
-                if attr == "context":
-                    value = snapshot.get_value(attr)
-                elif attr == "snapshot_type":
+                if attr in ["context","process","snapshot_type"]:
                     value = snapshot.get_value(attr)
                 elif attr == "version":
                     value = snapshot.get_value(attr)

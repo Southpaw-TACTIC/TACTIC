@@ -2547,8 +2547,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'category': 'Search'
         },
-
-
+        'simple_search_visible_rows': {
+            'description': 'Number of visible rows in the simple search bar',
+            'type': 'TextWdg',
+            'category': 'Search'
+        },
 
 
         "search_view": "search view to be displayed",
@@ -2588,7 +2591,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'default|tile|static_table|raw_table|fast_table|tool|browser|card|old_table|custom|custom_item',
             'category': 'Layout',
-            'order': 0,
+            'order': '00',
         },
 
 
@@ -2599,42 +2602,42 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': 8,
+            'order': '01',
         },
         'show_refresh': {
             'description': 'Flag to determine whether or not to show the refresh icon',
             'type': 'SelectWdg',
             'values': 'true|false',
             'category': 'Display',
-            'order': 7
+            'order': '02'
         },
 
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 1,
+            'order': '03',
             'category': 'Display'
         },
         "show_gear": {
             'description': "determines whether or not to show the gear",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": 2,
+            "order": '04',
             'category': 'Display'
         },
         "show_search": {
             'description': "determines whether or not to show the search box",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': '05',
             'category': 'Display'
         },
         "show_keyword_search": {
             'description': "determines whether or not to show keyword search bar",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': '06',
             'category': 'Display'
         },
  
@@ -2643,7 +2646,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not to show the search limit",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 4,
+            'order': '07',
             'category': 'Display'
         },
 
@@ -2652,44 +2655,57 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 5,
+            'order': '08',
             'category': 'Display'
         },
         "show_layout_switcher": {
             'description': "determines whether or not to show the layout switcher",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 6,
+            'order': '09',
             'category': 'Display'
         },
         "show_column_manager": {
             'description': "determines whether or not to show the column manager",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 7,
+            'order': '10',
             'category': 'Display'
         },
         "show_context_menu": {
             'description': "determines whether or not to show the context menu",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 8,
+            'order': '11',
             'category': 'Display'
         },
-
+        'checkin_context': {
+            'description': 'override the checkin context for Check-in New File',
+            'category': 'Check-in',
+            'type': 'TextWdg',
+            'order': '12'
+        },
+        'checkin_type': {
+            'description': 'override the checkin type for Check-in New File',
+            'category': 'Check-in',
+            'type': 'SelectWdg',
+            'empty': 'true',
+            'values': 'auto|strict',
+            'order': '13'
+        },
 
 
         'insert_view': {
             'description': 'Specify a custom insert view other than [insert]',
             'category': 'Display',
             'type': 'TextWdg',
-            'order': '5a'
+            'order': '14'
         },
         'edit_view': {
             'description': 'Specify a custom edit view other than [edit]',
             'category': 'Display',
             'type': 'TextWdg',
-            'order': '5b'
+            'order': '15'
         },
       
         'popup': {
@@ -2697,7 +2713,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '9',
+            'order': '16',
             'category': 'Display'
         },
 
@@ -2705,7 +2721,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '9a'
+            'order': '17'
         },    
 
 
@@ -2996,6 +3012,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             if my.kwargs.get("keywords"):
                 kwargs['keywords'] = my.kwargs.get("keywords")
+
+            kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
+
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 
@@ -3030,6 +3049,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
         init_load_num = my.kwargs.get("init_load_num")
+        checkin_context = my.kwargs.get("checkin_context")
+        checkin_type = my.kwargs.get("checkin_type")
 
        
 
@@ -3083,6 +3104,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
             "init_load_num": init_load_num, 
+            "checkin_context": checkin_context,
+            "checkin_type" : checkin_type,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
