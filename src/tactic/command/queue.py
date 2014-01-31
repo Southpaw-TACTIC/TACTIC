@@ -252,7 +252,6 @@ class JobTask(SchedulerTask):
         script_path = my.job.get_value("script_path", no_exception=True)
 
         project_code = my.job.get_value("project_code")
-        Project.set_project(project_code)
 
         if script_path:
             command = 'tactic.command.PythonCmd'
@@ -283,8 +282,8 @@ class JobTask(SchedulerTask):
             from pyasm.common import Environment
             Environment.get_env_object()
         except:
-            print "running batch"
-            Batch(project_code=project_code)
+            Batch()
+        Project.set_project(project_code)
 
 
         queue = my.job.get_value("queue", no_exception=True)
@@ -317,7 +316,6 @@ class JobTask(SchedulerTask):
             while 1:
                 try:
                     #Command.execute_cmd(cmd)
-                    print "OMG: ", Project.get_project_code()
                     cmd.execute()
 
                     # set job to complete
