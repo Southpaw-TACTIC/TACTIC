@@ -69,6 +69,8 @@ class CheckinDirListWdg(DirListWdg):
             search2.add_filter("process", process)
             search2.add_filter("is_latest", True)
             search2.add_sobject_filter(my.sobject)
+            search2.order_by = False
+
             snapshots = search2.get_sobjects()
             search.add_relationship_search_filter(search2)
         #search.add_filters("source_path", spaths)

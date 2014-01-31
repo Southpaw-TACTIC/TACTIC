@@ -232,8 +232,11 @@ class Search(Base):
         # add the table
         my.select.add_table(table)
 
+        
         # remember the order bys
         my.order_bys = []
+        # order_by is applied by default if available
+        my.order_by = True
 
 
 
@@ -914,7 +917,8 @@ class Search(Base):
 
         search_type_obj = my.get_search_type_obj()
         table = search_type_obj.get_table()
-
+        
+        search.order_by = False
 
         if search_type == related_type:
             #print "WARNING: related type and search type are the same for [%s]" % search_type
@@ -933,10 +937,10 @@ class Search(Base):
 
 
         my_is_from = attrs['from'] == search_type
-        
         if relationship in ['id', 'code']:
             from_col = attrs['from_col']
             to_col = attrs['to_col']
+
             if my_is_from:
                 search.add_column(to_col)
                 my.add_search_filter(from_col, search, op, table=table )
@@ -1586,22 +1590,24 @@ class Search(Base):
                     print "order: ", search_type, order_by
         '''
         # Hard coded replacement.  This is done for performance reasons
-        if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
-            my.add_order_by("timestamp", direction="desc")
-        elif search_type == 'sthpw/task':
-            my.add_order_by("search_type")
-            if my.column_exists("search_code"):
-                my.add_order_by("search_code")
-        elif search_type == 'sthpw/login':
-            my.add_order_by("login")
-        elif search_type == 'sthpw/login_group':
-            my.add_order_by("login_group")
-        elif search_type == 'config/process':
-            my.add_order_by("pipeline_code,sort_order")
-        elif search_type == 'sthpw/message_log':
-            my.add_order_by("timestamp", direction="desc")
-        elif "code" in columns:
-            my.add_order_by("code")
+        if my.order_by:
+
+            if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
+                my.add_order_by("timestamp", direction="desc")
+            elif search_type == 'sthpw/task':
+                my.add_order_by("search_type")
+                if my.column_exists("search_code"):
+                    my.add_order_by("search_code")
+            elif search_type == 'sthpw/login':
+                my.add_order_by("login")
+            elif search_type == 'sthpw/login_group':
+                my.add_order_by("login_group")
+            elif search_type == 'config/process':
+                my.add_order_by("pipeline_code,sort_order")
+            elif search_type == 'sthpw/message_log':
+                my.add_order_by("timestamp", direction="desc")
+            elif "code" in columns:
+                my.add_order_by("code")
 
 
 
