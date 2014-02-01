@@ -21,15 +21,17 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
+    def upgrade_v4_2_0_a01_003(my):
+        my.run_sql('''
+        ALTER TABLE "queue" ADD "message_code" varchar(256);
+        ''')
+
+
     def upgrade_v4_2_0_a01_002(my):
-        if my.get_database_type() == 'MySQL':
-            my.run_sql(''' ALTER TABLE "queue" MODIFY "serialized" integer NULL;''')
-        elif my.get_database_type() == 'SQLServer':
-            my.run_sql(''' ALTER TABLE "queue" ALTER COLUMN "serialized" integer NULL;''');
-        else:
-            my.run_sql('''
-            ALTER TABLE "queue" ALTER COLUMN "serialized" DROP NOT NULL;
-            ''')
+        my.run_sql('''
+        ALTER TABLE "queue" ADD "data" text;
+        ''')
+
 
 
     def upgrade_v4_2_0_a01_001(my):

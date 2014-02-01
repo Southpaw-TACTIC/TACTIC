@@ -65,7 +65,7 @@ class Queue:
     get_next_job = staticmethod(get_next_job)
 
 
-    def add(command, kwargs, queue_type, priority, description):
+    def add(command, kwargs, queue_type, priority, description, message_code=None):
 
         queue = SearchType.create("sthpw/queue")
         queue.set_value("project_code", Project.get_project_code())
@@ -77,7 +77,11 @@ class Queue:
 
         queue.set_value("command", command)
         data = jsondumps(kwargs)
-        queue.set_value("serialized", data)
+        queue.set_value("data", data)
+
+        if message_code:
+            queue.set_value("message_code", message_code)
+
 
 
         queue.set_value("priority", priority)
