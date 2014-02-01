@@ -22,6 +22,7 @@ class UploadMultipart(object):
         my.count = 0
         my.chunk_size = 10*1024*1024
         my.ticket = None
+        my.subdir = None
 
         my.server_url = None
 
@@ -37,6 +38,9 @@ class UploadMultipart(object):
     def set_ticket(my, ticket):
         '''set the ticket for security'''
         my.ticket = ticket
+
+    def set_subdir(my, subdir):
+        my.subdir = subdir
 
 
     def execute(my, path):
@@ -71,6 +75,8 @@ class UploadMultipart(object):
                 # the first index begins at 0
                 fields.append( ("file_name0", basename) )
 
+            if my.subdir:
+                fields.append( ("subdir", my.subdir) )
 	    
             files = [("file", path, buffer)]
             (status, reason, content) = my.upload(my.server_url,fields,files)
@@ -156,7 +162,6 @@ class UploadMultipart(object):
         import cStringIO
 
         import sys
-        print "encoding: ", sys.getfilesystemencoding()
         for (key, value) in fields:
             L.append('--' + BOUNDARY)
             L.append('Content-Disposition: form-data; name="%s"' % key)

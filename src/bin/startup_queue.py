@@ -13,6 +13,7 @@
 
 import tacticenv
 
+from pyasm.common import Common
 from tactic.command import JobTask
 
 import time
@@ -22,7 +23,11 @@ def main():
     from pyasm.security import Batch
     Batch()
 
-    JobTask.start()
+    JobTask.start(
+            check_interval=0.1
+            max_jobs_completed=50
+    )
+    count = 0
     while 1:
         time.sleep(1)
 

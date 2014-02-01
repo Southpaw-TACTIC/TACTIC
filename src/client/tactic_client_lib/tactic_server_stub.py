@@ -1634,7 +1634,7 @@ class TacticServerStub(object):
 
 
 
-    def upload_file(my, path):
+    def upload_file(my, path, base_dir=None):
         '''API Function: upload_file(path)
         Use http protocol to upload a file through http
 
@@ -1650,7 +1650,21 @@ class TacticServerStub(object):
         else:
             upload_server_url = "http://%s/tactic/default/UploadServer/" % my.server_name
 
+
+        if base_dir:
+            basename = os.path.basename(path)
+            dirname = os.path.dirname(path)
+            if not path.startswith(dirname):
+                raise TacticApiException("Path [%s] does not start with base_dir [%s]" % (path, base_dir))
+            base_dir = base_dir.rstrip("/")
+            sub_dir = dirname.replace("%s/" % base_dir, "")
+            if sub_dir:
+                upload.set_subdir(sub_dir)
+
+
+
         upload.set_upload_server(upload_server_url)
+        #upload.set_subdir("blah")
         upload.execute(path)
 
         # upload a file
@@ -1841,22 +1855,19 @@ class TacticServerStub(object):
             # get the naming conventions and move the file to the local repo
             files = my.server.eval(my.ticket, "@SOBJECT(sthpw/file)", snapshot)
 
-            # FIXME: this only works on the python implementation
+            # FIXME: this only works on the python implementation .. should
+            # use JSON
             files = eval(files)
 
             # TODO: maybe cache this??
             base_dirs = my.server.get_base_dirs(my.ticket)
             if os.name == 'nt':
                 client_repo_dir = base_dirs.get("win32_local_repo_dir")
-                # DEPRECATED
-                if not client_repo_dir:
-                    client_repo_dir = base_dirs.get("win32_local_base_dir")
-                    client_repo_dir = "%s/repo" % client_repo_dir
             else:
                 client_repo_dir = base_dirs.get("linux_local_repo_dir")
-                if not client_repo_dir:
-                    client_repo_dir = base_dirs.get("win32_local_base_dir")
-                    client_repo_dir = "%s/repo" % client_repo_dir
+
+            if not client_repo_dir:
+                raise TacticApiException('No local_repo_dir defined in server config file')
 
 
             for file in files:
@@ -1865,7 +1876,11 @@ class TacticServerStub(object):
                 repo_dir = os.path.dirname(repo_path)
                 if not os.path.exists(repo_dir):
                     os.makedirs(repo_dir)
-                shutil.copy(file_path, repo_path)
+                basename = os.path.basename(repo_path)
+                dirname = os.path.dirname(repo_path)
+                temp_repo_path = "%s/.%s.temp" % (dirname, basename)
+                shutil.copy(file_path, temp_repo_path)
+                shutil.move(temp_repo_path, repo_path)
 
 
 

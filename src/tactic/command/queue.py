@@ -102,19 +102,28 @@ class Queue:
 # create a task from the job
 class JobTask(SchedulerTask):
 
-    def __init__(my):
+    def __init__(my, **kwargs):
+
         #print "JobTask: init"
         my.job = None
         my.jobs = []
 
-        my.check_interval = my.get_check_interval()
+        my.check_interval = kwargs.get("check_interval")
+        if not my.check_interval:
+            my.check_interval = 1
+
+        my.jobs_completed = 0
+        my.max_jobs_completed = kwargs.get("max_jobs_completed")
+        if not my.max_jobs_completed:
+            my.max_jobs_completed = -1
+
         my.max_jobs = 2
 
         super(JobTask, my).__init__()
 
 
     def get_check_interval(my):
-        return 1
+        return my.check_interval
 
 
     def set_check_interval(my, interval):
@@ -186,6 +195,9 @@ class JobTask(SchedulerTask):
             my.check_new_job()
             time.sleep(my.check_interval)
             #DbContainer.close_thread_sql()
+
+            if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
+                Common.restart()
 
 
     def check_existing_jobs(my):
@@ -310,6 +322,8 @@ class JobTask(SchedulerTask):
             my.jobs.remove(my.job)
             my.job = None
 
+            my.jobs_completed += 1
+
 
         elif queue_type == 'repeat':
 
@@ -352,7 +366,7 @@ class JobTask(SchedulerTask):
             my.jobs.remove(my.job)
             my.job = None
 
-
+            my.jobs_completed += 1
 
 
         else:
@@ -421,12 +435,12 @@ class JobTask(SchedulerTask):
 
 
 
-    def start():
+    def start(**kwargs):
 
         scheduler = Scheduler.get()
         scheduler.start_thread()
 
-        task = JobTask()
+        task = JobTask(**kwargs)
         task.cleanup_db_jobs()
 
         scheduler.add_single_task(task, mode='threaded', delay=1)
