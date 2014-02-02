@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser']
+__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -243,7 +243,45 @@ class BaseMetadataParser(object):
         data = re.sub(RE_ILLEGAL_XML, "?", data)
         return data
     
-    
+   
+    def get_parser_by_path(cls, path):
+        ext = File.get_extension(path)
+
+        parser_str = None
+
+        if ext in File.VIDEO_EXT:
+            if HAS_FFMPEG:
+                parser_str = "FFMPEG"
+            else:
+                parser_str = "PIL"
+        else:
+            if HAS_IMAGEMAGICK:
+                parser_str = "ImageMagick"
+            elif HAS_PIL:
+                parser_str = "PIL"
+            elif HAS_EXIF:
+                parser_str = "EXIF"
+            elif HAS_FFMPEG:
+                parser_str = "FFMPEG"
+        return cls.get_parser(parser_str, path)
+    get_parser_by_path = classmethod(get_parser_by_path)
+
+
+    def get_parser(cls, parser_str, path):
+        if parser_str == "EXIF":
+            parser = ExifMetadataParser(path=path)
+        elif parser_str == "ImageMagick":
+            parser = ImageMagickMetadataParser(path=path)
+        elif parser_str == "PIL":
+            parser = PILMetadataParser(path=path)
+        elif parser_str == "FFMPEG":
+            parser = FFProbeParser(path=path)
+        else:
+            parser = None
+
+        return parser
+    get_parser = classmethod(get_parser)
+
 
 
 
