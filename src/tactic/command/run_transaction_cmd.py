@@ -612,6 +612,15 @@ class RunTransactionCmd(Command):
 
         transaction_code = transaction.get_value("code")
 
+        # see if this transaction already exists
+        search = Search("sthpw/transaction_log")
+        search.add_filter("code", transaction_code)
+        if search.get_count():
+            print "WARNING: transaction [%s] already exists" % transaction_code
+            return
+
+
+
         security = Environment.get_security()
         ticket = security.get_ticket_key()
 
