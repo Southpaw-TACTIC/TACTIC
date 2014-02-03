@@ -820,7 +820,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column)
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword")
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
         else:

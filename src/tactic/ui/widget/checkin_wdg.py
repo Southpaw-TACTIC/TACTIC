@@ -2124,6 +2124,10 @@ spt.app_busy.hide();
             'type': 'click_up',
             'cbjs_action': '''
 
+var top = bvr.src_el.getParent(".spt_checkin_top");
+var progress = top.getElement(".spt_checkin_progress");
+progress.setStyle("display", "");
+
 spt.checkin.html5_checkin = function(files) {
     var server = TacticServerStub.get();
 
@@ -2139,11 +2143,22 @@ spt.checkin.html5_checkin = function(files) {
 
     var upload_complete = function() {
 
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var file_path = file.name;
-            var context = process + '/' + file.name;
-            snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+        try {
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var file_path = file.name;
+                var context = process + '/' + file.name;
+                snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+            }
+            progress.setStyle("display", "");
+        }
+        catch(e) {
+            progress.setStyle("background", "#F00");
+            alert(e);
+            progress.setStyle("background", "#F00");
+            progress.setStyle("display", "none");
+            throw(e);
+            
         }
 
         spt.app_busy.hide();
@@ -2152,7 +2167,8 @@ spt.checkin.html5_checkin = function(files) {
     var upload_progress = function(evt) {
 
         var percent = Math.round(evt.loaded * 100 / evt.total);
-        spt.app_busy.show("Uploading ["+percent+"%% complete]");
+        //spt.app_busy.show("Uploading ["+percent+"%% complete]");
+        progress.setStyle("width", percent + "%");
     }
 
     var upload_kwargs = {
@@ -2645,7 +2661,7 @@ else {
 
 
 
-        button =ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
         top.add(button)
         button.add_class("spt_checkin_html5_button")
         button.add_behavior(html5_behavior)
@@ -2655,6 +2671,16 @@ else {
         button.add_style("margin-bottom: 20px")
 
         button.add_style("display: none")
+
+        progress = DivWdg()
+        top.add(progress)
+        progress.add_style("display: none")
+        progress.add_class("spt_checkin_progress")
+        progress.add_style("width: 0%")
+        progress.add_style("height: 10px")
+        progress.add_border()
+        progress.add_color("background", "background")
+
 
 
 

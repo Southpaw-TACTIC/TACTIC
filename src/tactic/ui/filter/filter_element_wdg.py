@@ -957,16 +957,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         if my.mode == 'keyword' and my.has_index:
             div.add(icon_div)
-            #checkbox = CheckboxWdg("partial")
-            #checkbox.add_attr("title", "Use partial word match (slower)")
-            #div.add(checkbox)
         elif my.mode =='global' and my.has_index:
             div.add(icon_div)
-            #checkbox = CheckboxWdg("partial")
-            #checkbox.add_attr("title", "Use partial word match (slower)")
-            checkbox.set_default_checked()
-            #div.add(checkbox)
-            
         else:
             # partial is implied otherwise
             hidden = HiddenWdg("partial")
