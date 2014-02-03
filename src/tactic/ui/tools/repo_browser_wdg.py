@@ -385,6 +385,64 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+
+    def get_file_count(my, base_dir, search_types, parent_ids):
+        show_empty_folders = True
+
+        my.show_files = True
+        show_main_only = True
+        show_latest = True
+        show_versionless = False
+
+        asset_base_dir = Environment.get_asset_dir()
+        relative_dir = base_dir.replace(asset_base_dir, "")
+        relative_dir = relative_dir.strip("/")
+
+        keywords = my.kwargs.get("keywords")
+
+        project_code = Project.get_project_code()
+        search = Search("sthpw/file")
+        if search_types:
+            search.add_filters("search_type", search_types)
+
+        if relative_dir:
+            search.add_op("begin")
+            search.add_filter("relative_dir", "%s" % relative_dir)
+            #if not my.dynamic:
+            if True:
+                search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+            search.add_op("or")
+
+        if parent_ids:
+            search.add_filters("search_id", parent_ids)
+        if keywords:
+            search.add_text_search_filter("metadata_search", keywords)
+
+        if show_latest or show_versionless:
+            search.add_join("sthpw/snapshot")
+            search.add_op("begin")
+            if show_latest:
+                search.add_filter("is_latest", True, table="snapshot")
+            if show_versionless:
+                search.add_filter("version", -1, table="snapshot")
+            search.add_filter("file_name", "")
+            search.add_filter("file_name", "NULL", quoted=False, op="is")
+            search.add_op("or")
+        else:
+            pass
+
+        if show_main_only:
+            search.add_filter("type", "main")
+
+
+
+        if my.sobjects:
+            search.add_sobjects_filter(my.sobjects)
+        return search.get_count()
+
+
+
+
     def get_relative_paths(my, base_dir):
 
         # options to get files
@@ -394,6 +452,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show totals?
 
         show_empty_folders = True
+        show_no_sobject_folders = False
 
         my.show_files = True
         show_main_only = True
@@ -414,18 +473,14 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_type = my.kwargs.get("search_type")
 
             if search_types:
-                search_types = [SearchType.build_search_type(x) for x in search_types]
                 parent_ids = []
-
-
             elif search_key:
                 sobject = Search.get_by_search_key(search_key)
                 search_types = [sobject.get_search_type()]
                 parent_ids = [x.get_id() for x in sobjects]
 
             elif search_type:
-                search_types = [SearchType.build_search_type(x) for x in search_types]
-
+                search_types = [search_type]
                 my.sobjects = []
                 parent_ids = []
 
@@ -436,18 +491,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             else:
                 raise Exception("No search_key or search_type/s specified")
 
-            """
-            else:
-                search_type_objs = Project.get().get_search_types(include_sthpw=False,include_config=False)
-                search_types = [x.get_base_key() for x in search_type_objs]
-
-                #print "search_type: ", search_types
-
-                search_types = [SearchType.build_search_type(x) for x in search_types]
-                my.sobjects = []
-                parent_ids = []
-            """
-
 
         else:
             search_types = [sobjects[0].get_search_type()]
@@ -455,6 +498,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             my.sobjects = sobjects
 
 
+        search_types = [SearchType.build_search_type(x) for x in search_types]
 
         paths = []
         my.file_codes = {}
@@ -552,30 +596,31 @@ class RepoBrowserDirListWdg(DirListWdg):
                     my.search_types_dict[tmp_dir] = search_type
 
 
+        # add dirnames only if they have files in them
+        if not show_no_sobject_folders:
+            dirnames = os.listdir(base_dir)
+            for dirname in dirnames:
+                subdir = "%s/%s" % (base_dir, dirname)
+                if not os.path.isdir(subdir):
+                    continue
+                count = my.get_file_count(subdir, search_types, parent_ids)
+                if count:
+                    full = "%s/" % subdir
+                    # FIXME: this actually allows for the click-up behavior
+                    # however, it only currently works for a single stype
+                    my.search_types_dict[full] = search_types[0]
+                    paths.append(full)
+
+            return paths
+
+
+
+
         project_code = Project.get_project_code()
-
-
-        # associate all of the root folders to search types
-        """
-        for search_type in search_types:
-            search_type_obj = SearchType.get(search_type)
-            root_dir = search_type_obj.get_value("root_dir", no_exception=True)
-            if not root_dir:
-                base_type = search_type_obj.get_base_key()
-                parts = base_type.split("/")
-                root_dir = parts[1]
-
-            dirname = "%s/%s/%s/" % (asset_base_dir, project_code, root_dir)
-            if os.path.exists(dirname):
-                my.search_types_dict[dirname] = search_type
-        """
 
 
         num_sobjects = {}
 
-
-
-  
         # show all folders, except in the case of the base folder of the project
         project_code = Project.get_project_code()
         project_base_dir = "%s/%s" % (asset_base_dir, project_code)
@@ -1470,8 +1515,6 @@ class RepoBrowserActionCmd(Command):
             search.add_filter("relative_dir", old_relative_dir)
             files = search.get_sobjects()
 
-            print "old_dir: ", old_dir
-            print "new_dir: ", new_dir
             for file in files:
                 file.set_value("relative_dir", new_relative_dir)
                 file.commit()

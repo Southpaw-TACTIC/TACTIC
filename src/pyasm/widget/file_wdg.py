@@ -11,13 +11,14 @@
 #
 
 
-__all__ = ["ThumbWdg", "FileInfoWdg"]
+__all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 
 import re, time, types, string, os
 
 from pyasm.common import Xml, Container, Environment, Config
 from pyasm.search import Search, SearchException, SearchKey, SqlException, DbContainer
 from pyasm.biz import *
+from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement, Table, Html, SpanWdg, AjaxWdg, WebContainer, AjaxLoader, FloatDivWdg, Widget
 
 from table_element_wdg import BaseTableElementWdg
@@ -644,7 +645,8 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         if not snapshot:
-            return my.get_no_icon_wdg()
+            icon = my.get_no_icon_wdg()
+            return icon
 
 
         xml = snapshot.get_xml_value("snapshot")
@@ -688,8 +690,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         div.force_default_context_menu()
-        
-       
+ 
       
         # if no link path is found, display the no icon image
         if link_path == None:
@@ -704,7 +705,6 @@ class ThumbWdg(BaseTableElementWdg):
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 
         elif not repo_path or not os.path.exists(repo_path):
-            print "repo_path: ", repo_path
             return my.get_no_icon_wdg(missing=True)
 
         if my.icon_type == 'default':
@@ -719,6 +719,39 @@ class ThumbWdg(BaseTableElementWdg):
         icon_link = icon_info.get('icon_link')
         icon_size = icon_info.get('icon_size')
         icon_missing = icon_info.get('icon_missing')
+
+        search_type = sobject.get_base_search_type()
+        if search_type != 'sthpw/snapshot' and icon_link.endswith("general_video.png"):
+            # generate icon inline
+            """
+            search_key = sobject.get_search_key()
+            thumb_cmd = ThumbCmd(search_key=search_key)
+            thumb_cmd.execute()
+            icon_link = thumb_cmd.get_path()
+            """
+            # generate icon dynamically
+            """
+            div.set_attr("spt_search_key", sobject.get_search_key())
+            div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+
+                setTimeout( function() {
+                var on_complete = function() {
+                    console.log("NO ICON!!!");
+                }
+                var cmd = 'pyasm.widget.ThumbCmd';
+                var server = TacticServerStub.get();
+                var kwargs = {
+                    search_key: bvr.src_el.getAttribute("spt_search_key")
+                };
+                server.execute_cmd(cmd, kwargs, {}, {on_complete:on_complete});
+                }, 2000 );
+                '''
+            } )
+            """
+     
+
 
  
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
@@ -1059,9 +1092,16 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "folder.png"
         elif ext in File.VIDEO_EXT:
             icon = "general_video.png"
+        elif ext not in File.NORMAL_EXT:
+            icon = "general_video.png"
         else:
             icon = "default_doc.png"
-        return "%s/%s" % ( base,icon)
+
+        if base:
+            path = "%s/%s" % ( base,icon)
+        else:
+            path = icon
+        return path
 
     find_icon_link = staticmethod(find_icon_link)
     
@@ -1148,6 +1188,48 @@ class ThumbWdg(BaseTableElementWdg):
         return info
 
     get_file_info_list = staticmethod(get_file_info_list)
+
+
+
+class ThumbCmd(Command):
+
+    def get_path(my):
+        return my.path
+
+    def execute(my):
+
+        search_key  = my.kwargs.get("search_key")
+
+        sobject = Search.get_by_search_key(search_key)
+        search_code = sobject.get_code()
+        search_type = sobject.get_search_type()
+
+        snapshot = Snapshot.get_snapshot(search_type, search_code, process=['publish',''])
+
+        if not snapshot:
+            return
+
+        file_type = "main"
+        path = snapshot.get_lib_path_by_type(file_type)
+
+        # use api
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+
+        # need the actual sobject
+        snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
+        my.path = snapshot.get_web_path_by_type("icon")
+
+
+        #from pyasm.checkin import FileCheckin
+        #checkin = FileCheckin(sobject, path, context="icon", mode="free_copy")
+        #checkin.execute()
+
+
+
+
+
 
 class FileInfoWdg(BaseTableElementWdg):
 

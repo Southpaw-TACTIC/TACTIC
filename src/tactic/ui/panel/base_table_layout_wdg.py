@@ -382,7 +382,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_value = keyword_values[0].get('value')
             if keyword_value and search.column_exists(column):
                     from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=column)
+                    keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
@@ -820,7 +820,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword")
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
         else:
