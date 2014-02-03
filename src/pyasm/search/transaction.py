@@ -1019,6 +1019,10 @@ class FileUndo:
                 # create the link
                 rel = Common.relative_path(dst, src)
                 try:
+                    dstdirname = os.path.dirname(dst)
+                    if not os.path.exists(dstdirname):
+                        os.makedirs(dstdirname)
+
                     os.symlink(rel,dst)
                 except Exception:
                     print "Error: could not symlink [%s] to [%s]" % (rel, dst)
