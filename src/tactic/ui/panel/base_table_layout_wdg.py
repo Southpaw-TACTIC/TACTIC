@@ -311,6 +311,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # a dictionary of widget class name and boolean True as they are drawn
         my.drawn_widgets = {}
 
+    def get_aux_info(my):
+        return my.aux_info
 
     def get_kwargs(my):
         return my.kwargs

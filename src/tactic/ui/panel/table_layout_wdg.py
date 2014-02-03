@@ -182,9 +182,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif display_handler == "pyasm.widget.HiddenRowToggleWdg":
             return "tactic.ui.table.HiddenRowElementWdg"
 
-    def get_aux_info(my):
-        return my.aux_info
-
     def remap_sobjects(my):
         # find all the distinct search types in the sobjects
         if not my.search_type.startswith("sthpw/sobject_list"):
