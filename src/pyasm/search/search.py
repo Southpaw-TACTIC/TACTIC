@@ -4552,9 +4552,6 @@ class SObject(object):
 
         from pyasm.biz import Schema
         attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
-        print "search_type1: ", search_type1
-        print "search_type2: ", search_type2
-        print "attrs: ", attrs
         relationship = attrs.get("relationship")
         if relationship != "instance":
             raise SearchException("Not an instance relationship")

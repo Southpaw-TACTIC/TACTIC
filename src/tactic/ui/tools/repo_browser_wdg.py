@@ -386,10 +386,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
-    def get_file_count(my, base_dir, search_types, parent_ids):
+    def get_file_search(my, base_dir, search_types, parent_ids, mode="count"):
         show_empty_folders = True
 
-        my.show_files = True
         show_main_only = True
         show_latest = True
         show_versionless = False
@@ -406,12 +405,24 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_filters("search_type", search_types)
 
         if relative_dir:
-            search.add_op("begin")
-            search.add_filter("relative_dir", "%s" % relative_dir)
-            #if not my.dynamic:
-            if True:
+
+
+            # TODO: not very clean.  There are different ways that the
+            # relative dir needs to be searched on depending on usage
+            # For now, just use a simple mode
+            if mode == "count":
+                search.add_op("begin")
+                search.add_filter("relative_dir", "%s" % relative_dir)
                 search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-            search.add_op("or")
+                search.add_op("or")
+            else:
+                search.add_op("begin")
+                search.add_filter("relative_dir", "%s" % relative_dir)
+                if not my.dynamic:
+                    search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
+                search.add_op("or")
+
+
 
         if parent_ids:
             search.add_filters("search_id", parent_ids)
@@ -435,10 +446,10 @@ class RepoBrowserDirListWdg(DirListWdg):
             search.add_filter("type", "main")
 
 
-
         if my.sobjects:
             search.add_sobjects_filter(my.sobjects)
-        return search.get_count()
+
+        return search
 
 
 
@@ -510,44 +521,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # sobjects
         if my.show_files:
 
-            search = Search("sthpw/file")
-            if search_types:
-                search.add_filters("search_type", search_types)
-
-            if relative_dir:
-                search.add_op("begin")
-                search.add_filter("relative_dir", "%s" % relative_dir)
-                if not my.dynamic:
-                    search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
-                search.add_op("or")
-
-
-            if parent_ids:
-                search.add_filters("search_id", parent_ids)
-            if keywords:
-                search.add_text_search_filter("metadata_search", keywords)
-
-            if show_latest or show_versionless:
-                search.add_join("sthpw/snapshot")
-                search.add_op("begin")
-                if show_latest:
-                    search.add_filter("is_latest", True, table="snapshot")
-                if show_versionless:
-                    search.add_filter("version", -1, table="snapshot")
-                search.add_filter("file_name", "")
-                search.add_filter("file_name", "NULL", quoted=False, op="is")
-                search.add_op("or")
-            else:
-                pass
-
-            if show_main_only:
-                search.add_filter("type", "main")
-
-
-
-            if my.sobjects:
-                search.add_sobjects_filter(my.sobjects)
-
+            search = my.get_file_search(relative_dir, search_types, parent_ids, mode="folder")
             file_objects = search.get_sobjects()
 
             for file_object in file_objects:
@@ -603,7 +577,8 @@ class RepoBrowserDirListWdg(DirListWdg):
                 subdir = "%s/%s" % (base_dir, dirname)
                 if not os.path.isdir(subdir):
                     continue
-                count = my.get_file_count(subdir, search_types, parent_ids)
+                search = my.get_file_search(subdir, search_types, parent_ids, mode="count")
+                count = search.get_count()
                 if count:
                     full = "%s/" % subdir
                     # FIXME: this actually allows for the click-up behavior

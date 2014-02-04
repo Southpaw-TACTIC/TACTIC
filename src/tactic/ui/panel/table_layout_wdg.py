@@ -4003,6 +4003,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
+        icon_generate_refresh: kw.icon_generate_refresh,
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
@@ -4019,7 +4020,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
     // update all of the changed rows
-    var kwargs;
     if (kw['cbjs_action']) {
         kwargs = {
           'args': kwargs,

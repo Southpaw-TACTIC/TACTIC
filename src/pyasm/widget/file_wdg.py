@@ -229,7 +229,47 @@ class ThumbWdg(BaseTableElementWdg):
             } )
         
  
-  
+        #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False:
+        if False:
+            layout.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var elements = bvr.src_el.getElements(".spt_generate_icon");
+                var search_keys = [];
+                var rows = [];
+                for (var i = 0; i < elements.length; i++) {
+                    var search_key = elements[i].getAttribute("spt_search_key");
+                    elements[i].removeClass("spt_generate_icon");
+                    search_keys.push(search_key);
+                    var row = elements[i].getParent(".spt_table_row")
+                    rows.push(row);
+                }
+
+                if (search_keys.length == 0) {
+                    return;
+                }
+                console.log("running: !!!");
+                console.log(search_keys);
+
+                var on_complete = function(ret_val) {
+                    console.log(ret_val);
+                    spt.table.refresh_rows(rows, null, null, {
+                        icon_generate_refresh:false
+                    });
+                }
+                var cmd = 'pyasm.widget.ThumbCmd';
+                var server = TacticServerStub.get();
+                var kwargs = {
+                    search_keys: search_keys
+                };
+                server.execute_cmd(cmd, kwargs, {}, {
+                            on_complete:on_complete,
+                        });
+                '''
+            } )
+ 
+
+
     def preprocess(my):
         my.is_preprocess_run = True
 
@@ -688,7 +728,6 @@ class ThumbWdg(BaseTableElementWdg):
         # define a div
         div = my.top
 
-
         div.force_default_context_menu()
  
       
@@ -723,33 +762,14 @@ class ThumbWdg(BaseTableElementWdg):
         search_type = sobject.get_base_search_type()
         if search_type != 'sthpw/snapshot' and icon_link.endswith("general_video.png"):
             # generate icon inline
-            """
             search_key = sobject.get_search_key()
-            thumb_cmd = ThumbCmd(search_key=search_key)
+            thumb_cmd = ThumbCmd(search_keys=[search_key])
             thumb_cmd.execute()
             icon_link = thumb_cmd.get_path()
-            """
-            # generate icon dynamically
-            """
-            div.set_attr("spt_search_key", sobject.get_search_key())
-            div.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
 
-                setTimeout( function() {
-                var on_complete = function() {
-                    console.log("NO ICON!!!");
-                }
-                var cmd = 'pyasm.widget.ThumbCmd';
-                var server = TacticServerStub.get();
-                var kwargs = {
-                    search_key: bvr.src_el.getAttribute("spt_search_key")
-                };
-                server.execute_cmd(cmd, kwargs, {}, {on_complete:on_complete});
-                }, 2000 );
-                '''
-            } )
-            """
+            # generate icon dynamically
+            div.set_attr("spt_search_key", sobject.get_search_key())
+            div.add_class("spt_generate_icon")
      
 
 
@@ -1198,7 +1218,17 @@ class ThumbCmd(Command):
 
     def execute(my):
 
-        search_key  = my.kwargs.get("search_key")
+        search_keys  = my.kwargs.get("search_keys")
+
+        for search_key in search_keys:
+            my.generate_icon(search_key)
+
+
+        my.info = {
+            'search_keys': search_keys
+        }
+
+    def generate_icon(my, search_key):
 
         sobject = Search.get_by_search_key(search_key)
         search_code = sobject.get_code()
@@ -1216,6 +1246,7 @@ class ThumbCmd(Command):
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
         snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+
 
         # need the actual sobject
         snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
