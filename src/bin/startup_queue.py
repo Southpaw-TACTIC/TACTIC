@@ -24,7 +24,7 @@ def main():
     Batch()
 
     JobTask.start(
-            check_interval=0.1
+            check_interval=0.1,
             max_jobs_completed=50
     )
     count = 0
