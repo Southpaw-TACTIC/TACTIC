@@ -2380,6 +2380,7 @@ class PluginVersionCreator(Command):
         zip_util = ZipUtil()
         zip_util.zip_dir(plugin_base_dir, zip_path=zip_path, include_dirs=include_dirs)
         """
+
         # OLD logic to be deleted
         #parts = new_plugin_dir.split("/")
         #iinclude_dirs = [parts[-1]]
@@ -2393,7 +2394,7 @@ class PluginVersionCreator(Command):
         
         ignore_dirs = ['.svn']
         ZipUtil.zip_dir(root_dir, zip_path, ignore_dirs=ignore_dirs, include_dirs=include_dirs)
-
+        
 
 
 

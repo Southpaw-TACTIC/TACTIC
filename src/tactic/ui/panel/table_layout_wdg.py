@@ -72,28 +72,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 0,
+            'order': 00,
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 1,
+            'order': 01,
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 2,
+            'order': 02,
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determines whether or not to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 3,
+            'order': 03,
             'category': 'Optional'
         },
 
@@ -102,7 +102,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '4'
+            'order': '04'
         },
 
 
@@ -113,14 +113,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '5'
+            'order': '05'
         },
         'show_layout_switcher': {
             'description': 'Flag to determine whether or not to show the Switch Layout button',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '6'
+            'order': '06'
         },
 
         'show_keyword_search': {
@@ -128,20 +128,35 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '7'
+            'order': '07'
         },
         'show_context_menu': {
             'description': 'Flag to determine whether to show the context menu',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '8'
+            'order': '08'
+        },
+        
+        'checkin_context': {
+            'description': 'override the checkin context for Check-in New File',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'empty': 'true',
+            'values': 'auto|strict',
+            'order': '09'
+        },
+         'checkin_type': {
+            'description': 'override the checkin type for Check-in New File',
+            'category': 'Optional',
+            'type': 'TextWdg',
+            'order': '10'
         },
         'init_load_num': {
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Optional',
-            'order': '9'
+            'order': '11'
         },
 
 
@@ -166,8 +181,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return "tactic.ui.table.HiddenRowElementWdg"
         elif display_handler == "pyasm.widget.HiddenRowToggleWdg":
             return "tactic.ui.table.HiddenRowElementWdg"
-
-    
 
     def remap_sobjects(my):
         # find all the distinct search types in the sobjects
@@ -766,13 +779,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             var count = -1;
+
+            var view_panel = layout.getParent('.spt_view_panel');
+            if (view_panel) {
+                var search_top = view_panel.getElement('.spt_search');
+                var search_dict = spt.table.get_search_values(search_top);
+            }
+            
             var func = function() {
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
                     return;
                 }
-                spt.table.refresh_rows(rows, null, null, {on_complete: func});
+
+               
+                spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
             }
             func();
 
@@ -2657,7 +2679,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
 
-
     // position the arrow
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
@@ -2702,10 +2723,13 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px;'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
+        var cell = src_el.getParent('.spt_cell_no_edit');
+        var elem_name = spt.table.get_element_name_by_cell(cell)
+        clone.setAttribute('column', elem_name);
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
@@ -2739,12 +2763,19 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 }
 
 
-spt.table.remove_hidden_row = function(row) {
-    var sibling = row.getNext();
+spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
+    // if it is hidden_row, just use it as is without getting Next 
+    var sibling = is_hidden ? row: row.getNext();
+    if (col_name) {
+        while (sibling && sibling.getAttribute('column') != col_name) {
+            sibling = sibling.getNext();
+        }
+    }
+    
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
-        //var child = sibling.firstChild.firstChild.firstChild;
         var child = sibling.getElement(".spt_hidden_content");
+
         if (child) {
             sibling.firstChild.firstChild.setStyle("overflow", "hidden");
             var size = child.getSize();
@@ -2752,7 +2783,7 @@ spt.table.remove_hidden_row = function(row) {
                 duration: "short",
             } )
             fx.addEvent("complete", function() {
-                spt.table.remove_hidden_row(sibling);
+                spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
             fx.start('margin-top', -size.y-100+"px");
@@ -2767,8 +2798,9 @@ spt.table.remove_hidden_row = function(row) {
 
 spt.table.remove_hidden_row_from_inside = function(el) {
     var hidden_row = el.getParent(".spt_hidden_row"); 
-    var row = hidden_row.getPrevious();
-    spt.table.remove_hidden_row(row);
+    var col_name = hidden_row.getAttribute('column');
+    
+    spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
 
@@ -3913,6 +3945,65 @@ spt.table.save_changes = function(kwargs) {
 
 }
 
+spt.table.get_search_values = function(search_top) {
+
+
+    // get all of the search input values
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+
+        var ops = search_top.getElements(".spt_op");
+
+        // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);
+
+        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);
+
+        // find the table/simple search as well
+        var panel = search_top.getParent(".spt_view_panel");
+        var table_searches = panel.getElements(".spt_table_search");
+        for (var i = 0; i < table_searches.length; i++) {
+            var table_search = table_searches[i];
+            var values = spt.api.Utility.get_input_values(table_search,null,false);
+            new_values.push(values);
+        }
+    }
+
+
+
+
+
+    // convert to json
+    var json_values = JSON.stringify(new_values);
+    return json_values;
+
+}
+
 
 spt.table.get_refresh_kwargs = function(row) {
     var element_names = spt.table.get_element_names();
@@ -4069,8 +4160,12 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           }
         }
     }
+    kwargs.values = {};
     if (web_data && web_data != "[{}]")
-        kwargs.values = {web_data: web_data};   
+        kwargs.values = {web_data: web_data};  
+
+    if (kw.json)
+        kwargs.values['json'] = kw.json;
     server.async_get_widget(class_name, kwargs);
 }
 
@@ -4174,7 +4269,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
         search_top = view_panel.getElement('.spt_search');
 
     
-    var search_dict = spt.dg_table.get_search_values(search_top)
+    var search_dict = spt.table.get_search_values(search_top);
     if (!('json' in values)) {
         values['json'] = search_dict;
     }

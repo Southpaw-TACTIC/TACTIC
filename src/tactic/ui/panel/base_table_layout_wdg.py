@@ -174,6 +174,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # my.parent_key is used to determine the parent for inline add-new-items purposes
         my.parent_key = my.kwargs.get("parent_key")
         my.parent_path = my.kwargs.get("parent_path")
+        my.checkin_context = my.kwargs.get("checkin_context")
+        my.checkin_type = my.kwargs.get("checkin_type")
+        if not my.checkin_type:
+            my.checkin_type = 'auto'
         my.state = my.kwargs.get("state")
         my.state = BaseRefreshWdg.process_state(my.state)
         my.expr_sobjects = []
@@ -307,6 +311,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # a dictionary of widget class name and boolean True as they are drawn
         my.drawn_widgets = {}
 
+    def get_aux_info(my):
+        return my.aux_info
 
     def get_kwargs(my):
         return my.kwargs
@@ -2318,13 +2324,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
                     
                     search_key = tbody.getAttribute("spt_search_key");
-                    
+                     
                     var context = bvr.context;
-                    if (!context)
-                        context = tbody.getAttribute("spt_icon_context");
-                    if (!context)
-                        context = "icon";
-
+                    // there are 2 modes: file, icon
+                    if (bvr.mode == 'icon') {
+                        if (!context)
+                            context = tbody.getAttribute("spt_icon_context");
+                        if (!context)
+                            context = "icon";
+                    }
                     // set the form
                     
                     if (!spt.html5upload.form) {
@@ -2363,14 +2371,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 var parts = file.split("/");
                                 var filename = parts[parts.length-1];
                                 var kwargs;
-                                if (context != "icon") {
+
+                                if (spt.get_typeof(bvr.checkin_context)=='array')
+                                    bvr.checkin_context= bvr.checkin_context[0];
+                                
+                                //checkin_context would override the default context
+                                if (bvr.checkin_context) 
+                                    context = bvr.checkin_context;
+
+                                if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
                                     context = context + "/" + filename;
                                     kwargs = {mode: 'uploaded', checkin_type: 'auto'};
                                 }
                                 else {
                                     kwargs = {mode: 'uploaded'};
+                                    
                                 }
-                                
                                 server.simple_checkin( search_key, context, file, kwargs);
                             }
                         } catch(e) {
@@ -2437,6 +2453,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
 
             bvr_cb["description"] = "Checking in preview ..."
+            bvr_cb["mode"] = "icon"
             # set a dummy
             if Container.get_dict("JSLibraries", "spt_html5upload"):
                 my.upload_id = '0'
@@ -2453,14 +2470,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
             } )
 
-
             bvr_cb2 = bvr_cb.copy()
             bvr_cb2["description"] = "Checking in new file ..."
-            bvr_cb2["context"] = "publish"
+            bvr_cb2["context"] = "publish",
+            bvr_cb2["checkin_context"] = my.checkin_context,
+            bvr_cb2["mode"] = "file"
+            bvr_cb2["checkin_type"] =  my.checkin_type
             spec_list.append( {
                 "type": "action",
                 "label": "Check in New File",
                 "upload_id": my.upload_id,
+                "mode": "file",
                 "icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {

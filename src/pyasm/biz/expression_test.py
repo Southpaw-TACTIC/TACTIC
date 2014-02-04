@@ -1913,8 +1913,26 @@ class ExpressionTest(unittest.TestCase):
         expression = "@GET( .age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=False)
+        
         my.assertEquals([age], result)
-       
+        expression = "@SOBJECT(unittest/city)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, person, dictionary=False)
+        my.assertEquals('los_angeles', result[0].get('code'))
+        
+        
+        expression = "@SOBJECT(unittest/city)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, person, dictionary=True)
+        result = result.get(person.get_search_key())
+        my.assertEquals('los_angeles', result[0].get('code'))
+
+        expression = "@SOBJECT(unittest/city.unittest/country)"
+        parser = ExpressionParser()
+        result = parser.eval(expression, person, dictionary=True)
+        result = result.get(person.get_search_key())
+        my.assertEquals('USA', result[0].get('code'))
+        
         expression = "@GET( .age)"
         parser = ExpressionParser()
         result = parser.eval(expression, person, dictionary=True)

@@ -740,6 +740,16 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add( HtmlElement.br(2) )
 
         
+        # triggers mode
+        option_div.add(SpanWdg("Triggers: ", css='small'))
+        select_wdg = SelectWdg('triggers_mode')
+        select_wdg.set_option('values', ['','False', 'True', 'none']) 
+        select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers']) 
+        select_wdg.add_behavior({'type' : 'change',
+                    'cbjs_action': "spt.panel.refresh('preview_data',\
+                    spt.api.Utility.get_input_values('csv_import_main'))"})
+        option_div.add(select_wdg)
+        option_div.add( HtmlElement.br(2) )
 
         div.add(option_div_top)
 

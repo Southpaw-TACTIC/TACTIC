@@ -710,7 +710,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 # if the event is specified in the xml, then use that
                 event = Xml.get_attribute(behavior_node, 'event')
 
-                # if the event is specified in the xml, then use that
                 modkeys = Xml.get_attribute(behavior_node, 'modkeys')
 
                 relay_class = Xml.get_attribute(behavior_node, 'relay_class')

@@ -13,7 +13,7 @@ __all__ = ["EditLayoutWdg"]
 
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
-from pyasm.web import DivWdg, Table
+from pyasm.web import DivWdg, Table, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg
 from tactic.ui.container import SmartMenu
 
@@ -155,7 +155,8 @@ class EditLayoutWdg(TableLayoutWdg):
                 title = widget.get_title()
 
                 tr = table.add_row()
-                title.add_style("float: left")
+                if isinstance(title, HtmlElement):
+                    title.add_style("float: left")
                 th = table.add_header(title)
                 th.add(" : ")
                 th.add_class("spt_header")
