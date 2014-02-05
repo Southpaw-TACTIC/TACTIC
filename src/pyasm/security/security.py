@@ -717,7 +717,7 @@ class Ticket(SObject):
             ticket.set_value("expiry", 'NULL', quoted=0)
         else:
             ticket.set_value("expiry", expiry, quoted=0)
-        ticket.commit(triggers=False)
+        ticket.commit(triggers="none")
    
 
         return ticket
