@@ -182,7 +182,7 @@ class RedoCmd(Command):
 
         # get the transaction and set it to not record this transaction
         transaction = Transaction.get()
-        transaction.set_record_flag(false)
+        transaction.set_record(False)
 
         # update the change timestamps
         transaction.update_change_timestamps(my.transaction_log)
