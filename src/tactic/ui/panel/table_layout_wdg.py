@@ -2681,7 +2681,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
 
-
     // position the arrow
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
@@ -2726,10 +2725,13 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px;'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
+        var cell = src_el.getParent('.spt_cell_no_edit');
+        var elem_name = spt.table.get_element_name_by_cell(cell)
+        clone.setAttribute('column', elem_name);
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
@@ -2763,12 +2765,18 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 }
 
 
-spt.table.remove_hidden_row = function(row) {
-    var sibling = row.getNext();
+spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
+    // if it is hidden_row, just use it as is without getting Next 
+    var sibling = is_hidden ? row: row.getNext();
+    if (col_name) {
+        while (sibling && sibling.getAttribute('column') != col_name)
+            sibling = sibling.getNext();
+    }
+    
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
-        //var child = sibling.firstChild.firstChild.firstChild;
         var child = sibling.getElement(".spt_hidden_content");
+
         if (child) {
             sibling.firstChild.firstChild.setStyle("overflow", "hidden");
             var size = child.getSize();
@@ -2776,13 +2784,13 @@ spt.table.remove_hidden_row = function(row) {
                 duration: "short",
             } )
             fx.addEvent("complete", function() {
-                spt.table.remove_hidden_row(sibling);
+                spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
             fx.start('margin-top', -size.y-100+"px");
         }
         else {
-            spt.table.remove_hidden_row(sibling);
+            spt.table.remove_hidden_row(sibling, null, true);
             spt.behavior.destroy_element(sibling);
         }
     }
@@ -2791,8 +2799,9 @@ spt.table.remove_hidden_row = function(row) {
 
 spt.table.remove_hidden_row_from_inside = function(el) {
     var hidden_row = el.getParent(".spt_hidden_row"); 
-    var row = hidden_row.getPrevious();
-    spt.table.remove_hidden_row(row);
+    var col_name = hidden_row.getAttribute('column');
+    
+    spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
 
