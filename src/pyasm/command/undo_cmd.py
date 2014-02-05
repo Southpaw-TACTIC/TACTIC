@@ -180,8 +180,9 @@ class RedoCmd(Command):
         my.transaction_log.set_value("type", "undo")
         my.transaction_log.commit()
 
-        # get the transaction
+        # get the transaction and set the record to false
         transaction = Transaction.get()
+        transaction.set_record(False)
 
         # update the change timestamps
         transaction.update_change_timestamps(my.transaction_log)
