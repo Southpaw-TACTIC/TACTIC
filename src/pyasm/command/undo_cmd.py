@@ -180,8 +180,9 @@ class RedoCmd(Command):
         my.transaction_log.set_value("type", "undo")
         my.transaction_log.commit()
 
-        # get the transaction
+        # get the transaction and set it to not record this transaction
         transaction = Transaction.get()
+        transaction.set_record_flag(false)
 
         # update the change timestamps
         transaction.update_change_timestamps(my.transaction_log)
