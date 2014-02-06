@@ -2767,8 +2767,9 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
     // if it is hidden_row, just use it as is without getting Next 
     var sibling = is_hidden ? row: row.getNext();
     if (col_name) {
-        while (sibling && sibling.getAttribute('column') != col_name)
+        while (sibling && sibling.getAttribute('column') != col_name) {
             sibling = sibling.getNext();
+        }
     }
     
     if (sibling && sibling.hasClass("spt_hidden_row")) {
@@ -2788,7 +2789,7 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
             fx.start('margin-top', -size.y-100+"px");
         }
         else {
-            spt.table.remove_hidden_row(sibling, null, true);
+            spt.table.remove_hidden_row(sibling);
             spt.behavior.destroy_element(sibling);
         }
     }
