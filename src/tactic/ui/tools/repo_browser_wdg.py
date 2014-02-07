@@ -452,7 +452,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show totals?
 
         show_empty_folders = True
-        show_no_sobject_folders = False
+        show_no_sobject_folders = True
 
         my.show_files = True
         show_main_only = True
