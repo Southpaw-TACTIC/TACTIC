@@ -3660,7 +3660,7 @@ class SObject(object):
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if search_code and transaction:
+            if not is_insert and search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -3913,6 +3913,9 @@ class SObject(object):
         project_code = Project.get_project_code()
 
         for column in trigger_update_data.keys():
+            # skip timestamp column
+            if column == 'timestamp':
+                continue
             events.append( '%s|%s|%s' % (mode, search_type, column) )
             events.append( 'change|%s|%s' % (search_type, column) )
 

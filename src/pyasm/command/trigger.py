@@ -376,11 +376,10 @@ class Trigger(Command):
         
         #call_event_key = jsondumps(key)
         triggers_sobjs = cls._get_triggers(key, integral_only, project_code=project_code)
-       
         if not triggers_sobjs:
             return
         
-        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode)
+        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
     call_by_key = classmethod(call_by_key)
 
 
@@ -417,12 +416,12 @@ class Trigger(Command):
         if not triggers_sobjs:
             return
 
-        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode)
+        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
 
     call = classmethod(call)
 
 
-    def _handle_trigger_sobjs(cls, triggers_sobjs, caller, event, output, forced_mode=''):
+    def _handle_trigger_sobjs(cls, triggers_sobjs, caller, event, output, forced_mode='', project_code=None):
 
         triggers = []
 
@@ -527,10 +526,11 @@ class Trigger(Command):
                     from subprocess_trigger import SubprocessTrigger
                     trigger = SubprocessTrigger()
                     trigger.set_mode(mode)
-
-                    from pyasm.biz import Project
+                    if not project_code:
+                        from pyasm.biz import Project
+                        project_code = Project.get_project_code()
                     data = {
-                        "project": Project.get_project_code(),
+                        "project": project_code,
                         "ticket": Environment.get_ticket(),
                         "class_name": trigger_class,
                         "kwargs": kwargs
