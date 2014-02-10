@@ -762,6 +762,7 @@ class ThumbWdg(BaseTableElementWdg):
         search_type = sobject.get_base_search_type()
         if search_type != 'sthpw/snapshot' and icon_link.endswith("general_video.png"):
             # generate icon inline
+            """
             search_key = sobject.get_search_key()
             thumb_cmd = ThumbCmd(search_keys=[search_key])
             thumb_cmd.execute()
@@ -770,6 +771,7 @@ class ThumbWdg(BaseTableElementWdg):
             # generate icon dynamically
             div.set_attr("spt_search_key", sobject.get_search_key())
             div.add_class("spt_generate_icon")
+            """
      
 
 
