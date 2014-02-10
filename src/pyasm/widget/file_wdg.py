@@ -231,7 +231,7 @@ class ThumbWdg(BaseTableElementWdg):
  
         #if False:
         #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False \
-        if my.layout_wdg.kwargs.get('temp') != True:
+        if my.layout_wdg and my.layout_wdg.kwargs.get('temp') != True:
             #unique_id = my.layout_wdg.get_unique_id()
             unique_id = my.layout_wdg.get_table_id()
             layout.add_behavior( {
@@ -796,24 +796,26 @@ class ThumbWdg(BaseTableElementWdg):
         icon_missing = icon_info.get('icon_missing')
 
         search_type = sobject.get_base_search_type()
-        if search_type != 'sthpw/snapshot' and icon_link.endswith("indicator_snake.gif"):
-            image_size = os.path.getsize(repo_path)
-            if image_size != 0:
-                # generate icon inline
-                """
-                search_key = sobject.get_search_key()
-                thumb_cmd = ThumbCmd(search_keys=[search_key])
-                thumb_cmd.execute()
-                icon_link = thumb_cmd.get_path()
-                """
+        if icon_link.endswith("indicator_snake.gif"):
+            if search_type != 'sthpw/snapshot':
+                image_size = os.path.getsize(repo_path)
+                if image_size != 0:
+                    # generate icon inline
+                    """
+                    search_key = sobject.get_search_key()
+                    thumb_cmd = ThumbCmd(search_keys=[search_key])
+                    thumb_cmd.execute()
+                    icon_link = thumb_cmd.get_path()
+                    """
 
-                # generate icon dynamically
-                div.set_attr("spt_search_key", sobject.get_search_key())
-                div.add_class("spt_generate_icon")
-                div.set_attr("spt_image_size", image_size)
+                    # generate icon dynamically
+                    div.set_attr("spt_search_key", sobject.get_search_key())
+                    div.add_class("spt_generate_icon")
+                    div.set_attr("spt_image_size", image_size)
+                else:
+                    icon_missing = True
             else:
-                icon_missing = True
-     
+                icon_link = icon_link.replace("indicator_snake.gif", "generic_image.png")
 
 
  

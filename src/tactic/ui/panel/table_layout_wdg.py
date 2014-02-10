@@ -804,7 +804,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
-
+        else:
+            table.add_behavior( {
+            'type': 'load',
+            'unique_id': my.get_table_id(),
+            'cbjs_action': '''
+                var unique_id = "loading|"+bvr.unique_id;
+                spt.named_events.fire_event(unique_id, {});
+            '''
+            } )
+ 
 
 
 

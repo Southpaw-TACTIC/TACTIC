@@ -384,7 +384,7 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         'description': 'Mode by which files are transferred to the server',
         'type': 'SelectWdg',
         'order': 1,
-        'values': 'upload|copy|move'
+        'values': 'upload|copy|move|local'
         },
       'mode': { 'type': 'SelectWdg',
             'category': '2. Display',
