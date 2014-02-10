@@ -22,12 +22,12 @@ from pyasm.biz import ExpressionParser
 class EmailHandler(object):
     '''Base class for email notifications'''
 
-    def __init__(my, notification, sobject, parent, command):
+    def __init__(my, notification, sobject, parent, command, input):
         my.notification = notification
         my.sobject = sobject
         my.command = command
         my.parent = parent
-
+        my.input = input
 
     def check_rule(my):
         '''determine whether an email should be sent'''
@@ -128,8 +128,14 @@ class EmailHandler(object):
             # parse it through the expression
             sudo = Sudo()
             parser = ExpressionParser()
+            snapshot = my.input.get('snapshot')
+            env_sobjects = {}
+            if snapshot:
+                env_sobjects = {
+                'snapshot': snapshot
+            }
 
-            notification_message  = parser.eval(notification_message, my.sobject, mode='string')
+            notification_message  = parser.eval(notification_message, my.sobject, env_sobjects=env_sobjects, mode='string')
             del sudo
             return notification_message
 

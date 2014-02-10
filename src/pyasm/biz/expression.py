@@ -1171,7 +1171,6 @@ class MethodMode(ExpressionParser):
 
             unique = method == 'GET'
             sobjects = my.get_sobjects(search_types, unique=unique)
-
             """
             #TOOO: make this work with @CASE or @IF statements
             sobjects_search = my.get_sobjects(search_types, unique=unique, is_search=True)
@@ -2190,7 +2189,6 @@ class MethodMode(ExpressionParser):
 
 
     def get(my, sobjects, column):
-
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
@@ -2216,7 +2214,16 @@ class MethodMode(ExpressionParser):
             if not sobject:
                 continue
 
-            if column == '__search_key__':
+            if isinstance(sobject, dict):
+                value = sobject.get(column)
+                col_type = SearchType.get_column_type(sobject.get('search_type'), column)
+                if value and col_type in ['timestamp','datetime2']:
+                    if not isinstance(value, datetime.datetime):
+                        value = parser.parse(value)
+                values.append(value)
+                continue
+
+            elif column == '__search_key__':
                 value = sobject.get_search_key()
             elif column == '__search_type__':
                 value = sobject.get_search_type()
@@ -2226,11 +2233,10 @@ class MethodMode(ExpressionParser):
                 value = sobject.get_project_code()
             else:
                 value = sobject.get_value(column)
-
+            
             col_type = SearchType.get_column_type(sobject.get_search_type(), column)
             #col_type = sobject.get_search_type_obj().get_column_type(column)
             if value and col_type in ['timestamp','datetime2']:
-                from dateutil import parser
                 if not isinstance(value, datetime.datetime):
                     value = parser.parse(value)
            
