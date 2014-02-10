@@ -21,6 +21,12 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
+
+    def upgrade_v4_2_0_a01_004(my):
+        my.run_sql('''
+        CREATE INDEX "queue_state_idx" on queue (state);
+        ''')
+
     def upgrade_v4_2_0_a01_003(my):
         my.run_sql('''
         ALTER TABLE "queue" ADD "message_code" varchar(256);

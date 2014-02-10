@@ -761,10 +761,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_behavior( {
             'type': 'load',
             'chunk': chunk_size,
+            'unique_id': my.get_table_id(),
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
+
+            var unique_id = "loading|"+bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -790,6 +793,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
+                    spt.named_events.fire_event(unique_id, {});
                     return;
                 }
 

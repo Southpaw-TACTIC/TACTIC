@@ -229,10 +229,16 @@ class ThumbWdg(BaseTableElementWdg):
             } )
         
  
-        #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False:
-        if False:
+        #if False:
+        #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False \
+        if my.layout_wdg.kwargs.get('temp') != True:
+            #unique_id = my.layout_wdg.get_unique_id()
+            unique_id = my.layout_wdg.get_table_id()
             layout.add_behavior( {
-                'type': 'load',
+                'type': 'listen',
+                'event_name': "loading|%s" % unique_id,
+
+                #'type': 'load',
                 'cbjs_action': '''
                 var elements = bvr.src_el.getElements(".spt_generate_icon");
                 var search_keys = [];
@@ -248,23 +254,54 @@ class ThumbWdg(BaseTableElementWdg):
                 if (search_keys.length == 0) {
                     return;
                 }
-                console.log("running: !!!");
-                console.log(search_keys);
 
-                var on_complete = function(ret_val) {
-                    console.log(ret_val);
-                    spt.table.refresh_rows(rows, null, null, {
-                        icon_generate_refresh:false
+
+                var jobs = [];
+                var count = 0;
+                var chunk = 5;
+                while (true) {
+                    var job_item = rows.slice(count, count+chunk);
+                    if (job_item.length == 0) {
+                        break;
+                    }
+                    jobs.push(job_item);
+                    count += chunk;
+                }
+
+                var count = -1;
+
+
+                var func = function() {
+                    count += 1;
+                    var rows = jobs[count];
+                    if (! rows || rows.length == 0) {
+                        return;
+                    }
+
+                    var on_complete = function(ret_val) {
+                        spt.table.refresh_rows(rows, null, null, {
+                            on_complete: func,
+                            icon_generate_refresh:false
+                        });
+                    }
+                    var cmd = 'pyasm.widget.ThumbCmd';
+
+                    var search_keys = [];
+                    for (var i = 0; i < rows.length; i++) {
+                        var search_key = rows[i].getAttribute("spt_search_key");
+                        search_keys.push(search_key);
+                    }
+
+                    var server = TacticServerStub.get();
+                    var kwargs = {
+                        search_keys: search_keys
+                    };
+                    server.execute_cmd(cmd, kwargs, {}, {
+                                on_complete:on_complete,
                     });
                 }
-                var cmd = 'pyasm.widget.ThumbCmd';
-                var server = TacticServerStub.get();
-                var kwargs = {
-                    search_keys: search_keys
-                };
-                server.execute_cmd(cmd, kwargs, {}, {
-                            on_complete:on_complete,
-                        });
+                func();
+
                 '''
             } )
  
@@ -760,18 +797,18 @@ class ThumbWdg(BaseTableElementWdg):
         icon_missing = icon_info.get('icon_missing')
 
         search_type = sobject.get_base_search_type()
-        if search_type != 'sthpw/snapshot' and icon_link.endswith("general_video.png"):
+        if search_type != 'sthpw/snapshot' and icon_link.endswith("indicator_snake.gif"):
             # generate icon inline
             """
             search_key = sobject.get_search_key()
             thumb_cmd = ThumbCmd(search_keys=[search_key])
             thumb_cmd.execute()
             icon_link = thumb_cmd.get_path()
+            """
 
             # generate icon dynamically
             div.set_attr("spt_search_key", sobject.get_search_key())
             div.add_class("spt_generate_icon")
-            """
      
 
 
@@ -1115,7 +1152,7 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext in File.VIDEO_EXT:
             icon = "general_video.png"
         elif ext not in File.NORMAL_EXT:
-            icon = "general_video.png"
+            icon = "indicator_snake.gif"
         else:
             icon = "default_doc.png"
 
