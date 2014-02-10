@@ -147,7 +147,6 @@ class Trigger(Command):
             #sobject = input.get('sobject')
             #if sobject and sobject.has_key('timestamp'):
             #    del sobject['timestamp']
-            
             input_json = jsondumps(input)
 
             class_name = Common.get_full_class_name(trigger)
@@ -192,7 +191,7 @@ class Trigger(Command):
 
 
 
-    def _get_triggers(cls, call_event, integral_only=False):
+    def _get_triggers(cls, call_event, integral_only=False, project_code=None):
         if integral_only:
             trigger_key = "%s:integral" % cls.TRIGGER_EVENT_KEY
         else:
@@ -202,14 +201,13 @@ class Trigger(Command):
         trigger_dict = Container.get(trigger_key)
 
         notification_dict = Container.get(notification_key)
-
+      
         call_event_key = jsondumps(call_event)
 
         # NOTE: get_db_triggers only get triggers for this project ...
         # need to update so that triggers from other projects
         # are also executed
         if trigger_dict == None:
-
             # assign keys to each trigger
             trigger_dict = {}
             Container.put(trigger_key, trigger_dict)
@@ -298,26 +296,40 @@ class Trigger(Command):
                     notification_dict[listen_key] = notification_list
 
                 notification_list.append(trigger_sobj)
-        
+       
+       
+       
         # we have to call with and without project_code to cover both cases
         key2 = call_event.copy()
-        from pyasm.biz import Project
-        project_code = Project.get_project_code()
-        key2['project_code'] =  project_code
-        
-        call_event_key2 = jsondumps(key2)
+       
+        if not project_code:
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
 
+        key2['project_code'] =  project_code
+      
+        
+        
+
+
+        call_event_key2 = jsondumps(key2)
         matched_notifications = []
         for call_event_key in [call_event_key, call_event_key2]:
             matched = notification_dict.get(call_event_key)
             if matched:
                 matched_notifications.extend(matched)
+
+      
+      
+
+
         combined_triggers = []
         if called_triggers:
             combined_triggers.extend(called_triggers)
         if matched_notifications:
             combined_triggers.extend(matched_notifications)
-
+        
+        
         return combined_triggers
 
     _get_triggers = classmethod(_get_triggers)
@@ -359,25 +371,22 @@ class Trigger(Command):
     get_db_triggers = classmethod(get_db_triggers)
 
 
-    def call_by_key(cls, key, caller, output={}, forced_mode='', integral_only=False ):
+    def call_by_key(cls, key, caller, output={}, forced_mode='', integral_only=False, project_code=None):
         event = key.get("event")
-
         
         #call_event_key = jsondumps(key)
-        triggers_sobjs = cls._get_triggers(key, integral_only)
-
+        triggers_sobjs = cls._get_triggers(key, integral_only, project_code=project_code)
         if not triggers_sobjs:
             return
         
-        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode)
+        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
     call_by_key = classmethod(call_by_key)
 
 
 
-    def call(cls, caller, event, output={}, process=None, search_type=None, forced_mode='' ):
+    def call(cls, caller, event, output={}, process=None, search_type=None, project_code=None, forced_mode=''):
         '''message is part of a function name and so should
         not contain spaces '''
-
         # build the call event key
         call_event = {}
         call_event['event'] = event
@@ -387,7 +396,7 @@ class Trigger(Command):
             call_event['search_type'] = search_type
 
         #call_event_key = jsondumps(call_event)
-        triggers_sobjs = cls._get_triggers(call_event)
+        triggers_sobjs = cls._get_triggers(call_event, project_code=project_code)
 
 
 
@@ -407,12 +416,12 @@ class Trigger(Command):
         if not triggers_sobjs:
             return
 
-        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode)
+        return cls._handle_trigger_sobjs(triggers_sobjs, caller, event, output, forced_mode=forced_mode, project_code=project_code)
 
     call = classmethod(call)
 
 
-    def _handle_trigger_sobjs(cls, triggers_sobjs, caller, event, output, forced_mode=''):
+    def _handle_trigger_sobjs(cls, triggers_sobjs, caller, event, output, forced_mode='', project_code=None):
 
         triggers = []
 
@@ -517,10 +526,11 @@ class Trigger(Command):
                     from subprocess_trigger import SubprocessTrigger
                     trigger = SubprocessTrigger()
                     trigger.set_mode(mode)
-
-                    from pyasm.biz import Project
+                    if not project_code:
+                        from pyasm.biz import Project
+                        project_code = Project.get_project_code()
                     data = {
-                        "project": Project.get_project_code(),
+                        "project": project_code,
                         "ticket": Environment.get_ticket(),
                         "class_name": trigger_class,
                         "kwargs": kwargs
