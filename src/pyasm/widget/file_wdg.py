@@ -797,7 +797,7 @@ class ThumbWdg(BaseTableElementWdg):
 
         search_type = sobject.get_base_search_type()
         if icon_link.endswith("indicator_snake.gif"):
-            if search_type != 'sthpw/snapshot':
+            if search_type != 'sthpw/snapshotXYZ':
                 image_size = os.path.getsize(repo_path)
                 if image_size != 0:
                     # generate icon inline
@@ -1278,29 +1278,55 @@ class ThumbCmd(Command):
         sobject = Search.get_by_search_key(search_key)
         search_code = sobject.get_code()
         search_type = sobject.get_search_type()
-
-        snapshot = Snapshot.get_snapshot(search_type, search_code, process=['publish',''])
-
-        if not snapshot:
-            return
-
-        file_type = "main"
-        path = snapshot.get_lib_path_by_type(file_type)
-
-        # use api
-        from tactic_client_lib import TacticServerStub
-        server = TacticServerStub.get()
-        snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+        base_search_type = sobject.get_base_search_type()
 
 
-        # need the actual sobject
-        snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
+        if base_search_type == 'sthpw/snapshot':
+            snapshot_code = sobject.get_code()
+
+            file_type = "main"
+            path = sobject.get_lib_path_by_type(file_type)
+
+            icon_creator = IconCreator(path)
+            icon_creator.execute()
+
+            web_path = icon_creator.get_web_path()
+            icon_path = icon_creator.get_icon_path()
+            if web_path:
+                sub_file_paths = [web_path, icon_path]
+                sub_file_types = ['web', 'icon']
+
+            from pyasm.checkin import FileAppendCheckin
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
+            checkin.execute()
+            snapshot = checkin.get_snapshot()
+
+
+        else:
+
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=['publish',''])
+
+            if not snapshot:
+                return
+
+            file_type = "main"
+            path = snapshot.get_lib_path_by_type(file_type)
+
+
+            # use api
+            from tactic_client_lib import TacticServerStub
+            server = TacticServerStub.get()
+            snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+
+
+            # need the actual sobject to get the path to replace the icon
+            # in the ui
+            snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
+
+
         my.path = snapshot.get_web_path_by_type("icon")
 
 
-        #from pyasm.checkin import FileCheckin
-        #checkin = FileCheckin(sobject, path, context="icon", mode="free_copy")
-        #checkin.execute()
 
 
 

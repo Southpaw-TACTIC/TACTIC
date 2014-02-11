@@ -804,7 +804,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
-        else:
+        elif not temp:
             table.add_behavior( {
             'type': 'load',
             'unique_id': my.get_table_id(),
