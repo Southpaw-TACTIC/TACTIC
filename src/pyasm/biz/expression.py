@@ -42,6 +42,8 @@ class ExpressionParser(object):
     def init(my):
         my.env_sobjects = {}
         my.expression = None
+        # for building cache key
+        my.related_types = []
         my.index = -1
         my.sobjects = []
         my.result = None
@@ -52,6 +54,7 @@ class ExpressionParser(object):
         my.is_single = False
 
 
+
     def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={} ):
 
         if not expression:
@@ -59,6 +62,7 @@ class ExpressionParser(object):
 
         my.init()
 
+            
 
         if dictionary == True:
             return_mode = 'dict'
@@ -303,7 +307,8 @@ class ExpressionParser(object):
     def get_cache_sobjects(my):
         '''method to store all the sobjects as they being searched through
         the hierarchy'''
-        cache = Container.get_full_dict('Expression:%s' % my.expression)
+        key = "%s|%s|%s" % (my.expression, my.related_types, str(my.sobjects))
+        cache = Container.get_full_dict('Expression:%s' % key)
         return cache
 
 
@@ -313,7 +318,8 @@ class ExpressionParser(object):
         if not related_sobjects:
             related_sobjects = []
 
-        cache = Container.get_full_dict('Expression:%s' % my.expression)
+        key = "%s|%s|%s" % (my.expression, my.related_types, str(my.sobjects))
+        cache = Container.get_full_dict('Expression:%s' % key)
         cache[sobject] = related_sobjects
 
 
@@ -325,15 +331,16 @@ class ExpressionParser(object):
         cache[search_key] = related_sobjects
 
 
+
     def get_flat_cache(my, filter_leaf=False):
         cache_sobjects = my.get_cache_sobjects()
         flat_cache_sobjects = {}
         level = 0
+
         for sobject in my.sobjects:
             leaf_sobjects = []
             search_key = sobject.get_search_key()
             my._flatten_cache(sobject, level, cache_sobjects, leaf_sobjects)
-
             # FIXME
             # _flatten_cache return a bizarre case where the leaf = [sobject]
             # to determine
@@ -350,7 +357,6 @@ class ExpressionParser(object):
 
     def _flatten_cache(my, top_sobject, level, cache_sobjects, leaf_sobjects):
         search_key = top_sobject.get_search_key()
-        #print " "*level*2, "- ", search_key
         # flatten the cache_sobjects
         sobjects = cache_sobjects.get(search_key)
         if not sobjects:
@@ -358,8 +364,8 @@ class ExpressionParser(object):
             # is returned, then this is a leaf
             if sobjects == None:
                 leaf_sobjects.append(top_sobject)
-            return
 
+            return
         # sobjects could be a single value
         if not isinstance(sobjects, list):
             leaf_sobjects.append(top_sobject)
@@ -583,7 +589,6 @@ class StringMode(ExpressionParser):
         if token == '{':
             mode = ExpressionMode()
             result = my.dive(mode)
-
             # FIXME: for now, take the first element
             if type(result) == types.ListType:
                 if not result:
@@ -1845,13 +1850,16 @@ class MethodMode(ExpressionParser):
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
         #key = "%s|%s" % (related_types, id(my.sobjects))
-        key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
+
+        #key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
+        my.related_types = related_types
+        key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
         results = Container.get_dict(my.EXPRESSION_KEY, key)
+     
         if results != None:
             return results
-
 
         related_types_filters = {}
         related_types_paths = {}

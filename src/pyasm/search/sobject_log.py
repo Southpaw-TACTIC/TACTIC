@@ -27,7 +27,7 @@ class SObjectLog(SObject):
         log.set_sobject_value(sobject)
         log.set_user()
         log.set_value("transaction_log_id", transaction.get_id() )
-        log.commit(triggers=False)
+        log.commit(triggers="none")
 
     create = staticmethod(create)
 

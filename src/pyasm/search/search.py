@@ -1644,6 +1644,7 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
             #print "statement: ", statement
+            
             results = sql.do_query(statement)
 
             # this gets the actual order of columns in this SQL
@@ -2839,7 +2840,6 @@ class SObject(object):
 
 
     def set_json_value(my, name, value):
-
         if not value:
             my.set_value(name, value)
             return
@@ -3660,7 +3660,7 @@ class SObject(object):
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if search_code and transaction:
+            if not is_insert and search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -3681,7 +3681,6 @@ class SObject(object):
                     changed_by[name] = login
                 log.set_json_value("changed_on", changed_on)
                 log.set_json_value("changed_by", changed_by)
-
 
 
         # store the undo information.  The transaction_log needs to
@@ -3909,7 +3908,14 @@ class SObject(object):
             'change',
             'change|%s' % search_type
         ]
+
+        from pyasm.biz import Project
+        project_code = Project.get_project_code()
+
         for column in trigger_update_data.keys():
+            # skip timestamp column
+            if column == 'timestamp':
+                continue
             events.append( '%s|%s|%s' % (mode, search_type, column) )
             events.append( 'change|%s|%s' % (search_type, column) )
 
@@ -3918,24 +3924,24 @@ class SObject(object):
 
             # first key
             key = {'event': event}
-            Trigger.call_by_key(key, my, output, integral_only=integral_only)
+            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
             key = {'event': event}
             if process:
                 key['process'] = process
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
             key = {'event': event}
             if parent_type:
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
             key = {'event': event}
             if process and parent_type:
                 key['process'] = process
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
 
@@ -4121,10 +4127,12 @@ class SObject(object):
         output["data"] = data
         output["sobject"] = my.get_sobject_dict()
 
-        Trigger.call(my, "retire", output)
-        Trigger.call(my, "retire|%s" % my.get_base_search_type(), output )
-        Trigger.call(my, "change", output)
-        Trigger.call(my, "change|%s" % my.get_base_search_type(), output )
+        from pyasm.biz import Project
+        project_code = Project.get_project_code()
+        Trigger.call(my, "retire", output, project_code=project_code)
+        Trigger.call(my, "retire|%s" % my.get_base_search_type(), output, project_code=project_code)
+        Trigger.call(my, "change", output, project_code=project_code)
+        Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
 
 
     def reactivate(my):
@@ -4191,6 +4199,8 @@ class SObject(object):
         if triggers:
             # call a delete event
             from pyasm.command import Trigger
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
             output = {}
             output["is_delete"] = True
             output["mode"] = "delete"
@@ -4200,9 +4210,9 @@ class SObject(object):
             output["data"] = data
             output["sobject"] = my.get_sobject_dict()
             Trigger.call(my, "delete", output)
-            Trigger.call(my, "delete|%s" % base_search_type, output )
+            Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
             Trigger.call(my, "change", output)
-            Trigger.call(my, "change|%s" % base_search_type, output )
+            Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
 
 
         # delete the sobject_list entry
@@ -4768,6 +4778,7 @@ class SObject(object):
         search = Search( cls.SEARCH_TYPE )
         search.set_show_retired(show_retired)
         search.add_id_filter(id)
+      
         search_type = search.get_search_type()
         key = SearchKey.build_search_key(search_type, id, column='id', project_code=search.project_code)
         if show_retired == False:
