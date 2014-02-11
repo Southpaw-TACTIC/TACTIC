@@ -380,15 +380,21 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
     ARGS_KEYS = {
     'transfer_mode': {
-        'category': '1. Required',
+        'category': '1. Modes',
         'description': 'Mode by which files are transferred to the server',
         'type': 'SelectWdg',
         'order': 1,
         'values': 'upload|copy|move|local'
         },
-      'mode': { 'type': 'SelectWdg',
-            'category': '2. Display',
+     'use_applet': { 'type': 'SelectWdg',
+            'category': '1. Modes',
+            'values': 'true|false',
             'order': 2,
+            'description': 'Determines which sobject to check into'},
+
+      'mode': { 'type': 'SelectWdg',
+            'category': '1. Modes',
+            'order': 3,
             'values': 'sequence|file|dir|multi_file|add',
             'description': 'determines whether this widget can only check-in sequences, file, or directory'},
      #'checkin_panel_script_path': {'type': 'TextWdg',
@@ -498,6 +504,11 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         show_context = my.get_option("show_context")
         show_sub_context = my.get_option("show_sub_context")
 
+        use_applet = my.get_option("use_applet")
+        if use_applet in ['false', False]:
+            use_applet = False
+        else:
+            use_applet = True
         
         kwargs = {}
         kwargs['checkin_script'] = checkin_script
@@ -514,6 +525,7 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         kwargs['checkin_relative_dir'] = checkin_relative_dir
         kwargs['show_context'] = show_context
         kwargs['show_sub_context'] = show_sub_context
+        kwargs['use_applet'] = use_applet
 
         my.behavior['kwargs'] = kwargs
         my.behavior['cbjs_action'] = '''
