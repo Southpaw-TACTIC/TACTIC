@@ -1227,8 +1227,11 @@ class Search(Base):
         if isinstance(keywords, basestring):
             raise SearchException('Expects a list for add_keyword_filter')
 
-        if op == 'or':
-            my.select.add_op('begin')
+        
+        # defaults to and
+        if not op:
+            op = 'and'
+        my.select.add_op('begin')
         for keyword in keywords:
             if not keyword:
                 continue
@@ -1241,10 +1244,10 @@ class Search(Base):
                 # cast integer as string
                 expr = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
             else:
-                expr = '''lower("%s"."%s") like lower('%%%s%%')''' % (table, column, keyword)
+                # don't add lower() here to allow index to function
+                expr = '''"%s"."%s" like '%%%s%%' ''' % (table, column, keyword)
             my.select.add_where(expr)
-        if op == 'or':
-            my.select.add_op(op)
+        my.select.add_op(op)
 
 
     def add_startswith_keyword_filter(my, column, keywords):
@@ -1294,8 +1297,11 @@ class Search(Base):
                 #expr1 = """"%s"."%s" = '%s'""" % (table, column, keyword)
             else:
                 keyword = keyword.lower()
-                expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
-                expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
+                #expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
+                # NOTE: lower() on the column disables the use of index, resulting in much slower performance
+                expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
+                #expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
+                expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
 
             my.select.add_op("begin")
 
