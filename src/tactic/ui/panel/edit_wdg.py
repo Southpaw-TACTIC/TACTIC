@@ -400,12 +400,12 @@ class EditWdg(BaseRefreshWdg):
 
         top_div = my.top
         top_div.add_class("spt_edit_top")
-        top_div.add_class("spt_edit_form_top")
 
         if not my.is_refresh:
             my.set_as_panel(top_div)
         content_div = DivWdg()
         content_div.add_class("spt_edit_top")
+        content_div.add_class("spt_edit_form_top")
         content_div.set_attr("spt_search_key", my.search_key)
 
         if not Container.get_dict("JSLibraries", "spt_edit"):
