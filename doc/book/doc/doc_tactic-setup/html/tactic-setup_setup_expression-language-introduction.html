@@ -29,7 +29,7 @@
                </div>
             </div>
          </div>
-         <h5><a name="d0e6855"></a>Introduction
+         <h5><a name="d0e7258"></a>Introduction
          </h5>
          <p>This document describes the construct of the <span class="bold"><strong>TEL</strong></span> TACTIC
             Expression Language. This language is a shorthand form to quickly retrieve information about
@@ -43,7 +43,7 @@
                     to easily retrieve data in a single command that would otherwise take many lines of
                     code.
          </p>
-         <h5><a name="d0e6864"></a>Simple Example
+         <h5><a name="d0e7267"></a>Simple Example
          </h5>
          <p>The expression often starts with a list of Search Objects and then operates on these
                     Search Objects. 
@@ -88,7 +88,7 @@
                     notification set-up, there is an assumed starting sObject, which is the one you are viewing
                     or the notification event refers to during an update or insert action.
          </p>
-         <h5><a name="d0e6906"></a>Searching
+         <h5><a name="d0e7309"></a>Searching
          </h5>
          <p>The expression language can be used as a shorthand for search for Search Objects. This is
                     often convenient because the expression language is a pure string and can be stored a number
@@ -102,7 +102,7 @@
                     asset_library is chr OR timestamp after 2009-01-01 AND  code containing the word prop1. If
                     there are only 2 filters, there is no need to sandwich it with begin. 
          </p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>To </p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>Note that full filter operations from the Client API are supported. </p>
-         <h5><a name="d0e6938"></a>Navigating Search Types
+         <h5><a name="d0e7341"></a>Navigating Search Types
          </h5>
          <p>One of the true powers of the expression language is the simplicity in which it can
                     navigate between various related Search Types using a navigational syntax. The expression
@@ -119,13 +119,13 @@
          <p>The expression can also navigate multiple levels of search types to dig deeply into the
                     hierarchy. For example, this will get all of the descriptions of all of the episodes that
                     belong to the sequences of the original shots.
-         </p><pre class="screen">@GET(prod/sequence.prod/episode.description)</pre><p> Another useful illustration is to get all of the tasks of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task)</pre><p> Get the last 50 tasks ordered by process of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task['@ORDER_BY','process']['@LIMIT','50'])</pre><h5><a name="d0e6962"></a>Aggregate functions
+         </p><pre class="screen">@GET(prod/sequence.prod/episode.description)</pre><p> Another useful illustration is to get all of the tasks of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task)</pre><p> Get the last 50 tasks ordered by process of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task['@ORDER_BY','process']['@LIMIT','50'])</pre><h5><a name="d0e7365"></a>Aggregate functions
          </h5>
          <p>The expression language defines a number of aggregate functions which will operate on the
                     list. 
          </p>
          <p>This will give the addition of all the duration attributes of the provided shots. </p><pre class="screen">@SUM(prod/shot.duration)</pre><p>This will give the average duration attribute of all of the shots. </p><pre class="screen">@AVG(prod/shot.duration)</pre><p>This will give a count of all of the Search Objects </p><pre class="screen">@COUNT(prod/shot)</pre><p>All of these aggregates return a single value which can be used to operate on other lists. </p>
-         <h5><a name="d0e6980"></a>Operations
+         <h5><a name="d0e7383"></a>Operations
          </h5>
          <p>The expression language operates on lists. The operator will operate on each element of
                     the list independently and return a list For example when doing a subtraction operation on
@@ -157,7 +157,7 @@ True
 
 &gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) != 462")
 False </pre><p>The expression language also supports the regular expression syntax</p>
-         <p>The following tests whether the name_first column starts with "John"</p><pre class="screen">@GET(.name_first) ~ '^John'</pre><h5><a name="d0e7004"></a>More complex operations
+         <p>The following tests whether the name_first column starts with "John"</p><pre class="screen">@GET(.name_first) ~ '^John'</pre><h5><a name="d0e7407"></a>More complex operations
          </h5>
          <p>You can do more complex operations by combining the above. The following will return a
                     cost list of all of the shots (assigned user wage * number of hours worked).
@@ -172,7 +172,7 @@ False </pre><p>The expression language also supports the regular expression synt
  # my.tasks is a list of tasks        
  expression = "@COUNT(@UNIQUE(@SOBJECT(sthpw/login)))"
  result = my.parser.eval(expression, my.tasks)
-    </pre><h5><a name="d0e7018"></a>Manipulating Strings 
+    </pre><h5><a name="d0e7421"></a>Manipulating Strings 
          </h5>
          <p>Most of the operations in the expression language operate on lists and either return lists
                     or return single values. However, it is often required that expressions be used in string
@@ -182,7 +182,7 @@ False </pre><p>The expression language also supports the regular expression synt
          <p>For a file to be named chr001_model.png, we could use: </p><pre class="screen">{@GET(prod/asset.code)}_{@GET(sthpw/snapshot.context)}.png</pre><p>** The file naming conventions do not current use the expression language. The presently
                     use a simplified expression language. The plan is to merge the two at some point. 
          </p>
-         <h5><a name="d0e7028"></a>String Formatting
+         <h5><a name="d0e7431"></a>String Formatting
          </h5>
          <p>For string values, the string operator them can use standard print formatting: </p><pre class="screen">v{@GET(sthpw/snapshot.version),%0.3d}
 </pre><p>will return "v012", for example. </p>
@@ -216,7 +216,7 @@ False </pre><p>The expression language also supports the regular expression synt
          </p><pre class="screen">@FORMAT( @GET(.frame_count), 'HH:MM:SS', '30')
         </pre><p>The following formats a cost column in currency format </p><pre class="screen">@FORMAT(@GET(.cost), '-$1,234.00')
         </pre><p>'31/12/99 13:37' can be used to show both date and time</p>
-         <h5><a name="d0e7091"></a>Shorthand (mostly for backwards compatibility)
+         <h5><a name="d0e7494"></a>Shorthand (mostly for backwards compatibility)
          </h5><pre class="screen">@GET(sobject.end_frame) - @GET(sobject.start_frame)
 
 or

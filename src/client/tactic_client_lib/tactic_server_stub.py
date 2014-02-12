@@ -1328,8 +1328,8 @@ class TacticServerStub(object):
 
 
 
-    def delete_sobject(my, search_key):
-        '''API Function: delete_sobject(search_key)
+    def delete_sobject(my, search_key, include_dependencies=False):
+        '''API Function: delete_sobject(search_key, include_dependencies=False)
         Invoke the delete method.  Note: this function may fail due
         to dependencies.  Tactic will not cascade delete.  This function
         should be used with extreme caution because, if successful, it will
@@ -1339,12 +1339,15 @@ class TacticServerStub(object):
             search_key - a unique identifier key representing an sobject.
             Note: this can also be an array.
 
+        @keyparam:
+            include_dependencies - True/False
+
         @return:
             dictionary - a sobject that represents values of the sobject in the
             form name:value pairs
         '''
 
-        return my.server.delete_sobject(my.ticket, search_key)
+        return my.server.delete_sobject(my.ticket, search_key, include_dependencies)
 
 
 
