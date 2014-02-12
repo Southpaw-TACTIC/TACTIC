@@ -474,7 +474,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         div.add_border()
-        div.set_box_shadow()
+        if my.kwargs.get("show_drop_shadow") not in ['false', False]:
+            div.set_box_shadow()
         div.add_color("background", "background", -3)
         div.add_style("margin: 10px")
         div.add_style("overflow: hidden")

@@ -3121,6 +3121,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
