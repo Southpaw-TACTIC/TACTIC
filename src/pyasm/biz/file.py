@@ -55,16 +55,17 @@ class FileException(TacticException):
 
 class File(SObject):
 
-    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf']
+    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', '']
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax',
-                'wm','wvx','ogg','webm','mkv','m4v','mxf'] 
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 'wm','wvx','ogg','webm','mkv','m4v','mxf']
 
 
     SEARCH_TYPE = "sthpw/file"
     BASE_TYPE_SEQ = "sequence"
     BASE_TYPE_DIR = "directory"
     BASE_TYPE_FILE = "file"
+
+
 
     def get_code(my):
         return my.get_value("code")
@@ -77,6 +78,20 @@ class File(SObject):
 
     def get_type(my):
         return my.get_value("type")
+
+
+    def get_media_type_by_path(cls, path):
+        tmp, ext = os.path.splitext(path)
+        ext = ext.lstrip(".")
+        ext = ext.lower()
+        if ext in File.VIDEO_EXT:
+            return "video"
+        elif ext in File.NORMAL_EXT:
+            return "document"
+        else:
+            return "image"
+    get_media_type_by_path = classmethod(get_media_type_by_path)
+
 
     def get_sobject(my):
         '''get the sobject associated with this file'''

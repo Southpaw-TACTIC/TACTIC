@@ -891,6 +891,24 @@ class Common(Base):
     kill = staticmethod(kill)
 
 
+
+    def restart():
+        '''Restarts the current program.'''
+        import sys
+        python = sys.executable
+        # for windows
+        python = python.replace('\\','/')
+        if os.name =='nt':
+            import subprocess
+            subprocess.Popen([python, sys.argv])
+            pid = os.getpid()
+            kill = KillProcessThread(pid)
+            kill.start()
+        else:
+            os.execl(python, python, * sys.argv)
+    restart = staticmethod(restart)
+
+
 class KillProcessThread(threading.Thread):
     '''Kill a Windows process'''
     def __init__(my, pid):

@@ -39,38 +39,43 @@ if not python:
 STARTUP_EXEC = '%s "%s/src/bin/startup.py"' % (python, tactic_install_dir)
 STARTUP_DEV_EXEC = '%s "%s/src/bin/startup_dev.py"' % (python, tactic_install_dir)
 
-class TacticThread(threading.Thread):
-    def __init__(my, port):
-        my.port = port
-        my.end = False
-        my.dev_mode = False
+
+
+class BaseProcessThread(threading.Thread):
+    '''Each Thread runs a separate TACTIC service'''
+    def __init__(my):
         my.num_checks = 0
         my.kill_interval = 30 + random.randint(0,30)
         my.kill_interval = 1
-        super(TacticThread,my).__init__()
-
-    def set_dev(my, mode):
-        my.dev_mode = mode
+        my.end = False
+        super(BaseProcessThread,my).__init__()
 
     def run(my):
         while 1:
-            if my.dev_mode:
-                exec_file = STARTUP_DEV_EXEC
-            else:
-                exec_file = STARTUP_EXEC
-            os.system('%s %s' % (exec_file, my.port) )
+            my.execute()
 
             # TACTIC has exited
             time.sleep(1)
             
             if my.end:
-                print "Stopping port %s ..." % my.port
+                print "Stopping port %s ..." % my.get_title()
                 break
             else:
-                print "Restarting %s ..." % my.port
-       
+                print "Restarting %s ..." % my.get_title()
+
+    def get_title(my):
+        return "No Title"
+
+
+    def execute(my):
+        raise Exception("Must override execute")
+
 
     def check(my):
+        pass
+
+
+    def _check(my):
 
         # This will kill the TACTIC process 
         # This is very harsh and should be used sparingly if at all
@@ -95,9 +100,7 @@ class TacticThread(threading.Thread):
 
         start = time.clock()
         try:
-            f = urllib.urlopen("http://localhost:%s/test" % my.port )
-            response = f.readlines()
-            f.close()
+            response = my.check()
         except IOError, e:
             print "Tactic IOError: ", str(e)
 
@@ -109,7 +112,7 @@ class TacticThread(threading.Thread):
             print "Killing process: ", pid
             Common.kill(pid) 
         else:
-            if response[0] != "OK":
+            if response and response != "OK":
                 my.end = True
                 return
 
@@ -131,13 +134,56 @@ class TacticThread(threading.Thread):
 
 
 
+
+class TacticThread(BaseProcessThread):
+    def __init__(my, port):
+        super(TacticThread,my).__init__()
+
+        my.dev_mode = False
+        my.port = port
+
+    def set_dev(my, mode):
+        my.dev_mode = mode
+
+    def get_title(my):
+        return my.port
+
+
+    def execute(my):
+        if my.dev_mode:
+            exec_file = STARTUP_DEV_EXEC
+        else:
+            exec_file = STARTUP_EXEC
+        os.system('%s %s' % (exec_file, my.port) )
+
+    def check(my):
+        f = urllib.urlopen("http://localhost:%s/test" % my.port )
+        response = f.readlines()
+        f.close()
+        return response[0]
+
+
+
+class JobQueueThread(BaseProcessThread):
+
+    def get_title(my):
+        return "Job Task Queue"
+
+    def execute(my):
+        # Run the job queue service
+        executable = '%s "%s/src/bin/startup_queue.py"' % (python, tactic_install_dir)
+        os.system('%s' % (executable) )
+
+
+
+# DEPRECATED: use SchedulerThread below
 class TacticTimedThread(threading.Thread):
 
     def __init__(my):
         my.end = False
         super(TacticTimedThread,my).__init__()
 
-    def check(my):
+    def _check(my):
         pass
 
 
@@ -146,7 +192,6 @@ class TacticTimedThread(threading.Thread):
         import time
         time.sleep(6)
 
-        # DEPRECATED: use TacticSchedulerThread
         #print "Starting Timed Trigger"
 
         # checks are done every 60 seconds
@@ -216,7 +261,7 @@ class TacticSchedulerThread(threading.Thread):
     def __init__(my):
         super(TacticSchedulerThread,my).__init__()
 
-    def check(my):
+    def _check(my):
         pass
 
 
@@ -430,24 +475,42 @@ class TacticMonitor(object):
                 ports.append( start_port + i )
                 
 
-        # create a number of processes
         tactic_threads = []
-        #for i in range(0, my.num_processes):
-        for port in ports:
 
-            # start cherrypy
-            tactic_thread = TacticThread(port)
-            tactic_thread.set_dev(my.dev_mode)
+        # create a number of processes
+        use_tactic = Config.get_value("services", "tactic")
+        if use_tactic != 'false':
+            #for i in range(0, my.num_processes):
+            for port in ports:
 
-            tactic_thread.start()
-            tactic_threads.append(tactic_thread)
-            time.sleep(1)
-            #port += 1
+                # start cherrypy
+                tactic_thread = TacticThread(port)
+                tactic_thread.set_dev(my.dev_mode)
 
+                tactic_thread.start()
+                tactic_threads.append(tactic_thread)
+                time.sleep(1)
+                #port += 1
+
+
+        # Job Queue services
+        use_job_queue = Config.get_value("services", "job_queue")
+        if use_job_queue == 'true':
+            num_processes = Config.get_value("services", "queue_process_count")
+            if not num_processes:
+                num_processes = 1
+            else:
+                num_processes = int(num_processes)
+
+            for i in range(0, num_processes):
+                job_thread = JobQueueThread()
+                job_thread.start()
+                tactic_threads.append(job_thread)
 
 
 
         # create a separate thread for timed processes
+        # DEPRECATED
         tactic_timed_thread = TacticTimedThread()
         tactic_timed_thread.start()
         tactic_threads.append(tactic_timed_thread)
@@ -474,7 +537,7 @@ class TacticMonitor(object):
                 if my.check_interval:
                     time.sleep(my.check_interval)
                     for tactic_thread in tactic_threads:
-                        tactic_thread.check()
+                        tactic_thread._check()
 
                 else:
                     # FIXME: break for now (for windows service)

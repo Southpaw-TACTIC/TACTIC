@@ -30,12 +30,17 @@ class UploadServerWdg(Widget):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
+        files = []
+
         # HTML5 upload
         if num_files:
             num_files = int(num_files)
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
+                if not field_storage:
+                    continue
+
                 file_name = web.get_form_value("file_name%s"% i)
                 if not file_name:
                     file_name = my.get_file_name(field_storage)
@@ -45,14 +50,18 @@ class UploadServerWdg(Widget):
 
         else:
             field_storage = web.get_form_value("file")
-            file_name = web.get_form_value("file_name0")
-            if not file_name:
-                file_name = my.get_file_name(field_storage)
+            if field_storage:
+                file_name = web.get_form_value("file_name0")
+                if not file_name:
+                    file_name = my.get_file_name(field_storage)
 
-            files = my.dump(field_storage, file_name)
+                files = my.dump(field_storage, file_name)
 
-        print "files: ", files
-        return "file_name=%s\n" % ','.join(files)
+        if files:
+            print "files: ", files
+            return "file_name=%s\n" % ','.join(files)
+        else:
+            return "NO FILES"
 
 
 

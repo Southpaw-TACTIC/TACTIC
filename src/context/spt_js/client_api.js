@@ -379,8 +379,10 @@ TacticServerStub = function() {
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var rel_path = file.relative_dir + "/" + file.file_name;
-                var repo_path = client_repo_dir + "/" + rel_path
-                applet.copy_file(file_path, repo_path);
+                var repo_path = client_repo_dir + "/" + rel_path;
+                var tmp_path = repo_path + ".temp";
+                applet.copy_file(file_path, tmp_path);
+                applet.move_file(tmp_path, repo_path);
                 var md5 = applet.get_md5(repo_path);
                 this.update(file, {md5: md5});
 

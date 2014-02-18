@@ -33,11 +33,6 @@ class ShareWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
-        return {
-        }
-
-
 
     def get_display(my):
 

@@ -182,8 +182,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif display_handler == "pyasm.widget.HiddenRowToggleWdg":
             return "tactic.ui.table.HiddenRowElementWdg"
 
-    
-
     def remap_sobjects(my):
         # find all the distinct search types in the sobjects
         if not my.search_type.startswith("sthpw/sobject_list"):
@@ -763,10 +761,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_behavior( {
             'type': 'load',
             'chunk': chunk_size,
+            'unique_id': my.get_table_id(),
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
+
+            var unique_id = "loading|"+bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -792,6 +793,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
+                    spt.named_events.fire_event(unique_id, {});
                     return;
                 }
 
@@ -802,7 +804,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
-
+        elif not temp:
+            table.add_behavior( {
+            'type': 'load',
+            'unique_id': my.get_table_id(),
+            'cbjs_action': '''
+                var unique_id = "loading|"+bvr.unique_id;
+                spt.named_events.fire_event(unique_id, {});
+            '''
+            } )
+ 
 
 
 
@@ -2681,7 +2692,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
 
-
     // position the arrow
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
@@ -2726,10 +2736,13 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px;'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
+        var cell = src_el.getParent('.spt_cell_no_edit');
+        var elem_name = spt.table.get_element_name_by_cell(cell)
+        clone.setAttribute('column', elem_name);
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
@@ -2763,12 +2776,19 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 }
 
 
-spt.table.remove_hidden_row = function(row) {
-    var sibling = row.getNext();
+spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
+    // if it is hidden_row, just use it as is without getting Next 
+    var sibling = is_hidden ? row: row.getNext();
+    if (col_name) {
+        while (sibling && sibling.getAttribute('column') != col_name) {
+            sibling = sibling.getNext();
+        }
+    }
+    
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
-        //var child = sibling.firstChild.firstChild.firstChild;
         var child = sibling.getElement(".spt_hidden_content");
+
         if (child) {
             sibling.firstChild.firstChild.setStyle("overflow", "hidden");
             var size = child.getSize();
@@ -2776,7 +2796,7 @@ spt.table.remove_hidden_row = function(row) {
                 duration: "short",
             } )
             fx.addEvent("complete", function() {
-                spt.table.remove_hidden_row(sibling);
+                spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
             fx.start('margin-top', -size.y-100+"px");
@@ -2791,8 +2811,9 @@ spt.table.remove_hidden_row = function(row) {
 
 spt.table.remove_hidden_row_from_inside = function(el) {
     var hidden_row = el.getParent(".spt_hidden_row"); 
-    var row = hidden_row.getPrevious();
-    spt.table.remove_hidden_row(row);
+    var col_name = hidden_row.getAttribute('column');
+    
+    spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
 
@@ -4086,6 +4107,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
+        icon_generate_refresh: kw.icon_generate_refresh,
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
@@ -4102,7 +4124,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
     // update all of the changed rows
-    var kwargs;
     if (kw['cbjs_action']) {
         kwargs = {
           'args': kwargs,

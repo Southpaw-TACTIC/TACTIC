@@ -893,7 +893,10 @@ class SearchTest(unittest.TestCase):
             update.impl = sql_impl
             update.set_value('timestamp','2012-12-25')
             update.set_value('description','')
-            my.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (my.sthpw_prefix, time_dict.get(db_type)))
+            if db_type == 'SQLServer':
+                my.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (my.sthpw_prefix, time_dict.get(db_type)))
+            else:
+                my.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (my.sthpw_prefix, time_dict.get(db_type)))
 
             update.set_value('description',None)
             my.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (my.sthpw_prefix, time_dict.get(db_type)))

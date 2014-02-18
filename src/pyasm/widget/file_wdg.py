@@ -11,13 +11,14 @@
 #
 
 
-__all__ = ["ThumbWdg", "FileInfoWdg"]
+__all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 
 import re, time, types, string, os
 
 from pyasm.common import Xml, Container, Environment, Config
 from pyasm.search import Search, SearchException, SearchKey, SqlException, DbContainer
 from pyasm.biz import *
+from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement, Table, Html, SpanWdg, AjaxWdg, WebContainer, AjaxLoader, FloatDivWdg, Widget
 
 from table_element_wdg import BaseTableElementWdg
@@ -228,7 +229,83 @@ class ThumbWdg(BaseTableElementWdg):
             } )
         
  
-  
+        #if False:
+        #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False \
+        if my.layout_wdg and my.layout_wdg.kwargs.get('temp') != True:
+            #unique_id = my.layout_wdg.get_unique_id()
+            unique_id = my.layout_wdg.get_table_id()
+            layout.add_behavior( {
+                'type': 'listen',
+                'event_name': "loading|%s" % unique_id,
+                #'type': 'load',
+                'cbjs_action': '''
+                var elements = bvr.src_el.getElements(".spt_generate_icon");
+                var search_keys = [];
+                var rows = [];
+                for (var i = 0; i < elements.length; i++) {
+                    var search_key = elements[i].getAttribute("spt_search_key");
+                    elements[i].removeClass("spt_generate_icon");
+                    search_keys.push(search_key);
+                    var row = elements[i].getParent(".spt_table_row")
+                    rows.push(row);
+                }
+
+                if (search_keys.length == 0) {
+                    return;
+                }
+
+
+                var jobs = [];
+                var count = 0;
+                var chunk = 5;
+                while (true) {
+                    var job_item = rows.slice(count, count+chunk);
+                    if (job_item.length == 0) {
+                        break;
+                    }
+                    jobs.push(job_item);
+                    count += chunk;
+                }
+
+                var count = -1;
+
+
+                var func = function() {
+                    count += 1;
+                    var rows = jobs[count];
+                    if (! rows || rows.length == 0) {
+                        return;
+                    }
+
+                    var on_complete = function(ret_val) {
+                        spt.table.refresh_rows(rows, null, null, {
+                            on_complete: func,
+                            icon_generate_refresh:false
+                        });
+                    }
+                    var cmd = 'pyasm.widget.ThumbCmd';
+
+                    var search_keys = [];
+                    for (var i = 0; i < rows.length; i++) {
+                        var search_key = rows[i].getAttribute("spt_search_key");
+                        search_keys.push(search_key);
+                    }
+
+                    var server = TacticServerStub.get();
+                    var kwargs = {
+                        search_keys: search_keys
+                    };
+                    server.execute_cmd(cmd, kwargs, {}, {
+                                on_complete:on_complete,
+                    });
+                }
+                func();
+
+                '''
+            } )
+ 
+
+
     def preprocess(my):
         my.is_preprocess_run = True
 
@@ -644,7 +721,8 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         if not snapshot:
-            return my.get_no_icon_wdg()
+            icon = my.get_no_icon_wdg()
+            return icon
 
 
         xml = snapshot.get_xml_value("snapshot")
@@ -686,10 +764,8 @@ class ThumbWdg(BaseTableElementWdg):
         # define a div
         div = my.top
 
-
         div.force_default_context_menu()
-        
-       
+ 
       
         # if no link path is found, display the no icon image
         if link_path == None:
@@ -704,7 +780,6 @@ class ThumbWdg(BaseTableElementWdg):
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 
         elif not repo_path or not os.path.exists(repo_path):
-            print "repo_path: ", repo_path
             return my.get_no_icon_wdg(missing=True)
 
         if my.icon_type == 'default':
@@ -719,6 +794,29 @@ class ThumbWdg(BaseTableElementWdg):
         icon_link = icon_info.get('icon_link')
         icon_size = icon_info.get('icon_size')
         icon_missing = icon_info.get('icon_missing')
+
+        search_type = sobject.get_base_search_type()
+        if icon_link.endswith("indicator_snake.gif"):
+            if search_type != 'sthpw/snapshotXYZ':
+                image_size = os.path.getsize(repo_path)
+                if image_size != 0:
+                    # generate icon inline
+                    """
+                    search_key = sobject.get_search_key()
+                    thumb_cmd = ThumbCmd(search_keys=[search_key])
+                    thumb_cmd.execute()
+                    icon_link = thumb_cmd.get_path()
+                    """
+
+                    # generate icon dynamically
+                    div.set_attr("spt_search_key", sobject.get_search_key())
+                    div.add_class("spt_generate_icon")
+                    div.set_attr("spt_image_size", image_size)
+                else:
+                    icon_missing = True
+            else:
+                icon_link = icon_link.replace("indicator_snake.gif", "generic_image.png")
+
 
  
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
@@ -1059,9 +1157,16 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "folder.png"
         elif ext in File.VIDEO_EXT:
             icon = "general_video.png"
+        elif ext not in File.NORMAL_EXT:
+            icon = "indicator_snake.gif"
         else:
             icon = "default_doc.png"
-        return "%s/%s" % ( base,icon)
+
+        if base:
+            path = "%s/%s" % ( base,icon)
+        else:
+            path = icon
+        return path
 
     find_icon_link = staticmethod(find_icon_link)
     
@@ -1148,6 +1253,85 @@ class ThumbWdg(BaseTableElementWdg):
         return info
 
     get_file_info_list = staticmethod(get_file_info_list)
+
+
+
+class ThumbCmd(Command):
+
+    def get_path(my):
+        return my.path
+
+    def execute(my):
+
+        search_keys  = my.kwargs.get("search_keys")
+
+        for search_key in search_keys:
+            my.generate_icon(search_key)
+
+
+        my.info = {
+            'search_keys': search_keys
+        }
+
+    def generate_icon(my, search_key):
+
+        sobject = Search.get_by_search_key(search_key)
+        search_code = sobject.get_code()
+        search_type = sobject.get_search_type()
+        base_search_type = sobject.get_base_search_type()
+
+
+        if base_search_type == 'sthpw/snapshot':
+            snapshot_code = sobject.get_code()
+
+            file_type = "main"
+            path = sobject.get_lib_path_by_type(file_type)
+
+            icon_creator = IconCreator(path)
+            icon_creator.execute()
+
+            web_path = icon_creator.get_web_path()
+            icon_path = icon_creator.get_icon_path()
+            if web_path:
+                sub_file_paths = [web_path, icon_path]
+                sub_file_types = ['web', 'icon']
+
+            from pyasm.checkin import FileAppendCheckin
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
+            checkin.execute()
+            snapshot = checkin.get_snapshot()
+
+
+        else:
+
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=['publish',''])
+
+            if not snapshot:
+                return
+
+            file_type = "main"
+            path = snapshot.get_lib_path_by_type(file_type)
+
+
+            # use api
+            from tactic_client_lib import TacticServerStub
+            server = TacticServerStub.get()
+            snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+
+
+            # need the actual sobject to get the path to replace the icon
+            # in the ui
+            snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
+
+
+        my.path = snapshot.get_web_path_by_type("icon")
+
+
+
+
+
+
+
 
 class FileInfoWdg(BaseTableElementWdg):
 

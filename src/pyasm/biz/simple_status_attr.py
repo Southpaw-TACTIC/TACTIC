@@ -90,7 +90,10 @@ class SimpleStatusAttr(SObjectAttr):
                 break
             percent += 1.0
         '''
-        percent = percent/(len(processes)-1)
+        if processes:
+            percent = (percent + 1)/(len(processes))
+        else:
+            percent = 0
         return percent
 
 

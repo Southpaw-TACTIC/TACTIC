@@ -1,0 +1,249 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Gantt</title>
+      <meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2">
+      <link rel="home" href="doc_tactic-setup.html" title="TACTIC Setup">
+      <link rel="up" href="tactic-setup_tactic-widgets-view.html" title="View Widgets">
+      <link rel="prev" href="tactic-setup_setup_link-element-wdg.html" title="Link Element">
+      <link rel="next" href="tactic-setup_setup_hidden-row-toggle-wdg.html" title="Hidden Row">
+   </head>
+   <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+      <div class="navheader">
+         <table width="100%" summary="Navigation header">
+            <tr>
+               <td width="20%" align="left"><a accesskey="p" href="tactic-setup_setup_link-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <th width="60%" align="center">&nbsp;</th>
+               <td width="20%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_hidden-row-toggle-wdg.html">Next</a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="section" title="Gantt">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h4 class="title"><a name="tactic-setup_setup_gantt-wdg"></a>Gantt
+                  </h4>
+               </div>
+            </div>
+         </div>
+         <div class="simplesect" title="Description">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8930"></a>Description
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The Gantt widget has the capability of displaying all projects schedules along with
+               sequences and tasks schedules. With the widget you can switch between weeks to months
+               view. This widget can be utilized and edited in multiple different ways. It also
+               displays the start and end date along with the amount of days.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/schedule.png"></span></p>
+         </div>
+         <div class="simplesect" title="Info">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8939"></a>Info
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <div class="informaltable">
+               <table border="1">
+                  <colgroup>
+                     <col>
+                     <col>
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Name</strong></span></p>
+                                                   
+                        </td>
+                        <td>Calendar Gantt Widget</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Class</strong></span></p>
+                                                   
+                        </td>
+                        <td>GanttWdg</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Category</strong></span></p>
+                                                   
+                        </td>
+                        <td>Common Columns</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Supported Interfaces</strong></span></p>
+                                                   
+                        </td>
+                        <td class="auto-generated">&nbsp;</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>TACTIC Version Support</strong></span></p>
+                                                   
+                        </td>
+                        <td>2.6.0+</td>
+                     </tr>
+                     <tr>
+                        <td>
+                                                       
+                           <p><span class="bold"><strong>Required database columns</strong></span></p>
+                                                   
+                        </td>
+                        <td>configurable.</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="simplesect" title="Usage">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e8999"></a>Usage
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>There are many ways to edit the Gantt Widget. You can also edit what part of the
+                           month, week or year of the schedule to view. Clicking on the header date of the Gantt
+                           Widget will toggle the different viewing options.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/date_Y_M_W.png"></span><span class="inlinemediaobject"><img src="media/date_M_W.png"></span></p>
+            <p>Above shows two different displays of viewing the range of the date. Clicking on the
+                           weeks will toggle to another viewing range.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/date_M_W_D.png"></span></p>
+            <p>The bars that show the schedule can also be edited using the UI. Hovering the mouse
+                           over the bars will popup a a window that will display the dates of the schedule.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/schedule_hovered.png"></span></p>
+            <p>The bars can also be editied by selecting the start and end dates and sliding the
+                           either end from the right to left. The first image below shows the end of the date
+                           stretched to May 14 and the second image shows the start date streched back to March
+                           13.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/schedule_shift_end.png"></span><span class="inlinemediaobject"><img src="media/schedule_shift_start.png"></span></p>
+            <p>The schedule bar can also move sideways while keeping the number of days constant by
+                           selecting the bar and shifting it from left to right.
+            </p>
+            <p></p>
+            <p><span class="inlinemediaobject"><img src="media/schedule_shift_move.png"></span></p>
+            <p>The Gantt Widget can also be edited using multi selection. Whether it is changing the
+                           end date, start date or sliding the bars forward and backward, the Gantt Widget can
+                           hande it. Below are images of a few examples of having the sequences muli-selected and
+                           edited.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/selected_start_move.png"></span><span class="inlinemediaobject"><img src="media/selected_move.png"></span></p>
+            <p>The Gantt Widget also has the capability of sliding the full time line by selecting
+                           the empty area of the widget and dragging the mouse left or right.
+            </p>
+            <p><span class="inlinemediaobject"><img src="media/schedule_slide.png"></span></p>
+            <p></p>
+            <p>The Gantt Widget can be found under the column manager as task schedule.</p>
+            <p><span class="inlinemediaobject"><img src="media/column_manager.png"></span></p>
+         </div>
+         <div class="simplesect" title="Advanced">
+            <div class="titlepage">
+               <div>
+                  <div>
+                     <h5 class="title"><a name="d0e9061"></a>Advanced
+                     </h5>
+                  </div>
+               </div>
+            </div>
+            <p>The following example illustrates a Gantt Widget that shows all tasks for a project,
+                           the schedule for all asset tasks, and the schedule for all shot tasks.
+            </p><pre class="screen">
+&lt;element name='task_schedule'&gt;
+  &lt;display class='tactic.ui.table.GanttElementWdg'&gt;
+    &lt;options&gt;[
+      {
+        "start_date_expr":  "@MIN(sthpw/task.bid_start_date)",
+        "end_date_expr":    "@MAX(sthpw/task.bid_end_date)",
+        "color":            "white",
+        "edit":               "true",
+        "default":          "true"
+      },
+      {
+        "start_date_expr":  "@MIN(sthpw/task['search_type', '~', 'asset'].bid_start_date)",
+        "end_date_expr":    "@MAX(sthpw/task['search_type', '~', 'asset'].bid_end_date)",
+        "color":            "red",
+        "edit":               "true",
+        "default":          "false"
+      },
+      {
+        "start_date_expr":  "@MIN(sthpw/task['search_type', '~', 'shot'].bid_start_date)",
+        "end_date_expr":    "@MAX(sthpw/task['search_type', '~', 'shot'].bid_end_date)",
+        "color":            "blue",
+        "edit":               "true",
+        "default":          "false"
+      }
+    ]&lt;/options&gt;
+  &lt;/display&gt;
+  &lt;action class='tactic.ui.table.GanttCbk'&gt;
+    &lt;sobjects&gt;@SOBJECT(prod/shot.sthpw/task)&lt;/sobjects&gt;
+    &lt;options&gt;[
+      {
+        "prefix":           "bid",
+        "sobjects":         "@SOBJECT(sthpw/task)",
+        "mode":             "cascade"
+      },
+      {
+        "prefix":           "bid",
+        "sobjects":         "@SOBJECT(sthpw/task['search_type', '~', 'asset'])",
+        "mode":             "cascade"
+      },
+      {
+        "prefix":           "bid",
+        "sobjects":         "@SOBJECT(sthpw/task['search_type', '~', 'shot'])",
+        "mode":             "cascade"
+      }
+    ]&lt;/options&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre><p><span class="inlinemediaobject"><img src="media/schedule_full.png"></span></p>
+            <p></p>
+            <p>Note: There are 3 editable bars in the display options in the above example and
+                           therefore, there are 3 corresponding action options. The 'prefix' action option assumes
+                           that the column in the table is named like &lt;prefix&gt;_start_date and
+                           &lt;prefix&gt;_end_date. If your column names are different, you would want to use the
+                           action_option "start_date_col" and "end_date_col" with the full column name as the
+                           value.  
+            </p>
+         </div>
+      </div>
+      <div class="navfooter">
+         <hr>
+         <table width="100%" summary="Navigation footer">
+            <tr>
+               <td width="40%" align="left"><a accesskey="p" href="tactic-setup_setup_link-element-wdg.html">Prev</a>&nbsp;
+               </td>
+               <td width="20%" align="center"><a accesskey="u" href="tactic-setup_tactic-widgets-view.html">Up</a></td>
+               <td width="40%" align="right">&nbsp;<a accesskey="n" href="tactic-setup_setup_hidden-row-toggle-wdg.html">Next</a></td>
+            </tr>
+            <tr>
+               <td width="40%" align="left" valign="top">&nbsp;</td>
+               <td width="20%" align="center"><a accesskey="h" href="doc_tactic-setup.html">Home</a></td>
+               <td width="40%" align="right" valign="top">&nbsp;</td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

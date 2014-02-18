@@ -28,7 +28,7 @@ __all__ = [
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from pyasm.common import Common, TacticException, Date
+from pyasm.common import Common, TacticException, SetupException, Date
 from pyasm.biz import Project
 from pyasm.web import DivWdg, SpanWdg, Table, WebContainer
 from pyasm.widget import CheckboxWdg, SelectWdg, TextWdg, HiddenWdg
@@ -539,7 +539,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
     def init(my):
 
-        my.search_type = ''
+        my.overall_search_type = ''
+
         my.columns = []
         
         my.relevant = my.get_option("relevant")
@@ -552,7 +553,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.do_search = my.kwargs.get("do_search")
         my.script_path = my.kwargs.get("script_path")
         if not my.mode:
-            my.mode = "global"
+            my.mode = "keyword"
 
         # TODO: this is dependent on the default database and not
         # on the database that may actually be searched on
@@ -583,8 +584,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
     def alter_search(my, search):
 
         overall_search = search
-        search = Search(overall_search.get_search_type())
-
+        my.overall_search_type = overall_search.get_search_type()
+        search_type = my.overall_search_type
+        search = Search(my.overall_search_type)
+        
         value = my.values.get("value")
         if not value:
             return
@@ -592,7 +595,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         name = my.get_name()
         if not my.columns:
             my.columns = [name]
-        search_type = search.get_search_type()
 
         partial = my.values.get("partial") == 'on'
 
@@ -658,7 +660,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 overall_search.add_op('begin')
                 #search.add_op('begin')
 
-
+            single_col = len(my.columns) == 1
+            partial_op = 'or'
             for column in my.columns:
                 if my.cross_db:
                     search2 = None
@@ -670,6 +673,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 keywords = value
                 # keywords_list is used for add_keyword_filter()
                 keywords_list = keywords.split(" ")
+                if single_col:
+                    keywords = keywords_list
+                    partial_op = 'and'
                 if my.has_index and is_ascii:
                     
                     search_type_obj = SearchType.get(search_type)
@@ -707,7 +713,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         if my.cross_db:
                             search2.add_op("begin")
                             search2.add_text_search_filter(column, keywords, table=table)
-                            search2.add_keyword_filter(column, keywords_list, table=table, op='or')
+                            search2.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search2.add_op("or")
 
                             if sub_search:
@@ -718,13 +724,14 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         else:
                             search.add_op("begin")
                             search.add_text_search_filter(column, keywords, table=table)
-                            search.add_keyword_filter(column, keywords_list, table=table, op='or')
+                            search.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search.add_op("or")
                             overall_search.add_relationship_search_filter(search, op="in")
                     else:
                         if my.cross_db:
                             if not search2:
                                 raise TacticException('If cross_db is set to true, all the columns should be formatted in expression-like format with one or more sTypes: sthpw/task.description')
+                            
                             search2.add_text_search_filter(column, keywords, table=table)
                             if sub_search:
                                 sub_search.add_relationship_search_filter(search2, op="in")
@@ -769,21 +776,21 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             column_types = SearchType.get_column_types(next_stype)
                             column_type = column_types.get(column)
                     if my.cross_db:
-                        search2.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op='or')
+                        search2.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                         # sub_search is not present if it only traverses thru 1 sType
                         if sub_search:
                             sub_search.add_relationship_search_filter(search2, op="in")
                         else:
                             sub_search = search2
                     else:
-                        search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op='or')
+                        search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                         overall_search.add_relationship_search_filter(search, op="in")
                 if my.cross_db:
                     sub_search_list.append(sub_search)
 
             #if not my.cross_db:
             #    search.add_op('or')
-            my.search_type = search.get_search_type()
+            #my.search_type = search.get_search_type()
 
 
             if my.cross_db:
@@ -808,8 +815,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
     def get_display(my):
         # can predefine a filter_search_type for the look ahead search
         my.filter_search_type = my.get_option("filter_search_type")
-       
-
+        if not my.filter_search_type:
+            my.filter_search_type = my.overall_search_type
         div = DivWdg()
         div.add_style("position: relative")
         #div.add_style("width: 360px")
@@ -872,12 +879,25 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
        
 
         if not my.columns:
-            my.columns = [my.get_name()]
+            name = my.get_name()
+            # check if column exists
+            if my.filter_search_type:
+                exists = SearchType.column_exists(my.filter_search_type, name)
+                if not exists:
+                    name = "name"
+                    exists = SearchType.column_exists(my.filter_search_type, name)
+                    if not exists:
+                        name = "description"
+                        exists = SearchType.column_exists(my.filter_search_type, name)
+                        if not exists:
+                            raise SetupException("Keyword Filter column [%s] does not exist"%name)
+            my.columns = [name]
+        
 
-     
 
 
-        elif my.mode == 'keyword':
+
+        if my.mode == 'keyword':
             search_type = my.filter_search_type
 
             # clean up the hint text and find the last search_type
@@ -965,16 +985,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         if my.mode == 'keyword' and my.has_index:
             div.add(icon_div)
-            #checkbox = CheckboxWdg("partial")
-            #checkbox.add_attr("title", "Use partial word match (slower)")
-            #div.add(checkbox)
         elif my.mode =='global' and my.has_index:
             div.add(icon_div)
-            #checkbox = CheckboxWdg("partial")
-            #checkbox.add_attr("title", "Use partial word match (slower)")
-            checkbox.set_default_checked()
-            #div.add(checkbox)
-            
         else:
             # partial is implied otherwise
             hidden = HiddenWdg("partial")
