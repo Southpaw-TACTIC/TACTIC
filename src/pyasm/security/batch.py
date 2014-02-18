@@ -56,6 +56,8 @@ class Batch(Environment):
         else:
             Project.set_project(my.context)
 
+        my.initialize_python_path()
+
         DbContainer.commit_thread_sql()
 
 

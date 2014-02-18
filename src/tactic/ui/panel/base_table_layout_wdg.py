@@ -311,6 +311,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # a dictionary of widget class name and boolean True as they are drawn
         my.drawn_widgets = {}
 
+    def get_aux_info(my):
+        return my.aux_info
 
     def get_kwargs(my):
         return my.kwargs
@@ -386,7 +388,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_value = keyword_values[0].get('value')
             if keyword_value and search.column_exists(column):
                     from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=column)
+                    keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
@@ -824,7 +826,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column)
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
         else:
@@ -833,7 +835,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         spacing_divs = []
-        for i in range(0, 5):
+        for i in range(0, 6):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
             spacing_div.add_style("height: 32px")
@@ -988,6 +990,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[4] } )
             wdg_list.append( { 'wdg': help_wdg } )
 
+
+        shelf_wdg = my.get_shelf_wdg()
+        if shelf_wdg:
+            wdg_list.append( { 'wdg': spacing_divs[5] } )
+            wdg_list.append( { 'wdg': shelf_wdg } )
+
+
         horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
         xx = DivWdg()
         xx.add(horiz_wdg)
@@ -1055,6 +1064,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         return outer
+
+
+
+    def get_shelf_wdg(my):
+        return None
 
 
 

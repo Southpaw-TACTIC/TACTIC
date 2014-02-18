@@ -27,6 +27,7 @@ from preference import PrefSetting
 class DirNaming(object):
 
     def __init__(my, sobject=None, snapshot=None, file_type=None, file_object=None):
+
         my.sobject = sobject
         my.snapshot = snapshot
         my._file_object = file_object

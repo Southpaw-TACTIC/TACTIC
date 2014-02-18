@@ -976,13 +976,22 @@ spt.dg_table.add_task_selected = function(bvr)
         
         spt.app_busy.show( title, msg );
         server.start({title: "Adding task to ["+num+"] items"});
+
+        on_complete = function() {
+            server.finish(); 
+            if (!aborted) {
+                spt.notify.show_message("Task creation completed.");
+                spt.named_events.fire_event(refresh_event, {});
+            }
+        };
+
         try {
             var cmd = 'tactic.ui.app.AddTaskCbk';
             var options = {
                     'search_key_list': bvr.search_key_list};
             var values = spt.api.Utility.get_input_values(bvr.src_el.getParent('.spt_add_task_panel'))
-            rtn = server.execute_cmd(cmd, options, values);
-            spt.named_events.fire_event(refresh_event, {});
+            rtn = server.execute_cmd(cmd, options, values,{on_complete:on_complete});
+            
             //spt.alert(rtn.description);
         }
         catch(e) {
@@ -996,15 +1005,9 @@ spt.dg_table.add_task_selected = function(bvr)
         }
 
         spt.app_busy.hide()
-        server.finish();
+        //server.finish();
         spt.popup.close(bvr.src_el.getParent('.spt_popup'));
 
-        if (!aborted) {
-            spt.notify.show_message("Task creation succeeded");
-        }
-        
-        
-        //spt.app_busy.hide();
 
 
 

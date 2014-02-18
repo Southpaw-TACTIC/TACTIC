@@ -1003,16 +1003,12 @@ class PathMetadataWdg(BaseRefreshWdg):
         path = my.kwargs.get("path")
         parser_str = my.kwargs.get("parser")
 
-        from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser
 
-        if parser_str == "EXIF":
-            parser = ExifMetadataParser(path=path)
-        elif parser_str == "ImageMagick":
-            parser = ImageMagickMetadataParser(path=path)
-        elif parser_str == "PIL":
-            parser = PILMetadataParser(path=path)
+        from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser, BaseMetadataParser
+        if parser_str:
+            parser = BaseMetadataParser.get_parser(parser_str, path)
         else:
-            parser = None
+            parser = BaseMetadataParser.get_parser_by_path(path)
 
         if parser:
             metadata = parser.get_metadata()

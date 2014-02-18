@@ -26,6 +26,7 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 from tool_layout_wdg import ToolLayoutWdg
 class TileLayoutWdg(ToolLayoutWdg):
 
+
     def can_select(my):
         return True
 
@@ -81,26 +82,18 @@ class TileLayoutWdg(ToolLayoutWdg):
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
-
-
-
-        from tactic.ui.filter import FilterData
-        filter_data = FilterData.get()
-        data_list = filter_data.get_values_by_prefix("tile_layout")
-        if data_list:
-            data = data_list[0]
-        else:
-            data = {}
-        my.scale = data.get("scale")
-        if my.scale == None:
-            my.scale = my.kwargs.get("scale")
-
-
         temp = my.kwargs.get("temp")
         has_loading = False
 
         
         inner.add_style("margin-left: 20px")
+
+
+        inner.add_attr("ondragenter", "return false")
+        inner.add_attr("ondragover", "return false")
+        inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+
+
 
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
@@ -181,6 +174,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def init(my):
+
+        my.scale_called = False
 
         top_view = my.kwargs.get("top_view")
         if top_view:
@@ -284,6 +279,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
 
             spt.thumb = {};
+
+            spt.thumb.background_drop = function(evt, el) {
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                var top = $(el);
+                top.setStyle("background", "#0F0");
+            }
+ 
 
             spt.thumb.noop = function(evt, el) {
                 evt.stopPropagation();
@@ -470,7 +474,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         div.add_border()
-        div.set_box_shadow()
+        if my.kwargs.get("show_drop_shadow") not in ['false', False]:
+            div.set_box_shadow()
         div.add_color("background", "background", -3)
         div.add_style("margin: 10px")
         div.add_style("overflow: hidden")
@@ -525,8 +530,16 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+    def get_shelf_wdg(my):
+        return my.get_scale_wdg()
+
 
     def get_scale_wdg(my):
+
+        if my.scale_called == True:
+            return None
+        my.scale_called = True
+
 
         show_scale = my.kwargs.get("show_scale")
 
@@ -661,6 +674,21 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         td = table.add_cell(value_wdg)
         td.add("&nbsp;%")
         td.add_style("padding: 3px 8px")
+
+
+
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get()
+        data_list = filter_data.get_values_by_prefix("tile_layout")
+        if data_list:
+            data = data_list[0]
+        else:
+            data = {}
+        my.scale = data.get("scale")
+        if my.scale == None:
+            my.scale = my.kwargs.get("scale")
+
+
         if my.scale:
             value_wdg.set_value(my.scale)
         value_wdg.add_style("width: 24px")

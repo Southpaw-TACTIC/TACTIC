@@ -37,6 +37,7 @@ class FileCheckin(BaseCheckin):
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
             checkin_type='strict', version=None):
+
         '''sobject - the sobject that this checkin belongs to
            file_paths - array of all the files to checkin
            file_types - corresponding array of all the types for each file
@@ -50,8 +51,11 @@ class FileCheckin(BaseCheckin):
            level_id - this is complimentary to level type to specify the
                parent level of this checkin
            mode - determines what mode the checkin is.  This basically
-                determines how the source files are treated.  Accepted
-                values are: copy, move, inplace
+                determines how the source files are treated.  
+                Accepted values: copy, move: default tactic check-in that uses upload/handoff dir; naming convention on 
+                        inplace: check in the source_path as is without moving it; naming convention off
+                        free_move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on
+                        free_copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on
            keep_file_name - determines whether the checked in file name is
                 kept as is or goes through naming conventions
            base_dir - DEPRECATED: this base directory determines the root that was used for inplace checkins
@@ -64,7 +68,7 @@ class FileCheckin(BaseCheckin):
            checkin_type - auto or strict: specifies how defaults are handled
                 strict uses strict naming conventions with explicit versionless
                 auto uses looser naming conventions with auto versionless
-            version - force the version of the check-in
+           version - force the version of the check-in
             
         '''
         super(FileCheckin,my).__init__(sobject)

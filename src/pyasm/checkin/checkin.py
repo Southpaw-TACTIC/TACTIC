@@ -200,9 +200,11 @@ class BaseCheckin(Command):
             metadata_files.append(file)
             metadata_file_objects.append(file_object)
 
-        from metadata import CheckinMetadataHandler
-        handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False)
-        handler.execute()
+
+        # DISABLING for now
+        #from metadata import CheckinMetadataHandler
+        #handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False)
+        #handler.execute()
 
 
 

@@ -1186,13 +1186,14 @@ class WebLoginWdg(Widget):
                 admin_login.reactivate()
                 web = WebContainer.get_web()
                 web.set_form_value(my.LOGIN_MSG, "admin user has been reactivated.")
+                admin_password = admin_log.get_value("password")
+                if admin_password == Login.get_default_encrypted_password():
+                    change_admin = True
 
-            login = Login.get_by_login("admin")
-            password = login.get_value("password")
-            if password == Login.get_default_encrypted_password() or not password:
-                change_admin = True
-        else:
-            change_admin = False
+            #login = Login.get_by_login("admin")
+            #password = login.get_value("password")
+            #if password == Login.get_default_encrypted_password() or not password:
+            #    change_admin = True
 
 
 

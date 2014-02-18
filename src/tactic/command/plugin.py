@@ -236,6 +236,11 @@ class PluginBase(Command):
         expr = my.xml.get_attribute(node, "expression")
         code = my.xml.get_attribute(node, "code")
 
+        try:
+            search_type = SearchType.get(search_type)
+        except SearchException, e:
+            return []
+
 
         if expr:
             sobjects = Search.eval(expr)
@@ -580,7 +585,10 @@ class PluginCreator(PluginBase):
         else:
             ignore_columns = []
 
-
+        # FIXME:
+        # it is possible that the manifest defines sobjects on search types
+        # that don't exist.  This is because it uses the manifest of
+        # the new pipeline and not the original ... 
         sobjects = my.get_sobjects_by_node(node)
         if not sobjects:
             print "Skipping as no sobjects found for [%s]" %search_type

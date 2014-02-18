@@ -144,7 +144,7 @@ class SandboxSelectWdg(BaseRefreshWdg):
         for alias in alias_options:
 
             from pyasm.biz import DirNaming
-            dir_naming = DirNaming(sobject=sobject)
+            dir_naming = DirNaming(sobject=sobject, snapshot=virtual_snapshot)
             dir_naming.set_protocol("sandbox")
             dir_naming.set_naming(naming_expr)
             base_dir = dir_naming.get_dir(alias=alias)

@@ -1101,14 +1101,13 @@ class SecurityAddGroupToProjectAction(DatabaseAction):
     def execute(my):
         value = my.get_value()
         sobject = my.sobject
-
         project = Project.get()
         project_code = project.get_code()
 
         builder = SecurityBuilder(group=sobject)
         builder.add_project(project_code)
-
-        sobject.set_value("access_rules", builder.to_string() )
+        if value:
+            sobject.set_value("access_rules", builder.to_string() )
 
 
 

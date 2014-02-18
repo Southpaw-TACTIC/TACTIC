@@ -1012,6 +1012,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
+    # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
+    LIMIT = 80
+    DISPLAY_LENGTH = 35
+
     def is_number(my, value):
         if has_numbers_module:
             return isinstance(value, numbers.Number)
@@ -1024,7 +1028,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             my.do_search = False
 
     def draw_result(my, top, value):
-        max = 35
+        max = my.DISPLAY_LENGTH
         # assuming it's a list
         results = my.kwargs.get('results')
         if not results:
@@ -1080,13 +1084,33 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_attr("spt_display", keywords)
 
 
-        
+    def get_value_column_result(my, search_dict, search_type, column, value_column, top):
+        results = search_dict.get(search_type).get('results')
+        for result in results:
+            display = result.get_value(column)
+            div = DivWdg()
+            div.add(display)
+            div.add_style("padding: 3px")
+            div.add_class("spt_input_text_result")
+            # turn off cache to prevent ascii error
+            display = HtmlElement.get_json_string(display, use_cache=False)
+            div.add_attr("spt_display", display)
+            div.add_attr("spt_value", result.get_value(value_column))
+            top.add(div)
+        if not results:
+            div = DivWdg()
+            div.add("-- no results --")
+            div.add_style("opacity: 0.5")
+            div.add_style("font-style: italic")
+            div.add_style("text-align: center")
+            top.add(div)
+        return top
+
     def get_display(my):
         top = my.top
-        value = my.kwargs.get("value")
-        
+        orig_value = my.kwargs.get("value")
         if not my.do_search:
-            my.draw_result(top, value)
+            my.draw_result(top, orig_value)
             return top
 
         # can only support 1 right now
@@ -1094,7 +1118,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         connected_col = None
         rel_values = []
 
-        if value.endswith(" "):
+        if orig_value.endswith(" "):
             last_word_complete = True
         else:
             last_word_complete = False
@@ -1120,16 +1144,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-        value = value.strip()
+        value = orig_value.strip()
+
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
         else:
             values = Common.extract_keywords(value)
             # allow words with speical characters stripped out by Common.extract_keywords to be searched
-            #if value.lower() != " ".join(values):
-            if value.lower() not in values:
-                values.append(value.lower())
+            # FIXME: THIS CAUSES PROBLEMS and is disabled for now
+            #if value.lower() not in values:
+            #    values.append(value.lower())
         # why is this done?
         # so the auto suggestion list the items in the same order as they are typed in
         values.reverse()
@@ -1210,7 +1235,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     rel_values = SObject.get_values(rel_sobjs, from_col)
 
                 connected_col = to_col
-            
+           
+            single_col = len(col_list) == 1
+            search_op = 'and'
+            if not single_col:
+                search_op = 'or'
             for col in col_list:
                 #info = column_info.get(column)
                 #if info and info.get("data_type") == 'integer':
@@ -1220,11 +1249,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 search.add_startswith_keyword_filter(col, values)
                
             
-            search.add_op("or")
+            
+            search.add_op(search_op)
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
-            
-            search.add_limit(10)
+           
+            search.add_limit(my.LIMIT)
             results = search.get_sobjects()
             info_dict['results'] = results
    
@@ -1234,26 +1264,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         # if the value column is specified then don't use keywords
         # this assume only 1 column is used with "value_column" option
         if value_column:
-            results = search_dict.get(search_type).get('results')
-            for result in results:
-                display = result.get_value(column)
-                div = DivWdg()
-                div.add(display)
-                div.add_style("padding: 3px")
-                div.add_class("spt_input_text_result")
-                # turn off cache to prevent ascii error
-                display = HtmlElement.get_json_string(display, use_cache=False)
-                div.add_attr("spt_display", display)
-                div.add_attr("spt_value", result.get_value(value_column))
-                top.add(div)
-            if not results:
-                div = DivWdg()
-                div.add("-- no results --")
-                div.add_style("opacity: 0.5")
-                div.add_style("font-style: italic")
-                div.add_style("text-align: center")
-                top.add(div)
-            return top
+           return my.get_value_column_result(search_dict, search_type, column, value_column, top)
 
        
 
@@ -1261,7 +1272,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-        max = 35
 
         # English: ???
         ignore = set()
@@ -1308,7 +1318,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #    keywords_set.add(keyword)
                 # if x in the comprehension above already does None filtering
                 #keywords = filter(None, keywords)
-
                 matches = []
                 for i, value in enumerate(values):
                     for keyword in keywords:
@@ -1324,7 +1333,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 # if nothing matches, 2nd guess by loosening the rule to find something broader
                 # this only runs most likely in global mode and sometimes in keyword mode
                 # Just take the first value to maintain performance
-                if not matches and values[0].strip():
+                if not matches and values and values[0].strip():
                     for keyword in keywords:
                         compare = values[0] in keyword
                         if compare:
@@ -1334,7 +1343,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #if len(matches) != len(values):
                 if len(matches) < 1:
                     continue
-
+                
                 for match in matches:
                     keywords.remove(match)
                     keywords.insert(0, match)
@@ -1343,17 +1352,21 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 first = keywords[:len(matches)]
                 first = filter(None, first)
                 first = " ".join(first)
-                if first not in first_filtered:
-                    first_filtered.append(first)
 
+                # add the first word filtered
+                if first.startswith(orig_value) and first not in first_filtered:
+                    first_filtered.append(first)
+                
                 # get all the other keywords
                 for second in keywords[len(matches):]:
                     if first == second:
                         continue
+                    
                     key = "%s %s" % (first, second)
+                    if not key.startswith(orig_value):
+                        continue
                     if key not in second_filtered:
                         second_filtered.append(key)
-
 
         first_filtered.sort()
         filtered.extend(first_filtered)
@@ -1370,8 +1383,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
-            if len(keywords) > max:
-                display = "%s..." % keywords[:max-3]
+            if len(keywords) > my.DISPLAY_LENGTH:
+                display = "%s..." % keywords[:my.DISPLAY_LENGTH-3]
             else:
                 display = keywords
 
