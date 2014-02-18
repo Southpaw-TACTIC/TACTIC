@@ -879,13 +879,21 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
        
 
         if not my.columns:
-            my.columns = [my.get_name()]
+            name = my.get_name()
             # check if column exists
             if my.filter_search_type:
-                exists = SearchType.column_exists(my.filter_search_type, my.get_name())
+                exists = SearchType.column_exists(my.filter_search_type, name)
                 if not exists:
-                    raise SetupException("Keyword Filter column [%s] does not exist"%my.get_name())
+                    name = "name"
+                    exists = SearchType.column_exists(my.filter_search_type, name)
+                    if not exists:
+                        name = "description"
+                        exists = SearchType.column_exists(my.filter_search_type, name)
+                        if not exists:
+                            raise SetupException("Keyword Filter column [%s] does not exist"%name)
+            my.columns = [name]
         
+
 
 
 
