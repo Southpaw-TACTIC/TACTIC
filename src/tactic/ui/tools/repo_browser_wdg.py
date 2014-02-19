@@ -1318,20 +1318,19 @@ class RepoBrowserDirListWdg(DirListWdg):
             return
 
 
-        # FIXME: TEST TEST
-        if search_type.startswith("test2/sequence") or search_type.startswith("test2/shot"):
-            SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
-        else:
-            SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
+        #SmartMenu.assign_as_local_activator( item_div, 'STRICT_DIR_ITEM_CTX' )
+        SmartMenu.assign_as_local_activator( item_div, 'FREEFORM_DIR_ITEM_CTX' )
 
         item_div.add_attr("spt_search_type", search_type)
 
 
+        """
         search_code_list = search_codes.get("%s/" % path)
         if not search_code_list:
             search_code_list = []
         search_codes_str = "|".join(list(search_code_list))
         item_div.add_attr("spt_search_codes", search_codes_str)
+        """
 
 
         item_div.add_attr("spt_relative_dir", relative_dir)
@@ -1361,6 +1360,10 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         var dir_list_top = bvr.src_el.getParent(".spt_dir_list_top");
+
+
+        // FIXME: both search_keys and search_codes are no longer useful
+        /*
         var search_keys = dir_list_top.getAttribute("spt_search_keys");
         if (search_keys) {
             search_keys = search_keys.split("|");
@@ -1368,9 +1371,13 @@ class RepoBrowserDirListWdg(DirListWdg):
         else {
             search_keys = [];
         }
-
         var search_codes = bvr.src_el.getAttribute("spt_search_codes");
         search_codes = search_codes.split("|");
+        */
+
+        search_codes = [];
+        search_keys = [];
+
 
         spt.app_busy.show("Loading ...");
         var kwargs = {
@@ -1723,13 +1730,28 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         reldir = reldir.strip("/")
 
 
+        # search for all files that are in this relative_dir
         search = Search("sthpw/file")
         search.add_filter("relative_dir", "%s%%" % reldir, op='like')
         search.add_filter("search_type", search_type)
 
+        # use the above search to find all sobjects with files in this
+        # relative_dir
         search2 = Search(search_type)
         search2.add_relationship_search_filter(search)
         sobjects = search2.get_sobjects()
+
+
+        # get the sobject codes to feed into the layout widget
+        # NOTE: this could be very very slow ... there could be a lot
+        # of sobjects in this search and will produce a massive
+        # number of search_codes
+        search_codes = [x.get_value("code") for x in sobjects]
+        search_codes_str = "|".join(search_codes)
+        expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
+
+        #search_keys = my.kwargs.get("search_keys")
+        search_keys = []
 
 
 
@@ -1746,14 +1768,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         path_div.add_style("margin: -1 -1 0 -1")
         path_div.add_border()
 
-
-
-        search_codes = [x.get_value("code") for x in sobjects]
-        search_codes_str = "|".join(search_codes)
-        expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
-
-        #search_keys = my.kwargs.get("search_keys")
-        search_keys = []
 
 
 

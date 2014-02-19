@@ -85,6 +85,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         temp = my.kwargs.get("temp")
         has_loading = False
 
+
         
         inner.add_style("margin-left: 20px")
 
@@ -93,6 +94,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner.add_attr("ondragover", "return false")
         inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
+        inner.add("<br clear='all'/>")
 
 
         if my.sobjects:

@@ -937,7 +937,8 @@ class IngestUploadCmd(Command):
 
 
             # extract metadata
-            file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
+            #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
+            file_path = "%s/%s" % (base_dir, filename)
 
             # TEST: convert on upload
             try:
