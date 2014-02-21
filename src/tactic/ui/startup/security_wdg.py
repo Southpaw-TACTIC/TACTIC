@@ -2083,6 +2083,7 @@ class ProcessSecurityCbk(Command):
             pipeline_code = ""
             if is_all:
                 process = "*"
+                pipeline_code = "*"
             else:
                 process_sobj = Search.get_by_search_key(search_key)
                 process = process_sobj.get_value("process")
