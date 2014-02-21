@@ -1701,7 +1701,7 @@ class ProcessSecurityWdg(ProjectSecurityWdg):
         for sobject in sobjects:
             if sobject.get("search_type") == "sthpw/task":
                 code_list.append(sobject.get("code"))
-
+        code_list.append('task')
         search = Search("config/process")
         search.add_filters("pipeline_code", code_list, op="not in")
         search.add_order_by('pipeline_code')
@@ -1773,7 +1773,7 @@ class TaskSecurityWdg(ProjectSecurityWdg):
         for sobject in sobjects:
             if sobject.get("search_type") == "sthpw/task":
                 code_list.append(sobject.get("code"))
-
+        code_list.append('task')
         search = Search("config/process")
         search.add_filters("pipeline_code", code_list)
         search.add_order_by('pipeline_code')
