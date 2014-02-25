@@ -1370,8 +1370,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
             var class_name = header.getAttribute("spt_class_name");
             var kwargs_str = header.getAttribute("spt_kwargs");
-            var kwargs = JSON.parse(kwargs_str);
-
+            var kwargs = {};
+            if (kwargs_str) {
+                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs = JSON.parse(kwargs_str);
+            }
             var contents = spt.tab.get_contents();
             for (var i=0; i<contents.length; i++) {
                 var content = contents[i];
