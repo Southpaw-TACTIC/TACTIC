@@ -182,11 +182,13 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 var el = els[i];
                 var replace_id = el.getAttribute("spt_replace_id");
                 var el_old = $(replace_id);
-                el.replaces(el_old);
+                if (el_old) {
+                    el.replaces(el_old);
 
-                var children = el_old.getChildren();
-                for (var j = 0; j < children.length; j++) {
-                    el.appendChild(children[j]);
+                    var children = el_old.getChildren();
+                    for (var j = 0; j < children.length; j++) {
+                        el.appendChild(children[j]);
+                    }
                 }
 
             }

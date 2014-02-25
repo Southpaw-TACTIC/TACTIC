@@ -953,23 +953,7 @@ spt.popup.get_widget = function( evt, bvr )
     content_wdg.setAttribute("spt_kwargs", JSON.stringify(options));
 
 
-    var widget_html = options.html;
-    if ( widget_html != null) {
-        spt.behavior.replace_inner_html( content_wdg, widget_html );
-        popup.setStyle("margin-left", 0);
-        return popup
-    }
-
-    // load the content
-    var server = TacticServerStub.get();
-    var values = {};
-    if (bvr.values) {
-        values = bvr.values;
-    }
-    var kwargs = {'args': args, 'values': values};
-
-
-    var callback = function() {
+     var callback = function() {
 
         // place in the middle of the screen
         var size = popup.getSize();
@@ -992,6 +976,25 @@ spt.popup.get_widget = function( evt, bvr )
         spt.popup.show_background();
 
     };
+
+    var widget_html = options.html;
+    if ( widget_html != null) {
+        spt.behavior.replace_inner_html( content_wdg, widget_html );
+        popup.setStyle("margin-left", 0);
+        callback();
+        return popup
+    }
+
+    // load the content
+    var server = TacticServerStub.get();
+    var values = {};
+    if (bvr.values) {
+        values = bvr.values;
+    }
+    var kwargs = {'args': args, 'values': values};
+
+
+   
 
     //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);

@@ -1327,8 +1327,13 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_tab_top");
 
+            // add new if this is the last oni
+            var headers = spt.tab.get_headers();
+            if (headers.length == 1) {
+                spt.tab.add_new();
+            }
+            
             spt.tab.top = top;
-            spt.tab.add_new();
 
             var header = activator;
             var element_name = header.getAttribute("spt_element_name");
@@ -1341,7 +1346,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                     spt.panel.load_popup_with_html( element_name, content.innerHTML );
                     spt.behavior.destroy_element(content);
                 }
-            }
+            } 
 
             '''
         } )
