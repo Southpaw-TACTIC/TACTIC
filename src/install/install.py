@@ -674,6 +674,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         """
         
 
+        my.tactic_license = 'tactic-license.xml'
         if os.name != 'nt':
             my.apache_conf = 'tactic.conf'
             my.tactic_conf = 'tactic_linux-conf.xml'
@@ -697,6 +698,11 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
             src = '%s/src/install/template/config/%s' %(current_dir, my.tactic_conf)
             dst = '%s/config/tactic-conf.xml' %(my.tactic_data_dir)
+            shutil.copyfile(src, dst)
+           
+            # Copy the TACTIC EPL license over to the tactic_data/config directory
+            src = '%s/src/install/template/config/%s' %(current_dir, my.tactic_license)
+            dst = '%s/config/%s' %(my.tactic_data_dir, my.tactic_license)
             shutil.copyfile(src, dst)
            
             # copy default project templates

@@ -305,7 +305,7 @@ class Pipeline(SObject):
         process_sobjs = search.get_sobjects()
         existing_names = SObject.get_values(process_sobjs, 'process')
 
-        count = 0
+        count = 1
         for process_name in process_names:
 
             exists = False
