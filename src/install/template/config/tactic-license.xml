@@ -1,0 +1,34 @@
+<!--
+    Copyright (c) 2008, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+<license>
+  <data>
+    <company>ALL - EPL</company>
+    <max_users>7029000000</max_users>
+    <issue_date>2012-08-01</issue_date>
+    <version>1</version>
+    <tactic_version>EPL</tactic_version>
+  </data>
+  <signature><![CDATA[<StartPycryptoSignature>
+KFUDUlNBcQAoTDkyNDQ3Mjk4Mjc5MDc2Nzk2Nzk4NDMyNTM1NjI0MTE5ODc1OTc2MjM2ODc0Mjg5
+NDU1MDY5NTMyMzc1MTYwOTAwNzU2MTk1Mjk5NjkwMTcxMzUzMDQwNzI2MjgyMzc3MTY2OTc5Mjc5
+ODAzMDQ5NTEwODI4NjE4NjIxNjk4MjAxNDYwMDUzMjE1MDE4NDc0NjcxOTg1OTc5NzRMCnRxAXRx
+Ai4=
+<EndPycryptoSignature>
+]]></signature>
+  <public_key><![CDATA[<StartPycryptoKey>
+KEkwMApOVeQoVQNSU0FxAChjQ3J5cHRvLlB1YmxpY0tleS5SU0EKUlNBb2JqCnEBb3ECfXEEKFUB
+ZXEFTDY1NTM3TApVAW5xBkw5NDQzODAyNzkzNTc0ODg2ODUzMDM1MTI3OTMzMDA3ODYxMTA1ODMz
+ODAxODkyMjM3NjMxNjE2NTAyNDk1NTkzNjcwMDU4Mzk3NTY4MjI5NzYyNzQ1MTAwMzU3Njk3NzUx
+NzY5ODAzNzAzMTg2NTQ0MzkwOTMxNDk5MTkxODc1OTk0ODg2NTczNjg4MjAzNjY0NDkyODg4ODU3
+TAp1YnRxBy5xAHRxAS4=
+<EndPycryptoKey>
+]]></public_key>
+</license>

@@ -479,7 +479,7 @@
       <expression>@SOBJECT(sthpw/task['project_code', $PROJECT]['status', 'Review'])</expression>
       <filter></filter>
       <width>100%</width>
-      <element_names>parent,process,description,status,priority,bid_duration,notes </element_names>
+      <element_names>parent,process,description,status,priority,bid_duration,notes</element_names>
     </display>
   </element>
 

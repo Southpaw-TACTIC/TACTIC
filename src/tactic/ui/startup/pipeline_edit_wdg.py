@@ -465,12 +465,16 @@ class PipelineEditCbk(Command):
 
             # handle the statuses for each process
             for process, status in zip(processes, statuses):
+
                 if process == '':
                     continue
 
                 if status == '(default)':
                     node = pipeline_xml.get_node("/pipeline/process[@name='%s']" % process)
                     pipeline_xml.del_attribute(node, "task_pipeline")
+                    
+                    default_pipeline = Pipeline.get_by_code('task')
+                    default_pipeline.update_process_table()
                     continue
 
                 status_list = status.split(",")

@@ -976,6 +976,9 @@ spt.show = function( element )
     var el = $(element);
     if( el ) {
         el.setStyle("display","");
+        if (el.getStyle("visibility") == "hidden")
+            el.fade("in");
+
         if( el.hasClass("SPT_BVR") ) {
             var show_bvr_list = spt.behavior.get_bvrs_by_type("show", el);
             for( var c=0; c < show_bvr_list.length; c++ ) {
@@ -1348,6 +1351,7 @@ spt.alert = function(msg, options){
    
     spt._init_dialog( function() {
         new MooDialog.Alert(msg, options);
+            
     } );
 }
 

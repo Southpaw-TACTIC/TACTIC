@@ -344,7 +344,7 @@ class EditMultipleCmd(Command):
             web_data_list = jsonloads(web_data)
 
 
-
+        sk_dict = {}
         search_types = set()
         for i, search_key in enumerate(search_keys):
 
@@ -375,14 +375,34 @@ class EditMultipleCmd(Command):
 
             edit_search_keys.append(search_key)
 
-            search_types.add( sobject.get_base_search_type() )
+            base_search_type = sobject.get_base_search_type()
+            search_types.add( base_search_type )
+            sk_data_list = sk_dict.get( base_search_type)
+            if not sk_data_list:
+                sk_data_list = []
+                sk_dict[base_search_type] = sk_data_list
 
+            sk_data_list.append((search_key, data))
+            
         my.info['search_keys'] = edit_search_keys
 
         search_types = list(search_types)
-        search_types = ", ".join(search_types)
+        search_types_label = ", ".join(search_types)
 
-        my.add_description( "Updated [%s] item/s in types [%s]" % (len(search_keys), search_types ) )
+        my.add_description( "Updated [%s] item/s in types [%s]" % (len(search_keys), search_types_label ) )
+        # call the done trigger for checkin
+        from pyasm.command import Trigger
+
+        prefix = 'update_multi'
+        for search_type in search_types:
+            sk_data_list = sk_dict.get(search_type)
+            grouped_edit_search_keys, data_list = map(list, zip(*sk_data_list))
+                
+                
+            output = {}
+            output['search_keys'] = grouped_edit_search_keys
+            output['update_data'] = data_list
+            Trigger.call(my, "%s|%s" % (prefix, search_type), output)
 
 
 

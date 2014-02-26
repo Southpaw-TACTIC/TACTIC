@@ -718,17 +718,20 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 }
 
 
-spt.popup.close = function( popup_el_or_id )
+spt.popup.close = function( popup_el_or_id , fade)
 {
-
-    spt.popup.hide_background();
-
-
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
-    if( ! popup ) { return; }
+    popup = popup ? popup : spt.popup.get_popup(popup_el_or_id);
 
-    spt.hide( popup );
-    spt.popup.hide_all_aux_divs( popup );
+    if (!popup) return;
+
+    if (fade) {
+        popup.fade('out');
+    }
+    else {
+        spt.hide( popup );
+    }
+    spt.popup.hide_all_aux_divs( popup, fade );
 
     if( popup == spt.popup._focus_el ) {
         spt.popup.release_focus( spt.popup._focus_el );
@@ -750,14 +753,17 @@ spt.popup.toggle_display = function( popup_el_or_id, use_safe_position )
 }
 
 
-spt.popup.hide_all_aux_divs = function( popup_el_or_id )
+spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
 {
     var popup = $(popup_el_or_id);
     var aux_divs = popup.getElements('.SPT_AUX');
     for( var c=0; c < aux_divs.length; c++ )
     {
         var aux = aux_divs[c];
-        spt.hide( aux );
+        if (fade)
+            aux.fade('out');
+        else
+            spt.hide( aux );
     }
 }
 
@@ -953,23 +959,7 @@ spt.popup.get_widget = function( evt, bvr )
     content_wdg.setAttribute("spt_kwargs", JSON.stringify(options));
 
 
-    var widget_html = options.html;
-    if ( widget_html != null) {
-        spt.behavior.replace_inner_html( content_wdg, widget_html );
-        popup.setStyle("margin-left", 0);
-        return popup
-    }
-
-    // load the content
-    var server = TacticServerStub.get();
-    var values = {};
-    if (bvr.values) {
-        values = bvr.values;
-    }
-    var kwargs = {'args': args, 'values': values};
-
-
-    var callback = function() {
+     var callback = function() {
 
         // place in the middle of the screen
         var size = popup.getSize();
@@ -992,6 +982,25 @@ spt.popup.get_widget = function( evt, bvr )
         spt.popup.show_background();
 
     };
+
+    var widget_html = options.html;
+    if ( widget_html != null) {
+        spt.behavior.replace_inner_html( content_wdg, widget_html );
+        popup.setStyle("margin-left", 0);
+        callback();
+        return popup
+    }
+
+    // load the content
+    var server = TacticServerStub.get();
+    var values = {};
+    if (bvr.values) {
+        values = bvr.values;
+    }
+    var kwargs = {'args': args, 'values': values};
+
+
+   
 
     //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);
