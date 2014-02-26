@@ -64,10 +64,6 @@ class Process(Base):
 
     def get_color(my):
         color = Xml.get_attribute( my.node, "color" )
-        from pyasm.web import Palette
-        theme = Palette.get().get_theme()
-        if theme == 'dark':
-            color = Common.modify_color(color, -50)
         return color
 
     def get_label(my):

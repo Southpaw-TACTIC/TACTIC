@@ -50,6 +50,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def can_select(my):
         return True
 
+    def can_use_gear(my):
+        return True
+
+
+
 
 
 
@@ -766,7 +771,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add gear menu here
         my.view_save_dialog = None
-        if my.kwargs.get("show_gear") != "false":
+        if my.kwargs.get("show_gear") not in ["false", False]:
             # Handle configuration for custom script (or straight javascript script) on "post-action on delete"
             # activity ...
             cbjs_post_delete = ''
@@ -1375,7 +1380,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        if my.kwargs.get("show_gear") != "false":
+        if my.can_use_gear() and my.kwargs.get("show_gear") != "false":
             button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
             button_row_wdg.add(button)
 

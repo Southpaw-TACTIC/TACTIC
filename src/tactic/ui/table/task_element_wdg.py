@@ -1667,14 +1667,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 var result = s.eval("@SOBJECT(sthpw/status_log['@ORDER_BY','timestamp desc'])",  {search_keys: [bvr.search_key], single:true});
                 
                 var content = 'No record';
-<<<<<<< HEAD
-                if (result.__search_key__)
-                    content = '<span>status: </span>' + result.from_status + '<br/>' + '<span style="padding-left: 20px">by:</span> ' + result.login; 
-=======
                 if (result && result.__search_key__)
                     content = '<span>status: </span>' + result.from_status + '<br>' + '<span style="padding-left: 20px">by:</span> ' + result.login; 
->>>>>>> 2428a3453a9ba6e4c7ebb81db2767a554c26cd77
-                
+
                 bvr.src_el.store('tip:text', content)
                 tips.fill(text_elem, content);
                 

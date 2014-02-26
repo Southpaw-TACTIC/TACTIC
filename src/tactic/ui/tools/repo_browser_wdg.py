@@ -26,7 +26,7 @@ from tactic.ui.panel import FastTableLayoutWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
-from tactic.ui.widget import DirListWdg, IconButtonWdg, ButtonNewWdg, ButtonRowWdg
+from tactic.ui.widget import DirListWdg, IconButtonWdg, ButtonNewWdg, ButtonRowWdg, ActionButtonWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu, DialogWdg
 
 import os, shutil
@@ -318,6 +318,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #my.mode = ""
 
         div = DivWdg()
+        div.add_class("spt_repo_browser_options")
 
         div.add_style("width: 200px")
         div.add_style("height: 200px")
@@ -350,6 +351,28 @@ class RepoBrowserWdg(BaseRefreshWdg):
         div.add("Show empty folders")
         div.add("<br/>")
         checkbox.add_behavior({"type": "click_up", "cbjs_action" : ""})
+
+        div.add("<br/>")
+
+        button = ActionButtonWdg(title="Refresh")
+        div.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_repo_browser_options");
+            var values = spt.api.get_input_values(top, null, false);
+            console.log(values);
+
+
+
+            var top = bvr.src_el.getParent(".spt_repo_browser_top");
+            spt.app_busy.show("Refreshing ...");
+            spt.panel.refresh(top);
+            spt.app_busy.hide();
+            '''
+        } )
+        button.add_style("float: right")
 
 
         return div
@@ -465,7 +488,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         show_empty_folders = True
         show_no_sobject_folders = True
 
-        my.show_files = True
+        my.show_files = False
         show_main_only = True
         show_latest = True
         show_versionless = False
