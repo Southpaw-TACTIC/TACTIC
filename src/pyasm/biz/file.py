@@ -648,16 +648,26 @@ class IconCreator(object):
             if not HAS_PIL:
                 raise Exception("No PIL installed")
 
+
             # create the thumbnail
             im = Image.open(large_path)
 
+            try:
+                im.seek(1)
+            except EOFError:
+                is_animated = False
+            else:
+                is_animated = True
+                im.seek(0)
+                im = im.convert('RGB')
+
             x,y = im.size
-            ext = "PNG"
+            to_ext = "PNG"
             if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
-                ext = "JPEG"
+                to_ext = "JPEG"
             if x >= y:
                 im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
-                im.save(small_path, ext)
+                im.save(small_path, to_ext)
             else:
                 
                 #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
@@ -673,9 +683,10 @@ class IconCreator(object):
                 im2 = Image.new( "RGB", thumb_size, (255,255,255) )
                 offset = (thumb_size[0]/2) - (im.size[0]/2)
                 im2.paste(im, (offset,0) )
-                im2.save(small_path, ext)
+                im2.save(small_path, to_ext)
                 
         except Exception, e:
+            print "Error: ", e
             # there could be any kind of Exception by PIL, not just IOError
             # maximum geometry mode aspect ratio preserved
             if sys.platform == 'darwin':

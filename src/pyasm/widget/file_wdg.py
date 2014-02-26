@@ -297,7 +297,7 @@ class ThumbWdg(BaseTableElementWdg):
                     };
                     server.execute_cmd(cmd, kwargs, {}, {
                                 on_complete:on_complete,
-                    });
+                    }, false);
                 }
                 func();
 
@@ -1141,7 +1141,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "fusion.png"
         elif ext == "txt":
             icon = "gnome-textfile.png"
-        elif ext == "obj":
+        elif ext in ["obj", "mtl"]:
             icon = "3d_obj.png"
         elif ext == "rdc":
             icon = "red_camera.png"
@@ -1296,10 +1296,12 @@ class ThumbCmd(Command):
                 sub_file_paths = [web_path, icon_path]
                 sub_file_types = ['web', 'icon']
 
-            from pyasm.checkin import FileAppendCheckin
-            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
-            checkin.execute()
-            snapshot = checkin.get_snapshot()
+                from pyasm.checkin import FileAppendCheckin
+                checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
+                checkin.execute()
+                snapshot = checkin.get_snapshot()
+            else:
+                snapshot = sobject
 
 
         else:
