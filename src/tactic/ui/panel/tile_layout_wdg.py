@@ -853,18 +853,19 @@ class ThumbWdg2(BaseRefreshWdg):
 
                 img_inner = HtmlElement.img(src=path)
                 img.add(img_inner)
+
                 img_inner.add_style("width: %s" % width)
 
         if path and path.startswith("/context"):
-            img.add_style("padding: 20px 0px")
-            img.add_border()
-            img.add_style("width: 100%")
+            img.add_style("padding: 10px 15%")
+            img.add_style("width: 70%")
+        else:
+            img.add_style("width: %s" % width)
 
         if not path:
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
-        img.add_style("width: %s" % width)
 
         div.add_style("height: 100%")
 
@@ -913,72 +914,9 @@ class ThumbWdg2(BaseRefreshWdg):
  
         return path
 
-
     def find_icon_link(my, file_path, repo_path=None):
-        base = "/context/icons/mime-types"
-        icon = None
-        if not file_path:
-            return ""
-            #return ThumbWdg.get_no_image()
-        #ext = File.get_extension(file_path)
-        import os
-        root, ext = os.path.splitext(file_path)
-        ext = ext[1:]
-
-        if ext == "xls":
-            icon = "gnome-application-vnd.ms-excel.png"
-        elif ext == "mp3" or ext == "wav":
-            icon = "mp3_and_wav.jpg"
-        elif ext == "aif" or ext == 'aiff':
-            icon = "gnome-audio-x-aiff.png"
-        elif ext == "mpg":
-            icon = "gnome-video-mpeg.png"
-        elif ext in ["mov", "MOV"] or ext == "mp4":
-            icon = "quicktime-logo.png"    
-        elif ext == "ma" or ext == "mb" or ext == "anim":
-            icon = "maya.png"
-        elif ext == "lwo":
-            icon = "lwo.jpg"
-        elif ext == "max":
-            icon = "max.jpg"
-        elif ext == "fbx":
-            icon = "fbx.jpg"
-        elif ext == "hip" or ext == "otl":
-            icon = "houdini.png"
-        elif ext in ["scn", "scntoc", "xsi"]:
-            icon = "xsi_scn.jpg"
-        elif ext == "emdl":
-            icon = "xsi_emdl.png"
-        elif ext == "fla":
-            icon = "flash.png"
-        elif ext == "dae":
-            icon = "collada.png"
-        elif ext == "pdf":
-            icon = "pdficon_large.gif"
-        elif ext == "shk":
-            icon = "icon_shake_white.gif"
-        elif ext == "comp":
-            icon = "fusion.png"
-        elif ext == "txt":
-            icon = "gnome-textfile.png"
-        elif ext == "obj":
-            icon = "3d_obj.png"
-        elif ext in ["rdc", "RDC"]:
-            icon = "red_camera.png"
-        elif ext == 'ps':
-            icon = "ps_icon.jpg"
-        elif ext == 'psd':
-            icon = "ps_icon.jpg"
-        elif ext == 'ai':
-            icon = "icon_illustrator_lg.png"
-        elif ext == 'unity3d':
-            icon = "unity_icon.jpg"
-        elif repo_path and os.path.isdir(repo_path):
-            icon = "folder.png"
-        else:
-            icon = "default_doc.png"
-        return "%s/%s" % ( base,icon)
-
+        from pyasm.widget import ThumbWdg
+        return ThumbWdg.find_icon_link(file_path, repo_path)
 
 
 

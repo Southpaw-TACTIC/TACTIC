@@ -1113,7 +1113,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "gnome-audio-x-aiff.png"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"
-        elif ext in ["mov","mp4"]:
+        elif ext in ["mov"]:
             icon = "quicktime-logo.png"    
         elif ext == "ma" or ext == "mb" or ext == "anim":
             icon = "maya.png"
