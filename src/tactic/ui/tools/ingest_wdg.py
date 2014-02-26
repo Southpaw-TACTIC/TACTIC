@@ -157,7 +157,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         files_div = DivWdg()
         files_div.add_style("position: relative")
-        files_div.add_class("spt_upload_files")
+        files_div.add_class("spt_to_ingest_files")
         div.add(files_div)
         files_div.add_style("max-height: 300px")
         files_div.add_style("height: 300px")
@@ -218,11 +218,13 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             if (!background) {
                 background = top.getElement(".spt_files_background");
-                background.setStyle("display", "none");
+                if (background)
+                    background.setStyle("display", "none");
             }
 
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
+
             clone.removeClass("spt_upload_file_template");
             clone.addClass("spt_upload_file");
             clone.setStyle("display", "");
@@ -303,7 +305,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         spt.drag.noop = function(evt, el) {
             var top = $(el).getParent(".spt_ingest_top");
-            var files_el = top.getElement(".spt_upload_files");
+            var files_el = top.getElement(".spt_to_ingest_files");
             evt.stopPropagation();
             evt.preventDefault();
             evt.dataTransfer.dropEffect = 'copy';
@@ -313,7 +315,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             var skip = false;
             for (var i = 0; i < files.length; i++) {
                 var size = files[i].size;
-
                 if (size >= 10*1024*1024) {
                     spt.drag.show_file(files[i], files_el, 0, false);
                 }
