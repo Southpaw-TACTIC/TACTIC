@@ -88,7 +88,6 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 
     for (var i = 0; i < input_list.length; i++) {
         var filter = input_list[i];
-
         if (filter.getAttribute("disabled") == "disabled") {
             continue;
         }
@@ -149,7 +148,6 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
         }
         else {
             var value = filter.getAttribute("spt_input_value");
-
             var is_multiple = filter.getAttribute("spt_is_multiple");
             if (is_multiple == "true") {
                 array_keys[filter.name] = is_multiple;
@@ -166,7 +164,11 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
                     values[filter.name].push(value);
                 }
             }
+            else {
+                    values[filter.name].push(value);
+            }
 
+                
             
         }
 
@@ -176,6 +178,7 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
     // it is specifically marked as an array
     if ( return_array == false ) {
         for (var i in values) {
+
             if (array_keys[i]) {
                 continue;
             }
