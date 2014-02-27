@@ -152,12 +152,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'TextWdg',
             'order': '10'
         },
-        'init_load_num': {
-            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
             'category': 'Optional',
             'order': '11'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '12'
+        },
+
 
 
         "temp" : {

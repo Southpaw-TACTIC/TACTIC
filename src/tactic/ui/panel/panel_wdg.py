@@ -2704,13 +2704,21 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'order': '15'
         },
-      
+     
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '16'
+        },
+
+
         'popup': {
             'description': 'Flag to determine whether or not to open as a popup by default',
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '16',
+            'order': '17',
             'category': 'Display'
         },
 
@@ -2718,7 +2726,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '17'
+            'order': '18'
         },    
 
 
@@ -3045,6 +3053,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         init_load_num = my.kwargs.get("init_load_num")
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
+        ingest_data_view = my.kwargs.get("ingest_data_view")
 
        
 
@@ -3100,6 +3109,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "init_load_num": init_load_num, 
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
+            "ingest_data_view" : ingest_data_view,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,

@@ -537,7 +537,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         //var category = values.category[0];
         //var keywords = values.keywords[0];
 
-        //var extra_data = values.extra_data[0];
+        var extra_data = values.extra_data[0];
         
         var parent_key = values.parent_key[0];
 
@@ -566,7 +566,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             parent_key: parent_key,
             //category: category,
             //keywords: keywords,
-            //extra_data: extra_data,
+            extra_data: extra_data,
             update_data: update_data,
             process: process,
             convert: convert,
@@ -785,13 +785,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             name_div.add("<br/>")
 
-        ingest_insert_view = my.kwargs.get('ingest_insert_view')
+        ingest_data_view = my.kwargs.get('ingest_data_view')
 
-        ingest_insert_view = 'edit'
         from tactic.ui.panel import EditWdg
 
         sobject = SearchType.create(my.search_type)
-        edit = EditWdg(search_key =sobject.get_search_key(), mode='view', view=ingest_insert_view )
+        edit = EditWdg(search_key =sobject.get_search_key(), mode='view', view=ingest_data_view )
         
         dialog_data_div.add(edit)
         hidden = HiddenWdg(name="parent_key")
@@ -1019,10 +1018,10 @@ class IngestUploadCmd(Command):
                 if keywords:
                     sobject.set_value("keywords", keywords)
 
+            """
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
                     sobject.set_value(key, value)
-            """
 
             """
             if category:
