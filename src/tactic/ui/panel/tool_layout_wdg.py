@@ -50,6 +50,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def can_use_gear(my):
         return True
 
+    def can_use_search(my):
+        return True
+
 
     def get_display(my):
 

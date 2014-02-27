@@ -201,10 +201,12 @@ class BaseCheckin(Command):
             metadata_file_objects.append(file_object)
 
 
-        # DISABLING for now
-        #from metadata import CheckinMetadataHandler
-        #handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False)
-        #handler.execute()
+        search_type = snapshot.get_value("search_type")
+        parser = SearchType.get(search_type).get_value("metadata_parser", no_exception=True)
+        if parser:
+            from metadata import CheckinMetadataHandler
+            handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False, parser=parser)
+            handler.execute()
 
 
 

@@ -1314,6 +1314,9 @@ class ThumbCmd(Command):
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
 
+            if path in File.NORMAL_EXT:
+                return
+
 
             # use api
             from tactic_client_lib import TacticServerStub

@@ -3079,6 +3079,7 @@ class SObject(object):
     # Metadata: this allows setting of arbitrary metadata without having to
     #   create a whole new column
     #
+    # NOTE: metadata is no longer stored as XML, it is stored as JSON
     def get_metadata_xml(my):
         metadata_mode = "json"
         if not my.metadata:

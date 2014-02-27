@@ -66,6 +66,8 @@ class CheckinMetadataHandler():
 
         snapshot_metadata = None
 
+        parser_type = my.kwargs.get("parser")
+
         for i, file in enumerate(files):
             path = file
             ext = File.get_extension(path)
@@ -73,6 +75,8 @@ class CheckinMetadataHandler():
 
             if not os.path.exists(path):
                 continue
+            elif parser_type != "auto" and parser_type != "true":
+                pass
             elif ext in File.VIDEO_EXT:
                 parser_type = "FFMPEG"
             elif ext in File.NORMAL_EXT:

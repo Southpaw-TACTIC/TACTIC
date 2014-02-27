@@ -210,6 +210,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         )
         content_div.add(dir_list)
 
+        top.add_attr("spt_search_keys", "|".join(search_keys) )
+
 
 
         content = table.add_cell()
@@ -220,6 +222,8 @@ class RepoBrowserWdg(BaseRefreshWdg):
         content.add(outer_div)
         outer_div.add_style("margin: -2px")
         outer_div.add_class("spt_repo_browser_content")
+
+
 
         content_div = DivWdg()
         content_div.add_style("min-width: 400px")
@@ -429,7 +433,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         if relative_dir:
 
-
             # TODO: not very clean.  There are different ways that the
             # relative dir needs to be searched on depending on usage
             # For now, just use a simple mode
@@ -444,7 +447,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                 if not my.dynamic:
                     search.add_filter("relative_dir", "%s/%%" % relative_dir, op='like')
                 search.add_op("or")
-
 
 
         if parent_ids:
@@ -483,12 +485,11 @@ class RepoBrowserDirListWdg(DirListWdg):
         # show latest version only
         # show files
         # show all files types
-        # show totals?
 
         show_empty_folders = True
         show_no_sobject_folders = True
 
-        my.show_files = False
+        my.show_files = True
         show_main_only = True
         show_latest = True
         show_versionless = False
@@ -540,7 +541,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         my.search_types_dict = {}
         my.search_codes = {}
 
-        # Not this shold be used sparingly because it can find lots of
+        # Note this shold be used sparingly because it can find lots of
         # sobjects
         if my.show_files:
 
@@ -1347,22 +1348,12 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_search_type", search_type)
 
 
-        """
-        search_code_list = search_codes.get("%s/" % path)
-        if not search_code_list:
-            search_code_list = []
-        search_codes_str = "|".join(list(search_code_list))
-        item_div.add_attr("spt_search_codes", search_codes_str)
-        """
-
-
         item_div.add_attr("spt_relative_dir", relative_dir)
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
+
         item_div.add_behavior( {
         'type': 'click_up',
-        'dirname': "%s/%s" % (dirname, basename),
-        'basename': '',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
@@ -1384,30 +1375,23 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         var dir_list_top = bvr.src_el.getParent(".spt_dir_list_top");
 
-
-        // FIXME: both search_keys and search_codes are no longer useful
-        /*
-        var search_keys = dir_list_top.getAttribute("spt_search_keys");
+        var search_keys = top.getAttribute("spt_search_keys");
         if (search_keys) {
             search_keys = search_keys.split("|");
         }
         else {
-            search_keys = [];
+            search_keys = null;
         }
-        var search_codes = bvr.src_el.getAttribute("spt_search_codes");
-        search_codes = search_codes.split("|");
-        */
 
-        search_codes = [];
-        search_keys = [];
-
+        var dirname = bvr.src_el.getAttribute("spt_dirname");
+        var basename = "";
 
         spt.app_busy.show("Loading ...");
         var kwargs = {
             search_type: search_type,
             view: 'table',
-            dirname: bvr.dirname,
-            basename: bvr.basename,
+            dirname: dirname,
+            basename: basename,
             search_keys: search_keys
         };
         spt.table.last_table = null;
@@ -1569,7 +1553,8 @@ class RepoBrowserCbk(Command):
         mode = "relative_dir"
         if mode == "relative_dir":
             # Some assumed behavior for this mode:
-            # 1) all snapshots exist in the same folder
+            # 1) all snapshots in this context exist in the same folder
+            #    and should remain so
             # 2) all sobjects have a column called {relative_dir}
             # This should all fail cleanly if these assumptions are not the
             # case unless the sobject has a column called "relative_dir"
@@ -1580,6 +1565,11 @@ class RepoBrowserCbk(Command):
 
         search_keys = [x.get_search_key() for x in all_files]
 
+        # move the files to what the naming now says.
+        # NOTE: this may not be correct.  A possible operation is to
+        # move the file away from the naming conventions say.  In this
+        # case, the file will be moved right back to where the naming
+        # conventions says to move it.
         from tactic.command import NamingMigratorCmd
         cmd = NamingMigratorCmd( mode="file", search_keys=search_keys)
         cmd.execute()
@@ -1729,6 +1719,25 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 
 
 
+class RepoBrowserSearchWrapper(object):
+
+    def alter_search(my, search):
+
+        search_type = search.get_full_search_type()
+
+        # search for all files that are in this relative_dir
+        file_search = Search("sthpw/file")
+        file_search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+        file_search.add_filter("search_type", search_type)
+
+        # use the above search to find all sobjects with files in this
+        # relative_dir
+        search.add_relationship_search_filter(file_search)
+
+
+
+
+
 
 class RepoBrowserDirContentWdg(BaseRefreshWdg):
 
@@ -1762,6 +1771,8 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         # relative_dir
         search2 = Search(search_type)
         search2.add_relationship_search_filter(search)
+
+
         sobjects = search2.get_sobjects()
 
 
@@ -1772,11 +1783,9 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         search_codes = [x.get_value("code") for x in sobjects]
         search_codes_str = "|".join(search_codes)
         expression = "@SEARCH(%s['code','in','%s'])" % (search_type,search_codes_str)
+        #print "expression: ", expression
 
-        #search_keys = my.kwargs.get("search_keys")
-        search_keys = []
-
-
+        search_keys = my.kwargs.get("search_keys")
 
 
         top = my.top
@@ -1817,7 +1826,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type=search_type,
             expression=expression,
-            search_keys=search_keys,
             view="table",
             element_names=element_names,
             show_shelf=True,

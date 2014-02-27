@@ -3201,6 +3201,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 popup.add(exception_wdg)
                 inner.add(popup)
 
+
         
         target_node.add(layout_table) 
 
