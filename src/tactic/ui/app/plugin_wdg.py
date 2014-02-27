@@ -2385,7 +2385,7 @@ class PluginVersionCreator(Command):
         #parts = new_plugin_dir.split("/")
         #iinclude_dirs = [parts[-1]]
         #root_dir = '/'.join(parts[0:-1])
-        parts = new_code.split("/")
+        parts = code.split("/")
         root_dir = "%s/%s" % (plugin_base_dir, parts[0])
         if len(parts) >= 2:
             include_dirs = ["/".join(parts[1:])]

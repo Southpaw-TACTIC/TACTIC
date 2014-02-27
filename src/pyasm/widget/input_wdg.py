@@ -656,7 +656,8 @@ class TextAreaWdg(BaseTextWdg):
 
     def __init__(my,name=None, **kwargs):
         super(TextAreaWdg,my).__init__(name,"textarea")
-
+        
+        my.kwargs = kwargs
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
@@ -716,11 +717,14 @@ class TextAreaWdg(BaseTextWdg):
             if my.disabled_look == True:
                 #my.add_class('disabled')
                 my.add_color("background", "background", -10)
-        value = my.get_value(for_display=True)
-       
+        
+        # value always overrides
+        value = my.kwargs.get("value")
+        if not value:
+            value = my.get_value(for_display=True)
         my.add(value)
 
-        my.handle_mode()
+        #my.handle_mode()
 
         return super(TextAreaWdg,my).get_display()
 
@@ -1229,7 +1233,7 @@ class SelectWdg(BaseInputWdg):
                 unzipped = zip(*zipped)
                 my.values = list(unzipped[0])
                 my.labels = list(unzipped[1])
-            
+           
         # if there is a search for options stored, then use these
         if my.sobjects_for_options != None:
             my.values = []

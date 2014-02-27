@@ -773,9 +773,11 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         repo_path = ThumbWdg.get_link_path(my.info['_repo'], image_link_order=my.image_link_order)
-        # FIXME: need a better check the this
-        # PERFORCE
-        if repo_path and repo_path.startswith("//"):
+        #if repo_path and repo_path.startswith("//"):
+        if False:
+            # PERFORCE
+            # FIXME: need a better check the this.  This is test code
+            # for viewing perforce images when running perforce web server
             version = snapshot.get_value("version")
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 

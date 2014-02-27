@@ -30,6 +30,7 @@ class CKEditorWdg(BaseRefreshWdg):
 
         top = my.top
         top.add_style("min-width: 600px")
+
         top.add_class("spt_ckeditor_top")
         top.add_attr("text_id", my.text_id)
 
@@ -43,12 +44,15 @@ class CKEditorWdg(BaseRefreshWdg):
         my.text.add_style("height: 100%")
         my.text.add_style("min-height: 500px")
         my.text.add_style("display: none")
+        my.text.set_id(my.text_id)
+
         my.text.add_behavior( {
         'type': 'load',
         'color': my.text.get_color("background", -10),
         'text_id': my.text_id,
         'cbjs_action': '''
 
+        /*
         var js_file = "ckeditor/ckeditor.js";
         var url = "/context/spt_js/" + js_file;
         var js_el = document.createElement("script");
@@ -56,8 +60,8 @@ class CKEditorWdg(BaseRefreshWdg):
         js_el.setAttribute("src", url);
         var head = document.getElementsByTagName("head")[0];
         head.appendChild(js_el);
-        setTimeout( function() {
-
+        */
+        var init =  function() {
 
 CKEDITOR.on( 'instanceReady', function( ev )
 {
@@ -66,7 +70,7 @@ CKEDITOR.on( 'instanceReady', function( ev )
 
 
 var config = {
-  toolbar: 'Full',
+  //toolbar: 'Full',
   uiColor: bvr.color,
   height: '500px'
 };
@@ -112,8 +116,14 @@ config.toolbar_Full =
 
 config.entities = false;
 config.basicEntities = false;
+config.extraAllowedContent = 'iframe[*]';
+
+var instance = CKEDITOR.instances[ bvr.text_id ];
+if (instance) instance.destroy();
+    
 CKEDITOR.replace(bvr.text_id, config );
-bvr.src_el.setStyle("display", "");
+
+bvr.src_el.setStyle("display", "none");
 
 
 
@@ -127,8 +137,12 @@ spt.ckeditor.get_value = function(text_id) {
     return text_value;
 }
 
+spt.ckeditor.set_value = function(text_id, data) {
+    CKEDITOR.instances[ text_id ].setData(data);
+}
 
-        }, 500);
+}
+spt.dom.load_js(['ckeditor/ckeditor.js'], init);
         '''
         } )
 
