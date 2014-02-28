@@ -859,7 +859,7 @@ class ThumbWdg2(BaseRefreshWdg):
         if path and path.startswith("/context"):
             img.add_style("padding: 10px 15%")
             img.add_style("width: 70%")
-        else:
+        elif path:
             img.add_style("width: %s" % width)
 
         if not path:

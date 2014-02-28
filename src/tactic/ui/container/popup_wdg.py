@@ -153,10 +153,16 @@ class PopupWdg(BaseRefreshWdg):
             '''
         } ) 
 
+
+
+
+
         # This is the absolute outside of a popup, including the drop shadow
         widget = DivWdg()
         div.add(widget)
         widget.add_class("spt_popup")
+
+
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
             widget.add_behavior( {
@@ -264,6 +270,11 @@ class PopupWdg(BaseRefreshWdg):
 
 
         drag_div = DivWdg()
+
+        #from tactic.ui.container import ArrowWdg
+        #arrow = ArrowWdg()
+        #drag_div.add(arrow)
+
 
         # FIXME: for some reason, this causes popups to stop functioning after
         # close a couple of times

@@ -757,6 +757,28 @@ spt.checkin.browse_folder = function(current_dir, is_sandbox, refresh, select_di
 
 
 
+spt.checkin.get_selected_items = function() {
+
+    var top = spt.checkin.top;
+    var el = top.getElement(".spt_file_selector");
+
+    var items = el.getElements(".spt_dir_list_item");
+    var selected = [];
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (item.is_selected != true)
+            continue;
+
+        selected.push(item);
+    }
+
+    return selected;
+
+}
+
+
+
+
 spt.checkin.get_selected_paths = function() {
 
     var top = spt.checkin.top;
@@ -1064,6 +1086,46 @@ spt.checkin.checkin_path = function(search_key, file_path, process, options) {
     }
 
     return snapshot;
+}
+
+
+
+spt.checkin.add_dependencies = function(snapshot, search_keys, processes) {
+
+    var server = TacticServerStub.get();
+
+    var cmd = 'tactic.ui.widget.CheckinAddDependencyCmd';
+    var kwargs = {
+        snapshot_key: snapshot.__search_key__,
+        search_keys: search_keys,
+        processes: processes
+    };
+
+    server.execute_cmd(cmd, kwargs);
+    return;
+
+    // add dependencies
+    contexts = [];
+
+    if (!search_keys.length) {
+        /*
+        var prev_snapshot = server.get_snapshot();
+
+        var ref_snapshots = server.get_dependencies(prev_snapshot);
+        for (var i = 0; i < ref_snapshots.length; i++) {
+            server.add_dependency_by_code(snapshot, ref_snapshots[i]);
+        }
+        */
+    }
+    else {
+        for (var i = 0; i < search_keys.length; i++) {
+            var search_key = search_keys[i];
+            var process = processes[i];
+            var ref_snapshot = server.get_snapshot(search_key, { process: process } );
+
+            server.add_dependency_by_code(snapshot, ref_snapshot);
+        }
+i   }
 }
 
 
@@ -1479,6 +1541,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
 
             var search_keys = spt.clipboard.get_search_keys();
+
             for (var i = 0; i < search_keys.length; i++) {
                 var search_key = search_keys[i];
                 var snapshot = server.get_snapshot(search_key, {context: ''});
@@ -2256,6 +2319,29 @@ else {
 }
 
 
+var depend_keys = []
+var depend_processes = []
+var items = spt.checkin.get_selected_items();
+for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    item.setStyle("border", "solid 1px red");
+    var item_depend_keys = item.getAttribute("spt_depend_keys");
+    if (item_depend_keys) {
+        item_depend_keys = item_depend_keys.split("|");
+    }
+    else {
+        item_depend_keys = [];
+    }
+    depend_keys.push(item_depend_keys);
+
+    var item_depend_processes = [];
+    for (var j = 0; j < item_depend_keys.length; j++) {
+        item_depend_processes.push("publish");
+    }
+    depend_processes.push(item_depend_processes);
+}
+
+
 if (!file_paths || file_paths.length == 0) {
     spt.alert("No files selected");
     return;
@@ -2553,6 +2639,7 @@ try {
                         snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: transfer_mode, is_current: is_current, context_index_padding: padding, checkin_type: checkin_type});
 
                         checkin_data[file_path] = snapshot;
+
                     }
 
                 }
@@ -2566,6 +2653,11 @@ try {
                     else {
 
                         snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: transfer_mode, is_current: is_current, context_index_padding: padding, checkin_type: checkin_type});
+
+
+                        // TEST Adding Dependency
+                        spt.checkin.add_dependencies(snapshot, depend_keys[i], depend_processes[i]);
+
                     }
                     checkin_data[file_path] = snapshot;
 
@@ -2593,7 +2685,6 @@ try {
         }    
 
     }
-
 
     // save info to the file
     var cached_data = spt.checkin.get_cached_data();
@@ -3976,7 +4067,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         snapshots = search.get_sobjects()
         snapshot_codes = [x.get_code() for x in snapshots]
 
-        button = ButtonNewWdg(title='Check-out Tools', icon=IconWdg.CHECK_OUT_SM, show_arrow=True )
+        for snapshot in snapshots:
+            ref_snapshots = Snapshot.get_all_ref_snapshots(snapshot)
+            ref_codes = [x.get_code() for x in ref_snapshots]
+            snapshot_codes.extend(ref_codes)
+
+
+        button = ButtonNewWdg(title='Check-out Files', icon=IconWdg.CHECK_OUT_SM, show_arrow=False )
+        button.set_show_arrow_menu(True)
         button_row.add(button)
 
         menu = Menu(width=220)
@@ -3985,19 +4083,23 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         cbjs_action = my.get_checkout_cbjs_action(my.process)
 
+        behavior = {
+            'type': 'click_up',
+            # Don't specify the sandbox dir at the moment because it will
+            # remove the relative sub directories
+            #'sandbox_dir': my.base_dir,
+            'snapshot_codes': snapshot_codes,
+            'transfer_mode': transfer_mode,
+            'file_types': ['main'],
+            'cbjs_action': cbjs_action,
+            'filename_mode': 'source'
+        }
+        button.add_behavior(behavior)
+
+
         menu_item = MenuItem(type='action', label='Check-out Files')
         menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        # Don't specify the sandbox dir at the moment because it will
-        # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
-        'snapshot_codes': snapshot_codes,
-        'transfer_mode': transfer_mode,
-        'file_types': ['main'],
-        'cbjs_action': cbjs_action,
-        'filename_mode': 'source'
-        } )
+        menu_item.add_behavior(behavior)
 
         
         menu_item = MenuItem(type='separator')
@@ -4058,11 +4160,23 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'type': 'click_up',
             'sandbox_dir': my.base_dir,
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
             spt.app_busy.show("Checking out from Clipboard");
-            var search_keys = spt.clipboard.get_search_keys();
+            //var search_keys = spt.clipboard.get_search_keys();
+
+            var expr = "@SOBJECT(sthpw/clipboard['category','select']['login',$LOGIN'])";
+            var items = server.eval(expr);
+            var search_keys = [];
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                console.log(item);
+                var search_key = item.search_type + '&code=' + item.search_code;
+                search_keys.push(search_key);
+            }
+
+
             for (var i = 0; i < search_keys.length; i++) {
                 var search_key = search_keys[i];
                 var snapshot = server.get_snapshot(search_key, {context: ''});
@@ -4126,8 +4240,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': menu } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
+        SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'BUTTON_MENU': menu } )
+        SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "BUTTON_MENU", True )
 
 
 
@@ -4316,6 +4430,10 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         
         cbjs_action = '''
         var button = spt.smenu.get_activator(bvr);
+        if (!button) {
+            button = bvr.src_el;
+        }
+
         var filename_mode = bvr.filename_mode;
         if (!filename_mode) {
             filename_mode = 'source';
@@ -5526,3 +5644,42 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         table.set_sobjects(snapshots)
 
         return table
+
+
+__all__.append("CheckinAddDependencyCmd")
+class CheckinAddDependencyCmd(Command):
+    def execute(my):
+
+        snapshot_key = my.kwargs.get("snapshot_key")
+        search_keys = my.kwargs.get("search_keys")
+        processes = my.kwargs.get("processes")
+
+        snapshot = Search.get_by_search_key(snapshot_key)
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+
+        # add dependencies
+        contexts = []
+
+        if len(search_keys) == 0:
+            prev_snapshot = snapshot.get_previous()
+            if not prev_snapshot:
+                return
+
+            ref_snapshots = server.get_dependencies(prev_snapshot.get_code())
+            for ref_snapshot in ref_snapshots:
+                server.add_dependency_by_code(snapshot.get("code"), ref_snapshot.get("code"))
+
+        else:
+            for i, search_key in enumerate(search_keys):
+                process = processes[i]
+                ref_snapshot = server.get_snapshot(search_key, process=process )
+
+                server.add_dependency_by_code(snapshot.get_code(), ref_snapshot)
+
+
+
+
+
+

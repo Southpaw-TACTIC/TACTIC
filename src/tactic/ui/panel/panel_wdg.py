@@ -3142,7 +3142,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
-            kwargs['show_gear'] = 'false'
             from tool_layout_wdg import RepoBrowserLayoutWdg
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 

@@ -3451,7 +3451,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def add_dependency(my, ticket, snapshot_code, file_path, type='ref', tag='main'):
-        '''method to append a dependency reference to an existing checkin
+        '''method to append a dependency reference to an existing checkin.
         The snapshot that this is attached will be auto-discovered
        
         @params
@@ -3469,7 +3469,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
-        snapshot = Snapshot.get_by_code(snapshot_code)
+        elif snapshot_code.startswith("sthpw/snapshot?"):
+            snapshot = Search.get_by_search_key(snapshot_code)
+        else:
+            snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
                 snapshot_code)
@@ -3481,6 +3484,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot.commit()
 
         return my._get_sobject_dict(snapshot)
+
 
 
     @xmlrpc_decorator
@@ -3511,7 +3515,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot = Snapshot.get_by_code(to_snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
-                snapshot_code)
+                to_snapshot_code)
 
         xml = snapshot.get_xml_value("snapshot")
         builder = SnapshotBuilder(xml)
@@ -4038,6 +4042,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         else:
             level_type = None
             level_id = None
+
+        # if a process is given the context is overridden
+        if process:
+            context = None
 
         if not versionless:
             snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
