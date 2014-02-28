@@ -53,16 +53,61 @@ class WatchFolderCheckin(WatchFolder):
         print "---"
 
 
-class WatchFolderCheckinThread(threading.Thread):
+
+class WatchFolderFileCheckinThread(threading.Thread):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
-        super(WatchFolderCheckinThread, my).__init__()
+        super(WatchFolderFileCheckinThread, my).__init__()
+
+    def run(my):
+
+        task = my.kwargs.get("task")
+        paths = task.get_checkin_paths()
+
+        while True:
+            if not paths:
+                time.sleep(1)
+                continue
+
+            path = paths.pop(0)
+
+            lock_path = "%s.lock" % path
+            error_path = "%s.error" % path
+
+            if not os.path.exists(lock_path):
+                print "ERROR: no lock path [%s]" % lock_path
+                continue
+
+            try:
+
+                print "CHECKIN: ", path
+
+                time.sleep(5)
+                #task.checkin(path)
+
+                if os.path.exists(path):
+                    os.unlink(path)
+
+            except Exception, e:
+                f = open(error_path)
+                f.close()
+
+            finally:
+                os.unlink(lock_path)
+
+
+
+
+class WatchFolderCheckThread(threading.Thread):
+
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
+        super(WatchFolderCheckThread, my).__init__()
 
         path = my.kwargs.get("path")
         my.lock_path = "%s.lock" % path
         my.error_path = "%s.error" % path
-
 
         if os.path.exists(my.lock_path):
             raise Exception()
@@ -74,27 +119,26 @@ class WatchFolderCheckinThread(threading.Thread):
         path = my.kwargs.get("path")
 
         try:
-
+            print "VERIFY: ", path
             changed = my.verify_file_size(path)
-            print " .... changed: ", changed
-
             if changed:
+                if os.path.exists(my.lock_path):
+                    os.unlink(my.lock_path)
                 return
 
             task = my.kwargs.get("task")
-            task.checkin(path)
-
+            task.add_checkin_path(path)
 
         except Exception, e:
             print "Error: ", e
             f = open(my.error_path, "w")
             f.write(str(e))
             f.close()
-            raise
-        finally:
+
             if os.path.exists(my.lock_path):
                 os.unlink(my.lock_path)
 
+            raise
 
 
     def verify_file_size(my, file_path):
@@ -111,7 +155,7 @@ class WatchFolderCheckinThread(threading.Thread):
                 changed = True
                 break
 
-            file_size_check=os.path.getsize(file_path)
+            file_size_check = os.path.getsize(file_path)
             if file_size != file_size_check:
                 changed = True
                 break
@@ -131,10 +175,16 @@ class WatchDropFolderTask(SchedulerTask):
         my.project_name = kwargs.get("project_name")
         my.search_type = kwargs.get("search_type")
 
+        my.checkin_paths = []
+
         super(WatchDropFolderTask, my).__init__()
-        # find out all of the jobs in the queue that are not in the
-        # database
-        #my.init()
+
+
+    def add_checkin_path(my, path):
+        my.checkin_paths.append(path)
+
+    def get_checkin_paths(my):
+        return my.checkin_paths
 
     def is_image(my, file_name):
         base, ext = os.path.splitext(file_name)
@@ -170,13 +220,11 @@ class WatchDropFolderTask(SchedulerTask):
             f.close()
 
             
-    def init(my):
+    def run(my):
 
         base_dir = my.base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
-
-        print "base_dir: ", base_dir
 
         dirs = os.listdir(base_dir)
         test_dirs = dirs[:]
@@ -184,15 +232,25 @@ class WatchDropFolderTask(SchedulerTask):
             if dirname.endswith(".lock") or dirname.endswith(".error"):
                 dirs.remove(dirname)
 
-        print "dirs: ", dirs
+                base, ext = os.path.splitext(dirname)
+                dirs.remove(base)
+
+        if not dirs:
+            return
 
         # skip certain files like log
         dir_set = set(dirs)
         for dirname in dirs:
-
             if dirname.startswith("TACTIC_log"):
                 dir_set.remove(dirname)
+            if dirname.startswith("."):
+                dir_set.remove(dirname)
         dirs = list(dir_set)
+
+        if not dirs:
+            return
+
+        print "Found new: ", dirs
 
         tmp_set = set(dirs)
         dirs_set = set()
@@ -215,45 +273,26 @@ class WatchDropFolderTask(SchedulerTask):
         # start a bunch of threads for each file which will apply the check
         # algorithm
 
-
         # go thru the list to check in  
         for file_list in [image_list, movie_list, other_list]:
             for file_name in file_list:
 
                 file_path = '%s/%s' %(my.base_dir, file_name)
-                print "file_path: ", file_path
+                my.lock_path = "%s.lock" % file_path
+                if os.path.exists(my.lock_path):
+                    continue
 
+                print "File: ", file_path
                 try:
-                    thread = WatchFolderCheckinThread(
+                    thread = WatchFolderCheckThread(
                             task=my,
                             path=file_path
                             )
                     thread.start()
                 except Exception, e:
-                    print "... Locked"
-
-                #if not my.verify_file(file_path):
-                #    continue
-                #my.checkin(file_path)
+                    pass
 
 
-    def verify_file(my, file_path):
-        return my.verify_file_size(file_path)
-
-
-    def verify_file_size(my, file_path):
-        '''Check if the file size changes over a period of 5 seconds. If so, file is not ready'''
-        # Chech whether the file_path exists or not. Once the file is ready, the or
-        if not os.path.exists(file_path):
-            return False
-        file_size=os.path.getsize(file_path)
-        time.sleep(5)
-        if not os.path.exists(file_path):
-            return False
-        file_size_check=os.path.getsize(file_path)
-        if file_size!=file_size_check:
-            return False
-        return True
 
 
     def checkin(my, file_path):
@@ -293,7 +332,7 @@ class WatchDropFolderTask(SchedulerTask):
         try:
             if not sobj:
                 # TODO: add pipeline_code
-                #sobj = server.insert('viacom/media', {'name': file_name, 'asset_type': asset_type})
+                #sobj = server.insert('jobs/media', {'name': file_name, 'asset_type': asset_type})
                 task = server.create_task(sobj.get('__search_key__'),process='publish')
                 server.update(task, {'status': 'New'})
 
@@ -343,13 +382,29 @@ class WatchDropFolderTask(SchedulerTask):
             print "File checked in. Source file [%s] deleted: " %file_name
             os.unlink(file_path)
 
+
+
     def execute(my):
         Batch()
-        base_dir = my.base_dir
-        if not base_dir:
-            print "WARNING: No base dir defined."
-            return
-        my.init()
+
+        # Start check-in thread
+        checkin = WatchFolderFileCheckinThread(
+                task=my
+                )
+        checkin.start()
+
+        # Check loop
+        while True:
+
+            base_dir = my.base_dir
+            if not base_dir:
+                print "WARNING: No base dir defined."
+                return
+            my.run()
+
+            time.sleep(1)
+
+
 
     def start(cls):
         # Check whether the user define the drop folder path.
@@ -363,7 +418,7 @@ class WatchDropFolderTask(SchedulerTask):
         if options.project_name!=None :
             project_name= options.project_name
         else:
-            project_name= 'viacom'
+            project_name= 'jobs'
 
         if options.drop_path!=None :
             drop_path= options.drop_path
@@ -373,12 +428,12 @@ class WatchDropFolderTask(SchedulerTask):
         if options.search_type!=None :
             search_type= options.drop_path
         else:
-            search_type= 'viacom/media'
+            search_type= 'jobs/media'
 
         task = WatchDropFolderTask(base_dir=drop_path, project_name=project_name,search_type=search_type)
         
         scheduler = Scheduler.get()
-        scheduler.add_interval_task(task, 30, delay=0)
+        scheduler.add_single_task(task, delay=1)
         scheduler.start_thread()
         return scheduler
     start = classmethod(start)
