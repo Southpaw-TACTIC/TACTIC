@@ -62,6 +62,19 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
     def run(my):
 
+        try:
+            my._run()
+        finally:
+            task = my.kwargs.get("task")
+            paths = task.get_checkin_paths()
+            for path in paths:
+                lock_path = "%s.lock" % path
+                if os.path.exists(path):
+                    os.unlink(path)
+
+
+    def _run(my):
+
         task = my.kwargs.get("task")
         paths = task.get_checkin_paths()
 
@@ -282,7 +295,6 @@ class WatchDropFolderTask(SchedulerTask):
                 if os.path.exists(my.lock_path):
                     continue
 
-                print "File: ", file_path
                 try:
                     thread = WatchFolderCheckThread(
                             task=my,
