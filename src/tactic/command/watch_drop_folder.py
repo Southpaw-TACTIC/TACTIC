@@ -32,29 +32,6 @@ from optparse import OptionParser
 import threading
 
 
-"""
-from pyasm.common import WatchFolder
-
-class WatchFolderCheckin(WatchFolder):
-
-    def on_moved(self, event):
-
-        src_path = event.src_path
-        dest_path = event.dest_path
-        print "src_path: ", src_path
-
-        # this file should be in the relative path
-        upload_dir = self.upload_dir
-        print "upload_dir: ", upload_dir
-
-        basename = os.path.basename(dest_path)
-        dirname = os.path.dirname(dest_path)
-        rel_dir = dirname.replace("%s" % upload_dir, "")
-        print "rel_dir: ", rel_dir
-        print "---"
-"""
-
-
 
 class WatchFolderFileActionThread(threading.Thread):
 
@@ -68,8 +45,8 @@ class WatchFolderFileActionThread(threading.Thread):
         try:
             my._run()
         finally:
-            cmd = my.kwargs.get("cmd")
-            paths = cmd.get_paths()
+            task = my.kwargs.get("task")
+            paths = task.get_paths()
             for path in paths:
                 checkin_path = "%s.lock" % path
                 if os.path.exists(checkin_path):
@@ -79,8 +56,7 @@ class WatchFolderFileActionThread(threading.Thread):
     def _run(my):
 
         task = my.kwargs.get("task")
-        cmd = my.kwargs.get("cmd")
-        paths = cmd.get_paths()
+        paths = task.get_paths()
 
         while True:
             if not paths:
@@ -98,7 +74,19 @@ class WatchFolderFileActionThread(threading.Thread):
 
             try:
 
-                cmd.checkin(path)
+                kwargs = {
+                    "project_code": task.project_code,
+                    "search_type": task.search_type,
+                    "base_dir": task.base_dir,
+                    "path": path
+                }
+
+
+                # create a "custom" command that will act on the file
+                cmd = CustomCmd(
+                        **kwargs
+                )
+                cmd.execute()
 
                 # TEST
                 #time.sleep(1)
@@ -110,7 +98,7 @@ class WatchFolderFileActionThread(threading.Thread):
                 f = open(error_path,"w")
                 f.write(str(e))
                 f.close()
-                raise
+                #raise
 
             finally:
                 os.unlink(checkin_path)
@@ -154,8 +142,8 @@ class WatchFolderCheckFileThread(threading.Thread):
             f = open(my.checkin_path, "w")
             f.close()
 
-            cmd = my.kwargs.get("cmd")
-            cmd.add_path(path)
+            task = my.kwargs.get("task")
+            task.add_path(path)
 
 
         except Exception, e:
@@ -215,16 +203,6 @@ class CustomCmd(object):
     def __init__(my, **kwargs):
         my.kwargs = kwargs
 
-        my.checkin_paths = []
-
-
-    def add_path(my, path):
-        my.checkin_paths.append(path)
-
-    def get_paths(my):
-        return my.checkin_paths
-
-
 
     def is_image(my, file_name):
         base, ext = os.path.splitext(file_name)
@@ -263,15 +241,18 @@ class CustomCmd(object):
 
 
 
-    def checkin(my, file_path):
+    def execute(my):
 
+        file_path = my.kwargs.get("path")
         project_code = my.kwargs.get("project_code")
         base_dir = my.kwargs.get("base_dir")
         search_type = my.kwargs.get("search_type")
 
+        basename = os.path.basename(file_path)
+
         context = my.kwargs.get("context")
         if not context:
-            context = 'publish' 
+            context = 'publish/%s'  % basename
 
 
         file_name = os.path.basename(file_path)
@@ -292,15 +273,35 @@ class CustomCmd(object):
         server_return_value = {}
 
         try:
-
-            # Set up the basic check-in step
-            sobj = server.query(search_type, filters=[['name', 'EQ', '^%s'%file_name]], single=True)
+            filters = [
+                    [ 'name', '=', file_name ],
+                    #[ 'relative_dir', '=', relative_dir ]
+                ]
+            sobj = server.query(search_type, filters=filters, single=True)
 
             if not sobj:
-                task = server.create_task(sobj.get('__search_key__'),process='publish')
-                server.update(task, {'status': 'New'})
+                # create sobject if it does not yet exist
+                sobj = SearchType.create(search_type)
+                if SearchType.column_exists(search_type, "name"):
+                    sobj.set_value("name", basename)
+                if SearchType.column_exists(search_type, "media_type"):
+                    sobj.set_value("media_type", asset_type)
 
-            server_return_value = server.simple_checkin(sobj.get('__search_key__'),  context, file_path, description=description, mode='copy')
+                if SearchType.column_exists(search_type, "keywords"):
+                    pass
+
+                sobj.commit()
+                search_key = sobj.get_search_key()
+            else:
+                search_key = sojb.get("__search_key__")
+
+
+            #task = server.create_task(sobj.get('__search_key__'),process='publish')
+            #server.update(task, {'status': 'New'})
+
+            server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='copy')
+
+
             
         except Exception, e:
             print "Error occurred", e
@@ -358,8 +359,18 @@ class WatchDropFolderTask(SchedulerTask):
 
         super(WatchDropFolderTask, my).__init__()
 
+        my.checkin_paths = []
 
-            
+
+    def add_path(my, path):
+        my.checkin_paths.append(path)
+
+    def get_paths(my):
+        return my.checkin_paths
+
+
+
+
     def _execute(my):
 
         base_dir = my.base_dir
@@ -395,12 +406,12 @@ class WatchDropFolderTask(SchedulerTask):
 
         print "Found new: ", dirs
 
-        # go thru the list to check in  
+        # go thru the list to check each file
         for file_name in dirs:
 
             file_path = '%s/%s' %(my.base_dir, file_name)
             thread = WatchFolderCheckFileThread(
-                    cmd=my.cmd,
+                    task=my,
                     path=file_path
                     )
             thread.daemon = True
@@ -415,16 +426,9 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
 
-        # create a "custom" command that will act on the file
-        my.cmd = CustomCmd(
-                project_code=my.project_code,
-                base_dir=my.base_dir,
-                search_type=my.search_type
-                )
-
         # Start check-in thread
         checkin = WatchFolderFileActionThread(
-                cmd=my.cmd
+                task=my,
                 )
         checkin.start()
 
@@ -472,7 +476,6 @@ if __name__ == '__main__':
         try:
             time.sleep(15)
         except (KeyboardInterrupt, SystemExit), e:
-            print "OMG"
             scheduler = Scheduler.get()
             scheduler.stop()
             break
