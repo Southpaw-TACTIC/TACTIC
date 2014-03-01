@@ -574,6 +574,54 @@ class Common(Base):
 
     get_filesystem_name = staticmethod(get_filesystem_name)
 
+
+
+
+    def get_keywords_from_path(cls, rel_path):
+        # delimiters 
+        P_delimiters = re.compile("[- _\.]")
+        # special characters
+        P_special_chars = re.compile("[\[\]{}\(\)\,]")
+        # camel case
+        P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+
+
+        parts = rel_path.split("/")
+        keywords = set()
+
+        for item in parts:
+            item = P_camel_case.sub(r'_\1', item)
+            parts2 = re.split(P_delimiters, item)
+            for item2 in parts2:
+                if not item2:
+                    continue
+
+                item2 = re.sub(P_special_chars, "", item2)
+
+                # skip 1 letter keywords
+                if len(item2) == 1:
+                    continue
+
+                try:
+                    int(item2)
+                    continue
+                except:
+                    pass
+
+
+                #print "item: ", item2
+                item2 = item2.lower()
+
+                keywords.add(item2)
+
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        return keywords_list
+
+    get_keywords_from_path = classmethod(get_keywords_from_path)
+
+
+
     #
     # String manipulation functions
     #

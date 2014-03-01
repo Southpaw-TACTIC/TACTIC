@@ -19,7 +19,7 @@ import os.path
 import sys
 
 from dateutil import parser
-from pyasm.common import Environment, Config
+from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
 from pyasm.biz import Project
 from pyasm.search import DbContainer
@@ -129,7 +129,6 @@ class WatchFolderCheckFileThread(threading.Thread):
             f = open(my.lock_path, "w")
             f.close()
 
-            print "VERIFY: ", path
             changed = my.verify_file_size(path)
 
 
@@ -255,6 +254,10 @@ class CustomCmd(object):
             context = 'publish/%s'  % basename
 
 
+        # find the relative_dir and relative_path
+        relative_path = file_path.replace("%s/" % base_dir, "")
+        relative_dir = os.path.dirname(relative_path)
+
         file_name = os.path.basename(file_path)
         log_path = '%s/TACTIC_log.txt' %(base_dir)
         my.create_checkin_log()
@@ -287,13 +290,20 @@ class CustomCmd(object):
                 if SearchType.column_exists(search_type, "media_type"):
                     sobj.set_value("media_type", asset_type)
 
+
+                if SearchType.column_exists(search_type, "relative_dir"):
+                    sobj.set_value("relative_dir", relative_dir)
+
                 if SearchType.column_exists(search_type, "keywords"):
-                    pass
+                    relative_path = relative_path
+                    keywords = Common.get_keywords_from_path(relative_path)
+                    keywords = " ".join( keywords )
+                    sobj.set_value("keywords", keywords)
 
                 sobj.commit()
                 search_key = sobj.get_search_key()
             else:
-                search_key = sojb.get("__search_key__")
+                search_key = sobj.get("__search_key__")
 
 
             #task = server.create_task(sobj.get('__search_key__'),process='publish')
