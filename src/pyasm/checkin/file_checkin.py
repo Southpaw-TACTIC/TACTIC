@@ -403,7 +403,8 @@ class FileCheckin(BaseCheckin):
 
             to_name = file_object.get_full_file_name()
             file_type = my.snapshot.get_type_by_file_name(to_name)
-            file_node = snapshot_xml.get_node("snapshot/file[@name='%s']" % to_name)
+
+            file_node = snapshot_xml.get_node('snapshot/file[@name="%s"]' % to_name)
             assert file_node != None
 
             if i < len(my.source_paths):
