@@ -135,25 +135,26 @@ class PopupWdg(BaseRefreshWdg):
     def get_display(my):
 
         div = DivWdg()
-        div.add_style("position: fixed")
-        div.add_style("top: 0px")
-        div.add_style("left: 0px")
-        div.add_style("opacity: 0.4")
-        div.add_style("background", "#000")
-        #div.add_color("background", "background2")
-        div.add_style("padding: 100px")
-        div.add_style("height: 100%")
-        div.add_style("width: 100%")
-        div.add_class("spt_popup_background")
-        div.add_style("display: none")
-        div.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.hide(bvr.src_el);
-            '''
-        } ) 
 
+        if not Container.get("PopupWdg:background"):
+            div.add_style("position: fixed")
+            div.add_style("top: 0px")
+            div.add_style("left: 0px")
+            div.add_style("opacity: 0.4")
+            div.add_style("background", "#000")
+            div.add_style("padding: 100px")
+            div.add_style("height: 100%")
+            div.add_style("width: 100%")
+            div.add_class("spt_popup_background")
+            div.add_style("display: none")
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.hide(bvr.src_el);
+                '''
+            } ) 
 
+        Container.put("PopupWdg:background", True)
 
 
 
@@ -743,6 +744,8 @@ spt.popup.close = function( popup_el_or_id , fade)
         spt.hide( popup );
     }
     spt.popup.hide_all_aux_divs( popup, fade );
+
+    spt.popup.hide_background();
 
     if( popup == spt.popup._focus_el ) {
         spt.popup.release_focus( spt.popup._focus_el );
