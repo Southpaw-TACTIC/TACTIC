@@ -176,6 +176,19 @@ class JobQueueThread(BaseProcessThread):
 
 
 
+class WatchFolderThread(BaseProcessThread):
+
+    def get_title(my):
+        return "Watch Folder"
+
+    def execute(my):
+        # Run the job queue service
+        executable = '%s "%s/src/tactic/command/watch_drop_folder.py"' % (python, tactic_install_dir)
+        os.system('%s' % (executable) )
+
+
+
+
 # DEPRECATED: use SchedulerThread below
 class TacticTimedThread(threading.Thread):
 
@@ -456,6 +469,7 @@ class TacticMonitor(object):
                 my.num_processes = 3
 
 
+
         start_port = Config.get_value("services", "start_port")
 
         ports_str = os.environ.get("TACTIC_PORTS")
@@ -473,12 +487,16 @@ class TacticMonitor(object):
             ports = []
             for i in range(0, my.num_processes):
                 ports.append( start_port + i )
-                
+        
 
         tactic_threads = []
 
-        # create a number of processes
         use_tactic = Config.get_value("services", "tactic")
+        use_job_queue = Config.get_value("services", "job_queue")
+        use_watch_folder = Config.get_value("services", "watch_folder")
+
+
+        # create a number of processes
         if use_tactic != 'false':
             #for i in range(0, my.num_processes):
             for port in ports:
@@ -494,7 +512,6 @@ class TacticMonitor(object):
 
 
         # Job Queue services
-        use_job_queue = Config.get_value("services", "job_queue")
         if use_job_queue == 'true':
             num_processes = Config.get_value("services", "queue_process_count")
             if not num_processes:
@@ -506,6 +523,22 @@ class TacticMonitor(object):
                 job_thread = JobQueueThread()
                 job_thread.start()
                 tactic_threads.append(job_thread)
+
+
+        # Watch Folder services
+        if use_watch_folder == 'true':
+            watch_thread = WatchFolderThread()
+            watch_thread.start()
+            tactic_threads.append(watch_thread)
+
+
+
+
+        if len(tactic_threads) == 0:
+            print
+            print "No services started ..."
+            print
+            return
 
 
 

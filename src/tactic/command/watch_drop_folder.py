@@ -58,6 +58,9 @@ class WatchFolderFileActionThread(threading.Thread):
         task = my.kwargs.get("task")
         paths = task.get_paths()
 
+        count = 0
+        restart = False
+
         while True:
             if not paths:
                 time.sleep(1)
@@ -93,6 +96,12 @@ class WatchFolderFileActionThread(threading.Thread):
                 #if os.path.exists(path):
                 #    os.unlink(path)
 
+                count += 1
+                if count > 50:
+                    restart = True
+                    break
+
+
             except Exception, e:
                 print "Error: ", e
                 f = open(error_path,"w")
@@ -103,7 +112,13 @@ class WatchFolderFileActionThread(threading.Thread):
             finally:
                 os.unlink(checkin_path)
 
-
+        # restart every 20 check-ins
+        if restart:
+            for path in paths:
+                checkin_path = "%s.checkin" % path
+                if os.path.exists(checkin_path):
+                    os.unlink(checkin_path)
+            Common.restart()
 
 
 class WatchFolderCheckFileThread(threading.Thread):
@@ -414,7 +429,7 @@ class WatchDropFolderTask(SchedulerTask):
         if not dirs:
             return
 
-        print "Found new: ", dirs
+        #print "Found new: ", dirs
 
         # go thru the list to check each file
         for file_name in dirs:
@@ -448,6 +463,9 @@ class WatchDropFolderTask(SchedulerTask):
 
 
     def start(cls):
+
+        print "Running Watch Folder ..."
+
         # Check whether the user define the drop folder path.
         # Default dop folder path: /tmp/drop
         parser = OptionParser()
@@ -460,11 +478,16 @@ class WatchDropFolderTask(SchedulerTask):
             project_code= options.project
         else:
             project_code= 'jobs'
+            project_code= 'ingest'
 
         if options.drop_path!=None :
             drop_path= options.drop_path
         else:
-            drop_path= '/tmp/drop'
+            tmp_dir = Environment.get_tmp_dir()
+            drop_path = "%s/drop" % tmp_dir
+        print "    using [%s]" % drop_path
+        if not os.path.exists(drop_path):
+            os.makedirs(drop_path)
 
         if options.search_type!=None :
             search_type= options.drop_path
