@@ -117,6 +117,17 @@ class UploadServerWdg(Widget):
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
             shutil.move(path, to_path)
+
+            # Because _cpreqbody makes use of mkstemp, the file permissions
+            # are set to 600.  This switches to the permissions as defined
+            # by the TACTIC users umask
+            try:
+                current_umask = os.umask(0)
+                os.umask(current_umask)
+                os.chmod(to_path, 0o666 - current_umask)
+            except Exception, e:
+                print "WARNING: ", e
+
             return [to_path]
 
 
