@@ -112,6 +112,30 @@ spt.tab.get_header = function(name) {
 
 
 
+spt.tab.get_content = function(name) {
+    var top = spt.tab.top;
+    var tab_id = top.getAttribute("spt_tab_id");
+
+    var content_top = top.getElement(".spt_tab_content_top");
+    var all_contents = content_top.getElements(".spt_tab_content");
+
+    // FIXME: this breaks when opening new tabs for some reason
+    //return all_contents;
+
+    for (var i = 0; i < all_contents.length; i++ ) {
+        var content_tab_id = all_contents[i].getAttribute("spt_tab_id");
+        var content_name = all_contents[i].getAttribute("spt_element_name");
+        if (content_name == name) {
+            return all_contents[i];
+        }
+    }
+
+
+    return null;
+}
+
+
+
 
 
 spt.tab.get_contents = function() {

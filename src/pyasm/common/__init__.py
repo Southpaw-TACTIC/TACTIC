@@ -34,5 +34,6 @@ except:
 
 
 from system import *
+from watch_folder import *
 
 

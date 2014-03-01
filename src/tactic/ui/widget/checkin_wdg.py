@@ -2319,12 +2319,12 @@ else {
 }
 
 
+// TEST Dependencies
 var depend_keys = []
 var depend_processes = []
 var items = spt.checkin.get_selected_items();
 for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    item.setStyle("border", "solid 1px red");
     var item_depend_keys = item.getAttribute("spt_depend_keys");
     if (item_depend_keys) {
         item_depend_keys = item_depend_keys.split("|");
@@ -2656,8 +2656,10 @@ try {
 
 
                         // TEST Adding Dependency
-                        spt.checkin.add_dependencies(snapshot, depend_keys[i], depend_processes[i]);
-
+                        var dependencies = depend_keys[i];
+                        if (dependencies.length) {
+                            spt.checkin.add_dependencies(snapshot, dependencies, depend_processes[i]);
+                        }
                     }
                     checkin_data[file_path] = snapshot;
 
@@ -5656,6 +5658,11 @@ class CheckinAddDependencyCmd(Command):
 
         snapshot = Search.get_by_search_key(snapshot_key)
 
+        from pyasm.checkin import SnapshotBuilder
+        xml = snapshot.get_xml_value("snapshot")
+        builder = SnapshotBuilder(xml)
+
+
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
 
@@ -5667,17 +5674,27 @@ class CheckinAddDependencyCmd(Command):
             if not prev_snapshot:
                 return
 
-            ref_snapshots = server.get_dependencies(prev_snapshot.get_code())
+            ref_snapshots = prev_snapshot.get_all_ref_snapshots()
             for ref_snapshot in ref_snapshots:
-                server.add_dependency_by_code(snapshot.get("code"), ref_snapshot.get("code"))
+                my.add_dependency_by_code(builder, ref_snapshot)
 
         else:
             for i, search_key in enumerate(search_keys):
                 process = processes[i]
-                ref_snapshot = server.get_snapshot(search_key, process=process )
+                sobject = Search.get_by_search_key(search_key)
+                ref_snapshot = Snapshot.get_latest_by_sobject(sobject, process=process)
+                if ref_snapshot:
+                    my.add_dependency_by_code(builder, ref_snapshot)
 
-                server.add_dependency_by_code(snapshot.get_code(), ref_snapshot)
 
+        snapshot.set_value("snapshot", builder.to_string() )
+        snapshot.commit()
+
+
+    def add_dependency_by_code(my, builder, from_snapshot, type='ref', tag='main'):
+        from_snapshot_code = from_snapshot.get("code")
+
+        builder.add_ref_by_snapshot_code(from_snapshot_code, type=type, tag=tag)
 
 
 

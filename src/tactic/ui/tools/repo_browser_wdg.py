@@ -1219,7 +1219,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             var activator = spt.smenu.get_activator(bvr);
             var search_type = activator.getAttribute("spt_search_type");
 
-
             var relative_dir = activator.getAttribute("spt_relative_dir");
             var class_name = 'tactic.ui.tools.IngestUploadWdg';
             var kwargs = {
@@ -1229,6 +1228,34 @@ class RepoBrowserDirListWdg(DirListWdg):
             spt.panel.load_popup("Ingest <i style='opacity: 0.3'>("+search_type+")</i>", class_name, kwargs);
             '''
         } )
+
+
+        menu_item = MenuItem(type='separator')
+        #menu.add(menu_item)
+        menu_item = MenuItem(type='action', label='Copy To Clipboard')
+        #menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+
+            var server = TacticServerStub.get();
+
+            var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
+            var kwargs = {
+                search_type: bvr.search_type,
+                action: 'copy_clipboard',
+                relative_dir: relative_dir
+            }
+
+            var server = TacticServerStub.get();
+            server.execute_cmd(class_name, kwargs);
+
+
+            '''
+        } )
+
 
 
 
@@ -1510,7 +1537,30 @@ class RepoBrowserActionCmd(Command):
             FileUndo.move(old_dir, new_dir)
 
 
-            
+        elif action == "copy_clipboard":
+
+            relative_dir = my.kwargs.get("relative_dir")
+            if not relative_dir:
+                return
+
+            search = Search("sthpw/file")
+            search.add_filter("relative_dir", relative_dir)
+            files = search.get_sobjects()
+
+            snapshots = []
+            search_keys = []
+            for file_object in files:
+                snapshot = file_object.get_parent()
+                if snapshot:
+                    snapshots.append(snapshot)
+                    search_keys.append(snapshot.get_search_key())
+
+            Clipboard.clear_selected()
+            if search_keys:
+                Clipboard.add_to_selected(search_keys)
+
+            print "snapshots: ", snapshots
+ 
 
 
 

@@ -2488,6 +2488,9 @@ spt.table.get_all_search_keys = function() {
     var search_keys = [];
     // Any future custom row may not have search_key
     for (var i = 0; i < rows.length; i++) {
+        if (rows[i].hasClass("spt_removed")) {
+            continue;
+        }
         var search_key = rows[i].getAttribute("spt_search_key");
         if (search_key)
             search_keys.push(search_key);
@@ -4926,9 +4929,12 @@ spt.table.delete_rows = function(rows) {
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = function(id) {
+            spt.behavior.destroy_element($(id));
+        }
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+            row.addClass("spt_removed");
             if (layout.getAttribute("spt_version") == "2") {
                 spt.table.remove_hidden_row(row);
             }
@@ -4940,6 +4946,26 @@ spt.table.delete_rows = function(rows) {
 
     return;
 }
+
+
+spt.table.remove_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    var layout = spt.table.get_layout();
+    //var on_complete = "$(id).setStyle('display', 'none')";
+    var on_complete = function(id) {
+        spt.behavior.destroy_element($(id));
+    }
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        row.addClass("spt_removed");
+        if (layout.getAttribute("spt_version") == "2") {
+            spt.table.remove_hidden_row(row);
+        }
+        Effects.fade_out(row, 500, on_complete);
+    }
+
+}
+
 
 
 spt.table.delete_selected = function()
@@ -4955,11 +4981,6 @@ spt.table.delete_selected = function()
 
     return;
 
-    /*
-    var bvr = { src_el: spt.table.layout };
-    spt.dg_table.drow_smenu_delete_cbk({}, bvr)
-    spt.table.operate_selected('delete');
-    */
 }
 
 spt.table.retire_selected = function()
