@@ -14,7 +14,7 @@
 __all__ = ['WatchDropFolderTask']
 
 import tacticenv
-import time, hashlib, os, shutil, sys
+import time, os, shutil, sys
 import os.path
 import sys
 
@@ -32,6 +32,7 @@ from optparse import OptionParser
 import threading
 
 
+"""
 from pyasm.common import WatchFolder
 
 class WatchFolderCheckin(WatchFolder):
@@ -51,7 +52,7 @@ class WatchFolderCheckin(WatchFolder):
         rel_dir = dirname.replace("%s" % upload_dir, "")
         print "rel_dir: ", rel_dir
         print "---"
-
+"""
 
 
 
@@ -67,8 +68,8 @@ class WatchFolderFileCheckinThread(threading.Thread):
         try:
             my._run()
         finally:
-            task = my.kwargs.get("task")
-            paths = task.get_checkin_paths()
+            cmd = my.kwargs.get("cmd")
+            paths = cmd.get_checkin_paths()
             for path in paths:
                 checkin_path = "%s.lock" % path
                 if os.path.exists(checkin_path):
@@ -78,7 +79,8 @@ class WatchFolderFileCheckinThread(threading.Thread):
     def _run(my):
 
         task = my.kwargs.get("task")
-        paths = task.get_checkin_paths()
+        cmd = my.kwargs.get("cmd")
+        paths = cmd.get_checkin_paths()
 
         while True:
             if not paths:
@@ -96,7 +98,9 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
             try:
 
-                task.checkin(path)
+                cmd.checkin(path)
+
+                # TEST
                 #time.sleep(1)
                 #if os.path.exists(path):
                 #    os.unlink(path)
@@ -146,12 +150,12 @@ class WatchFolderCheckThread(threading.Thread):
                     os.unlink(my.lock_path)
                 return
 
-            task = my.kwargs.get("task")
 
             f = open(my.checkin_path, "w")
             f.close()
 
-            task.add_checkin_path(path)
+            cmd = my.kwargs.get("cmd")
+            cmd.add_checkin_path(path)
 
 
         except Exception, e:
@@ -204,21 +208,14 @@ class WatchFolderCheckThread(threading.Thread):
         return changed
 
 
-class WatchDropFolderTask(SchedulerTask):
+
+
+class CustomCmd(object):
 
     def __init__(my, **kwargs):
-
-        print "Check-in script is Running..."
-        my.last_md5 = None
-        my.last_dir_set = None
-
-        my.base_dir = kwargs.get("base_dir")
-        my.project_name = kwargs.get("project_name")
-        my.search_type = kwargs.get("search_type")
+        my.kwargs = kwargs
 
         my.checkin_paths = []
-
-        super(WatchDropFolderTask, my).__init__()
 
 
     def add_checkin_path(my, path):
@@ -252,7 +249,8 @@ class WatchDropFolderTask(SchedulerTask):
             return 'other'
 
     def create_checkin_log(my):
-        log_path = '%s/TACTIC_log.txt' %(my.base_dir)
+        base_dir = my.kwargs.get("base_dir")
+        log_path = '%s/TACTIC_log.txt' %(base_dir)
         if not (os.path.isfile(log_path)):
             file = open(log_path, 'w')   
             title='File Name'+40*' '+'Checkin-Time'+20*' '+'Version#'+6*' ' +'Message\n'
@@ -260,8 +258,105 @@ class WatchDropFolderTask(SchedulerTask):
             f.write(title)
             f.close()
 
+
+
+
+    def checkin(my, file_path):
+
+        project_code = my.kwargs.get("project_code")
+        base_dir = my.kwargs.get("base_dir")
+        search_type = my.kwargs.get("search_type")
+
+        context = 'publish' 
+
+
+        file_name = os.path.basename(file_path)
+        log_path = '%s/TACTIC_log.txt' %(base_dir)
+        my.create_checkin_log()
+
+        # Define asset type of the file
+        asset_type = my.get_asset_type(file_path)
+        description = "drop folder check-in of %s" %file_name
+
+        from client.tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get(protocol='local')
+        server.set_project(project_code)
+
+        transaction = Transaction.get(create=True)
+        server.start(title='Check-in of media', description='Check-in of media')
+
+        server_return_value = {}
+
+        try:
+
+            # Set up the basic check-in step
+            sobj = server.query(search_type, filters=[['name', 'EQ', '^%s'%file_name]], single=True)
+
+            if not sobj:
+                task = server.create_task(sobj.get('__search_key__'),process='publish')
+                server.update(task, {'status': 'New'})
+
+            server_return_value = server.simple_checkin(sobj.get('__search_key__'),  context, file_path, description=description, mode='copy')
             
-    def run(my):
+        except Exception, e:
+            print "Error occurred", e
+            error_message=str(e)
+            version_num='Error:'
+            system_time=strftime("%Y/%m/%d %H:%M", gmtime())
+            pre_log=file_name+(50-len(file_name))*' '+system_time+(33-len(system_time))*' '+version_num+(15-len(version_num))*' ' +error_message+'\n'      
+            # Write data into TACTIC_log file under /tmp/drop
+            f = open(log_path, 'a')
+            f.write(pre_log)
+            f.close()
+
+            #server.abort()
+            transaction.rollback()
+            raise
+        
+        else:
+            transaction.commit()
+        
+        #server.finish()
+
+        if server_return_value:
+            # Create the TACTIC_log file to record every check-in. 
+            # Search for all required data
+            checkin_time=server_return_value.get('timestamp')
+            version_nu=server_return_value.get('version')
+            version_num=str(version_nu)
+            try:
+                value = parser.parse(checkin_time)
+                value = value.strftime("%Y/%m/%d %H:%M")
+            except:
+                value = checkin_time
+
+            pre_log=file_name+(50-len(file_name))*' '+value+(33-len(value))*' '+version_num+(15-len(version_num))*' ' +'ok\n'      
+            # Write data into TACTIC_log file under /tmp/drop
+            f = open(log_path, 'a')
+            f.write(pre_log)
+            f.close()
+
+            # Delete the sourse file after check-in step.
+            print "File checked in. Source file [%s] deleted: " %file_name
+            os.unlink(file_path)
+
+
+
+
+
+class WatchDropFolderTask(SchedulerTask):
+
+    def __init__(my, **kwargs):
+
+        my.base_dir = kwargs.get("base_dir")
+        my.project_code = kwargs.get("project_code")
+        my.search_type = kwargs.get("search_type")
+
+        super(WatchDropFolderTask, my).__init__()
+
+
+            
+    def _execute(my):
 
         base_dir = my.base_dir
         if not os.path.exists(base_dir):
@@ -296,136 +391,16 @@ class WatchDropFolderTask(SchedulerTask):
 
         print "Found new: ", dirs
 
-        tmp_set = set(dirs)
-        dirs_set = set()
-        dirs_dict = {}
-        image_list = []
-        movie_list = []
-        other_list = []
-
-        # these are probably files in this demo
-        for dir in tmp_set:
-            if dir.startswith("."):
-                continue
-            elif my.is_image(dir):
-                image_list.append(dir)
-            elif my.is_movie(dir):
-                movie_list.append(dir)
-            else:
-                other_list.append(dir)
-
-        # start a bunch of threads for each file which will apply the check
-        # algorithm
-
         # go thru the list to check in  
-        for file_list in [image_list, movie_list, other_list]:
-            for file_name in file_list:
+        for file_name in dirs:
 
-                file_path = '%s/%s' %(my.base_dir, file_name)
-                my.lock_path = "%s.lock" % file_path
-                if os.path.exists(my.lock_path):
-                    continue
-
-                try:
-                    thread = WatchFolderCheckThread(
-                            task=my,
-                            path=file_path
-                            )
-                    thread.daemon = True
-                    thread.start()
-                except Exception, e:
-                    pass
-
-
-
-
-    def checkin(my, file_path):
-        context = 'publish' 
-        file_name = os.path.basename(file_path)
-        log_path = '%s/TACTIC_log.txt' %(my.base_dir)
-        my.create_checkin_log()
-
-        # Define asset type of the file
-        asset_type = my.get_asset_type(file_path)
-        description = "drop folder check-in of %s" %file_name
-        from client.tactic_client_lib import TacticServerStub
-        server = TacticServerStub.get(protocol='local')
-
-        server.set_project(my.project_name)
-
-        # Set up the basic check-in step
-        sobj = server.query(my.search_type, filters=[['name', 'EQ', '^%s'%file_name]], single=True)
-
-        if sobj and sobj.get('occupied') == True:
-            print "The media item [%s] 'occupied' state is set to True now. Will check again later." %sobj.get('name')
-            return
-
-
-        transaction = Transaction.get(create=True)
-        server.start(title='Check-in of media', description='Check-in of media')
-
-        # occupied prevents a long-running checkin from being detected as a brand-new file
-        if not sobj:
-            sobj = server.insert(my.search_type, {'name': file_name, 'asset_type': asset_type, 'occupied': True})
-        else:
-            sobj = server.update(sobj, {'occupied': True})
-
-        
-        server_return_value = {}
-
-        try:
-            if not sobj:
-                # TODO: add pipeline_code
-                #sobj = server.insert('jobs/media', {'name': file_name, 'asset_type': asset_type})
-                task = server.create_task(sobj.get('__search_key__'),process='publish')
-                server.update(task, {'status': 'New'})
-
-            server_return_value = server.simple_checkin(sobj.get('__search_key__'),  context, file_path, description=description, mode='copy')
-            
-        except Exception, e:
-            print "Error occurred", e
-            error_message=str(e)
-            version_num='Error:'
-            system_time=strftime("%Y/%m/%d %H:%M", gmtime())
-            pre_log=file_name+(50-len(file_name))*' '+system_time+(33-len(system_time))*' '+version_num+(15-len(version_num))*' ' +error_message+'\n'      
-            # Write data into TACTIC_log file under /tmp/drop
-            f = open(log_path, 'a')
-            f.write(pre_log)
-            f.close()
-
-            #server.abort()
-            transaction.rollback()
-        
-        finally:
-            if sobj:
-                sobj = server.update(sobj, {'occupied': False})
-
-            transaction.commit()
-        
-        #server.finish()
-
-        if server_return_value:
-            # Create the TACTIC_log file to record every check-in. 
-            # Search for all required data
-            checkin_time=server_return_value.get('timestamp')
-            version_nu=server_return_value.get('version')
-            version_num=str(version_nu)
-            try:
-                value = parser.parse(checkin_time)
-                value = value.strftime("%Y/%m/%d %H:%M")
-            except:
-                value = checkin_time
-
-            pre_log=file_name+(50-len(file_name))*' '+value+(33-len(value))*' '+version_num+(15-len(version_num))*' ' +'ok\n'      
-            # Write data into TACTIC_log file under /tmp/drop
-            f = open(log_path, 'a')
-            f.write(pre_log)
-            f.close()
-
-            # Delete the sourse file after check-in step.
-            print "File checked in. Source file [%s] deleted: " %file_name
-            os.unlink(file_path)
-
+            file_path = '%s/%s' %(my.base_dir, file_name)
+            thread = WatchFolderCheckThread(
+                    cmd=my.cmd,
+                    path=file_path
+                    )
+            thread.daemon = True
+            thread.start()
 
 
     def execute(my):
@@ -436,14 +411,20 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
 
+        my.cmd = CustomCmd(
+                project_code=my.project_code,
+                base_dir=my.base_dir,
+                search_type=my.search_type
+                )
+
         # Start check-in thread
         checkin = WatchFolderFileCheckinThread(
-                task=my
+                cmd=my.cmd
                 )
         checkin.start()
 
         while True:
-            my.run()
+            my._execute()
             time.sleep(1)
 
 
@@ -451,15 +432,15 @@ class WatchDropFolderTask(SchedulerTask):
         # Check whether the user define the drop folder path.
         # Default dop folder path: /tmp/drop
         parser = OptionParser()
-        parser.add_option("-p", "--project_name", dest="project_name", help="Define the project_name. Default:Viacom")
+        parser.add_option("-p", "--project", dest="project", help="Define the project_name.")
         parser.add_option("-d", "--drop_path", dest="drop_path", help="Define drop folder path. Default:/tmp/drop")
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
         (options, args) = parser.parse_args()
 
-        if options.project_name!=None :
-            project_name= options.project_name
+        if options.project != None :
+            project_code= options.project
         else:
-            project_name= 'jobs'
+            project_code= 'jobs'
 
         if options.drop_path!=None :
             drop_path= options.drop_path
@@ -471,7 +452,7 @@ class WatchDropFolderTask(SchedulerTask):
         else:
             search_type= 'jobs/media'
 
-        task = WatchDropFolderTask(base_dir=drop_path, project_name=project_name,search_type=search_type)
+        task = WatchDropFolderTask(base_dir=drop_path, project_code=project_code,search_type=search_type)
         
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, delay=1)
