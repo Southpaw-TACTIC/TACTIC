@@ -54,6 +54,7 @@ class WatchFolderCheckin(WatchFolder):
 
 
 
+
 class WatchFolderFileCheckinThread(threading.Thread):
 
     def __init__(my, **kwargs):
@@ -62,15 +63,16 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
     def run(my):
 
+        Batch()
         try:
             my._run()
         finally:
             task = my.kwargs.get("task")
             paths = task.get_checkin_paths()
             for path in paths:
-                lock_path = "%s.lock" % path
-                if os.path.exists(path):
-                    os.unlink(path)
+                checkin_path = "%s.lock" % path
+                if os.path.exists(checkin_path):
+                    os.unlink(checkin_path)
 
 
     def _run(my):
@@ -85,29 +87,29 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
             path = paths.pop(0)
 
-            lock_path = "%s.lock" % path
+            checkin_path = "%s.checkin" % path
             error_path = "%s.error" % path
 
-            if not os.path.exists(lock_path):
-                print "ERROR: no lock path [%s]" % lock_path
+            if not os.path.exists(checkin_path):
+                print "ERROR: no lock path [%s]" % checkin_path
                 continue
 
             try:
 
-                print "CHECKIN: ", path
-
-                time.sleep(5)
-                #task.checkin(path)
-
-                if os.path.exists(path):
-                    os.unlink(path)
+                task.checkin(path)
+                #time.sleep(1)
+                #if os.path.exists(path):
+                #    os.unlink(path)
 
             except Exception, e:
-                f = open(error_path)
+                print "Error: ", e
+                f = open(error_path,"w")
+                f.write(str(e))
                 f.close()
+                raise
 
             finally:
-                os.unlink(lock_path)
+                os.unlink(checkin_path)
 
 
 
@@ -121,55 +123,81 @@ class WatchFolderCheckThread(threading.Thread):
         path = my.kwargs.get("path")
         my.lock_path = "%s.lock" % path
         my.error_path = "%s.error" % path
+        my.checkin_path = "%s.checkin" % path
 
-        if os.path.exists(my.lock_path):
-            raise Exception()
-
-        f = open(my.lock_path, "w")
-        f.close()
 
     def run(my):
-        path = my.kwargs.get("path")
 
         try:
+            path = my.kwargs.get("path")
+
+            if os.path.exists(my.lock_path):
+                return
+
+            f = open(my.lock_path, "w")
+            f.close()
+
             print "VERIFY: ", path
             changed = my.verify_file_size(path)
+
+
             if changed:
                 if os.path.exists(my.lock_path):
                     os.unlink(my.lock_path)
                 return
 
             task = my.kwargs.get("task")
+
+            f = open(my.checkin_path, "w")
+            f.close()
+
             task.add_checkin_path(path)
+
 
         except Exception, e:
             print "Error: ", e
             f = open(my.error_path, "w")
             f.write(str(e))
             f.close()
+            raise
 
+        finally:
             if os.path.exists(my.lock_path):
                 os.unlink(my.lock_path)
-
-            raise
 
 
     def verify_file_size(my, file_path):
         '''Check if the file size changes over a period of 5 seconds. If so, file is not ready'''
+
+        # assume nothing has changed
+        changed = False
+
         # Chech whether the file_path exists or not. Once the file is ready, the or
         if not os.path.exists(file_path):
-            return False
+            return True
 
-        changed = False
         for i in range(0, 5):
-            file_size=os.path.getsize(file_path)
+            file_size = os.path.getsize(file_path)
+            mtime = os.path.getmtime(file_path)
+            #print "file_size: ", file_size
+            #print "mtime: ", mtime
+
             time.sleep(2)
+
             if not os.path.exists(file_path):
                 changed = True
                 break
 
-            file_size_check = os.path.getsize(file_path)
-            if file_size != file_size_check:
+            file_size2 = os.path.getsize(file_path)
+            mtime2 = os.path.getmtime(file_path)
+            #print "file_size2: ", file_size2
+            #print "mtime2: ", mtime2
+            #print
+
+            if file_size != file_size2:
+                changed = True
+                break
+            if mtime != mtime2:
                 changed = True
                 break
 
@@ -242,11 +270,14 @@ class WatchDropFolderTask(SchedulerTask):
         dirs = os.listdir(base_dir)
         test_dirs = dirs[:]
         for dirname in test_dirs:
-            if dirname.endswith(".lock") or dirname.endswith(".error"):
+            base, ext = os.path.splitext(dirname)
+            if ext in [".lock", ".error", ".checkin"]:
                 dirs.remove(dirname)
 
-                base, ext = os.path.splitext(dirname)
-                dirs.remove(base)
+                try:
+                    dirs.remove(base)
+                except:
+                    pass
 
         if not dirs:
             return
@@ -300,6 +331,7 @@ class WatchDropFolderTask(SchedulerTask):
                             task=my,
                             path=file_path
                             )
+                    thread.daemon = True
                     thread.start()
                 except Exception, e:
                     pass
@@ -397,7 +429,12 @@ class WatchDropFolderTask(SchedulerTask):
 
 
     def execute(my):
-        Batch()
+
+        base_dir = my.base_dir
+        if not base_dir:
+            print "WARNING: No base dir defined."
+            return
+
 
         # Start check-in thread
         checkin = WatchFolderFileCheckinThread(
@@ -405,17 +442,9 @@ class WatchDropFolderTask(SchedulerTask):
                 )
         checkin.start()
 
-        # Check loop
         while True:
-
-            base_dir = my.base_dir
-            if not base_dir:
-                print "WARNING: No base dir defined."
-                return
             my.run()
-
             time.sleep(1)
-
 
 
     def start(cls):
@@ -457,6 +486,7 @@ if __name__ == '__main__':
         try:
             time.sleep(15)
         except (KeyboardInterrupt, SystemExit), e:
+            print "OMG"
             scheduler = Scheduler.get()
             scheduler.stop()
             break
