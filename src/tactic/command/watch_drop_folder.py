@@ -56,11 +56,11 @@ class WatchFolderCheckin(WatchFolder):
 
 
 
-class WatchFolderFileCheckinThread(threading.Thread):
+class WatchFolderFileActionThread(threading.Thread):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
-        super(WatchFolderFileCheckinThread, my).__init__()
+        super(WatchFolderFileActionThread, my).__init__()
 
     def run(my):
 
@@ -69,7 +69,7 @@ class WatchFolderFileCheckinThread(threading.Thread):
             my._run()
         finally:
             cmd = my.kwargs.get("cmd")
-            paths = cmd.get_checkin_paths()
+            paths = cmd.get_paths()
             for path in paths:
                 checkin_path = "%s.lock" % path
                 if os.path.exists(checkin_path):
@@ -80,7 +80,7 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
         task = my.kwargs.get("task")
         cmd = my.kwargs.get("cmd")
-        paths = cmd.get_checkin_paths()
+        paths = cmd.get_paths()
 
         while True:
             if not paths:
@@ -118,11 +118,11 @@ class WatchFolderFileCheckinThread(threading.Thread):
 
 
 
-class WatchFolderCheckThread(threading.Thread):
+class WatchFolderCheckFileThread(threading.Thread):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
-        super(WatchFolderCheckThread, my).__init__()
+        super(WatchFolderCheckFileThread, my).__init__()
 
         path = my.kwargs.get("path")
         my.lock_path = "%s.lock" % path
@@ -155,7 +155,7 @@ class WatchFolderCheckThread(threading.Thread):
             f.close()
 
             cmd = my.kwargs.get("cmd")
-            cmd.add_checkin_path(path)
+            cmd.add_path(path)
 
 
         except Exception, e:
@@ -218,11 +218,13 @@ class CustomCmd(object):
         my.checkin_paths = []
 
 
-    def add_checkin_path(my, path):
+    def add_path(my, path):
         my.checkin_paths.append(path)
 
-    def get_checkin_paths(my):
+    def get_paths(my):
         return my.checkin_paths
+
+
 
     def is_image(my, file_name):
         base, ext = os.path.splitext(file_name)
@@ -267,7 +269,9 @@ class CustomCmd(object):
         base_dir = my.kwargs.get("base_dir")
         search_type = my.kwargs.get("search_type")
 
-        context = 'publish' 
+        context = my.kwargs.get("context")
+        if not context:
+            context = 'publish' 
 
 
         file_name = os.path.basename(file_path)
@@ -395,7 +399,7 @@ class WatchDropFolderTask(SchedulerTask):
         for file_name in dirs:
 
             file_path = '%s/%s' %(my.base_dir, file_name)
-            thread = WatchFolderCheckThread(
+            thread = WatchFolderCheckFileThread(
                     cmd=my.cmd,
                     path=file_path
                     )
@@ -411,6 +415,7 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
 
+        # create a "custom" command that will act on the file
         my.cmd = CustomCmd(
                 project_code=my.project_code,
                 base_dir=my.base_dir,
@@ -418,7 +423,7 @@ class WatchDropFolderTask(SchedulerTask):
                 )
 
         # Start check-in thread
-        checkin = WatchFolderFileCheckinThread(
+        checkin = WatchFolderFileActionThread(
                 cmd=my.cmd
                 )
         checkin.start()
