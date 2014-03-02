@@ -510,13 +510,29 @@ class TacticMonitor(object):
 
         tactic_threads = []
 
-        use_tactic = Config.get_value("services", "tactic")
-        use_job_queue = Config.get_value("services", "job_queue")
-        use_watch_folder = Config.get_value("services", "watch_folder")
+        #use_tactic = Config.get_value("services", "tactic")
+        #use_job_queue = Config.get_value("services", "job_queue")
+        #use_watch_folder = Config.get_value("services", "watch_folder")
+
+        use_tactic = False
+        use_job_queue = False
+        use_watch_folder = False
+
+        services = Config.get_value("services", "enable")
+        if services:
+            services = services.split("|")
+            if 'tactic' in services:
+                use_tactic = True
+            if 'job_queue' in services:
+                use_job_queue = True
+            if 'watch_folder' in services:
+                use_watch_folder = True
+        else:
+            use_tactic = True
 
 
         # create a number of processes
-        if use_tactic != 'false':
+        if use_tactic:
             #for i in range(0, my.num_processes):
             for port in ports:
 
@@ -531,7 +547,7 @@ class TacticMonitor(object):
 
 
         # Job Queue services
-        if use_job_queue == 'true':
+        if use_job_queue:
             num_processes = Config.get_value("services", "queue_process_count")
             if not num_processes:
                 num_processes = 1
@@ -545,7 +561,7 @@ class TacticMonitor(object):
 
 
         # Watch Folder services
-        if use_watch_folder == 'true':
+        if use_watch_folder:
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
