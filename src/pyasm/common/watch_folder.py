@@ -23,7 +23,7 @@ try:
     from watchdog.events import LoggingEventHandler
 except ImportError:
     
-    class LogginEventHandler(object):
+    class LoggingEventHandler(object):
         pass 
 
 
