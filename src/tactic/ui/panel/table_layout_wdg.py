@@ -4948,10 +4948,8 @@ spt.table.delete_rows = function(rows) {
 }
 
 
-spt.table.remove_selected = function() {
-    var rows = spt.table.get_selected_rows();
+spt.table.remove_rows = function(rows) {
     var layout = spt.table.get_layout();
-    //var on_complete = "$(id).setStyle('display', 'none')";
     var on_complete = function(id) {
         spt.behavior.destroy_element($(id));
     }
@@ -4964,6 +4962,12 @@ spt.table.remove_selected = function() {
         Effects.fade_out(row, 500, on_complete);
     }
 
+}
+
+
+spt.table.remove_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    spt.table.remove_rows(rows);
 }
 
 

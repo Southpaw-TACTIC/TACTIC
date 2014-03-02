@@ -1087,7 +1087,9 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     drag_copy.setStyle( 'height', h );
     drag_copy.setStyle( 'min-height', h );
 
-    drag_copy.innerHTML = el_to_copy.innerHTML;
+    //drag_copy.innerHTML = el_to_copy.innerHTML;
+    var copy = spt.behavior.duplicate_element(el_to_copy);
+    copy.inject(drag_copy, "bottom");
 
     var override_styles = "padding-left: " + pad_left + "px; padding-right: " + pad_right + "px; " +
                           "padding-top: " + pad_top + "px; padding-bottom: " + pad_bottom + "px;";

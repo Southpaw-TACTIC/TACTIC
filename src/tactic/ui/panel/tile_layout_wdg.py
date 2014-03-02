@@ -450,6 +450,15 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+        """
+        layout_wdg.add_behavior( {
+            'type': 'smart_drag',
+            'bvr_match_class': 'spt_tile_title',
+            #'ignore_default_motion' : False,
+        } )
+        """
+
+
 
 
     def get_tile_wdg(my, sobject):

@@ -813,18 +813,35 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         }
 
-        spt.repo_browser.selected = [];
         spt.repo_browser.select = function(file_item) {
-            spt.repo_browser.selected.push(file_item);
-            //file_item.setStyle("background", "#F00");
+            file_item.setStyle("background", "#F00");
+            file_item.addClass("spt_selected")
+        }
+        spt.repo_browser.unselect = function(file_item) {
+            file_item.setStyle("background", "#0F0");
+            file_item.removeClass("spt_selected")
+        }
+        spt.repo_browser.toggle_select = function(file_item) {
+            if (file_item.hasClass("spt_selected")) {
+                spt.repo_browser.unselect(file_item);
+            }
+            else {
+                spt.repo_browser.select(file_item);
+            }
+
         }
         spt.repo_browser.clear_selected = function() {
-            var selected = spt.repo_browser.selected();
+            var selected = spt.repo_browser.get_selected();
             for (var i = 0; i < selected.length; i++) {
-                selected[i].setStyle("background", "");
+                spt.repo_browser.unselect(selected[i]);
             }
-            spt.repo_browser.selected = [];
         }
+
+        spt.repo_browser.get_selected = function() {
+            var selected = $(document.body).getElements(".spt_selected");
+            return selected;
+        }
+
 
 
 
@@ -1314,24 +1331,51 @@ class RepoBrowserDirListWdg(DirListWdg):
         # TODO: make this into a "smart" behavior
         item_div.add_behavior( {
         'type': 'click_up',
-        'dirname': dirname,
-        'basename': basename,
         'search_type': search_type,
         'cbjs_action': '''
+
+        if (!evt.control) {
+            spt.repo_browser.clear_selected();
+        }
+        //spt.repo_browser.toggle_select(bvr.src_el);
+        //var selected = spt.repo_browser.get_selected();
+        var selected = [];
+
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
         spt.table.last_table = null;
-        var class_name = "tactic.ui.tools.repo_browser_wdg.RepoBrowserContentWdg";
+
         spt.app_busy.show("Loading information");
-        var kwargs = {
-          search_type: bvr.search_type,
-          dirname: bvr.dirname,
-          basename: bvr.basename
-        };
+
+        if (selected.length > 1) {
+            var snapshot_codes = [];
+            for (var i = 0; i < selected.length; i++) {
+                snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
+            }
+            console.log(snapshot_codes);
+            var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
+            var kwargs = {
+              search_type: bvr.search_type,
+              snapshot_codes: snapshot_codes
+            };
+
+        }
+        else {
+            var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
+
+            var dirname = bvr.src_el.getAttribute("spt_dirname");
+            var basename = bvr.src_el.getAttribute("spt_basename");
+
+            var kwargs = {
+              search_type: bvr.search_type,
+              dirname: dirname,
+              basename: basename
+            };
+        }
+
         spt.panel.load(content, class_name, kwargs);
         spt.app_busy.hide();
 
-        spt.repo_browser.select(bvr.src_el);
         '''
         } )
 
@@ -1379,12 +1423,12 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_attr("spt_dirname", "%s/%s" % (dirname, basename))
 
 
+        # TODO: make this inot a relay behavior
         item_div.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_repo_browser_top");
         var content = top.getElement(".spt_repo_browser_content");
-        var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
 
         var search_type = null;
         var parent = bvr.src_el;
@@ -1414,6 +1458,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         var basename = "";
 
         spt.app_busy.show("Loading ...");
+        var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
         var kwargs = {
             search_type: search_type,
             view: 'table',
@@ -1426,6 +1471,24 @@ class RepoBrowserDirListWdg(DirListWdg):
         spt.app_busy.hide();
 
         '''
+        } )
+
+        item_div.add_behavior( {
+            'type': 'accept_drop',
+            'drop_code': 'DROP_ROW',
+            'cbjs_action': '''
+            //var src_el = bvr._drop_source_bvr.src_el;
+            var src_el = spt.behavior.get_bvr_src( bvr._drop_source_bvr );
+            var layout = src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            var row = src_el.getParent(".spt_table_row");
+
+            spt.table.remove_rows([row]);
+
+            var drop_el = bvr.src_el;
+
+
+            '''
         } )
 
 
@@ -1719,8 +1782,17 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         ''' % file.get_search_key()
         )
 
-        process = snapshot.get_value("process")
 
+        config.append('''
+        <element name='sobject_detail' title='Detail'>
+            <display class='tactic.ui.tools.SObjectDetailWdg'>
+                <search_key>%s</search_key>
+            </display>
+        </element>
+        ''' % parent.get_search_key()
+        )
+
+        process = snapshot.get_value("process")
         config.append('''
         <element name='notes' title='Notes'>
             <display class='tactic.ui.widget.DiscussionWdg'>
@@ -1739,14 +1811,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
  
 
 
-        config.append('''
-        <element name='sobject_detail' title='Full Item Detail'>
-            <display class='tactic.ui.tools.SObjectDetailWdg'>
-                <search_key>%s</search_key>
-            </display>
-        </element>
-        ''' % parent.get_search_key()
-        )
  
         config.append('''</tab></config>''')
         config = "\n".join(config)
@@ -1796,34 +1860,42 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         search_type = Project.get_full_search_type(search_type, project_code=project_code)
-        #search_type = "%s?project=%s" % (search_type, project_code)
-
-        dirname = my.kwargs.get("dirname")
-        basename = my.kwargs.get("basename")
-        #path = "%s/%s" % (dirname, basename)
-        path = dirname
-
-        asset_dir = Environment.get_asset_dir()
-        if not dirname.startswith(asset_dir):
-            top.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
-            return top
-
-        reldir = path.replace(asset_dir, "")
-        reldir = reldir.strip("/")
 
 
-        # search for all files that are in this relative_dir
-        search = Search("sthpw/file")
-        search.add_filter("relative_dir", "%s%%" % reldir, op='like')
-        search.add_filter("search_type", search_type)
+        snapshot_codes = my.kwargs.get("snapshot_codes")
+        if snapshot_codes:
+            search = Search("sthpw/snapshot")
+            search.add_filters("code", snapshot_codes)
 
-        # use the above search to find all sobjects with files in this
-        # relative_dir
-        search2 = Search(search_type)
-        search2.add_relationship_search_filter(search)
+            search2 = Search(search_type)
+            search2.add_relationship_search_filter(search)
+            sobjects = search2.get_sobjects()
+        else:
+
+            dirname = my.kwargs.get("dirname")
+            basename = my.kwargs.get("basename")
+            path = dirname
+
+            asset_dir = Environment.get_asset_dir()
+            if not dirname.startswith(asset_dir):
+                top.add("Error: path [%s] does not belong in the asset directory [%s]" % (path, asset_dir))
+                return top
+
+            reldir = path.replace(asset_dir, "")
+            reldir = reldir.strip("/")
 
 
-        sobjects = search2.get_sobjects()
+            # search for all files that are in this relative_dir
+            search = Search("sthpw/file")
+            search.add_filter("relative_dir", "%s%%" % reldir, op='like')
+            search.add_filter("search_type", search_type)
+
+            # use the above search to find all sobjects with files in this
+            # relative_dir
+            search2 = Search(search_type)
+            search2.add_relationship_search_filter(search)
+
+            sobjects = search2.get_sobjects()
 
 
         # get the sobject codes to feed into the layout widget

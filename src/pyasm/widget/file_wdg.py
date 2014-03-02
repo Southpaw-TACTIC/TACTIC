@@ -172,8 +172,7 @@ class ThumbWdg(BaseTableElementWdg):
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
             'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
-            'copy_styles': 'background: #393950; color: #c2c2c2; border: solid 1px black;' \
-                             ' text-align: left; padding: 10px;'
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background"))
         } )
 
 
