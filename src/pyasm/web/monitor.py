@@ -178,12 +178,31 @@ class JobQueueThread(BaseProcessThread):
 
 class WatchFolderThread(BaseProcessThread):
 
+    def __init__(my, **kwargs):
+        super(WatchFolderThread,my).__init__()
+        my.project_code = kwargs.get("project_code")
+        my.base_dir = kwargs.get("base_dir")
+        my.search_type = kwargs.get("search_type")
+        my.process = kwargs.get("process")
+
+ 
     def get_title(my):
         return "Watch Folder"
 
     def execute(my):
+
         # Run the job queue service
-        executable = '%s "%s/src/tactic/command/watch_drop_folder.py"' % (python, tactic_install_dir)
+        parts = []
+        parts.append(python)
+        parts.append('"%s/src/tactic/command/watch_drop_folder.py"'% tactic_install_dir)
+        parts.append('--project="%s"' % my.project_code)
+        parts.append('--drop_path="%s"' % my.base_dir)
+        parts.append('--search_type="%s"' % my.search_type)
+        if my.process:
+            parts.append('--process="%s"' % my.process)
+
+        executable = " ".join(parts)
+
         os.system('%s' % (executable) )
 
 
@@ -527,9 +546,35 @@ class TacticMonitor(object):
 
         # Watch Folder services
         if use_watch_folder == 'true':
-            watch_thread = WatchFolderThread()
-            watch_thread.start()
-            tactic_threads.append(watch_thread)
+            search = Search("sthpw/watch_folder")
+            watch_folders = search.get_sobjects()
+
+            for watch_folder in watch_folders:
+                project_code = watch_folder.get("project_code")
+                base_dir = watch_folder.get("base_dir")
+                search_type = watch_folder.get("search_type")
+                process = watch_folder.get("process")
+
+                if not project_code:
+                    print "Watch Folder missing project_code ... skipping"
+                    continue
+
+                if not project_code:
+                    print "Watch Folder missing base_dir ... skipping"
+                    continue
+
+                if not search_type:
+                    print "Watch Folder missing search_type ... skipping"
+                    continue
+
+                watch_thread = WatchFolderThread(
+                        project_code=project_code,
+                        base_dir=base_dir,
+                        search_type=search_type,
+                        process=process
+                        )
+                watch_thread.start()
+                tactic_threads.append(watch_thread)
 
 
 

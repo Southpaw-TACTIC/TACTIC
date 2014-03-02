@@ -21,6 +21,29 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
+
+
+    def upgrade_v4_2_0_a01_007(my):
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/watch_folder', 'sthpw/watch_folder', 'sthpw', 'Watch Folder', 'sthpw', 'watch_folder', 'pyasm.search.SObject', 'Watch Folder', 'public');
+        ''')
+
+    def upgrade_v4_2_0_a01_006(my):
+        my.run_sql('''
+        CREATE TABLE watch_folder (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            name varchar(256),
+            project_code varchar(256),
+            base_dir text,
+            search_type varchar(256),
+            process varchar(256),
+            "timestamp" timestamp
+        );
+        ''') 
+
+
+
+
     def upgrade_v4_2_0_a01_005(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "metadata_parser" varchar(256);

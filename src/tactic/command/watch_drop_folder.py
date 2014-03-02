@@ -81,6 +81,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     "project_code": task.project_code,
                     "search_type": task.search_type,
                     "base_dir": task.base_dir,
+                    "process": task.process,
                     "path": path
                 }
 
@@ -261,12 +262,15 @@ class CustomCmd(object):
         project_code = my.kwargs.get("project_code")
         base_dir = my.kwargs.get("base_dir")
         search_type = my.kwargs.get("search_type")
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
 
         basename = os.path.basename(file_path)
 
         context = my.kwargs.get("context")
         if not context:
-            context = 'publish/%s'  % basename
+            context = '%s/%s'  % (process, basename)
 
 
         # find the relative_dir and relative_path
@@ -381,6 +385,7 @@ class WatchDropFolderTask(SchedulerTask):
         my.base_dir = kwargs.get("base_dir")
         my.project_code = kwargs.get("project_code")
         my.search_type = kwargs.get("search_type")
+        my.process = kwargs.get("process")
 
         super(WatchDropFolderTask, my).__init__()
 
@@ -470,15 +475,15 @@ class WatchDropFolderTask(SchedulerTask):
         # Default dop folder path: /tmp/drop
         parser = OptionParser()
         parser.add_option("-p", "--project", dest="project", help="Define the project_name.")
-        parser.add_option("-d", "--drop_path", dest="drop_path", help="Define drop folder path. Default:/tmp/drop")
+        parser.add_option("-d", "--drop_path", dest="drop_path", help="Define drop folder path")
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
+        parser.add_option("-P", "--process", dest="process", help="Define process.")
         (options, args) = parser.parse_args()
 
         if options.project != None :
             project_code= options.project
         else:
             project_code= 'jobs'
-            project_code= 'ingest'
 
         if options.drop_path!=None :
             drop_path= options.drop_path
@@ -490,11 +495,17 @@ class WatchDropFolderTask(SchedulerTask):
             os.makedirs(drop_path)
 
         if options.search_type!=None :
-            search_type= options.drop_path
+            search_type = options.search_type
         else:
-            search_type= 'jobs/media'
+            search_type = 'jobs/media'
 
-        task = WatchDropFolderTask(base_dir=drop_path, project_code=project_code,search_type=search_type)
+        if options.process!=None :
+            process = options.process
+        else:
+            process= 'publish'
+
+
+        task = WatchDropFolderTask(base_dir=drop_path, project_code=project_code,search_type=search_type, process=process)
         
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, delay=1)

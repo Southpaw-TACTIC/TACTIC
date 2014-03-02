@@ -66,6 +66,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/group_notification" display="@GET(sthpw/group_notification.login_group)"/>
     <search_type name="sthpw/cache"/>
     <search_type name="sthpw/queue"/>
+    <search_type name="sthpw/watch_folder"/>
 
 
 
