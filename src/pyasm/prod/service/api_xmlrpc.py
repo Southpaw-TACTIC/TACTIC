@@ -4634,6 +4634,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             filter_data = FilterData(values)
             filter_data.set_to_cgi()
 
+
+        # initialize the translation module
+        from pyasm.web import Translation
+        Translation.install()
+
         # NOTE: this is deprecated.  The state is in the ticket passed
         # in, so restoration of transaction state is not really necessary
         if my.get_protocol() == "xmlrpc" and not Project.get():

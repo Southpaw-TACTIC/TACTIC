@@ -12,7 +12,8 @@
 
 __all__ = ['Translation']
 
-import gettext
+#import gettext
+import os
 
 from pyasm.common import Container
 from pyasm.search import Search
@@ -29,6 +30,12 @@ class Translation(object):
         #if not language:
         #    from pyasm.prod.biz import ProdSetting
         #    language = ProdSetting.get_by_key("language")
+
+        if os.environ.get("LC_MESSAGES"):
+            language = os.environ.get("LC_MESSAGES")
+
+        if os.environ.get("TACTIC_LANG"):
+            language = os.environ.get("TACTIC_LANG")
 
         # else it's english
         if not language:

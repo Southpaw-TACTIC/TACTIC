@@ -486,7 +486,7 @@ class BaseAppServer(Base):
 
 
         # install the language
-        #Translation.install()
+        Translation.install()
 
         widget = my.get_content(page_type)
 

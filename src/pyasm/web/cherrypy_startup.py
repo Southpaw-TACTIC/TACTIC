@@ -241,7 +241,8 @@ class CherryPyStartup(object):
         #from tactic.command import ScheduledTriggerMonitor
         #ScheduledTriggerMonitor.start()
 
-
+        #from pyasm.web import Translation
+        #Translation.install()
 
 
         # close all the threads in this startup thread
