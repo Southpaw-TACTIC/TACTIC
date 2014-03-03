@@ -136,7 +136,7 @@ class PopupWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
-        if not Container.get("PopupWdg:background"):
+        if not Container.get_dict("JSLibraries", "spt_popup"):
             div.add_style("position: fixed")
             div.add_style("top: 0px")
             div.add_style("left: 0px")
@@ -718,6 +718,8 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 
     spt.show( popup );
 
+    spt.popup.show_background();
+
 
     // @@@
     var rsw_content_box = popup.getElement(".SPT_RSW_CONTENT_BOX");
@@ -849,6 +851,7 @@ spt.popup.destroy = function( popup_el_or_id )
 
     spt.popup.close( popup );
     spt.behavior.destroy_element( popup );
+
 }
 
 
@@ -1014,11 +1017,11 @@ spt.popup.get_widget = function( evt, bvr )
     var kwargs = {'args': args, 'values': values};
 
 
-   
 
     //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);
     spt.behavior.replace_inner_html( content_wdg, widget_html );
+
     callback();
 
     return popup;

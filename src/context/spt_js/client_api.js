@@ -755,6 +755,10 @@ TacticServerStub = function() {
             transfer_mode = spt.Environment.get().get_transfer_mode();
             kwargs.mode = transfer_mode;
         }
+        if (! kwargs.mode ) {
+            kwargs.mode = 'web';
+        }
+
 
         if (kwargs.mode in {'client_repo':'', 'web':''} == false) {
             throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
@@ -853,6 +857,12 @@ TacticServerStub = function() {
     this.get_snapshot = function(search_key, kwargs) {
         return this._delegate("get_snapshot", arguments, kwargs);
     }
+
+
+    this.get_snapshots_by_relative_dir = function(relative_dir, kwargs) {
+        return this._delegate("get_snapshots_by_relative_dir", arguments, kwargs);
+    }
+
 
     this.get_client_dir = function(snapshot_code, kwargs) {
         return this._delegate("get_client_dir", arguments, kwargs);

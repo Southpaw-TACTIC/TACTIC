@@ -311,6 +311,7 @@ class DirListWdg(BaseRefreshWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_top")
+        top.add_class("SPT_DTS")
 
 
         my.add_load_behavior()

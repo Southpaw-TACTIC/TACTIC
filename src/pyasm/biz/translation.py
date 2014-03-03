@@ -33,6 +33,12 @@ class TranslationSObj(SObject):
             search.add_filter('language', language)
             sobjs = search.get_sobjects()
             for idx, sobj in enumerate(sobjs):
+
+                key = '%s|%s' %(language, sobj.get_value('id'))
+                TranslationSObj.cache_sobject(key, sobj)
+                if key == main_key:
+                    sobject = sobj
+
                 key = '%s|%s' %(language, sobj.get_value('msgid'))
                 TranslationSObj.cache_sobject(key, sobj)
                 if key == main_key:

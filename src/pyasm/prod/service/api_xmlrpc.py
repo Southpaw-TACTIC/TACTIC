@@ -3988,6 +3988,34 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+
+
+    @xmlrpc_decorator
+    def get_snapshots_by_relative_dir(my, ticket, relative_dir, base_dir_alias=""):
+        search = Search("sthpw/file")
+        search.add_op("begin")
+        search.add_filter("relative_dir", "%s/%%" % relative_dir, op="like")
+        search.add_filter("relative_dir", "%s" % relative_dir, op="=")
+        search.add_op("or")
+
+        search2 = Search("sthpw/snapshot")
+        search2.add_relationship_search_filter(search)
+        search2.add_filter("is_latest", True)
+
+        print search2.get_statement()
+
+        sobjects = search2.get_sobjects()
+        sobject_dicts = []
+        for sobject in sobjects:
+            sobject_dict = my._get_sobject_dict(sobject)
+            sobject_dicts.append(sobject_dict)
+        return sobject_dicts
+ 
+
+
+
+
+
     @xmlrpc_decorator
     def get_snapshot(my, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''method to retrieve snapshots
@@ -4123,6 +4151,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         return snapshot.get_full_snapshot_xml()
+
+
 
 
     @xmlrpc_decorator

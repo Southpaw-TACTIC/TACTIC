@@ -55,7 +55,10 @@ class FileException(TacticException):
 
 class File(SObject):
 
-    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx', 'tex', '']
+    NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
+            'gz', 'zip', 'rar',
+            'ini', 'db'
+    ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 'wm','wvx','ogg','webm','mkv','m4v','mxf']
 

@@ -403,32 +403,27 @@ class Environment(Base):
 
         from pyasm.biz import PrefSetting
         base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+        client_os = Environment.get_env_object().get_client_os()
 
         if not base_dir:
 
             if alias:
-                if Environment.get_env_object().get_client_os() =='nt':
-                    alias_dict = Config.get_value("checkin", "win32_snapshot_dir_alias", sub_key=alias)
+                if client_os == "nt":
+                    alias_dict = Config.get_dict_value("checkin", "win32_sandbox_dir")
                 else:
-                    alias_dict = Config.get_value("checkin", "linux_snapshot_dir_alias", sub_key=alias)
+                    alias_dict = Config.get_dict_value("checkin", "linux_sandbox_dir")
 
                 if not alias_dict:
-                    alias_dict = Config.get_value("checkin", "snapshot_dir_alias", sub_key=alias)
+                    alias_dict = Config.get_dict_value("checkin", "sandbox_dir")
 
                 base_dir = alias_dict.get("default")
 
         if not base_dir:
-
-            if Environment.get_env_object().get_client_os() =='nt':
-                base_dir = Config.get_value("checkin","win32_sandbox_dir")
-                if base_dir == "":
-                    base_dir = Config.get_value("checkin","win32_local_base_dir")
-                    base_dir += "/sandbox"
+            if client_os == "nt":
+                base_dir = "C:/tactic/sandbox"
             else:
-                base_dir = Config.get_value("checkin","linux_sandbox_dir")
-                if base_dir == "":
-                    base_dir = Config.get_value("checkin","linux_local_base_dir")
-                    base_dir += "/sandbox"
+                base_dir = "/tmp/snadbox"
+
 
         return base_dir
     get_sandbox_dir = staticmethod(get_sandbox_dir)

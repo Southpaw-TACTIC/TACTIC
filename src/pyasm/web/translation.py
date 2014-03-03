@@ -37,7 +37,7 @@ class Translation(object):
         if os.environ.get("TACTIC_LANG"):
             language = os.environ.get("TACTIC_LANG")
 
-        # else it's english
+        # else it is english
         if not language:
             language = "en_US"
 
@@ -59,9 +59,10 @@ class Translation(object):
 
 
     def _translate(msg):
+
         language = Container.get("language")
-        if language == 'en_US':
-            return msg
+        #if language == 'en_US':
+        #    return msg
         
         sobject = TranslationSObj.get(language, msg)
         if not sobject:

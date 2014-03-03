@@ -818,7 +818,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             file_item.addClass("spt_selected")
         }
         spt.repo_browser.unselect = function(file_item) {
-            file_item.setStyle("background", "#0F0");
+            file_item.setStyle("background", "");
             file_item.removeClass("spt_selected")
         }
         spt.repo_browser.toggle_select = function(file_item) {
@@ -843,8 +843,50 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
 
+        spt.repo_browser.click_file_bvr = function(evt, bvr) {
+            if (!evt.control) {
+                spt.repo_browser.clear_selected();
+            }
 
+            spt.repo_browser.toggle_select(bvr.src_el);
+            var selected = spt.repo_browser.get_selected();
+            //var selected = [];
 
+            var top = bvr.src_el.getParent(".spt_repo_browser_top");
+            var content = top.getElement(".spt_repo_browser_content");
+            spt.table.last_table = null;
+
+            spt.app_busy.show("Loading information");
+
+            if (selected.length > 1) {
+                var snapshot_codes = [];
+                for (var i = 0; i < selected.length; i++) {
+                    snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
+                }
+                console.log(snapshot_codes);
+                var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
+                var kwargs = {
+                  search_type: bvr.search_type,
+                  snapshot_codes: snapshot_codes
+                };
+
+            }
+            else {
+                var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
+
+                var dirname = bvr.src_el.getAttribute("spt_dirname");
+                var basename = bvr.src_el.getAttribute("spt_basename");
+
+                var kwargs = {
+                  search_type: bvr.search_type,
+                  dirname: dirname,
+                  basename: basename
+                };
+            }
+
+            spt.panel.load(content, class_name, kwargs);
+            spt.app_busy.hide();
+        }
 
         '''
         } )
@@ -1275,6 +1317,41 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+        menu_item = MenuItem(type='action', label='Check-out Files')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+
+            var relative_dir = activator.getAttribute("spt_relative_dir");
+
+            var server = TacticServerStub.get();
+            var snapshots = server.get_snapshots_by_relative_dir(relative_dir);
+            if (!snapshots.length) {
+                alert("No files checked into this folder");
+                return;
+            }
+
+            var snapshot_codes = []
+            for (var i = 0; i < snapshots.length; i++) {
+                snapshot_codes.push(snapshots[i].code);
+            }
+
+            var class_name = 'tactic.ui.tools.checkout_wdg.CheckoutWdg';
+            var kwargs = {
+                base_dir: relative_dir,
+                snapshot_codes: snapshot_codes,
+            }
+            spt.panel.load_popup("Check-out", class_name, kwargs);
+
+            return;
+            '''
+        } )
+
+
+
+
 
         return menu
 
@@ -1332,52 +1409,15 @@ class RepoBrowserDirListWdg(DirListWdg):
         item_div.add_behavior( {
         'type': 'click_up',
         'search_type': search_type,
-        'cbjs_action': '''
-
-        if (!evt.control) {
-            spt.repo_browser.clear_selected();
-        }
-        //spt.repo_browser.toggle_select(bvr.src_el);
-        //var selected = spt.repo_browser.get_selected();
-        var selected = [];
-
-        var top = bvr.src_el.getParent(".spt_repo_browser_top");
-        var content = top.getElement(".spt_repo_browser_content");
-        spt.table.last_table = null;
-
-        spt.app_busy.show("Loading information");
-
-        if (selected.length > 1) {
-            var snapshot_codes = [];
-            for (var i = 0; i < selected.length; i++) {
-                snapshot_codes.push( selected[i].getAttribute("spt_snapshot_code"));
-            }
-            console.log(snapshot_codes);
-            var class_name = "tactic.ui.tools.RepoBrowserDirContentWdg";
-            var kwargs = {
-              search_type: bvr.search_type,
-              snapshot_codes: snapshot_codes
-            };
-
-        }
-        else {
-            var class_name = "tactic.ui.tools.RepoBrowserContentWdg";
-
-            var dirname = bvr.src_el.getAttribute("spt_dirname");
-            var basename = bvr.src_el.getAttribute("spt_basename");
-
-            var kwargs = {
-              search_type: bvr.search_type,
-              dirname: dirname,
-              basename: basename
-            };
-        }
-
-        spt.panel.load(content, class_name, kwargs);
-        spt.app_busy.hide();
-
-        '''
+        'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
         } )
+        item_div.add_behavior( {
+        'type': 'click_up',
+        'modkeys': 'CTRL',
+        'search_type': search_type,
+        'cbjs_action': '''spt.repo_browser.click_file_bvr(evt, bvr);'''
+        } )
+
 
 
 
