@@ -3992,6 +3992,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_snapshots_by_relative_dir(my, ticket, relative_dir, base_dir_alias=""):
+        '''Get all of the snapshots associated with a particular relative
+        directory.
+
+        @params
+        ticket - authentication ticket
+        relative_dir - the relative directory in the server
+
+        @return
+        list of snapshots
+        '''
+
+
         search = Search("sthpw/file")
         search.add_op("begin")
         search.add_filter("relative_dir", "%s/%%" % relative_dir, op="like")
@@ -4001,8 +4013,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         search2 = Search("sthpw/snapshot")
         search2.add_relationship_search_filter(search)
         search2.add_filter("is_latest", True)
-
-        print search2.get_statement()
 
         sobjects = search2.get_sobjects()
         sobject_dicts = []

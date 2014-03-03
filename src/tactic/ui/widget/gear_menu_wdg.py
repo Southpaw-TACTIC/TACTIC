@@ -331,6 +331,26 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                  }
                 } )
 
+            menu_items.append(
+                { "type": "action", "label": "Check-out Files",
+                    "bvr_cb": { 'cbjs_action': '''
+                    var class_name = 'tactic.ui.tools.CheckoutWdg';
+                    var activator = spt.smenu.get_activator(bvr);
+
+                    var layout = activator.getParent(".spt_layout");
+                    spt.table.set_layout(layout)
+                    var selected_search_keys = spt.table.get_selected_search_keys()
+                    var kwargs = {
+                        search_keys: selected_search_keys
+                    };
+                    //spt.tab.set_main_body_tab();
+                    //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
+                    var title = "Check-out Files";
+                    spt.panel.load_popup(title, class_name, kwargs);
+                    '''
+                 }
+                } )
+
 
 
         return {'menu_tag_suffix': 'FILE', 'width': 180, 'opt_spec_list': menu_items}

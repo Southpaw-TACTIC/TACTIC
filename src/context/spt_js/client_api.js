@@ -863,6 +863,11 @@ TacticServerStub = function() {
         return this._delegate("get_snapshots_by_relative_dir", arguments, kwargs);
     }
 
+    this.get_sobjects_by_relative_dir = function(relative_dir, kwargs) {
+        return this._delegate("get_sobjects_by_relative_dir", arguments, kwargs);
+    }
+
+
 
     this.get_client_dir = function(snapshot_code, kwargs) {
         return this._delegate("get_client_dir", arguments, kwargs);

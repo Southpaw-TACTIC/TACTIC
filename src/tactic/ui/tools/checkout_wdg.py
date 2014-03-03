@@ -11,9 +11,9 @@
 #
 
 from pyasm.common import Environment
-from pyasm.biz import Project
+from pyasm.biz import Project, Snapshot
 from pyasm.search import Search
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, WebContainer
 from pyasm.widget import IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -35,10 +35,37 @@ class CheckoutWdg(BaseRefreshWdg):
         top.add(inner)
 
         snapshot_codes = my.kwargs.get("snapshot_codes")
+        search_keys = my.kwargs.get("search_keys")
 
-        search = Search("sthpw/snapshot")
-        search.add_filters("code", snapshot_codes)
-        snapshots = search.get_sobjects()
+        if snapshot_codes:
+            if isinstance(snapshot_codes, basestring):
+                snapshots_codes = eval(snapshot_codes)
+
+            search = Search("sthpw/snapshot")
+            search.add_filters("code", snapshot_codes)
+            snapshots = search.get_sobjects()
+        elif search_keys:
+
+            if isinstance(search_keys, basestring):
+                search_keys = eval(search_keys)
+
+            sobjects = Search.get_by_search_keys(search_keys)
+            snapshots = []
+            for sobject in sobjects:
+                snapshot = Snapshot.get_latest_by_sobject(sobject, process="publish")
+                if snapshot:
+                    snapshots.append(snapshot)
+
+            snapshot_codes = []
+            for snapshot in snapshots:
+                snapshot_codes.append( snapshot.get("code") )
+
+        if not snapshot_codes:
+            no_snapshots_div = DivWdg()
+            no_snapshots_div.add("No files in selection")
+            inner.add(no_snapshots_div)
+            return top
+
 
         sandbox_dir = Environment.get_sandbox_dir("default")
         project_code = Project.get_project_code()
@@ -73,8 +100,8 @@ class CheckoutWdg(BaseRefreshWdg):
         } )
 
 
-        use_applet = True
-        if use_applet:
+        web = WebContainer.get_web()
+        if web.use_applet():
 
             button = ButtonNewWdg(title="Check-out", icon=IconWdg.CHECK_OUT)
             button_div.add(button)
@@ -94,10 +121,10 @@ class CheckoutWdg(BaseRefreshWdg):
                 for (var i = 0; i < snapshot_codes.length; i++) {
                     var snapshot_code = snapshot_codes[i];
 
-                    var percent = parseInt( i / (num_snapshots-1) * 100);
-                    progress.setStyle("width", percent + "%");
+                    var percent = parseInt( (i+1) / (num_snapshots-1) * 100);
 
                     var desc = "Checking out: "+(i+1)+" of "+num_snapshots+": "+snapshot_code;
+                    progress.setStyle("width", percent + "%");
                     message.innerHTML = desc;
 
                     server.checkout_snapshot(snapshot_code, null, {file_types: ['main'], filename_mode: 'source'});

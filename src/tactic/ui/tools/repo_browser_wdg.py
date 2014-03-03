@@ -1213,9 +1213,13 @@ class RepoBrowserDirListWdg(DirListWdg):
                 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var relative_dir = activator.getAttribute("spt_relative_dir");
-                if (!confirm("Delete folder ["+relative_dir+"]?")) {
-                    return;
-                }
+
+                // This will only delete the folder if it is empty
+                //if (!confirm("Delete folder ["+relative_dir+"]?")) {
+                //    return;
+                //}
+
+                var server = TacticServerStub.get();
 
                 var class_name = 'tactic.ui.tools.RepoBrowserActionCmd';
                 var kwargs = {
@@ -1223,10 +1227,13 @@ class RepoBrowserDirListWdg(DirListWdg):
                     action: 'delete_folder',
                     relative_dir: relative_dir
                 }
-                var server = TacticServerStub.get();
-                server.execute_cmd(class_name, kwargs);
-
-                activator.destroy();
+                try {
+                    server.execute_cmd(class_name, kwargs);
+                    activator.destroy();
+                }
+                catch(e) {
+                    alert("Folder is not empty.  Please delete all items in folder first");
+                }
 
 
                 '''

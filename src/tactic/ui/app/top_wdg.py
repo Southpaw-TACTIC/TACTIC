@@ -120,8 +120,9 @@ class TopWdg(Widget):
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
-        my.body.add_style("height: 100%")
+        #my.body.add_style("height: 100%")
         my.body.add_style("margin: 0px")
+        my.body.add_style("padding: 0px")
 
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
