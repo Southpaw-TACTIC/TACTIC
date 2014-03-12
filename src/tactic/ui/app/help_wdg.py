@@ -1637,7 +1637,7 @@ class HelpEditContentWdg(BaseRefreshWdg):
 config.toolbar_Full =
 [
     ['Source'],
-    //['Cut','Copy','Paste'],
+    ['Cut','Copy','Paste'],
     ['Undo','Redo','-','Find','Replace'],
     ['Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'],
     ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
@@ -1645,7 +1645,7 @@ config.toolbar_Full =
     ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv'],
     ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
     ['HorizontalRule','SpecialChar'],
-    ['Styles','Format','FontSize'],
+    ['Styles','Format','Font','FontSize'],
     ['TextColor','BGColor'],
     ['Maximize', 'ShowBlocks']
 ];
