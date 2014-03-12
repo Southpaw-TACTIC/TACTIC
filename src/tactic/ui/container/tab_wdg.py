@@ -27,7 +27,17 @@ class TabWdg(BaseRefreshWdg):
             'description': 'show the + button',
              'values': 'true|false',
             'category': 'Display'
-        }
+        },
+        'show_context_menu': {
+            'description': 'show the context menu',
+             'values': 'true|false',
+            'category': 'Display'
+        },
+        'show_remove': {
+            'description': 'show the close button',
+             'values': 'true|false',
+            'category': 'Display'
+        },
     }
 
     def get_onload_js(my):
@@ -1392,31 +1402,31 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
 
 
-        menu_item = MenuItem(type='separator')
-        menu.add(menu_item)
 
+        if my.kwargs.get("show_remove") not in ['false', False]: 
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+            menu_item = MenuItem(type='action', label='Close Tab')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_tab_top");
+                spt.tab.top = top;
 
-        menu_item = MenuItem(type='action', label='Close Tab')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_tab_top");
-            spt.tab.top = top;
+                var header = activator;
+                var element_name = header.getAttribute("spt_element_name");
+                spt.behavior.destroy_element(header);
 
-            var header = activator;
-            var element_name = header.getAttribute("spt_element_name");
-            spt.behavior.destroy_element(header);
-
-            var contents = top.getElements(".spt_tab_content");
-            for (var i=0; i<contents.length; i++) {
-                var content = contents[i];
-                if (content.getAttribute("element_name") == element_name) {
-                    spt.behavior.destroy_element(content);
+                var contents = top.getElements(".spt_tab_content");
+                for (var i=0; i<contents.length; i++) {
+                    var content = contents[i];
+                    if (content.getAttribute("element_name") == element_name) {
+                        spt.behavior.destroy_element(content);
+                    }
                 }
-            }
-            '''
-        } )
-        menu.add(menu_item)
+                '''
+            } )
+            menu.add(menu_item)
 
 
 

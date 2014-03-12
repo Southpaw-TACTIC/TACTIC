@@ -155,8 +155,8 @@
             <view>my_dashboard_tabs</view>
             <show_add>false</show_add>
             <!-- This causes problems affecting the main body tab
-            <show_remove>false</show_remove>
             -->
+            <show_remove>false</show_remove>
           </display>
         </element>
       </td>
