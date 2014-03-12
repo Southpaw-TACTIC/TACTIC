@@ -328,9 +328,11 @@ def xmlrpc_decorator(meth):
 
                 if isinstance(message, unicode):
                     error_msg = message.encode('utf-8')
-                else:
+                elif isinstance(message, str):
                     error_msg = unicode(message, errors='ignore').encode('utf-8')
-                print "Error: ", error_msg
+                else:
+                    error_msg = message
+                print "Error: ", error_msg  
                 print "-"*50
                 raise
 
