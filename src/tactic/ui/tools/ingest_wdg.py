@@ -537,8 +537,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         //var category = values.category[0];
         //var keywords = values.keywords[0];
 
-        var extra_data = values.extra_data[0];
-        
+        var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
 
         var convert_el = top.getElement(".spt_image_convert")
