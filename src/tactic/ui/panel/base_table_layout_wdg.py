@@ -134,6 +134,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
                 if type(my.element_names) in types.StringTypes:
                     my.element_names = my.element_names.split(",")
+                    my.element_names = [x.strip() for x in my.element_names]
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in my.element_names:

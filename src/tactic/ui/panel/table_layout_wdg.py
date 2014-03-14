@@ -4071,10 +4071,16 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
+    //var layout = spt.table.get_layout();
+    // this is more reliable when multi table are drawn in the same page while
+    // refresh is happening
+    var layout = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout);
+    
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
-    var layout = spt.table.get_layout();
+
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
