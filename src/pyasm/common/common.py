@@ -244,10 +244,10 @@ class Common(Base):
 
         is_ascii = Common.is_ascii(data)
 
-        data = re.sub(r'([_|,])+', ' ', data)
+        data = re.sub(r'([_|,\n])+', ' ', data)
         if is_ascii:
             # other non ASCII languages don't need these
-            data = re.sub(r'([^\s\w\'/])+', '', data)
+            data = re.sub(r'([^\s\w\'/\.])+', '', data)
         # lowercase is still needed for a mix of ASCII and non-ASCII like a french word
         data = data.lower().split(" ")
         data = [x for x in data if x]
