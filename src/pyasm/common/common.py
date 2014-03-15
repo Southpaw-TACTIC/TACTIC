@@ -237,7 +237,7 @@ class Common(Base):
 
 
 
-    def extract_keywords(data):
+    def extract_keywords(data, lower=True):
 
         if not isinstance(data, basestring):
             data = str(data)
@@ -249,7 +249,9 @@ class Common(Base):
             # other non ASCII languages don't need these
             data = re.sub(r'([^\s\w\'/\.])+', '', data)
         # lowercase is still needed for a mix of ASCII and non-ASCII like a french word
-        data = data.lower().split(" ")
+        if lower:
+            data = data.lower()
+        data = data.split(" ")
         data = [x for x in data if x]
         return data
     extract_keywords = staticmethod(extract_keywords)
