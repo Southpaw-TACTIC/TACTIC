@@ -517,8 +517,9 @@ class LookAheadTextInputWdg(TextInputWdg):
         relevant = my.kwargs.get("relevant")
         if not column:
             column = 'keywords'
+    
+        case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
 
-        case_sensitive  =  not my.kwargs.get("case_sensitive") in ['false',False]
         value_column = my.kwargs.get("value_column")
         validate = my.kwargs.get("validate") in ['true', None]
         if not validate:
@@ -1112,11 +1113,14 @@ class TextInputResultsWdg(BaseRefreshWdg):
     def get_display(my):
         top = my.top
         orig_value = my.kwargs.get("value")
-        case_sensitive  = my.kwargs.get("case_sensitive")
-        
+        case_sensitive = my.kwargs.get("case_sensitive") in ['true',True]
+
         if not my.do_search:
             my.draw_result(top, orig_value)
             return top
+
+        if not case_sensitive:
+            orig_value = orig_value.lower()
 
         # can only support 1 right now
         relevant = my.kwargs.get("relevant") == 'true'
@@ -1148,14 +1152,13 @@ class TextInputResultsWdg(BaseRefreshWdg):
             columns = column
 
 
-
         value = orig_value.strip()
 
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
         else:
-            values = Common.extract_keywords(value, lower=False)
+            values = Common.extract_keywords(value, lower=not case_sensitive)
             # allow words with speical characters stripped out by Common.extract_keywords to be searched
             # FIXME: THIS CAUSES PROBLEMS and is disabled for now
             #if value.lower() not in values:
@@ -1306,7 +1309,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         value = str(value)
                     keywords.append(value)
                
-                
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
                 # keywords can be a long space delimited string in global mode
@@ -1316,7 +1318,10 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
                 # show the keyword that matched first
                 keywords = keywords.split(" ")
-                keywords = [x.lower().strip() for x in keywords if x]
+                if case_sensitive: 
+                    keywords = [x.strip() for x in keywords if x]
+                else:
+                    keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
@@ -1347,7 +1352,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #if len(matches) != len(values):
                 if len(matches) < 1:
                     continue
-                
                 for match in matches:
                     keywords.remove(match)
                     keywords.insert(0, match)

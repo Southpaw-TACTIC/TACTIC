@@ -548,8 +548,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
         if column:
+            if my.mode=='global':
+                raise SetupException('You are advised to use [keyword] mode since you have specified the column option.')
             my.columns = column.split('|')
-        
+        my.case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
+
         my.do_search = my.kwargs.get("do_search")
         my.script_path = my.kwargs.get("script_path")
         if not my.mode:
@@ -928,9 +931,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 column=my.columns,
                 relevant = my.relevant,
                 width ='230',
-                hint_text=hint_text
+                hint_text=hint_text,
+                case_sensitive = my.case_sensitive
         )
-
         value = my.values.get("value")
         if value:
             text.set_value(value)
@@ -1039,7 +1042,6 @@ class DateFilterElementWdg(BaseFilterElementWdg):
             search2 = Search(search_type)
 
         search2.add_date_range_filter(date_col, start_date, end_date)
-        print search2.get_statement()
 
         
         search.add_relationship_search_filter(search2)

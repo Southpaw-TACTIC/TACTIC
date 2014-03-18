@@ -1250,7 +1250,7 @@ class Search(Base):
         my.select.add_op(op)
 
 
-    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=True):
+    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=False):
 
         if column.find(".") != -1:
             parts = column.split(".")
@@ -1310,7 +1310,6 @@ class Search(Base):
             my.select.add_where(expr1)
             my.select.add_where(expr2)
             my.select.add_op("or")
-
 
 
     def add_text_search_filter(my, column, keywords, table=None):
