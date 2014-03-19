@@ -723,6 +723,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 editable_wdg.set_checked()
                 # set a original state to remember it is checked initially
                 editable_wdg.set_attr('orig', 'true')
+
             td.add(editable_wdg)
 
 
@@ -1274,6 +1275,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         widget.add(attr_table)
         
+        # for insert view
         td.add("Enable Edit: ")
         editable_wdg = CheckboxWdg("attr|editable")
         editable_wdg.add_attr("size", "50")
@@ -1842,29 +1844,35 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             spt.show(wdg);
             spt.panel.refresh(wdg, values);
 
-            var edit = ui_top.getElement('input[name=attr|editable]');
-            // Manage Side Bar doesn't run the following
-            if (edit) {
-                var edit_orig_state = edit.getAttribute('orig');
-                var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
-                // dynamically toggle edit widget ui based on chosen widget key
-                if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
-                {
-                    edit.checked = false;
-                    if (value != 'expression')
-                        edit.setAttribute('disabled', 'disabled');
-                    else {
-                        edit.removeAttribute('disabled');
-                        if (edit_orig_state == 'true')
-                            edit.checked = true;
+            // there could be 2
+            var edits = ui_top.getElements('input[name=attr|editable]');
+            // Manage Side Bar doesnt run the following
+            // applicable only for the View Mode widget key select
+            if (edits.length > 0 && bvr.prefix=='option') {
+                for (var k=0; k< edits.length; k ++) {
+                var edit = edits[k];
+                    var edit_orig_state = edit.getAttribute('orig');
+                    var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
+                    // dynamically toggle edit widget ui based on chosen widget key
+                    if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
+                    {
+                        edit.checked = false;
+                        if (value != 'expression')
+                            edit.setAttribute('disabled', 'disabled');
+                        else {
+                            edit.removeAttribute('disabled');
+                            if (edit_orig_state == 'true') 
+                                edit.checked = true;
+                            
+                        }
+                        spt.hide(form_top);
                     }
-                    spt.hide(form_top);
-                }
-                else {
-                    edit.checked = true;
-                    edit.removeAttribute('disabled');
-                    spt.show(form_top);
-                    
+                    else {
+                        edit.checked = true;
+                        edit.removeAttribute('disabled');
+                        spt.show(form_top);
+                        
+                    }
                 }
             }
 
@@ -1872,10 +1880,12 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         if load_event:
             widget_select.add_behavior( {
                 'type': 'load',
+                'prefix': prefix,
                 'cbjs_action': cbjs_action
             } )
         widget_select.add_behavior( {
             'type': 'change',
+            'prefix': prefix,
             'cbjs_action': cbjs_action
         } )
 
