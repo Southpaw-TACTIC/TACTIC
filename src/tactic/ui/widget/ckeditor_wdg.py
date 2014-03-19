@@ -136,8 +136,7 @@ spt.ckeditor = {};
 
 
 spt.ckeditor.get_value = function(text_id) {
-    var cmd = "CKEDITOR.instances." + text_id + ".getData()";
-    var text_value = eval( cmd );
+    var text_value =  CKEDITOR.instances[ text_id ].getData();
     return text_value;
 }
 

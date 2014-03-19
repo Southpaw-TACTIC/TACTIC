@@ -341,11 +341,11 @@ class QuickBoxWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.app.PluginWdg';
             var args = {
             };
-            spt.tab.add_new("Plugin Manager", "Plugin Manager", class_name, args);
+            spt.tab.add_new("Manage Plugin", "Manage Plugin", class_name, args);
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Plugin Manager", "Tool to load and unload plugins.", image, behavior)
+        section = my.get_section_wdg("Manage Plugin", "Tool to load and unload plugins.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
@@ -362,11 +362,11 @@ class QuickBoxWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.panel.ManageViewPanelWdg';
             var args = {
             };
-            spt.tab.add_new("Side Bar Manager", "Side Bar Manager", class_name, args);
+            spt.tab.add_new("Manage Side Bar", "Manage Side Bar", class_name, args);
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = my.get_section_wdg("Side Bar Manager", "Tool to manage links and folders for the side bar.", image, behavior)
+        section = my.get_section_wdg("Manage Side Bar", "Tool to manage links and folders for the side bar.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
