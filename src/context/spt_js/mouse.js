@@ -445,15 +445,12 @@ spt.mouse._CB_drag_setup = function( evt )
         // Most drag behaviors will be set up with only one per element ...
         var bvr = bvr_list_ok[0];
         if( bvr.bvr_match_class ) {
-            // -- ORIGINAL check was this:  if( ! orig_evt_target.hasClass( bvr.bvr_match_class ) ) { ... }
-            // -- but it fails in IE, the target object appears to contain MooTools methods, but they can't be
-            // -- accessed for some reason ... not sure why it's this way in IE. To fix we use lower level calls
-            // -- to check contained class name ...
-            //
+
             if( ! orig_evt_target.className ) {
                 return;
             }
-            if( ! orig_evt_target.className.contains_word( bvr.bvr_match_class ) ) {
+            //if( ! orig_evt_target.className.contains_word( bvr.bvr_match_class ) ) {
+            if( ! spt.has_class( orig_evt_target, bvr.bvr_match_class ) ) {
                 return;
             }
             bvr.orig_evt_target = orig_evt_target;

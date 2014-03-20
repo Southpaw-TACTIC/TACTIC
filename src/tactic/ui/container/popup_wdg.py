@@ -1133,15 +1133,9 @@ spt.popup._check_focus_by_target = function( target )
 
     var popup = null;
 
-    // -- ORIGINAL check was this:  if( target.hasClass('spt_popup') ) { ... }
-    // -- but it fails in IE, the target object appears to contain MooTools methods, but they can't be
-    // -- accessed for some reason ... not sure why it's this way in IE. To fix we use lower level calls to check
-    // -- contained class name ...
-    //
-    if( target.className ) {
-        if( target.className.contains_word('spt_popup') ) {  // DO NOT combine this if with outer if statement!!
-            popup = target;
-        }
+    //if( target.hasClass('spt_popup') ) {
+    if( spt.has_class(target, 'spt_popup') ) {
+        popup = target;
     }
 
     if( ! popup ) {

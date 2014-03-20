@@ -902,7 +902,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         inner = DivWdg();
         top.add(inner);
 
-
         if not Container.get_dict("JSLibraries", "spt_tab"):
             inner.add_behavior( {
             'type': 'load',
@@ -1049,7 +1048,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
         content_top = DivWdg()
 
-
         # add a div so that it breaks correctly
         if my.mode == 'default':
             content_top.add("<div style='height:5px'></div>")
@@ -1072,6 +1070,22 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         content_top.add_class("tab_content_top")
         content_top.add_color("color", "color")
         content_top.add_color("background", "background")
+
+
+        """
+        content_top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            new Scrollable(bvr.src_el);
+            '''
+        } )
+        content_top.add_style("overflow: hidden")
+        content_top.add_style("height: 300px")
+        content_top.add_style("padding-right: 15px" )
+        """
+
+
+
 
         # put in a content box for each element
         for element_name in element_names:

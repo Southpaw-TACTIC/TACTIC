@@ -659,8 +659,16 @@ spt.has_class = function( el, cls )
         return false;
     }
 
+    var class_name;
+    if (el.className.baseVal) {
+        class_name = el.className.baseVal;
+    }
+    else {
+        class_name = el.className;
+    }
+
     var regex = new RegExp( "\\b" + cls + "\\b" );
-    if( el.className.match( regex ) ) {
+    if( class_name.match( regex ) ) {
         return true;
     }
 
@@ -1951,7 +1959,7 @@ spt.click_off.check = function( listen_bvr )
 
     var click_off_top = null;
     // not using MooTools .hasClass() here for IE compatibility reasons ...
-    if( click_target.className ) {
+    if( click_target.className && click_target.className.contains_word ) {
         if( click_target.className.contains_word( "APP_CLICK_OFF_TOP_EL" ) ) {
             click_off_top = click_target;
         }

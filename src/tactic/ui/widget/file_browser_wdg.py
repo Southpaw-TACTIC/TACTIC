@@ -881,7 +881,7 @@ class DirListWdg(BaseRefreshWdg):
         # add the file name
         filename_div = DivWdg()
         item_div.add(filename_div)
-        filename_div.add(basename)
+        filename_div.add(my.get_basename(dirname, basename) )
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
 
@@ -893,6 +893,10 @@ class DirListWdg(BaseRefreshWdg):
         #item_div.add(checkbox)
 
         item_div.add("<br clear='all'/>")
+
+
+    def get_basename(my, dirname, basename):
+        return basename
 
 
 

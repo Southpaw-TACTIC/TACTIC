@@ -740,17 +740,22 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     bvr['kwargs'] = my.kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
-
                     if relay_class:
                         bvr['bvr_match_class'] = relay_class
                         if not bvr.get("type"):
                             bvr['type'] = 'mouseup'
                         my.content.add_relay_behavior( bvr )
+
+                    elif bvr.get("type") == "smart_drag":
+                        bvr['bvr_match_class'] = css_class
+                        my.content.add_behavior(bvr)
                     else:
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
                         if not bvr.get("type"):
                             bvr['type'] = 'click_up'
                         bvr_div.add_behavior( bvr )
+
+
 
                 except Exception, e:
                     print "Error: ", e

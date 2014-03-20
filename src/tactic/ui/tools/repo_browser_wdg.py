@@ -537,6 +537,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
         paths = []
         my.file_codes = {}
+        my.file_objects = {}
         my.snapshot_codes = {}
         my.search_types_dict = {}
         my.search_codes = {}
@@ -563,6 +564,7 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                 my.file_codes[path] = file_object.get("code")
                 my.snapshot_codes[path] = file_object.get("snapshot_code")
+                my.file_objects[path] = file_object
 
                 # store search codes per directory
                 dirname = "%s/%s/" % (asset_base_dir, relative_dir)
@@ -814,7 +816,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         }
 
         spt.repo_browser.select = function(file_item) {
-            file_item.setStyle("background", "#F00");
+            file_item.setStyle("background", "#CCC");
             file_item.addClass("spt_selected")
         }
         spt.repo_browser.unselect = function(file_item) {
@@ -1365,6 +1367,15 @@ class RepoBrowserDirListWdg(DirListWdg):
 
 
 
+    def get_basename(my, dirname, basename):
+        path = "%s/%s" % (dirname, basename)
+        file_object = my.file_objects.get(path)
+        src_path = file_object.get_value("source_path")
+        src_basename = os.path.basename(src_path)
+
+        src_basename = "%s <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % (src_basename, basename)
+
+        return src_basename
 
 
     def add_file_behaviors(my, item_div, dirname, basename):
