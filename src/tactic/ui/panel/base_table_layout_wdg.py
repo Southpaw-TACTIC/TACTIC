@@ -93,6 +93,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
+        my.ingest_data_view = kwargs.get("ingest_data_view")
 
         # DEPRECATED: Do not use
         if not my.view:
@@ -138,6 +139,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
                 if type(my.element_names) in types.StringTypes:
                     my.element_names = my.element_names.split(",")
+                    my.element_names = [x.strip() for x in my.element_names]
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in my.element_names:
@@ -798,7 +800,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 parent_key=my.parent_key,
                 cbjs_post_delete=cbjs_post_delete, show_delete=show_delete,
                 custom_menus=custom_gear_menus,
-                show_retired=show_retired, embedded_table=embedded_table
+                show_retired=show_retired, embedded_table=embedded_table,
+                ingest_data_view = my.ingest_data_view
             )
 
             my.gear_menus = btn_dd.get_menu_data()

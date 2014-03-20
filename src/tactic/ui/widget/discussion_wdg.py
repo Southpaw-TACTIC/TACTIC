@@ -452,10 +452,11 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-        match_class = cls.get_note_class(hidden)
+        match_class = cls.get_note_class(hidden, 'spt_discussion_add')
         layout.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': match_class,
+            'hidden': hidden,
 
             'cbjs_action': '''
 
@@ -475,6 +476,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var layout = spt.table.get_layout();
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
+                kwargs.hidden = bvr.hidden;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -534,10 +536,11 @@ class DiscussionWdg(BaseRefreshWdg):
             '''
             } )
 
+        submit_class = cls.get_note_class(hidden, 'spt_discussion_submit') 
         # for the Submit button
         layout.add_relay_behavior( {
         'type': 'mouseup',
-        'bvr_match_class': 'spt_discussion_submit',
+        'bvr_match_class': submit_class,
         'cbjs_action': '''
 
         var note_top = bvr.src_el.getParent(".spt_add_note_top");
@@ -608,12 +611,12 @@ class DiscussionWdg(BaseRefreshWdg):
         parent = sobject.get_parent()
         return parent
 
-    def get_note_class(cls, hidden):
+    def get_note_class(cls, hidden, cls_name):
         ''' An attempt to separate the main table relay and hidden table relay. Otherwise it will toggle twice making it look like the button doesn't work'''
         if hidden == True:
-            return 'spt_discussion_add_hidden'
+            return '%s_hidden'%cls_name
         else:
-            return 'spt_discussion_add'
+            return cls_name
 
     get_note_class = classmethod(get_note_class)
 
@@ -1043,7 +1046,7 @@ class DiscussionWdg(BaseRefreshWdg):
             #add_wdg.add_style("margin-top: -7px")
             #add_wdg.add_style("margin-right: -2px")
   
-            add_class = my.get_note_class(my.hidden) 
+            add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
             #add_wdg.add_class(add_class)
 
             no_notes_msg = DivWdg()
@@ -1380,9 +1383,6 @@ class DiscussionWdg(BaseRefreshWdg):
             add_wdg.add_style("margin-right: -3px")
             #dialog.set_as_activator(add_wdg)
 
-            add_class = my.get_note_class(my.hidden) 
-            add_wdg.add_class(add_class)
-
             add_wdg.add_attr("spt_process", process)
             add_wdg.add_attr("spt_context", context)
        
@@ -1680,6 +1680,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
     def init(my):
+        my.hidden = my.kwargs.get("hidden")
         my.append_processes = my.kwargs.get("append_process")
         if my.append_processes:
             my.append_processes = my.append_processes.split(",")
@@ -1833,7 +1834,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         add_button = ActionButtonWdg(title="Submit", tip='Submit information to create a new note')
         content_div.add(add_button)
         add_button.add_style("float: right")
-        add_button.add_class("spt_discussion_submit")
+
+        submit_class = DiscussionWdg.get_note_class(my.hidden, 'spt_discussion_submit') 
+        add_button.add_class(submit_class)
 
 
         # attachments

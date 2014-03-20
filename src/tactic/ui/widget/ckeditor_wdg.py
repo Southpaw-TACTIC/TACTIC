@@ -70,9 +70,9 @@ CKEDITOR.on( 'instanceReady', function( ev )
 
 
 var config = {
-  //toolbar: 'Full',
+  toolbar: 'Full',
   uiColor: bvr.color,
-  height: '500px'
+  height: '800px'
 };
 
 /*
@@ -91,8 +91,9 @@ config.toolbar_Full =
     ['TextColor','BGColor'],
     ['Maximize', 'ShowBlocks']
 ];
-*/
 
+
+*/
 
 config.toolbar_Full =
 [
@@ -123,6 +124,9 @@ if (instance) instance.destroy();
     
 CKEDITOR.replace(bvr.text_id, config );
 
+//var html = '';
+//editor = CKEDITOR.appendTo( bvr.text_id, config, html );
+
 bvr.src_el.setStyle("display", "none");
 
 
@@ -132,8 +136,7 @@ spt.ckeditor = {};
 
 
 spt.ckeditor.get_value = function(text_id) {
-    var cmd = "CKEDITOR.instances." + text_id + ".getData()";
-    var text_value = eval( cmd );
+    var text_value =  CKEDITOR.instances[ text_id ].getData();
     return text_value;
 }
 

@@ -24,6 +24,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def init(my):
         my.embedded_table = my.kwargs.get('embedded_table')
+        my.ingest_data_view = my.kwargs.get("ingest_data_view")
+        if not my.ingest_data_view:
+            my.ingest_data_view = 'edit'
 
         my.view_save_dialog = my.get_save_wdg()
         my.view_save_dialog_id = my.view_save_dialog.get_id()
@@ -321,13 +324,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
                     var kwargs = {
-                        search_type: search_type
+                        search_type: search_type,
+                        ingest_data_view: '%s'
                     };
                     //spt.tab.set_main_body_tab();
                     //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
                     var title = "Ingest: " + search_type;
                     spt.panel.load_popup(title, class_name, kwargs);
-                    '''
+                    '''%my.ingest_data_view
                  }
                 } )
 

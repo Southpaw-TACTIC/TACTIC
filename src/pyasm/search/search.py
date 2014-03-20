@@ -1250,7 +1250,7 @@ class Search(Base):
         my.select.add_op(op)
 
 
-    def add_startswith_keyword_filter(my, column, keywords):
+    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=False):
 
         if column.find(".") != -1:
             parts = column.split(".")
@@ -1294,21 +1294,22 @@ class Search(Base):
                 # cast as a string first for integer supported by postgres, SQLServer, MySQL
                 expr1 = """CAST("%s"."%s" AS varchar(10)) like '%% %s%%'""" % (table, column, keyword)
                 expr2 = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
-                #expr1 = """"%s"."%s" = '%s'""" % (table, column, keyword)
             else:
-                keyword = keyword.lower()
-                #expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
-                # NOTE: lower() on the column disables the use of index, resulting in much slower performance
-                expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
-                #expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
-                expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
+                if case_sensitive:
+                    
+                    expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
+                    expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
+                else:
+                    keyword = keyword.lower()
+                    expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
+                    # NOTE: lower() on the column disables the use of index, resulting in much slower performance
+                    expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
 
             my.select.add_op("begin")
 
             my.select.add_where(expr1)
             my.select.add_where(expr2)
             my.select.add_op("or")
-
 
 
     def add_text_search_filter(my, column, keywords, table=None):

@@ -2909,6 +2909,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_context_menu = target.getAttribute("spt_show_context_menu");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
+    var ingest_data_view = target.getAttribute("spt_ingest_data_view");
+    var checkin_context = target.getAttribute("spt_checkin_context");
+    var checkin_type = target.getAttribute("spt_checkin_type");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
@@ -2980,6 +2983,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'simple_search_view': simple_search_view,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
+        'checkin_type': checkin_type,
+        'checkin_context': checkin_context,
+        'ingest_data_view': ingest_data_view,
         'init_load_num': init_load_num,
         'mode': mode,
         'is_refresh': 'true',

@@ -198,7 +198,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         my.category = my.kwargs.get("category")
         my.search_type = my.kwargs.get("search_type")
-
+        my.encoding = my.kwargs.get("encoding")
+        if not my.encoding:
+             my.encoding = 'utf-8'
         my.plugin = None
 
 
@@ -586,7 +588,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
         html = html.replace("<![CDATA[", "")
         html = html.replace("]]>", "")
         #html = html.decode('utf-8')
-        template = Template(html, output_encoding='utf-8', input_encoding='utf-8')
+      
+        if my.encoding == 'ascii':
+            template = Template(html)
+        else:
+            template = Template(html, output_encoding=my.encoding, input_encoding=my.encoding)
 
         # get the api version of the sobject
         if not my.is_table_element:

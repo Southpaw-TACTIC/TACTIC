@@ -693,8 +693,8 @@ class IconCreator(object):
             # there could be any kind of Exception by PIL, not just IOError
             # maximum geometry mode aspect ratio preserved
             if sys.platform == 'darwin':
-                cmd = '''sips --resampleHeightWidthMax %s %s --out "%s" "%s"''' \
-                    % (thumb_size[0], thumb_size[1], small_path, large_path)
+                cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
+                    % (thumb_size[0], small_path, large_path)
                 print "cmd: ", cmd
             else:
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
@@ -702,13 +702,17 @@ class IconCreator(object):
                 print "cmd: ", cmd
    
             large_path = large_path.encode('utf-8')
+            #os.system(cmd)
+            # use subprocess to call instead
             import subprocess
             try:
-                subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                if sys.platform == 'darwin':
+                    subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
+                else:
+                    subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
             except:
                 pass
-            #os.system(cmd)
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
                 raise TacticException('Icon generation failed')

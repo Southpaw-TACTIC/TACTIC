@@ -517,6 +517,8 @@ class LookAheadTextInputWdg(TextInputWdg):
         relevant = my.kwargs.get("relevant")
         if not column:
             column = 'keywords'
+    
+        case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
 
         value_column = my.kwargs.get("value_column")
         validate = my.kwargs.get("validate") in ['true', None]
@@ -718,6 +720,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'filters': filters,
             'column': column,
             'relevant': relevant,
+            'case_sensitive': case_sensitive,
             'value_column': value_column,
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
@@ -835,6 +838,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     relevant: bvr.relevant,
                     script_path: bvr.script_path,
                     do_search: bvr.do_search,
+                    case_sensitive: bvr.case_sensitive,
                     value: value
                 },
                 cbjs_action: cbk,
@@ -1109,9 +1113,14 @@ class TextInputResultsWdg(BaseRefreshWdg):
     def get_display(my):
         top = my.top
         orig_value = my.kwargs.get("value")
+        case_sensitive = my.kwargs.get("case_sensitive") in ['true',True]
+
         if not my.do_search:
             my.draw_result(top, orig_value)
             return top
+
+        if not case_sensitive:
+            orig_value = orig_value.lower()
 
         # can only support 1 right now
         relevant = my.kwargs.get("relevant") == 'true'
@@ -1143,14 +1152,13 @@ class TextInputResultsWdg(BaseRefreshWdg):
             columns = column
 
 
-
         value = orig_value.strip()
 
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
         else:
-            values = Common.extract_keywords(value)
+            values = Common.extract_keywords(value, lower=not case_sensitive)
             # allow words with speical characters stripped out by Common.extract_keywords to be searched
             # FIXME: THIS CAUSES PROBLEMS and is disabled for now
             #if value.lower() not in values:
@@ -1158,7 +1166,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
         # why is this done?
         # so the auto suggestion list the items in the same order as they are typed in
         values.reverse()
-
 
         project_code = Project.get_project_code()
 
@@ -1246,14 +1253,14 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #    search.add_filter(column,values[0], op='=')
                 #else:
                 #    search.add_startswith_keyword_filter(column, values)
-                search.add_startswith_keyword_filter(col, values)
+                search.add_startswith_keyword_filter(col, values, \
+                   case_sensitive=case_sensitive)
                
             
             
             search.add_op(search_op)
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
-           
             search.add_limit(my.LIMIT)
             results = search.get_sobjects()
             info_dict['results'] = results
@@ -1302,7 +1309,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         value = str(value)
                     keywords.append(value)
                
-                
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
                 # keywords can be a long space delimited string in global mode
@@ -1312,7 +1318,10 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
                 # show the keyword that matched first
                 keywords = keywords.split(" ")
-                keywords = [x.lower().strip() for x in keywords if x]
+                if case_sensitive: 
+                    keywords = [x.strip() for x in keywords if x]
+                else:
+                    keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
@@ -1343,7 +1352,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #if len(matches) != len(values):
                 if len(matches) < 1:
                     continue
-                
                 for match in matches:
                     keywords.remove(match)
                     keywords.insert(0, match)

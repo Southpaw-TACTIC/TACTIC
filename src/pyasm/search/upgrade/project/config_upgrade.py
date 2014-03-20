@@ -101,7 +101,7 @@ class ConfigUpgrade(BaseUpgrade):
     #
     def upgrade_v4_0_0_b08_003(my):
         my.run_sql('''
-        ALTER TABLE "naming" DROP "checkin_mode";
+        ALTER TABLE "naming" DROP COLUMN "checkin_mode";
         ''')
 
     def upgrade_v4_0_0_b08_002(my):

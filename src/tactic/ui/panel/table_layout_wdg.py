@@ -152,12 +152,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'TextWdg',
             'order': '10'
         },
-        'init_load_num': {
-            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
             'category': 'Optional',
             'order': '11'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '12'
+        },
+
 
 
         "temp" : {
@@ -4081,10 +4089,16 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
+    //var layout = spt.table.get_layout();
+    // this is more reliable when multi table are drawn in the same page while
+    // refresh is happening
+    var layout = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout);
+    
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
-    var layout = spt.table.get_layout();
+
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
