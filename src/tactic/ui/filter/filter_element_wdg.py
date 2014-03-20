@@ -882,7 +882,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
        
 
         if not my.columns and my.mode == 'keyword':
-            my.columns = [my.get_name()]
+            name = my.get_name()
+            my.columns = [name]
             # check if column exists
             if my.filter_search_type:
                 exists = SearchType.column_exists(my.filter_search_type, name)
