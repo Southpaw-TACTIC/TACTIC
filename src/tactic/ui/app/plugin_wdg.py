@@ -30,6 +30,7 @@ from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg
 
 class PluginWdg(BaseRefreshWdg):
 
+
     def get_display(my):
 
         div = DivWdg()
@@ -124,7 +125,9 @@ class PluginWdg(BaseRefreshWdg):
         active_plugins = search.get_sobjects()
         active_codes = [x.get_code() for x in active_plugins]
         active_versions = [x.get_value("version") for x in active_plugins]
-
+        active_map = {}
+        for x in active_plugins:
+            active_map[x.get_code()] = x.get_value("version") 
 
         title_div = DivWdg()
         div.add(title_div)
@@ -367,11 +370,11 @@ class PluginWdg(BaseRefreshWdg):
             SmartMenu.assign_as_local_activator( plugin_div, 'PLUGIN_CTX' )
             plugin_div.add_attr("spt_plugin_dirname", dirname)
 
-            # FIXME: this logic is NOT correct
-            # FIXME: this logic is NOT correct
-            # FIXME: this logic is NOT correct
-            is_active = code in active_codes and version in active_versions
+           
+            active_version = active_map.get(code)
 
+            is_active = version == active_version
+         
 
             icon = DivWdg()
             icon.add_style("width: 9px")
@@ -817,7 +820,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 spt.panel.refresh(top);
             }
             exec();
-            spt.notify.show_message('Plugin [' + code + '] V' + version+ ' created.');
+            spt.notify.show_message('Plugin [' + code + '] v' + version+ ' created.');
             
             '''
             } )
