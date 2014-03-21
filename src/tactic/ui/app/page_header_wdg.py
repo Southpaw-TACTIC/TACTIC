@@ -114,6 +114,11 @@ class PageHeaderWdg(Widget):
             action_div.add_style("margin-top: -5px")
             td = tactic_header.add_cell( action_div )
 
+            if PrefSetting.get_value_by_key('subscription_bar') == 'true':
+                from message_wdg import SubscriptionBarWdg
+                sub = SubscriptionBarWdg(mode='popup')
+                tactic_header.add_cell(sub)
+
         # user login
 
         # user
