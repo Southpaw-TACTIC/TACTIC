@@ -58,8 +58,8 @@ except ImportError:
             else:
                 return json.JSONEncoder.default(self, obj)
 
-    def jsondumps(obj):
-        return xjsondumps(obj, cls=SPTJSONEncoder)
+    def jsondumps(obj, ensure_ascii=True):
+        return xjsondumps(obj, cls=SPTJSONEncoder, ensure_ascii=ensure_ascii)
 
 
 
