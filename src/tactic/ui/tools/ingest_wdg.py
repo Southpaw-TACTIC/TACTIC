@@ -35,6 +35,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
+        'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects'
     }
 
