@@ -23,6 +23,12 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
 
+    def upgrade_v4_2_0_a01_008(my):
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/translation', 'config/translation', 'config', 'Translation', '{project}', 'spt_translation', 'pyasm.search.SObject', 'Translation', 'public');
+        ''')
+
+ 
+
     def upgrade_v4_2_0_a01_007(my):
         my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/watch_folder', 'sthpw/watch_folder', 'sthpw', 'Watch Folder', 'sthpw', 'watch_folder', 'pyasm.search.SObject', 'Watch Folder', 'public');
         ''')

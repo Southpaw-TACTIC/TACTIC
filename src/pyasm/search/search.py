@@ -2665,7 +2665,7 @@ class SObject(object):
 
 
 
-    def get_dynamic_value(my, name, no_exceptions=False):
+    def _get_dynamic_value(my, name, no_exceptions=False):
 
         search_type = my.get_search_type()
         if search_type.startswith("sthpw/"):
@@ -2738,13 +2738,21 @@ class SObject(object):
         '''get the value of the named attribute stored as metadata in the
         sobject.  The no_exception argument determines whethere or not
         an exception is raised if the sobject does not have this attr'''
-        # check security
-        #my._check_value_security(name)
 
         # DISABLING
-        #value = my.get_dynamic_value(name, no_exception)
+        #value = my._get_dynamic_value(name, no_exception)
         #if value != None:
         #    return value
+
+        # TEST Translate
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
@@ -2923,6 +2931,17 @@ class SObject(object):
     def set_value(my, name, value, quoted=1, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
+
+
+        # TEST Translate
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
 
         if temp:
             my._set_value(name, value, quoted=quoted)

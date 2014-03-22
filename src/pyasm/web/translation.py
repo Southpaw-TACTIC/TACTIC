@@ -18,6 +18,7 @@ import os
 from pyasm.common import Container
 from pyasm.search import Search
 from pyasm.biz import PrefSetting, TranslationSObj
+from pyasm.biz import Translation as TranslationX
 
 class Translation(object):
 
@@ -39,10 +40,9 @@ class Translation(object):
 
         # else it is english
         if not language:
-            language = "en_US"
+            language = "en"
 
         Container.put("language", language)
-
 
         # add some localization code
         #gettext.install("messages", unicode=True)
@@ -58,11 +58,28 @@ class Translation(object):
 
 
 
-    def _translate(msg):
+    def _translate(msg, language=None, chk=None):
 
-        language = Container.get("language")
-        #if language == 'en_US':
-        #    return msg
+        if not language:
+            language = Container.get("language")
+
+        sobject = TranslationX.get(language, msg)
+        if sobject:
+
+            if chk:
+                chk = chk.strip("...")
+                orig = sobject.get_value("en".lower())
+                assert(orig)
+                assert(orig.startswith(chk))
+
+            msgstr = sobject.get_value(language)
+            if not msgstr:
+                return "No Translation"
+            else:
+                return msgstr
+
+        if language != 'en':
+            return "__%s__" % msg.upper()
         
         sobject = TranslationSObj.get(language, msg)
         if not sobject:

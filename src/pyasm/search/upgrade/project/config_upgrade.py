@@ -22,6 +22,24 @@ class ConfigUpgrade(BaseUpgrade):
     # 4.2.0.a01
     #
 
+    def upgrade_v4_2_0_a01_003(my):
+        my.run_sql('''
+        CREATE TABLE spt_translation (
+            id serial PRIMARY KEY,
+            code character varying(256),
+            name character varying(256),
+            en_US text,
+            fr text,
+            login character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now(),
+            CONSTRAINT "spt_translation_code_idx" UNIQUE (code),
+            CONSTRAINT "spt_translation_name_idx" UNIQUE (name)
+        );
+        ''')
+
+
+
+
     def upgrade_v4_2_0_a01_002(my):
         my.run_sql('''
         ALTER TABLE "naming" ADD "sandbox_dir_alias" varchar(256);

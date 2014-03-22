@@ -2503,6 +2503,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 parts  = title.split('.', 1)
                 title = parts[1]
             title = " ".join( [x.capitalize() for x in title.split("_")] )
+
+        title = _(title)
         return title
 
 
