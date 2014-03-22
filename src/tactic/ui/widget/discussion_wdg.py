@@ -1056,7 +1056,8 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_div.add(no_notes_msg)
             add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
             no_notes_msg.add(add_wdg)
-            no_notes_msg.add("<i>-- No notes. Click to add. --</i>")
+            msg = "No notes. Click to add."
+            no_notes_msg.add("<i>-- %s --</i>" % _(msg))
             no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
 

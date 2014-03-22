@@ -2744,7 +2744,6 @@ class SObject(object):
         #if value != None:
         #    return value
 
-        # TEST Translate
         from pyasm.biz import Translation
         lang = Translation.get_language()
         if lang:
@@ -2933,7 +2932,6 @@ class SObject(object):
         not commited to the database'''
 
 
-        # TEST Translate
         from pyasm.biz import Translation
         lang = Translation.get_language()
         if lang:

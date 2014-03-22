@@ -23,6 +23,32 @@ class SthpwUpgrade(BaseUpgrade):
     #
 
 
+    def upgrade_v4_2_0_a01_011(my):
+        my.run_sql('''
+        CREATE TABLE translation (
+            id serial PRIMARY KEY,
+            code character varying(256),
+            name character varying(256),
+            en text,
+            fr text,
+            ja text,
+            es text,
+            login character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now(),
+            CONSTRAINT "translation_code_idx" UNIQUE (code),
+            CONSTRAINT "translation_name_idx" UNIQUE (name)
+        );
+        ''')
+
+
+    def upgrade_v4_2_0_a01_010(my):
+        my.run_sql('''
+        DROP TABLE "translation";
+        ''')
+
+
+
+
     def upgrade_v4_2_0_a01_008(my):
         my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/translation', 'config/translation', 'config', 'Translation', '{project}', 'spt_translation', 'pyasm.search.SObject', 'Translation', 'public');
         ''')

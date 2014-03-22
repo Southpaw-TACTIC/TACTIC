@@ -442,7 +442,7 @@ class SearchLimitWdg(Widget):
         limit_select.set_option("values", "10|20|50|100|200|Custom")
         limit_select.add_style("font-size: 10px")
         limit_content.add(limit_select)
-        limit_content.add("items per page<br/>")
+        limit_content.add(" items per page<br/>")
 
         if my.search_limit in [10,20,50,100,200]:
             limit_select.set_value(my.search_limit)

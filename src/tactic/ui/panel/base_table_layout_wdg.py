@@ -876,9 +876,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.items_found = my.search.get_count()
 
         if my.items_found == 1:
-            num_div.add( "%s item found" % my.items_found)
+            num_div.add( "%s %s" % (my.items_found, _("item found")))
         else:
-            num_div.add( "%s items found" % my.items_found)
+            num_div.add( "%s %s" % (my.items_found, _("items found")))
         num_div.add_style("margin-right: 0px")
         num_div.add_border(style="none")
         num_div.set_round_corners(6)

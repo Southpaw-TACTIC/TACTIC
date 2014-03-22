@@ -4678,7 +4678,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # initialize the translation module
-        from pyasm.web import Translation
+        from pyasm.biz import Translation
         Translation.install()
 
         # NOTE: this is deprecated.  The state is in the ticket passed
