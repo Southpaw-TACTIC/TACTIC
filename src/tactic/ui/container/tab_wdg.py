@@ -1501,20 +1501,21 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 */
          
 
-
+                var br = '\n';
                 var xml = '';
-                xml += '<element>\n';
-                xml += '  <display class="'+class_name+'">\n';
+                xml += '<element>' + br;
+                xml += '  <display class="'+class_name+'">'  + br;
                 for (var name in kwargs) {
                   if (name == 'class_name') {
                     continue;
                   }
-                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>\n';
+                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
                 }
-                xml += '  </display>\n';
-                xml += '</element>\n';
+                xml += '  </display>' + br;
+                xml += '</element>';
 
-                spt.alert(xml);
+                var html = spt.convert_to_html_display(xml);
+                spt.alert(html, {type:'html'});
                 '''
             } )
             menu.add(menu_item)

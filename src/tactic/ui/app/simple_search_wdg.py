@@ -446,7 +446,9 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             if not widget:
-                widget = KeywordFilterElementWdg()
+                # even the default for KeywordFilterElementWdg is mode=keyword
+                # this is set to global for backward compatibility
+                widget = KeywordFilterElementWdg(mode='global')
                 widget.set_name(element_name)
                 
 

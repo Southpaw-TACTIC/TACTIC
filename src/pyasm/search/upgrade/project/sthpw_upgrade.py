@@ -17,6 +17,10 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    def upgrade_v4_1_0_v04_001(my):
+        my.run_sql('''
+        INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('subscription_bar','Determine whether to show the Subscription Bar','|true|false','sequence','display','Subscription Bar');
+        ''')
 
     #
     # 4.2.0.a01
