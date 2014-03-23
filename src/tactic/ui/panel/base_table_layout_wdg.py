@@ -279,11 +279,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
-        if not my.show_search_limit:
-            my.search_limit = None
-        else:
-            from tactic.ui.app import SearchLimitWdg
-            my.search_limit = SearchLimitWdg()
+        # Always instantiate the search limit for the pagination at the bottom
+        
+        from tactic.ui.app import SearchLimitWdg
+        my.search_limit = SearchLimitWdg()
 
         my.items_found = 0
 
@@ -889,7 +888,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- PAGINATION TOOLS
         limit_span = DivWdg()
         limit_span.add_style("margin-top: 4px")
-        if my.search_limit:
+        if my.show_search_limit:
             search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
             num_div.add(search_limit_button)
             from tactic.ui.container import DialogWdg
@@ -1039,7 +1038,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         outer.add(div)
-        if my.search_limit:
+        if my.show_search_limit:
             outer.add(dialog)
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
