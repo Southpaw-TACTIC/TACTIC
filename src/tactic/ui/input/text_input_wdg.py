@@ -120,10 +120,10 @@ class TextInputWdg(BaseInputWdg):
             my.set_readonly(True)
 
 
+        my.border_color = my.text.get_color("border")
 
         my.text.add_class("spt_text_input")
-        border_color = my.text.get_color("border")
-        my.text.add_style("border: solid 1px %s" % border_color)
+        #my.text.add_style("border: solid 1px %s" % my.border_color)
         my.text.add_style("padding: 4px")
         #my.text.add_style("margin-top: -4px")
 
@@ -170,10 +170,9 @@ class TextInputWdg(BaseInputWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 230
-        else:
-            my.width = my.width.replace("px", "")
-            my.width = int(my.width)
+            my.width = "230px"
+
+        my.icon = my.kwargs.get("icon")
 
 
     def add_style(my, name, value=None):
@@ -181,7 +180,7 @@ class TextInputWdg(BaseInputWdg):
             name, value = name.split(": ")
 
         if name == 'width':
-            my.width = int(value.replace("px",""))
+            my.width = value
         elif name == 'float':
             my.top.add_style(name, value)
         else:
@@ -270,8 +269,7 @@ class TextInputWdg(BaseInputWdg):
         top = my.top
         top.add_style("position: relative")
         top.add_class("spt_text_top")
-        top.add_style("height: 20px")
-        top.add_style("width: %spx" % my.width)
+        top.add_style("width: %s" % my.width)
         top.add_class("spt_input_text_top")
 
 
@@ -327,7 +325,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %spx" % my.width)
+            edit_div.add_style("margin-left: %s" % my.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -356,28 +354,43 @@ class TextInputWdg(BaseInputWdg):
 
 
 
+        table = Table()
+        top.add(table)
+        tr = table.add_row()
+        table.add_style("width: %s" % my.width)
+
+
+        #height = 27
+        height = my.kwargs.get("height")
+        if height:
+            height = height.replace("px", "")
+            height = int(height)
+        else:
+            height = 32 
+
         # add in an icon div
-        use_icon = True
-        if use_icon:
+        if my.icon:
             icon_div = DivWdg()
-            top.add(icon_div)
+            td = table.add_cell(icon_div)
+            td.add_style("width: 20")
             #icon_div.add_style("display: inline")
-            icon_div.add_style("float: left")
-            icon_div.add_border()
-            icon = IconWdg("Clear", IconWdg.ZOOM)
+            #icon_div.add_style("float: left")
+            td.add_style("border: solid 1px %s" % my.border_color)
+
+            icon = IconWdg("", eval("IconWdg.%s" % my.icon))
             icon_div.add(icon)
-            icon_div.add_style("padding: 4px 6px")
-            icon_div.add_style("height: 16px")
+            icon_div.add_style("padding: 4px 8px")
+            icon_div.add_style("height: %spx" % (height -12))
             icon_div.add_style("margin-right: -1px")
 
 
 
 
         # add the text widget
-        text_div = SpanWdg()
-        top.add(text_div)
-        text_div.add(my.text)
-
+        #text_div = DivWdg()
+        #text_div.add_style("float: left")
+        #top.add(text_div)
+        #text_div.add(my.text)
 
 
 
@@ -398,7 +411,7 @@ class TextInputWdg(BaseInputWdg):
                         positionOptions: {
                             offset: {x:5, y:5}}});
                     over.text.setStyle('color','#999');
-                    over.text.setStyle('font-size','11px');
+                    over.text.setStyle('font-size','1.1em');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''})
 
@@ -406,14 +419,31 @@ class TextInputWdg(BaseInputWdg):
 
         #my.text.add_style("-moz-border-radius: 5px")
         #my.text.set_round_corners()
+
+        td = table.add_cell(my.text)
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 0px 1px 1px")
+        td.add_style("border-style: solid")
+        td.add_style("position: relative")
+
         my.text.add_style("padding: 5px")
-        my.text.add_style("width: %spx" % my.width)
-        text_div.add_style("width: %spx" % my.width)
-        text_div.add_style("position: relative")
+        my.text.add_style("width: 100%")
+        my.text.add_style("border: none")
+
+        my.text.add_style("height: %s" % height)
+
+        td = table.add_cell()
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 1px 1px 0px")
+        td.add_style("border-style: solid")
 
         icon_wdg = DivWdg()
-        text_div.add(icon_wdg)
-        icon_wdg.add_style("position: absolute")
+        td.add(icon_wdg)
+        icon_wdg.add_style("float: right")
+        icon_wdg.add_style("margin-right: 3px")
+        #icon_wdg.add_style("position: absolute")
+
+
         
         if WebContainer.get_web().get_browser() in ['Webkit', 'Qt']:
             top_offset = '-2'
@@ -422,11 +452,13 @@ class TextInputWdg(BaseInputWdg):
         #    top_offset = '4'
         #    right_offset = '6'
         else:
-            top_offset = '2'
+            top_offset = '6'
             right_offset = '8'
 
-        icon_wdg.add_style("top: %spx" %top_offset)
-        icon_wdg.add_style("right: %spx" % right_offset)
+        #icon_wdg.add_style("top: %spx" %top_offset)
+        #icon_wdg.add_style("right: %spx" % right_offset)
+        icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("right: 0px")
 
 
         if not my.readonly:

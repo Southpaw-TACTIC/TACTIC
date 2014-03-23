@@ -907,15 +907,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             shelf_wdg = my.get_shelf_wdg()
             right_div.set_widget(shelf_wdg, "shelf_wdg")
 
-            shelf_wdg.add_style("overflow-x: hidden")
-            shelf_wdg.add_style("overflow-y: hidden")
+            #shelf_wdg.add_style("overflow-x: hidden")
+            #shelf_wdg.add_style("overflow-y: hidden")
            
 
             view_wdg = DivWdg()
             shelf_wdg.add(view_wdg)
 
-            view_wdg.add("<b>View: &nbsp;</b>")
-            text = TextInputWdg(name="view")
+            view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
+            text = TextInputWdg(name="view", height="25px")
             view_wdg.add(text)
             text.add_style("width: 350px")
             view_wdg.add_style("margin-top: 4px")
@@ -923,15 +923,20 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view_wdg.add_style("padding-left: 230px")
             text.add_class("spt_view")
             text.add_style("font-family: courier")
+            text.add_style("float: left")
             if view != '__new__':
                 text.set_value(view.replace(".", "/"))
 
+            type_wdg = DivWdg()
+            shelf_wdg.add(type_wdg)
+            type_wdg.add_style("float: left")
+            type_wdg.add_style("margin: 5px 5px 5px 20px")
 
             select = SelectWdg(name="widget_type")
             if widget_type:
                 select.set_value(widget_type)
-            view_wdg.add("<b>Type: &nbsp;</b>")
-            view_wdg.add(select)
+            type_wdg.add("<b>Type: &nbsp;</b>")
+            type_wdg.add(select)
             select.set_option("values", "widget|theme|column|chart|report|dashboard|layout_tool")
             select.add_empty_option("-- None ---")
 

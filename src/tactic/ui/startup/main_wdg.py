@@ -225,14 +225,18 @@ class MainWdg(BaseRefreshWdg):
             shelf.add("&nbsp;")
 
 
-        search_wdg = DivWdg()
-        search_wdg.add_class("spt_main_top")
+        search_wdg = Table()
         top.add(search_wdg)
+        search_wdg.add_row()
+
+        search_wdg.add_class("spt_main_top")
         search_wdg.add_style("padding: 10px")
-        search_wdg.add_style("margin: 10px auto")
+        search_wdg.add_style("margin: 20px auto")
         search_wdg.add_style("width: 430px")
-        search_wdg.add("Search: ")
-        search_wdg.add("&nbsp;"*3)
+
+        td = search_wdg.add_cell("Search: ")
+        td.add_style("vertical-align: top")
+        td.add_style("padding-top: 8px")
 
 
         custom_cbk = {}
@@ -262,21 +266,18 @@ class MainWdg(BaseRefreshWdg):
         #text = TextWdg("search")
         text.add_class("spt_main_search")
         text.add_style("width: 290px")
-        search_wdg.add(text)
+
+        search_wdg.add_cell(text)
         search_wdg.add_style("font-weight: bold")
         search_wdg.add_style("font-size: 16px")
 
 
-        button = ActionButtonWdg(title="Search")
-        #search_wdg.add(button)
-        button.add_style("float: right")
-        #button.add_style("margin-top: -28px")
-
         icon_div = DivWdg()
-        search_wdg.add(icon_div)
+        td = search_wdg.add_cell(icon_div)
+        td.add_style("vertical-align: top")
         icon_div.add_style("width: 38px")
         icon_div.add_style("height: 27px")
-        icon_div.add_style("padding-top: 3px")
+        icon_div.add_style("padding-top: 7px")
         icon_div.add_style("padding-left: 4px")
         icon_div.add_style("text-align: center")
         #icon_div.add_gradient("background", "background3", 15, -10)
@@ -287,8 +288,6 @@ class MainWdg(BaseRefreshWdg):
         icon_div.set_box_shadow("1px 1px 1px 1px")
         icon = IconWdg("Search", IconWdg.SEARCH_32, width=24)
         icon_div.add(icon)
-        icon_div.add_style("float: right")
-        icon_div.add_style("margin-top: -5px")
         button = icon_div
         icon_div.add_class("hand")
         icon_div.add_behavior( {
