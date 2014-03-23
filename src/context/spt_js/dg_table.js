@@ -3015,7 +3015,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     // have a chance to specify whether or not to show the search_limit_wdg ... needed
     // if you want all the results that match your search and not just the current
     // page ...
-    args['show_search_limit'] = 'true';
+    args['show_search_limit'] = target.getAttribute('spt_show_search_limit');
     if( 'show_search_limit' in bvr ) {
         if( spt.is_FALSE( bvr.show_search_limit ) ) {
             args['show_search_limit'] = 'false';

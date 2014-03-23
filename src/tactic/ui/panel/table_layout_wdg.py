@@ -415,7 +415,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.sobject_levels = []
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
-
+      
         # if a search key has been explicitly set without expression, use that
         expression = my.kwargs.get('expression') 
         matched_search_key = False
@@ -837,20 +837,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-     
-        if my.search_limit:
-            limit_span = DivWdg()
-            inner.add(limit_span)
-            limit_span.add_style("margin-top: 4px")
-            limit_span.add_class("spt_table_search")
-            limit_span.add_style("width: 250px")
-            limit_span.add_style("margin: 5 auto")
-            
+            # An empty div like this is not needed. 
+            """
+            if my.show_search_limit:
+                limit_span = DivWdg()
+                limit_span.add_border()
+                inner.add(limit_span)
+                limit_span.add_style("margin-top: 4px")
+                limit_span.add_class("spt_table_search")
+                limit_span.add_style("width: 250px")
+                limit_span.add_style("margin: 5 auto")
+            """
+        
             info = my.search_limit.get_info()
             if info.get("count") == None:
                 info["count"] = len(my.sobjects)
 
-
+            # this simple limit provides pagination and should always be drawn. Visible where applicable
             from tactic.ui.app import SearchLimitSimpleWdg
             limit_wdg = SearchLimitSimpleWdg(
                 count=info.get("count"),
@@ -858,7 +861,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 current_offset=info.get("current_offset"),
             )
             inner.add(limit_wdg)
-            #inner.add("<br clear='all'/>")
 
 
         if my.kwargs.get("is_refresh") == 'true':
