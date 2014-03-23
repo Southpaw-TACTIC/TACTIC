@@ -332,8 +332,9 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 5px;")
-        drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_style("padding: 12px;")
+        #drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
         drag_handle_div.add_style("font-weight", "bold")
         drag_handle_div.add_style("font-size", "12px")
@@ -405,8 +406,7 @@ class PopupWdg(BaseRefreshWdg):
         content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
-
-
+        content_div.add_style("margin", "0px, -1px -0px -1px")
 
         content_div.set_id("%s_content" % my.name)
         content_div.add_class("spt_popup_content")

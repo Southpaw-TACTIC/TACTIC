@@ -271,7 +271,7 @@ class SearchLimitWdg(Widget):
         #widget.add_style("border", "solid 1px blue")
         widget.add_color("background", "background")
         widget.add_color("color", "color")
-        widget.add_style("padding: 5px")
+        widget.add_style("padding: 10px")
 
         hidden = HiddenWdg("prefix", my.prefix)
         widget.add(hidden)
@@ -335,9 +335,10 @@ class SearchLimitWdg(Widget):
 
         showing_wdg = DivWdg()
         widget.add(showing_wdg)
-        showing_wdg.add_style("padding: 10px")
+        showing_wdg.add_style("padding: 20px")
         showing_wdg.add_style("margin: 10px")
         showing_wdg.add_color("background", "background", -5)
+        showing_wdg.add_color("text-align", "center")
         showing_wdg.add_border()
 
         label_span = SpanWdg("Showing: ")
@@ -386,8 +387,6 @@ class SearchLimitWdg(Widget):
         my.text.set_attr("size", "1")
         my.text.add_attr("title", "Set number of items per page")
 
-        widget.add("<hr/>")
-
 
         # set the limit
         set_limit_wdg = my.get_set_limit_wdg()
@@ -432,7 +431,7 @@ class SearchLimitWdg(Widget):
     def get_set_limit_wdg(my):
         limit_content = DivWdg()
         limit_content.add_style("font-size: 10px")
-        #limit_content.add_style("padding", "5px")
+        limit_content.add_style("padding", "15px")
         #limit_content.add_border()
 
         limit_content.add("Show ")

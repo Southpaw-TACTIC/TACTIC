@@ -1285,7 +1285,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("table_border", default="border")
+        border_color = table.get_color("#EEE", default="border")
         table.add_smart_styles("spt_table_select", {
             "border": "solid 1px %s" % border_color,
             "width": "30px",
@@ -1450,8 +1450,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             border_color = table.get_color("table_border", default="border")
             tr.add_gradient("background", "background", -5, -10)
         else:
-            tr.add_gradient("background", "background", -5, -10)
-            border_color = table.get_color("table_border", -10, default="border")
+            #tr.add_gradient("background", "background", -5, -10)
+            #border_color = table.get_color("table_border", -10, default="border")
+            tr.add_color("background", "background", -5)
+            border_color = table.get_color("#E0E0E0", 0, default="border")
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -1513,8 +1515,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("min-width: 20px")
             inner_div.add_class("spt_table_header_inner")
             inner_div.add_style("overflow: hidden")
-            inner_div.add_style("padding-top: 3px")
-            inner_div.add_style("padding-bottom: 3px")
+
+            inner_div.add_style("padding-top: 8px")
+            inner_div.add_style("padding-bottom: 8px")
+            inner_div.add_style("height: 20px")
 
 
             #inner_div.add_behavior( {
@@ -1858,7 +1862,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if i % 2:
                 div.add_color("background", "background")
             else:
-                div.add_color("background", "background", -8)
+                div.add_color("background", "background", -3)
 
 
         msg_div = DivWdg()
@@ -1912,7 +1916,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # remember the original background colors
         bgcolor1 = table.get_color("background")
-        bgcolor2 = table.get_color("background", -3)
+        bgcolor2 = table.get_color("background", -1)
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
@@ -1961,9 +1965,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif sobject.is_insert():
             background = tr.add_color("background-color", "background", [10, -10, -10])
         elif row % 2:
-            background = tr.add_color("background-color", "background")
+            background = tr.add_style("background-color", bgcolor1)
         else:
-            background = tr.add_color("background-color", "background", -3)
+            background = tr.add_style("background-color", bgcolor2)
 
 
 

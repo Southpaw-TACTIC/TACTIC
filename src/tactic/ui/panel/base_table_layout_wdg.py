@@ -734,13 +734,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
         #div.add_gradient("background", "background")
-        div.add_color("background", "background",-8)
+        div.add_color("background", "background",-3)
+
         if not my.kwargs.get("__hidden__"):
-            div.add_border()
-            div.add_style("margin-left: -1px")
-            div.add_style("margin-right: -1px")
+            #div.add_style("margin-left: -1px")
+            #div.add_style("margin-right: -1px")
+
+            #div.add_border()
+            div.add_style("border-width: 1px 1px 0px 1px")
+            div.add_style("border-style: solid")
+            div.add_style("border-color: %s" % div.get_color("border"))
+            div.add_style("border-color: #BBB")
+
         else:
-            div.add_style("border-width: 0px 0px 0px 1px")
+            div.add_style("border-width: 0px 0px 0px 0px")
             div.add_style("border-style: solid")
             div.add_style("border-color: %s" % div.get_color("table_border"))
         #div.add_color("background", "background3")
@@ -920,7 +927,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog.add(limit_div)
             limit_div.add_color("color", "color")
             limit_div.add_color("background", "background")
-            limit_div.add_style("width: 250px")
+            limit_div.add_style("width: 300px")
             #limit_div.add_style("height: 50px")
 
             #limit_span.add(my.search_limit)

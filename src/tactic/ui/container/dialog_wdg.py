@@ -360,6 +360,7 @@ class DialogWdg(BaseRefreshWdg):
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -10)
         drag_handle_div.add_color("color", "color")
+        drag_handle_div.add_style("padding: 8px 5px 8px 8px")
 
         drag_handle_div.add_behavior({
             'type': 'double_click',
@@ -382,6 +383,8 @@ class DialogWdg(BaseRefreshWdg):
         } )
 
 
+        # add the content
+        content_div = DivWdg()
         
         title_wdg = my.title_wdg
         if not title_wdg:
@@ -389,6 +392,8 @@ class DialogWdg(BaseRefreshWdg):
             # if the title is empty, just don't show
         if my.kwargs.get("show_title") in [False, 'false']:
             drag_div.add_style("display: none")
+        #else:
+        #    content_div.add_style("margin-top: -1px")
 
 
         drag_handle_div.add(title_wdg)
@@ -396,8 +401,6 @@ class DialogWdg(BaseRefreshWdg):
         drag_handle_div.add_style("font-weight: bold")
 
 
-        # add the content
-        content_div = DivWdg()
         widget.add(content_div)
         content_div.add_color("color", "color2")
         content_div.add_gradient( "background", "background2" )

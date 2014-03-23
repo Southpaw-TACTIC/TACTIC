@@ -1231,8 +1231,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         icon_div.add_style("height: 20px")
         icon_div.add_style("width: 18px")
         icon_div.add_style("margin-left: 2px")
-        icon_div.add_gradient("background", "background")
-        #icon_div.add_gradient("background", "tab_background", default="background")
+        icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
         div.add(icon_div);
@@ -1256,7 +1255,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             icon_div.add_style("height: 20px")
             icon_div.add_style("width: 10px")
             icon_div.add_style("margin-left: -1px")
-            icon_div.add_gradient("background", "background")
+            icon_div.add_gradient("background", "background", -5, 5)
             icon_div.add_border()
             icon_div.add_style("text-align: center")
             div.add(icon_div);
@@ -1296,7 +1295,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         icon_div.add_style("height: 20px")
         icon_div.add_style("width: 18px")
         icon_div.add_style("margin-left: 2px")
-        icon_div.add_gradient("background", "background")
+        icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
         div.add(icon_div);

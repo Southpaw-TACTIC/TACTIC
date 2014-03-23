@@ -184,6 +184,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         search_wdg.add_style("float: middle")
 
         search_wdg.add_style("padding-top: 6px")
+        search_wdg.add_style("padding-left: 10px")
         search_wdg.add_style("height: 33px")
 
 

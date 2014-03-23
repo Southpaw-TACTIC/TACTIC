@@ -125,11 +125,12 @@ class TextInputWdg(BaseInputWdg):
         border_color = my.text.get_color("border")
         my.text.add_style("border: solid 1px %s" % border_color)
         my.text.add_style("padding: 4px")
+        #my.text.add_style("margin-top: -4px")
 
         if my.readonly:
             bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
         else:
-            bgcolor = my.text.get_color("background", -3)
+            bgcolor = my.text.get_color("background")
             my.text.add_style("background", bgcolor)
 
         bgcolor2 = my.text.get_color("background", -10)
@@ -354,6 +355,25 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add(icon)
 
 
+
+        # add in an icon div
+        use_icon = True
+        if use_icon:
+            icon_div = DivWdg()
+            top.add(icon_div)
+            #icon_div.add_style("display: inline")
+            icon_div.add_style("float: left")
+            icon_div.add_border()
+            icon = IconWdg("Clear", IconWdg.ZOOM)
+            icon_div.add(icon)
+            icon_div.add_style("padding: 4px 6px")
+            icon_div.add_style("height: 16px")
+            icon_div.add_style("margin-right: -1px")
+
+
+
+
+        # add the text widget
         text_div = SpanWdg()
         top.add(text_div)
         text_div.add(my.text)
@@ -385,7 +405,8 @@ class TextInputWdg(BaseInputWdg):
 		
 
         #my.text.add_style("-moz-border-radius: 5px")
-        my.text.set_round_corners()
+        #my.text.set_round_corners()
+        my.text.add_style("padding: 5px")
         my.text.add_style("width: %spx" % my.width)
         text_div.add_style("width: %spx" % my.width)
         text_div.add_style("position: relative")
