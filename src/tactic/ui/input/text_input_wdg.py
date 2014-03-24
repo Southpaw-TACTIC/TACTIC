@@ -141,8 +141,9 @@ class TextInputWdg(BaseInputWdg):
                 'bgcolor2': bgcolor2,
                 'cbjs_action': '''
                 
-                if (bvr.src_el.hasClass('spt_input_validation_failed'))
+                if (bvr.src_el.hasClass('spt_input_validation_failed')) {
                     return;
+                }
 
                 var value = bvr.src_el.value;
                 var last_value = bvr.src_el.getAttribute("spt_last_value");
@@ -156,14 +157,15 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
              
-               
-               
                 bvr.src_el.setAttribute("spt_last_value", value);
+
+                //spt.input.set_success(bvr.src_el);
+                spt.input.set_error(bvr.src_el);
                 '''
                 } )
  
        
-        my.top = SpanWdg()
+        my.top = DivWdg()
 
 
         super(TextInputWdg, my).__init__()
@@ -353,14 +355,6 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add(icon)
 
 
-
-        table = Table()
-        top.add(table)
-        tr = table.add_row()
-        table.add_style("width: %s" % my.width)
-
-
-        #height = 27
         height = my.kwargs.get("height")
         if height:
             height = height.replace("px", "")
@@ -368,29 +362,27 @@ class TextInputWdg(BaseInputWdg):
         else:
             height = 32 
 
+
+        table = Table()
+        top.add(table)
+        tr = table.add_row()
+        table.add_style("width: %s" % my.width)
+
+
         # add in an icon div
         if my.icon:
             icon_div = DivWdg()
             td = table.add_cell(icon_div)
             td.add_style("width: 20")
-            #icon_div.add_style("display: inline")
-            #icon_div.add_style("float: left")
             td.add_style("border: solid 1px %s" % my.border_color)
 
             icon = IconWdg("", eval("IconWdg.%s" % my.icon))
             icon_div.add(icon)
             icon_div.add_style("padding: 4px 8px")
-            icon_div.add_style("height: %spx" % (height -12))
+            icon_div.add_style("height: %spx" % (height -16))
+            icon_div.add_style("overflow-y: hidden")
             icon_div.add_style("margin-right: -1px")
 
-
-
-
-        # add the text widget
-        #text_div = DivWdg()
-        #text_div.add_style("float: left")
-        #top.add(text_div)
-        #text_div.add(my.text)
 
 
 
@@ -421,27 +413,32 @@ class TextInputWdg(BaseInputWdg):
         #my.text.set_round_corners()
 
         td = table.add_cell(my.text)
+        td.add_style("position: relative")
+
+
         td.add_style("border-color: %s" % my.border_color)
         td.add_style("border-width: 1px 0px 1px 1px")
         td.add_style("border-style: solid")
-        td.add_style("position: relative")
-
-        my.text.add_style("padding: 5px")
-        my.text.add_style("width: 100%")
         my.text.add_style("border: none")
 
-        my.text.add_style("height: %s" % height)
+        my.text.add_style("width: 100%")
 
-        td = table.add_cell()
+        my.text.add_style("padding: 5px")
+        my.text.add_style("height: %s" % (height-10))
+
+        #td = table.add_cell()
         td.add_style("border-color: %s" % my.border_color)
-        td.add_style("border-width: 1px 1px 1px 0px")
+        td.add_style("border-width: 1px 1px 1px 1px")
         td.add_style("border-style: solid")
+
+
+
 
         icon_wdg = DivWdg()
         td.add(icon_wdg)
-        icon_wdg.add_style("float: right")
-        icon_wdg.add_style("margin-right: 3px")
-        #icon_wdg.add_style("position: absolute")
+        icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("right: 0px")
+        icon_wdg.add_style("position: absolute")
 
 
         
@@ -512,8 +509,6 @@ class TextInputWdg(BaseInputWdg):
                 spt.validation.onchange_cbk(evt, bvr2);
                 '''%input_type
             } )
-
-        top.add("&nbsp;")
 
         return top
 
@@ -911,7 +906,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 20px")
+        results_div.add_style("top: 25px")
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")

@@ -124,6 +124,15 @@ class BaseInputWdg(HtmlElement):
     def set_title(my, title):
         my.title = title
         
+    def get_display_title(my):
+        '''Function that that gives a title represenation of this widget'''
+        if my.title:
+            return my.title
+
+        name = my.get_name()
+        name = name.replace("_", " ")
+        return name.title()
+ 
 
 
     def get_title(my):
@@ -562,6 +571,7 @@ class TextWdg(BaseTextWdg):
         my.css = "inputfield"
         my.add_class(my.css)
         my.add_class("spt_input")
+        #my.add_class("spt_input_text")
         my.add_color("background", "background", 10)
         my.add_color("color", "color")
         #my.add_style("width: 200px")

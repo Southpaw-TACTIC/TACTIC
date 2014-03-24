@@ -527,22 +527,40 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         num_pages = int( float(count-1) / float(search_limit) ) + 1
         current_page = int (float(current_offset) / count * num_pages) + 1
 
-        if num_pages == 1:
-            return top
+        # show even if there is only a single page
+        #if num_pages == 1:
+        #    return top
 
         #print "current: ", current_offset
         #print "search_limit: ", search_limit
         #print "current_page: ", current_page
 
-
-        top.add_color("background", "background3")
-        top.add_color("color", "color3")
-        top.add_style("margin: 15px -1px 10px -1px")
-        top.add_border()
-
         table = Table()
-        table.add_style("margin-left: 30px")
+        table.add_style("float: right")
         top.add(table)
+
+        top.add_color("background", "background", -5)
+        top.add_color("color", "color3")
+        top.add_style("margin: -1px 0px 10px 0px")
+        top.add_border(color="table_border")
+        top.add_style("padding-right: 30px")
+        top.add_style("padding-left: 8px")
+        top.add_style("padding-top: 5px")
+        top.add_style("padding-bottom: 5px")
+
+        showing_div = DivWdg()
+        showing_div.add_style("padding: 5px")
+        top.add(showing_div)
+        start_count = current_offset + 1
+        end_count = current_offset + search_limit
+        total_count = count
+        if num_pages > 1:
+            showing_div.add("Showing %s - %s of %s" % (start_count, end_count, total_count))
+        else:
+            showing_div.add("Showing %s - %s of %s" % (start_count, count, count))
+            return top
+
+
         table.add_row()
 
 
@@ -616,9 +634,6 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         hidden = HiddenWdg("page", "")
         hidden.add_class("spt_page")
         top.add(hidden)
-
-
-
 
 
         td = table.add_cell()

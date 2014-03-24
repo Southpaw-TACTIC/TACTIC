@@ -174,7 +174,7 @@ class ToolsWdg(BaseRefreshWdg):
 
         from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
         #text = TextInputWdg(name="search")
-        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk)
+        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk, height="42px")
         #text = TextWdg("search")
         text.add_class("spt_main_search")
         text.add_style("width: 290px")

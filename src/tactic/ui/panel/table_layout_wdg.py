@@ -2220,7 +2220,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         th = table.add_cell()
         #th.add_gradient("background", "background", -10)
-        border_color = table.get_color("table_border", -10, default="border")
+        border_color = table.get_color("table_border", 0, default="border")
         th.add_style("border", "solid 1px %s" % border_color)
         th.add_looks( 'dg_row_select_box' )
         th.add_style('width: 30px')
@@ -3663,6 +3663,15 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     spt.table.last_data_wdg = null;
     spt.table.last_edit_wdg = null;
     spt.kbd.clear_handler_stack();
+
+
+    var table_layout = spt.table.get_layout();
+    var save_button = table_layout.getElement(".spt_save_button");
+    if (save_button) {
+        save_button.setStyle("display", "");
+    }
+
+
 
 }
 

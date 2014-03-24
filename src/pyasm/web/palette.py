@@ -98,8 +98,8 @@ class Palette(object):
     'background':   '#FFFFFF',      # main background color
     'background2':  '#AAAAAA',      # secondary background color
     'background3':  '#CCCCCC',      # tertiary background color
-    'border':       '#888888',         # main border color
-    'table_border': '#FFF',
+    'border':       '#BBBBBB',         # main border color
+    'table_border': '#E0E0E0',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.6)',
 

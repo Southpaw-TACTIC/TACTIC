@@ -2747,6 +2747,13 @@ spt.dg_table._search_cbk = function(evt, bvr)
             spt.table.set_layout(layout);
         }
     }
+
+
+    if (spt.table.has_changes()) {
+        if (!confirm("Changes made. Continue without saving?")) {
+            return;
+        }
+    }
     
     // if panel doesn't exist, then likely this is a table on its own
     if (panel == null) {

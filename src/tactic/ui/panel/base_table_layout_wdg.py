@@ -393,10 +393,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             column = "keywords"
             keyword_value = keyword_values[0].get('value')
             if keyword_value and search.column_exists(column):
-                    from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
-                    keyword_filter.set_values(keyword_values[0])
-                    keyword_filter.alter_search(search)
+                from tactic.ui.filter import KeywordFilterElementWdg
+                keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
+                keyword_filter.set_values(keyword_values[0])
+                keyword_filter.alter_search(search)
 
 
 
@@ -840,9 +840,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type)
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
+            keyword_div.add_style("margin-top: 3px")
+            keyword_div.add_style("margin-left: 8px")
         else:
             keyword_div = None
 
@@ -956,6 +958,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         wdg_list = []
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            wdg_list.append( { 'wdg': spacing_divs[3] } )
+
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
 
@@ -992,11 +999,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             quick_add_button_row = my.get_quick_add_wdg()
             wdg_list.append( { 'wdg': spacing_divs[2] } )
             wdg_list.append( { 'wdg': quick_add_button_row } )
-
-
-        if keyword_div:
-            wdg_list.append( { 'wdg': spacing_divs[3] } )
-            wdg_list.append( {'wdg': keyword_div} )
 
 
         # add the help widget
@@ -1299,6 +1301,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # Save button
             save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+            save_button_top = save_button.get_top()
+            save_button_top.add_style("display", "none")
+            save_button_top.add_class("spt_save_button")
 
             
             save_button.add_behavior({

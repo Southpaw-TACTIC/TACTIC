@@ -43,11 +43,11 @@ from filter_data import FilterData
 class BaseFilterElementWdg(BaseRefreshWdg):
     '''represents the base filter'''
     def __init__(my, **kwargs):
+        super(BaseFilterElementWdg, my).__init__(**kwargs)
         my.values = {}
         my.show_title = False
         my.set_flag = False
         my.title = None
-        super(BaseFilterElementWdg, my).__init__(**kwargs)
 
     def is_visible(my):
         return True
@@ -941,7 +941,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 relevant = my.relevant,
                 width ='230',
                 hint_text=hint_text,
-                case_sensitive = my.case_sensitive
+                case_sensitive = my.case_sensitive,
+                icon=my.kwargs.get("icon")
         )
         value = my.values.get("value")
         if value:

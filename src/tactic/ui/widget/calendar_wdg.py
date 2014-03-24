@@ -870,10 +870,15 @@ class CalendarInputWdg(BaseInputWdg):
         name = my.get_input_name()
         read_only = my.get_option('read_only')
         required = my.get_option('required')
+
+
+        width = my.get_option('width')
+
+        title = my.get_display_title()
         
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
-        input = TextInputWdg( name=name, read_only=read_only, required=required )
+        input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
 
         if read_only == True:
             read_only = 'true'
@@ -883,19 +888,22 @@ class CalendarInputWdg(BaseInputWdg):
         show_time = my.get_option("show_time") in [True, 'true']
         time_input_default = my.get_option('time_input_default')
         if show_time:
-            input.add_style("width: 120px")
+            if not width:
+                input.add_style("width: 120px")
             my.top.add_attr("show_time", "true")
             show_time = True
         else:
-            input.add_style("width: 100px")
+            if not width:
+                input.add_style("width: 100px")
             my.top.add_attr("show_time", "false")
             show_time = False
             if time_input_default:
                 input.add_style("width: 120px")
 
+
         input.add_style("text-left: center")
 
-        input_div = FloatDivWdg()
+        input_div = DivWdg()
         input_div.add(input)
         my.top.add(input_div)
 

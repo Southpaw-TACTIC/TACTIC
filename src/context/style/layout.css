@@ -42,7 +42,7 @@ table {
 /* style for all "select" and "text" and "password" input fields */
 .inputfield {
     font-family: sans-serif, times;
-    font-size: 0.9em;
+    font-size: 1.0em;
     margin: 0px;
 }
 
