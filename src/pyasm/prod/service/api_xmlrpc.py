@@ -1044,9 +1044,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         subscription  = search.get_sobject()
 
         if subscription:
+            raise ApiException('[%s] has already been subscribed to.'%key)
             # nothing to do ... already subscribed
-            sobject_dict = my._get_sobject_dict(subscription)
-            return sobject_dict
+            #sobject_dict = my._get_sobject_dict(subscription)
+            #return sobject_dict
 
         project_code = Project.get_project_code()
 

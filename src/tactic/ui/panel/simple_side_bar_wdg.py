@@ -282,7 +282,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     var kwargs = {
                         hash: link
                     }
-                    // not hash is different from link
+                    // Note: hash is different from link
                     hash = "/link/" + bvr.element_name;
                     spt.tab.add_new(bvr.element_name,bvr.title,class_name,kwargs, null, hash);
                 }
