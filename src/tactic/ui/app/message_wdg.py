@@ -92,19 +92,19 @@ class FormatMessageWdg(BaseRefreshWdg):
             thumb_wdg.set_sobject(login)
             thumb_wdg.set_icon_size(size)
 
-
-            key = subscription.get_value("message_code")
-            thumb.add_behavior( {
-                'type': 'click_up',
-                'key': key,
-                'cbjs_action': '''
-                var class_name = 'tactic.ui.app.ChatSessionWdg';
-                var kwargs = {
-                    'key': bvr.key,
-                }
-                spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
-                '''
-            } )
+            if subscription:
+                key = subscription.get_value("message_code")
+                thumb.add_behavior( {
+                    'type': 'click_up',
+                    'key': key,
+                    'cbjs_action': '''
+                    var class_name = 'tactic.ui.app.ChatSessionWdg';
+                    var kwargs = {
+                        'key': bvr.key,
+                    }
+                    spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
+                    '''
+                } )
 
         else:
             if not category:
@@ -141,7 +141,9 @@ class FormatMessageWdg(BaseRefreshWdg):
         table = Table()
         table.add_row()
         td = table.add_cell()
-        td.add( my.get_preview_wdg(None, category=category, message_code=message_code ))
+
+        subscription = my.kwargs.get('subscription')
+        td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
 
         message_value = message.get_value("message")
         message_login = message.get_value("login")
@@ -843,7 +845,8 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             size = 60
 
-            msg_element = FormatMessageWdg(short_format='true')
+            msg_element = FormatMessageWdg(subscription=subscription, short_format='true')
+            # this is optional
             msg_element.set_sobject(message)
             description = msg_element.get_buffer_display() 
           
