@@ -638,31 +638,89 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table_width = my.kwargs.get("width")
         if not table_width:
             table_width= ''
+        #table_width = '100%'
+        table_width = ''
+
+        """
+        column_widths = my.kwargs.get("column_widths")
+        total = 30
+        if not column_widths:
+            widths = [30]
+            column_widths = []
+            for i in range(0, len(my.widgets)-1):
+                column_widths.append(200)
+                total += 200
+            my.kwargs['column_widths'] = column_widths
+        table_width = total + 1000
+        print "total_width: ", table_width
+        """
+
+
+        # handle column widths
+        column_widths = my.kwargs.get("column_widths")
+        if not column_widths:
+            # The first one is the selection widget
+            column_widths = [30]
+            my.kwargs["column_widths"] = column_widths
+
+        for i in range(1, len(my.widgets)-1):
+
+            if i >= len(column_widths):
+                # default width
+                column_widths.append("")
+
+            elif not column_widths[i]:
+                column_widths[i] = 0
+
+            else: # get width from definition 
+                width = my.attributes[i].get("width")
+                if width:
+                    column_widths[i] = width
+
+        column_widths.append(400)
         table_width = '100%'
 
-        sticky_header = False
+
+
+
+        sticky_header = True
         if sticky_header:
+
+            h_scroll = DivWdg()
+            inner.add(h_scroll)
+
+            scroll = DivWdg()
+            h_scroll.add(scroll)
+            h_scroll.add_style("overflow-x: scroll")
+            h_scroll.add_style("width: auto")
+            scroll.add_style("overflow-y: scroll")
+
             my.header_table = Table()
+            scroll.add(my.header_table)
+
             my.header_table.add_class("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
-            inner.add(my.header_table)
             if table_width:
                 my.header_table.add_style("width: %s" % table_width)
-            my.header_table.add_color("color", "color")
 
-            # draw the main table
+
+            scroll = DivWdg()
+            h_scroll.add(scroll)
+            scroll.add_style("max-height: 350px")
+            scroll.add_style("overflow-y: scroll")
+            scroll.add_style("overflow-x: hidden")
+
             table = my.table
-            #inner.add(table)
-            xx = DivWdg()
-            inner.add(xx)
-            xx.add(table)
-            xx.add_style("max-height: 300px")
-            xx.add_style("overflow-y: scroll")
-            xx.add_style("overflow-x: hidden")
+            table = Table()
             table.add_class("spt_table_table")
+            scroll.add(table)
+            #my.handle_headers(table)
             if table_width:
                 table.add_style("width: %s" % table_width)
+                scroll.add_style("width: %s" % table_width)
+
+
             table.add_color("color", "color")
         else:
             table = my.table
@@ -685,7 +743,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             my.handle_headers(my.header_table)
 
-        inner.add_style("overflow-x: auto")
+            inner.add_style("overflow-x: auto")
 
         table.set_id(my.table_id)
         
@@ -778,6 +836,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
+
 
         if has_loading:
             table.add_behavior( {
@@ -1444,12 +1503,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
  
 
-    def handle_headers(my, table):
+    def handle_headers(my, table, hidden=False):
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
         #tr.add_style("display: none")
         tr.add_class("SPT_DTS")
+
+        if hidden:
+            tr.add_style("display: none")
 
         
         autofit = my.view_attributes.get("autofit") != 'false'
@@ -1490,7 +1552,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             name = widget.get_name()
 
             th = table.add_header()
-            
+
+            """
             if widths and len(widths) > i:
                 # this leaves the last column unset. Until there is an explanation, comment this out
                 #if i < len(my.widgets) - 1:
@@ -1507,13 +1570,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 th.add_style("min-width", width)
             else:
                 th.add_style("overflow","hidden")
-
-        # this is meant for views that haven't been saved to default to fit the whole screen
-      
-
+            """
+            th.add_style("width", widths[i])
 
 
 
+            # this is meant for views that haven't been saved to default
+            # to fit the whole screen
             th.add_style("text-align: left")
             # The smart menu has to be put on the header and not the
             # row to get row specific info.
@@ -1656,8 +1719,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             widget.handle_th(th, i)
 
         # this is for table where the view hasn't been saved yet (auto generated or built-in)
-        if not width_set:
-            table.add_style('width', '100%')
+        #if not width_set:
+        #    table.add_style('width', '100%')
 
     def has_group_bottom(my):
         '''return True if group_column has group_bottom'''
@@ -2015,7 +2078,33 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             td = table.add_cell()
             td.add_class("spt_cell_edit")
 
-            #td.add(element_name)
+
+            # TEST
+            widths = my.kwargs.get("column_widths")
+            td.add_style("width", widths[i])
+            """
+            autofit = False
+            if widths and len(widths) > i:
+                # this leaves the last column unset. Until there is an explanation, comment this out
+                #if i < len(my.widgets) - 1:
+                td.add_style("width", widths[i])
+                width_set = True
+                width = widths[i]
+
+            else: # get width from definition 
+                width = my.attributes[i].get("width")
+                if width:
+                     td.add_style("width", width)
+                     width_set = True
+            if width and not autofit:
+                td.add_style("min-width", width)
+            else:
+                td.add_style("overflow","hidden")
+            """
+
+
+
+
 
             # Qt webkit ignores these
             if my.browser == 'Qt':

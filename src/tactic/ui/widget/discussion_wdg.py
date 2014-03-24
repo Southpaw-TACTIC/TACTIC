@@ -108,11 +108,11 @@ class DiscussionElementWdg(BaseTableElementWdg):
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
+
         edit_wdg = DiscussionEditWdg()
-        my.menu  = edit_wdg.get_menu()
+        my.menu = edit_wdg.get_menu()
 
         th.add(edit_wdg)
-       
        
    
 
