@@ -69,6 +69,11 @@ class ErrorWdg(Widget):
         pass
 
 
+    def set_message(my, message):
+        my.message = message
+
+    def set_status(my, status):
+        my.status = status
 
 class Error404Wdg(ErrorWdg):
     ''' this should be displaying the error status and message, not necessarily 404'''
@@ -81,7 +86,6 @@ class Error404Wdg(ErrorWdg):
 
     def get_error_wdg(my):
         div = DivWdg()
-
         error_div = DivWdg()
         error_div.add("Error %s" % my.status)
         div.add(error_div)
@@ -107,14 +111,18 @@ class Error404Wdg(ErrorWdg):
 
         web = WebContainer.get_web()
         root = web.get_site_root()
-
-        span.add("Go back to the Main page for a list of valid projects")
+        if my.message.startswith('No project ['):
+            label = 'You may need to correct the default_project setting in the TACTIC config.'
+        else:
+            label = "Go to the Main page for a list of valid projects"
+        span.add(label)
         div.add(span)
         div.add(HtmlElement.br())
 
         from tactic.ui.widget import ActionButtonWdg
         button = ActionButtonWdg(title="Go to Main", tip='Click to go to main page')
         div.add(button)
+        
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''

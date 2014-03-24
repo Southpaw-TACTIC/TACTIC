@@ -2875,7 +2875,7 @@ class ExceptionMinimalWdg(Widget):
 
 
         web = WebContainer.get_web()
-        url = '/admin'
+        url = '/tactic/admin'
 
         h3.add('<br/><br/>')
 
