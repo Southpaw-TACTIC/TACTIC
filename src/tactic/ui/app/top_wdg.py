@@ -773,6 +773,8 @@ class SitePage(AppServer):
             Project.set_project("sthpw")
             from pyasm.widget import Error404Wdg
             page = Error404Wdg()
+            page.set_message(e.__str__())
+            page.status = ''
 
 
         application = my.get_top_wdg()
