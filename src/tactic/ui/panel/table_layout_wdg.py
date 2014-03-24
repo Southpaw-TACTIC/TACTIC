@@ -638,16 +638,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table_width = my.kwargs.get("width")
         if not table_width:
             table_width= ''
-        #table_width = '100%'
+        table_width = '100%'
 
         sticky_header = False
         if sticky_header:
-            table = Table()
-            my.handle_headers(table)
-            inner.add(table)
+            my.header_table = Table()
+            my.header_table.add_class("spt_table_with_headers")
+            my.header_table.set_unique_id()
+            my.handle_headers(my.header_table)
+            inner.add(my.header_table)
             if table_width:
-                table.add_style("width: %s" % table_width)
-            table.add_color("color", "color")
+                my.header_table.add_style("width: %s" % table_width)
+            my.header_table.add_color("color", "color")
 
             # draw the main table
             table = my.table
@@ -655,7 +657,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             xx = DivWdg()
             inner.add(xx)
             xx.add(table)
-            xx.add_style("max-height: 800px")
+            xx.add_style("max-height: 300px")
             xx.add_style("overflow-y: scroll")
             xx.add_style("overflow-x: hidden")
             table.add_class("spt_table_table")
@@ -664,14 +666,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_color("color", "color")
         else:
             table = my.table
-            inner.add(table)
+            my.header_table = table
+
+            # TEST scroll of the table
+            scroll = DivWdg()
+            inner.add(scroll)
+            scroll.add_style("width: 100%")
+            scroll.add_style("overflow-x: auto")
+            scroll.add(table)
+
+            #inner.add(table)
+
             table.add_class("spt_table_table")
+            table.add_class("spt_table_with_headers")
             if table_width:
                 table.add_style("width: %s" % table_width)
             table.add_color("color", "color")
 
-            my.handle_headers(table)
+            my.handle_headers(my.header_table)
 
+        inner.add_style("overflow-x: auto")
 
         table.set_id(my.table_id)
         
@@ -1130,7 +1144,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # column resizing behavior
-        table.add_smart_styles("spt_resize_handle", {
+        my.header_table.add_smart_styles("spt_resize_handle", {
             "position": "absolute",
             "height": "100px",
             "margin-top": "-3px",
@@ -1140,7 +1154,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-color": ''
         } )
 
-        table.add_behavior( {
+        my.header_table.add_behavior( {
             'type': 'smart_drag',
             'drag_el': '@',
             'bvr_match_class': 'spt_resize_handle',
@@ -1149,6 +1163,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "cbjs_motion": 'spt.table.drag_resize_header_motion(evt, bvr, mouse_411)',
             "cbjs_action": 'spt.table.drag_resize_header_action(evt, bvr, mouse_411)',
         } )
+
+
+
+
 
 
         table.add_relay_behavior( {
@@ -1562,9 +1580,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             resize_div.add("&nbsp;")
             resize_div.add_class("spt_resize_handle")
 
-
-            #resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
-            #resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
 
 
             header_div = DivWdg()
@@ -2225,6 +2240,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         th.add_looks( 'dg_row_select_box' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
+        th.add_style('max-width: 30px')
 
         th.add_behavior( {
         'type': 'click_up',
@@ -2369,6 +2385,15 @@ spt.table.get_table = function() {
     return spt.table.last_table;
 }
 
+spt.table.get_header_table = function() {
+    var layout = spt.table.layout;
+    var table = layout.getElement(".spt_table_with_headers");
+    if (!table) {
+        table = spt.table.get_table();
+    }
+    return table;
+}
+
 
 spt.table.get_table_id = function() {
     return spt.table.get_table().getAttribute('id');
@@ -2437,7 +2462,7 @@ spt.table.get_element_names = function() {
 spt.table.get_column_index = function(element_name) {
     var index = -1;
 
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
 
     // first find the index
     var header_row = table.getElement(".spt_table_header_row");
@@ -2521,7 +2546,7 @@ spt.table.get_group_rows = function() {
 }
 
 spt.table.get_header_row = function() {
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
     var header_row = table.getElement(".spt_table_header_row");
     return header_row;
 }
@@ -2549,7 +2574,7 @@ spt.table.get_header_by_cell = function(cell) {
 
 
 spt.table.get_headers = function() {
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
     if (!table)
         return [];
 
@@ -3733,6 +3758,13 @@ spt.table.set_changed_color = function(row, cell) {
         row.setStyle("background-color", "#C0CC99");
         cell.setStyle("background-color", "#909977");
         row.setAttribute("spt_background", "#C0CC99");
+        /*
+        var el = cell;
+        el.setStyle("background", "#EFE");
+        el.setStyle("border-color", "#0F0");
+        el.setStyle("border-style", "solid");
+        el.setStyle("border-width", "2px 1px 1px 2px");
+        */
     }
 }
 
@@ -4342,7 +4374,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         return;
     }
 
-    var header_row = table.getElement(".spt_table_header_row");
+    var header_table = spt.table.get_header_table();
+    var header_row = header_table.getElement(".spt_table_header_row");
 
     // add the headers
     var cells = data_header_row.getElements(".spt_table_header");
@@ -4596,9 +4629,18 @@ spt.table.drag_init();
 spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
+
+    var layout = bvr.src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout)
+
+
     var header = src_el.getParent(".spt_table_header");
     var header_inner = src_el.getParent(".spt_table_header_inner");
-    var table = src_el.getParent(".spt_table_table");
+
+
+    //var table = src_el.getParent(".spt_table_table");
+    var table = spt.table.get_header_table();
+
     spt.table.last_table = table;
     spt.table.last_table_size = table.getSize();
     spt.table.last_header = header;

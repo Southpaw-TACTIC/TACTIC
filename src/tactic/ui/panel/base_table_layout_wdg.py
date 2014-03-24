@@ -1353,15 +1353,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var version = layout.getAttribute("spt_version");
                 var headers;
                 var table = null;
+                var header_table = null;
+
                 if (version == '2') {
 
                     spt.table.set_layout(layout);
                     table = spt.table.get_table();
+                    header_table = spt.table.get_header_table();
                     var table_id = table.getAttribute('id');
-                    headers = table.getElements(".spt_table_header_" + table_id);
+                    headers = header_table.getElements(".spt_table_header_" + table_id);
                 }
                 else {
                     table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+                    header_table = table;
                     headers = layout.getElements(".spt_table_th");
                 }
 
