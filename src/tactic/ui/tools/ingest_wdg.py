@@ -114,18 +114,34 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-            var files_el = top.getElement(".spt_upload_files");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
 
 	    var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
+                var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
-                    spt.drag.show_file(files[i], files_el, 0, true);
+                    var size = files[i].size;
+                    var file_name = files[i].name;
+                    var is_normal = regex.test(file_name);
+                    if (size >= 10*1024*1024 || is_normal) {
+                        spt.drag.show_file(files[i], files_el, 0, false);
+                    }
+                    else {
+                        spt.drag.show_file(files[i], files_el, delay, true);
+
+                        if (size < 100*1024)       delay += 50;
+                        else if (size < 1024*1024) delay += 500;
+                        else if (size < 10*1024*1024) delay += 1000;
+                    }
                 }
 	    }
 
+            spt.html5upload.clear();
             spt.html5upload.set_form( top );
             spt.html5upload.select_file( onchange );
 
@@ -211,6 +227,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_attr("ondrop", "spt.drag.noop(event, this)")
         files_div.add_behavior( {
         'type': 'load',
+        'normal_ext': File.NORMAL_EXT,
         'cbjs_action': '''
         spt.drag = {}
         var background;
@@ -222,7 +239,6 @@ class IngestUploadWdg(BaseRefreshWdg):
                 if (background)
                     background.setStyle("display", "none");
             }
-
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
 
@@ -246,22 +262,30 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             //var loadingImage = loadImage(
             setTimeout( function() {
+                var draw_empty_icon = function() {
+                        var img = $(document.createElement("div"));
+                        img.setStyle("width", "58");
+                        img.setStyle("height", "34");
+                        //img.innerHTML = "MP4";
+                        img.setStyle("border", "1px dotted #222")
+                        thumb_el.appendChild(img);
+                    };
                 if (icon) {
-                    var loadingImage = loadImage(
-                        file,
-                        function (img) {
-                            thumb_el.appendChild(img);
-                        },
-                        {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
-                    );
+                        var loadingImage = loadImage(
+                            file,
+                            function (img) {
+                            if (img.width)
+                                thumb_el.appendChild(img);
+                            else
+                                draw_empty_icon();
+                                
+                            },
+                            {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
+                        );
+                        
                 }
                 else {
-                    var img = $(document.createElement("div"));
-                    img.setStyle("width", "60");
-                    img.setStyle("height", "40");
-                    //img.innerHTML = "MP4";
-                    img.setStyle("border", "solid 1px black")
-                    thumb_el.appendChild(img);
+                    draw_empty_icon();
                 }
 
 
@@ -314,9 +338,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var delay = 0;
             var skip = false;
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
             for (var i = 0; i < files.length; i++) {
                 var size = files[i].size;
-                if (size >= 10*1024*1024) {
+                var file_name = files[i].name;
+                var is_normal = regex.test(file_name);
+                if (size >= 10*1024*1024 || is_normal) {
                     spt.drag.show_file(files[i], files_el, 0, false);
                 }
                 else {
