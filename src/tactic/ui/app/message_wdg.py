@@ -690,13 +690,14 @@ class SubscriptionWdg(BaseRefreshWdg):
         return subscriptions
 
 
-    def set_refresh(my, inner, interval):
+    def set_refresh(my, inner, interval, panel_cls='spt_subscription_top'):
 
         inner.add_behavior( {
             'type': 'load',
             'interval': interval,
+            'panel_cls': panel_cls,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_subscription_top");
+            var top = bvr.src_el.getParent("."+bvr.panel_cls);
             var dialog = top.getElement(".spt_dialog_top");
             if (dialog && dialog.getStyle("display") == "none") {
                 top.setAttribute("spt_dialog_open", "false");
@@ -964,7 +965,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
     def get_display(my):
         top = my.top
-        top.add_class("spt_subscription_top")
+        top.add_class("spt_subscription_bar_top")
         my.set_as_panel(top)
 
         top.add_style("width: 40px")
@@ -984,7 +985,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
         inner = DivWdg()
         top.add(inner)
 
-        my.set_refresh(inner,interval)
+        my.set_refresh(inner,interval,panel_cls='spt_subscription_bar_top')
 
         mode = my.kwargs.get("mode")
         if not mode:

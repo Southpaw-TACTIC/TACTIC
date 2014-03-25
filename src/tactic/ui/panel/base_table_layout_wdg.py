@@ -2549,8 +2549,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     // search_key here is "id" based: need code based
                     var sobject = server.get_by_search_key(search_key);
                     search_key = sobject.__search_key__;
-
-                    server.subscribe(search_key, {category: "sobject" } );
+                   
+                    try {
+                        var sub = server.subscribe(search_key, {category: "sobject"} );
+                        spt.notify.show_message('Subscribed to [' + search_key + ']');
+                    } catch(e) {
+                        spt.info(spt.exception.handler(e));
+                    }
  
                     ''' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
