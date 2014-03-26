@@ -17,11 +17,7 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    def upgrade_v4_1_0_v04_001(my):
-        my.run_sql('''
-        INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('subscription_bar','Determine whether to show the Subscription Bar','|true|false','sequence','display','Subscription Bar');
-        ''')
-
+    
     #
     # 4.2.0.a01
     #
@@ -79,7 +75,6 @@ class SthpwUpgrade(BaseUpgrade):
 
 
 
-
     def upgrade_v4_2_0_a01_005(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "metadata_parser" varchar(256);
@@ -107,6 +102,12 @@ class SthpwUpgrade(BaseUpgrade):
     def upgrade_v4_2_0_a01_001(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "message_event" varchar(256);
+        ''')
+
+    
+    def upgrade_v4_1_0_v04_001(my):
+        my.run_sql('''
+        INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('subscription_bar','Determine whether to show the Subscription Bar','|true|false','sequence','display','Subscription Bar');
         ''')
 
 
