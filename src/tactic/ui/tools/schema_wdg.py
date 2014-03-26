@@ -1691,7 +1691,7 @@ class SchemaConnectorCbk(Command):
                     <calc_mode>fast</calc_mode>
                   </display>
                 </element>
-                ''' % (element_name2, label_attr, right_search_type)
+                ''' % (element_name2, right_search_type, label_attr)
                 config.append_xml_element(element_name2, element_xml)
             config.commit_config()
 

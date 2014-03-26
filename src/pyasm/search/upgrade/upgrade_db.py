@@ -22,7 +22,7 @@ __all__ = ['Upgrade']
 
 class Upgrade(object):
 
-    def __init__(my, version, is_forced=False, project_code=None, quiet=False, is_confirmed=False):
+    def __init__(my, version, is_forced=True, project_code=None, quiet=False, is_confirmed=False):
         my.to_version = version
         my.is_forced = is_forced
         my.is_confirmed = is_confirmed

@@ -274,11 +274,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
-        if not my.show_search_limit:
-            my.search_limit = None
-        else:
-            from tactic.ui.app import SearchLimitWdg
-            my.search_limit = SearchLimitWdg()
+        # Always instantiate the search limit for the pagination at the bottom
+        
+        from tactic.ui.app import SearchLimitWdg
+        my.search_limit = SearchLimitWdg()
 
         my.items_found = 0
 
@@ -884,7 +883,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- PAGINATION TOOLS
         limit_span = DivWdg()
         limit_span.add_style("margin-top: 4px")
-        if my.search_limit:
+        if my.show_search_limit:
             search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
             num_div.add(search_limit_button)
             from tactic.ui.container import DialogWdg
@@ -1027,7 +1026,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         outer.add(div)
-        if my.search_limit:
+        if my.show_search_limit:
             outer.add(dialog)
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
@@ -2517,47 +2516,65 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 }])
 
-        spec_list.extend( [
+        subscribe_label = 'Item'
+        if my.search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
+            subscribe_label = 'Parent'
+        elif my.search_type.startswith('sthpw') or my.search_type.startswith('config'): 
+            subscribe_label = None
+       
+        if subscribe_label:
+            spec_list.extend( [
 
-                { "type": "separator" },
+                    { "type": "separator" },
 
-                { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
-                    "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
-                    "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
-                                      'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
-                },
-
-                { "type": "action", "label": "Subscribe to Item", "icon": IconWdg.CONTENTS,
-                    "bvr_cb": { 'cbjs_action': '''
-                    var activator = spt.smenu.get_activator(bvr);
-                    var layout = activator.getParent(".spt_layout");
-                    var version = layout.getAttribute("spt_version");
-
-                    var search_key;
-
-                    var tbody;
-                    if (version == "2") {
-                        spt.table.set_layout(layout);
-                        tbody = activator;
-                    }
-                    else {
-                        tbody = activator.getParent('.spt_table_tbody');
-                    }
+                    { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
+                        "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    },
                     
-                    var search_key = tbody.getAttribute("spt_search_key");
-                    var server = TacticServerStub.get();
-                    // search_key here is "id" based: need code based
-                    var sobject = server.get_by_search_key(search_key);
-                    search_key = sobject.__search_key__;
+                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.CONTENTS,
+                        "bvr_cb": { 'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
 
-                    server.subscribe(search_key, {category: "sobject" } );
- 
-                    ''' },
-                    "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
-                                      'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
-                },
+                        var search_key;
+
+                        var tbody;
+                        if (version == "2") {
+                            spt.table.set_layout(layout);
+                            tbody = activator;
+                        }
+                        else {
+                            tbody = activator.getParent('.spt_table_tbody');
+                        }
+                        
+                        var search_key = tbody.getAttribute("spt_search_key");
+                        var server = TacticServerStub.get();
+                        // search_key here is "id" based: need code based
+                        var sobject = server.get_by_search_key(search_key);
+                        var temps = server.split_search_key(search_key);
+                        var st = temps[0];
+                        
+                        if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
+                            search_key = server.build_search_key(sobject.search_type, sobject.search_code);
+                        else
+                            search_key = sobject.__search_key__;
+                       
+                        try {
+                            var sub = server.subscribe(search_key, {category: "sobject"} );
+                            spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
+                        } catch(e) {
+                            spt.info(spt.exception.handler(e));
+                        }
+     
+                        ''' },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    },
 
 
                 { "type": "title", "label": 'All Table Items' },

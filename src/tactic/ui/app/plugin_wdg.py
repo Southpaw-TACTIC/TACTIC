@@ -30,6 +30,7 @@ from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg
 
 class PluginWdg(BaseRefreshWdg):
 
+
     def get_display(my):
 
         div = DivWdg()
@@ -124,7 +125,9 @@ class PluginWdg(BaseRefreshWdg):
         active_plugins = search.get_sobjects()
         active_codes = [x.get_code() for x in active_plugins]
         active_versions = [x.get_value("version") for x in active_plugins]
-
+        active_map = {}
+        for x in active_plugins:
+            active_map[x.get_code()] = x.get_value("version") 
 
         title_div = DivWdg()
         div.add(title_div)
@@ -367,11 +370,11 @@ class PluginWdg(BaseRefreshWdg):
             SmartMenu.assign_as_local_activator( plugin_div, 'PLUGIN_CTX' )
             plugin_div.add_attr("spt_plugin_dirname", dirname)
 
-            # FIXME: this logic is NOT correct
-            # FIXME: this logic is NOT correct
-            # FIXME: this logic is NOT correct
-            is_active = code in active_codes and version in active_versions
+           
+            active_version = active_map.get(code)
 
+            is_active = version == active_version
+         
 
             icon = DivWdg()
             icon.add_style("width: 9px")
@@ -775,6 +778,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: right")
             button.add_behavior( {
             'type': 'click_up', 
+            'from_version': my.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -793,13 +797,13 @@ class PluginEditWdg(BaseRefreshWdg):
                 return;
             }
 
-            spt.app_busy.show("Creating Version: " + version);
 
             var exec = function() {
                 var class_name = 'tactic.ui.app.PluginVersionCreator';
                 var kwargs = {
                     code: code,
-                    version: version
+                    version: version,
+                    from_version: bvr.from_version
                 }
 
                 var server = TacticServerStub.get();
@@ -815,8 +819,8 @@ class PluginEditWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_plugin_top");
                 spt.panel.refresh(top);
             }
-
-            spt.app_busy.hide(exec);
+            exec();
+            spt.notify.show_message('Plugin [' + code + '] v' + version+ ' created.');
             
             '''
             } )
@@ -1135,6 +1139,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: left")
             button.add_behavior( {
             'type': 'click_up', 
+            'from_version': my.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -1153,13 +1158,13 @@ class PluginEditWdg(BaseRefreshWdg):
                 return;
             }
 
-            spt.app_busy.show("Creating Version: " + version);
 
             var exec = function() {
                 var class_name = 'tactic.ui.app.PluginVersionCreator';
                 var kwargs = {
                     code: code,
-                    version: version
+                    version: version,
+                    from_version: bvr.from_version
                 }
 
                 var server = TacticServerStub.get();
@@ -1175,8 +1180,9 @@ class PluginEditWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_plugin_top");
                 spt.panel.refresh(top);
             }
+            exec();
+            spt.notify.show_message('Plugin [' + code + '] v' + version+ ' created.');
 
-            spt.app_busy.hide(exec);
             
             '''
             } )
@@ -1548,6 +1554,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button.add_style("float: left")
             button.add_behavior( {
             'type': 'click_up', 
+            'from_version': my.version,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
@@ -1567,12 +1574,12 @@ class PluginEditWdg(BaseRefreshWdg):
                 return;
             }
 
-            spt.app_busy.show("Creating Version: " + version);
 
             var class_name = 'tactic.ui.app.PluginVersionCreator';
             var kwargs = {
                 code: code,
-                version: version
+                version: version,
+                from_version: bvr.from_version
             }
 
             var server = TacticServerStub.get();
@@ -1582,7 +1589,7 @@ class PluginEditWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_plugin_top");
             spt.panel.refresh(top);
 
-            spt.app_busy.hide();
+            spt.notify.show_message('Plugin [' + code + '] v' + version+ ' created.');
             
             '''
             } )
@@ -2300,24 +2307,59 @@ class PluginVersionCreator(Command):
             dist_dir = Environment.get_dist_dir()
 
         version = my.kwargs.get("version")
+        from_version = my.kwargs.get("from_version")
+        if from_version in ['None', None]:
+            from_version = ''
+
         assert version
        
         # code is the same as dirname usually
         code = my.kwargs.get('code')
-        dirname = code
-        
+        search = Search("config/plugin")
+        search.add_filter("code", code)
+        plugin = search.get_sobject()
+        # In case there is extra plugins folder which is the case when the user 
+        # is developing. 
+        relative_dir = plugin.get_value("rel_dir")
+        relative_parts = relative_dir.split('/') 
+        relative_dir_no_leaf = '/'.join(relative_parts[0:-1])
+        relative_dir_head = relative_parts[0]
+       
+        plugin_base_dir = Environment.get_plugin_dir()
+        plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
+
+
+
+        existing_dirname = code
+        if from_version:
+            existing_dirname = '%s-%s'%(existing_dirname, from_version)
+       
+        new_dirname = code
+        if version:
+            new_dirname = '%s-%s'%(new_dirname, version)
+
         basecode = os.path.basename(code)
 
         zip_path = "%s/%s-%s.zip" % (dist_dir, basecode, version)
 
-        plugin_base_dir = Environment.get_plugin_dir()
-     
-        if not dirname.startswith(plugin_base_dir):
-            plugin_dir = "%s/%s" % (plugin_base_dir, dirname)
+        """
+        
+        if not existing_dirname.startswith(plugin_base_dir):
+            plugin_dir = "%s/%s" % (plugin_base_dir, existing_dirname)
         else:
-            plugin_dir = dirname
-
-        new_plugin_dir = "%s-%s" % (plugin_dir, version)
+            plugin_dir = existing_dirname
+        """
+        
+        if relative_dir_no_leaf:
+            new_plugin_dir = "%s/%s/%s" % (plugin_base_dir, relative_dir_no_leaf, new_dirname)
+            root_dir = "%s/%s" % (plugin_base_dir, relative_dir_head)
+            new_relative_dir =  "%s/%s" %(relative_dir_no_leaf, new_dirname)
+            new_relative_parts = new_relative_dir.split('/')
+            include_dirs = ['/'.join(new_relative_parts[1:])]
+        else:
+            new_plugin_dir = "%s/%s" % (plugin_base_dir, new_dirname)
+            root_dir = new_plugin_dir
+            include_dirs = None
 
         if os.path.exists(new_plugin_dir):
             os.makedirs(new_plugin_dir)
@@ -2344,7 +2386,6 @@ class PluginVersionCreator(Command):
         else:
             node = xml.create_element("version")
             xml.set_node_value(node, version)
-
             data_node = xml.get_node("manifest/data")
             xml.append_child(data_node, node)
     
@@ -2366,16 +2407,20 @@ class PluginVersionCreator(Command):
         """
 
         # OLD logic to be deleted
+        """
         #parts = new_plugin_dir.split("/")
-        #iinclude_dirs = [parts[-1]]
+        #include_dirs = [parts[-1]]
         #root_dir = '/'.join(parts[0:-1])
+        
+        # e.g. vfx or spt/vfx
         parts = code.split("/")
         root_dir = "%s/%s" % (plugin_base_dir, parts[0])
         if len(parts) >= 2:
             include_dirs = ["/".join(parts[1:])]
         else:
             include_dirs = None
-
+       
+        """
         ignore_dirs = ['.svn']
         ZipUtil.zip_dir(root_dir, zip_path, ignore_dirs=ignore_dirs, include_dirs=include_dirs)
         
