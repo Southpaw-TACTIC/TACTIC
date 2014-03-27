@@ -2551,7 +2551,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                                  my.look_row_selected, my.look_row ] }
                     },
                     
-                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.CONTENTS,
+                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.PICTURE_EDIT,
                         "bvr_cb": { 'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
@@ -2591,8 +2591,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  my.look_row_selected, my.look_row ] }
-                    },
+                    }
+                    ])   
 
+        spec_list.extend( [
 
                 { "type": "title", "label": 'All Table Items' },
 
