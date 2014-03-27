@@ -3863,37 +3863,30 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
-<<<<<<< HEAD
-        message = Search.get_by_code("sthpw/message", message_code)
-
-        """
-=======
->>>>>>> 4.1
         # if there are no subscriptions, don't bother storing
         #search = Search("sthpw/subscription")
         #search.add_filter("code", message_code)
         #search.add_filter("category", "sobject")
         #if search.get_count() == 0:
         #    return
-<<<<<<< HEAD
-=======
 
         message = Search.get_by_code("sthpw/message", message_code)
         """
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
->>>>>>> 4.1
         """
-
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
-        data = unicode(data)
-        json_data = jsondumps(data)
-        json_data = json_data.replace("\\", "\\\\")
+        # not suitable to make a dictionary unicode string
+        #data = unicode(data)
+        json_data = jsondumps(data, ensure_ascii=True)
+
+        # this is not needed even for string literals with \
+        #json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
         message.set_value("project_code", project_code)
@@ -3913,7 +3906,6 @@ class SObject(object):
         message.set_user()
         message.set_value("status", "complete")
         message.commit(triggers=False)
-
 
 
 
