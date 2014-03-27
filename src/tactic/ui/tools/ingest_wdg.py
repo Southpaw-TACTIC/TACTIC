@@ -120,7 +120,13 @@ class IngestUploadWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
 	    var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
                 var delay = 0; 
@@ -525,7 +531,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         # NOTE: files variable is passed in automatically
 
         upload_init = '''
-        var server = TacticServerStub.get();
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
@@ -617,16 +622,19 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             spt.message.stop_interval(key);
 
-            
+            var info_el = top.getElement(".spt_upload_info");
+            info_el.innerHTML = ''; 
 
             spt.table.run_search();
 
         };
 
-        var class_name = 'tactic.ui.tools.IngestUploadCmd';
-        
+        var class_name = bvr.action_handler;
+        // TODO: make the async_callback return throw an e so we can run 
+        // server.abort
         server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
-
+        
+        
         on_progress = function(message) {
             msg = JSON.parse(message.message);
             var percent = msg.progress;
@@ -651,8 +659,13 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add("<br clear='all'/>")
 
 
+        action_handler = my.kwargs.get("action_handler")
+        if not action_handler:
+            action_handler = 'tactic.ui.tools.IngestUploadCmd';
+
         button.add_behavior( {
             'type': 'click_up',
+            'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
                 'relative_dir': relative_dir
@@ -828,7 +841,16 @@ class IngestUploadWdg(BaseRefreshWdg):
             hidden.set_value(parent_key)
 
 
+        extra_data = my.kwargs.get("extra_data")
+        if not isinstance(extra_data, basestring):
+            extra_data = jsondumps(extra_data)
 
+        if extra_data and extra_data != "null":
+            # it needs a TextArea instead of Hidden because of JSON data
+            text = TextAreaWdg(name="extra_data")
+            text.add_style('display: none')
+            text.set_value(extra_data)
+            dialog_data_div.add(text)
 
         """
  
@@ -843,15 +865,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         dialog_data_div.add("<br/>"*2)
     
 
-        extra_data = my.kwargs.get("extra_data")
-        if not isinstance(extra_data, basestring):
-            extra_data = jsondumps(extra_data)
-
-        dialog_data_div.add("Extra Data (JSON):<br/>")
-        text = TextAreaWdg(name="extra_data")
-        dialog_data_div.add(text)
-        if extra_data != "null":
-            text.set_value(extra_data)
+       
         text.add_class("spt_extra_data")
         text.add_style("padding: 1px")
 
@@ -916,7 +930,12 @@ class IngestUploadCmd(Command):
 
     def execute(my):
 
+
         filenames = my.kwargs.get("filenames")
+
+        upload_dir = Environment.get_upload_dir()
+
+
         search_type = my.kwargs.get("search_type")
         key = my.kwargs.get("key")
         relative_dir = my.kwargs.get("relative_dir")
@@ -925,6 +944,8 @@ class IngestUploadCmd(Command):
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
+
+
 
         server = TacticServerStub.get()
 
@@ -938,11 +959,8 @@ class IngestUploadCmd(Command):
         else:
             extra_data = {}
 
-
         # TODO: use this to generate a category
         category_script_path = my.kwargs.get("category_script_path")
-        # ie:
-        # return blah/
         """
         ie:
             from pyasm.checkin import ExifMetadataParser
@@ -955,7 +973,6 @@ class IngestUploadCmd(Command):
  
     
 
-        upload_dir = Environment.get_upload_dir()
     
         if not SearchType.column_exists(search_type, "name"):
             raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
@@ -977,8 +994,6 @@ class IngestUploadCmd(Command):
                 sobject.set_value("name", filename)
                 if relative_dir and sobject.column_exists("relative_dir"):
                     sobject.set_value("relative_dir", relative_dir)
-
-
 
 
 
