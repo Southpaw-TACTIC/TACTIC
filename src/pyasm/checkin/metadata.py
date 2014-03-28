@@ -279,7 +279,7 @@ class BaseMetadataParser(object):
         elif parser_str == "PIL":
             parser = PILMetadataParser(path=path)
         elif parser_str == "FFMPEG":
-            parser = FFProbeParser(path=path)
+            parser = FFProbeMetadataParser(path=path)
         else:
             parser = None
 
