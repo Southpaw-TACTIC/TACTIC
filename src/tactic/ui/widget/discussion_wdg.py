@@ -1260,7 +1260,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                     add_wdg.add_attr("spt_process", process)
                     add_wdg.add_attr("spt_context", context)
-                    add_class = my.get_note_class(my.hidden) 
+                    add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
                     add_wdg.add_class(add_class)
 
                     sk = my.parent.get_search_key(use_id=True)
