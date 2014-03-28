@@ -1247,8 +1247,7 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
         title = my.get_option("title")
         if not title:
-            title = my.get_option("expression")
-
+            title = ''
         div = SpanWdg()
         div.add("%s" % title)
         checkbox = CheckboxWdg("option")
