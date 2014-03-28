@@ -3063,7 +3063,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
 
-
+        # this can be used to relate a View Panel to a table in order to 
+        # tell if a table is embedded or not in js
+        top.set_attr('table_id', table_id)
         layout = my.kwargs.get("layout")
         if not layout or layout == "default":
             layout = search_type_obj.get_value("default_layout", no_exception=True)
