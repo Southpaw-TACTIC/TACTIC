@@ -175,6 +175,9 @@ class TextInputWdg(BaseInputWdg):
             my.width = "230px"
 
         my.icon = my.kwargs.get("icon")
+        if my.icon:
+            my.icon_div = DivWdg()
+
 
 
     def add_style(my, name, value=None):
@@ -191,6 +194,10 @@ class TextInputWdg(BaseInputWdg):
 
     def add_behavior(my, behavior):
         my.text.add_behavior(behavior)
+
+
+    def get_icon_wdg(my):
+        return my.icon_div
 
 
 
@@ -371,17 +378,16 @@ class TextInputWdg(BaseInputWdg):
 
         # add in an icon div
         if my.icon:
-            icon_div = DivWdg()
-            td = table.add_cell(icon_div)
+            td = table.add_cell(my.icon_div)
             td.add_style("width: 20")
             td.add_style("border: solid 1px %s" % my.border_color)
 
             icon = IconWdg("", eval("IconWdg.%s" % my.icon))
-            icon_div.add(icon)
-            icon_div.add_style("padding: 4px 8px")
-            icon_div.add_style("height: %spx" % (height -16))
-            icon_div.add_style("overflow-y: hidden")
-            icon_div.add_style("margin-right: -1px")
+            my.icon_div.add(icon)
+            my.icon_div.add_style("padding: 4px 8px")
+            my.icon_div.add_style("height: %spx" % (height -16))
+            my.icon_div.add_style("overflow-y: hidden")
+            my.icon_div.add_style("margin-right: -1px")
 
 
 

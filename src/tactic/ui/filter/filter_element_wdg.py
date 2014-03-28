@@ -972,12 +972,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         icon_div.add_style("right: 0")
 
         from tactic.ui.container import DialogWdg
-        dialog = DialogWdg(show_title=False, show_pointer=False)
-        dialog.set_as_activator(icon_div, {'x': -150, 'y': 0})
+        dialog = DialogWdg(show_title=False, show_pointer=True)
+        dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
         div.add(dialog)
 
         match_div = DivWdg()
-        match_div.add_style("width: 150")
+        match_div.add_style("width: 175")
         dialog.add(match_div)
         checkbox = CheckboxWdg("partial")
         match_div.add(checkbox)

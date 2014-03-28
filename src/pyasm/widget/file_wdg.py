@@ -459,8 +459,6 @@ class ThumbWdg(BaseTableElementWdg):
 
     def handle_td(my, td):
         td.set_attr('spt_input_type', 'upload')
-        td.add_style("padding: 0px")
-
         td.add_style("min-width", "55px")
         return
 

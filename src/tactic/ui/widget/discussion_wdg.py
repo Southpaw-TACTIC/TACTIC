@@ -189,9 +189,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
         return top
 
-    def handle_td(my, td):
-        td.add_style("padding: 0px")
-
 
 
     def get_header_option_wdg(my):
