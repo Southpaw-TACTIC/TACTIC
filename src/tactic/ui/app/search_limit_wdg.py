@@ -555,9 +555,9 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         end_count = current_offset + search_limit
         total_count = count
         if num_pages > 1:
-            showing_div.add("Showing %s - %s of %s" % (start_count, end_count, total_count))
+            showing_div.add("Showing %s - %s &nbsp; of &nbsp; %s" % (start_count, end_count, total_count))
         else:
-            showing_div.add("Showing %s - %s of %s" % (start_count, count, count))
+            showing_div.add("Showing %s - %s &nbsp; of &nbsp; %s" % (start_count, count, count))
             return top
 
 

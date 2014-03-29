@@ -685,9 +685,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
+        sticky_header = my.kwargs.get("sticky_header")
+        if sticky_header in [True, 'true']:
+            sticky_header = True
+        else:
+            sticky_header = False
 
         sticky_header = True
+
+        inner.add_style("width: 100%")
+
         if sticky_header:
 
             h_scroll = DivWdg()
@@ -714,8 +721,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             scroll.add_style("max-height: 350px")
 
-            scroll.add_style("overflow-y: scroll")
+            scroll.add_style("overflow-y: hidden")
             scroll.add_style("overflow-x: hidden")
+            scroll.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                new Scrollable(bvr.src_el);
+                '''
+                } )
 
             table = my.table
             table.add_class("spt_table_table")
@@ -5305,9 +5318,9 @@ spt.table.open_ingest_tool = function(search_type) {
         } )
 
 
-
         element_names = my.element_names
         column_widths = my.kwargs.get("column_widths")
+        print "widths: ", column_widths
         table.add_behavior( {
             'type': 'load',
             'element_names': my.element_names,
@@ -5316,6 +5329,19 @@ spt.table.open_ingest_tool = function(search_type) {
 
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
+
+            // determine the widths of the screen
+            var size = layout.getSize();
+
+            var total_size = 0;
+            for (var i = 0; i < bvr.column_widths.length; i++) {
+                total_size += bvr.column_widths[i];
+            }
+
+            if (size.x > total_size) {
+                bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
+            }
+
 
             for (var i = 0; i < bvr.element_names.length; i++) {
                 var name = bvr.element_names[i];
