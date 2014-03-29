@@ -382,8 +382,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # reassign the widgets that pass security back to my.widgets
         my.widgets = filtered_widgets
-    
+
+
+
+
     def get_display(my):
+
         # fast table should use 0 chunk size
         my.chunk_size = 0
 
@@ -672,6 +676,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table_width = 30
         for i in range(0, len(column_widths)):
             width = column_widths[i]
+            if isinstance(width, basestring):
+                continue
             table_width += column_widths[i]
 
         #my.kwargs["column_widths"] = []
