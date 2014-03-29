@@ -641,20 +641,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #table_width = '100%'
         table_width = ''
 
-        """
-        column_widths = my.kwargs.get("column_widths")
-        total = 30
-        if not column_widths:
-            widths = [30]
-            column_widths = []
-            for i in range(0, len(my.widgets)-1):
-                column_widths.append(200)
-                total += 200
-            my.kwargs['column_widths'] = column_widths
-        table_width = total + 1000
-        print "total_width: ", table_width
-        """
-
 
         # handle column widths
         column_widths = my.kwargs.get("column_widths")
@@ -663,25 +649,34 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             column_widths = [60]
             my.kwargs["column_widths"] = column_widths
 
-        for i in range(1, len(my.widgets)-1):
+        for i, widget in enumerate(my.widgets):
+
+            name = widget.get_name()
+            if name == "notes":
+                default_width = 400
+            else:
+                default_width = 200
 
             if i >= len(column_widths):
                 # default width
-                column_widths.append(200)
+                column_widths.append(default_width)
 
             elif not column_widths[i]:
-                column_widths[i] = 200 
+                column_widths[i] = default_width 
 
             else: # get width from definition 
                 width = my.attributes[i].get("width")
                 if width:
                     column_widths[i] = width
 
-        column_widths.append(400)
-
         table_width = 30
         for i in range(0, len(column_widths)):
+            width = column_widths[i]
             table_width += column_widths[i]
+
+        #my.kwargs["column_widths"] = []
+        #table_width = "100%"
+
 
 
 
@@ -712,6 +707,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             h_scroll.add(scroll)
             scroll.add_style("max-height: 350px")
+
             scroll.add_style("overflow-y: scroll")
             scroll.add_style("overflow-x: hidden")
 
@@ -1559,7 +1555,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             th = table.add_header()
 
-            th.add_style("width", widths[i])
+            if widths:
+                th.add_style("width", widths[i])
             th.add_style("padding: 3px")
 
             # this is meant for views that haven't been saved to default
@@ -2051,9 +2048,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             td = table.add_cell()
             td.add_class("spt_cell_edit")
 
+            td.add_style("overflow: hidden")
+
 
             widths = my.kwargs.get("column_widths")
-            td.add_style("width", widths[i])
+            if widths:
+                td.add_style("width", widths[i])
+
 
 
             # Qt webkit ignores these
@@ -2625,13 +2626,9 @@ spt.table.get_all_rows = function(embedded) {
 }
 
 
-spt.table.get_first_row = function() {
-    if (typeof(embedded) == 'undefined') 
-        embedded = false;
-
+spt.table.get_first_row = function(embedded) {
     var table = spt.table.get_table();
-    var css = embedded ? ".spt_table_row" : ".spt_table_row_" + table.getAttribute('id');
-    var row = table.getElement(css);
+    var row = table.getElement(".spt_table_row");
     return row;
 }
 
@@ -4655,16 +4652,37 @@ spt.table.get_group_states = function() {
 
 spt.table.set_column_width = function(element_name, width) {
     var table = spt.table.get_table();
+    var header_table = spt.table.get_header_table();
+
+    var headers = spt.table.get_headers();
+    var total_width = 0;
+    for (var i = 0; i < headers.length; i++) {
+        var header = headers[i];
+        if (header.getAttribute("spt_element_name") == element_name) {
+            total_width += width;
+        }
+        else {
+            var size = header.getSize();
+            total_width += size.x;
+        }
+        
+
+    }
+
+
     var row = spt.table.get_first_row();
     var cell = spt.table.get_cell(element_name, row);
-    var header = spt.table.get_header_by_cell(cell);
+
+    var curr_header = spt.table.get_header_by_cell(cell);
+
+    table.setStyle("width", total_width);
+    header_table.setStyle("width", total_width);
 
 
-    table.setStyle("width", "none");
-    header.setStyle("width", width);
+    curr_header.setStyle("width", width);
     cell.setStyle("width", width);
 
-    size = header.getSize();
+    size = curr_header.getSize();
     console.log(size);
     size = cell.getSize();
     console.log(size);
@@ -4693,16 +4711,18 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
 
-    var layout = bvr.src_el.getParent(".spt_layout");
+    var layout = src_el.getParent(".spt_layout");
     spt.table.set_layout(layout)
 
 
     var header = src_el.getParent(".spt_table_header");
+
     var header_inner = src_el.getParent(".spt_table_header_inner");
 
 
     //var table = src_el.getParent(".spt_table_table");
-    var table = spt.table.get_header_table();
+    var header_table = spt.table.get_header_table();
+    var table = spt.table.get_table();
 
     spt.table.last_table = table;
     spt.table.last_table_size = table.getSize();
@@ -4710,6 +4730,12 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     spt.table.last_header_inner = header_inner;
     spt.table.last_size = header.getSize();
     spt.table.last_mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+
+
+
+    return;
+
+
 
     spt.table.smallest_size = -1;
 
@@ -4759,6 +4785,15 @@ spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
 
     var dx = mouse_411.curr_x - spt.table.last_mouse_pos.x;
     var x = spt.table.last_size.x + dx;
+
+    var element_name = spt.table.last_header.getAttribute("spt_element_name");
+    spt.table.set_column_width(element_name, x);
+
+
+    return;
+
+
+
 
     /* This is not needed any more
     if ( x < spt.table.smallest_size ) {
@@ -5273,8 +5308,6 @@ spt.table.open_ingest_tool = function(search_type) {
             'column_widths': column_widths,
             'cbjs_action': '''
 
-            console.log( bvr.element_names );
-            console.log( bvr.column_widths);
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
 
