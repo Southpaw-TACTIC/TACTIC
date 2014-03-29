@@ -123,9 +123,7 @@ class TextInputWdg(BaseInputWdg):
         my.border_color = my.text.get_color("border")
 
         my.text.add_class("spt_text_input")
-        #my.text.add_style("border: solid 1px %s" % my.border_color)
         my.text.add_style("padding: 4px")
-        #my.text.add_style("margin-top: -4px")
 
         if my.readonly:
             bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
