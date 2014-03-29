@@ -721,14 +721,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             scroll.add_style("max-height: 350px")
 
-            scroll.add_style("overflow-y: hidden")
+            scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
+            """
             scroll.add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
                 new Scrollable(bvr.src_el);
                 '''
                 } )
+            """
 
             table = my.table
             table.add_class("spt_table_table")
