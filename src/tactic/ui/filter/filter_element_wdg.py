@@ -1251,10 +1251,19 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
             title = my.get_option("expression")
 
         div = SpanWdg()
-        div.add("%s: " % title)
+        div.add("%s" % title)
         checkbox = CheckboxWdg("option")
+
         checkbox.set_attr("value", "expr_items")
         checkbox.set_checked()
+        cbjs_action = my.get_option("cbjs_action")
+        
+        if cbjs_action:
+            checkbox.add_behavior( {
+                'type': 'click_up',
+                'propogate_evt': 'true',
+                 'cbjs_action': cbjs_action
+                })
         div.add(checkbox)
 
         return div

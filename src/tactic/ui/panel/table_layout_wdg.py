@@ -3924,8 +3924,19 @@ spt.table.save_changes = function(kwargs) {
         values[column + '_option'] = note_options;
 
     }*/
-
     web_data = JSON.stringify(web_data);
+    
+    var search_top = null;
+    var table = spt.table.get_table();
+    
+    var search_dict = {};
+    var view_panel = table.getParent('.spt_view_panel[table_id=' + table.id + ']' );
+    if (view_panel) {
+        search_top = view_panel.getElement('.spt_search');
+        search_dict = spt.table.get_search_values(search_top);
+       
+    }
+    
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
         var info = result.info;
@@ -3933,7 +3944,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true};
+                var kw = {refresh_bottom : true, json: search_dict};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }

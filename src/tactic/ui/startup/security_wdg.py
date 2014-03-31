@@ -875,7 +875,7 @@ class SecurityGroupListWdg(BaseRefreshWdg):
     def get_display(my):
         top = my.top
 
-
+        '''
         show_all_groups = True
         if show_all_groups:
             search = Search("sthpw/login_group")
@@ -884,20 +884,14 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             groups = search.get_sobjects()
         else:
             groups = LoginGroup.get_by_project()
-
+        '''
+        
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            #simple_search_view='simple_search',
-            filter=[
-                {"prefix":"filter_mode","filter_mode":"or"},
-                {"prefix": "group", "group": "project_code"},
-                {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
-                {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is empty","main_body_value":""}
-            ]
+            simple_search_view='simple_search'
         )
-        layout.set_sobjects(groups)
         top.add(layout)
 
         return top
