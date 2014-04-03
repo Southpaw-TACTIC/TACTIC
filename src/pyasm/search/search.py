@@ -3792,7 +3792,7 @@ class SObject(object):
                     parent_type = my.get_base_search_type()
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
-
+            
                 # add message
                 my._add_message(sobject, output, mode)
 
@@ -4144,6 +4144,8 @@ class SObject(object):
         Trigger.call(my, "change", output, project_code=project_code)
         Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
 
+        # add message
+        my._add_message(my, output, 'retire')
 
     def reactivate(my):
         '''reactivate a retired asset'''
@@ -4223,7 +4225,6 @@ class SObject(object):
             Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
             Trigger.call(my, "change", output)
             Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
-
 
         # delete the sobject_list entry
         if base_search_type not in ['sthpw/sobject_list']:

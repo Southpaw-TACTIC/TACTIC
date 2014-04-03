@@ -146,7 +146,7 @@
     <element name="message_event">
       <display class="SelectWdg">
         <empty>true</empty>
-        <values>update|insert|change|delete|retire</values>
+        <values>update|insert|change|retire</values>
       </display>
     </element>
 

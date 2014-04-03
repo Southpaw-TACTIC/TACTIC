@@ -70,14 +70,14 @@ def get_simple_cmd(my, meth, ticket, args):
             if my.get_protocol() != "local":
                 print "request_id: ", request_id
                 now = datetime.datetime.now()
-                
-                print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                print "user: ", Environment.get_user_name()
-                print "simple method: ", meth
-                print "ticket: ", ticket
-                Container.put("CHECK", my2.check)
-                Container.put("NUM_SOBJECTS", 1)
-                Common.pretty_print(args)
+                if args and args[0].find("tactic.ui.app.message_wdg.Subscription") == -1:
+                    print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
+                    print "user: ", Environment.get_user_name()
+                    print "simple method: ", meth
+                    print "ticket: ", ticket
+                    Container.put("CHECK", my2.check)
+                    Container.put("NUM_SOBJECTS", 1)
+                    Common.pretty_print(args)
 
             try:
                 # actually execute the method
@@ -373,6 +373,7 @@ def profile_execute():
 
 def trace_decorator(meth):
     def new(my, *args):
+        
         print "method: ", meth.__name__, args
 
         try:
@@ -4585,11 +4586,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 Container.put("request_top_wdg", widget)
 
                 html = widget.get_buffer_display()
-
-                print "SQL Query Count: ", Container.get('Search:sql_query')
-                print "BVR Count: ", Container.get('Widget:bvr_count')
-                print "Sending: %s KB" % (len(html)/1024)
-                print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
+                    print "SQL Query Count: ", Container.get('Search:sql_query')
+                    print "BVR Count: ", Container.get('Widget:bvr_count')
+                    print "Sending: %s KB" % (len(html)/1024)
+                    print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
 
                 return html
 
