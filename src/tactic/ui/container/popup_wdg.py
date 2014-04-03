@@ -736,6 +736,7 @@ spt.popup.close = function( popup_el_or_id , fade)
     if( popup == spt.popup._focus_el ) {
         spt.popup.release_focus( spt.popup._focus_el );
     }
+    spt.popup.hide_background();
 }
 
 
