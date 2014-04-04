@@ -664,7 +664,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 #search.add_op('begin')
 
             single_col = len(my.columns) == 1
-            partial_op = 'or'
+            partial_op = 'and'
             for column in my.columns:
                 if my.cross_db:
                     search2 = None
@@ -678,12 +678,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 keywords_list = keywords.split(" ")
                 if single_col:
                     keywords = keywords_list
-                    partial_op = 'and'
+                
                 if my.has_index and is_ascii:
                     
                     search_type_obj = SearchType.get(search_type)
                     table = search_type_obj.get_table()
-
+                    
                     #print "column: ", column
                     search = Search(overall_search.get_search_type())
                     if column.find(".") != -1:
@@ -741,6 +741,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             else:
                                 sub_search = search2
                         else:
+                            
                             search.add_text_search_filter(column, keywords, table=table)
                             overall_search.add_relationship_search_filter(search, op="in")
                 else:
