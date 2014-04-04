@@ -4066,7 +4066,6 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
-
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -4089,7 +4088,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // refresh is happening
     var layout = rows[0].getParent(".spt_layout");
     spt.table.set_layout(layout);
-    
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
@@ -4100,8 +4098,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     
     var table_top = layout.getParent('.spt_table_top');
-    
-    var show_select = table_top.getAttribute("spt_show_select");
+    //note: sometimes table_top is null
+    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
