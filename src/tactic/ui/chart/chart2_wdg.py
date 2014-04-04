@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['ChartWdg', 'SampleBarChartWdg']
+__all__ = ['ChartWdg', 'ChartData', 'SampleBarChartWdg']
 
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.search import Search
@@ -305,17 +305,28 @@ class ChartGrid(BaseRefreshWdg):
         top = my.top
 
         font_color = top.get_color("color")
+        font = '12px san-serif';
+        grid_color = top.get_color("border")
+
+        rotate_x_axis = my.kwargs.get("rotate_x_axis") 
+        if rotate_x_axis in [True, 'true']:
+            rotate_x_axis = True
+        else:
+            rotate_x_axis = False
 
         top.add_behavior( {
             'type': 'load',
             'mode': mode,
+            'font': font,
             'font_color': font_color,
+            'grid_color': grid_color,
+            'rotate_x_axis': rotate_x_axis,
             'labels': labels,
             'label_values': my.label_values,
             'cbjs_action': '''
 
             var size = spt.chart.get_size();
-            var color = '#333';
+            var color = bvr.grid_color;
 
 
             var origin = spt.chart.get_origin();
@@ -371,7 +382,7 @@ class ChartGrid(BaseRefreshWdg):
 
                 var ctx = spt.chart.get_ctx();
                 ctx.fillStyle = bvr.font_color;
-                ctx.font = '12px san-serif';
+                ctx.font = bvr.font;
                 ctx.textBaseline = 'bottom';
 
                 if (label && label != last_label) {
@@ -383,8 +394,10 @@ class ChartGrid(BaseRefreshWdg):
 
                     ctx.save();
                     ctx.translate(+(x-offset_x), +(origin.y+offset_y));
-                    ctx.rotate(Math.PI/4);
+                    if (bvr.rotate_x_axis)
+                        ctx.rotate(Math.PI/4);
                     ctx.translate(-(x-offset_x), -(origin.y+offset_y));
+                    ctx.translate(0, 15);
                     ctx.fillText(label, x - offset_x, origin.y + offset_y);
                     ctx.restore();
                 }
@@ -416,7 +429,7 @@ class ChartGrid(BaseRefreshWdg):
             var too_big = false;
             while (1) {
                 var num_lines = (origin.y - outer.y) / (interval.y * multiplier);
-                if (num_lines > 20) {
+                if (num_lines > 10) {
                     multiplier = multiplier * 10;
                 }
                 else if (num_lines < 5) {
@@ -455,7 +468,7 @@ class ChartGrid(BaseRefreshWdg):
                 // draw the label
                 var ctx = spt.chart.get_ctx();
                 ctx.fillStyle = bvr.font_color;
-                ctx.font = '12px san-serif';
+                ctx.font = bvr.font;
                 ctx.textBaseline = 'bottom';
                 var length = (label+"").length;
                 var offset = (length-1) * 3;
@@ -566,7 +579,7 @@ class ChartData(BaseRefreshWdg):
             if (type != 'bar') {
                 if (i == 0) {
                     last = cur;
-                    spt.chart.draw_dot( x, y, 3, "#000" );
+                    //spt.chart.draw_dot( x, y, 3, "#000" );
                     continue;
                 }
             }
@@ -574,11 +587,11 @@ class ChartData(BaseRefreshWdg):
 
             if (type == 'area') {
                 spt.chart.draw_area( last, cur, bvr.color );
-                spt.chart.draw_dot( x, y, 3, "#000" );
+                //spt.chart.draw_dot( x, y, 3, "#000" );
             }
             else if (type == 'line') {
                 spt.chart.draw_line( last, cur, bvr.color );
-                spt.chart.draw_dot( x, y, 3, "#000" );
+                //spt.chart.draw_dot( x, y, 3, "#000" );
             }
             else {
                 var width = interval.x * 0.5 / bvr.total_index;
@@ -827,12 +840,13 @@ spt.chart.get_ctx = function() {
     return ctx;
 }
  
-spt.chart.draw_line = function(start, end, color) {
+spt.chart.draw_line = function(start, end, color, width) {
     var origin = spt.chart.get_origin();
 
     var ctx = spt.chart.get_ctx();
     ctx.strokeStyle = color;  
-    ctx.lineWidth = 2;
+    if (!width) width = 1;
+    ctx.lineWidth = width;
     ctx.beginPath();
 
     ctx.moveTo(start.x, start.y);
@@ -846,7 +860,15 @@ spt.chart.draw_area = function(start, end, color) {
 
     var ctx = spt.chart.get_ctx();
     ctx.strokeStyle = color;  
-    ctx.fillStyle = color;  
+
+    //ctx.fillStyle = color;  
+    var gradient = ctx.createLinearGradient(0,0,0,origin.y);
+    gradient.addColorStop(0, '#FFF');
+    //gradient.addColorStop(0.75, color);
+    gradient.addColorStop(1, color);
+    ctx.fillStyle = gradient;
+ 
+
     ctx.beginPath();
 
     ctx.moveTo(start.x, start.y);
@@ -854,10 +876,11 @@ spt.chart.draw_area = function(start, end, color) {
     ctx.lineTo(end.x, origin.y-1);
     ctx.lineTo(start.x, origin.y-1);
     ctx.closePath();
+
     ctx.fill();
 
-    ctx.lineWidth = 1;
-    spt.chart.draw_line(start, end, '#000');
+    var width = 1;
+    spt.chart.draw_line(start, end, 'rgba(100,145,164,1)', width);
 
 }
 
@@ -866,8 +889,20 @@ spt.chart.draw_bar = function(pos, index, color, width) {
     var origin = spt.chart.get_origin();
 
     var ctx = spt.chart.get_ctx();
-    ctx.strokeStyle = color;  
-    ctx.fillStyle = color;  
+
+    ctx.strokeStyle = spt.css.modify_color_value(color, -5);
+    //ctx.strokeStyle = color;
+
+    //var gradient = ctx.createLinearGradient(0,pos.y,0,origin.y);
+    var gradient = ctx.createLinearGradient(0,0,0,origin.y);
+    gradient.addColorStop(0, '#FFF');
+    gradient.addColorStop(0.75, color);
+    gradient.addColorStop(1, color);
+    ctx.fillStyle = gradient;
+    //ctx.fillStyle = color;  
+
+
+
     ctx.lineWidth = 2;
     ctx.beginPath();
 
@@ -884,6 +919,7 @@ spt.chart.draw_bar = function(pos, index, color, width) {
     ctx.lineTo(pos.x+offset+width, origin.y-1);
     ctx.closePath();
     ctx.stroke();
+
     ctx.fill();
 
 }

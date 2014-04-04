@@ -10,16 +10,15 @@
 #
 #
 
-from chart_data import *
-from chart_builder_wdg import *
-from chart_wdg import *
+#from chart_data import *
+#from chart_builder_wdg import *
+#from chart_wdg import *
+from chart2_wdg import *
 
-from bar_chart_wdg import *
+#from bar_chart_wdg import *
 #from date_chart_wdg import *
+#from sample_chart_wdg import *
 
-from sample_chart_wdg import *
-
-#from chart2_wdg import *
 
 from sobject_chart_wdg import *
 
