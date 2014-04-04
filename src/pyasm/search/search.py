@@ -3863,28 +3863,20 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
-<<<<<<< HEAD
         message = Search.get_by_code("sthpw/message", message_code)
 
         """
-=======
->>>>>>> 4.1
         # if there are no subscriptions, don't bother storing
         #search = Search("sthpw/subscription")
         #search.add_filter("code", message_code)
         #search.add_filter("category", "sobject")
         #if search.get_count() == 0:
         #    return
-<<<<<<< HEAD
-=======
-
-        message = Search.get_by_code("sthpw/message", message_code)
         """
+
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
->>>>>>> 4.1
-        """
 
         if not message:
             message = SearchType.create("sthpw/message")
