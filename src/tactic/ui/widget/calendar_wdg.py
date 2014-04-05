@@ -17,8 +17,9 @@ __all__ = ['CalendarWdg', 'CalendarMonthWdg', 'CalendarTimeWdg', 'CalendarInputW
 from pyasm.common import Date, Common, Config, Container
 from pyasm.biz import NamingUtil, ProdSetting
 from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
-from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
+from pyasm.widget import IconWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
 from tactic.ui.common import BaseRefreshWdg
+from button_new_wdg import IconButtonWdg
 
 from datetime import datetime
 from dateutil import parser
@@ -78,7 +79,7 @@ class CalendarWdg(BaseRefreshWdg):
         #my.top_wdg.add_style("background: #444")
         my.top_wdg.add_color("background", "background")
         my.top_wdg.add_color("color", "color")
-        my.top_wdg.add_style("padding: 3px")
+        #my.top_wdg.add_style("padding: 3px")
         my.top_wdg.set_id('calendar')
         my.set_as_panel(my.top_wdg)
 
@@ -289,7 +290,6 @@ class CalendarWdg(BaseRefreshWdg):
         my.year = year
         my.month = month
 
-
         weeks = my.weeks
 
         widget = DivWdg()
@@ -308,13 +308,14 @@ class CalendarWdg(BaseRefreshWdg):
 
         # add the main table
         table = Table()
+        widget.add(table)
         table.add_row()
         table.add_color("color", "color")
         table.add_style("width: 100%")
         table.add_style("table-layout: fixed")
 
-        table.add_style("margin-left: auto")
-        table.add_style("margin-right: auto")
+        #table.add_style("margin-left: auto")
+        #table.add_style("margin-right: auto")
 
         if my.kwargs.get("show_header") not in ['false', False]:
             table.add_style("margin-top: -1px")
@@ -407,9 +408,6 @@ class CalendarWdg(BaseRefreshWdg):
 
 
 
-    
-        widget.add(table)
-
 
         return widget
 
@@ -497,7 +495,7 @@ class CalendarWdg(BaseRefreshWdg):
             prev_year -= 1
 
 
-        prev_month_wdg = IconButtonWdg( "Prev Month", IconWdg.LEFT )
+        prev_month_wdg = IconButtonWdg( title="Prev Month", icon=IconWdg.G_LEFT_BLACK )
 
         prev_month_wdg.add_behavior( {
             'type': "click_up",
@@ -520,7 +518,7 @@ class CalendarWdg(BaseRefreshWdg):
             next_year += 1
 
 
-        next_month_wdg = IconButtonWdg( "Next Month", IconWdg.RIGHT )
+        next_month_wdg = IconButtonWdg( title="Next Month", icon=IconWdg.G_RIGHT_BLACK )
 
         next_month_wdg.add_behavior( {
             'type': "click_up",
@@ -582,7 +580,7 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_close_icon(my):
 
-        close_icon = IconWdg("Close", IconWdg.POPUP_WIN_CLOSE, right_margin='0px')
+        close_icon = IconWdg("Close", IconWdg.G_CLOSE_BLACK, right_margin='0px', width=16)
         close_icon.add_class('hand')
 
         # button to close calendar popup ...
@@ -1255,7 +1253,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
         table.add_style("width: 100%")
         table.add_border()
         table.add_row()
-        prev_year_wdg = IconButtonWdg( "Prev Year", IconWdg.LEFT )
+        prev_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.LEFT )
         table.add_cell(prev_year_wdg)
         prev_year_wdg.add_behavior( {
             'type': 'click_up',
@@ -1270,7 +1268,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
         year_div.add_class("spt_year")
         table.add_cell(year_div)
 
-        next_year_wdg = IconButtonWdg( "Prev Year", IconWdg.RIGHT )
+        next_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.RIGHT )
         td = table.add_cell(next_year_wdg)
         td.add_style("text-align: right")
         next_year_wdg.add_behavior( {

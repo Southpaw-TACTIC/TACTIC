@@ -584,7 +584,7 @@ class SObjectCalendarWdg(CalendarWdg):
             my.width = '100%'
         my.height = my.kwargs.get("cell_height")
         if not my.height:
-            my.height = '120px'
+            my.height = '80px'
 
         # preprocess the sobjects so that they are order by date
         my.date_sobjects = {}
@@ -861,7 +861,7 @@ class SObjectCalendarWdg(CalendarWdg):
             #div.add_style("background-image", "linear-gradient(135deg, #ccc 0%, #ccc 25%, #bbb 25%, #bbb 50%, #ccc 50%, #ccc 75%, #bbb 75%);");
             div.add_style("background-size", "15px 15px")
             div.add_style("background-color", "")
-            div.add_style("background-image", "linear-gradient(135deg, rgba(0, 0, 0, 0.03) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.03) 50%, rgba(0, 0, 0, 0.03) 75%, rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0));")
+            div.add_style("background-image", "linear-gradient(135deg, rgba(0, 0, 0, 0.06) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.06) 75%, rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0));")
 
 
 
@@ -874,7 +874,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         div.add_event("onmouseover", "$(this).setStyle('background-color','%s')" % color2)
-        div.add_event("onmouseout", "$(this).setStyle('background-color','')")
+        div.add_event("onmouseout", "$(this).setStyle('background-color','%s')" % color1)
 
         return div
 

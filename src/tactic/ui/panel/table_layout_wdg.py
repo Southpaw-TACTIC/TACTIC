@@ -2457,14 +2457,9 @@ spt.table.set_table = function(table) {
         log.critical('Cannot run spt.table.set_table() with an undefined table');
      	return;
     }
-   
-    if (!table.hasClass("spt_table_table")) {
-        table = table.getParent(".spt_table_table");
-    }
-    spt.table.last_table = table;
 
-    spt.table.layout = table.getParent(".spt_layout"); 
-    spt.table.element_names = null;
+    var layout = table.getParent(".spt_layout");
+    spt.table.set_layout(layout);
    
 }
 

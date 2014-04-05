@@ -18,9 +18,10 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.search import Search, SearchType
 from pyasm.command import Command
 from pyasm.web import Table
-from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
+from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextAreaWdg
 from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.common import BaseTableElementWdg
 
 __all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'SubscriptionBarWdg', 'MessageWdg', 'FormatMessageWdg', 'MessageTableElementWdg']
@@ -233,22 +234,23 @@ class ChatWdg(BaseRefreshWdg):
         keys = [x.get_value("message_code") for x in chats]
 
         chat_list_div = DivWdg()
-        chat_list_div.add("<b>Chat Sessions</b><br/>")
         inner.add(chat_list_div)
-        for chat in chats:
+        for i, chat in enumerate(chats):
             chat_div = DivWdg()
             chat_list_div.add(chat_div)
+            chat_div.add_style("padding: 8px")
 
             # find all the users with the same chat
             key = chat.get_value("message_code")
-            chat_div.add(key)
+            #chat_div.add(key)
+            chat_div.add("Session #%s: " % i)
+
 
             search = Search("sthpw/subscription")
             search.add_filter("message_code", key)
             subscriptions = search.get_sobjects()
             users = [x.get_value("login") for x in subscriptions]
-            chat_div.add(" : ")
-            chat_div.add(users)
+            chat_div.add(",".join(users))
 
             chat_div.add_behavior( {
                 'type': 'click_up',
@@ -273,10 +275,8 @@ class ChatWdg(BaseRefreshWdg):
 
         for key in keys:
             session_div = DivWdg()
-            session_div.add_style("width: 400px")
+            session_div.add_style("width: 100%")
             inner.add(session_div)
-            session_div.add_style("float: left")
-            session_div.add_style("margin: 15px")
 
             session = ChatSessionWdg(key=key)
             session_div.add(session)
@@ -296,13 +296,20 @@ class ChatWdg(BaseRefreshWdg):
         div.add_style("padding: 20px")
         div.add_class("spt_add_chat_top")
 
-        div.add("User: ")
-        text = TextWdg("user")
-        div.add(text)
+        div.add("Add New User: ")
+
+        table = Table()
+        table.add_style("width: auto")
+        div.add(table)
+        table.add_row()
+
+        text = TextInputWdg(title="user", icon="USER_ADD")
+        table.add_cell(text)
         text.add_class("spt_add_chat_user")
 
+
         add_button = ActionButtonWdg(title="Start Chat")
-        div.add(add_button)
+        table.add_cell(add_button)
         add_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -616,6 +623,8 @@ class ChatSessionWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title="Send")
         div.add(button)
+        button.add_style("float: right")
+        button.add_style("margin: 5px")
         button.add_behavior( {
         'type': 'click_up',
         'key': key,
@@ -640,6 +649,8 @@ class ChatSessionWdg(BaseRefreshWdg):
 
             '''
         } )
+
+        div.add("<br clear='all'/>")
 
 
         return div

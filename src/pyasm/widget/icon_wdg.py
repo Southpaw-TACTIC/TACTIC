@@ -176,6 +176,7 @@ class IconWdg(DivWdg):
     'PLUS_ADD'             : "/context/icons/custom/plus_bw.png",
     'POPUP_ANCHOR'         : "/context/icons/custom/popup_anchor.png",
     'POPUP_WIN_CLOSE'      : "/context/icons/custom/popup_close.png",
+    #'POPUP_WIN_CLOSE'      : "/context/icons/glyphs/test_close.png",
     'POPUP_WIN_MINIMIZE'   : "/context/icons/custom/popup_minimize.png",
     'POPUP_WIN_REFRESH'    : "_spt_popup_window_refresh.png",
     'PREF'                 : "brick.png",
@@ -328,7 +329,23 @@ class IconWdg(DivWdg):
     'HOME_02'             : "/context/icons/common/home_02.png",
 
 
-    'LAYOUT_64'           : "/context/icons/64x64/layout_64.png"
+    'LAYOUT_64'           : "/context/icons/64x64/layout_64.png",
+
+
+
+    # Glyphs
+    'G_FOLDER'            : '/context/icons/glyphs/folder.png',
+    'G_MAXIMIZE'          : '/context/icons/glyphs/maximize.png',
+    'G_SETTINGS'          : '/context/icons/glyphs/settings.png',
+    'G_CALENDAR'          : '/context/icons/glyphs/calendar.png',
+    'G_UP'                : '/context/icons/glyphs/chevron_up.png',
+    'G_DOWN'              : '/context/icons/glyphs/chevron_down.png',
+    'G_SEARCH'            : '/context/icons/glyphs/search.png',
+    'G_LEFT'              : '/context/icons/glyphs/chevron_left.png',
+    'G_RIGHT'             : '/context/icons/glyphs/chevron_right.png',
+    'G_LEFT_BLACK'        : '/context/icons/glyphs/chevron_left_black.png',
+    'G_RIGHT_BLACK'       : '/context/icons/glyphs/chevron_right_black.png',
+    'G_CLOSE_BLACK'       : '/context/icons/glyphs/close_black.png',
 
 
     

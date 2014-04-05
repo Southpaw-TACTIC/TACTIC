@@ -32,8 +32,10 @@ class SmartMenuWdg(BaseRefreshWdg):
         # required args
         my.menu_tag_suffix = kwargs['menu_tag_suffix']
         my.width = kwargs['width']
-        if not my.width:
-            my.width = 200;
+        if not my.width or my.width < 250:
+            my.width = 250
+
+
         my.opt_spec_list = kwargs['opt_spec_list']
 
         my.allow_icons = True
@@ -227,9 +229,10 @@ class SmartMenuWdg(BaseRefreshWdg):
             td = menu_table.add_cell()
             td.add_style("width", ("%spx" % label_width))
             td.add_style("height", ("%spx" % icon_col_width))
-            if opt.get('type') != 'title':
-                td.add_style( "padding-left: 6px" )
-            td.add_style( "padding-top: 2px" )
+            #if opt.get('type') != 'title':
+            #    td.add_style( "padding-left: 6px" )
+            #td.add_style( "padding-top: 2px" )
+            td.add_style("padding: 6px 4px")
 
             if opt.has_key( 'label' ):
                 label_str = opt.get('label').replace('"','&quot;')
@@ -237,7 +240,7 @@ class SmartMenuWdg(BaseRefreshWdg):
                 td.add( label_str )
                 td.set_attr( "SPT_ORIG_LABEL", label_str )
                 #td.add_looks("fnt_text")
-                td.add_style("font-size: 11px")
+                td.add_style("font-size: 1.0em")
                 if opt.get('type') == 'title':
                     #td.add_looks("smenu_title")
                     td.add_color("background", "background2")

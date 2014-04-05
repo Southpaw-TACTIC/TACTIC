@@ -438,7 +438,7 @@ class ButtonNewWdg(BaseRefreshWdg):
         button.add(icon_div)
         #icon_div.add_class("spt_button_click")
         icon_str = my.kwargs.get("icon")
-        icon = IconWdg(tip, icon_str, right_margin=0)
+        icon = IconWdg(tip, icon_str, right_margin=0, width=16)
         icon.add_class("spt_button_icon")
         icon_div.add(icon)
         icon_div.add_style("position: absolute")
@@ -1193,7 +1193,7 @@ class ActionButtonWdg(DivWdg):
         icon = my.kwargs.get("icon")
         if icon:
             icon_div = DivWdg() 
-            icon = IconWdg(title, icon )
+            icon = IconWdg(title, icon, width=16 )
             icon_div.add(icon)
             button.add(icon_div)
             my.table.add_style("position: relative")
@@ -1389,8 +1389,12 @@ class IconButtonWdg(DivWdg):
         icon_div.add_style("left: 5px")
         display.add(icon_div)
         icon_div.add_style("position: absolute")
+        if my.get_width() < 30:
+            width = 16
+        else:
+            width = None
 
-        icon = IconWdg(title, icon_str)
+        icon = IconWdg(title, icon_str, width=width)
         icon_div.add(icon)
         if tip:
             display.add_attr("title", tip)

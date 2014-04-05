@@ -18,6 +18,7 @@ from pyasm.widget import IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import CustomLayoutWdg
+from tactic.ui.widget import IconButtonWdg
 
 
 
@@ -26,21 +27,50 @@ class ContentBoxWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
-        top.add_style("margin: 15px")
         top.add_class("spt_content_box")
+        top.add_class("spt_content_box_inline")
+
+        colors = {
+            #"color3": top.get_color("color3"),
+            #"background3": top.get_color("background3"),
+            "background3": "rgba(18, 50, 91, 1.0)",
+            "color3": "#FFF",
+            "border": top.get_color("border", -10),
+        }
 
         style = HtmlElement.style()
         top.add(style)
         style.add('''
+        .spt_content_box_inline {
+            margin: 15px;
+        }
+
+        .spt_content_box_max {
+            margin: 0px;
+            width: 100%%;
+            height: 100%%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+        }
+
+        .spt_content_box_max .spt_content_box_content {
+            height: 100%% !important;
+        }
+
+
         .spt_content_box .spt_content_box_title {
             width: auto;
             border: none;
-            background: #333;
-            color: #FFF;
+            background: %(background3)s;
+            color: %(color3)s;
             height: 20px;
-            padding: 8px;
+            padding: 6px 8px;
             font-weight: bold;
-            border: solid 1px #333;
+            font-size: 1.2em;
+            border: solid 1px %(border)s;
         }
 
         .spt_content_box .spt_content_box_shelf {
@@ -68,9 +98,7 @@ class ContentBoxWdg(BaseRefreshWdg):
             height: 23px;
             background: #F8F8F8;
         }
-
-
-        ''')
+        ''' % colors)
 
 
         top.add(my.get_title_wdg())
@@ -97,6 +125,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_class("spt_content_box_content")
         inner.add(content_div)
+        content_div.add_style("width: auto")
 
         content_height = my.kwargs.get("content_height")
         if not content_height:
@@ -109,6 +138,11 @@ class ContentBoxWdg(BaseRefreshWdg):
         if content_view:
             layout = CustomLayoutWdg(view=content_view)
             content_div.add(layout)
+
+            content_margin = my.kwargs.get("content_margin")
+            if content_margin:
+                layout.add_style("margin", content_margin)
+
 
 
 
@@ -135,20 +169,18 @@ class ContentBoxWdg(BaseRefreshWdg):
             title = "No Title"
         icon = my.kwargs.get("icon")
         if not icon:
-            icon = "USER"
+            icon = "G_FOLDER"
 
         title_div = DivWdg()
         title_div.add_class("spt_content_box_title")
 
 
-
-
         # icon on the left
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconWdg(icon="FOLDER")
+        icon = IconWdg(icon=icon, width=16)
         icon_div.add(icon)
-        icon_div.add_styles('''float: left; height: 25px; margin-top: 0px; padding: 0px 8px;''')
+        icon_div.add_styles('''float: left; height: 25px; margin-top: 0px; padding: 0px 8px 0px 5px;''')
 
 
 
@@ -158,16 +190,16 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconWdg(icon="GEAR")
+        icon = IconWdg(icon="G_SETTINGS", width=16)
         icon_div.add(icon)
-        icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px;''')
+        icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px 0px 5px;''')
 
 
 
 
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconWdg(icon="ARROW_UP")
+        icon = IconButtonWdg(icon="G_UP", width=16)
         icon_div.add(icon)
         icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px;''')
         icon_div.add_behavior( {
@@ -194,9 +226,24 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconWdg(icon="DOT_RED")
+        icon = IconButtonWdg(icon="G_MAXIMIZE", width=16)
         icon_div.add(icon)
-        icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px;''')
+        icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 0px;''')
+
+        icon_div.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_content_box");
+            if (top.hasClass("spt_content_box_max")) {
+                top.removeClass("spt_content_box_max");
+                top.addClass("spt_content_box_inline");
+            }
+            else {
+                top.addClass("spt_content_box_max");
+                top.removeClass("spt_content_box_inline");
+            }
+            '''
+        } )
 
 
 
