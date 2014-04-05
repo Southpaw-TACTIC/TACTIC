@@ -311,9 +311,13 @@ class CalendarWdg(BaseRefreshWdg):
         table.add_row()
         table.add_color("color", "color")
         table.add_style("width: 100%")
+        table.add_style("table-layout: fixed")
 
         table.add_style("margin-left: auto")
         table.add_style("margin-right: auto")
+
+        if my.kwargs.get("show_header") not in ['false', False]:
+            table.add_style("margin-top: -1px")
 
 
         # get all of the day widgets
@@ -346,9 +350,8 @@ class CalendarWdg(BaseRefreshWdg):
         for day in week:
             td = table.add_cell()
             td.add(my.get_day_header_wdg(day) )
-            # NOTE: not sure why fixing the header td makes the whole table
-            # scale properly with equal size
-            td.add_style("width: 100px")
+            td.add_border()
+
         if has_right_wdgs:
             table.add_cell("&nbsp;")
 
@@ -370,7 +373,6 @@ class CalendarWdg(BaseRefreshWdg):
         
         for i, week in enumerate(weeks):
             table.add_row()
-
             
             if has_left_wdgs:
                 left_wdg = left_wdgs[i]

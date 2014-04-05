@@ -138,10 +138,9 @@ class SampleBarChartWdg(BaseRefreshWdg):
         data = ChartData(chart_type='polynomial', data=data, color="rgba(128, 128, 128, 0.6)")
         chart.add(data)
 
-
-
-
         return top
+
+
 
 
 
@@ -740,6 +739,7 @@ spt.chart = {}
 spt.chart.top = null;
 
 spt.chart.data = {};
+spt.chart.data.scale = {x: 1.0, y: 1.0};
 
 spt.chart.get_top = function() {
     return spt.chart.top;
@@ -763,6 +763,17 @@ spt.chart.get_size = function() {
     var top = spt.chart.get_top();
     return top.getSize();
 }
+
+
+spt.chart.set_scale = function(x, y) {
+    spt.chart.data.scale = {x: x, y: y};
+
+}
+
+spt.chart.get_scale = function() {
+    return spt.chart.data.scale;
+}
+
 
 
 

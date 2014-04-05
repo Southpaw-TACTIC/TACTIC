@@ -97,7 +97,7 @@ class Palette(object):
     'color3':       '#333',         # tertiary font color
     'background':   '#FFFFFF',      # main background color
     'background2':  '#AAAAAA',      # secondary background color
-    'background3':  '#CCCCCC',      # tertiary background color
+    'background3':  '#EEEEEE',      # tertiary background color
     'border':       '#BBBBBB',         # main border color
     'table_border': '#E0E0E0',
     'theme':        'default',

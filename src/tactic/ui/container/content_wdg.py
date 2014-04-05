@@ -55,7 +55,7 @@ class ContentBoxWdg(BaseRefreshWdg):
             width: auto;
             margin-top: -1px;
             border: solid 1px #AAA;
-            padding: 15px 25px;
+            padding: 15px 0px;
             background: #FFF;
             overflow-x: auto;
 
@@ -83,12 +83,12 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
         # handle the shelf
-        shelf_div = DivWdg()
-        inner.add(shelf_div)
-        shelf_div.add_class("spt_content_box_shelf")
-
         shelf_view = my.kwargs.get("shelf_view")
         if shelf_view:
+            shelf_div = DivWdg()
+            inner.add(shelf_div)
+            shelf_div.add_class("spt_content_box_shelf")
+
             layout = CustomLayoutWdg(view=shelf_view)
             shelf_div.add(layout)
 
@@ -102,7 +102,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         if not content_height:
             content_height = "300px"
         #content_div.add_style("max-height: %s" % content_height)
-        content_div.add_style("overflow-x: scroll")
+        content_div.add_style("overflow-x: auto")
 
         content_view = my.kwargs.get("content_view")
         #content_div.add(content_view)
@@ -114,9 +114,15 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
         # handle the footer
-        footer_div = DivWdg()
-        inner.add(footer_div)
-        footer_div.add_class("spt_content_box_footer")
+        footer_view = my.kwargs.get("footer_view")
+        if footer_view:
+            footer_div = DivWdg()
+            inner.add(footer_div)
+            footer_div.add_class("spt_content_box_footer")
+
+            layout = CustomLayoutWdg(view=footer_view)
+            shelf_div.add(layout)
+
 
         return top
 

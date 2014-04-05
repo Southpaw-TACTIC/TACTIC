@@ -4675,6 +4675,14 @@ spt.table.set_column_width = function(element_name, width) {
     var table = spt.table.get_table();
     var header_table = spt.table.get_header_table();
 
+    var row = spt.table.get_first_row();
+    var cell = spt.table.get_cell(element_name, row);
+    if (!cell) {
+        //alert("Cell for ["+element_name+"] does not exist");
+        return;
+    }
+
+
     var headers = spt.table.get_headers();
     var total_width = 0;
     for (var i = 0; i < headers.length; i++) {
@@ -4691,8 +4699,6 @@ spt.table.set_column_width = function(element_name, width) {
     }
 
 
-    var row = spt.table.get_first_row();
-    var cell = spt.table.get_cell(element_name, row);
 
     var curr_header = spt.table.get_header_by_cell(cell);
 
@@ -5322,7 +5328,8 @@ spt.table.open_ingest_tool = function(search_type) {
 
         element_names = my.element_names
         column_widths = my.kwargs.get("column_widths")
-        print "widths: ", column_widths
+        if not column_widths:
+            column_widths = []
         table.add_behavior( {
             'type': 'load',
             'element_names': my.element_names,
