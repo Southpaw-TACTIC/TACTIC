@@ -341,11 +341,14 @@ class IconWdg(DivWdg):
     'G_UP'                : '/context/icons/glyphs/chevron_up.png',
     'G_DOWN'              : '/context/icons/glyphs/chevron_down.png',
     'G_SEARCH'            : '/context/icons/glyphs/search.png',
+    'G_SEARCH_BLACK'      : '/context/icons/glyphs/search_black.png',
     'G_LEFT'              : '/context/icons/glyphs/chevron_left.png',
     'G_RIGHT'             : '/context/icons/glyphs/chevron_right.png',
     'G_LEFT_BLACK'        : '/context/icons/glyphs/chevron_left_black.png',
     'G_RIGHT_BLACK'       : '/context/icons/glyphs/chevron_right_black.png',
+    'G_CLOSE'             : '/context/icons/glyphs/close.png',
     'G_CLOSE_BLACK'       : '/context/icons/glyphs/close_black.png',
+    'G_HOME_BLACK'        : '/context/icons/glyphs/home_black.png',
 
 
     

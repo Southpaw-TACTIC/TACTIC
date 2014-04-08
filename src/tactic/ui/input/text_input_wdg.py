@@ -380,7 +380,7 @@ class TextInputWdg(BaseInputWdg):
             td.add_style("width: 20")
             td.add_style("border: solid 1px %s" % my.border_color)
 
-            icon = IconWdg("", eval("IconWdg.%s" % my.icon))
+            icon = IconWdg("", eval("IconWdg.%s" % my.icon), width=16)
             my.icon_div.add(icon)
             my.icon_div.add_style("padding: 4px 8px")
             my.icon_div.add_style("height: %spx" % (height -16))

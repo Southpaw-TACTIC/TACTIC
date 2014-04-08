@@ -5348,7 +5348,7 @@ spt.table.open_ingest_tool = function(search_type) {
             // determine the widths of the screen
             var size = layout.getSize();
 
-            var total_size = 0;
+            var total_size = 30 + 32;
             for (var i = 0; i < bvr.column_widths.length; i++) {
                 total_size += bvr.column_widths[i];
             }
@@ -5365,12 +5365,6 @@ spt.table.open_ingest_tool = function(search_type) {
             }
             '''
         } )
-
-
-
-
-
-
 
 
     #

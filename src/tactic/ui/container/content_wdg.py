@@ -30,10 +30,20 @@ class ContentBoxWdg(BaseRefreshWdg):
         top.add_class("spt_content_box")
         top.add_class("spt_content_box_inline")
 
+        #top.add_style("opacity: 0.1")
+
+        top.add_behavior( {
+            'type': 'loadX',
+            'cbjs_action': '''
+            new Fx.Tween(bvr.src_el, {duration: 500}).start("opacity", 1.0);
+            '''
+        } )
+
         colors = {
             #"color3": top.get_color("color3"),
             #"background3": top.get_color("background3"),
-            "background3": "rgba(18, 50, 91, 1.0)",
+            #"background3": "rgba(18, 50, 91, 1.0)",
+            "background3": "#323232",
             "color3": "#FFF",
             "border": top.get_color("border", -10),
         }
@@ -117,8 +127,11 @@ class ContentBoxWdg(BaseRefreshWdg):
             inner.add(shelf_div)
             shelf_div.add_class("spt_content_box_shelf")
 
-            layout = CustomLayoutWdg(view=shelf_view)
-            shelf_div.add(layout)
+            if shelf_view == "true":
+                pass
+            else:
+                layout = CustomLayoutWdg(view=shelf_view)
+                shelf_div.add(layout)
 
 
 

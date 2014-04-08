@@ -2202,7 +2202,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Edit",
-                "icon": IconWdg.EDIT,
+                #"icon": IconWdg.EDIT,
                 "bvr_cb": {
                     'edit_view': edit_view,
                     'cbjs_action': '''
@@ -2484,7 +2484,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Change Preview Image",
-                "icon": IconWdg.PHOTOS,
+                #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
@@ -2504,7 +2504,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "label": "Check in New File",
                 "upload_id": my.upload_id,
                 "mode": "file",
-                "icon": IconWdg.PHOTOS,
+                #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
@@ -2533,7 +2533,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
-                { "type": "action", "label": "Retire", "icon": IconWdg.RETIRE,
+                { "type": "action", "label": "Retire",
+                    #"icon": IconWdg.RETIRE,
                     "enabled_check_setup_key" : "is_not_retired",
                     "hide_when_disabled" : True,
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_retire_cbk(evt,bvr);' },
@@ -2542,7 +2543,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
-                { "type": "action", "label": "Delete", "icon": IconWdg.DELETE,
+                { "type": "action", "label": "Delete",
+                    #"icon": IconWdg.DELETE,
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_delete_cbk(evt,bvr);' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                       'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
@@ -2560,14 +2562,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     { "type": "separator" },
 
-                    { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
+                    { "type": "action", "label": "Item Audit Log",
+                        #"icon": IconWdg.CONTENTS,
                         "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  my.look_row_selected, my.look_row ] }
                     },
                     
-                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.PICTURE_EDIT,
+                    { "type": "action", "label": "Subscribe to %s"%subscribe_label,
+                        #"icon": IconWdg.PICTURE_EDIT,
                         "bvr_cb": { 'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
@@ -2616,7 +2620,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 { "type": "action", 
                     "label": "Save All Changes",
-                    "icon": IconWdg.DB,
+                    #"icon": IconWdg.DB,
                     "enabled_check_setup_key" : "commit_enabled",
                     "bvr_cb": { 'cbjs_action':
                     '''

@@ -1165,7 +1165,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             view = attrs.get("view")
             type = attrs.get("type")
 
-
             if type == "reference":
                 search_type = attrs.get("search_type")
                 my.config = WidgetConfigView.get_by_search_type(search_type, view)
@@ -1178,16 +1177,19 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 container.add(element_wdg)
                 return container
 
-            if not view:
+
+            class_name = attrs.get("display_class")
+
+            # if no class name is defined and not view is defined look
+            # at predefined elements
+            if not view and not class_name:
                 element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
 
 
-
             # look at the attributes
-            class_name = attrs.get("display_class")
             if not class_name:
                 class_name = "tactic.ui.panel.CustomLayoutWdg"
             display_node = xml.create_element("display")

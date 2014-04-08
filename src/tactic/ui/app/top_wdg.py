@@ -290,7 +290,7 @@ class TopWdg(Widget):
             icon_div.add_style("float: right")
             icon_div.add_style("margin-right: 10px")
             icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.POPUP_WIN_CLOSE)
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.G_CLOSE)
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
