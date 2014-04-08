@@ -206,7 +206,7 @@ class Common(Base):
     relative_path = classmethod(relative_path)
 
 
-    def generate_random_key():
+    def generate_random_key(digits=None):
         # generate a random key
         random.seed()
         random_key = ""
@@ -214,6 +214,8 @@ class Common(Base):
             random_key += chr(random.randint(0,255))
         #random_key = md5.new(random_key).hexdigest()
         random_key = hashlib.md5(random_key).hexdigest()
+        if digits:
+            random_key = random_key[:digits]
         return random_key
     generate_random_key = staticmethod(generate_random_key)
 
