@@ -2459,6 +2459,12 @@ class SObject(object):
         return project_code
 
 
+    def get_columns(my):
+        columns = SearchType.get_columns(my.get_search_type())
+        return columns
+
+
+
     def get_data(my, merged=True):
         if merged:
             data = my.data.copy()
