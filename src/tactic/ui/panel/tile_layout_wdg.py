@@ -226,7 +226,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
-        mode = "gallery"
+        mode = my.kwargs.get("expand_mode")
+        if not mode:
+            mode = "gallery"
 
         if mode == "view":
             layout_wdg.add_relay_behavior( {

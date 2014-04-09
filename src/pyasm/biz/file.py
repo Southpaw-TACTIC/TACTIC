@@ -270,7 +270,7 @@ class File(SObject):
 
 
 
-    def get_by_snapshots(cls, snapshots):
+    def get_by_snapshots(cls, snapshots, file_type=None):
         all_file_codes = []
         for snapshot in snapshots:
             xml = snapshot.get_xml_value("snapshot")
@@ -279,6 +279,8 @@ class File(SObject):
 
         search = Search( cls.SEARCH_TYPE)
         search.add_filters("code", all_file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         files = search.get_sobjects()
 
         # cache these

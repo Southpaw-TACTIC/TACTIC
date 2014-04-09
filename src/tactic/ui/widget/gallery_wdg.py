@@ -13,6 +13,8 @@
 
 __all__ = ['GalleryWdg']
 
+from pyasm.biz import Snapshot, File
+from pyasm.search import Search
 from pyasm.web import HtmlElement, DivWdg, Table
 from pyasm.widget import TextWdg, IconWdg
 
@@ -151,14 +153,7 @@ class GalleryWdg(BaseRefreshWdg):
         scroll.add_style("margin-right: auto")
 
 
-
-        paths = my.kwargs.get("paths")
-        paths = [
-            'http://192.168.0.191/assets/test/store/The%20Boxter_v001.jpg',
-            'http://192.168.0.191/assets/test/store/Another%20one_v001.jpg',
-            'http://192.168.0.191/assets/test/store/Whatever_v001.jpg'
-        ]
-
+        paths = my.get_paths()
 
 
         total_width = width * len(paths)
@@ -244,6 +239,34 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         return top
+
+
+
+    def get_paths(my):
+
+        search_keys = my.kwargs.get("search_keys")
+        paths = my.kwargs.get("paths")
+
+        if search_keys:
+            sobjects = Search.get_by_search_keys(search_keys)
+            snapshots = Snapshot.get_by_sobjects(sobjects)
+            file_objects = File.get_by_snapshots(snapshots, file_type='main')
+            paths = [x.get_web_path() for x in file_objects]
+
+        elif paths:
+            return paths
+
+        else:
+            # TEST
+            paths = [
+                '/assets/test/store/The%20Boxter_v001.jpg',
+                '/assets/test/store/Another%20one_v001.jpg',
+                '/assets/test/store/Whatever_v001.jpg'
+            ]
+
+        print "paths; ", paths
+        return paths
+
 
 
 
