@@ -226,29 +226,62 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
-        layout_wdg.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_tile_content',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_tile_top");
-            var search_key = top.getAttribute("spt_search_key");
-            var server = TacticServerStub.get();
-            var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-            if (snapshot.__search_key__) {
-                window.open(snapshot.__web_paths_dict__.main);
-            }
-            else {
-                var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+        mode = "gallery"
+
+        if mode == "view":
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = top.getAttribute("spt_search_key");
+                var server = TacticServerStub.get();
+                var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
                 if (snapshot.__search_key__) {
                     window.open(snapshot.__web_paths_dict__.main);
                 }
                 else {
-                    alert("WARNING: No file for this asset");
+                    var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                    if (snapshot.__search_key__) {
+                        window.open(snapshot.__web_paths_dict__.main);
+                    }
+                    else {
+                        alert("WARNING: No file for this asset");
+                    }
                 }
-            }
-            '''
-        } )
+                '''
+            } )
+        elif mode == "gallery":
+            gallery_div = DivWdg()
+            layout_wdg.add( gallery_div )
+            gallery_div.add_class("spt_tile_gallery")
 
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                var tile_tops = layout.getElements(".spt_tile_top");
+
+                var search_keys = [];
+                for (var i = 0; i < tile_tops.length; i++) {
+                    var tile_top = tile_tops[i];
+                    var search_key = tile_top.getAttribute("spt_search_key");
+                    search_keys.push(search_key);
+                }
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_keys: search_keys
+                };
+                var gallery_el = layout.getElement(".spt_tile_gallery");
+                spt.panel.load(gallery_el, class_name, kwargs);
+
+
+
+                '''
+            } )
+ 
 
 
 
@@ -260,7 +293,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "0.8");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            el.setStyle("background", "%s");
+            if (el)
+                el.setStyle("background", "%s");
             ''' % bg2
         } )
 
@@ -270,7 +304,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            el.setStyle("background", "%s");
+            if (el)
+                el.setStyle("background", "%s");
             ''' % bg1
         } )
 
@@ -469,13 +504,13 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
 
-
-        if my.title_wdg:
-            my.title_wdg.set_sobject(sobject)
-            div.add(my.title_wdg.get_buffer_display())
-        else:
-            title_wdg = my.get_title(sobject)
-            div.add( title_wdg )
+        if my.kwargs.get("show_title") not in ['false', False]:
+            if my.title_wdg:
+                my.title_wdg.set_sobject(sobject)
+                div.add(my.title_wdg.get_buffer_display())
+            else:
+                title_wdg = my.get_title(sobject)
+                div.add( title_wdg )
 
 
         div.add_attr("spt_search_key", sobject.get_search_key())
@@ -896,17 +931,6 @@ class ThumbWdg2(BaseRefreshWdg):
         # FIXME: make this faster
 
         snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
-
-        """
-        snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code)
-        """
-
 
         if snapshot:
             file_type = "web"

@@ -94,7 +94,8 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_color("background", "background")
+        # This is handled elsewhere
+        #inner.add_color("background", "background")
         inner.add_color("color", "color")
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")

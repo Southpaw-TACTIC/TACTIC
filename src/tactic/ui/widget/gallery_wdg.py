@@ -35,7 +35,8 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("left: 0")
         inner.add_style("width: 100%")
         inner.add_style("height: 100%")
-        inner.add_style("background: rgba(0,0,0,0.5)")
+        #inner.add_style("background: rgba(0,0,0,0.5)")
+        inner.add_style("background: rgba(0,0,0,1)")
         inner.add_style("z-index: 1000")
         """
         inner.add_behavior( {
