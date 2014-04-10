@@ -37,6 +37,7 @@ class PlanWdg(BaseRefreshWdg):
         inner.add_style("width: %s" % width)
         inner.add_style("height: %s" % height)
         inner.add_style("overflow: hidden")
+        inner.add_class("spt_container")
 
 
 
@@ -117,33 +118,41 @@ spt.drag.load = function(el) {
 
 spt.drag.wheel = function(evt, bvr) {
 
-    var pos = bvr.src_el.getPosition();
-    var size = bvr.src_el.getSize();
-    if (size.x == 0) {
-        size = bvr.src_el.getParent().getSize();
-    }
-    console.log(size);
-    var mouse = evt.client;
+    var container = bvr.src_el.getParent(".spt_container");
+    var size = container.getSize();
 
-    var mult = 0.9;
+    var mouse = evt.client;
+    var container_pos = container.getPosition();
+    mouse = {x: mouse.x - container_pos.x, y: mouse.y - container_pos.y};
+
+
+    var scale = bvr.src_el.getAttribute("spt_scale");
+    if (!scale) {
+        scale = 1.0;
+    }
+    scale = parseFloat(scale);
+
+    var mult = 0.95;
 
     var scale;
     if (evt.wheel > 0) {
-        scale = 1/mult;
+        scale = scale/mult;
     }
     else {
-        scale = mult;
+        scale = scale*mult;
     }
-    console.log(scale);
 
-    size = {x: size.x*scale, y: size.y*scale};
-    var px = mouse.x - ( mouse.x - pos.x ) * (scale*size.x) / size.x;
-    var py = mouse.y - ( mouse.y - pos.y ) * (scale*size.y) / size.y;
 
-    bvr.src_el.setStyle("width", size.x);
-    bvr.src_el.setStyle("height", size.y);
+    //spt.drag.zoom(bvr.src_el, scale, mouse);
+
+    var px = mouse.x - ( mouse.x - container_pos.x ) * (scale*size.x) / size.x;
+    var py = mouse.y - ( mouse.y - container_pos.y ) * (scale*size.y) / size.y;
+
+    bvr.src_el.setStyle("width", (scale*100)+"%");
+    bvr.src_el.setStyle("height", (scale*100)+"%");
     bvr.src_el.setStyle("left", px);
     bvr.src_el.setStyle("top", py);
+    bvr.src_el.setAttribute("spt_scale", scale);
 
 }
 
@@ -156,10 +165,14 @@ spt.drag.dblclick = function(evt, bvr) {
     }
     else {
 
+    var container = bvr.src_el.getParent(".spt_container");
+
     // find out current position of src
-    var pos = bvr.src_el.getPosition();
+    var container_pos = container.getPosition();
+    var pos = bvr.src_el.getPosition(container);
     var size = bvr.src_el.getSize();
     var mouse = evt.client;
+    mouse = {x: mouse.x - container_pos.x, y: mouse.y - container_pos.y};
 
     var scale = 5;
     var px = mouse.x - ( mouse.x - pos.x ) * (scale*size.x) / size.x;
@@ -172,13 +185,13 @@ spt.drag.dblclick = function(evt, bvr) {
     //width = parseInt(width.replace("%",""));
 
     if (width == '100%' ) {
-        new Fx.Tween(bvr.src_el, {duration: 1500, unit: '%'}).start('width', (scale*100) + '%');
-        new Fx.Tween(bvr.src_el, {duration: 1500, unit: '%'}).start('height', (scale*100) + '%');
-        new Fx.Tween(bvr.src_el, {duration: 1500}).start('top', py);
-        new Fx.Tween(bvr.src_el, {duration: 1500}).start('left', px);
+        new Fx.Tween(bvr.src_el, {duration: 500, unit: '%'}).start('width', (scale*100) + '%');
+        new Fx.Tween(bvr.src_el, {duration: 500, unit: '%'}).start('height', (scale*100) + '%');
+        new Fx.Tween(bvr.src_el, {duration: 500}).start('top', py);
+        new Fx.Tween(bvr.src_el, {duration: 500}).start('left', px);
 
         /*
-        new Fx.Morph(bvr.src_el, {duration: 1500}).start({
+        new Fx.Morph(bvr.src_el, {duration: 500}).start({
             'width': size.x * scale,
             'height': size.y * scale,
             'top': py,
@@ -187,14 +200,60 @@ spt.drag.dblclick = function(evt, bvr) {
         */
     }
     else {
-        new Fx.Tween(bvr.src_el, {duration: 1500, unit: '%'}).start('width', '100%');
-        new Fx.Tween(bvr.src_el, {duration: 1500, unit: '%'}).start('height', '100%');
-        new Fx.Tween(bvr.src_el, {duration: 1500}).start('top', 0);
-        new Fx.Tween(bvr.src_el, {duration: 1500}).start('left', 0);
+        new Fx.Tween(bvr.src_el, {duration: 500, unit: '%'}).start('width', '100%');
+        new Fx.Tween(bvr.src_el, {duration: 500, unit: '%'}).start('height', '100%');
+        new Fx.Tween(bvr.src_el, {duration: 500}).start('top', 0);
+        new Fx.Tween(bvr.src_el, {duration: 500}).start('left', 0);
     }
 
     }
 
+}
+
+
+spt.drag.zoom = function(content, scale, mouse) {
+
+    var container = content.getParent(".spt_container");
+
+    // find out current position of src
+    var pos = content.getPosition(container);
+    //var size = content.getSize();
+    var size = container.getSize();
+
+    // This is to find the position relative to the container, however,
+    // mouse should already have that in this case
+    //var container_pos = container.getPosition();
+    //mouse = {x: mouse.x - container_pos.x, y: mouse.y - container_pos.y};
+
+    var px = mouse.x - ( mouse.x - pos.x ) * (scale*size.x) / size.x;
+    var py = mouse.y - ( mouse.y - pos.y ) * (scale*size.y) / size.y;
+
+    var mid = scale * (1 + scale) / 2 * 100;
+
+    var width = content.getStyle("width");
+    //width = parseInt(width.replace("%",""));
+
+    if (width == '100%' ) {
+        new Fx.Tween(content, {duration: 1500, unit: '%'}).start('width', (scale*100) + '%');
+        new Fx.Tween(content, {duration: 1500, unit: '%'}).start('height', (scale*100) + '%');
+        new Fx.Tween(content, {duration: 1500}).start('top', py);
+        new Fx.Tween(content, {duration: 1500}).start('left', px);
+
+        /*
+        new Fx.Morph(content, {duration: 1500}).start({
+            'width': size.x * scale,
+            'height': size.y * scale,
+            'top': py,
+            'left': px
+        });
+        */
+    }
+    else {
+        new Fx.Tween(content, {duration: 1500, unit: '%'}).start('width', '100%');
+        new Fx.Tween(content, {duration: 1500, unit: '%'}).start('height', '100%');
+        new Fx.Tween(content, {duration: 1500}).start('top', 0);
+        new Fx.Tween(content, {duration: 1500}).start('left', 0);
+    }
 }
 
     ''' 
