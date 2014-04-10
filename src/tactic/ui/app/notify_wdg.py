@@ -29,7 +29,7 @@ class NotifyWdg(BaseRefreshWdg):
         top.set_id("spt_notify_top")
 
         top.add_style("position: fixed")
-        top.add_style("bottom: -30")
+        top.add_style("bottom: -32")
         top.add_style("left: 0")
         top.add_style("right: 0")
         top.add_style("z-index: 1000")
@@ -58,7 +58,7 @@ spt.notify.show = function() {
 }
 
 spt.notify.hide = function() {
-    new Fx.Tween('spt_notify_top').start('bottom', -30);
+    new Fx.Tween('spt_notify_top').start('bottom', -32);
 }
 
 

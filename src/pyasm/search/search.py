@@ -1250,7 +1250,7 @@ class Search(Base):
         my.select.add_op(op)
 
 
-    def add_startswith_keyword_filter(my, column, keywords):
+    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=False):
 
         if column.find(".") != -1:
             parts = column.split(".")
@@ -1294,21 +1294,22 @@ class Search(Base):
                 # cast as a string first for integer supported by postgres, SQLServer, MySQL
                 expr1 = """CAST("%s"."%s" AS varchar(10)) like '%% %s%%'""" % (table, column, keyword)
                 expr2 = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
-                #expr1 = """"%s"."%s" = '%s'""" % (table, column, keyword)
             else:
-                keyword = keyword.lower()
-                #expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
-                # NOTE: lower() on the column disables the use of index, resulting in much slower performance
-                expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
-                #expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
-                expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
+                if case_sensitive:
+                    
+                    expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
+                    expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
+                else:
+                    keyword = keyword.lower()
+                    expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
+                    # NOTE: lower() on the column disables the use of index, resulting in much slower performance
+                    expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
 
             my.select.add_op("begin")
 
             my.select.add_where(expr1)
             my.select.add_where(expr2)
             my.select.add_op("or")
-
 
 
     def add_text_search_filter(my, column, keywords, table=None):
@@ -2458,6 +2459,13 @@ class SObject(object):
         return project_code
 
 
+
+    def get_columns(my):
+        columns = SearchType.get_columns(my.get_search_type())
+        return columns
+
+
+
     def get_data(my, merged=True):
         if merged:
             data = my.data.copy()
@@ -2664,7 +2672,7 @@ class SObject(object):
 
 
 
-    def get_dynamic_value(my, name, no_exceptions=False):
+    def _get_dynamic_value(my, name, no_exceptions=False):
 
         search_type = my.get_search_type()
         if search_type.startswith("sthpw/"):
@@ -2737,13 +2745,20 @@ class SObject(object):
         '''get the value of the named attribute stored as metadata in the
         sobject.  The no_exception argument determines whethere or not
         an exception is raised if the sobject does not have this attr'''
-        # check security
-        #my._check_value_security(name)
 
         # DISABLING
-        #value = my.get_dynamic_value(name, no_exception)
+        #value = my._get_dynamic_value(name, no_exception)
         #if value != None:
         #    return value
+
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
@@ -2923,6 +2938,16 @@ class SObject(object):
         '''set the value of this sobject. It is
         not commited to the database'''
 
+
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
+
         if temp:
             my._set_value(name, value, quoted=quoted)
             return
@@ -3079,6 +3104,7 @@ class SObject(object):
     # Metadata: this allows setting of arbitrary metadata without having to
     #   create a whole new column
     #
+    # NOTE: metadata is no longer stored as XML, it is stored as JSON
     def get_metadata_xml(my):
         metadata_mode = "json"
         if not my.metadata:
@@ -3883,9 +3909,12 @@ class SObject(object):
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
-        data = unicode(data)
-        json_data = jsondumps(data)
-        json_data = json_data.replace("\\", "\\\\")
+        # not suitable to make a dictionary unicode string
+        #data = unicode(data)
+        json_data = jsondumps(data, ensure_ascii=True)
+
+        # this is not needed even for string literals with \
+        #json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
         message.set_value("project_code", project_code)

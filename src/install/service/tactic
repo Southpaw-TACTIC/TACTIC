@@ -16,9 +16,11 @@
 
 TACTIC_INSTALL_DIR=`python -c 'import tacticenv; print tacticenv.get_install_dir()'`
 TACTIC_SITE_DIR=`python -c 'import tacticenv; print tacticenv.get_site_dir()'`
+TACTIC_DATA_DIR=`python -c 'import tacticenv; print tacticenv.get_data_dir()'`
 
 echo "TACTIC_INSTALL_DIR = $TACTIC_INSTALL_DIR"
 echo "TACTIC_SITE_DIR = $TACTIC_SITE_DIR"
+echo "TACTIC_DATA_DIR = $TACTIC_DATA_DIR"
 echo
 
 # Some variables

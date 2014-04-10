@@ -55,9 +55,13 @@ class FileException(TacticException):
 
 class File(SObject):
 
-    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', '']
+    NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
+            'gz', 'zip', 'rar',
+            'ini', 'db', 'py', 'pyd'
+    ]
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 'wm','wvx','ogg','webm','mkv','m4v','mxf']
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
+                'wm','wvx','ogg','webm','mkv','m4v','mxf']
 
 
     SEARCH_TYPE = "sthpw/file"
@@ -648,16 +652,26 @@ class IconCreator(object):
             if not HAS_PIL:
                 raise Exception("No PIL installed")
 
+
             # create the thumbnail
             im = Image.open(large_path)
 
+            try:
+                im.seek(1)
+            except EOFError:
+                is_animated = False
+            else:
+                is_animated = True
+                im.seek(0)
+                im = im.convert('RGB')
+
             x,y = im.size
-            ext = "PNG"
+            to_ext = "PNG"
             if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
-                ext = "JPEG"
+                to_ext = "JPEG"
             if x >= y:
                 im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
-                im.save(small_path, ext)
+                im.save(small_path, to_ext)
             else:
                 
                 #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
@@ -673,14 +687,15 @@ class IconCreator(object):
                 im2 = Image.new( "RGB", thumb_size, (255,255,255) )
                 offset = (thumb_size[0]/2) - (im.size[0]/2)
                 im2.paste(im, (offset,0) )
-                im2.save(small_path, ext)
+                im2.save(small_path, to_ext)
                 
         except Exception, e:
+            print "Error: ", e
             # there could be any kind of Exception by PIL, not just IOError
             # maximum geometry mode aspect ratio preserved
             if sys.platform == 'darwin':
-                cmd = '''sips --resampleHeightWidthMax %s %s --out "%s" "%s"''' \
-                    % (thumb_size[0], thumb_size[1], small_path, large_path)
+                cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
+                    % (thumb_size[0], small_path, large_path)
                 print "cmd: ", cmd
             else:
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
@@ -688,13 +703,17 @@ class IconCreator(object):
                 print "cmd: ", cmd
    
             large_path = large_path.encode('utf-8')
+            #os.system(cmd)
+            # use subprocess to call instead
             import subprocess
             try:
-                subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                if sys.platform == 'darwin':
+                    subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
+                else:
+                    subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
             except:
                 pass
-            #os.system(cmd)
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
                 raise TacticException('Icon generation failed')

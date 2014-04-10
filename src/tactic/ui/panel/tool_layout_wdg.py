@@ -47,8 +47,11 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def can_select(my):
         return False
 
+    def can_use_gear(my):
+        return True
 
-
+    def can_use_search(my):
+        return True
 
 
     def get_display(my):
@@ -329,6 +332,9 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
+
+    def can_use_gear(my):
+        return False
 
     def get_content_wdg(my):
         from tactic.ui.tools import RepoBrowserWdg

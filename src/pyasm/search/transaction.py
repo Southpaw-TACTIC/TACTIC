@@ -899,10 +899,13 @@ class FileUndo:
                         os.unlink(dst)
                     prev = Xml.get_attribute(node,"prev")
                     if prev:
-                        
                         # create the link
-                        rel = Common.relative_path(dst, prev)
-                        os.symlink(rel, dst)
+                        try:
+                            rel = Common.relative_path(dst, prev)
+                            os.symlink(rel, dst)
+                        except Exception, e:
+                            raise IOError(str(e))
+
 
         except IOError, e:
             print( e.__str__())

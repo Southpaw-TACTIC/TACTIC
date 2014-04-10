@@ -56,7 +56,7 @@ Effects = new function()
               if (typeof(on_complete_script) =='string') {
                   eval(on_complete_script); 
               } else {
-                  on_complete_script();
+                  on_complete_script(id);
               }
             }
             });

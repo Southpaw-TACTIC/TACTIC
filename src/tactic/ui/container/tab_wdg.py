@@ -27,7 +27,17 @@ class TabWdg(BaseRefreshWdg):
             'description': 'show the + button',
              'values': 'true|false',
             'category': 'Display'
-        }
+        },
+        'show_context_menu': {
+            'description': 'show the context menu',
+             'values': 'true|false',
+            'category': 'Display'
+        },
+        'show_remove': {
+            'description': 'show the close button',
+             'values': 'true|false',
+            'category': 'Display'
+        },
     }
 
     def get_onload_js(my):
@@ -107,6 +117,30 @@ spt.tab.get_header = function(name) {
             return headers[i];
         }
     }
+    return null;
+}
+
+
+
+spt.tab.get_content = function(name) {
+    var top = spt.tab.top;
+    var tab_id = top.getAttribute("spt_tab_id");
+
+    var content_top = top.getElement(".spt_tab_content_top");
+    var all_contents = content_top.getElements(".spt_tab_content");
+
+    // FIXME: this breaks when opening new tabs for some reason
+    //return all_contents;
+
+    for (var i = 0; i < all_contents.length; i++ ) {
+        var content_tab_id = all_contents[i].getAttribute("spt_tab_id");
+        var content_name = all_contents[i].getAttribute("spt_element_name");
+        if (content_name == name) {
+            return all_contents[i];
+        }
+    }
+
+
     return null;
 }
 
@@ -878,7 +912,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         inner = DivWdg();
         top.add(inner);
 
-
         if not Container.get_dict("JSLibraries", "spt_tab"):
             inner.add_behavior( {
             'type': 'load',
@@ -1025,7 +1058,6 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
         content_top = DivWdg()
 
-
         # add a div so that it breaks correctly
         if my.mode == 'default':
             content_top.add("<div style='height:5px'></div>")
@@ -1048,6 +1080,22 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         content_top.add_class("tab_content_top")
         content_top.add_color("color", "color")
         content_top.add_color("background", "background")
+
+
+        """
+        content_top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            new Scrollable(bvr.src_el);
+            '''
+        } )
+        content_top.add_style("overflow: hidden")
+        content_top.add_style("height: 300px")
+        content_top.add_style("padding-right: 15px" )
+        """
+
+
+
 
         # put in a content box for each element
         for element_name in element_names:
@@ -1327,8 +1375,13 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_tab_top");
 
+            // add new if this is the last oni
+            var headers = spt.tab.get_headers();
+            if (headers.length == 1) {
+                spt.tab.add_new();
+            }
+            
             spt.tab.top = top;
-            spt.tab.add_new();
 
             var header = activator;
             var element_name = header.getAttribute("spt_element_name");
@@ -1341,7 +1394,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                     spt.panel.load_popup_with_html( element_name, content.innerHTML );
                     spt.behavior.destroy_element(content);
                 }
-            }
+            } 
 
             '''
         } )
@@ -1365,8 +1418,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
             var class_name = header.getAttribute("spt_class_name");
             var kwargs_str = header.getAttribute("spt_kwargs");
-            var kwargs = JSON.parse(kwargs_str);
-
+            var kwargs = {};
+            if (kwargs_str) {
+                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs = JSON.parse(kwargs_str);
+            }
             var contents = spt.tab.get_contents();
             for (var i=0; i<contents.length; i++) {
                 var content = contents[i];
@@ -1384,31 +1440,31 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
 
 
-        menu_item = MenuItem(type='separator')
-        menu.add(menu_item)
 
+        if my.kwargs.get("show_remove") not in ['false', False]: 
+            menu_item = MenuItem(type='separator')
+            menu.add(menu_item)
+            menu_item = MenuItem(type='action', label='Close Tab')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                var top = activator.getParent(".spt_tab_top");
+                spt.tab.top = top;
 
-        menu_item = MenuItem(type='action', label='Close Tab')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_tab_top");
-            spt.tab.top = top;
+                var header = activator;
+                var element_name = header.getAttribute("spt_element_name");
+                spt.behavior.destroy_element(header);
 
-            var header = activator;
-            var element_name = header.getAttribute("spt_element_name");
-            spt.behavior.destroy_element(header);
-
-            var contents = top.getElements(".spt_tab_content");
-            for (var i=0; i<contents.length; i++) {
-                var content = contents[i];
-                if (content.getAttribute("element_name") == element_name) {
-                    spt.behavior.destroy_element(content);
+                var contents = top.getElements(".spt_tab_content");
+                for (var i=0; i<contents.length; i++) {
+                    var content = contents[i];
+                    if (content.getAttribute("element_name") == element_name) {
+                        spt.behavior.destroy_element(content);
+                    }
                 }
-            }
-            '''
-        } )
-        menu.add(menu_item)
+                '''
+            } )
+            menu.add(menu_item)
 
 
 
@@ -1446,20 +1502,21 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
                 */
          
 
-
+                var br = '\n';
                 var xml = '';
-                xml += '<element>\n';
-                xml += '  <display class="'+class_name+'">\n';
+                xml += '<element>' + br;
+                xml += '  <display class="'+class_name+'">'  + br;
                 for (var name in kwargs) {
                   if (name == 'class_name') {
                     continue;
                   }
-                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>\n';
+                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
                 }
-                xml += '  </display>\n';
-                xml += '</element>\n';
+                xml += '  </display>' + br;
+                xml += '</element>';
 
-                spt.alert(xml);
+                var html = spt.convert_to_html_display(xml);
+                spt.alert(html, {type:'html'});
                 '''
             } )
             menu.add(menu_item)

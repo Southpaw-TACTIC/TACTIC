@@ -1,0 +1,40 @@
+/*
+---
+description: Unobtrusive modern scrollbar for elements with fixed heights
+license: MIT
+copyright: Copyright (c) 2011 by Julian Lam (julianlam).
+authors:
+- Julian Lam (julianlam)
+...
+*/
+
+/* Scrollbar CSS */
+.scrollbar {
+	width: 21px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.scrollbar .knob {
+	background: #666;
+	width: 7px;
+	height: 50px;
+	margin: 0 7px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	cursor: pointer;
+	-moz-opacity: 0.75;
+	opacity: 0.75;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
+}
+
+.scrollbar .knob:hover {
+	-moz-opacity: 1;
+	opacity: 1;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+}
+/* End Scrollbar CSS */

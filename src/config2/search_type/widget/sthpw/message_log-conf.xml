@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+
+
+<config>
+
+<definition>
+    <element name="code"/>
+    <element name="message_code"/>
+    <element name="category"/>
+    <element name="message">
+        <display class="tactic.ui.app.MessageTableElementWdg"/>
+    </element>
+    <element name="status"/>
+    <element name="login"/>
+    <element name="project_code"/>
+    <element name="timestamp"/>
+</definition>
+
+
+<edit_definition>
+    <element name="code"/>
+    <element name="message_code"/>
+    <element name="category"/>
+    <element name="message"/>
+    <element name="status"/>
+    <element name="login"/>
+    <element name="project_code"/>
+    <element name="timestamp"/>
+</edit_definition>
+
+
+<table>
+    <element name="message_code"/>
+    <element name="category"/>
+    <element name="message"/>
+    <element name="status"/>
+    <element name="login"/>
+    <element name="project_code"/>
+    <element name="timestamp"/>
+</table>
+
+
+<history>
+    <element name="message_code"/>
+    <element name="category"/>
+    <element name="message"/>
+    <element name="login"/>
+    <element name="project_code"/>
+    <element name="timestamp"/>
+</history>
+
+
+
+
+</config>
+

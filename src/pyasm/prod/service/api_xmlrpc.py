@@ -328,9 +328,11 @@ def xmlrpc_decorator(meth):
 
                 if isinstance(message, unicode):
                     error_msg = message.encode('utf-8')
-                else:
+                elif isinstance(message, str):
                     error_msg = unicode(message, errors='ignore').encode('utf-8')
-                print "Error: ", error_msg
+                else:
+                    error_msg = message
+                print "Error: ", error_msg  
                 print "-"*50
                 raise
 
@@ -1042,9 +1044,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         subscription  = search.get_sobject()
 
         if subscription:
+            raise ApiException('[%s] has already been subscribed to.'%key)
             # nothing to do ... already subscribed
-            sobject_dict = my._get_sobject_dict(subscription)
-            return sobject_dict
+            #sobject_dict = my._get_sobject_dict(subscription)
+            #return sobject_dict
 
         project_code = Project.get_project_code()
 
@@ -3451,7 +3454,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def add_dependency(my, ticket, snapshot_code, file_path, type='ref', tag='main'):
-        '''method to append a dependency reference to an existing checkin
+        '''method to append a dependency reference to an existing checkin.
         The snapshot that this is attached will be auto-discovered
        
         @params
@@ -3469,7 +3472,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
-        snapshot = Snapshot.get_by_code(snapshot_code)
+        elif snapshot_code.startswith("sthpw/snapshot?"):
+            snapshot = Search.get_by_search_key(snapshot_code)
+        else:
+            snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
                 snapshot_code)
@@ -3481,6 +3487,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot.commit()
 
         return my._get_sobject_dict(snapshot)
+
 
 
     @xmlrpc_decorator
@@ -3511,7 +3518,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot = Snapshot.get_by_code(to_snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
-                snapshot_code)
+                to_snapshot_code)
 
         xml = snapshot.get_xml_value("snapshot")
         builder = SnapshotBuilder(xml)
@@ -3984,6 +3991,44 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+
+
+    @xmlrpc_decorator
+    def get_snapshots_by_relative_dir(my, ticket, relative_dir, base_dir_alias=""):
+        '''Get all of the snapshots associated with a particular relative
+        directory.
+
+        @params
+        ticket - authentication ticket
+        relative_dir - the relative directory in the server
+
+        @return
+        list of snapshots
+        '''
+
+
+        search = Search("sthpw/file")
+        search.add_op("begin")
+        search.add_filter("relative_dir", "%s/%%" % relative_dir, op="like")
+        search.add_filter("relative_dir", "%s" % relative_dir, op="=")
+        search.add_op("or")
+
+        search2 = Search("sthpw/snapshot")
+        search2.add_relationship_search_filter(search)
+        search2.add_filter("is_latest", True)
+
+        sobjects = search2.get_sobjects()
+        sobject_dicts = []
+        for sobject in sobjects:
+            sobject_dict = my._get_sobject_dict(sobject)
+            sobject_dicts.append(sobject_dict)
+        return sobject_dicts
+ 
+
+
+
+
+
     @xmlrpc_decorator
     def get_snapshot(my, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''method to retrieve snapshots
@@ -4038,6 +4083,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         else:
             level_type = None
             level_id = None
+
+        # if a process is given the context is overridden
+        if process:
+            context = None
 
         if not versionless:
             snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
@@ -4115,6 +4164,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         return snapshot.get_full_snapshot_xml()
+
+
 
 
     @xmlrpc_decorator
@@ -4625,6 +4676,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             from tactic.ui.filter import FilterData
             filter_data = FilterData(values)
             filter_data.set_to_cgi()
+
+
+        # initialize the translation module
+        from pyasm.biz import Translation
+        Translation.install()
 
         # NOTE: this is deprecated.  The state is in the ticket passed
         # in, so restoration of transaction state is not really necessary

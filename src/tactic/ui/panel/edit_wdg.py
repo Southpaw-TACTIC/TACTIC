@@ -494,6 +494,8 @@ class EditWdg(BaseRefreshWdg):
         inner.add(table)
         if my.color_mode == "default":
             table.add_color("background", "background")
+        elif my.color_mode == "transparent":
+            table.add_style("background", "transparent")
         table.add_color("color", "color")
 
 

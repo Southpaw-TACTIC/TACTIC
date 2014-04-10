@@ -235,7 +235,7 @@ class FileCheckin(BaseCheckin):
             # since it is a a file name based context coming in, use process
             virtual_snapshot.set_value("context", process)
             virtual_snapshot.set_sobject(sobject)
-            
+
             naming = Naming.get(sobject, virtual_snapshot, file_path=filepath)
             if naming:
                 my.file_naming = None
@@ -395,15 +395,17 @@ class FileCheckin(BaseCheckin):
         builder = SnapshotBuilder(snapshot_xml)
         root = builder.get_root_node()
         Xml.set_attribute(root, "version", version)
-    
-     
+
+
+        naming = Naming.get(my.sobject, my.snapshot) 
 
         # find the path for each file
         for i, file_object in enumerate(my.file_objects):
 
             to_name = file_object.get_full_file_name()
             file_type = my.snapshot.get_type_by_file_name(to_name)
-            file_node = snapshot_xml.get_node("snapshot/file[@name='%s']" % to_name)
+
+            file_node = snapshot_xml.get_node('snapshot/file[@name="%s"]' % to_name)
             assert file_node != None
 
             if i < len(my.source_paths):
@@ -433,13 +435,17 @@ class FileCheckin(BaseCheckin):
                 relative_dir = relative_dir.strip("/")
                 file_object.set_value("relative_dir", relative_dir)
             else:
+                if naming:
+                    my.base_dir_alias = naming.get_value("base_dir_alias")
+                    if my.base_dir_alias:
+                        file_object.set_value("base_dir_alias", my.base_dir_alias)
+
                 # all other modes use the lib dir
                 lib_dir = my.snapshot.get_lib_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
                 file_object.set_value("checkin_dir", lib_dir)
 
                 # determine base_dir alias
                 asset_dirs = Environment.get_asset_dirs()
-                my.base_dir_alias = None
                 for name, asset_dir in asset_dirs.items():
                     # leave default blank (for now)
                     if name == 'default':

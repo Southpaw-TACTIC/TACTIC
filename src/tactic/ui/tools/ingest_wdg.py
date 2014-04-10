@@ -35,6 +35,7 @@ class IngestUploadWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
+        'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects'
     }
 
@@ -80,7 +81,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             title_div.add_style("margin: -20px -21px 15px -21px")
 
 
-        div.add("Add files or drag/drop files to be uploaded and ingested:")
+        div.add("<b>Add or drag/drop files to be ingested</b>")
         div.add("<br/>"*2)
 
 
@@ -113,18 +114,40 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-            var files_el = top.getElement(".spt_upload_files");
-
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+        
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
 	    var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
+                var delay = 0; 
                 for (var i = 0; i < files.length; i++) {
-                    spt.drag.show_file(files[i], files_el, 0, true);
+                    var size = files[i].size;
+                    var file_name = files[i].name;
+                    var is_normal = regex.test(file_name);
+                    if (size >= 10*1024*1024 || is_normal) {
+                        spt.drag.show_file(files[i], files_el, 0, false);
+                    }
+                    else {
+                        spt.drag.show_file(files[i], files_el, delay, true);
+
+                        if (size < 100*1024)       delay += 50;
+                        else if (size < 1024*1024) delay += 500;
+                        else if (size < 10*1024*1024) delay += 1000;
+                    }
                 }
 	    }
 
+            spt.html5upload.clear();
             spt.html5upload.set_form( top );
             spt.html5upload.select_file( onchange );
 
@@ -157,7 +180,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         files_div = DivWdg()
         files_div.add_style("position: relative")
-        files_div.add_class("spt_upload_files")
+        files_div.add_class("spt_to_ingest_files")
         div.add(files_div)
         files_div.add_style("max-height: 300px")
         files_div.add_style("height: 300px")
@@ -210,6 +233,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_attr("ondrop", "spt.drag.noop(event, this)")
         files_div.add_behavior( {
         'type': 'load',
+        'normal_ext': File.NORMAL_EXT,
         'cbjs_action': '''
         spt.drag = {}
         var background;
@@ -218,11 +242,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             if (!background) {
                 background = top.getElement(".spt_files_background");
-                background.setStyle("display", "none");
+                if (background)
+                    background.setStyle("display", "none");
             }
-
             var template = top.getElement(".spt_upload_file_template");
             var clone = spt.behavior.clone(template);
+
             clone.removeClass("spt_upload_file_template");
             clone.addClass("spt_upload_file");
             clone.setStyle("display", "");
@@ -243,22 +268,30 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             //var loadingImage = loadImage(
             setTimeout( function() {
+                var draw_empty_icon = function() {
+                        var img = $(document.createElement("div"));
+                        img.setStyle("width", "58");
+                        img.setStyle("height", "34");
+                        //img.innerHTML = "MP4";
+                        img.setStyle("border", "1px dotted #222")
+                        thumb_el.appendChild(img);
+                    };
                 if (icon) {
-                    var loadingImage = loadImage(
-                        file,
-                        function (img) {
-                            thumb_el.appendChild(img);
-                        },
-                        {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
-                    );
+                        var loadingImage = loadImage(
+                            file,
+                            function (img) {
+                            if (img.width)
+                                thumb_el.appendChild(img);
+                            else
+                                draw_empty_icon();
+                                
+                            },
+                            {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
+                        );
+                        
                 }
                 else {
-                    var img = $(document.createElement("div"));
-                    img.setStyle("width", "60");
-                    img.setStyle("height", "40");
-                    //img.innerHTML = "MP4";
-                    img.setStyle("border", "solid 1px black")
-                    thumb_el.appendChild(img);
+                    draw_empty_icon();
                 }
 
 
@@ -303,7 +336,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         spt.drag.noop = function(evt, el) {
             var top = $(el).getParent(".spt_ingest_top");
-            var files_el = top.getElement(".spt_upload_files");
+            var files_el = top.getElement(".spt_to_ingest_files");
             evt.stopPropagation();
             evt.preventDefault();
             evt.dataTransfer.dropEffect = 'copy';
@@ -311,10 +344,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var delay = 0;
             var skip = false;
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
             for (var i = 0; i < files.length; i++) {
                 var size = files[i].size;
-
-                if (size >= 10*1024*1024) {
+                var file_name = files[i].name;
+                var is_normal = regex.test(file_name);
+                if (size >= 10*1024*1024 || is_normal) {
                     spt.drag.show_file(files[i], files_el, 0, false);
                 }
                 else {
@@ -496,7 +531,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         # NOTE: files variable is passed in automatically
 
         upload_init = '''
-        var server = TacticServerStub.get();
         server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
@@ -515,6 +549,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
+        var update_data_top = top.getElement(".spt_edit_top");
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
@@ -533,9 +568,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         var key = spt.message.generate_key();
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
-        var keywords = values.keywords[0];
+        //var keywords = values.keywords[0];
 
-        var extra_data = values.extra_data[0];
+        var extra_data = values.extra_data ? values.extra_data[0]: {};
         var parent_key = values.parent_key[0];
 
         var convert_el = top.getElement(".spt_image_convert")
@@ -552,6 +587,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             process = null;
         }
 
+        var return_array = false;
+        var update_data = spt.api.get_input_values(update_data_top, null, return_array);
+
         var kwargs = {
             search_type: search_type,
             relative_dir: relative_dir,
@@ -559,13 +597,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             key: key,
             parent_key: parent_key,
             //category: category,
-            keywords: keywords,
+            //keywords: keywords,
             extra_data: extra_data,
+            update_data: update_data,
             process: process,
             convert: convert,
         }
         on_complete = function() {
-            spt.info("Ingest complete");
+
+            var click_action = function() {
+                var fade = true;
+                var pop = spt.popup.get_popup(top)
+                spt.popup.close(pop, fade); 
+            }
+            spt.info("Ingest Completed", {click: click_action});
             server.finish();
 
             var file_els = top.getElements(".spt_upload_file");
@@ -576,13 +621,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             background.setStyle("display", "");
 
             spt.message.stop_interval(key);
+
+            var info_el = top.getElement(".spt_upload_info");
+            info_el.innerHTML = ''; 
+
+            spt.table.run_search();
+
         };
 
         var class_name = bvr.action_handler;
-
-
+        // TODO: make the async_callback return throw an e so we can run 
+        // server.abort
         server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
-
+        
+        
         on_progress = function(message) {
             msg = JSON.parse(message.message);
             var percent = msg.progress;
@@ -632,7 +684,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 files.push( file_els[i].file );
             }
             if (files.length == 0) {
-                alert("No files selected");
+                alert("Either click 'Add' or drag some files over to ingest.");
                 return;
             }
 
@@ -706,7 +758,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         buttons.add_row()
 
 
-        button = IconButtonWdg(title="Add Data", icon=IconWdg.FOLDER)
+        button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
         buttons.add_cell(button)
 
 
@@ -773,8 +825,14 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             name_div.add("<br/>")
 
+        ingest_data_view = my.kwargs.get('ingest_data_view')
 
- 
+        from tactic.ui.panel import EditWdg
+
+        sobject = SearchType.create(my.search_type)
+        edit = EditWdg(search_key =sobject.get_search_key(), mode='view', view=ingest_data_view )
+        
+        dialog_data_div.add(edit)
         hidden = HiddenWdg(name="parent_key")
         dialog_data_div.add(hidden)
         hidden.add_class("spt_parent_key")
@@ -783,8 +841,18 @@ class IngestUploadWdg(BaseRefreshWdg):
             hidden.set_value(parent_key)
 
 
+        extra_data = my.kwargs.get("extra_data")
+        if not isinstance(extra_data, basestring):
+            extra_data = jsondumps(extra_data)
 
+        if extra_data and extra_data != "null":
+            # it needs a TextArea instead of Hidden because of JSON data
+            text = TextAreaWdg(name="extra_data")
+            text.add_style('display: none')
+            text.set_value(extra_data)
+            dialog_data_div.add(text)
 
+        """
  
         dialog_data_div.add("Keywords:<br/>")
         dialog.add(dialog_data_div)
@@ -795,21 +863,13 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         dialog_data_div.add("<br/>"*2)
+    
 
-
-        extra_data = my.kwargs.get("extra_data")
-        if not isinstance(extra_data, basestring):
-            extra_data = jsondumps(extra_data)
-
-        dialog_data_div.add("Extra Data (JSON):<br/>")
-        text = TextAreaWdg(name="extra_data")
-        dialog_data_div.add(text)
-        if extra_data != "null":
-            text.set_value(extra_data)
+       
         text.add_class("spt_extra_data")
         text.add_style("padding: 1px")
 
-
+        """
 
         #### TEST Image options
         """
@@ -893,12 +953,12 @@ class IngestUploadCmd(Command):
         parent_key = my.kwargs.get("parent_key")
         category = my.kwargs.get("category")
         keywords = my.kwargs.get("keywords")
+        update_data = my.kwargs.get("update_data")
         extra_data = my.kwargs.get("extra_data")
         if extra_data:
             extra_data = jsonloads(extra_data)
         else:
             extra_data = {}
-
 
         # TODO: use this to generate a category
         category_script_path = my.kwargs.get("category_script_path")
@@ -918,6 +978,8 @@ class IngestUploadCmd(Command):
         if not SearchType.column_exists(search_type, "name"):
             raise TacticException('The Ingestion puts the file name into the name column which is the minimal requirement. Please first create a "name" column for this sType.')
 
+        input_prefix = update_data.get('input_prefix')
+        
         for count, filename in enumerate(filenames):
 
             # first see if this sobjects still exists
@@ -937,7 +999,8 @@ class IngestUploadCmd(Command):
 
 
             # extract metadata
-            file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
+            #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
+            file_path = "%s/%s" % (base_dir, filename)
 
             # TEST: convert on upload
             try:
@@ -988,17 +1051,21 @@ class IngestUploadCmd(Command):
                 if parent:
                     sobject.set_sobject_value(sobject)
 
-
-
-
+            for key, value in update_data.items():
+                if input_prefix:
+                    key = key.replace('%s|'%input_prefix, '')
+                if SearchType.column_exists(search_type, key):
+                    if value:
+                        sobject.set_value(key, value)
+            """
             if SearchType.column_exists(search_type, "keywords"):
                 if keywords:
                     sobject.set_value("keywords", keywords)
 
+            """
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
                     sobject.set_value(key, value)
-
 
             """
             if category:

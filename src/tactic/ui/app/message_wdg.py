@@ -12,7 +12,7 @@
 
 from pyasm.common import jsonloads, Environment, Common
 
-from pyasm.web import DivWdg, SpanWdg
+from pyasm.web import DivWdg, SpanWdg, HtmlElement
 
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.search import Search, SearchType
@@ -21,10 +21,191 @@ from pyasm.web import Table
 from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
 from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+from tactic.ui.common import BaseTableElementWdg
+
+__all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'SubscriptionBarWdg', 'MessageWdg', 'FormatMessageWdg', 'MessageTableElementWdg']
+
+class MessageTableElementWdg(BaseTableElementWdg):
+
+    def get_display(my):
+        sobject = my.get_current_sobject()
+        msg = FormatMessageWdg()
+        msg.set_sobject(sobject)
+        return msg
 
 
-__all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'SubscriptionBarWdg', 'MessageWdg']
+class FormatMessageWdg(BaseRefreshWdg):
+    ''' formatted message for user-friendly display'''
+    def get_preview_wdg(cls, subscription, category='', message_code=''):
 
+        size = 60
+        
+        if subscription:
+            category = subscription.get_value("category")
+            message_code = subscription.get_value("message_code")
+
+
+        if category == 'sobject':
+            sobject = Search.get_by_search_key(message_code)
+            thumb = DivWdg()
+
+            thumb_wdg = ThumbWdg()
+            thumb.add(thumb_wdg)
+            thumb_wdg.set_sobject(sobject)
+            thumb_wdg.set_icon_size(size)
+
+            search_code = sobject.get_code()
+
+            thumb.add_behavior( {
+                'type': 'click_up',
+                'search_key': message_code,
+                'search_code': search_code,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+                var kwargs = {
+                    search_key: bvr.search_key
+                }
+                spt.tab.set_main_body_tab();
+                var title = "Detail ["+bvr.search_code+"]";
+                spt.app_busy.show("Loading " + bvr.search_code);
+                spt.tab.add_new(bvr.search_code, title, class_name, kwargs);
+                spt.app_busy.hide();
+                '''
+                } )
+
+
+
+        elif category == 'chat':
+            thumb = DivWdg()
+            thumb.add_style("width: %s" % size)
+            thumb.add_style("height: %s" % (size*3/4))
+            thumb.add_border()
+            thumb.add_style('text-align: center')
+            thumb.add_class("hand")
+
+            message = Search.get_by_code("sthpw/message", message_code)
+            login_code = message.get_value("login")
+
+            login = Search.get_by_code("sthpw/login", login_code)
+            thumb_wdg = ThumbWdg()
+            thumb.add(thumb_wdg)
+            thumb_wdg.set_sobject(login)
+            thumb_wdg.set_icon_size(size)
+
+            if subscription:
+                key = subscription.get_value("message_code")
+                thumb.add_behavior( {
+                    'type': 'click_up',
+                    'key': key,
+                    'cbjs_action': '''
+                    var class_name = 'tactic.ui.app.ChatSessionWdg';
+                    var kwargs = {
+                        'key': bvr.key,
+                    }
+                    spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
+                    '''
+                } )
+
+        else:
+            if not category:
+                category = "default"
+            thumb = DivWdg()
+            thumb.add_style("width: %s" % size)
+            thumb.add_style("height: %s" % (size*3/4))
+            thumb.add_border()
+            thumb.add_color("background", "background")
+            thumb.add("<br/>")
+            thumb.add(category)
+            thumb.add_style('text-align: center')
+            thumb.add_class("hand")
+
+
+
+
+
+        thumb.add_style("margin: 3px")
+        return thumb
+
+    get_preview_wdg = classmethod(get_preview_wdg)
+
+    def get_display(my):
+
+        message = my.sobjects[0]
+        if message.get_search_type() == 'sthpw/message':
+            message_code = message.get_value("code")
+        else:
+            message_code = message.get_value("message_code")
+
+        category = message.get_value("category")
+        
+        table = Table()
+        table.add_row()
+        td = table.add_cell()
+
+        subscription = my.kwargs.get('subscription')
+        td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
+
+        message_value = message.get_value("message")
+        message_login = message.get_value("login")
+
+        #TODO: implement short_format even for closing html tags properly while truncating 
+        short_format = my.kwargs.get('short_format') in  ['true', True]
+        if message_value.startswith('{') and message_value.endswith('}'):
+
+            #message_value = message_value.replace(r"\\", "\\");
+            message_value = jsonloads(message_value)
+            update_data = message_value.get("update_data")
+            
+            if category == "sobject":
+                search_type = message_value.get("search_type")
+                if search_type == "sthpw/note":
+                    description = "<b>Note added:</b><br/>%s" % update_data.get("note")
+                elif search_type == "sthpw/task":
+                    description = "<b>Task modified:</b><br/>%s" % update_data.get("process")
+                elif search_type == "sthpw/snapshot":
+                    sobject = message_value.get("sobject")
+                    description = "<b>Files checked in:</b><br/>%s" % sobject.get("process")
+                else:
+                    display = []
+                    for key, val in update_data.items():
+                        
+                        display.append('%s &ndash; %s'%(key, val))
+                    base_search_type = Project.extract_base_search_type(search_type)
+                    
+                    description = DivWdg()
+                    title = DivWdg("<b>%s</b> modified by %s:"%(base_search_type, message_login))
+                    title.add_style('margin-bottom: 6px')
+                    content = DivWdg()
+                    content.add_style('padding-left: 2px')
+                    content.add('<br>'.join(display))
+                    description.add(title)
+                    description.add(content)
+
+
+            else:
+                description = message_value.get("description")
+
+
+        else:
+
+            if category == "chat":
+                login = message.get("login")
+                timestamp = message.get("timestamp")
+
+                message_value = message.get("message")
+                message_value = message_value.replace("\n", "<br/>")
+
+                description = '''
+                <b>%s</b><br/>
+                %s
+                ''' % (login, message_value)
+            else:
+                description = message_value
+        
+        div = DivWdg()
+        div.add(description)
+        table.add_cell(div)
+        return table
 
 
 class ChatWdg(BaseRefreshWdg):
@@ -498,7 +679,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             user = Environment.get_user_name()
             search.add_op("begin")
             search.add_filter("login", user, op="!=", table="message")
-            search.add_filters("category", ["script","default"], table="message")
+            search.add_filters("category", ["script","default","sobject"], table="message")
             search.add_op("or")
         else:
             search.add_order_by("message.timestamp", direction="desc")
@@ -509,13 +690,14 @@ class SubscriptionWdg(BaseRefreshWdg):
         return subscriptions
 
 
-    def set_refresh(my, inner, interval):
+    def set_refresh(my, inner, interval, panel_cls='spt_subscription_top'):
 
         inner.add_behavior( {
             'type': 'load',
             'interval': interval,
+            'panel_cls': panel_cls,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_subscription_top");
+            var top = bvr.src_el.getParent("."+bvr.panel_cls);
             var dialog = top.getElement(".spt_dialog_top");
             if (dialog && dialog.getStyle("display") == "none") {
                 top.setAttribute("spt_dialog_open", "false");
@@ -554,7 +736,7 @@ class SubscriptionWdg(BaseRefreshWdg):
         top.add(inner)
         my.set_refresh(inner,interval)
 
-        inner.add_style("min-width: 400px")
+        inner.add_style("min-width: %spx"%SubscriptionBarWdg.WIDTH)
         inner.add_style("min-height: 300px")
 
 
@@ -575,7 +757,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             no_entries = DivWdg()
             inner.add(no_entries)
             no_entries.add_style("padding: 50px")
-            no_entries.add_style("width: 400px")
+            no_entries.add_style("width: %spx"%(SubscriptionBarWdg.WIDTH-50))
             no_entries.add_style("height: 100px")
             no_entries.add_style("margin: 100px auto")
             no_entries.add_style("text-align: center")
@@ -589,95 +771,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             return top
 
 
-    def get_preview_wdg(my, subscription):
-
-        category = subscription.get_value("category")
-
-        size = 60
-
-        message_code = subscription.get_value("message_code")
-
-        if category == 'sobject':
-            sobject = Search.get_by_search_key(message_code)
-            thumb = DivWdg()
-
-            thumb_wdg = ThumbWdg()
-            thumb.add(thumb_wdg)
-            thumb_wdg.set_sobject(sobject)
-            thumb_wdg.set_icon_size(size)
-
-            search_code = sobject.get_code()
-
-            thumb.add_behavior( {
-                'type': 'click_up',
-                'search_key': message_code,
-                'search_code': search_code,
-                'cbjs_action': '''
-                var class_name = 'tactic.ui.tools.SObjectDetailWdg';
-                var kwargs = {
-                    search_key: bvr.search_key
-                }
-                spt.tab.set_main_body_tab();
-                var title = "Detail ["+bvr.search_code+"]";
-                spt.app_busy.show("Loading " + bvr.search_code);
-                spt.tab.add_new(bvr.search_code, title, class_name, kwargs);
-                spt.app_busy.hide();
-                '''
-                } )
-
-
-
-        elif category == 'chat':
-            thumb = DivWdg()
-            thumb.add_style("width: %s" % size)
-            thumb.add_style("height: %s" % (size*3/4))
-            thumb.add_border()
-            thumb.add_style('text-align: center')
-            thumb.add_class("hand")
-
-            message = Search.get_by_code("sthpw/message", message_code)
-            login_code = message.get_value("login")
-
-            login = Search.get_by_code("sthpw/login", login_code)
-            thumb_wdg = ThumbWdg()
-            thumb.add(thumb_wdg)
-            thumb_wdg.set_sobject(login)
-            thumb_wdg.set_icon_size(size)
-
-
-            key = subscription.get_value("message_code")
-            thumb.add_behavior( {
-                'type': 'click_up',
-                'key': key,
-                'cbjs_action': '''
-                var class_name = 'tactic.ui.app.ChatSessionWdg';
-                var kwargs = {
-                    'key': bvr.key,
-                }
-                spt.panel.load_popup("Chat: " + bvr.key, class_name, kwargs);
-                '''
-            } )
-
-        else:
-            if not category:
-                category = "default"
-            thumb = DivWdg()
-            thumb.add_style("width: %s" % size)
-            thumb.add_style("height: %s" % (size*3/4))
-            thumb.add_border()
-            thumb.add_color("background", "background")
-            thumb.add("<br/>")
-            thumb.add(category)
-            thumb.add_style('text-align: center')
-            thumb.add_class("hand")
-
-
-
-
-
-        thumb.add_style("margin: 3px")
-        return thumb
-
+  
 
     def get_category_wdg(my, category, mode="new"):
 
@@ -724,7 +818,7 @@ class SubscriptionWdg(BaseRefreshWdg):
         # types of subscriptions
 
         table = Table()
-        table.add_style("width: 100%")
+        table.add_style('width: 100%')
         table.add_border()
         table.add_color("background", "background3")
 
@@ -744,7 +838,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             # show the thumb
             if not message:
                 if mode == "all":
-                    td = table.add_cell(my.get_preview_wdg(subscription))
+                    td = table.add_cell(FormatMessageWdg.get_preview_wdg(subscription))
 
                     td = table.add_cell()
                     td.add("No Messages")
@@ -752,72 +846,26 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             size = 60
 
-            category = message.get_value("category")
-            td = table.add_cell()
-            td.add( my.get_preview_wdg(subscription) )
-
-
-            #td = table.add_cell(message_code)
-
-            message_value = message.get_value("message")
-            if message_value.startswith("{") and message_value.endswith("}"):
-
-                # FIXME: this is needed because the json has some bad
-                # \\ issues. 
-                message_value = message_value.replace(r"\\", "\\");
-                message_value = jsonloads(message_value)
-                update_data = message_value.get("update_data")
-
-                if category == "sobject":
-                    search_type = message_value.get("search_type")
-                    if search_type == "sthpw/note":
-                        description = "<b>Note Added:</b><br/>%s" % update_data.get("note")
-                    elif search_type == "sthpw/task":
-                        description = "<b>Task modified:</b><br/>%s" % update_data.get("process")
-                    elif search_type == "sthpw/snapshot":
-                        sobject = message_value.get("sobject")
-                        description = "<b>Files Checked In:</b><br/>%s" % sobject.get("process")
-                    else:
-                        description = "<b>Data modified:</b><br/>%s" % update_data
-
-
-                else:
-                    description = message_value.get("description")
-
-
-            else:
-
-                if category == "chat":
-                    login = message.get("login")
-                    timestamp = message.get("timestamp")
-
-                    message_value = message.get("message")
-                    message_value = message_value.replace("\n", "<br/>")
-
-                    description = '''
-                    <b>%s</b><br/>
-                    %s
-                    ''' % (login, message_value)
-                else:
-                    description = message_value
-
-
-            td = table.add_cell()
-            icon = IconButtonWdg(title="Subscription History", icon=IconWdg.HISTORY)
-            td.add(icon)
-            subscription_key = subscription.get_search_key()
+            msg_element = FormatMessageWdg(subscription=subscription, short_format='true')
+            # this is optional
+            msg_element.set_sobject(message)
+            description = msg_element.get_buffer_display() 
+          
+            #td = table.add_cell()
+            history_icon = IconButtonWdg(title="Subscription History", icon=IconWdg.HISTORY)
+            #td.add(icon)
             message_code = subscription.get_value("message_code")
-            icon.add_behavior( {
+            history_icon.add_behavior( {
                 'type': 'click_up',
                 'message_code': message_code,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
                 var message_code = bvr.message_code;
-                alert(message_code);
                 var kwargs = {
                     search_type: 'sthpw/message_log',
                     show_shelf: false,
                     expression: "@SOBJECT(sthpw/message_log['message_code','"+message_code+"'])",
+                    view: 'history'
                 };
                 spt.tab.set_main_body_tab();
                 spt.tab.add_new("Message History", "Message History", class_name, kwargs);
@@ -825,13 +873,14 @@ class SubscriptionWdg(BaseRefreshWdg):
             } )
  
 
+            # description can take up 70%
             td = table.add_cell()
+            td.add_style("width: %spx"%(SubscriptionBarWdg.WIDTH*0.7))
 
             desc_div = DivWdg()
             td.add(desc_div)
             desc_div.add(description)
             desc_div.add_style("padding: 0px 20px")
-            desc_div.add_style("max-width: 600px")
 
             td = table.add_cell()
             #td.add(message.get_value("status"))
@@ -847,14 +896,18 @@ class SubscriptionWdg(BaseRefreshWdg):
             #td.add(subscription.get_value("last_cleared"))
 
             td = table.add_cell()
+            td.add(history_icon)
+            td.add(HtmlElement.br(2))
+            td.add_style('width: 30px')
             icon = IconButtonWdg(title="Unsubscribe", icon=IconWdg.DELETE)
             td.add(icon)
             subscription_key = subscription.get_search_key()
             icon.add_behavior( {
                 'type': 'click_up',
                 'search_key': subscription_key,
+                'message_code': message_code,
                 'cbjs_action': '''
-                    if (!confirm("Confirm subscription delete?")) {
+                    if (!confirm("Unsubscribe from [" + bvr.message_code + "]?")) {
                         return;
                     }
                     var top = bvr.src_el.getParent(".spt_subscription_top");
@@ -890,21 +943,35 @@ class SubscriptionBarWdg(SubscriptionWdg):
 
     ARGS_KEYS = {
         'mode': {
-            'description': "tab|dialog|popup - determines how the details should open",
+            'description': "tab|dialog|popup - Determine how the details should open",
             'type': 'SelectWdg',
             'values': 'tab|dialog|popup'
+        },
+
+        'interval': {
+            'description': "Determine how many seconds it takes to refresh",
+            'type': 'TextWdg'
+        },
+
+        'dialog_open': {
+            'description': "Determine if the dialog opens initially",
+            'type': 'SelectWdg',
+            'values': 'true|false'
         }
     }
 
+    # this is referenced in SubcriptionWdg as well
+    WIDTH = 500
+
     def get_display(my):
         top = my.top
-        top.add_class("spt_subscription_top")
+        top.add_class("spt_subscription_bar_top")
         my.set_as_panel(top)
 
-        top.add_style("width: 100px")
+        top.add_style("width: 40px")
         top.add_style("height: 20px")
 
-        top.add_class("hand")
+        #top.add_class("hand")
 
 
 
@@ -918,7 +985,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
         inner = DivWdg()
         top.add(inner)
 
-        my.set_refresh(inner,interval)
+        my.set_refresh(inner,interval,panel_cls='spt_subscription_bar_top')
 
         mode = my.kwargs.get("mode")
         if not mode:
@@ -940,9 +1007,9 @@ class SubscriptionBarWdg(SubscriptionWdg):
             dialog.set_as_activator(inner)
             subscription_wdg = SubscriptionWdg()
             dialog.add(subscription_wdg)
-            subscription_wdg.add_style("width: 400px")
+            subscription_wdg.add_style("width: %spx"%(my.WIDTH+50))
             subscription_wdg.add_color("background", "background")
-            subscription_wdg.add_style("height: 400px")
+            subscription_wdg.add_style("height: 500px")
 
         elif mode == "popup":
             top.add_behavior( {
@@ -991,20 +1058,30 @@ class SubscriptionBarWdg(SubscriptionWdg):
         subscriptions = my.get_subscriptions(category)
 
 
-
-        if not subscriptions:
-            inner.add_style("display: none")
+        #if not subscriptions:
+        #    inner.add_style("display: none")
 
 
         num = len(subscriptions)
-        if num == 1:
-            msg = "%s Message" % num
+        # the word message takes up too much space
+        """
+        if num <= 1:
+            msg = "%s message" % num
         else:
-            msg = "%s Messages" % num
-
+            msg = "%s messages" % num
+        """
+        if num > 0:
+            msg = num
+        else:
+            msg = ''
         icon = IconWdg(msg, IconWdg.STAR)
+        icon.add_style('float: left')
         inner.add(icon)
-        inner.add(msg)
+        msg_div = DivWdg(msg)
+        msg_div.add_style('padding-top: 1px')
+        #msg_div.add_style('border-width: 1px')
+        #msg_div.add_styles('border-radius: 50%; width: 18px; height: 18px; background: white')
+        inner.add(msg_div)
 
         if my.kwargs.get("is_refresh") == 'true':
             return inner
@@ -1068,9 +1145,8 @@ class MessageWdg(BaseRefreshWdg):
             var progress_el = bvr.src_el.getElement(".spt_message_progress");
 
             var callback = function(message) {
-                console.log(message);
                 if (message.status == "complete") {
-                    el.value = "OK DONE FINSHIED"
+                    el.value = "OK DONE FINISHED"
                     width = "100"
                 } else {
                     var value = JSON.parse(message.message);
@@ -1088,7 +1164,6 @@ class MessageWdg(BaseRefreshWdg):
             'type': 'click_up',
             'cbjs_action': '''
             spt.message.stop_all_intervals();
-            console.log("stopped");
             '''
         } )
 

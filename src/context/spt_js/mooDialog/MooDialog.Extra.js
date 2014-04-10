@@ -27,9 +27,12 @@ MooDialog.Alert = new Class({
 		var okButton = new Element('input[type=button]', {
 			events: {
 				click: this.close.bind(this)
+                                    
 			},
 			value: this.options.okText
 		});
+
+                
 
                 if (this.options.type == 'html') {
                     var html_p =  new Element('p.' + this.options.textPClass);
@@ -51,6 +54,11 @@ MooDialog.Alert = new Class({
 		if (this.options.focus) this.addEvent('show', function(){
 			okButton.focus()
 		});
+
+                /* tactic */
+                if (this.options.click) {
+                    okButton.addEvent('click', this.options.click);
+                }
 
 	},
        

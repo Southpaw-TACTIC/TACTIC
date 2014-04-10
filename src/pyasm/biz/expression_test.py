@@ -2274,6 +2274,18 @@ class ExpressionTest(unittest.TestCase):
         result = parser.eval(expression, person)
         my.assertEquals('', result)
 
+        expression = '''@COUNT(sthpw/task)'''
+        task_count = parser.eval(expression)
+
+        expression = '''{@IF(@COUNT(sthpw/task)==%s, @COUNT(sthpw/task),'NONE')}'''%task_count
+        result = parser.eval(expression)
+        
+        my.assertEquals(str(task_count), result)
+        my.assertEquals(task_count, int(result))
+
+        expression = '''{@IF(@COUNT(sthpw/task)==0, @COUNT(sthpw/task),'NONE')}'''
+        result = parser.eval(expression)
+        my.assertEquals('NONE', result)
 
         # try the case statement
         expression = '''@CASE(

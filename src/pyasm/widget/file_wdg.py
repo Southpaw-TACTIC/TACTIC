@@ -172,8 +172,7 @@ class ThumbWdg(BaseTableElementWdg):
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
             'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
-            'copy_styles': 'background: #393950; color: #c2c2c2; border: solid 1px black;' \
-                             ' text-align: left; padding: 10px;'
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background"))
         } )
 
 
@@ -297,7 +296,7 @@ class ThumbWdg(BaseTableElementWdg):
                     };
                     server.execute_cmd(cmd, kwargs, {}, {
                                 on_complete:on_complete,
-                    });
+                    }, false);
                 }
                 func();
 
@@ -773,9 +772,11 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         repo_path = ThumbWdg.get_link_path(my.info['_repo'], image_link_order=my.image_link_order)
-        # FIXME: need a better check the this
-        # PERFORCE
-        if repo_path and repo_path.startswith("//"):
+        #if repo_path and repo_path.startswith("//"):
+        if False:
+            # PERFORCE
+            # FIXME: need a better check the this.  This is test code
+            # for viewing perforce images when running perforce web server
             version = snapshot.get_value("version")
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 
@@ -1113,7 +1114,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "gnome-audio-x-aiff.png"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"
-        elif ext in ["mov","mp4"]:
+        elif ext in ["mov"]:
             icon = "quicktime-logo.png"    
         elif ext == "ma" or ext == "mb" or ext == "anim":
             icon = "maya.png"
@@ -1141,7 +1142,7 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "fusion.png"
         elif ext == "txt":
             icon = "gnome-textfile.png"
-        elif ext == "obj":
+        elif ext in ["obj", "mtl"]:
             icon = "3d_obj.png"
         elif ext == "rdc":
             icon = "red_camera.png"
@@ -1296,10 +1297,12 @@ class ThumbCmd(Command):
                 sub_file_paths = [web_path, icon_path]
                 sub_file_types = ['web', 'icon']
 
-            from pyasm.checkin import FileAppendCheckin
-            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
-            checkin.execute()
-            snapshot = checkin.get_snapshot()
+                from pyasm.checkin import FileAppendCheckin
+                checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, mode="inplace")
+                checkin.execute()
+                snapshot = checkin.get_snapshot()
+            else:
+                snapshot = sobject
 
 
         else:
@@ -1311,6 +1314,9 @@ class ThumbCmd(Command):
 
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
+
+            if path in File.NORMAL_EXT:
+                return
 
 
             # use api

@@ -58,8 +58,8 @@ except ImportError:
             else:
                 return json.JSONEncoder.default(self, obj)
 
-    def jsondumps(obj):
-        return xjsondumps(obj, cls=SPTJSONEncoder)
+    def jsondumps(obj, ensure_ascii=True):
+        return xjsondumps(obj, cls=SPTJSONEncoder, ensure_ascii=ensure_ascii)
 
 
 
@@ -206,7 +206,7 @@ class Common(Base):
     relative_path = classmethod(relative_path)
 
 
-    def generate_random_key():
+    def generate_random_key(digits=None):
         # generate a random key
         random.seed()
         random_key = ""
@@ -214,6 +214,8 @@ class Common(Base):
             random_key += chr(random.randint(0,255))
         #random_key = md5.new(random_key).hexdigest()
         random_key = hashlib.md5(random_key).hexdigest()
+        if digits:
+            random_key = random_key[:digits]
         return random_key
     generate_random_key = staticmethod(generate_random_key)
 
@@ -240,19 +242,21 @@ class Common(Base):
 
 
 
-    def extract_keywords(data):
+    def extract_keywords(data, lower=True):
 
         if not isinstance(data, basestring):
             data = str(data)
 
         is_ascii = Common.is_ascii(data)
 
-        data = re.sub(r'([_|,])+', ' ', data)
+        data = re.sub(r'([_|,\n])+', ' ', data)
         if is_ascii:
             # other non ASCII languages don't need these
-            data = re.sub(r'([^\s\w\'])+', '', data)
+            data = re.sub(r'([^\s\w\'/\.])+', '', data)
         # lowercase is still needed for a mix of ASCII and non-ASCII like a french word
-        data = data.lower().split(" ")
+        if lower:
+            data = data.lower()
+        data = data.split(" ")
         data = [x for x in data if x]
         return data
     extract_keywords = staticmethod(extract_keywords)
@@ -573,6 +577,54 @@ class Common(Base):
         return filename
 
     get_filesystem_name = staticmethod(get_filesystem_name)
+
+
+
+
+    def get_keywords_from_path(cls, rel_path):
+        # delimiters 
+        P_delimiters = re.compile("[- _\.]")
+        # special characters
+        P_special_chars = re.compile("[\[\]{}\(\)\,]")
+        # camel case
+        P_camel_case = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+
+
+        parts = rel_path.split("/")
+        keywords = set()
+
+        for item in parts:
+            item = P_camel_case.sub(r'_\1', item)
+            parts2 = re.split(P_delimiters, item)
+            for item2 in parts2:
+                if not item2:
+                    continue
+
+                item2 = re.sub(P_special_chars, "", item2)
+
+                # skip 1 letter keywords
+                if len(item2) == 1:
+                    continue
+
+                try:
+                    int(item2)
+                    continue
+                except:
+                    pass
+
+
+                #print "item: ", item2
+                item2 = item2.lower()
+
+                keywords.add(item2)
+
+        keywords_list = list(keywords)
+        keywords_list.sort()
+        return keywords_list
+
+    get_keywords_from_path = classmethod(get_keywords_from_path)
+
+
 
     #
     # String manipulation functions

@@ -14,12 +14,14 @@ __all__ = ['PythonCmd', 'PythonTrigger']
 import tacticenv
 
 from pyasm.common import TacticException, Environment, Config, jsondumps, jsonloads
-from pyasm.command import Command
+from pyasm.command import Command, CommandExitException
 from pyasm.biz import Project
 from pyasm.search import Search
 from tactic_client_lib import TacticServerStub
 
 from mako.template import Template
+from mako import exceptions
+
 import os
 
 class PythonCmd(Command):
@@ -79,8 +81,12 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
             template.render(server=server,spt_mako_results=spt_mako_results, kwargs=my.kwargs,**my.kwargs)
         except Exception, e:
             print "Error in Mako code: "
+            print exceptions.text_error_template().render()
+            print "---"
+            print "Code:"
             print code
-            raise
+            print "---"
+            raise CommandExitException(e)
 
         return spt_mako_results['spt_ret_val']
 

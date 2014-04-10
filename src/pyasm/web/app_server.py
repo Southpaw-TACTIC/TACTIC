@@ -17,7 +17,7 @@ import re, types
 from pyasm.common import *
 from pyasm.search import SObjectFactory, DbContainer, ExceptionLog, SearchType, Search, Sql, DatabaseException
 from pyasm.security import *
-from pyasm.biz import PrefSetting
+from pyasm.biz import PrefSetting, Translation
 
 from web_container import WebContainer
 from widget import Widget, Html
@@ -27,7 +27,6 @@ from event_container import EventContainer
 from web_tools import *
 from html_wdg import *
 from url_security import *
-from translation import *
 
 import os, cStringIO
 
@@ -486,7 +485,7 @@ class BaseAppServer(Base):
 
 
         # install the language
-        #Translation.install()
+        Translation.install()
 
         widget = my.get_content(page_type)
 
