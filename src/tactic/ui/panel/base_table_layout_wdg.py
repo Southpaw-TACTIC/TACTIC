@@ -1382,12 +1382,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg, SingleButtonWdg
 
         my.filter_num_div = None
-
         # Search button
         search_dialog_id = my.kwargs.get("search_dialog_id")
         show_search = my.kwargs.get("show_search") != 'false'
-    
-        if show_search and (my.is_refresh or search_dialog_id):
+        if show_search and search_dialog_id:
             div = DivWdg()
             my.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
