@@ -112,6 +112,10 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.width = bvr.width;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
 
+        spt.gallery.init = function() {
+            
+        }
+
         spt.gallery.show_next = function() {
             var width = spt.gallery.width;
             var content = spt.gallery.content;
@@ -264,7 +268,6 @@ class GalleryWdg(BaseRefreshWdg):
                 '/assets/test/store/Whatever_v001.jpg'
             ]
 
-        print "paths; ", paths
         return paths
 
 
