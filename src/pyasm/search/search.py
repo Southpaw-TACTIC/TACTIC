@@ -14,6 +14,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 
 import string, types, re, sys
+import decimal
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -4932,6 +4933,9 @@ class SObject(object):
                     if value == '':
                         value = None
                 if isinstance(value, datetime.datetime):
+                    value = str(value)
+                elif isinstance(value, decimal.Decimal):
+                    # use str to avoid loss of precision
                     value = str(value)
 
 

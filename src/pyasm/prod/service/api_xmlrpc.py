@@ -12,7 +12,7 @@
 
 __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
 
-
+import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
@@ -823,6 +823,9 @@ class BaseApiXMLRPC(XmlrpcServer):
                             print "WARNING: Value [%s] can't be processed" % value
                             continue
                     elif isinstance(value, long) and value > MAXINT:
+                        value = str(value)
+                    elif isinstance(value, decimal.Decimal):
+                        # use str to avoid loss of precision
                         value = str(value)
                     elif isinstance(value, unicode):
                         try:
