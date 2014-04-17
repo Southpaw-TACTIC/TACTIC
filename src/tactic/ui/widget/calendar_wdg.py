@@ -955,7 +955,10 @@ class CalendarInputWdg(BaseInputWdg):
             value = default_value
             if value:
                 value = parser.parse(value)
-
+                # NOTE: it's better not to do auto-convert for passed in value 
+                # since it could be already in local time
+                #if not SObject.is_day_column(my.get_name()):
+                #    value = SPTDate.convert_to_local(value)
 
         current = my.get_current_sobject()
         if current and not current.is_insert():
