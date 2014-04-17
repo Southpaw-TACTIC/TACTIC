@@ -236,11 +236,14 @@ class GalleryWdg(BaseRefreshWdg):
             if height:
                 path_div.add_style("height: %s" % height)
 
-            img = HtmlElement.img(path)
-            path_div.add(img)
-            img.add_style("width: 100%")
-            #img.add_style("height: 100%")
+            from tactic.ui.widget import EmbedWdg
+            embed = EmbedWdg(src=path)
+            path_div.add(embed)
+            embed.add_style("width: 100%")
 
+            #img = HtmlElement.img(path)
+            #path_div.add(img)
+            #img.add_style("width: 100%")
 
         return top
 

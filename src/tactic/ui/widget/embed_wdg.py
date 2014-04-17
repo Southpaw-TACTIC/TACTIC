@@ -68,7 +68,7 @@ class EmbedWdg(BaseRefreshWdg):
 
         if ext in ['.png', '.jpeg', '.jpg', '.gif']:
             embed = HtmlElement.img(src)
-        elif ext in ['.mp4', '.ogg', '.mov', '.avi']:
+        elif ext in ['.mp4', '.ogg', '.mov', '.avi', '.f4v']:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
 
@@ -78,10 +78,13 @@ class EmbedWdg(BaseRefreshWdg):
 
             video_id = None
             sources = [src]
+            source_types = ["video/mp4"]
             poster = thumb_path
             width = '100%'
             height = '100%'
-            video = VideoWdg(video_id=video_id, sources=sources, poster=poster, preload="auto", controls="true", width=width, height=height)
+            #width = "640"
+            #height = "480"
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload="auto", controls="true", width=width, height=height)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 

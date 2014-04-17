@@ -75,16 +75,15 @@ class VideoWdg(BaseRefreshWdg):
             my.video_id = video.set_unique_id()
         else:
             video.set_attr("id", my.video_id)
-        print "my.video_id: ", my.video_id
 
-
-        video.add_behavior( {
+        top.add_behavior( {
             'type': 'load',
             'video_id': my.video_id,
             'cbjs_action': '''
+            var video_id = bvr.video_id;
             spt.dom.load_js(["video/video.js"], function() {
-                //videojs(bvr.src_el, {}, function() {
-                //} );
+                videojs(video_id, {}, function() {
+                } );
                 //videojs(bvr.video_id).play();
             });
             '''
