@@ -986,7 +986,11 @@ class CalendarInputWdg(BaseInputWdg):
             key = 'DATETIME'
         else:
             key = 'DATE'
-        
+       
+        if not value:
+            value = my.value
+
+            
         if value:
             format = my.get_option("display_format")
 
@@ -999,7 +1003,6 @@ class CalendarInputWdg(BaseInputWdg):
 
             input.set_value(value)
 
-        my.value = value
 
         kbd_bvr = {
             'type': 'keyboard',
