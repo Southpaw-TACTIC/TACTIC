@@ -270,9 +270,10 @@ class GanttElementWdg(BaseTableElementWdg):
                         my.end_date_expr = '@GET(.bid_end_date)'
 
             if sobject_expr:
-                expr_parser.eval(sobject_expr, my.sobjects, list=True)
-                gantt_data = expr_parser.get_flat_cache(filter_leaf=True)
-
+                # the current parser doesn't support 2 separate calls due to the use of my.related_types. 
+                # Just use one single call 
+                gantt_data = expr_parser.eval(sobject_expr, my.sobjects, dictionary=True)
+                #gantt_data = expr_parser.get_flat_cache(filter_leaf=True)   
 
                 
             else:
