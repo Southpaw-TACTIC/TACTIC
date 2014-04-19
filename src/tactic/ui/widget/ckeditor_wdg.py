@@ -118,6 +118,7 @@ config.toolbar_Full =
 config.entities = false;
 config.basicEntities = false;
 config.extraAllowedContent = 'iframe[*]';
+config.allowedContent = true;
 
 var instance = CKEDITOR.instances[ bvr.text_id ];
 if (instance) instance.destroy();
