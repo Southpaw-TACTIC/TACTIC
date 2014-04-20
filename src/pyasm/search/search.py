@@ -2008,8 +2008,10 @@ class Search(Base):
         search.add_relationship_filters(sobjects, path=path)
         related_sobjects = search.get_sobjects()
 
-        if not related_sobjects:
-            return tmp_data
+        # to maintain returned data consistency, it should let it 
+        # return search_key: related_sobjects even if related_sobjects is []
+        # if not related_sobjects:
+        #    return tmp_data
 
         # get the base related type to avoid getting a None relationship
         related_type = SearchKey.extract_base_search_type(related_type)
