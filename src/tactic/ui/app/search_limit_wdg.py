@@ -248,7 +248,8 @@ class SearchLimitWdg(Widget):
             my.current_offset = last_search_offset + (my.chunk_num*my.chunk_size)
       
        
-        my.search.set_limit(my.search_limit)
+        if my.search_limit >= 0:
+            my.search.set_limit(my.search_limit)
         my.search.set_offset(my.current_offset)
 
 
