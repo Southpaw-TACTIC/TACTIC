@@ -70,7 +70,7 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("cursor: hand")
         icon.add_style("position: absolute")
-        icon.add_style("top: 0px")
+        icon.add_style("top: 40%")
         icon.add_style("left: 0px")
         icon.add_behavior( {
             'type': 'click_up' ,
@@ -84,7 +84,7 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: hand")
-        icon.add_style("top: 0px")
+        icon.add_style("top: 40%")
         icon.add_style("right: 0px")
         icon.add_behavior( {
             'type': 'click_up',
@@ -116,6 +116,13 @@ class GalleryWdg(BaseRefreshWdg):
             
         }
 
+        spt.gallery.stack = [];
+
+        spt.gallery.push_stack = function(key) {
+            spt.gallery.stack.push(key);
+        }
+
+
         spt.gallery.show_next = function() {
             var width = spt.gallery.width;
             var content = spt.gallery.content;
@@ -130,6 +137,21 @@ class GalleryWdg(BaseRefreshWdg):
             var pos = content.getStyle("margin-left");
             pos = parseInt(pos.replace("px", ""))
             new Fx.Tween(content,{duration: 250}).start("margin-left", pos+width);
+        }
+
+
+        spt.gallery.show_index = function(index) {
+            var width = spt.gallery.width;
+            var margin = - width * index;
+            var content = spt.gallery.content;
+            content.setStyle("margin-left", margin + "px");
+        }
+
+
+        spt.gallery.close = function() {
+            var content = spt.gallery.content;
+            var top = content.getParent(".spt_gallery_top");
+            spt.behavior.destroy_element(top);
         }
         '''
         } )
@@ -200,11 +222,12 @@ class GalleryWdg(BaseRefreshWdg):
             'width': width,
             'cbjs_action': '''
             var key = evt.key;
-            console.log(key);
             if (key == "left") {
+                spt.gallery.push_stack(key);
                 spt.gallery.show_prev();
             }
             else if (key == "right") {
+                spt.gallery.push_stack(key);
                 spt.gallery.show_next();
             }
             else if (key == "esc" || key == "enter") {
@@ -219,18 +242,14 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-
-        content.add_behavior({
-            'type': 'load',
-            'cbjs_action': '''
-            // find all of the widths of the images
-
-            '''
-        } )
-        for path in paths:
+        curr_index = 0
+        for i, path in enumerate(paths):
             path_div = DivWdg()
             content.add(path_div)
             path_div.add_style("float: left")
+
+            if path == my.curr_path:
+                curr_index = i
 
             path_div.add_style("width: %s" % width)
             if height:
@@ -245,11 +264,30 @@ class GalleryWdg(BaseRefreshWdg):
             #path_div.add(img)
             #img.add_style("width: 100%")
 
+
+        content.add_behavior({
+            'type': 'load',
+            'index': curr_index,
+            'cbjs_action': '''
+            spt.gallery.show_index(bvr.index);
+            '''
+        } )
+
+
         return top
 
 
 
     def get_paths(my):
+
+        search_key = my.kwargs.get("search_key")
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+            snapshot = Snapshot.get_latest_by_sobject(sobject)
+            file_object = File.get_by_snapshot(snapshot)[0]
+            my.curr_path = file_object.get_web_path()
+        else:
+            my.curr_path = None
 
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")

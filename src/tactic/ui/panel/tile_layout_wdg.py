@@ -272,9 +272,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                     search_keys.push(search_key);
                 }
 
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = tile_top.getAttribute("spt_search_key");
+
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
                 var kwargs = {
-                    search_keys: search_keys
+                    search_keys: search_keys,
+                    search_key: search_key
                 };
                 var gallery_el = layout.getElement(".spt_tile_gallery");
                 spt.panel.load(gallery_el, class_name, kwargs);
