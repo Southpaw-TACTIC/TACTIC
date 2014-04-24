@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -1532,6 +1532,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         date_obj = dateutil.parser.parse(date)
+        date_obj = SPTDate.convert_to_local(date_obj)
         display_date_full = date_obj.strftime("%b %d, %Y %H:%M")
         display_date = date_obj.strftime("%b %d - %H:%M")
         title.add(display_date)

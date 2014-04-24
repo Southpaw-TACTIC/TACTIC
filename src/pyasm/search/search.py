@@ -14,6 +14,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 
 import string, types, re, sys
+import decimal
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -2007,8 +2008,10 @@ class Search(Base):
         search.add_relationship_filters(sobjects, path=path)
         related_sobjects = search.get_sobjects()
 
-        if not related_sobjects:
-            return tmp_data
+        # to maintain returned data consistency, it should let it 
+        # return search_key: related_sobjects even if related_sobjects is []
+        # if not related_sobjects:
+        #    return tmp_data
 
         # get the base related type to avoid getting a None relationship
         related_type = SearchKey.extract_base_search_type(related_type)
@@ -3833,7 +3836,7 @@ class SObject(object):
                     parent_type = my.get_base_search_type()
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
-
+            
                 # add message only if triggers is true
                 if triggers:
                     my._add_message(sobject, output, mode)
@@ -4193,6 +4196,8 @@ class SObject(object):
         Trigger.call(my, "change", output, project_code=project_code)
         Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
 
+        # add message
+        my._add_message(my, output, 'retire')
 
     def reactivate(my):
         '''reactivate a retired asset'''
@@ -4272,7 +4277,6 @@ class SObject(object):
             Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
             Trigger.call(my, "change", output)
             Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
-
 
         # delete the sobject_list entry
         if base_search_type not in ['sthpw/sobject_list']:
@@ -5057,6 +5061,9 @@ class SObject(object):
                     if value == '':
                         value = None
                 if isinstance(value, datetime.datetime):
+                    value = str(value)
+                elif isinstance(value, decimal.Decimal):
+                    # use str to avoid loss of precision
                     value = str(value)
 
 
