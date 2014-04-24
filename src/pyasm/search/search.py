@@ -3700,6 +3700,7 @@ class SObject(object):
                 "sthpw/sync_log",
                 'sthpw/message',
                 'sthpw/message_log',
+                'sthpw/queue',
 
         ] \
                 and sobject and sobject.has_value("code"):
