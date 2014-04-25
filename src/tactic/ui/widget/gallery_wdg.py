@@ -339,16 +339,15 @@ class GalleryWdg(BaseRefreshWdg):
     def get_paths(my):
 
         search_key = my.kwargs.get("search_key")
+        my.curr_path = None
         if search_key:
             sobject = Search.get_by_search_key(search_key)
             snapshot = Snapshot.get_latest_by_sobject(sobject)
             if snapshot:
-                file_object = File.get_by_snapshot(snapshot)[0]
-                my.curr_path = file_object.get_web_path()
-            else:
-                my.curr_path = None
-        else:
-            my.curr_path = None
+                file_object = File.get_by_snapshot(snapshot)
+                if file_object:
+                    file_object = file_object[0]
+                    my.curr_path = file_object.get_web_path()
 
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")

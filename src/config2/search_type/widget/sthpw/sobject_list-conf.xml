@@ -79,7 +79,6 @@
 <simple_filter>
     <element name='global keyword' title=''>
         <display class='tactic.ui.filter.KeywordFilterElementWdg'>
-            <column>keywords</column>
             <mode>global</mode>
         </display>
     </element>

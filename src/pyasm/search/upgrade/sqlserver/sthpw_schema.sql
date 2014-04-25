@@ -705,7 +705,7 @@ INSERT INTO pref_list ("key", description, options, "type", category, title) VAL
 -- sample pipelines
 
 INSERT INTO pipeline (code, pipeline, "timestamp", search_type, project_code, description, s_status) VALUES ('model', '<?xml version="1.0" encoding="UTF-8"?>  
-<pipeline="serial">  
+<pipeline type="serial">  
   <process name="model"/>  
   <process name="texture"/>  
   <process name="shader"/>  
@@ -717,7 +717,7 @@ INSERT INTO pipeline (code, pipeline, "timestamp", search_type, project_code, de
   <connect to="shot/lighting" from="shader"/>  
 </pipeline>', '2007-06-27 19:16:02.733281', 'prod/asset', NULL, NULL, NULL);
 INSERT INTO pipeline (code, pipeline, "timestamp", search_type, project_code, description, s_status) VALUES ('shot', '<?xml version="1.0" encoding="UTF-8"?> 
-<pipeline="parallel"> 
+<pipeline type="parallel"> 
   <process name="layout"/> 
   <process name="anim"/> 
   <process name="char_final"/> 
