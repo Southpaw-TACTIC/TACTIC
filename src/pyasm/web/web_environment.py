@@ -14,7 +14,7 @@ __all__ = ['WebEnvironmentException', 'WebEnvironment']
 
 import os
 
-from pyasm.common import Environment, Config, Marshaller, System
+from pyasm.common import Environment, Config, Marshaller, System, Container
 from pyasm.biz import PrefSetting, Project
 from web_container import WebContainer
 
@@ -348,6 +348,30 @@ class WebEnvironment(Environment):
             return True
         else:
             return False
+
+
+
+    def use_applet(my):
+        # determines whether the applet should be used for local file
+        # operations
+        use_applet = Config.get_value("checkin", "use_applet")
+        if use_applet in ['false', False]:
+            use_applet = False
+        elif use_applet in ['true', True]:
+            use_applet = True
+        else:
+            browser = my.get_browser()
+            # TEAM can always use the applet
+            if browser == "Qt":
+                use_applet = True
+            else:
+                # Otherwise we need a way to detect the java applet reliably
+                if Container.get_dict("JSLibraries", "spt_applet"):
+                    use_applet = True
+                else:
+                    use_applet = False
+        return use_applet
+
 
 
     # define the context information

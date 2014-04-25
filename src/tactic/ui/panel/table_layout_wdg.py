@@ -152,12 +152,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'TextWdg',
             'order': '10'
         },
-        'init_load_num': {
-            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
             'category': 'Optional',
             'order': '11'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '12'
+        },
+
 
 
         "temp" : {
@@ -407,7 +415,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.sobject_levels = []
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
-
+      
         # if a search key has been explicitly set without expression, use that
         expression = my.kwargs.get('expression') 
         matched_search_key = False
@@ -842,20 +850,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-     
-        if my.search_limit:
-            limit_span = DivWdg()
-            inner.add(limit_span)
-            limit_span.add_style("margin-top: 4px")
-            limit_span.add_class("spt_table_search")
-            limit_span.add_style("width: 250px")
-            limit_span.add_style("margin: 5 auto")
-            
+            # An empty div like this is not needed. 
+            """
+            if my.show_search_limit:
+                limit_span = DivWdg()
+                limit_span.add_border()
+                inner.add(limit_span)
+                limit_span.add_style("margin-top: 4px")
+                limit_span.add_class("spt_table_search")
+                limit_span.add_style("width: 250px")
+                limit_span.add_style("margin: 5 auto")
+            """
+        
             info = my.search_limit.get_info()
             if info.get("count") == None:
                 info["count"] = len(my.sobjects)
 
-
+            # this simple limit provides pagination and should always be drawn. Visible where applicable
             from tactic.ui.app import SearchLimitSimpleWdg
             limit_wdg = SearchLimitSimpleWdg(
                 count=info.get("count"),
@@ -863,7 +874,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 current_offset=info.get("current_offset"),
             )
             inner.add(limit_wdg)
-            #inner.add("<br clear='all'/>")
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -2488,6 +2498,9 @@ spt.table.get_all_search_keys = function() {
     var search_keys = [];
     // Any future custom row may not have search_key
     for (var i = 0; i < rows.length; i++) {
+        if (rows[i].hasClass("spt_removed")) {
+            continue;
+        }
         var search_key = rows[i].getAttribute("spt_search_key");
         if (search_key)
             search_keys.push(search_key);
@@ -2718,6 +2731,11 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         }
       }
     }
+    if (spt.table.last_table.hasOwnProperty('hidden_zindex'))
+        spt.table.last_table.hidden_zindex += 1;
+    else
+        spt.table.last_table.hidden_zindex = 100;
+    
 
     // New popup test
     var kwargs = {
@@ -2730,8 +2748,10 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 
         var shadow_color = spt.table.shadow_color;
 
+        var border_color = "#777";
+
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px #777; position: absolute; z-index: 100; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -3909,8 +3929,19 @@ spt.table.save_changes = function(kwargs) {
         values[column + '_option'] = note_options;
 
     }*/
-
     web_data = JSON.stringify(web_data);
+    
+    var search_top = null;
+    var table = spt.table.get_table();
+    
+    var search_dict = {};
+    var view_panel = table.getParent('.spt_view_panel[table_id=' + table.id + ']' );
+    if (view_panel) {
+        search_top = view_panel.getElement('.spt_search');
+        search_dict = spt.table.get_search_values(search_top);
+       
+    }
+    
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
         var info = result.info;
@@ -3918,7 +3949,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true};
+                var kw = {refresh_bottom : true, json: search_dict};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }
@@ -4058,7 +4089,6 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
-
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -4076,18 +4106,23 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
+    //var layout = spt.table.get_layout();
+    // this is more reliable when multi table are drawn in the same page while
+    // refresh is happening
+    var layout = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout);
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
-    var layout = spt.table.get_layout();
+
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
 
     
     var table_top = layout.getParent('.spt_table_top');
-    
-    var show_select = table_top.getAttribute("spt_show_select");
+    //note: sometimes table_top is null
+    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
@@ -4924,9 +4959,12 @@ spt.table.delete_rows = function(rows) {
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = function(id) {
+            spt.behavior.destroy_element($(id));
+        }
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+            row.addClass("spt_removed");
             if (layout.getAttribute("spt_version") == "2") {
                 spt.table.remove_hidden_row(row);
             }
@@ -4938,6 +4976,30 @@ spt.table.delete_rows = function(rows) {
 
     return;
 }
+
+
+spt.table.remove_rows = function(rows) {
+    var layout = spt.table.get_layout();
+    var on_complete = function(id) {
+        spt.behavior.destroy_element($(id));
+    }
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        row.addClass("spt_removed");
+        if (layout.getAttribute("spt_version") == "2") {
+            spt.table.remove_hidden_row(row);
+        }
+        Effects.fade_out(row, 500, on_complete);
+    }
+
+}
+
+
+spt.table.remove_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    spt.table.remove_rows(rows);
+}
+
 
 
 spt.table.delete_selected = function()
@@ -4953,11 +5015,6 @@ spt.table.delete_selected = function()
 
     return;
 
-    /*
-    var bvr = { src_el: spt.table.layout };
-    spt.dg_table.drow_smenu_delete_cbk({}, bvr)
-    spt.table.operate_selected('delete');
-    */
 }
 
 spt.table.retire_selected = function()
@@ -5081,12 +5138,10 @@ spt.table.open_ingest_tool = function(search_type) {
             %s
             spt.table.set_table(bvr.src_el);
             
-            
             ''' %cbjs_action
 
 
         hidden_row_color = table.get_color("background3")
-
 
         table.add_behavior( {
             'type': 'load',

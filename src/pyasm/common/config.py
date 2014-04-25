@@ -146,7 +146,20 @@ class Config(Base):
             else:
                 return
 
-        xml_data.set_node_value(node, str(value))
+        xml_data.set_node_value(node, jsondumps(value))
+
+        data = Container.get(Config.CONFIG_KEY)
+        if data == None:
+            data = {}
+            Container.put(Config.CONFIG_KEY, data)
+
+        KEY = "%s:%s" % (module_name, key)
+        #if sub_key:
+        #    KEY = "%s:%s:%s" % (module_name, key, sub_key)
+        data[KEY] = jsondumps(value)
+ 
+
+
 
     set_value = staticmethod(set_value)
 

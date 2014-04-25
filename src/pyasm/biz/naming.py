@@ -91,7 +91,6 @@ class Naming(SObject):
         mode: find - find the naming
               check - check that a naming is defined
         '''
-
         if not versionless and snapshot:
             version = snapshot.get_value("version")
             if version == -1:

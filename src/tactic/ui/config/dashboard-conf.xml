@@ -155,8 +155,8 @@
             <view>my_dashboard_tabs</view>
             <show_add>false</show_add>
             <!-- This causes problems affecting the main body tab
-            <show_remove>false</show_remove>
             -->
+            <show_remove>false</show_remove>
           </display>
         </element>
       </td>
@@ -479,7 +479,7 @@
       <expression>@SOBJECT(sthpw/task['project_code', $PROJECT]['status', 'Review'])</expression>
       <filter></filter>
       <width>100%</width>
-      <element_names>parent,process,description,status,priority,bid_duration,notes </element_names>
+      <element_names>parent,process,description,status,priority,bid_duration,notes</element_names>
     </display>
   </element>
 

@@ -575,6 +575,21 @@ class ExpressionTest(unittest.TestCase):
         result = my.parser.eval(expression, [my.country])
         result = sorted(result)
         my.assertEquals(result, ['p1','p2','p3'])
+        
+        # task for city2 is None
+        expression = "@GET(sthpw/task.id)"
+        result = my.parser.eval(expression, [my.city2])
+        my.assertEquals(result, [])
+
+        # task for city2 is None
+        expression = "@SOBJECT(sthpw/task)"
+        result = my.parser.eval(expression, [my.city2])
+        my.assertEquals(result, [])
+
+        # task for city2 is None even in dictionary return
+        expression = "@SOBJECT(sthpw/task)"
+        result = my.parser.eval(expression, [my.city2], dictionary=True)
+        my.assertEquals(result, {my.city2.get_search_key(): []})
 
         expression = "@COUNT(sthpw/task)"
         result = my.parser.eval(expression, [my.country])
@@ -2274,6 +2289,18 @@ class ExpressionTest(unittest.TestCase):
         result = parser.eval(expression, person)
         my.assertEquals('', result)
 
+        expression = '''@COUNT(sthpw/task)'''
+        task_count = parser.eval(expression)
+
+        expression = '''{@IF(@COUNT(sthpw/task)==%s, @COUNT(sthpw/task),'NONE')}'''%task_count
+        result = parser.eval(expression)
+        
+        my.assertEquals(str(task_count), result)
+        my.assertEquals(task_count, int(result))
+
+        expression = '''{@IF(@COUNT(sthpw/task)==0, @COUNT(sthpw/task),'NONE')}'''
+        result = parser.eval(expression)
+        my.assertEquals('NONE', result)
 
         # try the case statement
         expression = '''@CASE(
@@ -2577,7 +2604,8 @@ class ExpressionTest(unittest.TestCase):
 
        
         # verify the connection exists
-        my.assertEquals(sobj, my.city_task)
+        my.assertEquals(sobj.get_id(), my.city_task.get_id())
+        my.assertEquals(sobj.get_search_type(), my.city_task.get_search_type())
 
         parser = ExpressionParser()
         expr = '@GET(connect.id)'

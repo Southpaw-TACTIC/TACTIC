@@ -14,7 +14,7 @@ __all__ = ["Task", "Timecard", "Milestone"]
 
 import types
 import re
-from pyasm.common import Xml, Environment
+from pyasm.common import Xml, Environment, Common
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
 from prod_setting import ProdSetting
 from pipeline import Pipeline
@@ -75,7 +75,18 @@ class Task(SObject):
 
     def get_default_task_xml():
         global TASK_PIPELINE
-        return TASK_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(TASK_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
     get_default_task_xml = staticmethod(get_default_task_xml)
 
 
@@ -87,7 +98,13 @@ class Task(SObject):
             return OTHER_COLORS.get(process)
         color = default_xml.get_attribute(node, "color")
         if not color:
-            return OTHER_COLORS.get(process)
+            color = OTHER_COLORS.get(process)
+
+        from pyasm.web import Palette
+        theme = Palette.get()
+        if theme == 'dark':
+            color = Common.modify_color(color, -50)
+
         return color
     get_default_color = staticmethod(get_default_color)
 
@@ -219,7 +236,7 @@ class Task(SObject):
         if not pipeline:
             pipeline = SearchType.create("sthpw/pipeline")
             pipeline.set_value("code", pipe_code)
-            pipeline.set_value("pipeline", TASK_PIPELINE)
+            pipeline.set_value("pipeline", task.get_default_task_xml())
 
         return pipeline
 

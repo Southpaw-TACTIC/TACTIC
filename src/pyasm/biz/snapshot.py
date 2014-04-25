@@ -308,7 +308,8 @@ class Snapshot(SObject):
     def get_type_by_file_name(my, file_name):
         '''gets the name of the file reference'''
         xml = my.get_snapshot_xml()
-        node = xml.get_node("snapshot/file[@name='%s']"%file_name)
+
+        node = xml.get_node('snapshot/file[@name="%s"]' % file_name)
         if node is not None:
             return Xml.get_attribute(node, "type")
         else:
@@ -1775,6 +1776,16 @@ class Snapshot(SObject):
         return contexts
 
     get_contexts = staticmethod(get_contexts)
+
+
+
+    def get_by_path(path):
+        file_object = File.get_by_path(path)
+        if not file_object:
+            return None
+        snapshot = file_object.get_parent()
+        return snapshot
+    get_by_path = staticmethod(get_by_path)
 
 
 

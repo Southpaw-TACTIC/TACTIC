@@ -176,6 +176,38 @@ class JobQueueThread(BaseProcessThread):
 
 
 
+class WatchFolderThread(BaseProcessThread):
+
+    def __init__(my, **kwargs):
+        super(WatchFolderThread,my).__init__()
+        my.project_code = kwargs.get("project_code")
+        my.base_dir = kwargs.get("base_dir")
+        my.search_type = kwargs.get("search_type")
+        my.process = kwargs.get("process")
+
+ 
+    def get_title(my):
+        return "Watch Folder"
+
+    def execute(my):
+
+        # Run the job queue service
+        parts = []
+        parts.append(python)
+        parts.append('"%s/src/tactic/command/watch_drop_folder.py"'% tactic_install_dir)
+        parts.append('--project="%s"' % my.project_code)
+        parts.append('--drop_path="%s"' % my.base_dir)
+        parts.append('--search_type="%s"' % my.search_type)
+        if my.process:
+            parts.append('--process="%s"' % my.process)
+
+        executable = " ".join(parts)
+
+        os.system('%s' % (executable) )
+
+
+
+
 # DEPRECATED: use SchedulerThread below
 class TacticTimedThread(threading.Thread):
 
@@ -456,6 +488,7 @@ class TacticMonitor(object):
                 my.num_processes = 3
 
 
+
         start_port = Config.get_value("services", "start_port")
 
         ports_str = os.environ.get("TACTIC_PORTS")
@@ -473,13 +506,33 @@ class TacticMonitor(object):
             ports = []
             for i in range(0, my.num_processes):
                 ports.append( start_port + i )
-                
+        
 
         tactic_threads = []
 
+        #use_tactic = Config.get_value("services", "tactic")
+        #use_job_queue = Config.get_value("services", "job_queue")
+        #use_watch_folder = Config.get_value("services", "watch_folder")
+
+        use_tactic = False
+        use_job_queue = False
+        use_watch_folder = False
+
+        services = Config.get_value("services", "enable")
+        if services:
+            services = services.split("|")
+            if 'tactic' in services:
+                use_tactic = True
+            if 'job_queue' in services:
+                use_job_queue = True
+            if 'watch_folder' in services:
+                use_watch_folder = True
+        else:
+            use_tactic = True
+
+
         # create a number of processes
-        use_tactic = Config.get_value("services", "tactic")
-        if use_tactic != 'false':
+        if use_tactic:
             #for i in range(0, my.num_processes):
             for port in ports:
 
@@ -494,8 +547,7 @@ class TacticMonitor(object):
 
 
         # Job Queue services
-        use_job_queue = Config.get_value("services", "job_queue")
-        if use_job_queue == 'true':
+        if use_job_queue:
             num_processes = Config.get_value("services", "queue_process_count")
             if not num_processes:
                 num_processes = 1
@@ -506,6 +558,48 @@ class TacticMonitor(object):
                 job_thread = JobQueueThread()
                 job_thread.start()
                 tactic_threads.append(job_thread)
+
+
+        # Watch Folder services
+        if use_watch_folder:
+            search = Search("sthpw/watch_folder")
+            watch_folders = search.get_sobjects()
+
+            for watch_folder in watch_folders:
+                project_code = watch_folder.get("project_code")
+                base_dir = watch_folder.get("base_dir")
+                search_type = watch_folder.get("search_type")
+                process = watch_folder.get("process")
+
+                if not project_code:
+                    print "Watch Folder missing project_code ... skipping"
+                    continue
+
+                if not project_code:
+                    print "Watch Folder missing base_dir ... skipping"
+                    continue
+
+                if not search_type:
+                    print "Watch Folder missing search_type ... skipping"
+                    continue
+
+                watch_thread = WatchFolderThread(
+                        project_code=project_code,
+                        base_dir=base_dir,
+                        search_type=search_type,
+                        process=process
+                        )
+                watch_thread.start()
+                tactic_threads.append(watch_thread)
+
+
+
+
+        if len(tactic_threads) == 0:
+            print
+            print "No services started ..."
+            print
+            return
 
 
 

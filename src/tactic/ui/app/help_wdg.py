@@ -182,11 +182,13 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 var el = els[i];
                 var replace_id = el.getAttribute("spt_replace_id");
                 var el_old = $(replace_id);
-                el.replaces(el_old);
+                if (el_old) {
+                    el.replaces(el_old);
 
-                var children = el_old.getChildren();
-                for (var j = 0; j < children.length; j++) {
-                    el.appendChild(children[j]);
+                    var children = el_old.getChildren();
+                    for (var j = 0; j < children.length; j++) {
+                        el.appendChild(children[j]);
+                    }
                 }
 
             }
@@ -1680,7 +1682,7 @@ class HelpEditContentWdg(BaseRefreshWdg):
 config.toolbar_Full =
 [
     ['Source'],
-    //['Cut','Copy','Paste'],
+    ['Cut','Copy','Paste'],
     ['Undo','Redo','-','Find','Replace'],
     ['Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'],
     ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
@@ -1688,7 +1690,7 @@ config.toolbar_Full =
     ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv'],
     ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
     ['HorizontalRule','SpecialChar'],
-    ['Styles','Format','FontSize'],
+    ['Styles','Format','Font','FontSize'],
     ['TextColor','BGColor'],
     ['Maximize', 'ShowBlocks']
 ];

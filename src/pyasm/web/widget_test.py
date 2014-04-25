@@ -12,13 +12,34 @@
 #
 
 
+import tacticenv
 import unittest
 
+from pyasm.security import *
 from widget import *
+
+from client.tactic_client_lib import TacticServerStub
 from web_state import *
+
+from pyasm.unittest import UnittestEnvironment
+from pyasm.common import Environment
+from pyasm.biz import Project
 
 class WidgetTest(unittest.TestCase):
 
+    def test_all(my):
+        # start batch environment
+        Batch(login_code='admin')
+
+        test_env = UnittestEnvironment()
+        test_env.create()
+        Project.set_project('admin')
+
+       
+        try:
+            my.test_csv_export()
+        finally:
+            test_env.delete()
 
     def test_url(my):
 
@@ -45,9 +66,21 @@ class WidgetTest(unittest.TestCase):
 
         url_str = url.to_string()
 
-        my.assertEquals("%s?episode=TF01A&scene=TF01A-003" % base, url_str)
+        my.assertEquals("%s?episode_code=TF01A&scene=TF01A-003" % base, url_str)
 
-
+    def test_csv_export(my):
+        from tactic.ui.panel import TableLayoutWdg
+        view = 'table'
+        search_type ='sthpw/task'
+        search_view = 'auto_search:table'
+        simple_search_view = 'simple_search'
+        search_class =''
+        server = TacticServerStub(protocol='xmlrpc')
+        server.set_project('admin')
+        rtn = server.get_widget('tactic.ui.panel.TableLayoutWdg', {'search_type':search_type, 'view':view,\
+                'show_search_limit':'false', 'search_limit':-1, 'search_view':search_view,\
+                'search_class':search_class, 'simple_search_view':simple_search_view, 'init_load_num':-1})
+        
 
         
 

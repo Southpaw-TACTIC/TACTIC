@@ -17,10 +17,69 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-
+    
     #
     # 4.2.0.a01
     #
+
+
+    def upgrade_v4_2_0_a01_011(my):
+        my.run_sql('''
+        CREATE TABLE translation (
+            id serial PRIMARY KEY,
+            code character varying(256),
+            name character varying(256),
+            en text,
+            fr text,
+            ja text,
+            es text,
+            login character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now(),
+            CONSTRAINT "translation_code_idx" UNIQUE (code),
+            CONSTRAINT "translation_name_idx" UNIQUE (name)
+        );
+        ''')
+
+
+    def upgrade_v4_2_0_a01_010(my):
+        my.run_sql('''
+        DROP TABLE "translation";
+        ''')
+
+
+
+
+    def upgrade_v4_2_0_a01_008(my):
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/translation', 'config/translation', 'config', 'Translation', '{project}', 'spt_translation', 'pyasm.search.SObject', 'Translation', 'public');
+        ''')
+
+ 
+
+    def upgrade_v4_2_0_a01_007(my):
+        my.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/watch_folder', 'sthpw/watch_folder', 'sthpw', 'Watch Folder', 'sthpw', 'watch_folder', 'pyasm.search.SObject', 'Watch Folder', 'public');
+        ''')
+
+    def upgrade_v4_2_0_a01_006(my):
+        my.run_sql('''
+        CREATE TABLE watch_folder (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            name varchar(256),
+            project_code varchar(256),
+            base_dir text,
+            search_type varchar(256),
+            process varchar(256),
+            "timestamp" timestamp
+        );
+        ''') 
+
+
+
+    def upgrade_v4_2_0_a01_005(my):
+        my.run_sql('''
+        ALTER TABLE "search_object" ADD "metadata_parser" varchar(256);
+        ''')
+
 
     def upgrade_v4_2_0_a01_004(my):
         my.run_sql('''
@@ -43,6 +102,12 @@ class SthpwUpgrade(BaseUpgrade):
     def upgrade_v4_2_0_a01_001(my):
         my.run_sql('''
         ALTER TABLE "search_object" ADD "message_event" varchar(256);
+        ''')
+
+    
+    def upgrade_v4_1_0_v04_001(my):
+        my.run_sql('''
+        INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('subscription_bar','Determine whether to show the Subscription Bar','|true|false','sequence','display','Subscription Bar');
         ''')
 
 

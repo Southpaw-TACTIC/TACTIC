@@ -606,7 +606,8 @@ class WidgetConfigView(Base):
             if not title:     
                 title = Common.get_display_title(element_name)
                 titles.append(title)
-        
+      
+        #titles = [_(x) for x in titles]
         return titles
 
         

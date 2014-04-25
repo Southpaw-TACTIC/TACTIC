@@ -26,6 +26,44 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 from tool_layout_wdg import ToolLayoutWdg
 class TileLayoutWdg(ToolLayoutWdg):
 
+    ARGS_KEYS = ToolLayoutWdg.ARGS_KEYS.copy()
+    ARGS_KEYS['top_view'] = {
+            'description': 'an optional custom layout for the title area of the tile',
+            'order' : '01',
+            'category': 'Display'
+        }
+
+
+    ARGS_KEYS['bottom_view'] = {
+            'description': 'an optional custom layout for the bottom area of the tile',
+            'order' : '02',
+            'category': 'Display'
+        }
+
+    ARGS_KEYS['show_scale'] = {
+            'description': 'If set to true, the scale slider bar is displayed',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '03',
+            'category': 'Display'
+    }
+    ARGS_KEYS['scale'] = {
+            'description': 'Initial Scale. If not set, it defaults to 100',
+            'type': 'TextWdg',
+            'order' : '04',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['sticky_scale'] = {
+            'description': 'If set to local, the scale is sticky in the current view until page refresh',
+            'type': 'SelectWdg',
+            'values': 'local|global',
+            'order' : '05',
+            'category': 'Display'
+
+    }
+    
+
 
     def can_select(my):
         return True
@@ -82,18 +120,23 @@ class TileLayoutWdg(ToolLayoutWdg):
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
+
+
+
+        
+
         temp = my.kwargs.get("temp")
         has_loading = False
 
         
         inner.add_style("margin-left: 20px")
-
+       
 
         inner.add_attr("ondragenter", "return false")
         inner.add_attr("ondragover", "return false")
         inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
-
+        inner.add("<br clear='all'/>")
 
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
@@ -174,9 +217,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def init(my):
-
         my.scale_called = False
-
+        my.scale = None
         top_view = my.kwargs.get("top_view")
         if top_view:
             kwargs = {
@@ -187,9 +229,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             my.title_wdg = None
 
- 
-
-
+        my.sticky_scale = my.kwargs.get('sticky_scale')
+        if my.sticky_scale == 'local':
+            my.scale_prefix = my.view
+        else:
+            my.scale_prefix = ''
+        
         bottom_view = my.kwargs.get("bottom_view")
         if bottom_view:
             kwargs = {
@@ -200,6 +245,21 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = CustomLayoutWdg(**kwargs)
         else:
             my.bottom = None
+
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get()
+        data_list = filter_data.get_values_by_prefix("tile_layout")
+        if data_list:
+            data = data_list[0]
+        else:
+            data = {}
+        
+
+        my.scale = data.get("scale")
+        if my.scale == None:
+            my.scale = my.kwargs.get("scale")
+        if my.scale == None:
+            my.scale = 100
 
         super(TileLayoutWdg, my).init()
 
@@ -540,7 +600,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             return None
         my.scale_called = True
 
-
         show_scale = my.kwargs.get("show_scale")
 
         div = DivWdg()
@@ -550,9 +609,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_search")
         hidden = HiddenWdg("prefix", "tile_layout")
         div.add(hidden)
-
         div.add_behavior( {
             'type': 'load',
+            'scale_prefix':  my.scale_prefix,
+            'default_scale': my.scale,
             'cbjs_action': '''
 spt.tile_layout = {}
 spt.tile_layout.layout = null;
@@ -590,8 +650,8 @@ spt.tile_layout.set_scale = function(scale) {
         el.setStyle( "height", size_y);
     }
 
-    spt.container.set_value("tile_layout::scale", scale);
-
+    var container_id = "tile_layout::scale"+bvr.scale_prefix;
+    spt.container.set_value( container_id, scale);
 }
 
 
@@ -626,24 +686,39 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
     for (var i = 0; i < increment; i++) {
         scale = scale * multiplier;
     }
+    if (scale > 400)
+        scale = 400;
     scale = parseInt(scale);
     spt.tile_layout.set_scale(scale);
 
+}
+spt.tile_layout.setup_control = function() {
+   var slider = spt.tile_layout.layout.getElement('.spt_slider');
+   var container_id = "tile_layout::scale"+bvr.scale_prefix;
+   var initial_value = spt.container.get_value(container_id) ?  spt.container.get_value(container_id) : bvr.default_scale;
+
+   spt.tile_layout.set_scale(initial_value);
+   new Slider(slider, slider.getElement('.knob'), {
+    range: [30, 400],
+    steps: 74,
+    initialStep: initial_value,
+    onChange: function(value){
+      if (value) spt.tile_layout.set_scale(value);
+    }
+  });
 }
 
 
         ''' } )
 
 
-
         div.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
         spt.tile_layout.set_layout(bvr.src_el);
-        var scale = spt.container.get_value("tile_layout::scale");
-        if (scale) {
-            spt.tile_layout.set_scale(scale);
-        }
+
+        spt.tile_layout.setup_control();
+      
         '''
         } )
 
@@ -652,6 +727,8 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         div.add(table)
         table.add_row()
 
+        """
+        # TO BE DELETED
         less_div = DivWdg()
         less_div.add("<input type='button' value='&lt;&lt;'/>")
         table.add_cell(less_div)
@@ -666,17 +743,33 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             spt.tile_layout.set_scale(scale);
             '''
         } )
+        """
 
-
- 
+        dark_color = div.get_color("background", -5)
+        light_color = div.get_color('color')
+        med_color = div.get_color('color2')
+        
+        slider_div = DivWdg(css='spt_slider')
+        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 200px;'% light_color)
+        knob_div = DivWdg(css='knob')
+        knob_div.add_behavior({'type':'click',
+                'cbjs_action': 'spt.tile_layout.set_layout(bvr.src_el)'
+                })
+        knob_div.add_styles('background: %s; bottom: 4px;\
+                height: 16px; width: 12px; border-radius: 6px 6px 0 0;\
+                border: 1px %s solid'\
+                %(dark_color, med_color ))
+        slider_div.add(knob_div)
+        td = table.add_cell(slider_div)
         value_wdg = TextWdg("scale")
         value_wdg.add_class("spt_scale_value")
         td = table.add_cell(value_wdg)
         td.add("&nbsp;%")
+
         td.add_style("padding: 3px 8px")
 
-
-
+        """
+        # TO BE DELETED
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
         data_list = filter_data.get_values_by_prefix("tile_layout")
@@ -687,8 +780,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         my.scale = data.get("scale")
         if my.scale == None:
             my.scale = my.kwargs.get("scale")
-
-
+        """
         if my.scale:
             value_wdg.set_value(my.scale)
         value_wdg.add_style("width: 24px")
@@ -726,8 +818,9 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             "cbjs_motion": 'spt.tile_layout.drag_motion( evt, bvr, mouse_411 );'
         } )
 
-
-
+        
+        """
+        # TO BE DELETED
         more_div = DivWdg()
         more_div.add("<input type='button' value='&gt;&gt;'/>")
         table.add_cell(more_div)
@@ -743,7 +836,10 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             '''
         } )
 
+        """
 
+
+       
 
         return div
 
@@ -851,18 +947,19 @@ class ThumbWdg2(BaseRefreshWdg):
 
                 img_inner = HtmlElement.img(src=path)
                 img.add(img_inner)
+
                 img_inner.add_style("width: %s" % width)
 
         if path and path.startswith("/context"):
-            img.add_style("padding: 20px 0px")
-            img.add_border()
-            img.add_style("width: 100%")
+            img.add_style("padding: 10px 15%")
+            img.add_style("width: 70%")
+        elif path:
+            img.add_style("width: %s" % width)
 
         if not path:
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
-        img.add_style("width: %s" % width)
 
         div.add_style("height: 100%")
 
@@ -913,69 +1010,9 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
     def find_icon_link(my, file_path, repo_path=None):
-        base = "/context/icons/mime-types"
-        icon = None
-        if not file_path:
-            return ""
-            #return ThumbWdg.get_no_image()
-        #ext = File.get_extension(file_path)
-        import os
-        root, ext = os.path.splitext(file_path)
-        ext = ext[1:]
+        from pyasm.widget import ThumbWdg
+        return ThumbWdg.find_icon_link(file_path, repo_path)
 
-        if ext == "xls":
-            icon = "gnome-application-vnd.ms-excel.png"
-        elif ext == "mp3" or ext == "wav":
-            icon = "mp3_and_wav.jpg"
-        elif ext == "aif" or ext == 'aiff':
-            icon = "gnome-audio-x-aiff.png"
-        elif ext == "mpg":
-            icon = "gnome-video-mpeg.png"
-        elif ext in ["mov", "MOV"] or ext == "mp4":
-            icon = "quicktime-logo.png"    
-        elif ext == "ma" or ext == "mb" or ext == "anim":
-            icon = "maya.png"
-        elif ext == "lwo":
-            icon = "lwo.jpg"
-        elif ext == "max":
-            icon = "max.jpg"
-        elif ext == "fbx":
-            icon = "fbx.jpg"
-        elif ext == "hip" or ext == "otl":
-            icon = "houdini.png"
-        elif ext in ["scn", "scntoc", "xsi"]:
-            icon = "xsi_scn.jpg"
-        elif ext == "emdl":
-            icon = "xsi_emdl.png"
-        elif ext == "fla":
-            icon = "flash.png"
-        elif ext == "dae":
-            icon = "collada.png"
-        elif ext == "pdf":
-            icon = "pdficon_large.gif"
-        elif ext == "shk":
-            icon = "icon_shake_white.gif"
-        elif ext == "comp":
-            icon = "fusion.png"
-        elif ext == "txt":
-            icon = "gnome-textfile.png"
-        elif ext == "obj":
-            icon = "3d_obj.png"
-        elif ext in ["rdc", "RDC"]:
-            icon = "red_camera.png"
-        elif ext == 'ps':
-            icon = "ps_icon.jpg"
-        elif ext == 'psd':
-            icon = "ps_icon.jpg"
-        elif ext == 'ai':
-            icon = "icon_illustrator_lg.png"
-        elif ext == 'unity3d':
-            icon = "unity_icon.jpg"
-        elif repo_path and os.path.isdir(repo_path):
-            icon = "folder.png"
-        else:
-            icon = "default_doc.png"
-        return "%s/%s" % ( base,icon)
 
 
 

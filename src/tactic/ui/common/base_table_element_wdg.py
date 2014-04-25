@@ -108,29 +108,15 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
 
             else:
                 title = Common.get_display_title(title)
+
+        title = _(title)
+
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
-        #title = title.replace(" ", "<br/>")
         div.add(title)
 
         return div
-
-        # FIXME: not sure about autofit here?  This should be a mode
-        """
-        div = DivWdg()
-        div.add_attr("title", title)
-        inner = DivWdg()
-        inner.add_style("width: 100%")
-        
-        autofit = my.view_attributes.get('autofit')
-        if autofit != 'false':
-            div.add_style("width: 1px")
-            inner.add_style("white-space: nowrap")
-        inner.add(title)
-        div.add(inner)
-        return div
-        """
 
 
 
@@ -457,7 +443,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(my):
         sobject = my.get_current_sobject()
-        
+
         column =  my.kwargs.get('column')
         if column:
             name = column

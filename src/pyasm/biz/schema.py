@@ -66,6 +66,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/group_notification" display="@GET(sthpw/group_notification.login_group)"/>
     <search_type name="sthpw/cache"/>
     <search_type name="sthpw/queue"/>
+    <search_type name="sthpw/watch_folder"/>
 
 
 
@@ -357,6 +358,7 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/ingest_rule'/>
    <search_type name='config/plugin'/>
    <search_type name='config/plugin_content'/>
+   <search_type name='config/translation'/>
 
    <connect from="config/ingest_rule" to="config/ingest_session" type="code" from_col="spt_ingest_session_code" to_col="code"/>
 

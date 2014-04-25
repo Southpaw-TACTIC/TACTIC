@@ -281,7 +281,6 @@ class FileNaming(object):
 
         naming = Naming.get(my.sobject, my.snapshot, file_path=filename)
 
-        #naming = Naming.get_by_search_type(search_type)
         if not naming:
             return None
         naming_util = NamingUtil()

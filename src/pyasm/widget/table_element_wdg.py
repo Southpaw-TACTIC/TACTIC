@@ -178,14 +178,14 @@ class BaseTableElementWdg(HtmlElement):
         column'''
         if my.title:
             title = my.title
-            return title
+        else:
+            title = my.name
+            if not title:
+                title = ""
+                return title
 
-        title = my.name
-        if not title:
-            title = ""
-            return title
-
-        title = Common.get_display_title(title)
+            title = Common.get_display_title(title)
+        title = _(title)
         return title
 
 

@@ -24,6 +24,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
     def init(my):
         my.embedded_table = my.kwargs.get('embedded_table')
+        my.ingest_data_view = my.kwargs.get("ingest_data_view")
+        if not my.ingest_data_view:
+            my.ingest_data_view = 'edit'
 
         my.view_save_dialog = my.get_save_wdg()
         my.view_save_dialog_id = my.view_save_dialog.get_id()
@@ -321,11 +324,32 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
                     var kwargs = {
-                        search_type: search_type
+                        search_type: search_type,
+                        ingest_data_view: '%s'
                     };
                     //spt.tab.set_main_body_tab();
                     //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
                     var title = "Ingest: " + search_type;
+                    spt.panel.load_popup(title, class_name, kwargs);
+                    '''%my.ingest_data_view
+                 }
+                } )
+
+            menu_items.append(
+                { "type": "action", "label": "Check-out Files",
+                    "bvr_cb": { 'cbjs_action': '''
+                    var class_name = 'tactic.ui.tools.CheckoutWdg';
+                    var activator = spt.smenu.get_activator(bvr);
+
+                    var layout = activator.getParent(".spt_layout");
+                    spt.table.set_layout(layout)
+                    var selected_search_keys = spt.table.get_selected_search_keys()
+                    var kwargs = {
+                        search_keys: selected_search_keys
+                    };
+                    //spt.tab.set_main_body_tab();
+                    //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
+                    var title = "Check-out Files";
                     spt.panel.load_popup(title, class_name, kwargs);
                     '''
                  }
