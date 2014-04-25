@@ -171,7 +171,7 @@ class TextInputWdg(BaseInputWdg):
         if not my.width:
             my.width = 230
         else:
-            my.width = my.width.replace("px", "")
+            my.width = str(my.width).replace("px", "")
             my.width = int(my.width)
 
 

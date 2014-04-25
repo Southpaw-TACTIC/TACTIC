@@ -104,7 +104,16 @@ class GalleryWdg(BaseRefreshWdg):
 
         paths = my.get_paths()
 
-        descriptions = [ my.sobject_data.get(x).get("description") for x in paths]
+        descriptions = []
+        for path in paths:
+            sobject = my.sobject_data.get(path)
+            if not sobject:
+                descriptions.append("")
+            else:
+                description = sobject.get("description")
+                if not description:
+                    description = ""
+                descriptions.append(description)
         inner.add_behavior( {
         'type': 'load',
         'width': width,
@@ -159,9 +168,9 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.index = index;
 
             var description = spt.gallery.descriptions[index];
-            var total = spt.gallery.total-1;
+            var total = spt.gallery.total;
             if (!description) {
-                description = "("+index+" of "+total+")";
+                description = "("+(index+1)+" of "+total+")";
             }
             else {
                 description = "("+(index+1)+" of "+total+") - " + description;
@@ -333,8 +342,11 @@ class GalleryWdg(BaseRefreshWdg):
         if search_key:
             sobject = Search.get_by_search_key(search_key)
             snapshot = Snapshot.get_latest_by_sobject(sobject)
-            file_object = File.get_by_snapshot(snapshot)[0]
-            my.curr_path = file_object.get_web_path()
+            if snapshot:
+                file_object = File.get_by_snapshot(snapshot)[0]
+                my.curr_path = file_object.get_web_path()
+            else:
+                my.curr_path = None
         else:
             my.curr_path = None
 
