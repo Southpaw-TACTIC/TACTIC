@@ -145,7 +145,7 @@ CREATE TABLE notification (
 -- minimal data required
 
 
-INSERT INTO project (code, title,) VALUES ('admin', 'Tactic','sthpw');
+INSERT INTO project (code, title, type) VALUES ('admin', 'Tactic','sthpw');
 INSERT INTO project (code, title) VALUES ('sthpw', 'Tactic Admin');
 
 -- Project
@@ -159,7 +159,7 @@ INSERT INTO search_object (code, search_type, namespace, description, "database"
 -- Trigger
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/trigger', 'sthpw/trigger', 'sthpw', 'Triggers', 'sthpw', 'trigger', 'pyasm.biz.TriggerSObj', 'Triggers', 'public');
 -- Notification
-INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/notification', 'sthpw/notification', 'sthpw', 'Differents of Notification', 'sthpw', 'notification', 'pyasm.biz.Notification', 'Notification', 'public');
+INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/notification', 'sthpw/notification', 'sthpw', 'Different types of Notification', 'sthpw', 'notification', 'pyasm.biz.Notification', 'Notification', 'public');
 
 
 

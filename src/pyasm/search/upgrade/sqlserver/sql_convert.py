@@ -138,7 +138,6 @@ class SQLServerConverter(BaseSQLConverter):
         line = line.replace("id serial"                  , "id integer IDENTITY")
         line = line.replace("create unique index "       , "CREATE UNIQUE INDEX ")
         line = line.replace(" TYPE"                      , "")
-        line = line.replace(" type"                      , "")
         line = line.replace("(id)"                       , "")
         line = line.replace(" add column"                , " add")
         line = line.replace(" ADD COLUMN"                , " ADD")
