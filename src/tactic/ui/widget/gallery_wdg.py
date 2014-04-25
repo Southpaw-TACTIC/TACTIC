@@ -312,7 +312,7 @@ class GalleryWdg(BaseRefreshWdg):
                 path_div.add_style("height: %s" % height)
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path)
+            embed = EmbedWdg(src=path, click=False)
             path_div.add(embed)
             embed.add_style("width: 100%")
 
