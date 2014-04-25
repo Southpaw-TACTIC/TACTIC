@@ -70,6 +70,10 @@ class EmbedWdg(BaseRefreshWdg):
         else:
             click = True
 
+        preload = my.kwargs.get("preload")
+        if not preload:
+            preload = "none"
+
 
         if ext in ['.png', '.jpeg', '.jpg', '.gif']:
             embed = HtmlElement.img(src)
@@ -89,7 +93,7 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload="auto", controls="true", width=width, height=height)
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 

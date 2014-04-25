@@ -112,7 +112,7 @@ class Environment(Base):
         for dir in dirs:
             System().makedirs(dir)
             try:
-                os.chmod(dir, 0770)
+                os.chmod(dir, 0775)
             except OSError, e:
                 print "WARNING: cannot chmod: ", e
 

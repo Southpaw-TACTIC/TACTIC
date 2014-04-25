@@ -42,58 +42,6 @@ class GalleryWdg(BaseRefreshWdg):
         #inner.add_style("background: rgba(0,0,0,0.5)")
         inner.add_style("background: rgba(0,0,0,1)")
         inner.add_style("z-index: 1000")
-        """
-        inner.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_gallery_top");
-            spt.behavior.destroy_element(top);
-            '''
-        } )
-        """
-
-
-        icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
-        inner.add(icon)
-        icon.add_style("position: absolute")
-        icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 0px")
-        icon.add_style("right: 0px")
-        icon.add_behavior( {
-            'type': 'click_up' ,
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_gallery_top");
-            spt.behavior.destroy_element(top);
-            '''
-        } )
-
-
-        icon = IconWdg(title="Previous", icon="/plugins/remington/pos/icons/chevron_left.png")
-        inner.add(icon)
-        icon.add_style("cursor: pointer")
-        icon.add_style("position: absolute")
-        icon.add_style("top: 40%")
-        icon.add_style("left: 0px")
-        icon.add_behavior( {
-            'type': 'click_up' ,
-            'cbjs_action': '''
-            spt.gallery.show_prev(); 
-            '''
-        } )
-
-
-        icon = IconWdg(title="Next", icon="/plugins/remington/pos/icons/chevron_right.png")
-        inner.add(icon)
-        icon.add_style("position: absolute")
-        icon.add_style("cursor: hand")
-        icon.add_style("top: 40%")
-        icon.add_style("right: 0px")
-        icon.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.gallery.show_next(); 
-            '''
-        } )
 
 
         width = my.kwargs.get("width")
@@ -159,6 +107,21 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         spt.gallery.show_index = function(index) {
+
+            // stop all videos
+            var videos = spt.gallery.top.getElements(".video-js");
+            for (var i = 0; i < videos.length; i++) {
+                try {
+                    var video = videos[i];
+                    var video_id = video.get("id");
+                    var video_obj = videojs(video_id);
+                    video_obj.pause();
+
+                }
+                catch(e) {
+                }
+            }
+
             var width = spt.gallery.width;
             var margin = - width * index;
             var content = spt.gallery.content;
@@ -193,29 +156,6 @@ class GalleryWdg(BaseRefreshWdg):
 
         '''
         } )
-
-
-
-
-        desc_div = DivWdg()
-        desc_div.add_class("spt_gallery_description")
-        desc_div.add_style("height: 30px")
-        desc_div.add_style("width: %s" % width)
-        desc_div.add_style("text-align: center")
-        desc_div.add_style("background: rgba(255,255,255,0.8)")
-        desc_div.add_style("color: #000")
-        desc_div.add_style("font-weight: bold")
-        desc_div.add_style("font-size: 1.2em")
-        desc_div.add_style("padding-top: 3px")
-        desc_div.add_style("margin-left: -%s" % (width/2))
-        desc_div.add("")
-
-        desc_outer_div = DivWdg()
-        inner.add(desc_outer_div)
-        desc_outer_div.add_style("position: fixed")
-        desc_outer_div.add(desc_div)
-        desc_outer_div.add_style("bottom: 0px")
-        desc_outer_div.add_style("left: 50%")
 
 
 
@@ -332,6 +272,88 @@ class GalleryWdg(BaseRefreshWdg):
         } )
 
 
+
+        #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
+        icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
+        icon = DivWdg()
+        icon.add("X")
+        icon.add_style("font-size: 2.5em")
+        icon.add_style("color: white")
+        icon.add_style("width: 48px")
+        icon.add_style("height: 48px")
+        icon.add_style("border-radius: 30px")
+        icon.add_style("border: solid 3px white")
+        inner.add(icon)
+        icon.add_style("position: absolute")
+        icon.add_style("cursor: pointer")
+        icon.add_style("top: 0px")
+        icon.add_style("right: 0px")
+        icon.add_behavior( {
+            'type': 'click_up' ,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_gallery_top");
+            spt.behavior.destroy_element(top);
+            '''
+        } )
+
+
+        icon = IconWdg(title="Previous", icon="/plugins/remington/pos/icons/chevron_left.png")
+        inner.add(icon)
+        icon.add_style("cursor: pointer")
+        icon.add_style("position: absolute")
+        icon.add_style("top: 40%")
+        icon.add_style("left: 0px")
+        icon.add_behavior( {
+            'type': 'click_up' ,
+            'cbjs_action': '''
+            spt.gallery.show_prev(); 
+            '''
+        } )
+
+
+        icon = IconWdg(title="Next", icon="/plugins/remington/pos/icons/chevron_right.png")
+        inner.add(icon)
+        icon.add_style("position: absolute")
+        icon.add_style("cursor: hand")
+        icon.add_style("top: 40%")
+        icon.add_style("right: 0px")
+        icon.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.gallery.show_next(); 
+            '''
+        } )
+
+
+
+
+        desc_div = DivWdg()
+        desc_div.add_class("spt_gallery_description")
+        desc_div.add_style("height: 30px")
+        desc_div.add_style("width: %s" % width)
+        desc_div.add_style("text-align: center")
+        desc_div.add_style("background: rgba(255,255,255,0.8)")
+        desc_div.add_style("color: #000")
+        desc_div.add_style("font-weight: bold")
+        desc_div.add_style("font-size: 1.2em")
+        desc_div.add_style("padding-top: 3px")
+        desc_div.add_style("margin-left: -%s" % (width/2))
+        desc_div.add_style("z-index: 1000")
+        desc_div.add("")
+
+        desc_outer_div = DivWdg()
+        inner.add(desc_outer_div)
+        desc_outer_div.add_style("position: fixed")
+        desc_outer_div.add(desc_div)
+        desc_outer_div.add_style("bottom: 0px")
+        desc_outer_div.add_style("left: 50%")
+
+
+
+
+
+
+
         return top
 
 
@@ -352,9 +374,10 @@ class GalleryWdg(BaseRefreshWdg):
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
 
+
         if search_keys:
             sobjects = Search.get_by_search_keys(search_keys)
-            snapshots = Snapshot.get_by_sobjects(sobjects)
+            snapshots = Snapshot.get_by_sobjects(sobjects, is_latest=True)
             file_objects = File.get_by_snapshots(snapshots, file_type='main')
             paths = [x.get_web_path() for x in file_objects]
 
