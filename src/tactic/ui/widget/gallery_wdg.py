@@ -38,7 +38,10 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("top: 0")
         inner.add_style("left: 0")
         inner.add_style("width: 100%")
-        inner.add_style("height: 100%")
+        #inner.add_style("height: 100%")
+        inner.add_style("bottom: 0px")
+        inner.add_style("padding-bottom: 40px")
+
         #inner.add_style("background: rgba(0,0,0,0.5)")
         inner.add_style("background: rgba(0,0,0,1)")
         inner.add_style("z-index: 1000")
@@ -156,7 +159,6 @@ class GalleryWdg(BaseRefreshWdg):
 
         '''
         } )
-
 
 
 
@@ -347,10 +349,6 @@ class GalleryWdg(BaseRefreshWdg):
         desc_outer_div.add(desc_div)
         desc_outer_div.add_style("bottom: 0px")
         desc_outer_div.add_style("left: 50%")
-
-
-
-
 
 
 
