@@ -381,6 +381,10 @@ class GalleryWdg(BaseRefreshWdg):
             file_objects = File.get_by_snapshots(snapshots, file_type='main')
             paths = [x.get_web_path() for x in file_objects]
 
+            web_file_objects = File.get_by_snapshots(snapshots, file_type='web')
+            web_paths = [x.get_web_path() for x in web_file_objects]
+            #paths = web_paths
+
             for sobject, path in zip(sobjects, paths):
                 my.sobject_data[path] = sobject
 

@@ -1157,7 +1157,8 @@ class ThumbWdg(BaseTableElementWdg):
         elif repo_path and os.path.isdir(repo_path):
             icon = "folder.png"
         elif ext in File.VIDEO_EXT:
-            icon = "general_video.png"
+            #icon = "general_video.png"
+            icon = "indicator_snake.gif"
         elif ext not in File.NORMAL_EXT:
             icon = "indicator_snake.gif"
         else:

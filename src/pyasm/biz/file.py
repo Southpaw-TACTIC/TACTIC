@@ -499,9 +499,21 @@ class IconCreator(object):
 
         if type == "pdf":
             my._process_pdf( file_name )
-        elif type in File.NORMAL_EXT or type in File.VIDEO_EXT:
+        elif type in File.NORMAL_EXT:
             # skip icon generation for normal or video files
             pass
+        elif type in File.VIDEO_EXT:
+            try:
+                my._process_video( file_name )
+            except IOError, e:
+                '''This is an unknown file type.  Do nothing and except as a
+                file'''
+                print "WARNING: ", e.__str__()
+                Environmnet.add_warning("Unknown file type", e.__str__())
+
+
+
+
         else:
             # assume it is an image
             try:
@@ -547,6 +559,28 @@ class IconCreator(object):
 
 
 
+    def _process_video(my, file_name):
+
+        ffmpeg = Common.which("ffmpeg")
+        if not ffmpeg:
+            return
+
+        exts = File.get_extensions(file_name)
+
+        base, ext = os.path.splitext(file_name)
+        icon_file_name = "%s_icon.png" % base
+        web_file_name = "%s_web.jpg" % base
+
+        tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
+        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
+
+        cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -f image2 "%s"''' % (ffmpeg, my.file_path, tmp_web_path)
+        os.system(cmd)
+        
+        my.web_path = tmp_web_path
+        my.icon_path = tmp_icon_path
+
+
 
     def _process_image(my, file_name):
 
@@ -570,7 +604,6 @@ class IconCreator(object):
             web_file_name = "%s_web.jpg" % base
 
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
-
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
         # create the web image
