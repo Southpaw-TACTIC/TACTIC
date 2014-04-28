@@ -114,11 +114,11 @@ class FileCheckin(BaseCheckin):
             base_dir = "//%s" % depot
         elif mode == "inplace" and not base_dir:
             # get base_dir_alias
-            alias_dict = Config.get_value("checkin", "base_dir_alias")
+            #alias_dict = Config.get_value("checkin", "base_dir_alias")
+            alias_dict = Environment.get_asset_dirs()
             if alias_dict:
-                alias_dict = eval(alias_dict)
                 for key, value in alias_dict.items():
-                    asset_base_dir = alias_dict[key]['asset_base_dir']
+                    asset_base_dir = alias_dict[key]
                     if my.file_paths[0].startswith(asset_base_dir):
                         base_dir = asset_base_dir
                         my.base_dir_alias = key

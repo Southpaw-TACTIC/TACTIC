@@ -64,7 +64,12 @@ class EmbedWdg(BaseRefreshWdg):
         ext = parts[1]
         ext = ext.lower()
 
-        click = True
+        click = my.kwargs.get("click")
+        if click in [False, 'false']:
+            click = False
+        else:
+            click = True
+
 
         if ext in ['.png', '.jpeg', '.jpg', '.gif']:
             embed = HtmlElement.img(src)

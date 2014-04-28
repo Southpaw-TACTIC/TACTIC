@@ -107,7 +107,16 @@ class GalleryWdg(BaseRefreshWdg):
 
         paths = my.get_paths()
 
-        descriptions = [ my.sobject_data.get(x).get("description") for x in paths]
+        descriptions = []
+        for path in paths:
+            sobject = my.sobject_data.get(path)
+            if not sobject:
+                descriptions.append("")
+            else:
+                description = sobject.get("description")
+                if not description:
+                    description = ""
+                descriptions.append(description)
         inner.add_behavior( {
         'type': 'load',
         'width': width,
@@ -162,9 +171,9 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.index = index;
 
             var description = spt.gallery.descriptions[index];
-            var total = spt.gallery.total-1;
+            var total = spt.gallery.total;
             if (!description) {
-                description = "("+index+" of "+total+")";
+                description = "("+(index+1)+" of "+total+")";
             }
             else {
                 description = "("+(index+1)+" of "+total+") - " + description;
@@ -307,7 +316,7 @@ class GalleryWdg(BaseRefreshWdg):
                 path_div.add_style("height: %s" % height)
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path)
+            embed = EmbedWdg(src=path, click=False)
             path_div.add(embed)
             embed.add_style("width: 100%")
 
@@ -343,7 +352,6 @@ class GalleryWdg(BaseRefreshWdg):
                 if file_object:
                     file_object = file_object[0]
                     my.curr_path = file_object.get_web_path()
-
 
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
