@@ -30,16 +30,18 @@ class RSync(object):
 
         tries = 1
         success = False
+        value = ""
+        start = time.time()
 
         while 1:
             try:
-                my.sync_paths(from_path, to_path)
-
+                value = my.sync_paths(from_path, to_path)
                 success = True
                 break
 
             except Exception, e:
                 print "Failed on try [%s]..." % tries
+                print e
                 time.sleep(tries)
                 if tries == 3:
                     break
@@ -49,17 +51,19 @@ class RSync(object):
 
 
         print "success: ", success
+        print time.time() - start, " seconds"
+        print value
 
 
 
 
     def sync_paths(my, from_path, to_path):
 
-        server = my.kwargs.get("server")
-        user = my.kwargs.get("user")
+        host = my.kwargs.get("host")
+        login = my.kwargs.get("login")
 
 
-        to_path = "%s@%s:%s" % (user, server, to_path)
+        to_path = "%s@%s:%s" % (login, host, to_path)
 
         rsync = Common.which("rsync")
 
@@ -78,8 +82,6 @@ class RSync(object):
 
         cmd_list.append('%s' % from_path)
         cmd_list.append('%s' % to_path)
-
-        fasfdsa
 
         program = subprocess.Popen(cmd_list, shell=False, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
@@ -105,8 +107,8 @@ if __name__ == '__main__':
     start = time.time()
 
     kwargs = {
-            "user": "root",
-            "server": "XYZ",
+            "login": "root",
+            "host": "sync1.southpawtech.com",
             "from_path": from_path,
             "to_path": "/spt/test/svg"
     }

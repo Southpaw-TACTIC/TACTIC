@@ -252,12 +252,12 @@ class JobTask(SchedulerTask):
         # get some info from the job
         command = my.job.get_value("command")
         job_code = my.job.get_value("code")
-        print "Grabbing job [%s] ... " % job_code
 
         try: 
             kwargs = my.job.get_json_value("data")
         except:
             try:
+                # DEPRECATED
                 kwargs = my.job.get_json_value("serialized")
             except:
                 kwargs = {}
@@ -305,7 +305,9 @@ class JobTask(SchedulerTask):
         queue = my.job.get_value("queue", no_exception=True)
         queue_type = 'repeat'
 
-        print "running job: ", my.job.get_value("code") 
+        stop_on_error = False
+
+        print "Running job: ", my.job.get_value("code") 
 
         if queue_type == 'inline':
 
@@ -329,8 +331,8 @@ class JobTask(SchedulerTask):
 
             cmd = Common.create_from_class_path(command, kwargs=kwargs)
             attempts = 0
-            max_attempts = 5
-            retry_interval = 10
+            max_attempts = 3
+            retry_interval = 5
             while 1:
                 try:
                     #Command.execute_cmd(cmd)
@@ -349,7 +351,8 @@ class JobTask(SchedulerTask):
 
 
                 except Exception, e:
-                    raise
+                    if stop_on_error:
+                        raise
                     print "WARNING in Queue: ", e
                     import time
                     time.sleep(retry_interval)
