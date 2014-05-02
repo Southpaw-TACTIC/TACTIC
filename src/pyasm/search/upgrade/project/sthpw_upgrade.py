@@ -22,6 +22,8 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.2.0.a01
     #
 
+    def upgrade_v4_2_0_a01_012(my):
+        my.run_sql('''ALTER TABLE sync_server ADD COLUMN file_mode varchar(256);''')
 
     def upgrade_v4_2_0_a01_011(my):
         my.run_sql('''
