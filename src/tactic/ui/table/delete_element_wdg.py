@@ -35,6 +35,7 @@ class DeleteElementWdg(ButtonElementWdg):
         spt.table.unselect_all_rows();
         spt.table.select_row(row);
         spt.table.delete_selected();
+        spt.table.unselect_all_rows();
         '''
 
 

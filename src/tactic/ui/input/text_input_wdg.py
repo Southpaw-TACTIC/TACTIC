@@ -13,7 +13,7 @@
 
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
-from pyasm.common import Date, Common, Environment, FormatValue, TacticException
+from pyasm.common import Date, Common, Environment, FormatValue, SPTDate, TacticException
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
@@ -214,6 +214,13 @@ class TextInputWdg(BaseInputWdg):
         my.name = name
         my.text.set_name(name)
 
+    def is_datetime_col(my, sobject, name):
+        '''get_column_info call datetime as timestamp, which is the time tactic_type'''
+        tactic_type = SearchType.get_tactic_type(sobject.get_search_type(), name)
+        if tactic_type == 'time':
+            return True
+        else:
+            return False
 
     def fill_data(my):
 
@@ -221,7 +228,6 @@ class TextInputWdg(BaseInputWdg):
             my.name = my.kwargs.get("name")
         name = my.get_input_name()
         my.text.set_name(name)
-
         value = my.kwargs.get("value")
         # value always overrides
         if value:
@@ -245,6 +251,9 @@ class TextInputWdg(BaseInputWdg):
                     column = my.name
 
                 display = sobject.get_value(column)
+                if my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                    display = SPTDate.convert_to_local(display)
+
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
                     display = unicode(display, errors='ignore').encode('utf-8')

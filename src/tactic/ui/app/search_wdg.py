@@ -393,11 +393,11 @@ class SearchWdg(BaseRefreshWdg):
         filter_data = FilterData.get_from_cgi()
 
         json = filter_data.serialize()
-
         # use widget settings instead
-        key = SearchWdg._get_key(my.search_type, my.view)
-        
-        WidgetSettings.set_value_by_key(key, json)
+        # Using solely TableLayoutWdg will result in having no search view
+        if my.view:
+            key = SearchWdg._get_key(my.search_type, my.view)
+            WidgetSettings.set_value_by_key(key, json)
         #value = WidgetSettings.get_value_by_key(key)
         #print "value: ", value
         return

@@ -109,6 +109,8 @@ class TacticRepo(BaseRepo):
                     rel_dir = file_object.get_value("relative_dir")
                     file_name = file_object.get_value("file_name")
                     rel_path = "%s/%s" % (rel_dir, file_name)
+                    if mode == 'copy':
+                        io_action = 'copy'
                     FileUndo.create( files[i], to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
 
 

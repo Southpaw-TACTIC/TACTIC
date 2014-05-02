@@ -208,7 +208,7 @@ class EditWdg(BaseRefreshWdg):
             # is set
             my.config = my.get_config()
         else:
-            my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+            my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view, use_cache=False)
 
         # for inline config definitions
         config_xml = my.kwargs.get("config_xml")
@@ -220,10 +220,9 @@ class EditWdg(BaseRefreshWdg):
             #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
             #config = WidgetConfig.get(view=my.view, xml=xml)
             config_xml = config_xml.replace("&", "&amp;")
-            config = WidgetConfig.get(view="tab", xml=config_xml)
 
-            my.config.get_configs().insert(0, config)
- 
+            config = WidgetConfig.get(view="tab", xml=config_xml)
+            my.config.insert_config(0, config)
 
         
         my.skipped_element_names = []
@@ -1102,9 +1101,8 @@ class EditWdg(BaseRefreshWdg):
             input.set_options(display_options)
 
         elif element_type =="sqlserver_timestamp":
-            # better then set it to None
-            input = TextWdg()
-            input.add_attr('disabled','disabled')
+            # NoneType Exception is prevented in WidgetConfig already
+            input = None
         else:
             # else try to instantiate it as a class
             print "WARNING: EditWdg handles type [%s] as default TextWdg" %element_type
@@ -1119,7 +1117,7 @@ class EditWdg(BaseRefreshWdg):
     def get_onload_js(my):
         return r'''
 
-//spt.Environment.get().add_library("spt_edit");
+spt.Environment.get().add_library("spt_edit");
 
 spt.edit = {}
 
