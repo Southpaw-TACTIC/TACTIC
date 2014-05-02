@@ -332,6 +332,8 @@ TacticServerStub = function() {
             }
             else if (mode == 'copy') {
                 applet.copy_file(file_path, handoff_dir + '/' +  basename);
+                // it moves from handoff to repo during check-in
+                mode = 'move';
             }
 
             // this is meant for 3.8, commented out for now
@@ -441,6 +443,7 @@ TacticServerStub = function() {
                     applet.copy_file(path, handoff_dir+'/'+basename);
                 }
                 use_handoff_dir = true;
+                mode = 'move';
             }
             // use a custom protocol
             else if (mode == 'custom') {
@@ -527,6 +530,7 @@ TacticServerStub = function() {
             else if (mode == 'copy') {
                 applet.copytree(dir, handoff_dir + "/" + basename);
                 kwargs.use_handoff_dir = true;
+                mode = 'move';
             }
         }
         else if (mode == 'upload') {

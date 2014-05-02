@@ -14,6 +14,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 
 import string, types, re, sys
+import decimal
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -2007,8 +2008,10 @@ class Search(Base):
         search.add_relationship_filters(sobjects, path=path)
         related_sobjects = search.get_sobjects()
 
-        if not related_sobjects:
-            return tmp_data
+        # to maintain returned data consistency, it should let it 
+        # return search_key: related_sobjects even if related_sobjects is []
+        # if not related_sobjects:
+        #    return tmp_data
 
         # get the base related type to avoid getting a None relationship
         related_type = SearchKey.extract_base_search_type(related_type)
@@ -3834,7 +3837,7 @@ class SObject(object):
                     parent_type = my.get_base_search_type()
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
-
+            
                 # add message only if triggers is true
                 if triggers:
                     my._add_message(sobject, output, mode)
@@ -3859,6 +3862,7 @@ class SObject(object):
 
 
     def _add_message(my, sobject, data, mode):
+
         # message types are "insert,update,change"
         search_type_obj = sobject.get_search_type_obj()
         events = search_type_obj.get_value("message_event", no_exception=True)
@@ -3889,19 +3893,20 @@ class SObject(object):
         project_code = Project.get_project_code()
 
 
+        message = Search.get_by_code("sthpw/message", message_code)
+
+        """
         # if there are no subscriptions, don't bother storing
         #search = Search("sthpw/subscription")
         #search.add_filter("code", message_code)
         #search.add_filter("category", "sobject")
         #if search.get_count() == 0:
         #    return
-
-        message = Search.get_by_code("sthpw/message", message_code)
         """
+
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
-        """
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
@@ -3932,7 +3937,6 @@ class SObject(object):
         message.set_user()
         message.set_value("status", "complete")
         message.commit(triggers=False)
-
 
 
 
@@ -4191,6 +4195,8 @@ class SObject(object):
         Trigger.call(my, "change", output, project_code=project_code)
         Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
 
+        # add message
+        my._add_message(my, output, 'retire')
 
     def reactivate(my):
         '''reactivate a retired asset'''
@@ -4270,7 +4276,6 @@ class SObject(object):
             Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
             Trigger.call(my, "change", output)
             Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
-
 
         # delete the sobject_list entry
         if base_search_type not in ['sthpw/sobject_list']:
@@ -5055,6 +5060,9 @@ class SObject(object):
                     if value == '':
                         value = None
                 if isinstance(value, datetime.datetime):
+                    value = str(value)
+                elif isinstance(value, decimal.Decimal):
+                    # use str to avoid loss of precision
                     value = str(value)
 
 

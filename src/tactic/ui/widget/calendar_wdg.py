@@ -14,10 +14,12 @@
 
 __all__ = ['CalendarWdg', 'CalendarMonthWdg', 'CalendarTimeWdg', 'CalendarInputWdg', 'TimeInputWdg']
 
-from pyasm.common import Date, Common, Config, Container
+import locale
+from pyasm.common import Date, Common, Config, Container, SPTDate
 from pyasm.biz import NamingUtil, ProdSetting
 from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
 from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
+from pyasm.search import SObject
 from tactic.ui.common import BaseRefreshWdg
 
 from datetime import datetime
@@ -953,22 +955,42 @@ class CalendarInputWdg(BaseInputWdg):
             value = default_value
             if value:
                 value = parser.parse(value)
-
+                # NOTE: it's better not to do auto-convert for passed in value 
+                # since it could be already in local time
+                #if not SObject.is_day_column(my.get_name()):
+                #    value = SPTDate.convert_to_local(value)
 
         current = my.get_current_sobject()
         if current and not current.is_insert():
             db_date = current.get_value(my.get_name(), no_exception=True)
             if db_date:
+                # This date is assumed to be GMT
                 try:
                     value = parser.parse(db_date)
                 except:
                     value = datetime.now()
+                
+                #from pyasm.common import SPTDate
+                #from pyasm.search import SObject
+                if not SObject.is_day_column(my.get_name()):
+                    date = SPTDate.convert_to_local(value)
+                try:
+                   encoding = locale.getlocale()[1]		
+                   value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                except:
+                   value = date.strftime("%b %d, %Y - %H:%M")
+
+
 
         if show_time:
             key = 'DATETIME'
         else:
             key = 'DATE'
-        
+       
+        if not value:
+            value = my.value
+
+            
         if value:
             format = my.get_option("display_format")
 
@@ -981,7 +1003,6 @@ class CalendarInputWdg(BaseInputWdg):
 
             input.set_value(value)
 
-        my.value = value
 
         kbd_bvr = {
             'type': 'keyboard',

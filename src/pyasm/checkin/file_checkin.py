@@ -52,7 +52,9 @@ class FileCheckin(BaseCheckin):
                parent level of this checkin
            mode - determines what mode the checkin is.  This basically
                 determines how the source files are treated.  
-                Accepted values: copy, move: default tactic check-in that uses upload/handoff dir; naming convention on 
+                Accepted values: copy, move, local: default tactic check-in that uses upload/handoff dir; naming convention on.
+                        move and local performs a move. copy performs a copy
+                        
                         inplace: check in the source_path as is without moving it; naming convention off
                         free_move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on
                         free_copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on
@@ -827,6 +829,10 @@ class FileGroupCheckin(FileCheckin):
         if my.mode == 'inplace':
             # TODO: ? MD5?
             return
+        if my.mode == 'copy':
+            io_action = 'copy'
+        else:
+            io_action = True
 
         for i in range( 0, len(files) ):
 
@@ -853,6 +859,7 @@ class FileGroupCheckin(FileCheckin):
             my.expanded_paths.extend(from_expanded)
 
             # iterate through each and copy to the lib
+
             for j in range(0, len(from_expanded) ):
 
                 # check before copying
@@ -874,10 +881,10 @@ class FileGroupCheckin(FileCheckin):
                         file_object.set_value("md5", md5_checksum)
                         file_object.commit()
                     st_size = file_object.get_value("st_size")
-                    FileUndo.create( from_expanded[j], to_expanded[j], { "md5": md5_checksum, "st_size": st_size } )
+                    FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action, extra={ "md5": md5_checksum, "st_size": st_size } )
 
                 else:
-                    FileUndo.create( from_expanded[j], to_expanded[j] )
+                    FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action )
 
                 # check to see that the file exists.
                 if not os.path.exists( to_expanded[j] ):

@@ -103,8 +103,6 @@
     <element name="hide_other_projects">
         <display class="tactic.ui.filter.ExpressionFilterElementWdg">
             <expression>@SEARCH(sthpw/login_group['begin']['project_code','$PROJECT']['project_code is NULL']['or'])</expression>
-            <title> </title>
-            <cbjs_action>spt.dg_table.search_cbk({}, bvr)</cbjs_action>
         </display>
     </element>
 </simple_search>

@@ -357,9 +357,9 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 new_src = "/doc/%s" % (src)
 
-            print "src: ", src
-            print "new_src: ", new_src
-            print "---"
+            #print "src: ", src
+            #print "new_src: ", new_src
+            #print "---"
             xml.set_attribute(node, "src", new_src)
 
 
@@ -370,8 +370,22 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         for node in link_nodes:
 
             href = xml.get_attribute(node, "href")
+
             if not href:
+                # Test link to GitHub docs
+                """
+                # add a link to github
+                github_node = xml.create_text_element("div", "edit >>")
+                xml.insert_after(github_node, node)
+                xml.set_attribute(github_node, "style", "float: right; font-size: 0.8em; opacity: 0.3")
+                xml.set_attribute(github_node, "class", "hand")
+                url = '''https://github.com/Southpaw-TACTIC/Docs/tree/master/section/doc/tactic-end-user/end-user/creating-tasks'''
+                xml.set_attribute(github_node, "onclick", "window.open('%s', 'TACTIC Docs')" % url)
+                """
+
                 continue
+
+
 
             if dirname:
                 link_rel_path = "%s/%s" % (dirname, href)
@@ -674,6 +688,7 @@ class HelpWdg(BaseRefreshWdg):
         content = DivWdg()
         help_div.add(content)
         content.add_class("spt_help_content");
+        content.add_style("position: relative")
         content.add_style("overflow_x: auto")
         content.add_style("overflow_y: auto")
         content.add_style("margin-bottom: 10px")
@@ -894,6 +909,17 @@ spt.help.load_rel_path = function(rel_path, history) {
         spt.help.show();
     }
 
+    var saved_path = rel_path;
+
+    if (rel_path.indexOf("#") != -1) {
+        var parts = rel_path.split("#");
+        rel_path = parts[0];
+        tag = parts[1];
+    }
+    else {
+        tag = null;
+    }
+
     var class_name = 'tactic.ui.app.HelpContentWdg'; 
     var kwargs = {
         rel_path: rel_path
@@ -908,6 +934,25 @@ spt.help.load_rel_path = function(rel_path, history) {
     var dialog = bvr.src_el.getParent(".spt_dialog_content");
     dialog.setStyle("height", size.y - 100);
     dialog.setStyle("width", 650);
+
+
+    var help_top = bvr.src_el.getElement(".spt_help_content");
+    if (help_top && tag) {
+        help_top = help_top.getChildren()[0];
+        var tag_els = help_top.getElements('a');
+        var tag_el = null;
+        for ( var i = 0; i < tag_els.length; i++) {
+            var id = tag_els[i].getAttribute("id");
+            if (id == tag) {
+                tag_el = tag_els[i];
+                break;
+            }
+        }
+        var pos = tag_el.getPosition(help_top);
+        setTimeout( function() {
+            help_top.scrollTo(0, pos.y-30);
+        }, 0 );
+    }
 
 
 
@@ -927,7 +972,7 @@ spt.help.load_rel_path = function(rel_path, history) {
         return;
     }
 
-    spt.help.history.push( ['rel_path', rel_path]);
+    spt.help.history.push( ['rel_path', saved_path]);
 }
 
 
