@@ -4252,7 +4252,6 @@ class SObject(object):
             else:
                 statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
 
-
             sql.do_update(statement)
 
         # record the delete unless specifically not requested (for undo)
@@ -6170,6 +6169,7 @@ class SObjectUndo:
                 "sthpw/change_timestamp",
                 "sthpw/sync_job",
                 "sthpw/sync_log",
+                "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
         ]:

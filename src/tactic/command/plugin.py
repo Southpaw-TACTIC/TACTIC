@@ -1145,6 +1145,14 @@ class PluginInstaller(PluginBase):
                             sobject.set_value("project_code", project_code)
 
                         if base_search_type == "sthpw/schema":
+                            # if a schema is already defined, the delete
+                            # the current one
+                            search = Search("sthpw/schema")
+                            search.add_filter("code", project_code)
+                            old_schema = search.get_sobject()
+                            if old_schema:
+                                old_schema.delete()
+
                             sobject.set_value("code", project_code)
 
 
