@@ -25,8 +25,12 @@ class RSync(object):
 
 
     def execute(my):
-        from_path = my.kwargs.get("from_path")
+        base_dir = my.kwargs.get("base_dir")
+        relative_dir = my.kwargs.get("relative_dir")
+        file_name = my.kwargs.get("file_name")
         to_path = my.kwargs.get("to_path")
+
+        from_path = "%s/./%s/%s" % (base_dir, relative_dir, file_name)
 
         tries = 1
         success = False
@@ -80,6 +84,11 @@ class RSync(object):
         cmd_list.append("-e ssh")
         cmd_list.append("-v")
         cmd_list.append("--progress")
+        cmd_list.append("--delete")
+
+        relative = True
+        if relative:
+            cmd_list.append("--relative")
 
         partial = True
         if partial:
@@ -106,6 +115,7 @@ class RSync(object):
         data = []
         lines = []
         path = None
+        error = []
         while program.poll() is None:
             buffer = []
             while 1:
@@ -143,14 +153,42 @@ class RSync(object):
                     if on_update:
                         on_update(path, my.current_data)
 
-
+                elif line.startswith("rsync "):
+                    error.append(line)
+                elif line.startswith("sent "):
+                    my.handle_data_line(line)
+                elif line.startswith("total "):
+                    my.handle_data_line(line)
                 else:
                     line = line.strip()
                     path = line
 
 
+        if error:
+            error = "\n".join(error)
+            raise Exception("Sync Error\n%s" % error)
 
-        return "".join(line)
+        return "success"
+
+
+
+    def handle_data_line(my, line):
+        data = {}
+
+
+        if line.startswith("sent "):
+            # sent 520 bytes  received 22 bytes  361.33 bytes/sec
+            pass
+
+        elif line.startswith("total "):
+            #total size is 431666  speedup is 796.43 (DRY RUN)
+            parts = line.split()
+            total_size = parts[3]
+            data['total_size'] = total_size
+
+        print "data: ", data
+
+
 
 
 class RSyncProgress(object):

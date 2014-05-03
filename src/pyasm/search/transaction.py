@@ -270,6 +270,9 @@ class Transaction(Base):
     def get_transaction_log(my):
         return my.xml
 
+    def get_transaction_log_sobj(my):
+        return my.transaction_log
+
 
     def get_file_log(my):
         '''get only the file logs'''

@@ -242,11 +242,13 @@ class File(SObject):
     get_extensions = staticmethod(get_extensions)
 
 
-    def get_by_snapshot(cls, snapshot):
+    def get_by_snapshot(cls, snapshot, file_type=None):
         xml = snapshot.get_xml_value("snapshot")
         file_codes = xml.get_values("snapshot/file/@file_code")
         search = Search( cls.SEARCH_TYPE)
         search.add_filters("code", file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         return search.get_sobjects()
     get_by_snapshot = classmethod(get_by_snapshot)
 
