@@ -643,7 +643,7 @@ class RunTransactionCmd(Command):
             ignore = ['file']
         else:
             ignore = []
-        ignore = []
+        #ignore = []
 
 
         # this will switch to use rel_path in transaction to get the files

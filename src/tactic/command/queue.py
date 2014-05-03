@@ -335,8 +335,8 @@ class JobTask(SchedulerTask):
             retry_interval = 5
             while 1:
                 try:
-                    #Command.execute_cmd(cmd)
-                    cmd.execute()
+                    Command.execute_cmd(cmd)
+                    #cmd.execute()
 
                     # set job to complete
                     my.job.set_value("state", "complete")
