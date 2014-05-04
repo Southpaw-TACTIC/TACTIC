@@ -279,7 +279,7 @@ class SearchWdg(BaseRefreshWdg):
                 try:
                     filter_data = None
 
-                    # This is for backward compatibilty
+                    # TODO: remove this. This is for backward compatibilty
                     my.config = WidgetConfig.get(xml=filter, view='filter')
                     filter_data = FilterData.get()
                     if not filter_data.get_data():

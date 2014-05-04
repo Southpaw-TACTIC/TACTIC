@@ -61,16 +61,17 @@ class CsvExportWdg(BaseRefreshWdg):
         my.selected_search_keys = []
         my.error_msg = ''
         my.search_type_list = []
+        my.is_test = my.kwargs.get('test') == True
+        my.table = None
 
     def check(my):
         if my.mode == 'export_matched':
             from tactic.ui.panel import TableLayoutWdg
-            
-            table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
+            my.table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
                 show_search_limit='false', search_limit=-1, search_view=my.search_view,\
                 search_class=my.search_class, simple_search_view=my.simple_search_view, init_load_num=-1)
-            table.handle_search()
-            search_objs = table.sobjects
+            my.table.handle_search()
+            search_objs = my.table.sobjects
             my.selected_search_keys = SearchKey.get_by_sobjects(search_objs, use_id=True)
             return True
 
@@ -184,7 +185,6 @@ class CsvExportWdg(BaseRefreshWdg):
         if not my.search_type or not my.view:
             return table
 
-        
         # use overriding element names and derived titles if available
         config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
         if my.element_names and config:
@@ -244,8 +244,7 @@ class CsvExportWdg(BaseRefreshWdg):
         widget.add(hint)
 
         label = string.capwords(my.mode.replace('_', ' '))
-        button = ActionButtonWdg(title=label)
-
+        button = ActionButtonWdg(title=label, size='l')
         is_export_all  = my.mode == 'export_all'
         button.add_behavior({
             'type': "click_up",
@@ -281,6 +280,15 @@ class CsvExportWdg(BaseRefreshWdg):
         top.add(div)
         top.add(HtmlElement.br())
         top.add(action_div)
+
+        if my.is_test:
+            rtn_data = {'columns': my.element_names, 'count': len(my.selected_search_keys)}
+            if my.mode == 'export_matched':
+                rtn_data['sql'] =  my.table.search_wdg.search.get_statement()
+            from pyasm.common import jsondumps
+            rtn_data = jsondumps(rtn_data)
+            return rtn_data
+
         return top
 
 
