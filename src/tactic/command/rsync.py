@@ -22,6 +22,10 @@ class RSync(object):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+        my.paths = []
+
+    def get_paths(my):
+        return my.paths
 
 
     def execute(my):
@@ -86,6 +90,10 @@ class RSync(object):
         cmd_list.append("--progress")
         cmd_list.append("--delete")
 
+        dry_run = my.kwargs.get("dry_run")
+        if dry_run in [True, 'true']:
+            cmd_list.append("--dry-run")
+
         relative = True
         if relative:
             cmd_list.append("--relative")
@@ -105,27 +113,47 @@ class RSync(object):
         program = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         #program.wait()
 
+        message_key = my.kwargs.get("message_key")
+
+        progress = RSyncProgress(message_key=message_key)
 
         on_update = my.kwargs.get("on_update")
         if not on_update:
-            progress = RSyncProgress()
             on_update = progress.on_update
         assert(on_update)
+
+        on_complete = my.kwargs.get("on_complete")
+        if not on_complete:
+            on_complete = progress.on_complete
+        assert(on_complete)
+
+        on_error = my.kwargs.get("on_error")
+        if not on_error:
+            on_error = progress.on_error
+        assert(on_error)
+
+
 
         data = []
         lines = []
         path = None
+        my.paths = []
         error = []
         while program.poll() is None:
             buffer = []
             while 1:
                 char = program.stdout.read(1)
+                #print "char: ", char
                 if char == "\n":
                     line = "".join(buffer)
                     buffer = []
                     break
 
                 buffer.append(char)
+                if len(buffer) > 1024:
+                    print "ERROR: overflow"
+                    print buffer
+                    break
                 if not buffer:
                     break
                 
@@ -155,18 +183,31 @@ class RSync(object):
 
                 elif line.startswith("rsync "):
                     error.append(line)
+                elif line.startswith("rsync: "):
+                    error.append(line)
                 elif line.startswith("sent "):
                     my.handle_data_line(line)
                 elif line.startswith("total "):
                     my.handle_data_line(line)
+                elif line.startswith("sending incremental "):
+                    my.handle_data_line(line)
                 else:
                     line = line.strip()
                     path = line
+                    if not line.endswith("/"):
+                        my.paths.append(line)
 
 
         if error:
             error = "\n".join(error)
+            if on_error:
+                on_error(path, {"error": error})
             raise Exception("Sync Error\n%s" % error)
+
+
+        if on_complete:
+            on_complete(path, {})
+
 
         return "success"
 
@@ -192,12 +233,13 @@ class RSync(object):
 
 
 class RSyncProgress(object):
-    def __init__(my):
+    def __init__(my, **kwargs):
         my.total_sent = 0
+        from tactic_client_lib import TacticServerStub
+        my.server = TacticServerStub.get()
+        my.message_key = kwargs.get("message_key")
 
     def on_update(my, path, data):
-        from tactic_client_lib import TacticServerStub
-        server = TacticServerStub.get()
         data['path'] = path
 
         bytes = data.get("bytes")
@@ -206,10 +248,17 @@ class RSyncProgress(object):
         print "path: ", path
         print "total: ", my.total_sent
 
-        server.log_message("wow", data)
+        if my.message_key:
+            my.server.log_message(my.message_key, data, status="in_progress")
 
 
+    def on_error(my, path, data):
+        if my.message_key:
+            my.server.log_message(my.message_key, data, status="error")
 
+    def on_complete(my, path, data):
+        if my.message_key:
+            my.server.log_message(my.message_key, data, status="complete")
 
 
 
