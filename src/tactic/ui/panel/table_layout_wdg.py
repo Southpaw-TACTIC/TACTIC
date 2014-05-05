@@ -2731,6 +2731,11 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         }
       }
     }
+    if (spt.table.last_table.hasOwnProperty('hidden_zindex'))
+        spt.table.last_table.hidden_zindex += 1;
+    else
+        spt.table.last_table.hidden_zindex = 100;
+    
 
     // New popup test
     var kwargs = {
@@ -2746,7 +2751,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "#777";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index: 100; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -4084,7 +4089,6 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
-
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -4107,7 +4111,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // refresh is happening
     var layout = rows[0].getParent(".spt_layout");
     spt.table.set_layout(layout);
-    
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
@@ -4118,8 +4121,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     
     var table_top = layout.getParent('.spt_table_top');
-    
-    var show_select = table_top.getAttribute("spt_show_select");
+    //note: sometimes table_top is null
+    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
@@ -5135,12 +5138,10 @@ spt.table.open_ingest_tool = function(search_type) {
             %s
             spt.table.set_table(bvr.src_el);
             
-            
             ''' %cbjs_action
 
 
         hidden_row_color = table.get_color("background3")
-
 
         table.add_behavior( {
             'type': 'load',

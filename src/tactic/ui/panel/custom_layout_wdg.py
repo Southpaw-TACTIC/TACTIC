@@ -198,11 +198,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         my.category = my.kwargs.get("category")
         my.search_type = my.kwargs.get("search_type")
+
         my.encoding = my.kwargs.get("encoding")
         if not my.encoding:
              my.encoding = 'utf-8'
         my.plugin = None
-
 
         xml = None
 
@@ -300,19 +300,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         my.config = config
         #my.def_config = config    # This is unnessary?
-
-        # find out if there is a plugin associated with this
-        my.plugin = my.kwargs.get("plugin")
-        if not my.plugin or my.plugin == '{}':
-            my.plugin = {}
-
-
-
-        """
-        if not my.plugin and isinstance(my.config, SObject):
-            my.plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
-        """
-
 
         # try to get the sobject if this is in a table element widget
         if my.search_key:
@@ -607,11 +594,23 @@ class CustomLayoutWdg(BaseRefreshWdg):
         else:
             sobject = {}
 
-        if my.plugin:
-            if isinstance(my.plugin, dict):
-                plugin = my.plugin
+
+
+        # find out if there is a plugin associated with this
+        plugin = my.kwargs.get("plugin")
+        if not plugin or plugin == '{}':
+            plugin = {}
+
+        """
+        if not plugin and isinstance(my.config, SObject):
+            plugin = Search.eval("@SOBJECT(config/plugin_content.config/plugin)", my.config, single=True)
+        """
+
+        if plugin:
+            if isinstance(plugin, dict):
+                pass
             else:
-                plugin = my.plugin.get_sobject_dict()
+                plugin = plugin.get_sobject_dict()
             plugin_code = plugin.get("code")
             plugin_dir = my.server.get_plugin_dir(plugin)
         else:

@@ -103,6 +103,7 @@
     <element name="class_name"/>
     <element name="color"/>
     <element name="default_layout"/>
+    <element name="message_event"/>
 </edit>
 
 
@@ -140,6 +141,12 @@
       <display class="SelectWdg">
         <empty>true</empty>
         <values>tile|card|browser|table</values>
+      </display>
+    </element>
+    <element name="message_event">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>update|insert|change|retire</values>
       </display>
     </element>
 

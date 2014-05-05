@@ -38,7 +38,8 @@ class TransactionQueueAppendCmd(Trigger):
 
         
         project = Project.get()
-        # Things done in the Admin project are not sync'd.
+
+        # Block admin project from syncing
         # NOTE: maybe need an option to enable this?
         if project.get_code() == 'admin':
             return
@@ -54,18 +55,21 @@ class TransactionQueueAppendCmd(Trigger):
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-
-
         #print "servers: ", len(servers)
 
-        mode = input.get('mode')
-        if not mode or mode == 'default':
-            mode = 'xmlrpc'
-        # This will transaction into a "file" folder
-        mode = "file"
 
 
-        file_mode = 'upload'
+
+        # These are usually determined by the server entry
+        #sync_mode = input.get('mode')
+        #if not sync_mode or sync_mode == 'default':
+        #    sync_mode = 'xmlrpc'
+        ## This will transaction into a "file" folder
+        #sync_mode = "file"
+
+        #file_mode = 'delayed'
+        #file_mode = 'upload'
+
 
         # get some user info
         env = Environment.get()
@@ -80,7 +84,6 @@ class TransactionQueueAppendCmd(Trigger):
 
         for server in servers:
 
-            # FIXME
             # check security
             #if not my.check_security(server):
             #    print "Transaction denied due to security restrictions"
@@ -129,9 +132,9 @@ class TransactionQueueAppendCmd(Trigger):
             kwargs = {
                 'server': server.get_value("code"),
                 'transaction_code': transaction_code,
-                'file_mode': file_mode,
                 'project_code': project_code,
-                'mode': mode
+                #'file_mode': file_mode,
+                #'sync_mode': sync_mode
             }
             job.set_json_value("data", kwargs)
             job.commit()
@@ -291,18 +294,22 @@ class TransactionQueueCmd(Command):
         host = server.get_value("host")
 
 
+        # file mode is usually determined by the server
         file_mode = my.kwargs.get("file_mode")
+        if not file_mode:
+            file_mode = server.get_value("file_mode", no_exception=True)
         if not file_mode:
             file_mode = 'upload'
 
 
 
-        # mode can default|undo
-        mode = my.kwargs.get("sync_mode")
-        if not mode:
-            mode = server.get_value("sync_mode", no_exception=True)
-        if not mode or mode == 'default':
-            mode = "xmlrpc"
+        # sync mode is usually determined by the server
+        sync_mode = my.kwargs.get("sync_mode")
+        if not sync_mode:
+            sync_mode = server.get_value("sync_mode", no_exception=True)
+        if not sync_mode or sync_mode == 'default':
+            # defautl is xmlrpc
+            sync_mode = "xmlrpc"
 
 
         project_code = my.kwargs.get("project_code")
@@ -354,7 +361,7 @@ class TransactionQueueCmd(Command):
         from pyasm.search import TableDataDumper
 
         # drop the transaction into a folder
-        if mode == 'file':
+        if sync_mode == 'file':
             base_dir = server.get_value("base_dir", no_exception=True)
             if not base_dir:
                 base_dir = Config.get_value("checkin", "win32_dropbox_dir")
@@ -383,8 +390,7 @@ class TransactionQueueCmd(Command):
 
 
         # if the mode is undo, then execute an undo
-        if mode == 'undo':
-            print "mode = undo"
+        if sync_mode == 'undo':
             remote_server.undo(transaction_id=log.get_code(), is_sync=True)
         else:            
 
