@@ -228,10 +228,12 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.title_wdg = CustomLayoutWdg(**kwargs)
         else:
             my.title_wdg = None
-
         my.sticky_scale = my.kwargs.get('sticky_scale')
         if my.sticky_scale == 'local':
-            my.scale_prefix = my.view
+            # NOTE: each side bar link has a unique name on each level, but it's not always available
+            # not in page refresh or built-in links
+            # element = my.kwargs.get('element_name')
+            my.scale_prefix = '%s:%s' %(my.search_type, my.view)
         else:
             my.scale_prefix = ''
         

@@ -29,6 +29,7 @@ class Trigger(Command):
 
     KEY = "Trigger:triggers2"
     STATIC_TRIGGER_KEY = "Trigger:static_trigger"
+    STATIC_TRIGGER_COUNT = "Trigger:static_trigger_count"
     INTEGRAL_TRIGGER_KEY = "Trigger:integral_trigger"
     NOTIFICATION_KEY = "Trigger:notifications"
     TRIGGER_EVENT_KEY = "triggers:cache"
@@ -199,7 +200,6 @@ class Trigger(Command):
 
         notification_key = cls.NOTIFICATION_EVENT_KEY 
         trigger_dict = Container.get(trigger_key)
-
         notification_dict = Container.get(notification_key)
       
         call_event_key = jsondumps(call_event)
@@ -207,11 +207,18 @@ class Trigger(Command):
         # NOTE: get_db_triggers only get triggers for this project ...
         # need to update so that triggers from other projects
         # are also executed
-        if trigger_dict == None:
+
+        # static triggers could grow when more sTypes are searched
+        last_static_count = Container.get(cls.STATIC_TRIGGER_COUNT)
+        static_trigger_sobjs = cls.get_static_triggers()
+        current_static_count = len(static_trigger_sobjs)
+        renew = last_static_count != current_static_count and not integral_only
+
+        if trigger_dict == None or renew:
             # assign keys to each trigger
             trigger_dict = {}
             Container.put(trigger_key, trigger_dict)
-
+            
             if integral_only:
                 # just get all the integral triggers
                 trigger_sobjs = cls.get_integral_triggers()
@@ -222,11 +229,11 @@ class Trigger(Command):
                 trigger_sobjs = cls.get_db_triggers()
 
                 # append all static triggers
-                static_trigger_sobjs = cls.get_static_triggers()
                 if static_trigger_sobjs:
+                    Container.put(cls.STATIC_TRIGGER_COUNT, current_static_count)
                     trigger_sobjs.extend(static_trigger_sobjs)
-
-
+                
+            
                 # append all integral triggers
                 integral_trigger_sobjs = cls.get_integral_triggers()
                 if integral_trigger_sobjs:
@@ -259,7 +266,6 @@ class Trigger(Command):
                     trigger_dict[listen_key] = trigger_list
 
                 trigger_list.append(trigger_sobj)
-                
 
         called_triggers = trigger_dict.get(call_event_key)
 
@@ -373,7 +379,6 @@ class Trigger(Command):
 
     def call_by_key(cls, key, caller, output={}, forced_mode='', integral_only=False, project_code=None):
         event = key.get("event")
-        
         #call_event_key = jsondumps(key)
         triggers_sobjs = cls._get_triggers(key, integral_only, project_code=project_code)
         if not triggers_sobjs:

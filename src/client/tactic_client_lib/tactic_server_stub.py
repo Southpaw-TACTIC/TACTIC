@@ -1842,9 +1842,12 @@ class TacticServerStub(object):
                 basename = os.path.basename(file_path)
 
                 if mode == 'move':
+                    
                     shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
                 elif mode == 'copy':
                     shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    # it moves to repo from handoff dir later
+                    mode = 'move'
 
             elif mode in ['local']:
                 # do nothing
@@ -1955,6 +1958,8 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                # it moves to repo from handoff dir later
+                mode = 'move'
             elif mode == 'upload':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
@@ -2027,6 +2032,8 @@ class TacticServerStub(object):
             shutil.move(dir, "%s/%s" % (handoff_dir, basename))
         elif mode == 'copy':
             shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
+            # it moves to repo from handoff dir later
+            mode = 'move'
 
         use_handoff_dir = True
 
@@ -3266,16 +3273,20 @@ class TacticServerStub(object):
             string - html form of the widget
 
         @example:
-        class_name = 'TableLayoutWdg'
+        class_name = 'tactic.ui.panel.TableLayoutWdg'
 
         args = {
-                'view': 'manage',
-                'search_type': 'prod/asset',
+                'view': 'task_list',
+                'search_type': 'sthpw/task',
                }
 
-        widget = server.get_widget(class_name, args))
+        filter =  [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}, {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is not","main_body_value":"sthpw/project"}]
+        
+        from simplejson import dumps
+        values  = {'json': dumps(filter)}
+        widget_html = server.get_widget(class_name, args, values)
         '''
-        return my.server.get_widget(my.ticket, class_name, args)
+        return my.server.get_widget(my.ticket, class_name, args, values)
 
 
 
