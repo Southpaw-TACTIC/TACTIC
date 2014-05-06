@@ -52,12 +52,13 @@ class FileCheckin(BaseCheckin):
                parent level of this checkin
            mode - determines what mode the checkin is.  This basically
                 determines how the source files are treated.  
-                Accepted values: copy, move, local: default tactic check-in that uses upload/handoff dir; naming convention on.
+                Accepted values: create, copy, move, local: 
+                        create: default tactic check-in that uses upload/handoff dir; naming convention on, return to cache on undo
                         move and local performs a move. copy performs a copy
                         
                         inplace: check in the source_path as is without moving it; naming convention off
-                        free_move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on
-                        free_copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on
+                        move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on, return to src on undo
+                        copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on, return to cache on undo
            keep_file_name - determines whether the checked in file name is
                 kept as is or goes through naming conventions
            base_dir - DEPRECATED: this base directory determines the root that was used for inplace checkins

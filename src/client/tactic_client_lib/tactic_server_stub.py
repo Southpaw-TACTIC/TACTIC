@@ -1844,10 +1844,11 @@ class TacticServerStub(object):
                 if mode == 'move':
                     
                     shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
                 elif mode == 'copy':
                     shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
                     # it moves to repo from handoff dir later
-                    mode = 'move'
+                    mode = 'create'
 
             elif mode in ['local']:
                 # do nothing
@@ -1951,6 +1952,7 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 handoff_dir = my.get_handoff_dir()
                 expanded_paths = my._expand_paths(file_path, file_range)
@@ -1959,7 +1961,7 @@ class TacticServerStub(object):
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
                 # it moves to repo from handoff dir later
-                mode = 'move'
+                mode = 'create'
             elif mode == 'upload':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
@@ -2030,10 +2032,11 @@ class TacticServerStub(object):
 
         if mode == 'move':
             shutil.move(dir, "%s/%s" % (handoff_dir, basename))
+            mode = 'create'
         elif mode == 'copy':
             shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
             # it moves to repo from handoff dir later
-            mode = 'move'
+            mode = 'create'
 
         use_handoff_dir = True
 
@@ -2254,6 +2257,7 @@ class TacticServerStub(object):
                         shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
 
         return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming, checkin_type)
 
@@ -2294,12 +2298,14 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'upload':
                 my.upload_group(file_path, file_range)
                 use_handoff_dir = False
@@ -2369,6 +2375,7 @@ class TacticServerStub(object):
             elif mode == 'copy':
                 shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
 
+            mode = 'create'
 
         use_handoff_dir = True
         create_icon = False

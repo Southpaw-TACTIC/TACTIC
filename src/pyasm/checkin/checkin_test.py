@@ -68,7 +68,7 @@ class CheckinTest(unittest.TestCase, Command):
         search = Search("sthpw/snapshot")
 
         my.person = Person.create( "Unit", "Test",
-                "ComputerWorld", "")
+                "ComputerWorld", "unittest/checkin_test")
 
        
         
@@ -708,7 +708,7 @@ class CheckinTest(unittest.TestCase, Command):
             'alias': '/tmp/tactic/alias',
             'alias2': '/tmp/tactic/alias2',
         });
-
+        # "plugins" is assumed in some branch 
         asset_dict = Environment.get_asset_dirs()
         default_dir = asset_dict.get("default")
         my.assertEquals( "/tmp/tactic/default", default_dir)

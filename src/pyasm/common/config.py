@@ -75,9 +75,14 @@ class Config(Base):
 
             value = value.strip()
             if sub_key:
-                sub_value = eval(value)
-                sub_value = sub_value.get(sub_key)
-                value = sub_value
+                # in case it's not in dict format like asset_base_dir
+                try:
+                    sub_value = eval(value)
+                    sub_value = sub_value.get(sub_key)
+                    value = sub_value
+                except:
+                    pass
+
 
             data[KEY] = value
 
