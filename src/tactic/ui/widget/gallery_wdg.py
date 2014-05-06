@@ -80,6 +80,8 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
         spt.gallery.total = bvr.descriptions.length;
+        spt.gallery.left_arrow = bvr.src_el.getElement('.spt_left_arrow');
+        spt.gallery.right_arrow = bvr.src_el.getElement('.spt_right_arrow');
 
         spt.gallery.init = function() {
             
@@ -92,7 +94,11 @@ class GalleryWdg(BaseRefreshWdg):
         }
 
 
-        spt.gallery.show_next = function() {
+        spt.gallery.show_next = function(src_el) {
+           
+            if (spt.gallery.index >= spt.gallery.total-2) {
+                spt.hide(src_el);
+            }
             if (spt.gallery.index == spt.gallery.total-1) {
                 return;
             }
@@ -100,17 +106,21 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_index(spt.gallery.index);
         }
 
-        spt.gallery.show_prev = function() {
+        spt.gallery.show_prev = function(src_el) {
+            if (spt.gallery.index <= 1) {
+                spt.hide(src_el);
+            
+            }
             if (spt.gallery.index == 0) {
                 return;
             }
+            
             spt.gallery.index -= 1;
             spt.gallery.show_index(spt.gallery.index);
         }
 
 
         spt.gallery.show_index = function(index) {
-
             // stop all videos
             var videos = spt.gallery.top.getElements(".video-js");
             for (var i = 0; i < videos.length; i++) {
@@ -132,9 +142,21 @@ class GalleryWdg(BaseRefreshWdg):
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
 
             spt.gallery.index = index;
-
-            var description = spt.gallery.descriptions[index];
             var total = spt.gallery.total;
+            
+           
+            if (index == 0) {
+                spt.hide(spt.gallery.left_arrow);
+                spt.show(spt.gallery.right_arrow);
+            }
+            else if (index == total - 1) {
+                spt.show(spt.gallery.left_arrow);
+                spt.hide(spt.gallery.right_arrow);
+            }
+                
+
+            
+            var description = spt.gallery.descriptions[index];
             if (!description) {
                 description = "("+(index+1)+" of "+total+")";
             }
@@ -301,6 +323,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         icon = IconWdg(title="Previous", icon="/plugins/remington/pos/icons/chevron_left.png")
         inner.add(icon)
+        icon.add_class('spt_left_arrow')
         icon.add_style("cursor: pointer")
         icon.add_style("position: absolute")
         icon.add_style("top: 40%")
@@ -308,13 +331,15 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
-            spt.gallery.show_prev(); 
+            var arrow = bvr.src_el;
+            spt.gallery.show_prev(arrow); 
             '''
         } )
 
 
         icon = IconWdg(title="Next", icon="/plugins/remington/pos/icons/chevron_right.png")
         inner.add(icon)
+        icon.add_class('spt_right_arrow')
         icon.add_style("position: absolute")
         icon.add_style("cursor: hand")
         icon.add_style("top: 40%")
@@ -322,7 +347,8 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            spt.gallery.show_next(); 
+            var arrow = bvr.src_el;
+            spt.gallery.show_next(arrow); 
             '''
         } )
 
