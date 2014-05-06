@@ -6306,7 +6306,7 @@ class SObjectUndo:
 
 
     def redo(node, no_exception=True):
-        no_exception=False
+        #no_exception=False
 
         import time
         start = time.time()
@@ -6492,8 +6492,8 @@ class SObjectUndo:
                     print "WARNING: %s" % error
                 else:
                     raise MissingException(error)
-
-            sobject.delete(log=False)
+            else:
+                sobject.delete(log=False)
 
 
     redo = staticmethod(redo)
