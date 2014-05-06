@@ -611,7 +611,10 @@ class FileUndo:
                     os.unlink(src)
 
                 if io_action == 'copy':
-                    shutil.copy(orig,src)
+                    if os.path.isdir(orig):
+                        shutil.copytree(orig, src)
+                    else:
+                        shutil.copy(orig,src)
                 else:
                     shutil.move(orig,src)
             else:

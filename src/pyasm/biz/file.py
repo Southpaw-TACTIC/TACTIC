@@ -57,7 +57,7 @@ class File(SObject):
 
     NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
             'gz', 'zip', 'rar',
-            'ini', 'db', 'py', 'pyd'
+            'ini', 'db', 'py', 'pyd', 'spt'
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
@@ -270,7 +270,7 @@ class File(SObject):
 
 
 
-    def get_by_snapshots(cls, snapshots):
+    def get_by_snapshots(cls, snapshots, file_type=None):
         all_file_codes = []
         for snapshot in snapshots:
             xml = snapshot.get_xml_value("snapshot")
@@ -279,6 +279,8 @@ class File(SObject):
 
         search = Search( cls.SEARCH_TYPE)
         search.add_filters("code", all_file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         files = search.get_sobjects()
 
         # cache these
@@ -500,6 +502,8 @@ class IconCreator(object):
         elif type in File.NORMAL_EXT or type in File.VIDEO_EXT:
             # skip icon generation for normal or video files
             pass
+
+
         else:
             # assume it is an image
             try:
@@ -546,6 +550,8 @@ class IconCreator(object):
 
 
 
+
+
     def _process_image(my, file_name):
 
         base, ext = os.path.splitext(file_name)
@@ -568,7 +574,6 @@ class IconCreator(object):
             web_file_name = "%s_web.jpg" % base
 
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
-
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
         # create the web image
