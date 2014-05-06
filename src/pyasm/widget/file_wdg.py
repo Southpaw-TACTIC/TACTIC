@@ -1274,6 +1274,7 @@ class ThumbCmd(Command):
         my.info = {
             'search_keys': search_keys
         }
+        my.add_description('Generate Thumbnail with ThumbCmd')
 
     def generate_icon(my, search_key):
 
@@ -1315,9 +1316,12 @@ class ThumbCmd(Command):
 
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
+            ext = File.get_extension(path)
+            ext = ext.lower()
+            if ext in File.NORMAL_EXT:
 
-            if path in File.NORMAL_EXT:
                 return
+
 
 
             # use api
@@ -1337,7 +1341,7 @@ class ThumbCmd(Command):
                 sub_file_types = [path, 'web', 'icon']
 
                 from pyasm.checkin import FileCheckin
-                checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="free_copy")
+                checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="copy")
                 checkin.execute()
                 snapshot = checkin.get_snapshot()
 

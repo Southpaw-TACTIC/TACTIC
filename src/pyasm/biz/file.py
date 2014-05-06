@@ -57,7 +57,7 @@ class File(SObject):
 
     NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
             'gz', 'zip', 'rar',
-            'ini', 'db', 'py', 'pyd'
+            'ini', 'db', 'py', 'pyd', 'spt'
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 

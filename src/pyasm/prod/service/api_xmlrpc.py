@@ -3578,7 +3578,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         if mode:
-            assert mode in ['move', 'copy', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
+            assert mode in ['move', 'copy','create', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
 
 
         # file_path can be an array of files:
@@ -3728,7 +3728,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #filename = File.get_filesystem_name(filename)
 
         if mode:
-            assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
+            assert mode in ['move', 'copy', 'create','preallocate', 'upload', 'inplace']
         if mode == 'preallocate':
             keep_file_name = True
             # create a virtual file object for dir naming
