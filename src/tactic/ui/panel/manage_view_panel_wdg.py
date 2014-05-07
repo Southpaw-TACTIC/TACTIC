@@ -637,11 +637,21 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         menu_item = MenuItem(type='action', label='Remove')
         menu.add(menu_item)
-        menu_item.add_behavior({
+        menu_item.add_behavior({ 
             'type': 'click_up',
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
-            spt.behavior.destroy_element(activator);
+
+            if (! activator.hasClass("spt_side_bar_element")) {
+                activator = activator.getParent('.spt_side_bar_element');
+            }
+            if (activator.hasClass("spt_side_bar_element")) {
+                var name = activator.getAttribute('spt_element_name');
+                var view = activator.getAttribute('spt_view');
+                spt.side_bar.changed_views[view] = true;
+                spt.side_bar.trashed_items.push(name);
+                spt.behavior.destroy_element(activator);
+            }
         ''' } )
 
 
