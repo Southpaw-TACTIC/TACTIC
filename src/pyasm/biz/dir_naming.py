@@ -138,7 +138,6 @@ class DirNaming(object):
         my._init_file_object()
 
 
-        naming = Naming.get(my.sobject, my.snapshot)
 
         # get the alias from the naming, if it exists
         if not alias and my.protocol in ["file", "http"]:

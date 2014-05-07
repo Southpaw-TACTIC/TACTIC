@@ -1585,7 +1585,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             header_div.add_behavior(behavior)
-            th.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
+            table.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
 
 
 
