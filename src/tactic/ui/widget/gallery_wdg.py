@@ -54,7 +54,7 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         paths = my.get_paths()
-
+          
         descriptions = []
         for path in paths:
             sobject = my.sobject_data.get(path)
@@ -95,6 +95,8 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         spt.gallery.show_next = function(src_el) {
+            if (!src_el)
+                src_el = spt.gallery.right_arrow;
            
             if (spt.gallery.index >= spt.gallery.total-2) {
                 spt.hide(src_el);
@@ -107,6 +109,8 @@ class GalleryWdg(BaseRefreshWdg):
         }
 
         spt.gallery.show_prev = function(src_el) {
+            if (!src_el)
+                src_el = spt.gallery.left_arrow;
             if (spt.gallery.index <= 1) {
                 spt.hide(src_el);
             
@@ -153,15 +157,19 @@ class GalleryWdg(BaseRefreshWdg):
                 spt.show(spt.gallery.left_arrow);
                 spt.hide(spt.gallery.right_arrow);
             }
+            else {
+                spt.show(spt.gallery.left_arrow);
+                spt.show(spt.gallery.right_arrow);
+            }
                 
 
             
             var description = spt.gallery.descriptions[index];
             if (!description) {
-                description = "("+(index+1)+" of "+total+")";
+                description = (index+1)+" of "+total;
             }
             else {
-                description = "("+(index+1)+" of "+total+") - " + description;
+                description = (index+1)+" of "+total+" - " + description;
             }
             spt.gallery.set_description(description);
         }
@@ -242,6 +250,7 @@ class GalleryWdg(BaseRefreshWdg):
             'width': width,
             'cbjs_action': '''
             var key = evt.key;
+            
             if (key == "left") {
                 spt.gallery.push_stack(key);
                 spt.gallery.show_prev();
@@ -361,7 +370,7 @@ class GalleryWdg(BaseRefreshWdg):
         desc_div.add_style("width: %s" % width)
         desc_div.add_style("text-align: center")
         desc_div.add_style("background: rgba(255,255,255,0.8)")
-        desc_div.add_style("color: #000")
+        desc_div.add_style("color: #222")
         desc_div.add_style("font-weight: bold")
         desc_div.add_style("font-size: 1.2em")
         desc_div.add_style("padding-top: 3px")
@@ -386,19 +395,12 @@ class GalleryWdg(BaseRefreshWdg):
 
         search_key = my.kwargs.get("search_key")
         my.curr_path = None
-        if search_key:
-            sobject = Search.get_by_search_key(search_key)
-            snapshot = Snapshot.get_latest_by_sobject(sobject)
-            if snapshot:
-                file_object = File.get_by_snapshot(snapshot)
-                if file_object:
-                    file_object = file_object[0]
-                    my.curr_path = file_object.get_web_path()
-
+      
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
-
-
+        if not paths:
+            paths = []
+        """
         if search_keys:
             sobjects = Search.get_by_search_keys(search_keys)
             snapshots = Snapshot.get_by_sobjects(sobjects, is_latest=True)
@@ -411,8 +413,33 @@ class GalleryWdg(BaseRefreshWdg):
 
             for sobject, path in zip(sobjects, paths):
                 my.sobject_data[path] = sobject
+        """
+        if search_keys:
+            sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
 
+            # return_dict=True defaults to return the first of each snapshot list 
+            # and so works well with is_latest=True
+            sobj_snapshot_dict = Snapshot.get_by_sobjects(sobjects, is_latest=True, return_dict=True)
+            snapshots = sobj_snapshot_dict.values()
+            file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type='main')
+
+            for sobject in sobjects:
+                path = ''
+                snapshot = sobj_snapshot_dict.get(sobject.get_search_key())
+                # it is supposed to get one (latest), just a precaution
+                if isinstance(snapshot, list):
+                    snapshot = snapshot[0]
                 
+                file_list = file_dict.get(snapshot.get_code())
+                
+                for file_object in file_list:
+                    path = file_object.get_web_path()
+                    my.sobject_data[path] = sobject
+                    paths.append(path)  
+	        # set the current path the user clicks on
+                if not my.curr_path and sobject.get_search_key() == search_key:
+                    my.curr_path = path
+                        
 
         elif paths:
             return paths
