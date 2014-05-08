@@ -61,7 +61,7 @@ class File(SObject):
     ]
 
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf']
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v']
 
 
     SEARCH_TYPE = "sthpw/file"
@@ -557,13 +557,29 @@ class IconCreator(object):
             print "Warning: [%s] did not get created from pdf" % tmp_icon_path
 
 
+    def get_web_file_size(my):
+        from pyasm.prod.biz import ProdSetting
+        web_file_size = ProdSetting.get_value_by_key('web_file_size')
+        thumb_size = (640, 480)
+        if web_file_size:
+            parts = re.split('[\Wx]+', web_file_size)
+            
+            thumb_size = (640, 480)
+            if len(parts) == 2:
+                try:
+                    thumb_size = (int(parts[0]), int(parts[1]))
+                except ValueError:
+                    thumb_size = (640, 480)
 
+        return thumb_size
 
     def _process_video(my, file_name):
-
         ffmpeg = Common.which("ffmpeg")
         if not ffmpeg:
             return
+
+        thumb_web_size = my.get_web_file_size()
+        thumb_icon_size = (120, 100)
 
         exts = File.get_extensions(file_name)
 
@@ -574,11 +590,24 @@ class IconCreator(object):
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
-        cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -f image2 "%s"''' % (ffmpeg, my.file_path, tmp_web_path)
-        os.system(cmd)
-        
-        my.web_path = tmp_web_path
-        my.icon_path = tmp_icon_path
+        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -s %sx%s -f image2 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
+        #os.system(cmd)
+        import subprocess
+        try:
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
+                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]), "-f","image2", tmp_web_path])
+
+            my.web_path = tmp_web_path
+        except:
+            pass
+           
+        try:
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
+                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]), "-f","image2", tmp_icon_path])
+            my.icon_path = tmp_icon_path
+
+        except:
+            pass    
 
 
 
@@ -632,18 +661,9 @@ class IconCreator(object):
 
 
             else:
-                from pyasm.prod.biz import ProdSetting
-                web_file_size = ProdSetting.get_value_by_key('web_file_size')
-                thumb_size = (640, 480)
-                if web_file_size:
-                    parts = re.split('[\Wx]+', web_file_size)
-                    
-                    thumb_size = (640, 480)
-                    if len(parts) == 2:
-                        try:
-                            thumb_size = (int(parts[0]), int(parts[1]))
-                        except ValueError:
-                            thumb_size = (640, 480)
+                
+                thumb_size = my.get_web_file_size()
+                
                 try:
                     my._resize_image(my.file_path, tmp_web_path, thumb_size)
                 except TacticException:
