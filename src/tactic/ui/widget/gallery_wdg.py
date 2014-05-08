@@ -125,6 +125,8 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         spt.gallery.show_index = function(index) {
+
+          
             // stop all videos
             var videos = spt.gallery.top.getElements(".video-js");
             for (var i = 0; i < videos.length; i++) {
@@ -213,39 +215,41 @@ class GalleryWdg(BaseRefreshWdg):
         total_width = width * len(paths)
 
         content = DivWdg()
+        top.add_attr('tabindex','-1')
+
         scroll.add(content)
         content.add_class("spt_gallery_content")
 
         content.add_style("width: %s" % total_width)
 
-        scroll.add_behavior( {
+        top.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
-            bvr.src_el.getElement(".spt_input").focus();
+            bvr.src_el.focus();
             '''
         } )
  
-        scroll.add_behavior( {
+        top.add_behavior( {
             'type': 'mouseenter',
             'cbjs_action': '''
-            bvr.src_el.getElement(".spt_input").focus();
+            bvr.src_el.focus();
             '''
         } )
-        scroll.add_behavior( {
+        top.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
-            bvr.src_el.getElement(".spt_input").blur();
+            bvr.src_el.blur();
             '''
         } )
 
 
-
+        """
         input = TextWdg("keydown")
         content.add(input)
         input.add_style("position: absolute")
         input.add_style("left: -5000px")
-
-        input.add_behavior( {
+        """
+        top.add_behavior( {
             'type': 'keydown',
             'width': width,
             'cbjs_action': '''
@@ -260,7 +264,8 @@ class GalleryWdg(BaseRefreshWdg):
                 spt.gallery.show_next();
             }
             else if (key == "esc" || key == "enter") {
-                var top = bvr.src_el.getParent(".spt_gallery_top");
+                
+                var top = bvr.src_el
                 spt.behavior.destroy_element(top);
             }
 
@@ -429,9 +434,12 @@ class GalleryWdg(BaseRefreshWdg):
                 # it is supposed to get one (latest), just a precaution
                 if isinstance(snapshot, list):
                     snapshot = snapshot[0]
-                
+                if not snapshot:
+                    continue
+
                 file_list = file_dict.get(snapshot.get_code())
-                
+                if not file_list: 
+                    continue
                 for file_object in file_list:
                     path = file_object.get_web_path()
                     my.sobject_data[path] = sobject
