@@ -316,16 +316,16 @@ class GalleryWdg(BaseRefreshWdg):
         icon = DivWdg()
         icon.add("X")
         icon.add_style("font-size: 2.5em")
-        icon.add_style("color: white")
+        icon.add_style("color: #ddd")
         icon.add_style("width: 48px")
         icon.add_style("height: 48px")
         icon.add_style("border-radius: 30px")
-        icon.add_style("border: solid 3px white")
+        icon.add_style("border: solid 3px #ddd")
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("top: 0px")
-        icon.add_style("right: 0px")
+        icon.add_style("bottom: 40px")
+        icon.add_style("left: 40px")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''

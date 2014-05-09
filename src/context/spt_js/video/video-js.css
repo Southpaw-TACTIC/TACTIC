@@ -418,6 +418,12 @@ easily in the skin designer. http://designer.videojs.com/
 .vjs-default-skin.vjs-using-native-controls .vjs-big-play-button {
   display: none;
 }
+/* show when paused */
+.vjs-default-skin.vjs-paused .vjs-big-play-button { 
+  display:block !important;
+}
+
+
 .vjs-default-skin:hover .vjs-big-play-button,
 .vjs-default-skin .vjs-big-play-button:focus {
   outline: 0;
