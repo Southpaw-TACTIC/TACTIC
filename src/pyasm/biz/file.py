@@ -151,7 +151,7 @@ class File(SObject):
     ##################
     # Static Methods
     ##################
-
+    """
     # DEPRERECATED
     PADDING = 10
 
@@ -224,6 +224,7 @@ class File(SObject):
         else:
             return True
     has_file_code = staticmethod(has_file_code)
+    """
 
 
     def get_extension(file_path):
@@ -294,8 +295,8 @@ class File(SObject):
     get_by_snapshots = classmethod(get_by_snapshots)
 
 
-
-
+    # DEPRECATED
+    """
     def get_by_path(path):
         file_code = File.extract_file_code(path)
         if file_code == 0:
@@ -305,6 +306,24 @@ class File(SObject):
         search.add_id_filter(file_code)
         file = search.get_sobject()
         return file
+    get_by_path = staticmethod(get_by_path)
+    """
+
+
+    def get_by_path(path):
+        asset_dir = Environment.get_asset_dir()
+        path = path.replace("%s/" % asset_dir, "")
+        relative_dir = os.path.dirname(path)
+        file_name = os.path.basename(path)
+
+        # NOTE: this does not work with base_dir_alias
+
+        search = Search("sthpw/file")
+        search.add_filter("relative_dir", relative_dir)
+        search.add_filter("file_name", file_name)
+        sobject = search.get_sobject()
+        return sobject
+
     get_by_path = staticmethod(get_by_path)
 
 

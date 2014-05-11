@@ -1,4 +1,3 @@
-
 ############################################################
 #
 #    Copyright (c) 2012, Southpaw Technology
@@ -12,6 +11,9 @@
 
 
 __all__ = ['WatchDropFolderTask']
+
+
+
 
 import tacticenv
 import time, os, shutil, sys
@@ -30,6 +32,42 @@ from time import gmtime, strftime
 from optparse import OptionParser
 
 import threading
+
+
+import logging
+logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
+
+from watchdog.observers import Observer
+from watchdog.events import LoggingEventHandler
+
+
+class TestLoggingEventHandler(LoggingEventHandler):
+    """Logs all the events captured."""
+
+    def on_moved(self, event):
+        super(LoggingEventHandler, self).on_moved(event)
+
+        what = 'directory' if event.is_directory else 'file'
+        print "Moved %s: from %s to %s" % (what, event.src_path, event.dest_path)
+
+    def on_created(self, event):
+        super(LoggingEventHandler, self).on_created(event)
+
+        what = 'directory' if event.is_directory else 'file'
+        print "Created %s: %s" % (what, event.src_path)
+
+    def on_deleted(self, event):
+        super(LoggingEventHandler, self).on_deleted(event)
+
+        what = 'directory' if event.is_directory else 'file'
+        print "Deleted %s: %s" % (what, event.src_path)
+
+    def on_modified(self, event):
+        super(LoggingEventHandler, self).on_modified(event)
+
+        what = 'directory' if event.is_directory else 'file'
+        print "Modified %s: %s" % (what, event.src_path)
+
 
 
 
@@ -87,7 +125,9 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
                 # create a "custom" command that will act on the file
-                cmd = CustomCmd(
+                from proctor_and_gamble.gfr_project import GFRWatchFolderCmd
+                cmd = GFRWatchFolderCmd(
+                #cmd = CustomCmd(
                         **kwargs
                 )
                 cmd.execute()
@@ -378,6 +418,8 @@ class CustomCmd(object):
 
 
 
+
+
 class WatchDropFolderTask(SchedulerTask):
 
     def __init__(my, **kwargs):
@@ -448,6 +490,7 @@ class WatchDropFolderTask(SchedulerTask):
             thread.start()
 
 
+
     def execute(my):
 
         base_dir = my.base_dir
@@ -462,9 +505,39 @@ class WatchDropFolderTask(SchedulerTask):
                 )
         checkin.start()
 
-        while True:
-            my._execute()
-            time.sleep(1)
+        # execute and react based on a loop every second
+        mode = "loop"
+        if mode == "loop":
+            while True:
+                my._execute()
+                time.sleep(1)
+
+
+        elif mode == "event":
+
+            try:
+                event_handler = TestLoggingEventHandler()
+                observer = Observer()
+
+                print "base: ", my.base_dir
+                path = my.base_dir
+                observer.schedule(event_handler, path=path, recursive=True)
+                observer.start()
+
+            except Exception, e:
+                print "... skipping: ", e
+                raise
+
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                for observer in observers:
+                    observer.stop()
+
+
+
+
 
 
     def start(cls):
@@ -523,7 +596,6 @@ if __name__ == '__main__':
             scheduler = Scheduler.get()
             scheduler.stop()
             break
-
 
 
 

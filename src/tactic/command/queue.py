@@ -8,6 +8,8 @@
 #    or disclosed in any way without written permission.
 #
 #
+__all__ = ['JobTask', 'Queue']
+
 import tacticenv
 
 from pyasm.security import Batch
@@ -19,7 +21,6 @@ from tactic.command import Scheduler, SchedulerTask
 
 import os
 
-__all__ = ['JobTask', 'Queue']
 
 
 class Queue:

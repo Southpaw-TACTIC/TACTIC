@@ -12,7 +12,7 @@
 
 # scripts that starts up a number of Tactic and monitors them
 
-__all__ = ['TacticThread', 'TacticTimedThread', 'TacticMonitor']
+__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'TacticMonitor']
 
 
 import os, sys, threading, time, urllib, random

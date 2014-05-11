@@ -23,9 +23,13 @@ class RSync(object):
     def __init__(my, **kwargs):
         my.kwargs = kwargs
         my.paths = []
+        my.data = {}
 
     def get_paths(my):
         return my.paths
+
+    def get_data(my):
+        return my.data
 
 
     def execute(my):
@@ -41,6 +45,8 @@ class RSync(object):
         value = ""
         start = time.time()
 
+        message_key = my.kwargs.get("message_key")
+
         while 1:
             try:
                 value = my.sync_paths(from_path, to_path)
@@ -50,6 +56,12 @@ class RSync(object):
             except Exception, e:
                 print "Failed on try [%s]..." % tries
                 print e
+
+                if message_key:
+                    from tactic_client_lib import TacticServerStub
+                    server = TacticServerStub.get()
+                    server.log_message(message_key, {"error": str(e)}, "error_retry")
+
                 time.sleep(tries)
                 if tries == 3:
                     break
@@ -58,9 +70,9 @@ class RSync(object):
 
 
 
-        print "success: ", success
-        print time.time() - start, " seconds"
-        print value
+        #print "success: ", success
+        #print time.time() - start, " seconds"
+        #print value
 
 
 
@@ -68,11 +80,22 @@ class RSync(object):
         return my.current_data
 
 
+    def get_data(my):
+        return my.data
+
 
     def sync_paths(my, from_path, to_path):
 
         server = my.kwargs.get("server")
         login = my.kwargs.get("login")
+        paths = my.kwargs.get("paths")
+        paths_sizes = []
+        if paths:
+            for path in paths:
+                full_path = "%s/%s" % (base_dir, path)
+                size = os.path.getsize(full_path)
+                paths_sizes.append(size)
+ 
 
 
         to_path = "%s@%s:%s" % (login, server, to_path)
@@ -106,7 +129,7 @@ class RSync(object):
         cmd_list.append('%s' % from_path)
         cmd_list.append('%s' % to_path)
 
-        print " ".join(cmd_list)
+        print "exec: ", " ".join(cmd_list)
 
 
 
@@ -115,7 +138,11 @@ class RSync(object):
 
         message_key = my.kwargs.get("message_key")
 
-        progress = RSyncProgress(message_key=message_key)
+        progress = RSyncProgress(
+                message_key=message_key,
+                paths=paths,
+                paths_sizes=paths_sizes
+        )
 
         on_update = my.kwargs.get("on_update")
         if not on_update:
@@ -139,30 +166,23 @@ class RSync(object):
         path = None
         my.paths = []
         error = []
-        while program.poll() is None:
-            buffer = []
-            while 1:
-                char = program.stdout.read(1)
-                #print "char: ", char
-                if char == "\n":
-                    line = "".join(buffer)
-                    buffer = []
-                    break
+        #while program.poll() is None:
+        buffer = []
+        line = ""
+        while 1:
+            char = program.stdout.read(1)
+            if not char:
+                break
 
+            if char == "\n":
+                line = "".join(buffer)
+
+            else:
                 buffer.append(char)
-                if len(buffer) > 1024:
-                    print "ERROR: overflow"
-                    print buffer
-                    break
-                if not buffer:
-                    break
-                
-            #line = program.stdout.readline()
-
-            if line == "\n":
-                continue
+            
 
             if line:
+                print "line: ", line
                 lines.append(line)
                 if line.startswith(" "):
 
@@ -196,6 +216,11 @@ class RSync(object):
                     path = line
                     if not line.endswith("/"):
                         my.paths.append(line)
+    
+                # reset the line
+                line = None
+                buffer = []
+
 
 
         if error:
@@ -214,8 +239,6 @@ class RSync(object):
 
 
     def handle_data_line(my, line):
-        data = {}
-
 
         if line.startswith("sent "):
             # sent 520 bytes  received 22 bytes  361.33 bytes/sec
@@ -225,9 +248,8 @@ class RSync(object):
             #total size is 431666  speedup is 796.43 (DRY RUN)
             parts = line.split()
             total_size = parts[3]
-            data['total_size'] = total_size
-
-        print "data: ", data
+            total_size = int(total_size)
+            my.data['total_size'] = total_size
 
 
 
@@ -238,6 +260,10 @@ class RSyncProgress(object):
         from tactic_client_lib import TacticServerStub
         my.server = TacticServerStub.get()
         my.message_key = kwargs.get("message_key")
+        my.paths = kwargs.get("paths")
+        my.paths_size = kwargs.get("paths_size")
+        if not my.paths:
+            my.paths = []
 
     def on_update(my, path, data):
         data['path'] = path
@@ -245,8 +271,10 @@ class RSyncProgress(object):
         bytes = data.get("bytes")
         my.total_sent += bytes
 
-        print "path: ", path
-        print "total: ", my.total_sent
+        index = my.paths.index(path)
+        data["path_index"] = index+1
+        data["paths_count"] = len(my.paths)
+        data["paths_sizes"] = my.paths_sizes
 
         if my.message_key:
             my.server.log_message(my.message_key, data, status="in_progress")
