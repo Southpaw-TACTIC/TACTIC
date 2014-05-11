@@ -11,6 +11,7 @@
 #
 __all__ = ["TileLayoutWdg"]
 
+import re
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -21,9 +22,8 @@ from tactic.ui.container import SmartMenu
 from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 
-
-
 from tool_layout_wdg import ToolLayoutWdg
+
 class TileLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = ToolLayoutWdg.ARGS_KEYS.copy()
@@ -62,6 +62,21 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['styles'] = {
+            'description': 'styles in a string that can be applied to the top container of this Tile Layout',
+            'type': 'TextWdg',
+            'order' : '06',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['aspect_ratio'] = {
+            'description': 'Custom aspect ratio like 240,110 for the tiles',
+            'type': 'TextWdg',
+            'order' : '06',
+            'category': 'Display'
+
+    }
+
     
 
 
@@ -101,24 +116,23 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_content_wdg(my):
         div = DivWdg()
         div.add_class("spt_tile_layout_top")
+        if my.top_styles:
+            div.add_styles(my.top_styles)
         inner = DivWdg()
         div.add(inner)
 
 
-        # set up the context menus
-        show_context_menu = my.kwargs.get("show_context_menu")
-        if show_context_menu in ['false', False]:
-            show_context_menu = False
-        else:
-            show_context_menu = True
-
+        
         menus_in = {}
-        if show_context_menu:
+        # set up the context menus
+        if my.show_context_menu == True:
             menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
             menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        elif my.show_context_menu == 'none':
+            div.add_event('oncontextmenu', 'return false;')
         if menus_in:
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
-
+ 
 
 
 
@@ -263,6 +277,16 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.scale == None:
             my.scale = 100
 
+
+        my.aspect_ratio = my.kwargs.get('aspect_ratio')
+        if my.aspect_ratio:
+            parts = re.split('[\Wx]+', my.aspect_ratio)
+            my.aspect_ratio = (int(parts[0]), int(parts[1]))
+        else:
+            my.aspect_ratio = (240, 160)
+
+
+        my.top_styles = my.kwargs.get('styles')
         super(TileLayoutWdg, my).init()
 
 
@@ -590,11 +614,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         #thumb_div.add_class("spt_tile_detail")
         div.add(thumb_div)
 
-        width =  240
-        height = 160
 
-        thumb_div.add_style("width: %s" % width)
-        thumb_div.add_style("height: %s" % height)
+        
+        thumb_div.add_style("width: %s" % my.aspect_ratio[0])
+
+        thumb_div.add_style("height: %s" % my.aspect_ratio[1])
         thumb_div.add_style("overflow: hidden")
 
         thumb = ThumbWdg2()
@@ -656,6 +680,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             'type': 'load',
             'scale_prefix':  my.scale_prefix,
             'default_scale': my.scale,
+            'aspect_ratio': my.aspect_ratio,
             'cbjs_action': '''
 spt.tile_layout = {}
 spt.tile_layout.layout = null;
@@ -681,8 +706,8 @@ spt.tile_layout.set_scale = function(scale) {
     var scale_value = spt.tile_layout.layout.getElement(".spt_scale_value");
     scale_value.value = scale;
 
-    var size_x = 240*scale/100;
-    var size_y = 160*scale/100;
+    var size_x = bvr.aspect_ratio[0]*scale/100;
+    var size_y = bvr.aspect_ratio[1]*scale/100;
 
     //var top = bvr.src_el.getParent(".spt_tile_layout_top");
     var top = spt.tile_layout.layout;
@@ -967,6 +992,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_path(my):
         return my.path
+
 
 
     def get_display(my):
