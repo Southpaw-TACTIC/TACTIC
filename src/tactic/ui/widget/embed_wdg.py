@@ -51,6 +51,8 @@ class EmbedWdg(BaseRefreshWdg):
         #div = DivWdg()
         #top.add(div)
         div = top
+        div.add_style("overflow-x: hidden")
+        div.add_style("overflow-y: hidden")
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("text-align: center")
@@ -114,8 +116,7 @@ class EmbedWdg(BaseRefreshWdg):
             embed.add_class("hand")
 
 
-
-
+     
         #embed.set_box_shadow("1px 1px 1px 1px")
         embed.add_style("height", "100%")
         #embed.add_style("width", "100%")

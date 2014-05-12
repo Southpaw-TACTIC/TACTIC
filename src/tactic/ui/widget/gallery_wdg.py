@@ -53,7 +53,7 @@ class GalleryWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
         if not width:
-            width = 1024
+            width = 1200
 
 
         paths = my.get_paths(file_type='main')
@@ -333,8 +333,8 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 45px")
-        icon.add_style("left: 34px")
+        icon.add_style("bottom: 120px")
+        icon.add_style("left: 38px")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
@@ -364,7 +364,7 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_class('spt_right_arrow')
         icon.add_style("position: absolute")
-        icon.add_style("cursor: hand")
+        icon.add_style("cursor: pointer")
         icon.add_style("top: 40%")
         icon.add_style("right: 0px")
         icon.add_behavior( {

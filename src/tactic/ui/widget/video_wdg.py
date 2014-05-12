@@ -82,7 +82,7 @@ class VideoWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var video_id = bvr.video_id;
             spt.dom.load_js(["video/video.js"], function() {
-                videojs(video_id, {}, function() {
+                videojs(video_id, {"nativeControlsForTouch": false}, function() {
                 } );
                 //videojs(bvr.video_id).play();
             });
