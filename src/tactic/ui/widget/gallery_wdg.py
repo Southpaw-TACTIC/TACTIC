@@ -24,6 +24,9 @@ from tactic.ui.common import BaseRefreshWdg
 
 class GalleryWdg(BaseRefreshWdg):
 
+    def init(my):
+        my.curr_path = None
+
     def get_display(my):
 
         my.sobject_data = {}
@@ -53,8 +56,10 @@ class GalleryWdg(BaseRefreshWdg):
             width = 1024
 
 
-        paths = my.get_paths()
-          
+        paths = my.get_paths(file_type='main')
+        # icon type may be too small
+        thumb_paths = my.get_paths(file_type='web')
+        
         descriptions = []
         for path in paths:
             sobject = my.sobject_data.get(path)
@@ -285,12 +290,15 @@ class GalleryWdg(BaseRefreshWdg):
             if path == my.curr_path:
                 curr_index = i
 
+            thumb_path = thumb_paths[i]
+            
+            
             path_div.add_style("width: %s" % width)
             if height:
                 path_div.add_style("height: %s" % height)
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False)
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path)
             path_div.add(embed)
             embed.add_style("width: 100%")
 
@@ -397,10 +405,10 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-    def get_paths(my):
+    def get_paths(my, file_type='main'):
 
         search_key = my.kwargs.get("search_key")
-        my.curr_path = None
+        
       
         search_keys = my.kwargs.get("search_keys")
         paths = my.kwargs.get("paths")
@@ -427,7 +435,7 @@ class GalleryWdg(BaseRefreshWdg):
             # and so works well with is_latest=True
             sobj_snapshot_dict = Snapshot.get_by_sobjects(sobjects, is_latest=True, return_dict=True)
             snapshots = sobj_snapshot_dict.values()
-            file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type='main')
+            file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type=file_type)
 
             for sobject in sobjects:
                 path = ''
@@ -446,7 +454,7 @@ class GalleryWdg(BaseRefreshWdg):
                     my.sobject_data[path] = sobject
                     paths.append(path)  
 	        # set the current path the user clicks on
-                if not my.curr_path and sobject.get_search_key() == search_key:
+                if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
                     my.curr_path = path
                         
 
