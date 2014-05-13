@@ -72,7 +72,14 @@ class TileLayoutWdg(ToolLayoutWdg):
     ARGS_KEYS['aspect_ratio'] = {
             'description': 'Custom aspect ratio like 240,110 for the tiles',
             'type': 'TextWdg',
-            'order' : '06',
+            'order' : '07',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['spacing'] = {
+            'description': 'Custom tile spacing between tiles',
+            'type': 'TextWdg',
+            'order' : '08',
             'category': 'Display'
 
     }
@@ -287,6 +294,10 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         my.top_styles = my.kwargs.get('styles')
+        my.spacing = my.kwargs.get('spacing')
+        if not my.spacing:
+            my.spacing = '10'
+
         super(TileLayoutWdg, my).init()
 
 
@@ -581,6 +592,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div = DivWdg()
         div.add_class("spt_tile_top")
+        div.add_style('margin', my.spacing)
+        div.add_style('background-color','transparent')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
@@ -600,11 +613,11 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
-        div.add_border()
+        
         if my.kwargs.get("show_drop_shadow") not in ['false', False]:
             div.set_box_shadow()
         div.add_color("background", "background", -3)
-        div.add_style("margin: 10px")
+        
         div.add_style("overflow: hidden")
 
         div.add_style("float: left")
@@ -624,6 +637,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb = ThumbWdg2()
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
+        thumb_div.add_border()
 
         #bottom_view = my.kwargs.get("bottom_view")
         #if bottom_view:

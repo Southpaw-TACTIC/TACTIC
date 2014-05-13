@@ -75,8 +75,19 @@ class GalleryWdg(BaseRefreshWdg):
         'width': width,
         'descriptions': descriptions,
         'cbjs_action': '''
-
         spt.gallery = {};
+        // 1250 is defined also in the css styles
+        spt.gallery.portrait = window.innerWidth < 1250;
+
+        if (spt.gallery.portrait) {
+            bvr.width = bvr.width * 0.7;
+            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
+            scroll.setStyle('width', bvr.width);
+            var items = bvr.src_el.getElements('.spt_gallery_item')
+            for (var k=0; k < items.length; k++)
+                items[k].setStyle('width', bvr.width);
+        } 
+       
 
         spt.gallery.top = bvr.src_el;
         spt.gallery.width = bvr.width;
@@ -87,6 +98,8 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.total = bvr.descriptions.length;
         spt.gallery.left_arrow = bvr.src_el.getElement('.spt_left_arrow');
         spt.gallery.right_arrow = bvr.src_el.getElement('.spt_right_arrow');
+
+       
 
         spt.gallery.init = function() {
             
@@ -200,7 +213,7 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-        scroll = DivWdg()
+        scroll = DivWdg(css='spt_gallery_scroll')
         inner.add(scroll)
         scroll.set_box_shadow()
 
@@ -256,7 +269,6 @@ class GalleryWdg(BaseRefreshWdg):
         """
         top.add_behavior( {
             'type': 'keydown',
-            'width': width,
             'cbjs_action': '''
             var key = evt.key;
             
@@ -283,7 +295,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         curr_index = 0
         for i, path in enumerate(paths):
-            path_div = DivWdg()
+            path_div = DivWdg(css='spt_gallery_item')
             content.add(path_div)
             path_div.add_style("float: left")
 
