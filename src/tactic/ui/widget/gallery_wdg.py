@@ -83,9 +83,16 @@ class GalleryWdg(BaseRefreshWdg):
             bvr.width = bvr.width * 0.7;
             var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
             scroll.setStyle('width', bvr.width);
+            scroll.setStyle('height', '70%');
+            scroll.setStyle('position', 'relative');
+            scroll.setStyle('top', '400px');
+            
             var items = bvr.src_el.getElements('.spt_gallery_item')
-            for (var k=0; k < items.length; k++)
+            for (var k=0; k < items.length; k++) {
                 items[k].setStyle('width', bvr.width);
+                items[k].setStyle('height', '70%');
+            }
+            
         } 
        
 
