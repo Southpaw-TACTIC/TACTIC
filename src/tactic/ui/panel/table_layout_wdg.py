@@ -696,6 +696,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         for widget in my.widgets:
+            #if my.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             my.drawn_widgets[widget.__class__.__name__] = True
         
@@ -1952,6 +1953,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
+        tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
         display_value = sobject.get_display_value(long=True)

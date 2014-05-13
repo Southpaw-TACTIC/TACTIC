@@ -131,9 +131,13 @@ class SandboxSelectWdg(BaseRefreshWdg):
         virtual_snapshot.set_value("context", process)
 
         naming = Naming.get(sobject, virtual_snapshot)
+        if naming:
+            naming_expr = naming.get_value("sandbox_dir_naming")
+            alias_options = naming.get_value("sandbox_dir_alias")
+        else:
+            naming_expr = None
+            alias_options = None
 
-        naming_expr = naming.get_value("sandbox_dir_naming")
-        alias_options = naming.get_value("sandbox_dir_alias")
         if alias_options == "__all__":
             alias_options = alias_dict.keys()
         elif alias_options:

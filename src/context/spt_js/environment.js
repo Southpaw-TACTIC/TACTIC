@@ -115,6 +115,16 @@ spt.Environment = function() {
     this.get_libraries = function() {
         return this.libraries;
     }
+    this.has_library = function(library) {
+        var state = this.libraries[library];
+        if (!state) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
 
 
 

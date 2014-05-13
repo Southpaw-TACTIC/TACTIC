@@ -29,7 +29,11 @@ def main():
     )
     count = 0
     while 1:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except (KeyboardInterrupt, SystemExit), e:
+            print "Exiting ..."
+            raise
 
 
 

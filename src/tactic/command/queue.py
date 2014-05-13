@@ -160,7 +160,6 @@ class JobTask(SchedulerTask):
 
 
     def cleanup(my, count=0):
-        #print "Cleaning up ..."
         if count >= 3:
             return
         try:

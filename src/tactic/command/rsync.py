@@ -89,6 +89,8 @@ class RSync(object):
         server = my.kwargs.get("server")
         login = my.kwargs.get("login")
         paths = my.kwargs.get("paths")
+        base_dir = my.kwargs.get("base_dir")
+
         paths_sizes = []
         if paths:
             for path in paths:
@@ -215,6 +217,10 @@ class RSync(object):
                     line = line.strip()
                     path = line
                     if not line.endswith("/"):
+                        if line.find(" -> ") != -1:
+                            parts = line.split(" -> ")
+                            line = parts[0]
+
                         my.paths.append(line)
     
                 # reset the line
@@ -256,12 +262,11 @@ class RSync(object):
 
 class RSyncProgress(object):
     def __init__(my, **kwargs):
-        my.total_sent = 0
         from tactic_client_lib import TacticServerStub
         my.server = TacticServerStub.get()
         my.message_key = kwargs.get("message_key")
         my.paths = kwargs.get("paths")
-        my.paths_size = kwargs.get("paths_size")
+        my.paths_sizes = kwargs.get("paths_sizes")
         if not my.paths:
             my.paths = []
 
@@ -269,12 +274,28 @@ class RSyncProgress(object):
         data['path'] = path
 
         bytes = data.get("bytes")
-        my.total_sent += bytes
 
         index = my.paths.index(path)
         data["path_index"] = index+1
         data["paths_count"] = len(my.paths)
         data["paths_sizes"] = my.paths_sizes
+
+        total_size = 0
+        current_size = 0
+        for i in range(0, len(my.paths)):
+            if i < index:
+                current_size += my.paths_sizes[i]
+            elif i == index:
+                current_size += bytes
+
+            total_size += my.paths_sizes[i]
+
+        print "current_size: ", current_size
+        print "total_size: ", total_size
+        print "percent: ", (current_size*1000)/(total_size*10)
+        total_percent = (current_size*1000)/(total_size*10)
+        data['total_percent'] = total_percent
+
 
         if my.message_key:
             my.server.log_message(my.message_key, data, status="in_progress")

@@ -216,6 +216,12 @@ TacticServerStub = function() {
         return this._delegate("get_message", arguments);
     }
 
+    this.get_messages = function(keys) {
+        return this._delegate("get_messages", arguments);
+    }
+
+
+
 
     this.log_message = function(key, message, kwargs) {
         return this._delegate("log_message", arguments, kwargs);

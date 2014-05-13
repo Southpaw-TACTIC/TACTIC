@@ -935,6 +935,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
+    def get_messages(my, ticket, keys):
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        messages = search.get_sobjects()
+
+        results = []
+        for message in messages:
+            sobject_dict = my._get_sobject_dict(message)
+            results.append(sobject_dict)
+
+        return results
+
+
+
+
+    @xmlrpc_decorator
     def log_message(my, ticket, key, message=None, status=None, category="default"):
         '''Log a message which will be seen by all who are subscribed to
         the message "key".
