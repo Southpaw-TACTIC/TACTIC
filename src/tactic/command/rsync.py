@@ -207,6 +207,8 @@ class RSync(object):
                     error.append(line)
                 elif line.startswith("rsync: "):
                     error.append(line)
+                elif line.startswith("deleting "):
+                    my.handle_data_line(line)
                 elif line.startswith("sent "):
                     my.handle_data_line(line)
                 elif line.startswith("total "):
