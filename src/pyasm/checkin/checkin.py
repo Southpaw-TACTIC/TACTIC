@@ -357,10 +357,9 @@ class BaseCheckin(Command):
         # don't bother checking in local mode because the files won't be there
         if my.mode in ['local','inplace']:
             return
-
         for file in file_paths:
-            if File.has_file_code(file):
-                continue
+            #if File.has_file_code(file):
+            #    continue
 
             if not System().exists(file):
                 raise CheckinException("File [%s] does not exist" % file)

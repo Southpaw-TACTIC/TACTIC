@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin']
+__all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin','SingleSnapshotException']
 
 import sys, string, os, shutil, time, types
 from cStringIO import StringIO
@@ -23,6 +23,8 @@ from pyasm.search import *
 from checkin import *
 from snapshot_builder import *
 
+class SingleSnapshotException(Exception):
+    pass
 
 
 class FileCheckin(BaseCheckin):
@@ -36,7 +38,7 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='strict', version=None):
+            checkin_type='strict', version=None, single_snapshot=False):
 
         '''sobject - the sobject that this checkin belongs to
            file_paths - array of all the files to checkin
@@ -72,6 +74,7 @@ class FileCheckin(BaseCheckin):
                 strict uses strict naming conventions with explicit versionless
                 auto uses looser naming conventions with auto versionless
            version - force the version of the check-in
+           single_snapshot - if set to True, it raises a SingleSnapshotException if an existing snapshot already exists.
             
         '''
         super(FileCheckin,my).__init__(sobject)
@@ -213,7 +216,8 @@ class FileCheckin(BaseCheckin):
             # Checkin may not provide md5s, make a None list
             file_sizes = [ None for x in xrange(len(file_paths))]
         my.file_sizes = file_sizes
-
+        
+        my.single_snapshot = single_snapshot
 
 
 
@@ -387,6 +391,10 @@ class FileCheckin(BaseCheckin):
             level_type=my.level_type, level_id=my.level_id, is_latest=is_latest,
             is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False)
 
+        if my.single_snapshot and my.snapshot.get_version() > 1:
+            raise SingleSnapshotException("There is an existing snapshot for \
+                    this sobject [%s] under the [%s] context."%(my.sobject.get_search_key(), my.context))
+            
 
     def postprocess_snapshot(my):
 
