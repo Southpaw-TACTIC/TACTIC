@@ -105,7 +105,7 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.total = bvr.descriptions.length;
         spt.gallery.left_arrow = bvr.src_el.getElement('.spt_left_arrow');
         spt.gallery.right_arrow = bvr.src_el.getElement('.spt_right_arrow');
-
+        spt.gallery.videos = {};
        
 
         spt.gallery.init = function() {
@@ -158,7 +158,7 @@ class GalleryWdg(BaseRefreshWdg):
                 try {
                     var video = videos[i];
                     var video_id = video.get("id");
-                    var video_obj = videojs(video_id);
+                    var video_obj = videojs(video_id,  {"nativeControlsForTouch": false});
                     video_obj.pause();
 
                 }
@@ -170,6 +170,8 @@ class GalleryWdg(BaseRefreshWdg):
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
+           
+
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
 
             spt.gallery.index = index;
@@ -317,7 +319,7 @@ class GalleryWdg(BaseRefreshWdg):
                 path_div.add_style("height: %s" % height)
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path)
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
             path_div.add(embed)
             embed.add_style("width: 100%")
 

@@ -46,6 +46,7 @@ class EmbedWdg(BaseRefreshWdg):
 
         height = my.kwargs.get("height")
         width = my.kwargs.get("width")
+        index = my.kwargs.get("index")
 
 
         #div = DivWdg()
@@ -82,6 +83,8 @@ class EmbedWdg(BaseRefreshWdg):
         elif ext in ['.mp4', '.ogg', '.mov', '.avi', '.f4v']:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
+           
+
 
             thumb_path = my.kwargs.get("thumb_path")
             if not thumb_path:
@@ -95,7 +98,7 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height)
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height, index=index)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 
