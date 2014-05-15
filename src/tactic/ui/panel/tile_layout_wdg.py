@@ -1038,7 +1038,7 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("padding: 10px 15%")
             img.add_style("width: 70%")
         elif path:
-            #img.add_style("width: %s" % width)
+            img.add_style("width: %s" % width)
             img.add_style("height: %s" % height)
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
