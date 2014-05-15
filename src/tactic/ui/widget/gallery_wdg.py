@@ -53,7 +53,9 @@ class GalleryWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
         if not width:
-            width = 1500
+            width = 1300
+        else:
+            width = int(width)
 
 
         paths = my.get_paths(file_type='main')
@@ -70,36 +72,58 @@ class GalleryWdg(BaseRefreshWdg):
                 if not description:
                     description = ""
                 descriptions.append(description)
+
+        total_width = width * len(paths)
         inner.add_behavior( {
         'type': 'load',
         'width': width,
+        'total_width': total_width,
         'descriptions': descriptions,
         'cbjs_action': '''
         spt.gallery = {};
         // 1250 is defined also in the css styles
         spt.gallery.portrait = window.innerWidth < 1250;
 
-        if (spt.gallery.portrait) {
-            bvr.width = bvr.width * 0.7;
-            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
-            scroll.setStyle('width', bvr.width);
-            scroll.setStyle('height', '70%');
-            scroll.setStyle('position', 'relative');
-            scroll.setStyle('top', '400px');
-            
-            var items = bvr.src_el.getElements('.spt_gallery_item')
-            for (var k=0; k < items.length; k++) {
-                items[k].setStyle('width', bvr.width);
-                items[k].setStyle('height', '70%');
-            }
-            
-        } 
        
-
+        
         spt.gallery.top = bvr.src_el;
-        spt.gallery.width = bvr.width;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
+        
+        
+        if (spt.gallery.portrait) {
+            bvr.width = bvr.width * 0.6;
+            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
+            scroll.setStyle('width', bvr.width);
+            scroll.setStyle('height', '60%');
+            scroll.setStyle('position', 'relative');
+            scroll.setStyle('top', '500px');
+            
+            var items = bvr.src_el.getElements('.spt_gallery_item');
+            for (var k=0; k < items.length; k++) {
+                items[k].setStyle('width', bvr.width);
+                items[k].setStyle('height', '60%');
+            }
+            
+        }
+        else {
+            // make landscape mode 20% wider
+            bvr.width = bvr.width * 1.2;
+            var new_total_width = bvr.total_width * 1.2;
+            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
+            scroll.setStyle('width', bvr.width);
+            spt.gallery.desc_el.setStyle('width', bvr.width);
+            spt.gallery.desc_el.setStyle('margin-left', bvr.width/-2);
+
+            spt.gallery.content.setStyle('width', new_total_width);
+            var items = bvr.src_el.getElements('.spt_gallery_item');
+            for (var k=0; k < items.length; k++) {
+                items[k].setStyle('width', bvr.width);
+            }
+        }
+
+        
+        spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
         spt.gallery.total = bvr.descriptions.length;
@@ -165,13 +189,10 @@ class GalleryWdg(BaseRefreshWdg):
                 catch(e) {
                 }
             }
-
             var width = spt.gallery.width;
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
-           
-
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
 
             spt.gallery.index = index;
@@ -239,7 +260,7 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-        total_width = width * len(paths)
+        
 
         content = DivWdg()
         top.add_attr('tabindex','-1')

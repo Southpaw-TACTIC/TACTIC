@@ -325,6 +325,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not mode:
             mode = "gallery"
 
+        gallery_width = my.kwargs.get("gallery_width")
+        if not gallery_width:
+            gallery_width = ''
         if mode == "view":
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
@@ -355,6 +358,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'width': gallery_width,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -373,8 +377,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
                 var kwargs = {
                     search_keys: search_keys,
-                    search_key: search_key
+                    search_key: search_key,
                 };
+                if (bvr.width) 
+                    kwargs['width'] = bvr.width;
                 var gallery_el = layout.getElement(".spt_tile_gallery");
                 spt.panel.load(gallery_el, class_name, kwargs);
 
