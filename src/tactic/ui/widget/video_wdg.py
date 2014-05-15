@@ -80,7 +80,7 @@ class VideoWdg(BaseRefreshWdg):
             overlay = DivWdg()
             overlay.add_class('video_overlay')
             overlay.add_styles('background: transparent; z-index: 300; position: fixed; top: 38%; left: 12%;\
-                margin-left: auto; margin-right: auto; width: 75%; height: 50%' )
+                margin-left: auto; margin-right: auto; width: 75%; height: 45%' )
 
            
             overlay.add_behavior({'type':'click_up',
@@ -122,6 +122,12 @@ class VideoWdg(BaseRefreshWdg):
             if (spt.gallery) {
                 
                 spt.gallery.videos[bvr.index] = video_id;
+            }
+            if (!spt.gallery.portrait) {
+                var overlay = bvr.src_el.getElement('.video_overlay');
+                if (overlay)
+                    overlay.setStyles({'top': '4%', 'left': '5%', 
+                        'width': '90%', 'height':'87%'});
             }
             
             '''

@@ -606,7 +606,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
 
-
         div.add_attr("spt_search_key", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
@@ -623,6 +622,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style("float: left")
 
         thumb_div = DivWdg()
+        #thumb_div.add_styles('margin-left: auto; margin-right: auto')
         thumb_div.add_class("spt_tile_content")
         #thumb_div.add_class("spt_tile_detail")
         div.add(thumb_div)
@@ -632,7 +632,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_style("width: %s" % my.aspect_ratio[0])
 
         thumb_div.add_style("height: %s" % my.aspect_ratio[1])
-        thumb_div.add_style("overflow: hidden")
+        #thumb_div.add_style("overflow: hidden")
 
         thumb = ThumbWdg2()
         thumb.set_sobject(sobject)
@@ -1012,6 +1012,7 @@ class ThumbWdg2(BaseRefreshWdg):
     def get_display(my):
 
         width = "100%"
+        height = "100%"
 
         sobject = my.get_current_sobject()
 
@@ -1037,7 +1038,10 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("padding: 10px 15%")
             img.add_style("width: 70%")
         elif path:
-            img.add_style("width: %s" % width)
+            #img.add_style("width: %s" % width)
+            img.add_style("height: %s" % height)
+            img.add_style('margin-left','auto')
+            img.add_style('margin-right','auto')
 
         if not path:
             img = DivWdg()

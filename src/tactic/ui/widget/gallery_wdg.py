@@ -53,7 +53,7 @@ class GalleryWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         height = my.kwargs.get("height")
         if not width:
-            width = 1200
+            width = 1500
 
 
         paths = my.get_paths(file_type='main')
