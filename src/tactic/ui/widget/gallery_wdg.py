@@ -90,38 +90,51 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
         
-        
+        var height_factor = '100%'; 
         if (spt.gallery.portrait) {
-            bvr.width = bvr.width * 0.6;
+            bvr.width = bvr.width * 0.8;
             var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
             scroll.setStyle('width', bvr.width);
-            scroll.setStyle('height', '60%');
+            scroll.setStyle('height', '80%');
             scroll.setStyle('position', 'relative');
             scroll.setStyle('top', '500px');
             
             var items = bvr.src_el.getElements('.spt_gallery_item');
             for (var k=0; k < items.length; k++) {
                 items[k].setStyle('width', bvr.width);
-                items[k].setStyle('height', '60%');
+                items[k].setStyle('height', '80%');
             }
+            var left = bvr.src_el.getElement('.spt_left_arrow');
+            var right = bvr.src_el.getElement('.spt_right_arrow');
+            left.setStyle('top','88%')
+            left.setStyle('left','35%')
+            right.setStyle('top','88%')
+            
+            right.setStyle('right','35%')
+            
+            height_factor = '70%';
             
         }
-        else {
-            // make landscape mode 20% wider
-            bvr.width = bvr.width * 1.2;
-            var new_total_width = bvr.total_width * 1.2;
-            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
-            scroll.setStyle('width', bvr.width);
-            spt.gallery.desc_el.setStyle('width', bvr.width);
-            spt.gallery.desc_el.setStyle('margin-left', bvr.width/-2);
-
-            spt.gallery.content.setStyle('width', new_total_width);
-            var items = bvr.src_el.getElements('.spt_gallery_item');
-            for (var k=0; k < items.length; k++) {
-                items[k].setStyle('width', bvr.width);
+        // set the img h or w directly
+        var items = bvr.src_el.getElements('.spt_gallery_item img');
+        for (var k=0; k < items.length; k++) {
+            var item_h = items[k].getHeight();
+            var item_w = items[k].getWidth();
+            if (item_h >= item_w){
+                items[k].setStyle('width', '');
+                items[k].setStyle('height', height_factor);
+            }
+            else {
+                if (spt.gallery.portrait) {
+                    items[k].setStyle('width','100%');
+                    items[k].setStyle('height','');
+                } 
+                // this is only needed if EmdedWdg doesn't set height to keep original aspect ratio
+                //else
+                //    items[k].setStyle('width','100%');
+            
             }
         }
-
         
         spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
@@ -267,7 +280,8 @@ class GalleryWdg(BaseRefreshWdg):
 
         scroll.add(content)
         content.add_class("spt_gallery_content")
-
+        # make the itesm vertically align to bottom
+        content.add_styles("display: flex; flex-flow: row nowrap; align-items: flex-end;")
         content.add_style("width: %s" % total_width)
 
         top.add_behavior( {
@@ -342,7 +356,7 @@ class GalleryWdg(BaseRefreshWdg):
             from tactic.ui.widget import EmbedWdg
             embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
             path_div.add(embed)
-            embed.add_style("width: 100%")
+            
 
             #img = HtmlElement.img(path)
             #path_div.add(img)
@@ -375,7 +389,7 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 120px")
+        icon.add_style("bottom: 125px")
         icon.add_style("left: 38px")
         icon.add_behavior( {
             'type': 'click_up' ,
@@ -393,6 +407,7 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_style("position: absolute")
         icon.add_style("top: 40%")
         icon.add_style("left: 0px")
+        icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
@@ -409,6 +424,7 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_style("cursor: pointer")
         icon.add_style("top: 40%")
         icon.add_style("right: 0px")
+        icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -425,8 +441,8 @@ class GalleryWdg(BaseRefreshWdg):
         desc_div.add_style("height: 30px")
         desc_div.add_style("width: %s" % width)
         desc_div.add_style("text-align: center")
-        desc_div.add_style("background: rgba(255,255,255,0.8)")
-        desc_div.add_style("color: #222")
+        desc_div.add_style("background: rgba(0,0,0,1)")
+        desc_div.add_style("color: #bbb")
         desc_div.add_style("font-weight: bold")
         desc_div.add_style("font-size: 16px")
         desc_div.add_style("padding-top: 10px")

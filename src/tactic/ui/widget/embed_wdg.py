@@ -118,12 +118,12 @@ class EmbedWdg(BaseRefreshWdg):
             } )
             embed.add_class("hand")
 
-
-     
-        #embed.set_box_shadow("1px 1px 1px 1px")
-        embed.add_style("height", "100%")
         #embed.add_style("width", "100%")
-
+        # NOTE: to keep true original aspect ratio, don't set this height
+        # and let GalleryWdg inner load script to take care of it on load
+        # that js portion needs uncommenting as well
+        embed.add_style("height", "100%")
+        #embed.set_box_shadow("1px 1px 1px 1px")
         return top
 
     
