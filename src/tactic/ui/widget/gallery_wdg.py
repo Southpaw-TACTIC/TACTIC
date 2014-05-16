@@ -88,6 +88,7 @@ class GalleryWdg(BaseRefreshWdg):
         
         spt.gallery.top = bvr.src_el;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
+        spt.gallery.content.setStyle('opacity','0.1')
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
         
         var height_factor = '100%'; 
@@ -115,27 +116,28 @@ class GalleryWdg(BaseRefreshWdg):
             height_factor = '70%';
             
         }
-        // set the img h or w directly
-        var items = bvr.src_el.getElements('.spt_gallery_item img');
-        for (var k=0; k < items.length; k++) {
-            var item_h = items[k].getHeight();
-            var item_w = items[k].getWidth();
-            if (item_h >= item_w){
-                items[k].setStyle('width', '');
-                items[k].setStyle('height', height_factor);
-            }
-            else {
-                if (spt.gallery.portrait) {
-                    items[k].setStyle('width','100%');
-                    items[k].setStyle('height','');
-                } 
-                // this is only needed if EmdedWdg doesn't set height to keep original aspect ratio
-                //else
-                //    items[k].setStyle('width','100%');
-            
-            }
-        }
-        
+        //window.addEvent('domready', function() {
+        setTimeout(function() {
+		// set the img h or w directly
+		var items = bvr.src_el.getElements('.spt_gallery_item img');
+		// fade in
+        spt.gallery.content.set('tween', {duration: 250}).fade('in');
+
+		for (var k=0; k < items.length; k++) {
+		    var sizes = items[k].getSize();
+		    var item_h = sizes.y;
+		    var item_w = sizes.x;
+		    if (item_h >= item_w){
+			    items[k].setStyle('width', '');
+			    items[k].setStyle('height', height_factor);
+		    }
+		    else {
+			    items[k].setStyle('width','100%');
+			    items[k].setStyle('height','');
+		    }
+		    
+		}
+        }, 50)
         spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
