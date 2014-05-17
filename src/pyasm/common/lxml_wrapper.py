@@ -151,9 +151,18 @@ class Xml(Base):
         #return my.doc.importNode(element, deep)
         return my.doc.insert(0, element)
 
-    def create_element(my, name):
+    def create_element(my, name, node=None, attrs=None):
         '''create a new element with this document'''
-        return etree.Element(name)
+        element = etree.Element(name)
+
+        if node is not None:
+            node.append(element)
+
+        if attrs:
+            for name, value in attrs.items():
+                xml.set_attribute(element, name, value)
+
+        return element
 
     def create_text_element(my, name, text, node=None):
         '''create an element with a text node embedded'''
@@ -323,7 +332,7 @@ class Xml(Base):
         return etree.tostring(my.doc, pretty_print=True)
 
 
-    def to_string(my, node=None, pretty=True, tree=False, method='xml'):
+    def to_string(my, node=None, pretty=True, tree=False, method='xml', xml_declaration=False):
         '''returns a stringified version of the document
             method: xml, html, text'''
         if tree: # needed for adding comment before the root
@@ -338,7 +347,7 @@ class Xml(Base):
                 output = node
        
 
-        value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method)
+        value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method, xml_declaration=xml_declaration)
         value = unicode( value, 'utf-8')
         return value
 

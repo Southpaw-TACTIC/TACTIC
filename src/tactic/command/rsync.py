@@ -239,7 +239,7 @@ class RSync(object):
 
 
         if on_complete:
-            on_complete(path, {})
+            on_complete(path, {"message": "All files synchronized"})
 
 
         return "success"

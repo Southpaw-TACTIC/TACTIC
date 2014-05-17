@@ -466,7 +466,8 @@ class Common(Base):
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
-                            dir_size = 0;
+                            # ignore links
+                            pass
                         else:
                             dir_size += os.path.getsize(filename)
                         count += 1
