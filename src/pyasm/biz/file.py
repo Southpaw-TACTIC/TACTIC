@@ -531,7 +531,6 @@ class IconCreator(object):
                 file'''
                 print "WARNING: ", e.__str__()
                 Environmnet.add_warning("Unknown file type", e.__str__())
-
         else:
             # assume it is an image
             try:
