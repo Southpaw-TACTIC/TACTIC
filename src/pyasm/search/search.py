@@ -3907,6 +3907,7 @@ class SObject(object):
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
+
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
@@ -3937,6 +3938,7 @@ class SObject(object):
         message.set_user()
         message.set_value("status", "complete")
         message.commit(triggers=False)
+
 
 
 

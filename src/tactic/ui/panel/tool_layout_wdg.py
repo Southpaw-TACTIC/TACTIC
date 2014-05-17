@@ -54,6 +54,16 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         return True
 
 
+    def init(my):
+        # set up the context menus
+        my.show_context_menu = my.kwargs.get("show_context_menu")
+        if my.show_context_menu in ['false', False]:
+            my.show_context_menu = False
+        elif my.show_context_menu == 'none':
+            pass
+        else:
+            my.show_context_menu = True
+
     def get_display(my):
 
         my.view_editable = True
@@ -94,7 +104,8 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_color("background", "background")
+        # This is handled elsewhere
+        #inner.add_color("background", "background")
         inner.add_color("color", "color")
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")
@@ -106,13 +117,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
 
-        # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        
 
+        
 
         thumb = ThumbWdg()
         thumb.handle_layout_behaviors(inner)

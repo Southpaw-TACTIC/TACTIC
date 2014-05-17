@@ -3280,16 +3280,20 @@ class TacticServerStub(object):
             string - html form of the widget
 
         @example:
-        class_name = 'TableLayoutWdg'
+        class_name = 'tactic.ui.panel.TableLayoutWdg'
 
         args = {
-                'view': 'manage',
-                'search_type': 'prod/asset',
+                'view': 'task_list',
+                'search_type': 'sthpw/task',
                }
 
-        widget = server.get_widget(class_name, args))
+        filter =  [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}, {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is not","main_body_value":"sthpw/project"}]
+        
+        from simplejson import dumps
+        values  = {'json': dumps(filter)}
+        widget_html = server.get_widget(class_name, args, values)
         '''
-        return my.server.get_widget(my.ticket, class_name, args)
+        return my.server.get_widget(my.ticket, class_name, args, values)
 
 
 

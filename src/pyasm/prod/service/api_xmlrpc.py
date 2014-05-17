@@ -241,6 +241,9 @@ QUERY_METHODS = {
     'get_doc_link': 0
 }
 
+TRANS_OPTIONAL_METHODS = {
+    'execute_cmd': 3
+}
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -277,6 +280,13 @@ def xmlrpc_decorator(meth):
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(my, meth, ticket, args)
+                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                        cmd = get_simple_cmd(my, meth, ticket, args)
+                    else:
+                        cmd = get_full_cmd(my, meth, ticket, args)
+
                 else:
                     cmd = get_full_cmd(my, meth, ticket, args)
 

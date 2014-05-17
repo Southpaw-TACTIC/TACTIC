@@ -256,7 +256,7 @@ class FileNaming(object):
             
             else:
                 raise
-        # ensure that the filename has no illegal characters
+
         file_name = Common.get_filesystem_name(file_name)
 
         return file_name

@@ -262,7 +262,7 @@ class Snapshot(SObject):
 
 
 
-    def get_files_by_snapshots(cls, snapshots):
+    def get_files_by_snapshots(cls, snapshots, file_type=None):
         '''get all of the file objects in a snsapshot'''
         if not snapshots:
             return []
@@ -277,6 +277,8 @@ class Snapshot(SObject):
 
         search = Search("sthpw/file")
         search.add_filters("code", all_file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         search.add_order_by("code")
         file_objects = search.get_sobjects()
         return file_objects
@@ -284,12 +286,12 @@ class Snapshot(SObject):
 
 
 
-    def get_files_dict_by_snapshots(cls, snapshots, attr="snapshot_code"):
+    def get_files_dict_by_snapshots(cls, snapshots, attr="snapshot_code", file_type=None):
         '''gets all of the file objects in a dict of lists.  The keys are
         sorted by the attr argument'''
         # preprocess and get all file objects
         all_files = {}
-        files = Snapshot.get_files_by_snapshots(snapshots)
+        files = Snapshot.get_files_by_snapshots(snapshots, file_type=file_type)
         for file in files:
             snapshot_code = file.get_value(attr)
 

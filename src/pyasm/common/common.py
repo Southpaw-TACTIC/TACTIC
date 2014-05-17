@@ -511,11 +511,15 @@ class Common(Base):
 
 
     def get_filesystem_name(filename):
+        # FIXME: for now, turn it off
+        return filename
+    get_filesystem_name = staticmethod(get_filesystem_name)
+
+
+    def clean_filesystem_name(filename):
         '''take a name and converts it to a name that can be saved in
         the filesystem. This is different from File.get_filesystem_name()'''
 
-        # FIXME: for now, turn it off
-        return filename
 
         # handle python style
         p = re.compile("^__(\w+)__.py$")
@@ -577,7 +581,7 @@ class Common(Base):
 
         return filename
 
-    get_filesystem_name = staticmethod(get_filesystem_name)
+    clean_filesystem_name = staticmethod(clean_filesystem_name)
 
 
 
