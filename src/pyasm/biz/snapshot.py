@@ -1229,11 +1229,17 @@ class Snapshot(SObject):
     #get_by_sobject = staticmethod(get_by_sobject)
 
 
-    def get_by_sobject(sobject, context=None):
+    def get_by_sobject(sobject, context=None, process=None, is_latest=False):
         search = Search(Snapshot.SEARCH_TYPE)
 
         if context != None:
             search.add_filter("context", context)
+
+        if process != None:
+            search.add_filter("process", process)
+
+        if is_latest:
+            search.add_filter('is_latest', True)
 
         search.add_sobject_filter(sobject)
         search.add_order_by("timestamp desc")

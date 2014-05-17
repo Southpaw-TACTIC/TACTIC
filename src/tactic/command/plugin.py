@@ -1146,12 +1146,14 @@ class PluginInstaller(PluginBase):
 
                         if base_search_type == "sthpw/schema":
                             # if a schema is already defined, the delete
-                            # the current one
-                            search = Search("sthpw/schema")
-                            search.add_filter("code", project_code)
-                            old_schema = search.get_sobject()
-                            if old_schema:
-                                old_schema.delete()
+                            # the current one.  This is not necessary
+                            # if unique flag is on
+                            if not unique:
+                                search = Search("sthpw/schema")
+                                search.add_filter("code", project_code)
+                                old_schema = search.get_sobject()
+                                if old_schema:
+                                    old_schema.delete()
 
                             sobject.set_value("code", project_code)
 
