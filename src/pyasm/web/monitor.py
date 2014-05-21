@@ -12,10 +12,10 @@
 
 # scripts that starts up a number of Tactic and monitors them
 
-__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'TacticMonitor', 'CustomPythonProcessThread']
+__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, random, subprocess
+import os, sys, threading, time, urllib, random, subprocess, re
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -199,6 +199,18 @@ class CustomPythonProcessThread(BaseProcessThread):
 
             buffer.append(char)
  
+
+
+
+class ASyncThread(BaseProcessThread):
+
+    def get_title(my):
+        return "aSync Queue"
+
+    def execute(my):
+        # Run the job queue service
+        executable = '%s "%s/src/bin/startup_async.py"' % (python, tactic_install_dir)
+        os.system('%s' % (executable) )
 
 
 
@@ -549,34 +561,36 @@ class TacticMonitor(object):
 
         tactic_threads = []
 
-        #use_tactic = Config.get_value("services", "tactic")
-        #use_job_queue = Config.get_value("services", "job_queue")
-        #use_watch_folder = Config.get_value("services", "watch_folder")
+        #start_tactic = Config.get_value("services", "tactic")
+        #start_job_queue = Config.get_value("services", "job_queue")
+        #start_watch_folder = Config.get_value("services", "watch_folder")
 
-        use_tactic = False
-        use_job_queue = False
-        use_watch_folder = False
+        start_tactic = False
+        start_job_queue = False
+        start_watch_folder = False
 
         services = Config.get_value("services", "enable")
         custom_services = []
         if services:
-            services = services.split("|")
+            #services = services.split("|")
+            services = re.split("[|,]", services)
             for service in services:
                 if service == 'tactic':
-                    use_tactic = True
+                    start_tactic = True
                 elif service == 'job_queue':
-                    use_job_queue = True
+                    start_job_queue = True
                 elif service == 'watch_folder':
-                    use_watch_folder = True
+                    start_watch_folder = True
+                elif service == 'async':
+                    start_async = True
                 else:
                     custom_services.append(service)
         else:
-            use_tactic = True
-
+            start_tactic = True
 
 
         # create a number of processes
-        if use_tactic:
+        if start_tactic:
             #for i in range(0, my.num_processes):
             for port in ports:
 
@@ -590,8 +604,22 @@ class TacticMonitor(object):
                 #port += 1
 
 
+        # aSync Queue services
+        if start_async:
+            num_processes = Config.get_value("async", "process_count")
+            if not num_processes:
+                num_processes = 1
+            else:
+                num_processes = int(num_processes)
+
+            for i in range(0, num_processes):
+                job_thread = ASyncThread()
+                job_thread.start()
+                tactic_threads.append(job_thread)
+
+
         # Job Queue services
-        if use_job_queue:
+        if start_job_queue:
             num_processes = Config.get_value("services", "queue_process_count")
             if not num_processes:
                 num_processes = 1
@@ -605,7 +633,7 @@ class TacticMonitor(object):
 
 
         # Watch Folder services
-        if use_watch_folder:
+        if start_watch_folder:
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
@@ -663,8 +691,8 @@ class TacticMonitor(object):
 
         # create a separate thread for scheduler processes
 
-        use_scheduler = Config.get_value("services", "scheduler")
-        if use_scheduler == 'true':
+        start_scheduler = Config.get_value("services", "scheduler")
+        if start_scheduler == 'true':
             tactic_scheduler_thread = TacticSchedulerThread()
             tactic_scheduler_thread.start()
             tactic_threads.append(tactic_scheduler_thread)
