@@ -568,6 +568,7 @@ class TacticMonitor(object):
         start_tactic = False
         start_job_queue = False
         start_watch_folder = False
+        start_async = False
 
         services = Config.get_value("services", "enable")
         custom_services = []
