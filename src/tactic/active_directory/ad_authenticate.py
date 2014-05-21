@@ -403,7 +403,7 @@ class ADAuthenticate(Authenticate):
         if not remaining:
             for group in my.groups:
                 print "user: ", user.get_value("login")
-                print "adding: ", group
+                print "adding to: ", group.get_value('login_group')
                 user.add_to_group(group)
 
 

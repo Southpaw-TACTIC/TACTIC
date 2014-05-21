@@ -1252,9 +1252,8 @@ class WebLoginWdg(Widget):
             if len(domains) > 1:
                 domain_wdg.add_empty_option("-- Select --")
             domain_wdg.set_option("values", domains)
-            domain_wdg.add_style("background-color: #333")
+            domain_wdg.add_style("background-color: #EEE")
             domain_wdg.add_style("height: 20px")
-            domain_wdg.add_style("color: white")
             table.add_cell( domain_wdg )
             table.add_row()
 
