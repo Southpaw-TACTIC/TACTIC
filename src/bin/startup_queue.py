@@ -19,7 +19,7 @@ from tactic.command import JobTask
 import time
 
 def main():
-    print "Starting Job Queue ..."
+    #print "Starting Job Queue ..."
     from pyasm.security import Batch
     Batch()
 

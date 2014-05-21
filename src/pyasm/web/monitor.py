@@ -12,10 +12,10 @@
 
 # scripts that starts up a number of Tactic and monitors them
 
-__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'TacticMonitor']
+__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, random
+import os, sys, threading, time, urllib, random, subprocess
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -28,7 +28,7 @@ app_server = "cherrypy"
 #    pass
 
 
-from pyasm.common import Environment, Common, Date, Config
+from pyasm.common import Environment, Common, Date, Config, jsonloads, jsondumps
 from pyasm.search import Search, DbContainer, SearchType
 
 python = Config.get_value("services", "python")
@@ -43,7 +43,8 @@ STARTUP_DEV_EXEC = '%s "%s/src/bin/startup_dev.py"' % (python, tactic_install_di
 
 class BaseProcessThread(threading.Thread):
     '''Each Thread runs a separate TACTIC service'''
-    def __init__(my):
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
         my.num_checks = 0
         my.kill_interval = 30 + random.randint(0,30)
         my.kill_interval = 1
@@ -51,14 +52,17 @@ class BaseProcessThread(threading.Thread):
         super(BaseProcessThread,my).__init__()
 
     def run(my):
+        print "Starting %s ..." % my.get_title()
+
         while 1:
+
             my.execute()
 
             # TACTIC has exited
             time.sleep(1)
             
             if my.end:
-                print "Stopping port %s ..." % my.get_title()
+                print "Stopping %s ..." % my.get_title()
                 break
             else:
                 print "Restarting %s ..." % my.get_title()
@@ -161,6 +165,41 @@ class TacticThread(BaseProcessThread):
         response = f.readlines()
         f.close()
         return response[0]
+
+
+
+class CustomPythonProcessThread(BaseProcessThread):
+
+    def get_title(my):
+        return my.kwargs.get("title")
+
+    def execute(my):
+        # Run the job queue service
+        path = my.kwargs.get("path")
+
+        plugin_dir = Environment.get_plugin_dir()
+        path = path.replace("${TACTIC_PLUGIN_DIR}", plugin_dir)
+
+        cmd_list = []
+        cmd_list.append(python)
+        cmd_list.append(path)
+
+        program = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        #program.wait()
+
+        buffer = []
+        while 1:
+            char = program.stdout.read(1)
+            if not char:
+                break
+
+            if char == "\n":
+                line = "".join(buffer)
+                print line
+
+            buffer.append(char)
+ 
+
 
 
 
@@ -519,16 +558,21 @@ class TacticMonitor(object):
         use_watch_folder = False
 
         services = Config.get_value("services", "enable")
+        custom_services = []
         if services:
             services = services.split("|")
-            if 'tactic' in services:
-                use_tactic = True
-            if 'job_queue' in services:
-                use_job_queue = True
-            if 'watch_folder' in services:
-                use_watch_folder = True
+            for service in services:
+                if service == 'tactic':
+                    use_tactic = True
+                elif service == 'job_queue':
+                    use_job_queue = True
+                elif service == 'watch_folder':
+                    use_watch_folder = True
+                else:
+                    custom_services.append(service)
         else:
             use_tactic = True
+
 
 
         # create a number of processes
@@ -592,6 +636,14 @@ class TacticMonitor(object):
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
 
+
+
+        # set up custom services 
+        for service in custom_services:
+            kwargs = Config.get_section_values(service)
+            custom_thread = CustomPythonProcessThread(**kwargs)
+            custom_thread.start()
+            tactic_threads.append(custom_thread)
 
 
 
