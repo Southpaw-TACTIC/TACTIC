@@ -1208,7 +1208,6 @@ class WebLoginWdg(Widget):
             div.add_style("height: 250px")
             div.add_style("padding-top: 20px")
         else:
-            div.add_style("height: 210px")
             div.add_style("padding-top: 25px")
 
 
@@ -1333,6 +1332,7 @@ class WebLoginWdg(Widget):
                 td.add(IconWdg("INFO", IconWdg.INFO))
             else:
                 td.add(IconWdg("ERROR", IconWdg.ERROR))
+
             td.add(HtmlElement.b(msg))
             td.add_style('line-height', '14px')
             td.add_style('padding-top', '5px')
@@ -1349,7 +1349,8 @@ class WebLoginWdg(Widget):
                 link = HtmlElement.js_href(js, data=access_msg)
                 link.add_color('color','color', 60)
                 td.add(link)
-   
+        else:
+            div.add_style("height: 210px")
 
         div.add(HtmlElement.br())
         div.add(table)

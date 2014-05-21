@@ -1170,6 +1170,7 @@ class Security(Base):
         mode = authenticate.get_mode()
         if not mode:
             mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
+        
         if not mode:
             mode = 'default'
         
@@ -1197,8 +1198,12 @@ class Security(Base):
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
                 my._login.set_value('login', login_name)
-            authenticate.add_user_info( my._login, password)
 
+            try:
+                authenticate.add_user_info( my._login, password)
+            except Exception, e:
+                raise SecurityException("Error updaing user info: %s" % e.__str__())
+                
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
             if my._login.has_user_license():
