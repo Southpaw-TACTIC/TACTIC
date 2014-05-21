@@ -10,7 +10,6 @@
 #
 #
 
-__all__ = ['ADLookup', 'ADException']
 
 '''Command line script to get user info.'''
 
@@ -46,8 +45,11 @@ mail: remko@southpawtech.com
         print "WARNING: user [%s] cannot be found" % user_name
         return {}
 
-    # turn the most likely single-item generator back to a list
-    user = list(user)[0]
+    import types
+    if isinstance(user, types.GeneratorType):
+        user = next(user)
+    else:
+        user = list(user)[0]
 
     # TODO: need to find a way to get all properties
     #print "properties: ", user.properties
@@ -141,7 +143,7 @@ def main(argv):
                 usage()
                 sys.exit()
     else:
-        print ("Try 'ad_get_user_info -h' for more information.")
+        print ("Try 'python ad_get_user_info.py -h' for more information.")
 
 
 def usage():
