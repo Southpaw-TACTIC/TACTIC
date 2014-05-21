@@ -278,9 +278,14 @@ class TransactionQueueCmd(Command):
 
     def execute(my):
 
-        print "Executing sync job ..."
 
         transaction_code = my.kwargs.get("transaction_code")
+        job = my.kwargs.get("job")
+        job_code = ''
+        if job:
+            job_code = job.get_code()
+
+        print "Executing sync job [%s] ... "% job_code
         if not transaction_code:
             raise TacticException("WARNING: No transaction_code provided")
 
