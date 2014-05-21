@@ -43,14 +43,23 @@ mail: remko@southpawtech.com
     user = active_directory.find_user(user_name, domain)
     if not user:
         print "WARNING: user [%s] cannot be found" % user_name
-        return {}
-
+        return ''
+   
     import types
     if isinstance(user, types.GeneratorType):
-        user = next(user)
-    else:
-        user = list(user)[0]
 
+        try:
+            user = user.next()
+        except StopIteration:
+            user = None
+            return ''
+    else:
+        users = list(user)
+        if users:
+            user = users[0]
+        else:
+            user = None
+            return ''
     # TODO: need to find a way to get all properties
     #print "properties: ", user.properties
     #print "-"*20
