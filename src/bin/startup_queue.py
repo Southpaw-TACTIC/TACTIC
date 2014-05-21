@@ -27,7 +27,6 @@ def main():
             check_interval=0.1,
             max_jobs_completed=50
     )
-    count = 0
     while 1:
         try:
             time.sleep(1)

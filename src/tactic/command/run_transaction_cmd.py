@@ -161,13 +161,8 @@ class TransactionQueueAppendCmd(Trigger):
 from queue import JobTask
 class TransactionQueueManager(JobTask):
 
-    def __init__(my):
-        my.job = None
-        my.jobs = []
-
-
-        my.check_interval = 1
-        my.max_jobs = 2
+    def __init__(my, **kwargs):
+        super(TransactionQueueManager, my).__init__(**kwargs)
 
         trigger = TransactionQueueServersTrigger()
         trigger.execute()
@@ -182,7 +177,6 @@ class TransactionQueueManager(JobTask):
         Trigger.append_static_trigger(trigger, startup=True)
 
 
-        super(TransactionQueueManager, my).__init__()
 
 
     def set_check_interval(my, interval):
@@ -200,6 +194,7 @@ class TransactionQueueManager(JobTask):
 
 
     def get_next_job(my):
+
         from pyasm.prod.queue import Queue
         import random
         import time
@@ -248,7 +243,10 @@ class TransactionQueueManager(JobTask):
         scheduler = Scheduler.get()
         scheduler.start_thread()
 
-        task = TransactionQueueManager()
+        task = TransactionQueueManager(
+            #check_interval=0.1,
+            max_jobs_completed=20
+        )
         task.cleanup_db_jobs()
 
         scheduler.add_single_task(task, mode='threaded', delay=1)
