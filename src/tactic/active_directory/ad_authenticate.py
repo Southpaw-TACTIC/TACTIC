@@ -55,7 +55,7 @@ class ADAuthenticate(Authenticate):
     def verify(my, login_name, password):
             
         if login_name.find("\\") != -1:
-            domain, login_name = login_name.split("\\")
+            domain, base_login_name = login_name.split("\\")
         else:
             domain = None
 
@@ -74,11 +74,11 @@ class ADAuthenticate(Authenticate):
         ad_connect = ADConnect()
         if domain:
             ad_connect.set_domain(domain)
-        ad_connect.set_user(login_name)
+        ad_connect.set_user(base_login_name)
         ad_connect.set_password(password)
         is_logged_in = ad_connect.logon()
 
-        # preload data for further use later
+        # preload data for further use later with original full login_name
         if is_logged_in:
             my.load_user_data(login_name)
 
