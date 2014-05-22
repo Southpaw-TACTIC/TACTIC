@@ -57,6 +57,7 @@ class ADAuthenticate(Authenticate):
         if login_name.find("\\") != -1:
             domain, base_login_name = login_name.split("\\")
         else:
+            base_login_name = login_name
             domain = None
 
         # confirm that there is a domain present if required
