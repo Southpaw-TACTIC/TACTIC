@@ -948,6 +948,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
         default = my.kwargs.get("default")
 
+        # have to set the name with prefix if applicable
+        name = my.get_input_name()
+        my.text.set_name(name)
+        my.hidden.set_name(name)
 
         # fill in the values
         search_key = my.kwargs.get("search_key")
