@@ -957,7 +957,9 @@ class Common(Base):
         python = python.replace('\\','/')
         if os.name =='nt':
             import subprocess
-            subprocess.Popen([python, sys.argv])
+            cmd_list = [python]
+            cmd_list.extend(sys.argv)
+            subprocess.Popen(cmd_list)
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
