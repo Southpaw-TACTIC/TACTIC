@@ -46,11 +46,14 @@ class EmbedWdg(BaseRefreshWdg):
 
         height = my.kwargs.get("height")
         width = my.kwargs.get("width")
+        index = my.kwargs.get("index")
 
 
         #div = DivWdg()
         #top.add(div)
         div = top
+        div.add_style("overflow-x: hidden")
+        div.add_style("overflow-y: hidden")
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("text-align: center")
@@ -64,13 +67,24 @@ class EmbedWdg(BaseRefreshWdg):
         ext = parts[1]
         ext = ext.lower()
 
-        click = True
+        click = my.kwargs.get("click")
+        if click in [False, 'false']:
+            click = False
+        else:
+            click = True
+
+        preload = my.kwargs.get("preload")
+        if not preload:
+            preload = "none"
+
 
         if ext in ['.png', '.jpeg', '.jpg', '.gif']:
             embed = HtmlElement.img(src)
-        elif ext in ['.mp4', '.ogg', '.mov', '.avi']:
+        elif ext in ['.mp4', '.ogg', '.mov', '.avi', '.f4v']:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
+           
+
 
             thumb_path = my.kwargs.get("thumb_path")
             if not thumb_path:
@@ -78,10 +92,13 @@ class EmbedWdg(BaseRefreshWdg):
 
             video_id = None
             sources = [src]
+            source_types = ["video/mp4"]
             poster = thumb_path
             width = '100%'
             height = '100%'
-            video = VideoWdg(video_id=video_id, sources=sources, poster=poster, preload="auto", controls="true", width=width, height=height)
+            #width = "640"
+            #height = "480"
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height, index=index)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 
@@ -101,13 +118,12 @@ class EmbedWdg(BaseRefreshWdg):
             } )
             embed.add_class("hand")
 
-
-
-
-        #embed.set_box_shadow("1px 1px 1px 1px")
-        embed.add_style("height", "100%")
         #embed.add_style("width", "100%")
-
+        # NOTE: to keep true original aspect ratio, don't set this height
+        # and let GalleryWdg inner load script to take care of it on load
+        # that js portion needs uncommenting as well
+        embed.add_style("height", "100%")
+        #embed.set_box_shadow("1px 1px 1px 1px")
         return top
 
     
