@@ -447,7 +447,6 @@ class Common(Base):
         count = 0
         dir_size = 0
 
-
         if dir.find("#") != -1:
             dir_size = 0
             file_type = 'sequence'
@@ -463,13 +462,19 @@ class Common(Base):
             # this part is too slow
             if not skip_dir_details:
                 for (path, dirs, files) in os.walk(dir):
+                    
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
                             # ignore links
                             pass
                         else:
-                            dir_size += os.path.getsize(filename)
+                            try: 
+                                dir_size += os.path.getsize(filename)
+                            except:
+                                continue
+
+                                
                         count += 1
             file_type = 'directory'
         else:
