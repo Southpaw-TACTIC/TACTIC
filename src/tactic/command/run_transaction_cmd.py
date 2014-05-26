@@ -195,7 +195,7 @@ class TransactionQueueManager(JobTask):
 
     def get_next_job(my):
 
-        from pyasm.prod.queue import Queue
+        from queue import Queue
         import random
         import time
         interval = 0.2
@@ -226,7 +226,7 @@ class TransactionQueueManager(JobTask):
 
             server_code = my.servers[server_index].get_code()
             #print "server_code: ", server_code
-            job = Queue.get_job(job_search_type=job_search_type, server_code=server_code)
+            job = Queue.get_next_job(job_search_type=job_search_type, server_code=server_code)
             if job:
                 break
 

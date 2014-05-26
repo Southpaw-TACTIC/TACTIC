@@ -24,14 +24,20 @@ import os
 
 
 class Queue:
-    def get_next_job(queue_type=None):
+
+    def get_next_job(job_search_type="sthpw/queue", queue_type=None, server_code=None):
 
         sql = DbContainer.get("sthpw")
 
+        search_type_obj = SearchType.get(job_search_type)
+        table = search_type_obj.get_table()
+
         # get the entire queue
-        search = Search("sthpw/queue")
+        search = Search(job_search_type)
         if queue_type:
             search.add_filter("queue", queue_type)
+        if server_code:
+            search.add_filter("server_code", server_code)
         search.add_filter("state", "pending")
         search.add_order_by("timestamp")
 
@@ -47,7 +53,7 @@ class Queue:
 
             # attempt to lock this queue
             # have to do this manually
-            update = "UPDATE queue SET state = 'locked' where id = '%s' and state = 'pending'" % queue_id
+            update = """UPDATE "%s" SET state = 'locked' where id = '%s' and state = 'pending'""" % (table, queue_id)
 
             sql.do_update(update)
             row_count = sql.get_row_count()
@@ -58,7 +64,7 @@ class Queue:
                 queue_id = 0
 
         if queue_id:
-            queue = Search.get_by_id("sthpw/queue", queue_id)
+            queue = Search.get_by_id(job_search_type, queue_id)
             return queue
         else:
             return None
