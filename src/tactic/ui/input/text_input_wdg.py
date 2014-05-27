@@ -251,7 +251,7 @@ class TextInputWdg(BaseInputWdg):
                     column = my.name
 
                 display = sobject.get_value(column)
-                if my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
 
                 if isinstance(display, str):
@@ -262,7 +262,6 @@ class TextInputWdg(BaseInputWdg):
                 if format_str:
                     format = FormatValue()
                     display = format.get_format_value( display, format_str )
-
                 my.text.set_value(display)
 
         default = my.kwargs.get("default")
