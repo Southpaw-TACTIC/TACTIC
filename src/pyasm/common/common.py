@@ -959,6 +959,8 @@ class Common(Base):
         import sys
         python = sys.executable
         # for windows
+        print "Restarting the process. . ."
+        print
         python = python.replace('\\','/')
         if os.name =='nt':
             import subprocess
@@ -987,7 +989,9 @@ class KillProcessThread(threading.Thread):
         import ctypes
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.OpenProcess(1, 0, my.pid)
-        return (0 != kernel32.TerminateProcess(handle, 0))
+        kernel32.TerminateProcess(handle, -1)
+        rtn = kernel32.CloseHandle(handle)
+        return (0 != rtn)
 
 
 gl = globals()
