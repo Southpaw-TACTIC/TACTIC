@@ -198,7 +198,7 @@ class TransactionQueueManager(JobTask):
         from queue import Queue
         import random
         import time
-        interval = 0.2
+        interval = 0.05
         time.sleep(interval)
         job_search_type = my.get_job_search_type()
         servers_tried = []

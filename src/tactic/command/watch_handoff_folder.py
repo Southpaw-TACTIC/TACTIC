@@ -57,6 +57,11 @@ class WatchServerFolderTask(SchedulerTask):
             my.tasks.append(task)
 
 
+        # close all the database connections
+        from pyasm.search import DbContainer
+        DbContainer.close_all()
+
+
         count = 0
         while 1:
             #start = time.time()

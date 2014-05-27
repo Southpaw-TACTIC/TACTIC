@@ -18,6 +18,11 @@ import os, subprocess, time, re
 
 
 
+class RSyncConnectionException(Exception):
+    pass
+
+
+
 class RSync(object):
 
     def __init__(my, **kwargs):
@@ -52,10 +57,16 @@ class RSync(object):
                 value = my.sync_paths(from_path, to_path)
                 success = True
                 break
+            except RSyncConnectionException, e:
+                time.sleep(60)
+                server.log_message(message_key, {"error": str(e)}, "error_retry")
+                continue
 
             except Exception, e:
                 print "Failed on try [%s]..." % tries
                 print e
+
+                # ping the server to see
 
                 if message_key:
                     from tactic_client_lib import TacticServerStub
@@ -67,6 +78,7 @@ class RSync(object):
                     break
 
                 tries += 1
+
 
 
 
@@ -233,6 +245,9 @@ class RSync(object):
 
         if error:
             error = "\n".join(error)
+            if error.startswith("rsync: connection unexpectedly closed"):
+                raise RSyncConnectionException(error) 
+
             if on_error:
                 on_error(path, {"error": error})
             raise Exception("Sync Error\n%s" % error)

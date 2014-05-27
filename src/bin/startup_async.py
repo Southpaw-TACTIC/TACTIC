@@ -21,13 +21,18 @@ def main():
     from pyasm.security import Batch
     Batch()
 
+    from pyasm.search import DbContainer
+    DbContainer.close_all()
+
+
+
     # start up the sync system ...
     #print "Starting Transaction Sync ..."
     from tactic.command import TransactionQueueManager
     TransactionQueueManager.start()
 
     # start up the sync system ...
-    #print "Starting Watch Folder Service ..."
+    print "Starting Watch Folder Service ..."
     from tactic.command import WatchServerFolderTask
     WatchServerFolderTask.start()
 
