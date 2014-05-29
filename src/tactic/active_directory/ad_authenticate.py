@@ -82,7 +82,7 @@ class ADAuthenticate(Authenticate):
         # preload data for further use later with original full login_name
         if is_logged_in:
             my.load_user_data(login_name)
-
+                
         return is_logged_in
 
 
@@ -172,6 +172,8 @@ class ADAuthenticate(Authenticate):
             path = "%s/AD_user_export.ldif" % BASE_DIR
             my.data = my.get_info_from_file(login_name, attrs_map, path)
 
+        if not my.data.get('sAMAccountName'):
+            raise SecurityException("Could not get info from Active Directory for login [%s]. You may have selected the wrong domain." % login_name)
         return my.data
 
 
@@ -257,7 +259,7 @@ class ADAuthenticate(Authenticate):
             import StringIO
             output = StringIO.StringIO(output)
             data = my.get_info_from_file(login_name, attrs_map, output)
-
+            
             # get the license type from active directory
             license_type = data.get('tacticLicenseType')
             if not license_type:
@@ -273,7 +275,7 @@ class ADAuthenticate(Authenticate):
                     data['license_type'] = "user"
 
         except ADException:
-            raise SecurityException("Could not log get info from Active Directory for login [%s]" % login_name)
+            raise SecurityException("Could not get info from Active Directory for login [%s]" % login_name)
         return data 
 
 

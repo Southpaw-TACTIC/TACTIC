@@ -100,7 +100,7 @@ import sys, getopt
 
 def usage():
     print "ADS credentials checker"
-    print "Usage: adslogon.py [Option]"
+    print "Usage: ad_connect.py [Option]"
     print "Check for ADS connectivity"
     print ""
     print "-u <username>        username"
