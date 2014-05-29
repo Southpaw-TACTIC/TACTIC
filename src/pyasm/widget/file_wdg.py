@@ -164,7 +164,7 @@ class ThumbWdg(BaseTableElementWdg):
         # Drag will allow the dragging of items from a table onto
         # anywhere else!
         layout.add_behavior( {
-            'type': 'smart_drag',
+            'type': 'smart_dragX',
             'bvr_match_class': 'spt_image',
             'drag_el': 'drag_ghost_copy',
             'use_copy': 'true',

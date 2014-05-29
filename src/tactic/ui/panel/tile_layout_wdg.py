@@ -295,7 +295,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             var server = TacticServerStub.get();
             var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
             if (snapshot.__search_key__) {
-                window.open(snapshot.__web_paths_dict__.main);
+                //window.open(snapshot.__web_paths_dict__.main);
+                ;
             }
             else {
                 var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
