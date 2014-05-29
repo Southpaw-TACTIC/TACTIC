@@ -426,7 +426,7 @@ class Sql(Base):
                     my.connect()
                 else:
                     my.conn.commit()
-
+                    
                 sql_dict = DbContainer._get_sql_dict()
                 database_name = my.get_database_name()
                 sql_dict[database_name] = my
@@ -1343,16 +1343,20 @@ class DbContainer(Base):
 
 
     def commit_thread_sql(cls):
-        # abort all of the open connections in this thread
+        
+        # commit all of the open connections in this thread
         thread_pool = Container.get("DbContainer::thread_pool")
         if not thread_pool:
             return
         for database_key, sql in thread_pool.items():
             try:
                 sql.commit()
+                
             except Exception, e:
                 print "WARNING: When trying to commit: ", e
                 del(thread_pool[database_key])
+            finally:
+                sql.close()
 
         # clear the thread pool
         Container.put("DbContainer::thread_pool", {})

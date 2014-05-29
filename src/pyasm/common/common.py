@@ -983,9 +983,7 @@ class KillProcessThread(threading.Thread):
 
     def run(my):
         """kill function for Win32 prior to Python2.7"""
-        import time
-        # pause for the DbConfigSaveCbk to finish first
-        time.sleep(2)
+       
         import ctypes
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.OpenProcess(1, 0, my.pid)

@@ -17,7 +17,7 @@ import tacticenv
 from pyasm.common import Environment, Xml, TacticException, Config, Container
 from pyasm.biz import Project
 from pyasm.command import Command, Trigger
-from pyasm.search import SearchType, Search, SObject
+from pyasm.search import SearchType, Search, SObject, DbContainer
 
 from scheduler import Scheduler
 
@@ -194,7 +194,6 @@ class TransactionQueueManager(JobTask):
 
 
     def get_next_job(my):
-
         from queue import Queue
         import random
         import time
@@ -233,23 +232,23 @@ class TransactionQueueManager(JobTask):
             servers_tried.append(server_index)
             if len(servers_tried) == len(my.servers):
                 break
-
         return job
 
 
 
     def start():
-
+        
         scheduler = Scheduler.get()
         scheduler.start_thread()
-
         task = TransactionQueueManager(
             #check_interval=0.1,
             max_jobs_completed=20
         )
         task.cleanup_db_jobs()
-
         scheduler.add_single_task(task, mode='threaded', delay=1)
+        # important to close connection after adding tasks
+        DbContainer.close_all()
+
     start = staticmethod(start)
 
 

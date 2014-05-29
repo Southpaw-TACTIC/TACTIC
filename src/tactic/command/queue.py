@@ -195,8 +195,8 @@ class JobTask(SchedulerTask):
         import atexit
         import time
         atexit.register( my.cleanup )
-
         while 1:
+            
             my.check_existing_jobs()
             my.check_new_job()
             time.sleep(my.check_interval)
@@ -204,6 +204,10 @@ class JobTask(SchedulerTask):
 
             if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
                 Common.restart()
+                while 1:
+                    print "Waiting to restart..."
+                    time.sleep(1)
+
 
 
     def check_existing_jobs(my):
@@ -242,8 +246,7 @@ class JobTask(SchedulerTask):
         if num_jobs >= my.max_jobs:
             print "Already at max jobs [%s]" % my.max_jobs
             return
-
-
+        
         my.job = my.get_next_job()
         if not my.job:
             return
@@ -445,10 +448,9 @@ class JobTask(SchedulerTask):
 
 
     def start(**kwargs):
-
+         
         scheduler = Scheduler.get()
         scheduler.start_thread()
-
         task = JobTask(**kwargs)
         task.cleanup_db_jobs()
 

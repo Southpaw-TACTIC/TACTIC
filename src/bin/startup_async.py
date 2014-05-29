@@ -21,13 +21,11 @@ def main():
     from pyasm.security import Batch
     Batch()
 
-    from pyasm.search import DbContainer
-    DbContainer.close_all()
 
 
 
     # start up the sync system ...
-    #print "Starting Transaction Sync ..."
+    print "Starting Transaction Sync Service ..."
     from tactic.command import TransactionQueueManager
     TransactionQueueManager.start()
 
