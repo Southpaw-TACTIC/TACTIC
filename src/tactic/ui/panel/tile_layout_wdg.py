@@ -75,7 +75,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '07',
             'category': 'Display'
 
-    },
+    }
     ARGS_KEYS['spacing'] = {
             'description': 'Custom tile spacing between tiles',
             'type': 'TextWdg',

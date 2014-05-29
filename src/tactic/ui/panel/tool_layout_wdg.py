@@ -112,11 +112,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add_class("spt_layout")
 
 
+        #if not Container.get_dict("JSLibraries", "spt_html5upload"):
         from tactic.ui.input import Html5UploadWdg
         upload_wdg = Html5UploadWdg()
         inner.add(upload_wdg)
         my.upload_id = upload_wdg.get_upload_id()
 
+        inner.add_attr('upload_id',my.upload_id)
         
 
         
