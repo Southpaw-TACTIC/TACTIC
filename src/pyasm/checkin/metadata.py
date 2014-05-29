@@ -288,6 +288,66 @@ class BaseMetadataParser(object):
 
 
 
+    '''Function by Christina. Extracts IPTC metadata given a path to an image.
+       Returns IPTC metadata as a dictionary'''
+    def get_iptc_keywords(my, path):
+
+        ret = {} # dictionary with metadata to be returned
+
+        # if path has "dng:" appended at the beginning of the path, delete it
+        if path[0:4] == "dng:":
+            path = path[4:]
+
+        # get IPTC data from exiftool
+        exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+        ret_val, error = exif_process.communicate()
+        if error:
+            return ret
+
+        # parse and clean the metadata
+        keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
+
+        # add keywords metadata to the dictionary to be returned: "ret"
+        ret["IPTC: Keywords"] = keyword_values
+
+        return ret
+
+
+    '''Function by Christia: Given XMP data as a string, parse it for Keywords of IPTC metadata, and
+       return it as a string, with values separated by spaces.'''
+    def get_keywords_metadata_from_xmp(my, xmp_data):
+
+        keywords_list = []
+        
+        # find the chunk of data in xmp_data where the keywords resides
+        starting_index = xmp_data.find("<dc:subject>")
+        end_index = xmp_data.find("</dc:subject>")
+
+        # section of xmp data containing keywords metadata
+        dc_subject_str = xmp_data[starting_index:end_index]
+
+        # find all words between tags.
+        # aka, search for words btween <tag>words</tag>
+        keywords_list = re.findall('>.*<', dc_subject_str)
+
+        # get rid of the > and < around words in keywords_list
+        for i in range(len(keywords_list)):
+            keywords_list[i] = keywords_list[i][1:-1]
+ 
+        # take the list, and turn it into a string, separated by spaces
+        keywords_string = " ".join(keywords_list)
+
+        return keywords_string
+
+
+
+
+
+
+
+
+
+
 
 class PILMetadataParser(BaseMetadataParser):
 
@@ -383,6 +443,17 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         path = my.kwargs.get("path")
 
         import subprocess, re
+
+        # Christina's stuff
+
+        iptc_data = {} # dictionary to hold iptc data
+
+        # make it an option to extract IPTC data from a file
+        if my.kwargs.get("extract_iptc_keywords_only") in ["true", "True"]:
+            iptc_data = my.get_iptc_keywords(path)
+            return iptc_data
+
+        # end Christina's stuff
 
         ret = {}
 
