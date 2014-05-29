@@ -1258,6 +1258,8 @@ class WebLoginWdg(Widget):
             web.set_form_value(my.LOGIN_MSG, msg)
 
         host = web.get_http_host()
+        if host.find(':') != -1:
+            host = host.split(':')[0]
         if domains:
             
             th = table.add_header( "<b>Domain: </b>")
