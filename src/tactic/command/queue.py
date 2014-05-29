@@ -200,7 +200,7 @@ class JobTask(SchedulerTask):
             my.check_existing_jobs()
             my.check_new_job()
             time.sleep(my.check_interval)
-            #DbContainer.close_thread_sql()
+            DbContainer.close_thread_sql()
 
             if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
                 Common.restart()

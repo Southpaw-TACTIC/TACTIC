@@ -20,7 +20,7 @@ from pyasm.common import Environment, Xml, EncryptUtil, ZipUtil, Config
 from pyasm.security import Batch
 from pyasm.biz import Project
 from pyasm.search import DbContainer
-from pyasm.search import Search, Transaction, SearchType
+from pyasm.search import Search, Transaction, SearchType, DbContainer
 from pyasm.command import Command
 
 from scheduler import SchedulerTask, Scheduler
@@ -58,7 +58,6 @@ class WatchServerFolderTask(SchedulerTask):
 
 
         # close all the database connections
-        from pyasm.search import DbContainer
         DbContainer.close_all()
 
 
@@ -81,13 +80,17 @@ class WatchServerFolderTask(SchedulerTask):
 
 
     def start(cls):
-
+        
         task = WatchServerFolderTask()
 
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, 3)
         #scheduler.add_interval_task(task, 1)
+
         scheduler.start_thread()
+        # important to close connection after adding tasks
+        DbContainer.close_all()
+
         return scheduler
 
     start = classmethod(start)
