@@ -462,13 +462,19 @@ class Common(Base):
         elif os.path.isdir(dir):
             # this part is too slow
             if not skip_dir_details:
-                for (path, dirs, files) in os.walk(dir):
+                for (path, dirs, files) in os.walk(unicode(dir)):
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
-                            dir_size = 0;
+                            # ignore links
+                            pass                        
                         else:
-                            dir_size += os.path.getsize(filename)
+                            try: 
+                                dir_size += os.path.getsize(filename)
+                            except:
+                                continue
+
+                                
                         count += 1
             file_type = 'directory'
         else:
@@ -510,11 +516,15 @@ class Common(Base):
 
 
     def get_filesystem_name(filename):
+        # FIXME: for now, turn it off
+        return filename
+    get_filesystem_name = staticmethod(get_filesystem_name)
+
+
+    def clean_filesystem_name(filename):
         '''take a name and converts it to a name that can be saved in
         the filesystem. This is different from File.get_filesystem_name()'''
 
-        # FIXME: for now, turn it off
-        return filename
 
         # handle python style
         p = re.compile("^__(\w+)__.py$")
@@ -576,7 +586,7 @@ class Common(Base):
 
         return filename
 
-    get_filesystem_name = staticmethod(get_filesystem_name)
+    clean_filesystem_name = staticmethod(clean_filesystem_name)
 
 
 
@@ -949,10 +959,14 @@ class Common(Base):
         import sys
         python = sys.executable
         # for windows
+        print "Restarting the process. . ."
+        print
         python = python.replace('\\','/')
         if os.name =='nt':
             import subprocess
-            subprocess.Popen([python, sys.argv])
+            cmd_list = [python]
+            cmd_list.extend(sys.argv)
+            subprocess.Popen(cmd_list)
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
@@ -969,13 +983,13 @@ class KillProcessThread(threading.Thread):
 
     def run(my):
         """kill function for Win32 prior to Python2.7"""
-        import time
-        # pause for the DbConfigSaveCbk to finish first
-        time.sleep(2)
+       
         import ctypes
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.OpenProcess(1, 0, my.pid)
-        return (0 != kernel32.TerminateProcess(handle, 0))
+        kernel32.TerminateProcess(handle, -1)
+        rtn = kernel32.CloseHandle(handle)
+        return (0 != rtn)
 
 
 gl = globals()

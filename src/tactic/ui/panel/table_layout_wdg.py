@@ -131,10 +131,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '07'
         },
         'show_context_menu': {
-            'description': 'Flag to determine whether to show the context menu',
+            'description': 'Flag to determine whether to show the tactic context menu, default, or none',
             'category': 'Optional',
             'type': 'SelectWdg',
-            'values': 'true|false',
+            'values': 'true|false|none',
             'order': '08'
         },
         
@@ -680,6 +680,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         show_context_menu = my.kwargs.get("show_context_menu")
         if show_context_menu in ['false', False]:
             show_context_menu = False
+        elif show_context_menu == 'none':
+            pass
         else:
             show_context_menu = True
 
@@ -691,6 +693,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if show_context_menu:
                 menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
                 menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+            elif show_context_menu == 'none':
+                div.add_event('oncontextmenu', 'return false;')
             if menus_in:
                 SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
