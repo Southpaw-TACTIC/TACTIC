@@ -461,7 +461,7 @@ class Common(Base):
         elif os.path.isdir(dir):
             # this part is too slow
             if not skip_dir_details:
-                for (path, dirs, files) in os.walk(dir):
+                for (path, dirs, files) in os.walk(unicode(dir)):
                     
                     for file in files:
                         filename = os.path.join(path, file)

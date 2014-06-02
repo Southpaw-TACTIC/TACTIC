@@ -1149,7 +1149,7 @@ TacticServerStub = function() {
 
 
     
-    this.execute_execute_transaction = function(transaction_xml, kwargs) {
+    this.execute_transaction = function(transaction_xml, kwargs) {
         return this._delegate("execute_transaction", arguments, kwargs);
     }
 
