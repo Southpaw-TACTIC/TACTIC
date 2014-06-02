@@ -86,12 +86,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     
 
-
     def can_select(my):
         return True
 
     def can_expand(my):
         return True
+
 
     def get_expand_behavior(my):
         return {
@@ -241,6 +241,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.scale_called = False
         my.scale = None
         top_view = my.kwargs.get("top_view")
+        my.top_view = top_view
         if top_view:
             kwargs = {
                 'view': top_view,
@@ -259,6 +260,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.scale_prefix = ''
         
         bottom_view = my.kwargs.get("bottom_view")
+        my.bottom_view = bottom_view
         if bottom_view:
             kwargs = {
                 'view': bottom_view,
@@ -286,9 +288,15 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         my.aspect_ratio = my.kwargs.get('aspect_ratio')
-        if my.aspect_ratio:
-            parts = re.split('[\Wx]+', my.aspect_ratio)
-            my.aspect_ratio = (int(parts[0]), int(parts[1]))
+        
+        if isinstance(my.aspect_ratio, list):
+            pass
+        elif my.aspect_ratio:
+            try:
+                parts = re.split('[\Wx]+', my.aspect_ratio)
+                my.aspect_ratio = (int(parts[0]), int(parts[1]))
+            except:
+                my.aspect_ratio = (240, 160)
         else:
             my.aspect_ratio = (240, 160)
 
@@ -297,6 +305,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.spacing = my.kwargs.get('spacing')
         if not my.spacing:
             my.spacing = '10'
+        
+        my.expand_mode = my.kwargs.get('expand_mode')
+        my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
 
         super(TileLayoutWdg, my).init()
 
@@ -337,7 +348,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             else {
                 var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
         """
-        mode = my.kwargs.get("expand_mode")
+        mode = my.expand_mode
         if not mode:
             mode = "gallery"
 
@@ -407,7 +418,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 '''
             } )
  
-
+        elif mode == "none":
+            # no action for none
+            pass
 
 
         bg1 = layout_wdg.get_color("background3")
@@ -637,7 +650,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         
-        if my.kwargs.get("show_drop_shadow") not in ['false', False]:
+        if my.show_drop_shadow  not in ['false', False]:
             div.set_box_shadow()
         div.add_color("background", "background", -3)
         

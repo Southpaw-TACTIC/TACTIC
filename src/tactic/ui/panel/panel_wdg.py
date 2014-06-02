@@ -3135,6 +3135,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
+            kwargs['aspect_ratio'] = my.kwargs.get("aspect_ratio")
+            kwargs['expand_mode'] = my.kwargs.get("expand_mode")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             layout_table = TileLayoutWdg(**kwargs)
 
