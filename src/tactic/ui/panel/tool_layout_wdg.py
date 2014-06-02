@@ -11,7 +11,7 @@
 #
 __all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
-from pyasm.common import Common
+from pyasm.common import Common, Container
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table
 from pyasm.widget import ThumbWdg, IconWdg
@@ -112,19 +112,19 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add_class("spt_layout")
 
 
-        #if not Container.get_dict("JSLibraries", "spt_html5upload"):
-        from tactic.ui.input import Html5UploadWdg
-        upload_wdg = Html5UploadWdg()
-        inner.add(upload_wdg)
-        my.upload_id = upload_wdg.get_upload_id()
+        if not Container.get_dict("JSLibraries", "spt_html5upload"):
+            from tactic.ui.input import Html5UploadWdg
+            upload_wdg = Html5UploadWdg()
+            inner.add(upload_wdg)
+            my.upload_id = upload_wdg.get_upload_id()
 
-        inner.add_attr('upload_id',my.upload_id)
+            inner.add_attr('upload_id',my.upload_id)
         
-
         
-
-        thumb = ThumbWdg()
-        thumb.handle_layout_behaviors(inner)
+        
+        # this interferes with Html5Upload function on first load, commenting it out
+        #thumb = ThumbWdg()
+        #thumb.handle_layout_behaviors(inner)
 
         is_refresh = my.kwargs.get("is_refresh")
         if my.kwargs.get("show_shelf") not in ['false', False]:
