@@ -150,7 +150,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         has_loading = False
 
         
-        inner.add_style("margin-left: 20px")
+        #inner.add_style("margin-left: 20px")
+        inner.add_style("padding-left: 20px")
        
 
         inner.add_attr("ondragenter", "return false")
