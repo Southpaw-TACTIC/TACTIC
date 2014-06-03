@@ -120,6 +120,7 @@ class DirListWdg(BaseRefreshWdg):
             my.paths = []
 
 
+        my.handler_kwargs = my.kwargs.get('handler_kwargs')
         my.preselected = {}
 
         my.preprocess()
@@ -508,13 +509,15 @@ class DirListWdg(BaseRefreshWdg):
 
 
         # This is the package that gets passed around
-        handler_kwargs = {
+        core_handler_kwargs = {
             'base_dir': my.base_dir,
             'root_dir': my.root_dir,
 
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
+        if my.handler_kwargs:
+            core_handler_kwargs.update(my.handler_kwargs)
 
 
 
@@ -525,7 +528,7 @@ class DirListWdg(BaseRefreshWdg):
                 base_dir=my.base_dir,
                 root_dir=my.root_dir,
                 handler_class=handler_class,
-                handler_kwargs=handler_kwargs,
+                handler_kwargs=core_handler_kwargs,
                 depth=0,
                 all_open=False,
                 # Open depth is not really supported on dynamic mode yet
@@ -1164,7 +1167,7 @@ class DirListPathHandler(BaseRefreshWdg):
             handler_kwargs['all_open'] = all_open
             handler_kwargs['depth'] = my.kwargs.get("depth")
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
-            handler_kwargs['search_type'] = my.kwargs.get("search_type")
+            #handler_kwargs['search_type'] = my.kwargs.get("search_type")
             handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
 
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
@@ -1241,7 +1244,7 @@ class DirListPathHandler(BaseRefreshWdg):
                     # slow but it works
                     if new_dir in new_paths:
                         continue
-
+                    
                     new_paths.append(new_dir)
 
             if basename:
