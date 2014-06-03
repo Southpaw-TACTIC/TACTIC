@@ -105,8 +105,10 @@ class TopWdg(Widget):
                 spt.body.focus_elements = [];
 
         }
+        var body = $(document.body)
+        //body.addEvent()
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
-        document.body.addEvent("mousedown", spt.body.hide_focus_elements);
+        body.addEvent("mousedown", spt.body.hide_focus_elements);
         '''
         } )
 
