@@ -1154,13 +1154,16 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
 
-        # handle the windows domain
+        # handle the windows domain, manually typed in domain overrides
+        if login_name.find('\\') != -1:
+            domain, login_name = login_name.split('\\', 1)
         if domain and login_name !='admin':
             auth_login_name = "%s\\%s" % (domain, login_name)
         else:
+            
             auth_login_name = login_name
 
-
+     
 
         authenticate = Common.create_from_class_path(auth_class)
         is_authenticated = authenticate.verify(auth_login_name, password)
@@ -1170,6 +1173,7 @@ class Security(Base):
         mode = authenticate.get_mode()
         if not mode:
             mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
+        
         if not mode:
             mode = 'default'
         
@@ -1197,8 +1201,12 @@ class Security(Base):
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
                 my._login.set_value('login', login_name)
-            authenticate.add_user_info( my._login, password)
 
+            try:
+                authenticate.add_user_info( my._login, password)
+            except Exception, e:
+                raise SecurityException("Error updating user info: %s" % e.__str__())
+                
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
             if my._login.has_user_license():
