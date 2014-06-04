@@ -14,7 +14,7 @@ __all__ = ['FileBrowserWdg', 'DirListWdg', 'DirInfoWdg', 'FileInfoWdg', 'IngestW
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Common, Config, jsonloads, Environment
+from pyasm.common import Common, Config, jsonloads, jsondumps, Environment
 from pyasm.command import Command, DatabaseAction
 from pyasm.web import DivWdg, Table, SpanWdg, FloatDivWdg, WebContainer, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType, WidgetDbConfig
@@ -664,13 +664,23 @@ class DirListWdg(BaseRefreshWdg):
                     search_types = [];
                 }
 
-                var extra_data = top.getAttribute("spt_extra_data");
-                var ingest_mode = top.getAttribute("spt_ingest_mode");
-                var checkin_mode = top.getAttribute("spt_checkin_mode");
-                var metadata_expr = top.getAttribute("spt_metadata_expr");
-                var enable_stats = top.getAttribute("spt_enable_stats");
+             
 
-
+                //FIXME: these root_dir and base_dir are really needed in this handler_kwargs?
+                var handler_kwargs = {
+                        root_dir: root_dir,
+                        base_dir: base_dir,
+                        // FIXME: this causes files to disappear
+                        //search_keys: search_keys,
+                        search_types: search_types
+                       
+                    } 
+                var extra_handler_kwargs = eval(%s);
+                
+                for (handler_kw in extra_handler_kwargs) {
+                    if (extra_handler_kwargs.hasOwnProperty(handler_kw))
+                        handler_kwargs[handler_kw] = extra_handler_kwargs[handler_kw];
+                }
                 var class_name = 'tactic.ui.widget.DirListPathHandler';
                 var kwargs = {
                     level: item_top.getAttribute("spt_level"),
@@ -679,20 +689,10 @@ class DirListWdg(BaseRefreshWdg):
                     all_open: false,
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
-                    handler_kwargs: {
-                        root_dir: root_dir,
-                        base_dir: base_dir,
-                        // FIXME: this causes files to disappear
-                        //search_keys: search_keys,
-                        search_types: search_types,
-                        extra_data: extra_data,
-                        ingest_mode: ingest_mode,
-                        metadata_expr: metadata_expr,
-                        checkin_mode: checkin_mode,
-                        enable_stats: enable_stats
-                    }
+                    handler_kwargs: handler_kwargs
 
-                }
+                };
+               
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
@@ -737,7 +737,9 @@ class DirListWdg(BaseRefreshWdg):
         folder_state = items.join("|");
         folder_state_el.value = folder_state;
 
-        '''
+        '''%(jsondumps(my.handler_kwargs))
+
+
         swap.add_action_script(swap_action)
 
 
