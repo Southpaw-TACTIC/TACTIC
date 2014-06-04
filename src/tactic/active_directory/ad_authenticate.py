@@ -55,8 +55,9 @@ class ADAuthenticate(Authenticate):
     def verify(my, login_name, password):
             
         if login_name.find("\\") != -1:
-            domain, login_name = login_name.split("\\")
+            domain, base_login_name = login_name.split("\\")
         else:
+            base_login_name = login_name
             domain = None
 
         # confirm that there is a domain present if required
@@ -72,16 +73,28 @@ class ADAuthenticate(Authenticate):
             return True
 
         ad_connect = ADConnect()
-        if domain:
-            ad_connect.set_domain(domain)
-        ad_connect.set_user(login_name)
+        ad_connect.set_user(base_login_name)
         ad_connect.set_password(password)
+        info = ad_connect.lookup()
+        try:
+            lookup_domain = info[1]
+        except:
+            lookup_domain = ''
+        # lookup domain takes prescedence
+        if lookup_domain:
+            domain = lookup_domain
+            ad_connect.set_domain(lookup_domain)
+        elif domain:
+            ad_connect.set_domain(domain)
+
+        #ad_connect.set_user(base_login_name)
+        #ad_connect.set_password(password)
         is_logged_in = ad_connect.logon()
 
-        # preload data for further use later
+        # preload data for further use later with original full login_name
         if is_logged_in:
-            my.load_user_data(login_name)
-
+            my.load_user_data(base_login_name, domain)
+                
         return is_logged_in
 
 
@@ -153,7 +166,7 @@ class ADAuthenticate(Authenticate):
             return my.data
 
 
-    def load_user_data(my, login_name):
+    def load_user_data(my, login_name, domain=None):
         '''get user data from active directory'''
 
         # get all of the tactic groups
@@ -164,13 +177,15 @@ class ADAuthenticate(Authenticate):
         group_attrs_map = my.get_group_mapping()
 
         if my.ad_exists:
-            my.data = my.get_info_from_ad(login_name, attrs_map)
+            my.data = my.get_info_from_ad(login_name, attrs_map, domain=domain)
         else:
             #group_path = "%s/AD_group_export.ldif" % BASE_DIR
             #my.group_data = my.get_info_from_file(login_name, group_attrs_map, group_path)
             path = "%s/AD_user_export.ldif" % BASE_DIR
-            my.data = my.get_info_from_file(login_name, attrs_map, path)
+            my.data = my.get_info_from_file(attrs_map, path)
 
+        if not my.data.get('sAMAccountName'):
+            raise SecurityException("Could not get info from Active Directory for login [%s]. You may have selected the wrong domain." % login_name)
         return my.data
 
 
@@ -229,17 +244,18 @@ class ADAuthenticate(Authenticate):
 
 
 
-    def get_info_from_ad(my, login_name, attrs_map):
+    def get_info_from_ad(my, login_name, attrs_map, domain=None):
 
         data = {}
         if login_name == 'admin':
 	    return data
 
+        """
         if login_name.find("\\") != -1:
             domain, login_name = login_name.split("\\")
         else:
             domain = None
-
+        """
         python = Config.get_value('services', 'python')
 	if not python:
 	    python = 'python'
@@ -255,8 +271,8 @@ class ADAuthenticate(Authenticate):
             output = Popen( cmd, stdout=PIPE).communicate()[0]
             import StringIO
             output = StringIO.StringIO(output)
-            data = my.get_info_from_file(login_name, attrs_map, output)
-
+            data = my.get_info_from_file(attrs_map, output)
+            
             # get the license type from active directory
             license_type = data.get('tacticLicenseType')
             if not license_type:
@@ -272,14 +288,14 @@ class ADAuthenticate(Authenticate):
                     data['license_type'] = "user"
 
         except ADException:
-            raise SecurityException("Could not log get info from Active Directory for login [%s]" % login_name)
+            raise SecurityException("Could not get info from Active Directory for login [%s]" % login_name)
         return data 
 
 
 
 
 
-    def get_info_from_file(my, login_name, attrs_map, path):
+    def get_info_from_file(my, attrs_map, path):
         '''for testing purposes'''
 
         data = {}
@@ -403,7 +419,11 @@ class ADAuthenticate(Authenticate):
         if not remaining:
             for group in my.groups:
                 print "user: ", user.get_value("login")
-                print "adding: ", group
+                if not isinstance(group, basestring): 
+                    group_name = group.get_value('login_group')
+                else:
+                    group_name = group
+                print "adding to: ", group_name
                 user.add_to_group(group)
 
 
