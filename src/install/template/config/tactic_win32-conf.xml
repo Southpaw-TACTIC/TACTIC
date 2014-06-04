@@ -78,6 +78,7 @@
 <security>
     <version>2</version>
     <ticket_expiry>10 hour</ticket_expiry>
+    <case_insensitive_login>false</case_insensitive_login>
     <authenticate_mode>default</authenticate_mode>
     <authenticate_class></authenticate_class>
     <authenticate_domains></authenticate_domains>

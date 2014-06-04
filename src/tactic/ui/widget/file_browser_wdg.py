@@ -664,6 +664,11 @@ class DirListWdg(BaseRefreshWdg):
                     search_types = [];
                 }
 
+                var extra_data = top.getAttribute("spt_extra_data");
+                var ingest_mode = top.getAttribute("spt_ingest_mode");
+                var checkin_mode = top.getAttribute("spt_checkin_mode");
+                var metadata_expr = top.getAttribute("spt_metadata_expr");
+                var enable_stats = top.getAttribute("spt_enable_stats");
 
 
                 var class_name = 'tactic.ui.widget.DirListPathHandler';
@@ -680,10 +685,14 @@ class DirListWdg(BaseRefreshWdg):
                         // FIXME: this causes files to disappear
                         //search_keys: search_keys,
                         search_types: search_types,
+                        extra_data: extra_data,
+                        ingest_mode: ingest_mode,
+                        metadata_expr: metadata_expr,
+                        checkin_mode: checkin_mode,
+                        enable_stats: enable_stats
                     }
 
                 }
-
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
@@ -1127,7 +1136,6 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
-
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
