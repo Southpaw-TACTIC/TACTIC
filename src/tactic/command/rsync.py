@@ -201,7 +201,6 @@ class RSync(object):
             
 
             if line:
-                print "line: ", line
                 lines.append(line)
                 if line.startswith(" "):
 
@@ -214,7 +213,7 @@ class RSync(object):
                         "rate": parts[2],
                         "time_left": parts[3]
                     }
-                    print my.current_data
+                    #print my.current_data
                     #print "status: ", line
 
                     if on_update:
