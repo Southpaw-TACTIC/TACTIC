@@ -510,6 +510,7 @@ class LookAheadTextInputWdg(TextInputWdg):
 
 
     def init(my):
+        my.text.add_attr("autocomplete", "off")
 
         my.search_type = my.kwargs.get("search_type")
         filter_search_type = my.kwargs.get("filter_search_type")

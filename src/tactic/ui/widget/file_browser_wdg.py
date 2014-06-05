@@ -1075,7 +1075,7 @@ class DirListWdg(BaseRefreshWdg):
     def get_dir_icon(my, dir, item):
         return IconWdg.LOAD
 
-
+        """
         # FIXME: this is for ingestion ... should be moved
         path = "%s/%s" % (dir, item)
 
@@ -1116,7 +1116,7 @@ class DirListWdg(BaseRefreshWdg):
             return IconWdg.DOT_GREEN
         else:
             return IconWdg.ERROR
-
+        """
 
 
 

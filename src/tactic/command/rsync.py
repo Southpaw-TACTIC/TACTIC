@@ -59,19 +59,19 @@ class RSync(object):
                 break
             except RSyncConnectionException, e:
                 time.sleep(60)
-                server.log_message(message_key, {"error": str(e)}, "error_retry")
+                server.log_message(message_key, {"message": str(e)}, "error_retry")
                 continue
 
             except Exception, e:
                 print "Failed on try [%s]..." % tries
-                print e
+                raise
 
                 # ping the server to see
 
                 if message_key:
                     from tactic_client_lib import TacticServerStub
                     server = TacticServerStub.get()
-                    server.log_message(message_key, {"error": str(e)}, "error_retry")
+                    server.log_message(message_key, {"message": str(e)}, "error_retry")
 
                 time.sleep(tries)
                 if tries == 3:
@@ -107,25 +107,30 @@ class RSync(object):
         if paths:
             for path in paths:
                 full_path = "%s/%s" % (base_dir, path)
+                print "full_path: ", full_path
                 size = os.path.getsize(full_path)
                 paths_sizes.append(size)
- 
 
 
-        to_path = "%s@%s:%s" % (login, server, to_path)
+        if server:
+            to_path = "%s@%s:%s" % (login, server, to_path)
+
 
         rsync = Common.which("rsync")
-
 
 
         cmd_list = []
         cmd_list.append(rsync)
         flags = "-az"
         cmd_list.append(flags)
-        cmd_list.append("-e ssh")
+        if server:
+            cmd_list.append("-e ssh")
         cmd_list.append("-v")
         cmd_list.append("--progress")
-        cmd_list.append("--delete")
+
+        delete = False
+        if delete:
+            cmd_list.append("--delete")
 
         dry_run = my.kwargs.get("dry_run")
         if dry_run in [True, 'true']:
@@ -227,6 +232,8 @@ class RSync(object):
                     my.handle_data_line(line)
                 elif line.startswith("sending incremental "):
                     my.handle_data_line(line)
+                elif line.startswith("created directory "):
+                    my.handle_data_line(line)
                 else:
                     line = line.strip()
                     path = line
@@ -249,7 +256,7 @@ class RSync(object):
                 raise RSyncConnectionException(error) 
 
             if on_error:
-                on_error(path, {"error": error})
+                on_error(path, {"message": error})
             raise Exception("Sync Error\n%s" % error)
 
 
@@ -292,7 +299,10 @@ class RSyncProgress(object):
 
         bytes = data.get("bytes")
 
-        index = my.paths.index(path)
+        try:
+            index = my.paths.index(path)
+        except:
+            index = 0
         data["path_index"] = index+1
         data["paths_count"] = len(my.paths)
         data["paths_sizes"] = my.paths_sizes
@@ -307,10 +317,13 @@ class RSyncProgress(object):
 
             total_size += my.paths_sizes[i]
 
-        print "current_size: ", current_size
-        print "total_size: ", total_size
-        print "percent: ", (current_size*1000)/(total_size*10)
-        total_percent = (current_size*1000)/(total_size*10)
+        #print "current_size: ", current_size
+        #print "total_size: ", total_size
+        #print "percent: ", (current_size*1000)/(total_size*10)
+        if total_size:
+            total_percent = (current_size*1000)/(total_size*10)
+        else:
+            total_percent = 0
         data['total_percent'] = total_percent
 
 
