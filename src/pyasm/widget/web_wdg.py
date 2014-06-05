@@ -1245,12 +1245,37 @@ class WebLoginWdg(Widget):
 
         if domains:
             domains = domains.split('|')
+
+        hosts = Config.get_value("active_directory", "hosts")
+        if not hosts:
+            hosts = Config.get_value("security", "hosts")
+            
+        if hosts:
+            hosts = hosts.split('|')
+       
+        if hosts and len(hosts) != len(domains):
+            msg = 'When specified, the number of IP_address has to match the number of domains'
+            web.set_form_value(my.LOGIN_MSG, msg)
+
+        host = web.get_http_host()
+        if host.find(':') != -1:
+            host = host.split(':')[0]
+        if domains:
+            
             th = table.add_header( "<b>Domain: </b>")
             domain_wdg = SelectWdg("domain")
             domain_wdg.set_persist_on_submit()
             if len(domains) > 1:
                 domain_wdg.add_empty_option("-- Select --")
             domain_wdg.set_option("values", domains)
+            try:
+                matched_idx = hosts.index(host)
+            except ValueError:
+                matched_idx = -1
+            # select the matching domain based on host/IP in browser URL
+            if host and matched_idx > -1:
+                domain_wdg.set_value(domains[matched_idx])
+
             domain_wdg.add_style("background-color: #EEE")
             domain_wdg.add_style("height: 20px")
             table.add_cell( domain_wdg )

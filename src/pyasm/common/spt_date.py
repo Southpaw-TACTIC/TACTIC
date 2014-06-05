@@ -75,8 +75,12 @@ class SPTDate(object):
             # assume GMT
             date = date.replace(tzinfo=TZGMT)
 
+        #NOTE: it errors out on time before epoch
+        try:    
+            local = date.astimezone(TZLOCAL)
+        except:
+            local = date.replace(tzinfo=None)
 
-        local = date.astimezone(TZLOCAL)
         return local
     convert_to_local = classmethod(convert_to_local)
 

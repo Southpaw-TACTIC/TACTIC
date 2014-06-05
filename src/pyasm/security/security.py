@@ -1154,13 +1154,16 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
 
-        # handle the windows domain
+        # handle the windows domain, manually typed in domain overrides
+        if login_name.find('\\') != -1:
+            domain, login_name = login_name.split('\\', 1)
         if domain and login_name !='admin':
             auth_login_name = "%s\\%s" % (domain, login_name)
         else:
+            
             auth_login_name = login_name
 
-
+     
 
         authenticate = Common.create_from_class_path(auth_class)
         is_authenticated = authenticate.verify(auth_login_name, password)

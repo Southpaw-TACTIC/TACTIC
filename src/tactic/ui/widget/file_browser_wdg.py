@@ -14,7 +14,7 @@ __all__ = ['FileBrowserWdg', 'DirListWdg', 'DirInfoWdg', 'FileInfoWdg', 'IngestW
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Common, Config, jsonloads, Environment
+from pyasm.common import Common, Config, jsonloads, jsondumps, Environment
 from pyasm.command import Command, DatabaseAction
 from pyasm.web import DivWdg, Table, SpanWdg, FloatDivWdg, WebContainer, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType, WidgetDbConfig
@@ -120,6 +120,7 @@ class DirListWdg(BaseRefreshWdg):
             my.paths = []
 
 
+        my.handler_kwargs = my.kwargs.get('handler_kwargs')
         my.preselected = {}
 
         my.preprocess()
@@ -508,13 +509,15 @@ class DirListWdg(BaseRefreshWdg):
 
 
         # This is the package that gets passed around
-        handler_kwargs = {
+        core_handler_kwargs = {
             'base_dir': my.base_dir,
             'root_dir': my.root_dir,
 
             'search_types': my.kwargs.get("search_types"),
             'search_keys': my.kwargs.get("search_keys"),
         }
+        if my.handler_kwargs:
+            core_handler_kwargs.update(my.handler_kwargs)
 
 
 
@@ -525,7 +528,7 @@ class DirListWdg(BaseRefreshWdg):
                 base_dir=my.base_dir,
                 root_dir=my.root_dir,
                 handler_class=handler_class,
-                handler_kwargs=handler_kwargs,
+                handler_kwargs=core_handler_kwargs,
                 depth=0,
                 all_open=False,
                 # Open depth is not really supported on dynamic mode yet
@@ -661,8 +664,23 @@ class DirListWdg(BaseRefreshWdg):
                     search_types = [];
                 }
 
+             
 
-
+                //FIXME: these root_dir and base_dir are really needed in this handler_kwargs?
+                var handler_kwargs = {
+                        root_dir: root_dir,
+                        base_dir: base_dir,
+                        // FIXME: this causes files to disappear
+                        //search_keys: search_keys,
+                        search_types: search_types
+                       
+                    } 
+                var extra_handler_kwargs = eval(%s);
+                
+                for (handler_kw in extra_handler_kwargs) {
+                    if (extra_handler_kwargs.hasOwnProperty(handler_kw))
+                        handler_kwargs[handler_kw] = extra_handler_kwargs[handler_kw];
+                }
                 var class_name = 'tactic.ui.widget.DirListPathHandler';
                 var kwargs = {
                     level: item_top.getAttribute("spt_level"),
@@ -671,16 +689,10 @@ class DirListWdg(BaseRefreshWdg):
                     all_open: false,
                     dynamic: true,
                     handler_class: item_top.getAttribute("spt_handler_class"),
-                    handler_kwargs: {
-                        root_dir: root_dir,
-                        base_dir: base_dir,
-                        // FIXME: this causes files to disappear
-                        //search_keys: search_keys,
-                        search_types: search_types,
-                    }
+                    handler_kwargs: handler_kwargs
 
-                }
-
+                };
+               
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         }
@@ -725,7 +737,9 @@ class DirListWdg(BaseRefreshWdg):
         folder_state = items.join("|");
         folder_state_el.value = folder_state;
 
-        '''
+        '''%(jsondumps(my.handler_kwargs))
+
+
         swap.add_action_script(swap_action)
 
 
@@ -1124,7 +1138,6 @@ __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
     def get_display(my):
-
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
@@ -1164,7 +1177,7 @@ class DirListPathHandler(BaseRefreshWdg):
             handler_kwargs['all_open'] = all_open
             handler_kwargs['depth'] = my.kwargs.get("depth")
             handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
-            handler_kwargs['search_type'] = my.kwargs.get("search_type")
+            #handler_kwargs['search_type'] = my.kwargs.get("search_type")
             handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
 
             my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
@@ -1241,7 +1254,7 @@ class DirListPathHandler(BaseRefreshWdg):
                     # slow but it works
                     if new_dir in new_paths:
                         continue
-
+                    
                     new_paths.append(new_dir)
 
             if basename:
