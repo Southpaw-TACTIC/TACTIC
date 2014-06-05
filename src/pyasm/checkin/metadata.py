@@ -301,7 +301,7 @@ class BaseMetadataParser(object):
         # get IPTC data from exiftool
 
         # For windows, use parser_path for exiftool.exe
-        if os.name == "nt" && parser_path:
+        if os.name == "nt" and parser_path:
             exif_process = subprocess.Popen([parser_path,'-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
 
         # For linux, use command-line exiftool
