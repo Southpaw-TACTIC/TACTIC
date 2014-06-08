@@ -14,7 +14,7 @@ import tacticenv
 
 from pyasm.common import Common, TacticException
 
-import os, subprocess, time, re
+import os, subprocess, time, re, os
 
 
 
@@ -115,8 +115,27 @@ class RSync(object):
         if server:
             to_path = "%s@%s:%s" % (login, server, to_path)
 
+        is os.name == "nt":
+            # This assumes we are using the cygwin implementation of RSync
+            if to_path[1] == ":":
+                # then this is a drive letter
+                drive_letter = to_path[0]
+                to_path = "/cygdrive/%s/%s" % (drive_letter, to_path[3:])
+            if from_path[1] == ":":
+                # then this is a drive letter
+                drive_letter = from_path[0]
+                from_path = "/cygdrive/%s/%s" % (drive_letter, from_path[3:])
 
-        rsync = Common.which("rsync")
+            to_path = to_path.replace("\\", '/')
+            from_path = from_path.replace("\\", '/')
+
+
+        rsync = Config.get_value("services", "rsync")
+        if not rsync:
+            rsync = Common.which("rsync")
+
+        if not rsync:
+            raise Exception("RSync executable could not be found")
 
 
         cmd_list = []
