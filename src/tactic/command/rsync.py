@@ -12,7 +12,7 @@
 import tacticenv
 
 
-from pyasm.common import Common, TacticException
+from pyasm.common import Common, TacticException, Config
 
 import os, subprocess, time, re, os
 
