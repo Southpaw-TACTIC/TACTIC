@@ -115,7 +115,7 @@ class RSync(object):
         if server:
             to_path = "%s@%s:%s" % (login, server, to_path)
 
-        is os.name == "nt":
+        if os.name == "nt":
             # This assumes we are using the cygwin implementation of RSync
             if to_path[1] == ":":
                 # then this is a drive letter
