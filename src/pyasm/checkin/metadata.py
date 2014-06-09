@@ -295,18 +295,22 @@ class BaseMetadataParser(object):
         ret = {} # dictionary with metadata to be returned
 
         # if path has "dng:" appended at the beginning of the path, delete it
-        if path[0:4] == "dng:":
-            path = path[4:]
+        #if path[0:4] == "dng:":
+        #    path = path[4:]
+
+        # determine file format of image path
+        type_start = path.rfind(".")
+        image_type = path[type_start:]
 
         # get IPTC data from exiftool
 
         # For windows, use parser_path for exiftool.exe
         if os.name == "nt" and parser_path:
-            exif_process = subprocess.Popen([parser_path,'-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+            exif_process = subprocess.Popen([parser_path,'-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
 
         # For linux, use command-line exiftool
         else:
-            exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+            exif_process = subprocess.Popen(['exiftool','-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
         ret_val, error = exif_process.communicate()
         if error:
             return ret
@@ -456,6 +460,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         iptc_data = {} # dictionary to hold iptc data
 
         # make it an option to extract IPTC data from a file
+        # this uses exif tool as ImageMagick does not
         if my.kwargs.get("extract_iptc_keywords_only") in ["true", "True"]:
             # Option to specify where exiftool is.
             parser_path = my.kwargs.get('parser_path')
