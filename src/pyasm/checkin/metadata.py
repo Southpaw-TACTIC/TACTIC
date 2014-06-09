@@ -290,7 +290,7 @@ class BaseMetadataParser(object):
 
     '''Function by Christina. Extracts IPTC metadata given a path to an image.
        Returns IPTC metadata as a dictionary'''
-    def get_iptc_keywords(my, path):
+    def get_iptc_keywords(my, path, parser_path = ""):
 
         ret = {} # dictionary with metadata to be returned
 
@@ -299,7 +299,14 @@ class BaseMetadataParser(object):
             path = path[4:]
 
         # get IPTC data from exiftool
-        exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+
+        # For windows, use parser_path for exiftool.exe
+        if os.name == "nt" and parser_path:
+            exif_process = subprocess.Popen([parser_path,'-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+
+        # For linux, use command-line exiftool
+        else:
+            exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
         ret_val, error = exif_process.communicate()
         if error:
             return ret
@@ -450,7 +457,12 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
         # make it an option to extract IPTC data from a file
         if my.kwargs.get("extract_iptc_keywords_only") in ["true", "True"]:
-            iptc_data = my.get_iptc_keywords(path)
+            # Option to specify where exiftool is.
+            parser_path = my.kwargs.get('parser_path')
+            if parser_path:
+                iptc_data = my.get_iptc_keywords(path, parser_path=parser_path)
+            else:
+                iptc_data = my.get_iptc_keywords(path)
             return iptc_data
 
         # end Christina's stuff

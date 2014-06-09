@@ -1208,7 +1208,6 @@ class WebLoginWdg(Widget):
             div.add_style("height: 250px")
             div.add_style("padding-top: 20px")
         else:
-            div.add_style("height: 210px")
             div.add_style("padding-top: 25px")
 
 
@@ -1246,15 +1245,39 @@ class WebLoginWdg(Widget):
 
         if domains:
             domains = domains.split('|')
+
+        hosts = Config.get_value("active_directory", "hosts")
+        if not hosts:
+            hosts = Config.get_value("security", "hosts")
+            
+        if hosts:
+            hosts = hosts.split('|')
+       
+        if hosts and len(hosts) != len(domains):
+            msg = 'When specified, the number of IP_address has to match the number of domains'
+            web.set_form_value(my.LOGIN_MSG, msg)
+
+        host = web.get_http_host()
+        if host.find(':') != -1:
+            host = host.split(':')[0]
+        if domains:
+            
             th = table.add_header( "<b>Domain: </b>")
             domain_wdg = SelectWdg("domain")
             domain_wdg.set_persist_on_submit()
             if len(domains) > 1:
                 domain_wdg.add_empty_option("-- Select --")
             domain_wdg.set_option("values", domains)
-            domain_wdg.add_style("background-color: #333")
+            try:
+                matched_idx = hosts.index(host)
+            except ValueError:
+                matched_idx = -1
+            # select the matching domain based on host/IP in browser URL
+            if host and matched_idx > -1:
+                domain_wdg.set_value(domains[matched_idx])
+
+            domain_wdg.add_style("background-color: #EEE")
             domain_wdg.add_style("height: 20px")
-            domain_wdg.add_style("color: white")
             table.add_cell( domain_wdg )
             table.add_row()
 
@@ -1334,6 +1357,7 @@ class WebLoginWdg(Widget):
                 td.add(IconWdg("INFO", IconWdg.INFO))
             else:
                 td.add(IconWdg("ERROR", IconWdg.ERROR))
+
             td.add(HtmlElement.b(msg))
             td.add_style('line-height', '14px')
             td.add_style('padding-top', '5px')
@@ -1350,7 +1374,8 @@ class WebLoginWdg(Widget):
                 link = HtmlElement.js_href(js, data=access_msg)
                 link.add_color('color','color', 60)
                 td.add(link)
-   
+        else:
+            div.add_style("height: 210px")
 
         div.add(HtmlElement.br())
         div.add(table)

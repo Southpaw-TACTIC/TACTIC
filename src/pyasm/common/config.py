@@ -66,7 +66,6 @@ class Config(Base):
                 value = xml_data.get_value(xpath)
 
             value = Common.expand_env(value)
-
             if not value and default:
                 value = default
 
@@ -150,8 +149,21 @@ class Config(Base):
                 Xml.append_child(parent_node, node)
             else:
                 return
+        
+        if isinstance(value, int):
+            value = str(value)
+        elif value.startswith('{'):
+            try:
+                value = eval(value)
+            except Exception, e:
+                print "Config value is invalid ", value 
+                raise e
 
-        xml_data.set_node_value(node, jsondumps(value))
+            value = jsondumps(value)
+        else:
+            value = unicode(value, errors='ignore').encode('utf-8')
+        
+        xml_data.set_node_value(node, value)
 
         data = Container.get(Config.CONFIG_KEY)
         if data == None:
@@ -161,7 +173,7 @@ class Config(Base):
         KEY = "%s:%s" % (module_name, key)
         #if sub_key:
         #    KEY = "%s:%s:%s" % (module_name, key, sub_key)
-        data[KEY] = jsondumps(value)
+        data[KEY] = value
  
 
 
