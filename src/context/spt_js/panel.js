@@ -220,16 +220,31 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         args: args,
         kwargs: kwargs
     }
+
+    var custom_placement = {
+        top_pos: "",
+        left_pos: ""
+    }
     
     if (kwargs.values) {
         bvr2.values = kwargs.values;
     }
-    if (kwargs.width) 
+    if (kwargs.width) {
         bvr2.options.width = kwargs.width;
-    if (kwargs.height) 
+    }
+    if (kwargs.height) {
         bvr2.options.height = kwargs.height;
+    } 
+    if (kwargs.offset_y){
+        bvr2.options.offset_y = kwargs.offset_y;
+        custom_placement.top_pos = kwargs.offset_y;
+    }
+    if (kwargs.offset_x){
+        bvr2.options.offset_x = kwargs.offset_x;
+        custom_placement.left_pos = kwargs.offset_x;
+    }
 
-    return spt.popup.get_widget({}, bvr2);
+    return spt.popup.get_widget({}, bvr2, custom_placement);
 
 }
 

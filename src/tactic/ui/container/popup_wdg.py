@@ -859,7 +859,7 @@ spt.popup.destroy = function( popup_el_or_id )
 // Dynamically clones the template popup and fill it in with a dynamically
 // loaded widget.  This acts as a behavior
 // @param: load_once - load this only once if the popup is in view
-spt.popup.get_widget = function( evt, bvr )
+spt.popup.get_widget = function( evt, bvr, custom_placement )
 {
     if (typeof(bvr.options) == "undefined" || bvr.options == null) {
         bvr.options = {};
@@ -996,6 +996,32 @@ spt.popup.get_widget = function( evt, bvr )
         popup.setStyle("left", xpos);
         popup.setStyle("margin-left", 0);
         popup.setStyle("position", "fixed");
+
+        // if the user wants to specify where the popup will occur, place popup in custom location
+
+        // if user has specified a custom position for the popup
+
+        if (typeof custom_placement != "undefined") {
+
+            // if the user has specified a y position, place popup in custom location
+            if (custom_placement.hasOwnProperty("left_pos")) {
+                var left_pos = custom_placement.left_pos;
+                if (left_pos) {
+                    popup.setStyle('left', left_pos);
+                }
+                
+            }
+
+            // if the user has specified a top position, place popup in custom location
+            if (custom_placement.hasOwnProperty("top_pos")) {
+                var top_pos = custom_placement.top_pos;
+                if (top_pos) {
+                    popup.setStyle('top', top_pos);
+                }
+                
+            }
+
+        }
 
         spt.popup.show_background();
 
