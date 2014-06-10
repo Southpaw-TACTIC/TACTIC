@@ -6056,6 +6056,7 @@ class SObjectUndo:
                 "sthpw/sync_log",
                 "sthpw/sync_server",
                 "sthpw/cache",
+                "sthpw/queue",
 
                 'sthpw/message',
                 'sthpw/message_log',
