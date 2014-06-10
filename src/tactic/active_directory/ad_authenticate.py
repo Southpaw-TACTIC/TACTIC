@@ -15,7 +15,7 @@ __all__ = ['ADAuthenticate', 'ADException']
 import types, os
 
 from pyasm.common import SecurityException, Config
-from pyasm.security import Authenticate
+from pyasm.security import Authenticate, LoginInGroup
 from pyasm.search import Search
 
 from pyasm.common import Environment
@@ -240,8 +240,12 @@ class ADAuthenticate(Authenticate):
             login.set_value(name, value)
 
 
-        # add all of the groups
-        my.add_group_info(login)
+        handle_groups = Config.get_value("active_directory", "handle_groups")
+        if handle_groups == "false":
+            my.add_default_group(login)
+        else:
+            # add all of the groups
+            my.add_group_info(login)
 
 
 
@@ -414,8 +418,6 @@ class ADAuthenticate(Authenticate):
 
 
         # add a group
-
-
         remaining = user.remove_all_groups(except_list=my.groups)
         if not remaining:
             for group in my.groups:
@@ -427,6 +429,15 @@ class ADAuthenticate(Authenticate):
                 print "adding to: ", group_name
                 user.add_to_group(group)
 
+    def add_default_group(my, user):
+        '''add the user to the default group only if he is groupless'''
+        default_groups = my.get_default_groups()
+        user_name = user.get_login()
+        login_in_groups = LoginInGroup.get_by_login_name(user_name)
 
+        if not login_in_groups:
+            for group in default_groups:
+                print "adding to: ", group
+                user.add_to_group(group)
 
 
