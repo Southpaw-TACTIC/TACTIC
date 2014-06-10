@@ -740,7 +740,7 @@ spt.popup.close = function( popup_el_or_id , fade)
     if (!popup) return;
 
     if (fade) {
-        popup.fade('out');
+        popup.fade('out').get('tween').chain(function(){ spt.hide( popup );});
     }
     else {
         spt.hide( popup );
@@ -778,7 +778,7 @@ spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
     {
         var aux = aux_divs[c];
         if (fade)
-            aux.fade('out');
+            aux.fade('out').get('tween').chain(function(){ spt.hide( aux );});
         else
             spt.hide( aux );
     }
