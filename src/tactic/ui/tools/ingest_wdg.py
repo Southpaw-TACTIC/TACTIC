@@ -36,11 +36,25 @@ class IngestUploadWdg(BaseRefreshWdg):
         'search_type': 'Search Type to ingest into',
         'parent_key': 'Parent search key to relate create sobject to',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
-        'extra_data': 'Extra data (JSON) to be added to created sobjects'
+        'extra_data': 'Extra data (JSON) to be added to created sobjects',
+
+        'display_help': 'a boolean to determine if the help button should be displayed',
+        'display_edit': 'a boolean to determine if the edit button should be displayed' 
     }
 
 
     def get_display(my):
+
+        if my.kwargs.get('display_help'):
+            my.display_help = my.kwargs.get('display_help');
+        else:
+            my.display_help = True;
+
+        if my.kwargs.get('display_edit'):
+            my.display_edit = my.kwargs.get('display_edit');
+        else:
+            my.display_edit = True;
+
 
 
         relative_dir = my.kwargs.get("relative_dir")
@@ -91,17 +105,19 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(data_div)
 
         # create the help button
-        help_button_wdg = DivWdg()
-        div.add(help_button_wdg)
-        help_button_wdg.add_style("margin-top: -3px")
-        help_button_wdg.add_style("float: right")
-        help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
-        help_button_wdg.add(help_button)
+        if my.display_help in ['true', "True", True]:
+            help_button_wdg = DivWdg()
+            div.add(help_button_wdg)
+            help_button_wdg.add_style("margin-top: -3px")
+            help_button_wdg.add_style("float: right")
+            help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
+            help_button_wdg.add(help_button)
 
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
-        } )
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''spt.help.load_alias("ingestion_widget")'''
+            } )
+        
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -753,18 +769,23 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         ####
-        buttons = Table()
-        div.add(buttons)
-        buttons.add_row()
+        
 
+        if my.display_edit in ['true', "True", True]:
 
-        button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
-        buttons.add_cell(button)
+            buttons = Table()
+            div.add(buttons)
+            buttons.add_row()
+
+            button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
+            buttons.add_cell(button)
 
 
         dialog = DialogWdg(display="false", show_title=False)
         div.add(dialog)
-        dialog.set_as_activator(button, offset={'x':-10,'y':10})
+
+        if my.display_edit in ['true', "True", True]:
+            dialog.set_as_activator(button, offset={'x':-10,'y':10})
 
         dialog_data_div = DivWdg()
         dialog_data_div.add_color("background", "background")

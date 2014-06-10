@@ -368,7 +368,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         if not upload_progress:
             upload_progress = '''
             var percent = Math.round(evt.loaded * 100 / evt.total);
-            spt.app_busy.show("Uploading ["+percent+"%% complete]");
+            spt.app_busy.show("Uploading ["+percent+"\% complete]");
             '''
 
         reader_load = my.kwargs.get("reader_load")
