@@ -127,7 +127,8 @@ var mooOverlay = new Class({
 
 	resize: function(){
 		this.fireEvent('resize');
-		this.overlay.setStyle('height', this.container.getScrollSize().y);
+		if(typeof this.overlay.setStyle !== "undefined") // IE8 Fix 
+            this.overlay.setStyle('height', this.container.getScrollSize().y);
 		return this;
 	},
 
