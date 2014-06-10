@@ -1367,7 +1367,9 @@ class WebLoginWdg(Widget):
             td = table2.add_cell(css='center_content')
             hidden = HiddenWdg('reset_request')
             td.add(hidden)
-            if msg != ResetPasswordWdg.RESET_MSG:
+
+            authenticate_class = Config.get_value("security", "authenticate_class")
+            if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
                 access_msg = "Can't access your account?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
