@@ -139,6 +139,7 @@ class Login(SObject):
     def get_sub_group_names(my):
         '''Returns all of the names as a list of strings
         of the sub_groups a group contains'''
+        
         connectors = LoginInGroup.get_by_login_name(my.get_login() ) 
         group_names = [ x.get_value("login_group") for x in connectors ]
         return group_names
@@ -891,6 +892,7 @@ class Security(Base):
             my._group_names = []
             my._find_all_login_groups()
 
+           
             # set the results to the cache
             #my.login_cache.set_attr("%s:groups" % login, my._groups)
             #my.login_cache.set_attr("%s:group_names" % login, my._group_names)
@@ -959,7 +961,8 @@ class Security(Base):
             login_in_group.commit()
 
 
-
+        # clear the login_in_group cache
+        LoginInGroup.clear_cache()
         my._find_all_login_groups()
 
         # create a new ticket for the user
@@ -1242,8 +1245,11 @@ class Security(Base):
 
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name, expiry, category="gui")
-
+        # clear the login_in_group cache
+        LoginInGroup.clear_cache()
+        
         my._do_login()
+        
 
 
 
@@ -1425,7 +1431,7 @@ class Security(Base):
         if my._login and my._login.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
             return
-
+        
         for group in my._groups:
             login_group = group.get_value("login_group")
             if login_group == "admin":
