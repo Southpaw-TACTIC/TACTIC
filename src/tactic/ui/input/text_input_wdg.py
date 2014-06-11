@@ -110,6 +110,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             my.text = TextWdg(name)
 
+        my.text.set_attr('autocomplete','off')
 
         class_name = kwargs.get("class")
         if class_name:

@@ -116,8 +116,14 @@ class UploadServerWdg(Widget):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
-            shutil.move(path, to_path)
-
+            
+            if os.name == 'nt':
+                # windows does not do anything.. and it shouldn't even get to 
+                # this point for windows.
+                pass
+            else:
+                shutil.move(path, to_path)
+                    
             # Because _cpreqbody makes use of mkstemp, the file permissions
             # are set to 600.  This switches to the permissions as defined
             # by the TACTIC users umask
@@ -133,7 +139,7 @@ class UploadServerWdg(Widget):
 
 
         # This may be DEPRECATED
-        raise Exception("Upload method is DEPRECATED")
+        #raise Exception("Upload method is DEPRECATED")
 
 
 

@@ -88,6 +88,13 @@
     <api_password></api_password>
 </security>
 
+<active_directory>
+    <domains></domains>
+    <handle_groups>true</handle_groups>
+    <default_groups>user</default_groups>
+    <default_license_type>user</default_license_type>
+</active_directory>
+
 <look>
     <palette>AQUA</palette>
 </look>
