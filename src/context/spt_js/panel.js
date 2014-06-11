@@ -211,6 +211,7 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
     // load into a popup
     if (!kwargs)
         kwargs = {};
+
     var bvr2 = {
         options:  {
             title: popup_id,
@@ -221,30 +222,25 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         kwargs: kwargs
     }
 
-    var custom_placement = {
-        top_pos: "",
-        left_pos: ""
-    }
+
     
     if (kwargs.values) {
         bvr2.values = kwargs.values;
     }
-    if (kwargs.width) {
+    if (kwargs.width) { 
         bvr2.options.width = kwargs.width;
     }
     if (kwargs.height) {
         bvr2.options.height = kwargs.height;
     } 
-    if (kwargs.offset_y){
-        bvr2.options.offset_y = kwargs.offset_y;
-        custom_placement.top_pos = kwargs.offset_y;
+    if (args.offset_y){
+        bvr2.options.offset_y = args.offset_y;
     }
-    if (kwargs.offset_x){
-        bvr2.options.offset_x = kwargs.offset_x;
-        custom_placement.left_pos = kwargs.offset_x;
+    if (args.offset_x){
+        bvr2.options.offset_x = args.offset_x;
     }
 
-    return spt.popup.get_widget({}, bvr2, custom_placement);
+    return spt.popup.get_widget({}, bvr2);
 
 }
 

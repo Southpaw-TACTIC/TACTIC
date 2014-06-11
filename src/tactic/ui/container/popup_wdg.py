@@ -859,7 +859,7 @@ spt.popup.destroy = function( popup_el_or_id )
 // Dynamically clones the template popup and fill it in with a dynamically
 // loaded widget.  This acts as a behavior
 // @param: load_once - load this only once if the popup is in view
-spt.popup.get_widget = function( evt, bvr, custom_placement )
+spt.popup.get_widget = function( evt, bvr )
 {
     if (typeof(bvr.options) == "undefined" || bvr.options == null) {
         bvr.options = {};
@@ -961,15 +961,15 @@ spt.popup.get_widget = function( evt, bvr, custom_placement )
 
 
     // change position of popup to an offset from mouse position if offset options are provided in the bvr
-    var pos = spt.mouse.get_abs_cusor_position(evt);
-    if( bvr.options.hasOwnProperty("offset_x") ) {
-        var offset_x = bvr.options.offset_x;
-        popup.setStyle('left', pos.x + offset_x);
-    }
-    if( bvr.options.hasOwnProperty("offset_y") ) {
-        var offset_y = bvr.options.offset_y;
-        popup.setStyle('top', pos.y + offset_y);
-    }
+    // var pos = spt.mouse.get_abs_cusor_position(evt);
+    // if( bvr.options.hasOwnProperty("offset_x") ) {
+    //     var offset_x = bvr.options.offset_x;
+    //     popup.setStyle('left', pos.x + offset_x);
+    // }
+    // if( bvr.options.hasOwnProperty("offset_y") ) {
+    //     var offset_y = bvr.options.offset_y;
+    //     popup.setStyle('top', pos.y + offset_y);
+    // }
 
 
     // set the parameters for reload this popup
@@ -979,7 +979,8 @@ spt.popup.get_widget = function( evt, bvr, custom_placement )
 
      var callback = function() {
 
-        // place in the middle of the screen
+        // place in the middle of the screen 
+        // (will be over-written in part if user specified any custom location)
         var size = popup.getSize();
         var body = document.body;
         var win_size = $(window).getSize();
@@ -999,29 +1000,24 @@ spt.popup.get_widget = function( evt, bvr, custom_placement )
 
         // if the user wants to specify where the popup will occur, place popup in custom location
 
-        // if user has specified a custom position for the popup
-
-        if (typeof custom_placement != "undefined") {
-
-            // if the user has specified a y position, place popup in custom location
-            if (custom_placement.hasOwnProperty("left_pos")) {
-                var left_pos = custom_placement.left_pos;
-                if (left_pos) {
-                    popup.setStyle('left', left_pos);
-                }
-                
+        // if the user has specified a x position, place popup in custom location
+        if (typeof bvr.options.offset_x != "undefined") {
+            var left_pos = bvr.options.offset_x;
+            if (left_pos) {
+                popup.setStyle('left', left_pos);
             }
-
-            // if the user has specified a top position, place popup in custom location
-            if (custom_placement.hasOwnProperty("top_pos")) {
-                var top_pos = custom_placement.top_pos;
-                if (top_pos) {
-                    popup.setStyle('top', top_pos);
-                }
-                
-            }
-
+            
         }
+
+        // if the user has specified a top position, place popup in custom location
+        if (typeof bvr.options.offset_y != "undefined") {
+            var top_pos = bvr.options.offset_y;
+            if (top_pos) {
+                popup.setStyle('top', top_pos);
+            }
+            
+        }
+
 
         spt.popup.show_background();
 
