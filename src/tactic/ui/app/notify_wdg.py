@@ -29,7 +29,7 @@ class NotifyWdg(BaseRefreshWdg):
         top.set_id("spt_notify_top")
 
         top.add_style("position: fixed")
-        top.add_style("bottom: -32")
+        top.add_style("bottom: -32px")
         top.add_style("left: 0")
         top.add_style("right: 0")
         top.add_style("z-index: 1000")

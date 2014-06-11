@@ -632,7 +632,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div = DivWdg()
         div.add_class("spt_tile_top")
-        div.add_style('margin', my.spacing)
+        div.add_style('margin', "%spx" %my.spacing)
         div.add_style('background-color','transparent')
 
         div.add_class("spt_table_row")
@@ -668,10 +668,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add(thumb_div)
 
 
-        
-        thumb_div.add_style("width: %s" % my.aspect_ratio[0])
+        if not my.aspect_ratio[0] == "auto":
+            thumb_div.add_style("width: %s" % my.aspect_ratio[0])
 
-        thumb_div.add_style("height: %s" % my.aspect_ratio[1])
+        thumb_div.add_style("height: %spx" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
         thumb = ThumbWdg2()
@@ -757,6 +757,7 @@ spt.tile_layout.get_scale = function() {
 
 spt.tile_layout.set_scale = function(scale) {
 
+    if (bvr.aspect_ratio[0] !== "auto") {
     var scale_value = spt.tile_layout.layout.getElement(".spt_scale_value");
     scale_value.value = scale;
 
@@ -774,6 +775,7 @@ spt.tile_layout.set_scale = function(scale) {
 
     var container_id = "tile_layout::scale"+bvr.scale_prefix;
     spt.container.set_value( container_id, scale);
+    }
 }
 
 
