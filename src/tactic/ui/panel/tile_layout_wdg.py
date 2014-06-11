@@ -292,6 +292,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         if isinstance(my.aspect_ratio, list):
             pass
+        elif my.aspect_ratio == "original":
+            my.aspect_ratio = ("auto", 160)
         elif my.aspect_ratio:
             try:
                 parts = re.split('[\Wx]+', my.aspect_ratio)
