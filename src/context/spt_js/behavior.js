@@ -409,7 +409,7 @@ spt.behavior.duplicate_element = function( el )
 
     // duplicate className string of element node ...
     dup_el.className = el.className;
-    dup_el.spt_bvrs = el.spt_bvrs;
+    dup_el.spt_bvrs = el.spt_bvrs; // IE8 Fix
 
     // process behaviors of element node and its descendents ...
     var bvr_el_list = dup_el.getElements( ".SPT_BVR" );
@@ -705,7 +705,7 @@ spt.behavior._CB_change = function( evt )
     if( ! evt ) { evt = window.event; }
 
     var change_el = spt.behavior.find_bvr_target( "change", spt.get_event_target(evt) );
-    if( change_el && 'change' in change_el.spt_bvrs ) { // Added by Luke: check if change_el is undefined
+    if( change_el && 'change' in change_el.spt_bvrs ) { // IE8 Fix: added check for change_el
         var oc_bvrs = change_el.spt_bvrs['change'];
         for( var c=0; c < oc_bvrs.length; c++ ) {
             var bvr = oc_bvrs[c];
