@@ -726,7 +726,7 @@ class IconCreator(object):
                 to_ext = "JPEG"
             
             from pyasm.prod.biz import ProdSetting
-            no_white_canvas = ProdSetting.get_value_by_key('no_white_canvas')
+            no_white_canvas = ProdSetting.get_value_by_key('icon_no_white_canvas')
 
             if x >= y or no_white_canvas:
                 im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
