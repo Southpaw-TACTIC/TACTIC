@@ -735,7 +735,7 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 }
 
 
-spt.popup.close = function( popup_el_or_id , fade)
+spt.popup.close = function( popup_el_or_id , fade, close_fn)
 {
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     popup = popup ? popup : spt.popup.get_popup(popup_el_or_id);
@@ -743,14 +743,17 @@ spt.popup.close = function( popup_el_or_id , fade)
     if (!popup) return;
 
     if (fade) {
-        popup.fade('out').get('tween').chain(function(){ spt.hide( popup );});
+        popup.fade('out').get('tween').chain(
+        function(){ 
+            spt.hide( popup );
+            if (close_fn) close_fn();
+        });
     }
     else {
         spt.hide( popup );
     }
     spt.popup.hide_all_aux_divs( popup, fade );
 
-    spt.popup.hide_background();
 
     if( popup == spt.popup._focus_el ) {
         spt.popup.release_focus( spt.popup._focus_el );
@@ -849,12 +852,20 @@ spt.popup._position = function( popup, use_safe_position )
 }
 
 
-spt.popup.destroy = function( popup_el_or_id )
+spt.popup.destroy = function( popup_el_or_id, fade )
 {
     var popup = $(popup_el_or_id);
 
-    spt.popup.close( popup );
-    spt.behavior.destroy_element( popup );
+    var destroy_fn = function() {
+        spt.behavior.destroy_element( popup );
+    }
+    if (fade) {
+        spt.popup.close( popup, fade, destroy_fn );
+    }
+    else {
+        spt.popup.close( popup);
+        destroy_fn();
+    }
 
 }
 

@@ -984,9 +984,14 @@ spt.show = function( element )
     var el = $(element);
     if( el ) {
         el.setStyle("display","");
-        if (el.getStyle("visibility") == "hidden")
-            el.fade("in").get('tween').chain(function(){ el.setStyle('display','block')});
-
+        if (el.getStyle("opacity") == "0")
+            el.setStyle("opacity", "1");
+        
+        if (el.getStyle("visibility") == "hidden") {
+            //el.fade("in");
+            el.setStyle("visibility", "visible");
+            el.setStyle("opacity", "1");
+        }
         if( el.hasClass("SPT_BVR") ) {
             var show_bvr_list = spt.behavior.get_bvrs_by_type("show", el);
             for( var c=0; c < show_bvr_list.length; c++ ) {
@@ -999,8 +1004,6 @@ spt.show = function( element )
     }
 
 }
-
-
 spt.show_block = function( element )
 {
     // element can be element ID or element itself ...
