@@ -985,7 +985,7 @@ spt.show = function( element )
     if( el ) {
         el.setStyle("display","");
         if (el.getStyle("visibility") == "hidden")
-            el.fade("in");
+            el.fade("in").get('tween').chain(function(){ el.setStyle('display','block')});
 
         if( el.hasClass("SPT_BVR") ) {
             var show_bvr_list = spt.behavior.get_bvrs_by_type("show", el);
