@@ -143,6 +143,7 @@ class PopupWdg(BaseRefreshWdg):
             div.add_style("opacity: 0.4")
             # below is for IE8 opacity
             div.add_style("progid: DXImageTransform.Microsoft.Alpha(Opacity=40)")
+            div.add_style("filter: alpha(opacity=50)")
             div.add_style("background", "#000")
             div.add_style("padding: 100px")
             div.add_style("height: 100%")
