@@ -3139,6 +3139,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['aspect_ratio'] = my.kwargs.get("aspect_ratio")
             kwargs['expand_mode'] = my.kwargs.get("expand_mode")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_hover_name'] = my.kwargs.get("show_hover_name")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':

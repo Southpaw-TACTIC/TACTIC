@@ -311,7 +311,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         my.expand_mode = my.kwargs.get('expand_mode')
         my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
-
+        my.show_hover_name = my.kwargs.get('show_hover_name')
         super(TileLayoutWdg, my).init()
 
 
@@ -674,7 +674,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_style("height: %spx" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
-        thumb = ThumbWdg2()
+        kwargs = {
+            'show_hover_name':my.show_hover_name
+        }
+        thumb = ThumbWdg2(**kwargs)
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
         thumb_div.add_border()
@@ -1038,6 +1041,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def init(my):
         my.path = None
+        my.show_hover_name = my.kwargs.get('show_hover_name')
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)
@@ -1089,6 +1093,13 @@ class ThumbWdg2(BaseRefreshWdg):
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
+        if my.show_hover_name:
+            name_hover = DivWdg()
+            name_hover.add_class("spt_name_hover")
+            name_hover.add(sobject.get('name'))
+            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
+            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+            div.add(name_hover)
 
         div.add_style("height: 100%")
 
