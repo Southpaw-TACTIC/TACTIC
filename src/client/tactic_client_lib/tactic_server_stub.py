@@ -1842,9 +1842,13 @@ class TacticServerStub(object):
                 basename = os.path.basename(file_path)
 
                 if mode == 'move':
+                    
                     shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
                 elif mode == 'copy':
                     shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    # it moves to repo from handoff dir later
+                    mode = 'create'
 
             elif mode in ['local']:
                 # do nothing
@@ -1948,6 +1952,7 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 handoff_dir = my.get_handoff_dir()
                 expanded_paths = my._expand_paths(file_path, file_range)
@@ -1955,6 +1960,8 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                # it moves to repo from handoff dir later
+                mode = 'create'
             elif mode == 'upload':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
@@ -2025,8 +2032,11 @@ class TacticServerStub(object):
 
         if mode == 'move':
             shutil.move(dir, "%s/%s" % (handoff_dir, basename))
+            mode = 'create'
         elif mode == 'copy':
             shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
+            # it moves to repo from handoff dir later
+            mode = 'create'
 
         use_handoff_dir = True
 
@@ -2247,6 +2257,7 @@ class TacticServerStub(object):
                         shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
 
         return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming, checkin_type)
 
@@ -2287,12 +2298,14 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'upload':
                 my.upload_group(file_path, file_range)
                 use_handoff_dir = False
@@ -2362,6 +2375,7 @@ class TacticServerStub(object):
             elif mode == 'copy':
                 shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
 
+            mode = 'create'
 
         use_handoff_dir = True
         create_icon = False
@@ -3266,16 +3280,20 @@ class TacticServerStub(object):
             string - html form of the widget
 
         @example:
-        class_name = 'TableLayoutWdg'
+        class_name = 'tactic.ui.panel.TableLayoutWdg'
 
         args = {
-                'view': 'manage',
-                'search_type': 'prod/asset',
+                'view': 'task_list',
+                'search_type': 'sthpw/task',
                }
 
-        widget = server.get_widget(class_name, args))
+        filter =  [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}, {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is not","main_body_value":"sthpw/project"}]
+        
+        from simplejson import dumps
+        values  = {'json': dumps(filter)}
+        widget_html = server.get_widget(class_name, args, values)
         '''
-        return my.server.get_widget(my.ticket, class_name, args)
+        return my.server.get_widget(my.ticket, class_name, args, values)
 
 
 

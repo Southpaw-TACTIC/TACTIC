@@ -35,91 +35,91 @@ class CommonTest(unittest.TestCase):
         # remove -
         name = 'chr001_.jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove -_
         name = 'chr001-_.jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove double ..
         name = 'chr001..jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove triple ...
         name = 'chr001...jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove -
         name = 'chr001-_model.jpg'
         exp  = 'chr001_model.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # keep double --, keep double __
         name = 'chr001--model__v001.jpg'
         exp = 'chr001--model__v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # change space to underscore
         name = 'chr001 model_v001.jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
         # change space to underscore, but keep .
         name = 'chr001_model_v001 .jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove bad characters
         name = 'ch%r001_model_v001?! .jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # allow %0.4d convention 
         name = 'chr001_model.%0.4d.jpg'
         exp = 'chr001_model.%0.4d.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # start with a .
         name = '.chr001.jpg'
         exp = '.chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
         
         # ends with a .
         name = 'chr001.jpg.'
         exp = 'chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
         # start with a -
         name = '-!chr001.jpg'
         exp = '-chr001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001__!v001.jpg'
         exp = 'chr001__v001.jpg'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
 
         # handle python special naming
         name = '__init__.py'
         exp = '__init__.py'
-        my.assertEquals(exp, Common.get_filesystem_name(name))
+        my.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
 

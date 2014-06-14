@@ -662,9 +662,14 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             else:
                 overall_search.add_op('begin')
                 #search.add_op('begin')
-
+            
+            # single col does not matter
+            # we should just use the AND logic for single_col or multi keywords column.
+            # Drawback is that multiple columns defined for the same sType may cause a return of 0 result
+            # if words from multi columns are used in the search. This is in line with partial_op = 'and' for 
+            # db not supporting full text search
             single_col = len(my.columns) == 1
-            partial_op = 'or'
+            partial_op = 'and'
             for column in my.columns:
                 if my.cross_db:
                     search2 = None
@@ -676,14 +681,15 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 keywords = value
                 # keywords_list is used for add_keyword_filter()
                 keywords_list = keywords.split(" ")
-                if single_col:
-                    keywords = keywords_list
-                    partial_op = 'and'
+                #if single_col:
+                # AND logic in full text search will be adopted if keywords is a list as oopposed to string
+                keywords = keywords_list
+                
                 if my.has_index and is_ascii:
                     
                     search_type_obj = SearchType.get(search_type)
                     table = search_type_obj.get_table()
-
+                    
                     #print "column: ", column
                     search = Search(overall_search.get_search_type())
                     if column.find(".") != -1:
@@ -741,6 +747,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             else:
                                 sub_search = search2
                         else:
+                            
                             search.add_text_search_filter(column, keywords, table=table)
                             overall_search.add_relationship_search_filter(search, op="in")
                 else:
@@ -1249,8 +1256,7 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
         title = my.get_option("title")
         if not title:
-            title = my.get_option("expression")
-
+            title = ''
         div = SpanWdg()
         div.add("%s" % title)
         checkbox = CheckboxWdg("option")

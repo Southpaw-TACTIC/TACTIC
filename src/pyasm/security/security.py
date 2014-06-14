@@ -139,6 +139,7 @@ class Login(SObject):
     def get_sub_group_names(my):
         '''Returns all of the names as a list of strings
         of the sub_groups a group contains'''
+        
         connectors = LoginInGroup.get_by_login_name(my.get_login() ) 
         group_names = [ x.get_value("login_group") for x in connectors ]
         return group_names
@@ -891,6 +892,7 @@ class Security(Base):
             my._group_names = []
             my._find_all_login_groups()
 
+           
             # set the results to the cache
             #my.login_cache.set_attr("%s:groups" % login, my._groups)
             #my.login_cache.set_attr("%s:group_names" % login, my._group_names)
@@ -959,7 +961,8 @@ class Security(Base):
             login_in_group.commit()
 
 
-
+        # clear the login_in_group cache
+        LoginInGroup.clear_cache()
         my._find_all_login_groups()
 
         # create a new ticket for the user
@@ -1154,13 +1157,16 @@ class Security(Base):
             auth_class = "pyasm.security.TacticAuthenticate"
 
 
-        # handle the windows domain
+        # handle the windows domain, manually typed in domain overrides
+        if login_name.find('\\') != -1:
+            domain, login_name = login_name.split('\\', 1)
         if domain and login_name !='admin':
             auth_login_name = "%s\\%s" % (domain, login_name)
         else:
+            
             auth_login_name = login_name
 
-
+     
 
         authenticate = Common.create_from_class_path(auth_class)
         is_authenticated = authenticate.verify(auth_login_name, password)
@@ -1170,6 +1176,7 @@ class Security(Base):
         mode = authenticate.get_mode()
         if not mode:
             mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
+        
         if not mode:
             mode = 'default'
         
@@ -1197,8 +1204,12 @@ class Security(Base):
             if not my._login:
                 my._login = SearchType.create("sthpw/login")
                 my._login.set_value('login', login_name)
-            authenticate.add_user_info( my._login, password)
 
+            try:
+                authenticate.add_user_info( my._login, password)
+            except Exception, e:
+                raise SecurityException("Error updaing user info: %s" % e.__str__())
+                
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
             if my._login.has_user_license():
@@ -1234,8 +1245,11 @@ class Security(Base):
 
         # create a new ticket for the user
         my._ticket = my._generate_ticket(login_name, expiry, category="gui")
-
+        # clear the login_in_group cache
+        LoginInGroup.clear_cache()
+        
         my._do_login()
+        
 
 
 
@@ -1417,7 +1431,7 @@ class Security(Base):
         if my._login and my._login.get_value("login") == 'admin':
             my._access_manager.set_admin(True)
             return
-
+        
         for group in my._groups:
             login_group = group.get_value("login_group")
             if login_group == "admin":

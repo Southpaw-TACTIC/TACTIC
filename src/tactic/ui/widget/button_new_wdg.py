@@ -792,10 +792,23 @@ class ActionButtonWdgOld(DivWdg):
         'order': 1,
         'category': 'Options'
     },
+    'width': {
+        'description': 'Button Width',
+        'type': 'TextWdg',
+        'order': 2,
+        'category': 'Options'
+    },
+    'size': {
+        'description': 'Button size, Medium (m) or Large (l)',
+        'type': 'SelectWdg',
+        'values' : 'm|l',
+        'order': 3,
+        'category': 'Options'
+    },
     'action': {
         'description': 'Javascript callback',
         'type': 'TextAreaWdg',
-        'order': 1,
+        'order': 4,
         'category': 'Options'
     }
     }

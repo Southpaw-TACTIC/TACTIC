@@ -155,8 +155,10 @@ class FormatMessageWdg(BaseRefreshWdg):
 
             #message_value = message_value.replace(r"\\", "\\");
             message_value = jsonloads(message_value)
+            # that doesn't support delete
             update_data = message_value.get("update_data")
-            
+            sobject_data = message_value.get("sobject")
+            sobject_code = sobject_data.get('code')
             if category == "sobject":
                 search_type = message_value.get("search_type")
                 if search_type == "sthpw/note":
@@ -168,13 +170,17 @@ class FormatMessageWdg(BaseRefreshWdg):
                     description = "<b>Files checked in:</b><br/>%s" % sobject.get("process")
                 else:
                     display = []
-                    for key, val in update_data.items():
-                        
-                        display.append('%s &ndash; %s'%(key, val))
+                    if update_data:
+                        for key, val in update_data.items():
+                            display.append('%s &ndash; %s'%(key, val))
+                    else:
+                        if message_value.get('mode') == 'retire':
+                            display.append('Retired')
+
                     base_search_type = Project.extract_base_search_type(search_type)
                     
                     description = DivWdg()
-                    title = DivWdg("<b>%s</b> modified by %s:"%(base_search_type, message_login))
+                    title = DivWdg("<b>%s</b> - %s modified by %s:"%(base_search_type, sobject_code, message_login))
                     title.add_style('margin-bottom: 6px')
                     content = DivWdg()
                     content.add_style('padding-left: 2px')
@@ -696,7 +702,6 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
-
 
         return subscriptions
 

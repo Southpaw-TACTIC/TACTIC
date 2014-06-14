@@ -2496,6 +2496,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
                 pass
             else:
                 plugin = plugin.get_sobject_dict()
+
             plugin_code = plugin.get("code")
             from tactic_client_lib import TacticServerStub
             server = TacticServerStub.get(protocol="local")

@@ -12,7 +12,7 @@
 
 __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
 
-
+import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
@@ -67,18 +67,28 @@ def get_simple_cmd(my, meth, ticket, args):
             my2.start_time = time.time()
             global REQUEST_COUNT, LAST_RSS
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
+           
             if my.get_protocol() != "local":
                 print "request_id: ", request_id
                 now = datetime.datetime.now()
                 
-                print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                print "user: ", Environment.get_user_name()
-                print "simple method: ", meth
-                print "ticket: ", ticket
-                Container.put("CHECK", my2.check)
-                Container.put("NUM_SOBJECTS", 1)
-                Common.pretty_print(args)
-
+                def print_info(my2, args):
+                    print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
+                    print "user: ", Environment.get_user_name()
+                    print "simple method: ", meth
+                    print "ticket: ", ticket
+                    Container.put("CHECK", my2.check)
+                    Container.put("NUM_SOBJECTS", 1)
+                    Common.pretty_print(args)
+                
+                if meth.__name__ == 'get_widget':
+                    first_arg = args[0]
+                    if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                        print_info(my2, args)
+                else:
+                    print_info(my2, args)
+                
+                    
             try:
                 # actually execute the method
                 my2.results = exec_meth(my, ticket, meth, args)
@@ -231,6 +241,9 @@ QUERY_METHODS = {
     'get_doc_link': 0
 }
 
+TRANS_OPTIONAL_METHODS = {
+    'execute_cmd': 3
+}
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -267,6 +280,13 @@ def xmlrpc_decorator(meth):
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(my, meth, ticket, args)
+                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                        cmd = get_simple_cmd(my, meth, ticket, args)
+                    else:
+                        cmd = get_full_cmd(my, meth, ticket, args)
+
                 else:
                     cmd = get_full_cmd(my, meth, ticket, args)
 
@@ -373,6 +393,7 @@ def profile_execute():
 
 def trace_decorator(meth):
     def new(my, *args):
+        
         print "method: ", meth.__name__, args
 
         try:
@@ -813,6 +834,9 @@ class BaseApiXMLRPC(XmlrpcServer):
                             continue
                     elif isinstance(value, long) and value > MAXINT:
                         value = str(value)
+                    elif isinstance(value, decimal.Decimal):
+                        # use str to avoid loss of precision
+                        value = str(value)
                     elif isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
@@ -918,6 +942,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
         message = Search.get_by_code("sthpw/message", key)
         sobject_dict = my._get_sobject_dict(message)
         return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_messages(my, ticket, keys):
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        messages = search.get_sobjects()
+
+        results = []
+        for message in messages:
+            sobject_dict = my._get_sobject_dict(message)
+            results.append(sobject_dict)
+
+        return results
+
+
 
 
     @xmlrpc_decorator
@@ -3554,7 +3594,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         if mode:
-            assert mode in ['move', 'copy', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
+            assert mode in ['move', 'copy','create', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
 
 
         # file_path can be an array of files:
@@ -3704,7 +3744,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #filename = File.get_filesystem_name(filename)
 
         if mode:
-            assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
+            assert mode in ['move', 'copy', 'create','preallocate', 'upload', 'inplace']
         if mode == 'preallocate':
             keep_file_name = True
             # create a virtual file object for dir naming
@@ -4733,11 +4773,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 Container.put("request_top_wdg", widget)
 
                 html = widget.get_buffer_display()
-
-                print "SQL Query Count: ", Container.get('Search:sql_query')
-                print "BVR Count: ", Container.get('Widget:bvr_count')
-                print "Sending: %s KB" % (len(html)/1024)
-                print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
+                    print "SQL Query Count: ", Container.get('Search:sql_query')
+                    print "BVR Count: ", Container.get('Widget:bvr_count')
+                    print "Sending: %s KB" % (len(html)/1024)
+                    print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
 
                 return html
 

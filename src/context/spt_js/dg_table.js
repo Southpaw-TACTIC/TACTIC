@@ -2771,9 +2771,16 @@ spt.dg_table._search_cbk = function(evt, bvr)
                     if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
+            var new_values = [];
+            var table_searches = table_top.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
+            var search_dict = {'json' : JSON.stringify(new_values)};
         }
-
-        spt.panel.refresh(table_top);
+        spt.panel.refresh(table_top, search_dict);
         return;
     }
 
@@ -5756,5 +5763,6 @@ spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
 
     return setup_info;
 }
+
 
 

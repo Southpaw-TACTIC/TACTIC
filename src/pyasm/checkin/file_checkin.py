@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin']
+__all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin','SingleSnapshotException']
 
 import sys, string, os, shutil, time, types
 from cStringIO import StringIO
@@ -23,6 +23,8 @@ from pyasm.search import *
 from checkin import *
 from snapshot_builder import *
 
+class SingleSnapshotException(Exception):
+    pass
 
 
 class FileCheckin(BaseCheckin):
@@ -36,7 +38,7 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='strict', version=None):
+            checkin_type='strict', version=None, single_snapshot=False):
 
         '''sobject - the sobject that this checkin belongs to
            file_paths - array of all the files to checkin
@@ -52,10 +54,13 @@ class FileCheckin(BaseCheckin):
                parent level of this checkin
            mode - determines what mode the checkin is.  This basically
                 determines how the source files are treated.  
-                Accepted values: copy, move: default tactic check-in that uses upload/handoff dir; naming convention on 
+                Accepted values: create, copy, move, local: 
+                        create: default tactic check-in that uses upload/handoff dir; naming convention on, return to cache on undo
+                        move and local performs a move. copy performs a copy
+                        
                         inplace: check in the source_path as is without moving it; naming convention off
-                        free_move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on
-                        free_copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on
+                        move: check in the source_path to the tactic repo via a move without going thru upload/handoff dir; naming convention on, return to src on undo
+                        copy: check in the source_path to the tactic repo via a copy without going thru upload/handoff dir; naming convention on, return to cache on undo
            keep_file_name - determines whether the checked in file name is
                 kept as is or goes through naming conventions
            base_dir - DEPRECATED: this base directory determines the root that was used for inplace checkins
@@ -69,6 +74,7 @@ class FileCheckin(BaseCheckin):
                 strict uses strict naming conventions with explicit versionless
                 auto uses looser naming conventions with auto versionless
            version - force the version of the check-in
+           single_snapshot - if set to True, it raises a SingleSnapshotException if an existing snapshot already exists.
             
         '''
         super(FileCheckin,my).__init__(sobject)
@@ -114,11 +120,11 @@ class FileCheckin(BaseCheckin):
             base_dir = "//%s" % depot
         elif mode == "inplace" and not base_dir:
             # get base_dir_alias
-            alias_dict = Config.get_value("checkin", "base_dir_alias")
+            #alias_dict = Config.get_value("checkin", "base_dir_alias")
+            alias_dict = Environment.get_asset_dirs()
             if alias_dict:
-                alias_dict = eval(alias_dict)
                 for key, value in alias_dict.items():
-                    asset_base_dir = alias_dict[key]['asset_base_dir']
+                    asset_base_dir = alias_dict[key]
                     if my.file_paths[0].startswith(asset_base_dir):
                         base_dir = asset_base_dir
                         my.base_dir_alias = key
@@ -210,7 +216,8 @@ class FileCheckin(BaseCheckin):
             # Checkin may not provide md5s, make a None list
             file_sizes = [ None for x in xrange(len(file_paths))]
         my.file_sizes = file_sizes
-
+        
+        my.single_snapshot = single_snapshot
 
 
 
@@ -384,6 +391,10 @@ class FileCheckin(BaseCheckin):
             level_type=my.level_type, level_id=my.level_id, is_latest=is_latest,
             is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False)
 
+        if my.single_snapshot and my.snapshot.get_version() > 1:
+            raise SingleSnapshotException("There is an existing snapshot for \
+                    this sobject [%s] under the [%s] context."%(my.sobject.get_search_key(), my.context))
+            
 
     def postprocess_snapshot(my):
 
@@ -827,6 +838,10 @@ class FileGroupCheckin(FileCheckin):
         if my.mode == 'inplace':
             # TODO: ? MD5?
             return
+        if my.mode == 'copy':
+            io_action = 'copy'
+        else:
+            io_action = True
 
         for i in range( 0, len(files) ):
 
@@ -853,6 +868,7 @@ class FileGroupCheckin(FileCheckin):
             my.expanded_paths.extend(from_expanded)
 
             # iterate through each and copy to the lib
+
             for j in range(0, len(from_expanded) ):
 
                 # check before copying
@@ -874,10 +890,10 @@ class FileGroupCheckin(FileCheckin):
                         file_object.set_value("md5", md5_checksum)
                         file_object.commit()
                     st_size = file_object.get_value("st_size")
-                    FileUndo.create( from_expanded[j], to_expanded[j], { "md5": md5_checksum, "st_size": st_size } )
+                    FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action, extra={ "md5": md5_checksum, "st_size": st_size } )
 
                 else:
-                    FileUndo.create( from_expanded[j], to_expanded[j] )
+                    FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action )
 
                 # check to see that the file exists.
                 if not os.path.exists( to_expanded[j] ):

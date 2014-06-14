@@ -19,7 +19,7 @@ from tactic.command import JobTask
 import time
 
 def main():
-    print "Running Job Queue ..."
+    #print "Starting Job Queue ..."
     from pyasm.security import Batch
     Batch()
 
@@ -27,9 +27,12 @@ def main():
             check_interval=0.1,
             max_jobs_completed=50
     )
-    count = 0
     while 1:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except (KeyboardInterrupt, SystemExit), e:
+            print "Exiting ..."
+            raise
 
 
 

@@ -523,7 +523,7 @@ class ClientApiTest(unittest.TestCase):
 
     def _test_get_related(my):
         results = my.server.get_related_types('unittest/person')
-        my.assertEquals(['unittest/city', 'unittest/person_car_instance'], results)
+        my.assertEquals(['unittest/city', 'unittest/car','unittest/person_in_car'], results)
         results = my.server.get_related_types('unittest/country')
         my.assertEquals(['unittest/city'], results)
 

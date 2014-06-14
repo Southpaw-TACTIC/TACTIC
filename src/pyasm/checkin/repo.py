@@ -88,6 +88,7 @@ class TacticRepo(BaseRepo):
                 raise CheckinException('This path [%s] already exists'%to_path) 
 
 
+
             # add the file
             try:
 
@@ -97,19 +98,28 @@ class TacticRepo(BaseRepo):
                 if mode in ['preallocate']:
                     io_action = False
 
-                if mode == 'free_move':
+                
+                if mode == 'move':
                     FileUndo.move( source_paths[i], to_path )
-                elif mode == 'free_copy':
-                    # check for directory within FileUndo.copy
-                    FileUndo.copy( source_paths[i], to_path )
+                #elif mode == 'copy': # was free_copy
+                   
+                    #FileUndo.create( source_paths[i], to_path, io_action=io_action )
                 # make it look like the files was created in the repository
-                else:
+                else: # mode ='create'
+                    
                     md5 = file_object.get_value("md5")
                     st_size = file_object.get_value("st_size")
                     rel_dir = file_object.get_value("relative_dir")
-                    file_name = file_object.get_value("file_name")
+                    if mode == 'copy':
+                        io_action = 'copy'
+                        src_path = source_paths[i]
+                    else:
+                        src_path = files[i]
+
+                    file_name = to_name
                     rel_path = "%s/%s" % (rel_dir, file_name)
-                    FileUndo.create( files[i], to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
+                    
+                    FileUndo.create( src_path, to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
 
 
             except IOError, e:

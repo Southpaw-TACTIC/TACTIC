@@ -35,6 +35,7 @@ class Transaction(Base):
         my.description = ""
         my.title = ''
         my.record_flag = True
+        my.sync_flag = True
 
 
     def _reset(my):
@@ -48,6 +49,11 @@ class Transaction(Base):
 
     def set_record(my, record_flag):
         my.record_flag = record_flag
+
+
+    def set_sync(my, sync_flag):
+        my.sync_flag = sync_flag
+
 
     def get_xml(my):
         return my.xml
@@ -264,6 +270,9 @@ class Transaction(Base):
     def get_transaction_log(my):
         return my.xml
 
+    def get_transaction_log_sobj(my):
+        return my.transaction_log
+
 
     def get_file_log(my):
         '''get only the file logs'''
@@ -370,7 +379,8 @@ class Transaction(Base):
         my.update_change_timestamps(my.transaction_log)
 
         # add remote sync registration
-        my.transaction_log.trigger_remote_sync()
+        if my.sync_flag:
+            my.transaction_log.trigger_remote_sync()
 
         return my.transaction_log
 
@@ -611,7 +621,10 @@ class FileUndo:
                     os.unlink(src)
 
                 if io_action == 'copy':
-                    shutil.copy(orig,src)
+                    if os.path.isdir(orig):
+                        shutil.copytree(orig, src)
+                    else:
+                        shutil.copy(orig,src)
                 else:
                     shutil.move(orig,src)
             else:

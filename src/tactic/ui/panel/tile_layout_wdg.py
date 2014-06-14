@@ -11,6 +11,7 @@
 #
 __all__ = ["TileLayoutWdg"]
 
+import re
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -21,10 +22,69 @@ from tactic.ui.container import SmartMenu
 from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 
-
-
 from tool_layout_wdg import ToolLayoutWdg
+
 class TileLayoutWdg(ToolLayoutWdg):
+
+    ARGS_KEYS = ToolLayoutWdg.ARGS_KEYS.copy()
+    ARGS_KEYS['top_view'] = {
+            'description': 'an optional custom layout for the title area of the tile',
+            'order' : '01',
+            'category': 'Display'
+        }
+
+
+    ARGS_KEYS['bottom_view'] = {
+            'description': 'an optional custom layout for the bottom area of the tile',
+            'order' : '02',
+            'category': 'Display'
+        }
+
+    ARGS_KEYS['show_scale'] = {
+            'description': 'If set to true, the scale slider bar is displayed',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '03',
+            'category': 'Display'
+    }
+    ARGS_KEYS['scale'] = {
+            'description': 'Initial Scale. If not set, it defaults to 100',
+            'type': 'TextWdg',
+            'order' : '04',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['sticky_scale'] = {
+            'description': 'If set to local, the scale is sticky in the current view until page refresh',
+            'type': 'SelectWdg',
+            'values': 'local|global',
+            'order' : '05',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['styles'] = {
+            'description': 'styles in a string that can be applied to the top container of this Tile Layout',
+            'type': 'TextWdg',
+            'order' : '06',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['aspect_ratio'] = {
+            'description': 'Custom aspect ratio like 240,110 for the tiles',
+            'type': 'TextWdg',
+            'order' : '07',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['spacing'] = {
+            'description': 'Custom tile spacing between tiles',
+            'type': 'TextWdg',
+            'order' : '08',
+            'category': 'Display'
+
+    }
+
+    
 
 
     def can_select(my):
@@ -63,39 +123,41 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_content_wdg(my):
         div = DivWdg()
         div.add_class("spt_tile_layout_top")
+        if my.top_styles:
+            div.add_styles(my.top_styles)
         inner = DivWdg()
         div.add(inner)
 
 
-        # set up the context menus
-        show_context_menu = my.kwargs.get("show_context_menu")
-        if show_context_menu in ['false', False]:
-            show_context_menu = False
-        else:
-            show_context_menu = True
-
+        
         menus_in = {}
-        if show_context_menu:
+        # set up the context menus
+        if my.show_context_menu == True:
             menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
             menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+        elif my.show_context_menu == 'none':
+            div.add_event('oncontextmenu', 'return false;')
         if menus_in:
             SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+ 
 
+
+
+
+        
 
         temp = my.kwargs.get("temp")
         has_loading = False
 
-
         
         inner.add_style("margin-left: 20px")
-
+       
 
         inner.add_attr("ondragenter", "return false")
         inner.add_attr("ondragover", "return false")
         inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
         inner.add("<br clear='all'/>")
-
 
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
@@ -176,9 +238,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def init(my):
-
         my.scale_called = False
-
+        my.scale = None
         top_view = my.kwargs.get("top_view")
         if top_view:
             kwargs = {
@@ -188,10 +249,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.title_wdg = CustomLayoutWdg(**kwargs)
         else:
             my.title_wdg = None
-
- 
-
-
+        my.sticky_scale = my.kwargs.get('sticky_scale')
+        if my.sticky_scale == 'local':
+            # NOTE: each side bar link has a unique name on each level, but it's not always available
+            # not in page refresh or built-in links
+            # element = my.kwargs.get('element_name')
+            my.scale_prefix = '%s:%s' %(my.search_type, my.view)
+        else:
+            my.scale_prefix = ''
+        
         bottom_view = my.kwargs.get("bottom_view")
         if bottom_view:
             kwargs = {
@@ -202,6 +268,35 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = CustomLayoutWdg(**kwargs)
         else:
             my.bottom = None
+
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get()
+        data_list = filter_data.get_values_by_prefix("tile_layout")
+        if data_list:
+            data = data_list[0]
+        else:
+            data = {}
+        
+
+        my.scale = data.get("scale")
+        if my.scale == None:
+            my.scale = my.kwargs.get("scale")
+        if my.scale == None:
+            my.scale = 100
+
+
+        my.aspect_ratio = my.kwargs.get('aspect_ratio')
+        if my.aspect_ratio:
+            parts = re.split('[\Wx]+', my.aspect_ratio)
+            my.aspect_ratio = (int(parts[0]), int(parts[1]))
+        else:
+            my.aspect_ratio = (240, 160)
+
+
+        my.top_styles = my.kwargs.get('styles')
+        my.spacing = my.kwargs.get('spacing')
+        if not my.spacing:
+            my.spacing = '10'
 
         super(TileLayoutWdg, my).init()
 
@@ -226,29 +321,74 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
-        layout_wdg.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_tile_content',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_tile_top");
-            var search_key = top.getAttribute("spt_search_key");
-            var server = TacticServerStub.get();
-            var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
-            if (snapshot.__search_key__) {
-                window.open(snapshot.__web_paths_dict__.main);
-            }
-            else {
-                var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+        mode = my.kwargs.get("expand_mode")
+        if not mode:
+            mode = "gallery"
+
+        gallery_width = my.kwargs.get("gallery_width")
+        if not gallery_width:
+            gallery_width = ''
+        if mode == "view":
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = top.getAttribute("spt_search_key");
+                var server = TacticServerStub.get();
+                var snapshot = server.get_snapshot(search_key, {context: "", process:"publish",include_web_paths_dict:true});
                 if (snapshot.__search_key__) {
                     window.open(snapshot.__web_paths_dict__.main);
                 }
                 else {
-                    alert("WARNING: No file for this asset");
+                    var snapshot = server.get_snapshot(search_key, {context: "",include_web_paths_dict:true});
+                    if (snapshot.__search_key__) {
+                        window.open(snapshot.__web_paths_dict__.main);
+                    }
+                    else {
+                        alert("WARNING: No file for this asset");
+                    }
                 }
-            }
-            '''
-        } )
+                '''
+            } )
+        elif mode == "gallery":
+            gallery_div = DivWdg()
+            layout_wdg.add( gallery_div )
+            gallery_div.add_class("spt_tile_gallery")
 
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'width': gallery_width,
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                var tile_tops = layout.getElements(".spt_tile_top");
+
+                var search_keys = [];
+                for (var i = 0; i < tile_tops.length; i++) {
+                    var tile_top = tile_tops[i];
+                    var search_key = tile_top.getAttribute("spt_search_key");
+                    search_keys.push(search_key);
+                }
+
+                var tile_top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = tile_top.getAttribute("spt_search_key");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_keys: search_keys,
+                    search_key: search_key,
+                };
+                if (bvr.width) 
+                    kwargs['width'] = bvr.width;
+                var gallery_el = layout.getElement(".spt_tile_gallery");
+                spt.panel.load(gallery_el, class_name, kwargs);
+
+
+
+                '''
+            } )
+ 
 
 
 
@@ -260,7 +400,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "0.8");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            el.setStyle("background", "%s");
+            if (el)
+                el.setStyle("background", "%s");
             ''' % bg2
         } )
 
@@ -270,7 +411,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
             var el = bvr.src_el.getElement(".spt_tile_title");
-            el.setStyle("background", "%s");
+            if (el)
+                el.setStyle("background", "%s");
             ''' % bg1
         } )
 
@@ -450,33 +592,25 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-        """
-        layout_wdg.add_behavior( {
-            'type': 'smart_drag',
-            'bvr_match_class': 'spt_tile_title',
-            #'ignore_default_motion' : False,
-        } )
-        """
-
-
 
 
     def get_tile_wdg(my, sobject):
 
         div = DivWdg()
         div.add_class("spt_tile_top")
+        div.add_style('margin', my.spacing)
+        div.add_style('background-color','transparent')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
 
-
-        if my.title_wdg:
-            my.title_wdg.set_sobject(sobject)
-            div.add(my.title_wdg.get_buffer_display())
-        else:
-            title_wdg = my.get_title(sobject)
-            div.add( title_wdg )
-
+        if my.kwargs.get("show_title") not in ['false', False]:
+            if my.title_wdg:
+                my.title_wdg.set_sobject(sobject)
+                div.add(my.title_wdg.get_buffer_display())
+            else:
+                title_wdg = my.get_title(sobject)
+                div.add( title_wdg )
 
         div.add_attr("spt_search_key", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
@@ -484,30 +618,32 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
-        div.add_border()
+        
         if my.kwargs.get("show_drop_shadow") not in ['false', False]:
             div.set_box_shadow()
         div.add_color("background", "background", -3)
-        div.add_style("margin: 10px")
+        
         div.add_style("overflow: hidden")
 
         div.add_style("float: left")
 
         thumb_div = DivWdg()
+        #thumb_div.add_styles('margin-left: auto; margin-right: auto')
         thumb_div.add_class("spt_tile_content")
         #thumb_div.add_class("spt_tile_detail")
         div.add(thumb_div)
 
-        width =  240
-        height = 160
 
-        thumb_div.add_style("width: %s" % width)
-        thumb_div.add_style("height: %s" % height)
-        thumb_div.add_style("overflow: hidden")
+        
+        thumb_div.add_style("width: %s" % my.aspect_ratio[0])
+
+        thumb_div.add_style("height: %s" % my.aspect_ratio[1])
+        #thumb_div.add_style("overflow: hidden")
 
         thumb = ThumbWdg2()
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
+        thumb_div.add_border()
 
         #bottom_view = my.kwargs.get("bottom_view")
         #if bottom_view:
@@ -551,7 +687,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             return None
         my.scale_called = True
 
-
         show_scale = my.kwargs.get("show_scale")
 
         div = DivWdg()
@@ -561,9 +696,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_search")
         hidden = HiddenWdg("prefix", "tile_layout")
         div.add(hidden)
-
         div.add_behavior( {
             'type': 'load',
+            'scale_prefix':  my.scale_prefix,
+            'default_scale': my.scale,
+            'aspect_ratio': my.aspect_ratio,
             'cbjs_action': '''
 spt.tile_layout = {}
 spt.tile_layout.layout = null;
@@ -589,8 +726,8 @@ spt.tile_layout.set_scale = function(scale) {
     var scale_value = spt.tile_layout.layout.getElement(".spt_scale_value");
     scale_value.value = scale;
 
-    var size_x = 240*scale/100;
-    var size_y = 160*scale/100;
+    var size_x = bvr.aspect_ratio[0]*scale/100;
+    var size_y = bvr.aspect_ratio[1]*scale/100;
 
     //var top = bvr.src_el.getParent(".spt_tile_layout_top");
     var top = spt.tile_layout.layout;
@@ -601,8 +738,8 @@ spt.tile_layout.set_scale = function(scale) {
         el.setStyle( "height", size_y);
     }
 
-    spt.container.set_value("tile_layout::scale", scale);
-
+    var container_id = "tile_layout::scale"+bvr.scale_prefix;
+    spt.container.set_value( container_id, scale);
 }
 
 
@@ -637,24 +774,39 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
     for (var i = 0; i < increment; i++) {
         scale = scale * multiplier;
     }
+    if (scale > 400)
+        scale = 400;
     scale = parseInt(scale);
     spt.tile_layout.set_scale(scale);
 
+}
+spt.tile_layout.setup_control = function() {
+   var slider = spt.tile_layout.layout.getElement('.spt_slider');
+   var container_id = "tile_layout::scale"+bvr.scale_prefix;
+   var initial_value = spt.container.get_value(container_id) ?  spt.container.get_value(container_id) : bvr.default_scale;
+
+   spt.tile_layout.set_scale(initial_value);
+   new Slider(slider, slider.getElement('.knob'), {
+    range: [30, 400],
+    steps: 74,
+    initialStep: initial_value,
+    onChange: function(value){
+      if (value) spt.tile_layout.set_scale(value);
+    }
+  });
 }
 
 
         ''' } )
 
 
-
         div.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
         spt.tile_layout.set_layout(bvr.src_el);
-        var scale = spt.container.get_value("tile_layout::scale");
-        if (scale) {
-            spt.tile_layout.set_scale(scale);
-        }
+
+        spt.tile_layout.setup_control();
+      
         '''
         } )
 
@@ -663,6 +815,8 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         div.add(table)
         table.add_row()
 
+        """
+        # TO BE DELETED
         less_div = DivWdg()
         less_div.add("<input type='button' value='&lt;&lt;'/>")
         table.add_cell(less_div)
@@ -677,17 +831,33 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             spt.tile_layout.set_scale(scale);
             '''
         } )
+        """
 
-
- 
+        dark_color = div.get_color("background", -5)
+        light_color = div.get_color('color')
+        med_color = div.get_color('color2')
+        
+        slider_div = DivWdg(css='spt_slider')
+        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 200px;'% light_color)
+        knob_div = DivWdg(css='knob')
+        knob_div.add_behavior({'type':'click',
+                'cbjs_action': 'spt.tile_layout.set_layout(bvr.src_el)'
+                })
+        knob_div.add_styles('background: %s; bottom: 4px;\
+                height: 16px; width: 12px; border-radius: 6px 6px 0 0;\
+                border: 1px %s solid'\
+                %(dark_color, med_color ))
+        slider_div.add(knob_div)
+        td = table.add_cell(slider_div)
         value_wdg = TextWdg("scale")
         value_wdg.add_class("spt_scale_value")
         td = table.add_cell(value_wdg)
         td.add("&nbsp;%")
+
         td.add_style("padding: 3px 8px")
 
-
-
+        """
+        # TO BE DELETED
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
         data_list = filter_data.get_values_by_prefix("tile_layout")
@@ -698,8 +868,7 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
         my.scale = data.get("scale")
         if my.scale == None:
             my.scale = my.kwargs.get("scale")
-
-
+        """
         if my.scale:
             value_wdg.set_value(my.scale)
         value_wdg.add_style("width: 24px")
@@ -737,8 +906,9 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             "cbjs_motion": 'spt.tile_layout.drag_motion( evt, bvr, mouse_411 );'
         } )
 
-
-
+        
+        """
+        # TO BE DELETED
         more_div = DivWdg()
         more_div.add("<input type='button' value='&gt;&gt;'/>")
         table.add_cell(more_div)
@@ -754,7 +924,10 @@ spt.tile_layout.drag_motion = function(evt, bvr, mouse_411) {
             '''
         } )
 
+        """
 
+
+       
 
         return div
 
@@ -841,9 +1014,11 @@ class ThumbWdg2(BaseRefreshWdg):
         return my.path
 
 
+
     def get_display(my):
 
         width = "100%"
+        height = "100%"
 
         sobject = my.get_current_sobject()
 
@@ -870,6 +1045,9 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("width: 70%")
         elif path:
             img.add_style("width: %s" % width)
+            img.add_style("height: %s" % height)
+            img.add_style('margin-left','auto')
+            img.add_style('margin-right','auto')
 
         if not path:
             img = DivWdg()
@@ -897,17 +1075,6 @@ class ThumbWdg2(BaseRefreshWdg):
 
         snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
 
-        """
-        snapshot = Snapshot.get_snapshot(search_type, search_code, context='icon')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, context='publish')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code, process='publish')
-        if not snapshot:
-            snapshot = Snapshot.get_snapshot(search_type, search_code)
-        """
-
-
         if snapshot:
             file_type = "web"
             icon_path = snapshot.get_web_path_by_type(file_type)
@@ -923,9 +1090,12 @@ class ThumbWdg2(BaseRefreshWdg):
  
         return path
 
+
     def find_icon_link(my, file_path, repo_path=None):
         from pyasm.widget import ThumbWdg
         return ThumbWdg.find_icon_link(file_path, repo_path)
+
+
 
 
 

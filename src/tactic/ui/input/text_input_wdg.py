@@ -13,7 +13,7 @@
 
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
-from pyasm.common import Date, Common, Environment, FormatValue, TacticException
+from pyasm.common import Date, Common, Environment, FormatValue, SPTDate, TacticException
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
@@ -110,6 +110,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             my.text = TextWdg(name)
 
+        my.text.set_attr('autocomplete','off')
 
         class_name = kwargs.get("class")
         if class_name:
@@ -170,7 +171,11 @@ class TextInputWdg(BaseInputWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = "230px"
+            my.width = 230
+        else:
+            my.width = str(my.width).replace("px", "")
+            my.width = int(my.width)
+
 
         my.icon = my.kwargs.get("icon")
         if my.icon:
@@ -221,6 +226,13 @@ class TextInputWdg(BaseInputWdg):
         my.name = name
         my.text.set_name(name)
 
+    def is_datetime_col(my, sobject, name):
+        '''get_column_info call datetime as timestamp, which is the time tactic_type'''
+        tactic_type = SearchType.get_tactic_type(sobject.get_search_type(), name)
+        if tactic_type == 'time':
+            return True
+        else:
+            return False
 
     def fill_data(my):
 
@@ -228,7 +240,6 @@ class TextInputWdg(BaseInputWdg):
             my.name = my.kwargs.get("name")
         name = my.get_input_name()
         my.text.set_name(name)
-
         value = my.kwargs.get("value")
         # value always overrides
         if value:
@@ -252,6 +263,9 @@ class TextInputWdg(BaseInputWdg):
                     column = my.name
 
                 display = sobject.get_value(column)
+                if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                    display = SPTDate.convert_to_local(display)
+
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
                     display = unicode(display, errors='ignore').encode('utf-8')
@@ -260,7 +274,6 @@ class TextInputWdg(BaseInputWdg):
                 if format_str:
                     format = FormatValue()
                     display = format.get_format_value( display, format_str )
-
                 my.text.set_value(display)
 
         default = my.kwargs.get("default")
@@ -554,6 +567,7 @@ class LookAheadTextInputWdg(TextInputWdg):
 
 
     def init(my):
+        my.text.add_attr("autocomplete", "off")
 
         my.search_type = my.kwargs.get("search_type")
         filter_search_type = my.kwargs.get("filter_search_type")
@@ -991,6 +1005,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
         default = my.kwargs.get("default")
 
+        # have to set the name with prefix if applicable
+        name = my.get_input_name()
+        if name:
+            my.text.set_name(name)
+            my.hidden.set_name(name)
 
         # fill in the values
         search_key = my.kwargs.get("search_key")

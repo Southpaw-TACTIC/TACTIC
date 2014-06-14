@@ -295,8 +295,8 @@ class ThumbWdg(BaseTableElementWdg):
                         search_keys: search_keys
                     };
                     server.execute_cmd(cmd, kwargs, {}, {
-                                on_complete:on_complete,
-                    }, false);
+                                on_complete:on_complete, use_transaction:false
+                    });
                 }
                 func();
 
@@ -1171,7 +1171,8 @@ class ThumbWdg(BaseTableElementWdg):
         elif repo_path and os.path.isdir(repo_path):
             icon = "folder.png"
         elif ext in File.VIDEO_EXT:
-            icon = "general_video.png"
+            #icon = "general_video.png"
+            icon = "indicator_snake.gif"
         elif ext not in File.NORMAL_EXT:
             icon = "indicator_snake.gif"
         else:
@@ -1287,6 +1288,7 @@ class ThumbCmd(Command):
         my.info = {
             'search_keys': search_keys
         }
+        my.add_description('Generate Thumbnail with ThumbCmd')
 
     def generate_icon(my, search_key):
 
@@ -1328,24 +1330,41 @@ class ThumbCmd(Command):
 
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
+            ext = File.get_extension(path)
+            ext = ext.lower()
+            if ext in File.NORMAL_EXT:
 
-            if path in File.NORMAL_EXT:
                 return
 
 
+
             # use api
+            """
             from tactic_client_lib import TacticServerStub
             server = TacticServerStub.get()
             snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
+            """
 
+            icon_creator = IconCreator(path)
+            icon_creator.execute()
+
+            web_path = icon_creator.get_web_path()
+            icon_path = icon_creator.get_icon_path()
+            if web_path and icon_path:
+                sub_file_paths = [path, web_path, icon_path]
+                sub_file_types = [path, 'web', 'icon']
+
+                from pyasm.checkin import FileCheckin
+                checkin = FileCheckin(sobject, sub_file_paths, sub_file_types, context='icon', mode="copy")
+                checkin.execute()
+                snapshot = checkin.get_snapshot()
 
             # need the actual sobject to get the path to replace the icon
             # in the ui
-            snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
+            #snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
 
 
         my.path = snapshot.get_web_path_by_type("icon")
-
 
 
 

@@ -169,9 +169,9 @@ class Palette(object):
 
 
     #COLORS = DEFAULT
-    COLORS = SILVER
+    #COLORS = SILVER
     #COLORS = ORIGAMI
-    #COLORS = AQUA
+    COLORS = AQUA
     #COLORS = BRIGHT
     #COLORS = BON_NOCHE
     #COLORS = MMS

@@ -96,7 +96,7 @@ import sys, getopt
 
 def usage():
     print "ADS lookup tool"
-    print "Usage: adslookup.py [Option]"
+    print "Usage: ad_lookup.py [Option]"
     print "Check for ADS data"
     print ""
     print "-u <name>            Look up the username 'name'"
@@ -137,7 +137,7 @@ def main(argv):
                 usage()
                 sys.exit()
     else:
-        print ("Try 'adslookup.py -h' for more information.")
+        print ("Try 'ad_lookup.py -h' for more information.")
 
 if __name__ == '__main__':
     main(sys.argv[1:])
