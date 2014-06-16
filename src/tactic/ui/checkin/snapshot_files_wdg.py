@@ -1002,6 +1002,7 @@ class PathMetadataWdg(BaseRefreshWdg):
         search_key = my.kwargs.get("search_key")
         path = my.kwargs.get("path")
         parser_str = my.kwargs.get("parser")
+        use_tactic_tags = my.kwargs.get("use_tactic_tags")
 
 
         from pyasm.checkin import PILMetadataParser, ImageMagickMetadataParser, ExifMetadataParser, BaseMetadataParser
@@ -1011,7 +1012,10 @@ class PathMetadataWdg(BaseRefreshWdg):
             parser = BaseMetadataParser.get_parser_by_path(path)
 
         if parser:
-            metadata = parser.get_metadata()
+            if use_tactic_tags in ['true', True]:
+                metadata = parser.get_tactic_metadata()
+            else:
+                metadata = parser.get_metadata()
         else:
             metadata = {}
 

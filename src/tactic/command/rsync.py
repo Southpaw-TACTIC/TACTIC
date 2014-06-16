@@ -169,8 +169,6 @@ class RSync(object):
 
         print "exec: ", " ".join(cmd_list)
 
-
-
         program = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         #program.wait()
 
