@@ -12,6 +12,7 @@
 __all__ = ["EmbedWdg"]
 
 from pyasm.common import Environment
+from pyasm.biz import File
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -77,13 +78,12 @@ class EmbedWdg(BaseRefreshWdg):
         if not preload:
             preload = "none"
 
-
-        if ext in ['.png', '.jpeg', '.jpg', '.gif']:
+        ext = ext.lstrip(".")
+        if ext in File.IMAGE_EXT:
             embed = HtmlElement.img(src)
-        elif ext in ['.mp4', '.ogg', '.mov', '.avi', '.f4v']:
+        elif ext in File.VIDEO_EXT:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
-           
 
 
             thumb_path = my.kwargs.get("thumb_path")
@@ -105,7 +105,13 @@ class EmbedWdg(BaseRefreshWdg):
             click = False
 
         else:
-            embed = HtmlElement.embed(src)
+            #embed = HtmlElement.embed(src)
+            from pyasm.widget import ThumbWdg
+            link = ThumbWdg.find_icon_link(src)
+            img = HtmlElement.img(link)
+            img.add_style("width: 50%")
+            img.add_style("margin: 20px 20px")
+            embed = DivWdg(img)
         div.add(embed)
 
         if click:

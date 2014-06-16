@@ -636,8 +636,6 @@ class RepoBrowserDirListWdg(DirListWdg):
 
                     paths.append("%s/" % full)
 
-
-
         # only look at folders associated with search types given
         for search_type in search_types:
             #search = Search(search_type)
@@ -660,6 +658,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             start_dir = "%s/%s/%s" % (asset_base_dir, project_code, table)
             full = "%s/" % start_dir
             paths.append(full)
+
 
 
             search_type = search_type_obj.get_value("search_type")

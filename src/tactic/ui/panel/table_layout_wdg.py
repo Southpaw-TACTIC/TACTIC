@@ -1880,10 +1880,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
         else:
 
+            no_results_msg = my.kwargs.get("no_results_msg")
+
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             msg.set_box_shadow("0px 0px 5px")
-            if my.get_show_insert():
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
                 msg.add("<br/><br/>Click on the ")
                 icon = IconWdg("Add", IconWdg.ADD)
                 msg.add(icon)
