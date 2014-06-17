@@ -110,6 +110,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             my.text = TextWdg(name)
 
+        my.text.set_attr('autocomplete','off')
 
         class_name = kwargs.get("class")
         if class_name:
@@ -251,7 +252,7 @@ class TextInputWdg(BaseInputWdg):
                     column = my.name
 
                 display = sobject.get_value(column)
-                if my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
 
                 if isinstance(display, str):
@@ -948,6 +949,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
         default = my.kwargs.get("default")
 
+        # have to set the name with prefix if applicable
+        name = my.get_input_name()
+        if name:
+            my.text.set_name(name)
+            my.hidden.set_name(name)
 
         # fill in the values
         search_key = my.kwargs.get("search_key")

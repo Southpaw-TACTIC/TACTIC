@@ -662,7 +662,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             else:
                 overall_search.add_op('begin')
                 #search.add_op('begin')
-
+            
+            # single col does not matter
+            # we should just use the AND logic for single_col or multi keywords column.
+            # Drawback is that multiple columns defined for the same sType may cause a return of 0 result
+            # if words from multi columns are used in the search. This is in line with partial_op = 'and' for 
+            # db not supporting full text search
             single_col = len(my.columns) == 1
             partial_op = 'and'
             for column in my.columns:
@@ -676,8 +681,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 keywords = value
                 # keywords_list is used for add_keyword_filter()
                 keywords_list = keywords.split(" ")
-                if single_col:
-                    keywords = keywords_list
+                #if single_col:
+                # AND logic in full text search will be adopted if keywords is a list as oopposed to string
+                keywords = keywords_list
                 
                 if my.has_index and is_ascii:
                     

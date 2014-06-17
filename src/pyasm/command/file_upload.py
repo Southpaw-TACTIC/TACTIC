@@ -96,7 +96,7 @@ class FileUpload(Base):
             basename = os.path.basename(filename)
 
             # File.process_file_path() should be deprecated
-            return "%s/%s" % (my.file_dir, File.get_filesystem_name(basename))
+            return "%s/%s" % (my.file_dir, Common.get_filesystem_name(basename))
             #return "%s/%s" % (my.file_dir, File.process_file_path(basename) )
 
         elif my.field_storage != None:
@@ -109,7 +109,7 @@ class FileUpload(Base):
             filename = filename.replace("\\", "/")
             basename = os.path.basename(filename)
             # File.process_file_path() should be deprecated
-            return "%s/%s" % (my.tmp_dir,  File.get_filesystem_name(basename))
+            return "%s/%s" % (my.tmp_dir,  Common.get_filesystem_name(basename))
             #return "%s/%s" % (my.tmp_dir, File.process_file_path(basename) )
         else:
             raise FileUploadException("No file defined")

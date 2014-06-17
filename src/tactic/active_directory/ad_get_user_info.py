@@ -10,7 +10,6 @@
 #
 #
 
-__all__ = ['ADLookup', 'ADException']
 
 '''Command line script to get user info.'''
 
@@ -44,11 +43,23 @@ mail: remko@southpawtech.com
     user = active_directory.find_user(user_name, domain)
     if not user:
         print "WARNING: user [%s] cannot be found" % user_name
-        return {}
+        return ''
+   
+    import types
+    if isinstance(user, types.GeneratorType):
 
-    # turn the most likely single-item generator back to a list
-    user = list(user)[0]
-
+        try:
+            user = user.next()
+        except StopIteration:
+            user = None
+            return ''
+    else:
+        users = list(user)
+        if users:
+            user = users[0]
+        else:
+            user = None
+            return ''
     # TODO: need to find a way to get all properties
     #print "properties: ", user.properties
     #print "-"*20
@@ -141,7 +152,7 @@ def main(argv):
                 usage()
                 sys.exit()
     else:
-        print ("Try 'ad_get_user_info -h' for more information.")
+        print ("Try 'python ad_get_user_info.py -h' for more information.")
 
 
 def usage():
