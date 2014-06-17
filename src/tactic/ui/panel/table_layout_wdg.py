@@ -499,6 +499,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # The version of the table so that external callbacks
         # can key on this
         inner.add_attr("spt_version", "2")
+        inner.add_style("position: relative")
 
 
 
@@ -655,11 +656,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         for i, widget in enumerate(my.widgets):
 
+            # TODO: ask the widget for a default
             name = widget.get_name()
             if name == "notes":
                 default_width = 400
             else:
-                default_width = 200
+                default_width = 100
 
             if i >= len(column_widths):
                 # default width
@@ -699,7 +701,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             h_scroll = DivWdg()
             inner.add(h_scroll)
-            h_scroll.add_style("overflow-x: auto")
+            h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: none")
 
             scroll = DivWdg()
@@ -3122,6 +3124,7 @@ spt.table.add_new_item = function(kwargs) {
     var insert_row = insert_rows[insert_rows.length-1];
 
     var row;
+    var position;
     var table = spt.table.get_table();
     if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
@@ -3131,13 +3134,16 @@ spt.table.add_new_item = function(kwargs) {
         else {
             row = rows[rows.length-1];
         }
+        position = "after";
+
     }
     else {
-        row = table.getElement(".spt_table_header_row");
+        row = table.getElement(".spt_table_row");
+        position = "before";
     }
 
     var clone = spt.behavior.clone(insert_row);
-    clone.inject(row, "after");
+    clone.inject(row, position);
     spt.remove_class(clone, 'spt_clone');
 
     // find the no items row
@@ -4731,9 +4737,7 @@ spt.table.set_column_width = function(element_name, width) {
     cell.setStyle("width", width);
 
     size = curr_header.getSize();
-    console.log(size);
     size = cell.getSize();
-    console.log(size);
 
 }
 
@@ -4894,31 +4898,39 @@ spt.table.pos = null;
 spt.table.resize_handles = null;
 spt.table.resize_positions = null;
 spt.table.drop_index = -1;
+spt.table.resize_layout = null;
 
 spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
+    var layout = src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout);
+    spt.table.resize_layout = layout;
+
     var table = src_el.getParent(".spt_table_table");
-    var pos = src_el.getPosition();
-    var pos = {x:0, y:0};
 
     var cell = src_el.getParent(".spt_table_header");
     var size = cell.getSize();
 
+
+    var layout_pos = layout.getPosition(document.body);
+
+
     spt.table.last_table = table;
-    spt.table.pos = pos;
+    spt.table.pos = layout_pos;
 
     // create a clone
     var clone = spt.behavior.clone(bvr.src_el);
     spt.table.clone = clone;
 
-    clone.inject(bvr.src_el.parentNode,'before')
+    clone.inject(layout)
 
     clone.setStyle("position", "absolute");
-    clone.setStyle("left", mouse_411.curr_x-pos.x+5);
-    clone.setStyle("top", mouse_411.curr_y-pos.y+5);
+    clone.setStyle("left", mouse_411.curr_x-layout_pos.x+5);
+    clone.setStyle("top", mouse_411.curr_y-layout_pos.y+5);
     clone.setStyle("width", size.x);
-    //clone.setStyle("width", "100%");
+    clone.setStyle("max-width", "200px");
+    clone.setStyle("min-height", "30px");
     //clone.setStyle("height", size.y);
     clone.setStyle("background", "yellow");
     clone.setStyle("border", "solid 1px black");
@@ -4942,13 +4954,16 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
 
 spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
 {
-    var table_pos = spt.table.pos;
+    var layout = spt.table.resize_layout;
+
+    var layout_pos = spt.table.pos;
     var clone = spt.table.clone;
 
     var clone_pos = {
-        x: mouse_411.curr_x-table_pos.x+5,
-        y: mouse_411.curr_y-table_pos.y+5
+        x: mouse_411.curr_x - layout_pos.x,
+        y: mouse_411.curr_y - layout_pos.y
     }
+
     clone.setStyle("left", clone_pos.x+5);
     clone.setStyle("top", clone_pos.y+5);
 
@@ -4956,7 +4971,7 @@ spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
     var smallest_dd = -1;
     var index = -1;
     for (var i = 0; i < spt.table.resize_handles.length; i++) {
-        var pos = spt.table.resize_handles[i].getPosition();
+        var pos = spt.table.resize_handles[i].getPosition(layout);
         var dd = (pos.x-clone_pos.x)*(pos.x-clone_pos.x) + (pos.y-clone_pos.y)*(pos.y-clone_pos.y);
         if (smallest_dd == -1 || dd < smallest_dd) {
             smallest_dd = dd;
@@ -4998,6 +5013,12 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
     // reorder the header
     var headers = spt.table.get_headers();
     headers[src_index].inject(headers[drop_index], "after");
+
+    // It's possible that layout gets reset somewhere during the drag
+    var src_el = spt.behavior.get_bvr_src( bvr );
+    var layout = src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout);
+
 
     // reorder the cells
     var rows = spt.table.get_all_rows();

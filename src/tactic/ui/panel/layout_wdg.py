@@ -5212,7 +5212,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         content_wdg = DivWdg()
         content_wdg.add_class("spt_columns")
         content_wdg.add_style("margin-bottom: 5px")
-        content_wdg.add_style("font-size: 0.85em")
+        content_wdg.add_style("font-size: 1.0em")
 
         web = WebContainer.get_web()
         browser = web.get_browser()
@@ -5289,14 +5289,21 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         for element_name in element_names:
             menu_item = DivWdg(css='hand')
             menu_item.add_class("spt_column")
+            menu_item.add_style("height: 28px")
 
             checkbox = CheckboxWdg("whatever")
             if browser == 'Qt':
                 checkbox.add_style("margin: -3px 5px 8px 0px")
+            else:
+                checkbox.add_style("margin-top: 1px")
             # undo the click.. let the div bvr take care of the toggling
             checkbox.add_behavior({'type':'click', 'cbjs_action': 'bvr.src_el.checked=!bvr.src_el.checked;'})
             if element_name in my.current_elements:
                 checkbox.set_checked()
+
+            checkbox.add_style("height: 16px")
+            checkbox = DivWdg(checkbox)
+            checkbox.add_style("float: left")
 
             attrs = my.config.get_element_attributes(element_name)
 
@@ -5347,9 +5354,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             
 
 
-            menu_item.add("&nbsp;&nbsp;&nbsp;")
             #menu_item.add_attr("title", full_title)
             menu_item.add(checkbox)
+            menu_item.add("&nbsp;&nbsp;")
             menu_item.add(display_title)
             menu_item.add_behavior({
             'type': "click_up", 

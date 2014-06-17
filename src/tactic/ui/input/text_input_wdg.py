@@ -174,7 +174,8 @@ class TextInputWdg(BaseInputWdg):
             my.width = 230
         else:
             my.width = str(my.width).replace("px", "")
-            my.width = int(my.width)
+            if not my.width.endswith("%"):
+                my.width = int(my.width)
 
 
         my.icon = my.kwargs.get("icon")
