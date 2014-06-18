@@ -239,24 +239,26 @@ class ChatWdg(BaseRefreshWdg):
         chats = search.get_sobjects()
         keys = [x.get_value("message_code") for x in chats]
 
+
+        """
         chat_list_div = DivWdg()
         inner.add(chat_list_div)
         for i, chat in enumerate(chats):
             chat_div = DivWdg()
             chat_list_div.add(chat_div)
-            chat_div.add_style("padding: 8px")
+            chat_div.add_style("padding: 5px")
+            chat_div.add_class("hand")
 
             # find all the users with the same chat
             key = chat.get_value("message_code")
             #chat_div.add(key)
-            chat_div.add("Session #%s: " % i)
-
+            chat_div.add("#%s: " % i)
 
             search = Search("sthpw/subscription")
             search.add_filter("message_code", key)
             subscriptions = search.get_sobjects()
             users = [x.get_value("login") for x in subscriptions]
-            chat_div.add(",".join(users))
+            chat_div.add(", ".join(users))
 
             chat_div.add_behavior( {
                 'type': 'click_up',
@@ -271,6 +273,22 @@ class ChatWdg(BaseRefreshWdg):
                 '''
             } )
 
+            chat_div.add_behavior( {
+                'type': 'mouseover',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("color", "#214e75");
+                '''
+            } )
+
+
+            chat_div.add_behavior( {
+                'type': 'mouseout',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("color", "");
+                '''
+            } )
+        """
+
 
 
         #keys = my.kwargs.get("keys")
@@ -279,10 +297,29 @@ class ChatWdg(BaseRefreshWdg):
 
         inner.add( my.get_add_chat_wdg() )
 
+
+        inner.add("<br/>")
+        
+
+        from tactic.ui.container import TabWdg
+        tab = TabWdg(
+                show_add=False,
+                show_remove=False
+        )
+        inner.add(tab)
+
         for key in keys:
+            search = Search("sthpw/subscription")
+            search.add_filter("message_code", key)
+            subscriptions = search.get_sobjects()
+            users = [x.get_value("login") for x in subscriptions]
+            users = ", ".join(users)
+
             session_div = DivWdg()
+            session_div.set_name(users)
             session_div.add_style("width: 100%")
-            inner.add(session_div)
+            #inner.add(session_div)
+            tab.add(session_div)
 
             session = ChatSessionWdg(key=key)
             session_div.add(session)
@@ -301,8 +338,6 @@ class ChatWdg(BaseRefreshWdg):
         div.add_border()
         div.add_style("padding: 20px")
         div.add_class("spt_add_chat_top")
-
-        div.add("Add New User: ")
 
         table = Table()
         table.add_style("width: auto")
@@ -493,23 +528,62 @@ class ChatSessionWdg(BaseRefreshWdg):
             #timestamp = timestamp.strftime("%b %d, %Y - %H:%M")
             timestamp_str = timestamp.strftime("%H:%M")
             date_str = timestamp.strftime("%b %d, %Y")
-        
-            msg = "";
-            msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td colspan='2'>";
 
-            if date_str != last_date:
-                msg += "<br/><b style='font-size: 1.0em'>"+date_str+"</b><hr/></td></tr>";
-                msg += "<tr><td>";
-                last_login = None
+        
 
             if login != last_login:
-                msg += "<b>"+login+"</b><br/>";
-            msg += message.replace("\n",'<br/>');
-            msg += "</td><td style='text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top'>";
+
+                table = Table()
+                history_div.add(table)
+                table.add_row()
+                table.add_style("width: 100%")
+                table.add_style("margin-top: 15px")
+
+                login_sobj = Search.get_by_code("sthpw/login", login)
+                thumb_div = DivWdg()
+                td = table.add_cell()
+                td.add_style("vertical-align: top")
+                td.add_style("width: 75px")
+
+                thumb_div = DivWdg()
+                td.add(thumb_div)
+                thumb_div.add_style("overflow: hidden")
+
+                thumb = ThumbWdg()
+                thumb_div.add(thumb)
+                thumb.set_sobject(login_sobj)
+                thumb.set_icon_size(60)
+
+
+                display_name = login_sobj.get("display_name")
+
+                td = table.add_cell()
+                td.add_style("padding-top: 3px")
+                
+                name_div = DivWdg()
+                td.add(name_div)
+                name_div.add_style("color", "#214e75")
+                name_div.add_style("font-size", "1.3em")
+                name_div.add(display_name)
+
+
+            msg = "";
+            msg += "<table style='margin-top: 5px; font-size: 1.0em; width: 100%'>";
+
+
+            if date_str != last_date:
+                msg += "<tr><td colspan='2' style='text-align: right'><br/><b style='font-size: 1.0em'>"+date_str+"</b></td></tr>";
+                last_login = None
+
+            msg += "<tr><td>"
+            msg += message.replace("\n",'<br/>')
+            msg += "</td><td style='vertical-align: top; text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top; opacity: 0.7;'>";
             msg += timestamp_str;
             msg += "</td></tr></table>";
 
-            history_div.add(msg)
+            td.add(msg)
+
+            
 
             last_login = login
             last_date = date_str
@@ -566,7 +640,7 @@ class ChatSessionWdg(BaseRefreshWdg):
                 bvr.src_el.setAttribute("spt_last_login", login);
 
                 var msg = "";
-                msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
+                msg += "<table style='margin-top: 5px; font-size: 1.0em; width: 100%'><tr><td>";
                 if (login != last_login) {
                     msg += "<b>"+login+"</b><br/>";
                 }
@@ -595,7 +669,8 @@ class ChatSessionWdg(BaseRefreshWdg):
         text.add_class("spt_chat_text")
         text.add_style("width: 100%")
         text.add_style("padding: 5px")
-        text.add_style("margin-top: -1px")
+        #text.add_style("margin-top: -1px")
+        text.add_style("margin-top: 5px")
         
         text.add_behavior( {
         'type': 'load',

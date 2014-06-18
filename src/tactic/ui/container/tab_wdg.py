@@ -930,6 +930,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         #outer_header.add(header_div)
         header_div.add_style("height: 30px")
         header_div.add_class("spt_tab_header_top")
+        header_div.add_style("overflow-y: hidden")
         #header_div.add_style("width: 5000")
         header_div.add_style("float: left")
 
@@ -1065,11 +1066,16 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             palette = content_top.get_palette()
             border = palette.color("border")
             content_top.add_style("border: 1px solid %s" % border)
-            content_top.add_style("margin-top: -5px")
 
         inner.add(content_top)
         content_top.add_class("spt_tab_content_top")
         content_top.add_style("min-height: 500px")
+
+        height = my.kwargs.get("height")
+        if height:
+            content_top.add_style("height: %s" % height)
+            content_top.add_style("overflow-y: auto")
+            #content_top.add_style("overflow-x: hidden")
 
         width = my.kwargs.get("width")
         if not width:
@@ -1206,16 +1212,16 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
         icon_div = DivWdg()
         icon_div.add_style("padding: 0 2px 0 2px")
-        icon_div.set_round_corners(3, corners=['TR','TL'])
+        icon_div.set_round_corners(12, corners=['TR'])
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.PLUS)
         icon = IconWdg("New Tab", IconWdg.PLUS)
         #icon.add_style("top: -1px")
         #icon.add_style("left: 0px")
         #icon.add_style("position: absolute")
-        icon.add_style("margin-top: -1px")
         icon.add_style("margin-left: 3px")
         icon_div.add_class("hand")
+        icon_div.add_style("opacity: 0.5")
 
         icon_div.add(icon)
         icon.add_behavior( {
@@ -1225,14 +1231,17 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         spt.tab.add_new();
         '''
         } )
-        icon_div.add_style("padding-top: 4px")
 
         icon_div.add_style("float: left")
-        icon_div.add_style("height: 20px")
-        icon_div.add_style("width: 18px")
-        icon_div.add_style("margin-left: 2px")
+        icon_div.add_style("margin-top: 2px")
+        icon_div.add_style("padding-top: 4px")
+        icon_div.add_style("height: 21px")
+        icon_div.add_style("width: 22px")
+        icon_div.add_style("margin-left: 4px")
         icon_div.add_gradient("background", "background", -5, 5)
-        icon_div.add_border()
+        icon_div.add_style("border-style: solid")
+        icon_div.add_style("border-width: 1px 1px 0px 1px")
+        icon_div.add_color("border-color", "border")
         icon_div.add_style("text-align: center")
         div.add(icon_div);
 
@@ -1599,22 +1608,15 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
         header.add_style("border-style: solid")
         header.add_style("border-color: %s" % border)
         header.add_style("border-width: 1px 1px 0px 1px")
+        header.add_style("overflow: hidden")
 
         header.add_style("float: left")
-        header.add_style("padding: 5px")
+        header.add_style("padding: 7px 5px")
         header.add_style("margin-right: 1px")
         #header.add_style("margin-left: 1px")
         if is_IE:
             header.add_style("width: 150px")
         header.add_class("hand")
-
-        #line = DivWdg()
-        #header.add(line)
-        #line.add_style("height: 1px")
-        #line.add_style("width: 100%")
-        #line.add_style("background: red")
-        #line.add("&nbsp;")
-        #line.add_style("margin-top: -5px")
 
         if is_selected:
             header.add_color("color", "color")

@@ -477,6 +477,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_sobject_top")
+        top.add_class("spt_layout_top")
 
         # FIXME: still need to set an id for Column Manager
         top.set_id("%s_layout" % my.table_id)
@@ -1198,23 +1199,66 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             } )
 
         widths = my.kwargs.get("column_widths")
-        """
+        #widths = []
         if not widths:
             table.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                setTimeout( function() {
-                spt.table.set_table(bvr.src_el);
-                var headers = spt.table.get_headers();
-                for (var i = 0; i < headers.length; i++) {
-                    var size = headers[i].getSize();
-                    headers[i].setStyle("width", size.x);
-                }
-                bvr.src_el.setStyle("width", "0px")
-                }, 100);
-                '''
+            'type': 'load',
+            'widths': widths,
+            'cbjs_action': '''
+            setTimeout( function() {
+
+            spt.table.set_table(bvr.src_el);
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var layout_top = layout.getParent(".spt_layout_top");
+            var width = layout_top.getSize().x;
+
+            //layout_top.setStyle("border", "solid 1px red");
+
+            var header_table = spt.table.get_header_table()
+
+            // make sure the headers width are set
+
+            var headers = spt.table.get_headers();
+            var num_headers = headers.length;
+            var mode = "scale";
+
+            if (mode == "full") {
+                header_table.setStyle("width", "100%")
+                var width = 100 / num_headers;
+                width = parseInt(width) + "%";
+            }
+            else {
+                header_table.setStyle("width", "")
+                bvr.src_el.setStyle("width", "")
+                width = width / (num_headers) - 30;
+            }
+
+            if (width == 0) { return; }
+
+            for (var i = 0; i < headers.length; i++) {
+                headers[i].setStyle("width", width);
+            }
+
+
+            var no_items_el = layout.getElements(".spt_table_no_items");
+            if (no_items_el) {
+                header_table.setStyle("width", "100%")
+                bvr.src_el.setStyle("width", "100%")
+                return;
+            }
+
+
+            var row = spt.table.get_first_row();
+            var cells = row.getElements(".spt_cell_edit");
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].setStyle("width", width);
+            }
+
+            }, 100);
+
+            '''
             } )
-        """
+
 
         # all for collapsing of columns
         table.add_behavior( {

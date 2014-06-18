@@ -94,8 +94,9 @@ class ContentBoxWdg(BaseRefreshWdg):
         .spt_content_box .spt_content_box_content {
             width: auto;
             margin-top: -1px;
+            margin-bottom: 5px;
             border: solid 1px #AAA;
-            padding: 15px 0px;
+            padding: 15px 0px 0px 0px;
             background: #FFF;
             overflow-x: auto;
 
