@@ -59,6 +59,9 @@ class RSync(object):
                 break
             except RSyncConnectionException, e:
                 time.sleep(60)
+
+                from tactic_client_lib import TacticServerStub
+                server = TacticServerStub.get()
                 server.log_message(message_key, {"message": str(e)}, "error_retry")
                 continue
 
