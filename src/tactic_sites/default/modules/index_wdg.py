@@ -292,8 +292,8 @@ class IndexWdg2(Widget):
                 code = project.get_code()
                 title = project.get_value("title")
                 # Restrict the length of project name
-                if len(title) >= 18:
-                    title = title[:18] + "..."
+                if len(title) >= 36:
+                    title = title[:36] + "..."
                 if app_name != 'Browser':
                     href = HtmlElement.href(HtmlElement.h2(title), ref='/tactic/%s/%s'\
                         %(code, app_name))
