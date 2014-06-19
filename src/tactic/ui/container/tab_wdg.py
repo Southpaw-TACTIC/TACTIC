@@ -808,7 +808,11 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 }
 
 spt.tab.close = function(src_el) {
-    
+    // src_el should be a child of spt_tab_content or spt_tab_header
+    if (!src_el) {
+        spt.error('src_el passed in to spt.tab.close() does not exist.');
+        return;
+    }
     spt.tab.top = src_el.getParent(".spt_tab_top");
     var top = spt.tab.top;
     var headers = spt.tab.get_headers();
@@ -816,20 +820,34 @@ spt.tab.close = function(src_el) {
         return;
     }
 
-    var header = src_el.getParent(".spt_tab_header");
+
+    var content = src_el.getParent(".spt_tab_content");
+    var header;
+    var element_name;
+    // check if it's a header child
+    if (content) {
+        element_name = content.getAttribute("spt_element_name");
+        header = spt.tab.get_selected_header(element_name);
+    } else {
+
+        header = src_el.getParent(".spt_tab_header");
+        if (header) {
+            element_name = header.getAttribute("spt_element_name");
+            content = spt.tab.get_content(element_name);
+        }
+
+    }
+    if (!header || !content) {
+        spt.error('Tab close cannot find the header or content. Abort');
+        return;
+    }
+
+    
     var opener = header.getAttribute("spt_tab_opener");
     var element_name = header.getAttribute("spt_element_name");
     header.destroy();
 
-    var content_top = top.getElement(".spt_tab_content_top");
-    var contents = content_top.getElements(".spt_tab_content");
-    for (var i = 0; i < contents.length; i++ ) {
-        var content = contents[i];
-        if (content.getAttribute("spt_element_name") == element_name) {
-            content.destroy();
-            break;
-        }
-    }
+    content.destroy();
 
     var last_element_name = spt.tab.get_last_selected_element_name();
     last_element_name = null;
@@ -842,7 +860,6 @@ spt.tab.close = function(src_el) {
         spt.tab.select(last_element_name);
     }
     else {
-        var headers = spt.tab.get_headers();
         var last = headers[headers.length - 1].getAttribute("spt_element_name");
         spt.tab.select(last);
     }
