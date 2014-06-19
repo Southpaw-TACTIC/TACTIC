@@ -125,9 +125,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
                 # create a "custom" command that will act on the file
-                from proctor_and_gamble.gfr_project import GFRWatchFolderCmd
-                cmd = GFRWatchFolderCmd(
-                #cmd = CustomCmd(
+                cmd = CustomCmd(
                         **kwargs
                 )
                 cmd.execute()
