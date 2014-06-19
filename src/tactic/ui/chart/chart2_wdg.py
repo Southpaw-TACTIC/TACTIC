@@ -235,10 +235,14 @@ class ChartWdg(BaseRefreshWdg):
                     ymax = value
 
 
-            # FIXME: the xmax may not depend on lenth, but on x-value
-            # Handle that case later
-            if len(data) > xmax:
-                xmax = len(data)
+            x_data = widget.get_xdata()
+            if not x_data:
+                if len(data)-1 > xmax:
+                    xmax = len(data)-1
+            else:
+                last = x_data[-1]
+                if last > xmax:
+                    xmax = last
 
             top.add(widget)
 
@@ -502,6 +506,8 @@ class ChartData(BaseRefreshWdg):
     def set_data(my, data):
         my.data = data
 
+    def get_xdata(my):
+        return my.x_data
 
     def set_index(my, index, total_index):
         my.index = index
@@ -512,6 +518,7 @@ class ChartData(BaseRefreshWdg):
         my.chart_type = my.kwargs.get("chart_type")
         my.index = my.kwargs.get("index")
         my.data = my.kwargs.get("data")
+        my.x_data = my.kwargs.get("x_data")
 
         if my.chart_type == 'function':
             my.data = my.handle_func(my.data)
