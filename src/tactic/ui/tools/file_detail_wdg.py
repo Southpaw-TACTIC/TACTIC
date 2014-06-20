@@ -132,12 +132,13 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("overflow-x: hidden")
 
         parser = my.kwargs.get("parser")
+        use_tactic_tags = my.kwargs.get("use_tactic_tags")
 
         file_type = "main"
         server_src = snapshot.get_lib_path_by_type(file_type)
 
         # get it dynamically by path
-        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser)
+        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags)
         metadata_div.add(metadata_wdg)
 
         #else:

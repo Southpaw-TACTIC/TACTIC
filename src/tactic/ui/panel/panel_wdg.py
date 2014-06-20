@@ -3067,6 +3067,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         save_inputs = my.kwargs.get("save_inputs")
         no_results_mode = my.kwargs.get("no_results_mode")
+        no_results_msg = my.kwargs.get("no_results_msg")
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
@@ -3116,6 +3117,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
+            "no_results_msg": no_results_msg,
             "init_load_num": init_load_num, 
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,

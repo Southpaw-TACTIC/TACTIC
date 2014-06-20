@@ -1106,7 +1106,9 @@ class ThumbWdg(BaseTableElementWdg):
         ext = File.get_extension(file_path)
         ext = ext.lower()
 
-        if ext == "xls":
+        if ext in ["xls", "xlsx"]:
+            icon = "gnome-application-vnd.ms-excel.png"
+        elif ext in ["ppt", "pptx"]:
             icon = "gnome-application-vnd.ms-excel.png"
         elif ext == "mp3" or ext == "wav":
             icon = "mp3_and_wav.jpg"
@@ -1159,7 +1161,7 @@ class ThumbWdg(BaseTableElementWdg):
         elif ext in File.VIDEO_EXT:
             #icon = "general_video.png"
             icon = "indicator_snake.gif"
-        elif ext not in File.NORMAL_EXT:
+        elif ext in File.IMAGE_EXT:
             icon = "indicator_snake.gif"
         else:
             icon = "default_doc.png"
