@@ -278,7 +278,11 @@ class Task(SObject):
         if my.get_value("s_status") == "__TEMPLATE__":
             msg = "Created template task: %s, %s" % (process, description)
         else:
-            parent = my.get_parent()
+            try:
+                parent = my.get_parent()
+            except Exception, e:
+                print "WARNING: ", e
+                parent = Project.get_project()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
             else:

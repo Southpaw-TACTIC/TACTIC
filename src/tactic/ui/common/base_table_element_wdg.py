@@ -114,6 +114,7 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
+        div.add_style("margin-top", "6px")
         div.add(title)
 
         return div
@@ -496,6 +497,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                     return value_wdg
 
         return value
+
+
     def is_sortable(my):
         return True
 

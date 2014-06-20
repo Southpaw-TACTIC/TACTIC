@@ -2686,6 +2686,9 @@ class WorkElementWdg(ButtonElementWdg):
                     pass    
                 else:
                     raise
+            except Exception, e:
+                parent = None
+
             # find current snapshot for this:
             search_type = sobject.get_value("search_type")
             search_id = sobject.get_value("search_id")

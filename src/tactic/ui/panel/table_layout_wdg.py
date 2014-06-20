@@ -1655,9 +1655,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
-            inner_div.add_style("margin-top: 8px")
-            inner_div.add_style("margin-bottom: 8px")
-            inner_div.add_style("height: 20px")
+            inner_div.add_style("margin-top: 4px")
+            inner_div.add_style("margin-bottom: 4px")
+            inner_div.add_style("min-height: 30px")
+            inner_div.add_style("cursor: move")
+
 
 
             # handle the sort arrow
@@ -1698,7 +1700,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-            # FIXME: make this into a smart drag
             # put reorder directly here
             behavior = {
                 "type": 'drag',
@@ -1755,6 +1756,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 value = Common.get_display_title(element)
 
             header_div.add(value)
+            if isinstance(value, basestring):
+                header_div.add_style("margin-top: 6px")
 
 
             # provide an opportunity for the widget to affect its header
@@ -2124,6 +2127,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         for i, widget in enumerate(my.widgets):
             element_name = widget.get_name()
 
+            # TEST TEST TEST
+            if row > 0 and element_name == "gantt_test":
+                continue
+
             td = table.add_cell()
             td.add_class("spt_cell_edit")
 
@@ -2155,7 +2162,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         html = widget.get_buffer_display()
                         if not html:
-                            html = "<div style='height: 30px'>&nbsp;</div>"
+                            html = "<div style='height: 14px'>&nbsp;</div>"
                         td.add(html)
                 except Exception, e:
 
