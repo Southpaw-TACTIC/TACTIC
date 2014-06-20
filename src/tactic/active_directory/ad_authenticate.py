@@ -85,7 +85,6 @@ class ADAuthenticate(Authenticate):
             domain = lookup_domain
             ad_connect.set_domain(lookup_domain)
         elif domain:
-            print "set select ", domain
             ad_connect.set_domain(domain)
 
         #ad_connect.set_user(base_login_name)

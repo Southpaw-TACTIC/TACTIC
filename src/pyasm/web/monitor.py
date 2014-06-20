@@ -259,7 +259,7 @@ class WatchFolderThread(BaseProcessThread):
 
 
 
-# DEPRECATED: use SchedulerThread below
+# DEPRECATED: use TacticSchedulerThread below
 class TacticTimedThread(threading.Thread):
 
     def __init__(my):

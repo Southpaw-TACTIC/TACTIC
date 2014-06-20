@@ -122,13 +122,15 @@ class VideoWdg(BaseRefreshWdg):
             if (spt.gallery) {
                 
                 spt.gallery.videos[bvr.index] = video_id;
-            }
-            if (!spt.gallery.portrait) {
+
+                if (!spt.gallery.portrait) {
                 var overlay = bvr.src_el.getElement('.video_overlay');
                 if (overlay)
                     overlay.setStyles({'top': '4%', 'left': '5%', 
                         'width': '90%', 'height':'87%'});
+                }
             }
+            
             
             '''
         } )
