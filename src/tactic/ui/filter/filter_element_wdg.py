@@ -163,7 +163,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         #print "value: ", value, type(value)
         if not value:
-            default =  my.kwargs.get('default')
+            default = my.kwargs.get('default')
             if not my.values and default:
                 value = default
             else:
@@ -173,8 +173,6 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         op = my.values.get("op")
         if not op:
             op = '='
-
-       
 
        
         # go through the hierarchy
@@ -307,6 +305,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         select = SelectWdg("value")
         select.add_style("width: 150px")
 
+        default_value = my.kwargs.get("default")
+
         # TODO: this is needed for multiple selection, but it is ugly
         #select.set_attr("multiple", "1")
         #select.add_attr("spt_is_multiple", "true")
@@ -328,6 +328,9 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         # FIXME: this is probably a bug in SelectWdg
         select.set_value('')
         value = my.values.get("value")
+        if not value:
+            value = default_value
+
         if value:
             select.set_value(value)
 
