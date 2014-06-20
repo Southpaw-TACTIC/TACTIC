@@ -36,6 +36,7 @@ class BaseUpgrade(Command):
         my.is_forced = False
         my.quiet = False
         my.is_confirmed = False
+        my.commit = True
         super(BaseUpgrade, my).__init__()
     
     def set_project(my, project_code):
@@ -60,7 +61,8 @@ class BaseUpgrade(Command):
     def set_confirmed(my, is_confirmed):
         my.is_confirmed = is_confirmed
 
-
+    def set_commit(my, commit):
+        my.commit = commit
 
     def execute(my):
         assert my.project_code
@@ -178,7 +180,8 @@ class BaseUpgrade(Command):
             #DbContainer.abort_thread_sql()
             DbContainer.release_thread_sql()
         else:
-            db.commit()
+            if my.commit:
+                db.commit()
 
 
 
