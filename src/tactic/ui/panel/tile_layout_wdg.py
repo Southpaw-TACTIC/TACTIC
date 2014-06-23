@@ -677,6 +677,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         kwargs = {
             'show_hover_name':my.show_hover_name
         }
+
+        if my.aspect_ratio[0] == 'auto':
+            kwargs['width'] = 'auto'
+
         thumb = ThumbWdg2(**kwargs)
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
@@ -1042,6 +1046,7 @@ class ThumbWdg2(BaseRefreshWdg):
     def init(my):
         my.path = None
         my.show_hover_name = my.kwargs.get('show_hover_name')
+        my.width = my.kwargs.get('width')
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)
@@ -1057,7 +1062,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_display(my):
 
-        width = "100%"
+        width = my.width or "100%"
         height = "100%"
 
         sobject = my.get_current_sobject()
