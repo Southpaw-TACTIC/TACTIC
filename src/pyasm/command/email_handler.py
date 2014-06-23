@@ -134,18 +134,12 @@ class EmailHandler(object):
             # turn prev_data and update_data from input into sobjects
             prev_data = SearchType.create("sthpw/virtual")
 
-            # get rid of the "id":-1 entry that comes with the sobject
-            del prev_data["id"]
-
             for name, value in my.input.get("prev_data").items():
                 if value != None:
                     prev_data.set_value(name, value)
 
 
             update_data = SearchType.create("sthpw/virtual")
-
-            # get rid of the "id":-1 entry that comes with the sobject
-            del update_data["id"]
 
             for name, value in my.input.get("update_data").items():
                 if value != None:
