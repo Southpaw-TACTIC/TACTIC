@@ -50,6 +50,12 @@ class SthpwUpgrade(BaseUpgrade):
     def upgrade_v4_2_0_a01_012(my):
         my.run_sql('''ALTER TABLE sync_server ADD COLUMN file_mode varchar(256);''')
 
+    def upgrade_v4_2_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE "watch_folder" ADD "script_path" varchar(1024);
+        ''')
+
+
     def upgrade_v4_2_0_a01_011(my):
         my.run_sql('''
         CREATE TABLE translation (
