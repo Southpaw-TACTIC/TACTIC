@@ -465,7 +465,8 @@ class SObjectCalendarWdg(CalendarWdg):
         'start_date_col': 'Start date column',
         'end_date_col': 'End date column',
         'handler': 'handler class to display each day',
-        'search_type': 'search type to search for'
+        'search_type': 'search type to search for',
+        'search_expr': 'Initial SObjects Expression'
     }
 
 
@@ -477,15 +478,24 @@ class SObjectCalendarWdg(CalendarWdg):
 
     def handle_search(my):
 
+        # this is an absolute expression
+        my.search_expr = my.kwargs.get("search_expr")
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             my.search_type = 'sthpw/task'
+        if my.search_expr:
+            search = Search.eval(my.search_expr)
 
-        my.op_filters = my.kwargs.get("filters")
-        if my.op_filters:
-            if isinstance(my.op_filters, basestring):
-                my.op_filters = eval(my.op_filters)
+        else:
+            
 
+            my.op_filters = my.kwargs.get("filters")
+            if my.op_filters:
+                if isinstance(my.op_filters, basestring):
+                    my.op_filters = eval(my.op_filters)
+            search = Search(my.search_type)
+            if my.op_filters:
+                search.add_op_filters(my.op_filters)
 
         my.start_column = my.kwargs.get('start_date_col')
         if not my.start_column:
@@ -496,9 +506,7 @@ class SObjectCalendarWdg(CalendarWdg):
             my.end_column = 'bid_end_date'
 
        
-        search = Search(my.search_type)
-        if my.op_filters:
-            search.add_op_filters(my.op_filters)
+        
 
         search.add_op('begin')
 
@@ -727,7 +735,6 @@ class SObjectCalendarWdg(CalendarWdg):
         my.handler.set_current_week(my.current_week)
 
         sobjects = my.date_sobjects.get(str(day))
-
         div = DivWdg()
        
         div.add_style("vertical-align: top")
