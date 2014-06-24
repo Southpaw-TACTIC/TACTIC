@@ -594,7 +594,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
             '''
         } )
-        
 
         # Disabling for now
         #from tactic.ui.widget import CalendarWdg
@@ -679,6 +678,7 @@ class GanttElementWdg(BaseTableElementWdg):
         # replace day widget with javascript generated one
         color1 = inner_div.get_color("background", -15)
         color2 = inner_div.get_color("background", -30)
+        weekend_bgcolor = "#888"
         day_wdg.add_attr("spt_color1", color1)
         day_wdg.add_attr("spt_color2", color2)
         day_wdg.add_behavior( {
@@ -688,13 +688,14 @@ class GanttElementWdg(BaseTableElementWdg):
         'percent_per_day': my.percent_per_day,
         'color1': color1,
         'color2': color2,
+        'weekend_bgcolor':  weekend_bgcolor,
         'cbjs_action': '''
         var el = bvr.src_el;
         var start_date = bvr.start_date;
         var end_date = bvr.end_date;
         var percent_per_day = bvr.percent_per_day;
 
-        spt.gantt.fill_header_days(el, start_date, end_date, percent_per_day);
+        spt.gantt.fill_header_days(el, start_date, end_date, percent_per_day, bvr.weekend_bgcolor);
 
         '''
         } )
@@ -761,7 +762,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
     def get_day_wdg(my, start_date, end_date):
-
         dates = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
 
         if not dates or dates[0] != start_date:
@@ -821,7 +821,6 @@ class GanttElementWdg(BaseTableElementWdg):
         for i, date in enumerate(dates[:-1]):
             date2 = dates[i+1]
             diff = date2 - date
-
             width = (diff.days + float(diff.seconds)/3600/24) * my.percent_per_day
             if total + width > 100:
                 width = 100 - total
@@ -829,7 +828,7 @@ class GanttElementWdg(BaseTableElementWdg):
             divider_widths.append(width)
 
             display = eval(date_expr)
-          
+             
             div = DivWdg()
             div.add_style("border-width: 0 0 1 0")
             div.add_style("border-style: solid")
@@ -1028,6 +1027,8 @@ class GanttElementWdg(BaseTableElementWdg):
         outer_div.add_style("position: relative")
         outer_div.add_style("height: 100%")
         #inner_div.add_style("position: absolute")
+        
+        # WHY min-height?
         inner_div.add_style("min-height: %spx" % (height+6))
 
         # draw the dividers
@@ -1267,7 +1268,7 @@ class GanttElementWdg(BaseTableElementWdg):
         start_div.set_attr("spt_input_value", start_date_str)
 
         start_div.add_color("background", "background3")
-        start_div.add_style("margin-top: 3px")
+        #start_div.add_style("margin-top: 3px")
         start_div.add_border()
         start_div.set_round_corners(10, ["TL", "BL"])
         start_div.add_style("opacity: 0.4")
@@ -1382,7 +1383,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         end_div.add_color("background", "background3")
-        end_div.add_style("margin-top: 3px")
+        #end_div.add_style("margin-top: 3px")
         end_div.add_style("opacity: 0.4")
         end_div.add_border()
         end_div.set_round_corners(10, ["TR", "BR"])
@@ -1687,7 +1688,7 @@ class GanttElementWdg(BaseTableElementWdg):
             divider_wdg.add(draw_div)
 
 
-
+        # draw today's vertical bar
         draw_div = my.get_day_bar_wdg(datetime.datetime.today(), "blue", opacity=0.5)
         divider_wdg.add(draw_div)
 
@@ -1717,7 +1718,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
         dates = list(rrule.rrule(rrule.WEEKLY, byweekday=week_start, dtstart=my.start_date, until=my.end_date))
 
-
         if len(dates) > 75:
             dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=my.start_date, until=my.end_date))
         if len(dates) > 75:
@@ -1725,7 +1725,8 @@ class GanttElementWdg(BaseTableElementWdg):
 
         for date in dates:
             color = '#999'
-            draw_div = my.get_day_bar_wdg(date, color, opacity=0.15, days=2)
+            # draw weekend bar
+            draw_div = my.get_day_bar_wdg(date, color, opacity=0.35, days=2)
             divider_wdg.add(draw_div)
 
 
@@ -2259,7 +2260,7 @@ spt.gantt.months = ['January','February','March','April','May','June','July','Au
 
 
 // days functions
-spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day) {
+spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day, weekend_bgcolor) {
 
     var color1 = top.getAttribute("spt_color1");
     var color2 = top.getAttribute("spt_color2");
@@ -2269,6 +2270,8 @@ spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day
 
     var date = moment(start_date, "YYYY-MM-DD");
     end_date = moment(end_date, "YYYY-MM-DD");
+
+    
     end_date.subtract('days', 1);
 
     var count = 0;
@@ -2280,13 +2283,23 @@ spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day
         el.setStyle("float", "left");
         el.setStyle("font-size", "10px");
         el.setStyle("text-align", "center");
-        if (count % 2 == 0) {
+
+        var wkday = date.day();
+        var is_weekend = (wkday == 6) || (wkday == 0);
+        if (is_weekend) {
+            el.setStyle("background", weekend_bgcolor);
+            el.setStyle("opacity", '0.75');
+        }
+        else if (count % 2 == 0) {
             el.setStyle("background", color1);
         }
         else {
             el.setStyle("background", color2);
         }
         //var day = date.format('MMM-DD');
+
+       
+
         var day = date.format('DD');
         var text = $(document.createTextNode(day));
         el.appendChild(text);
@@ -3348,4 +3361,6 @@ spt.gantt.accept_day = function(evt, bvr) {
 }
 
     '''
+
+
 
