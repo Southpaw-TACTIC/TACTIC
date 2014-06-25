@@ -1084,7 +1084,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
                 bar = my.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
                 bar.add_style("z-index: 2")
-                bar.add_style("position: absolute")
+                #bar.add_style("position: absolute")
                 bar.add_style("padding-top: 2px")
                 bar.add_style("padding-bottom: 2px")
                 #bar.add_style("border: solid 1px red")
@@ -1096,7 +1096,9 @@ class GanttElementWdg(BaseTableElementWdg):
 
                 if not my.overlap:
                     inner_div.add("<br clear='all'>")
+                    bar.add_style("position: relative")
                 else:
+                    bar.add_style("position: absolute")
                     inner_div.add("<br class='spt_overlap' style='display: none' clear='all'>")
 
 
