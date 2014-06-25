@@ -24,7 +24,7 @@ from pyasm.widget import HiddenWdg, TextWdg, IconWdg
 from pyasm.biz import ExpressionParser
 
 from tactic.ui.widget import IconButtonWdg
-
+from subcontext_wdg import ProcessElementWdg
 import datetime
 from dateutil import rrule
 from dateutil import parser
@@ -282,15 +282,20 @@ class GanttElementWdg(BaseTableElementWdg):
             # get the start and end dates
             start_sobj_dates = []
             end_sobj_dates = []
-
+            from pyasm.search import SObject
             # go through each row sobject
             for sobject in my.sobjects:
-
+                sub_search_keys = []
                 if sobject_expr:
                     search_key = sobject.get_search_key()
                     gantt_sobjects = gantt_data.get(search_key)
                     if not gantt_sobjects:
                         gantt_sobjects = []
+                    else:
+                        # sort the task according to pipeline order if applicable
+                        if gantt_sobjects[0].get_base_search_type() == 'sthpw/task':
+                            gantt_sobjects = ProcessElementWdg.process_sobjects(gantt_sobjects)
+
 
                     xstart_values = expr_parser.eval(my.start_date_expr, gantt_sobjects, dictionary=True)
                     xend_values = expr_parser.eval(my.end_date_expr, gantt_sobjects, dictionary=True)
@@ -300,6 +305,8 @@ class GanttElementWdg(BaseTableElementWdg):
                     colors = []
                     for x in gantt_sobjects:
                         search_key = x.get_search_key()
+                        sub_search_keys.append(search_key)
+                        
                         start_values.extend( xstart_values.get(search_key) )
                         end_values.extend( xend_values.get(search_key) )
 
@@ -311,6 +318,9 @@ class GanttElementWdg(BaseTableElementWdg):
                 else:
                     start_values = expr_parser.eval(my.start_date_expr, sobject, list=True)
                     end_values = expr_parser.eval(my.end_date_expr, sobject, list=True)
+
+                    search_key = sobject.get_search_key()
+                    sub_search_keys.append(search_key)
                     # getting the attribute directly from this sobject
                     colors = []
                     # only support getting the current column type of expression inferred above
@@ -319,6 +329,7 @@ class GanttElementWdg(BaseTableElementWdg):
                         color_value = sobject.get_value(color_mode)
                         color_dict = my.get_colors(sobject, color_mode)
                         colors.append(color_dict.get(color_value))
+
 
                 # handle condition where there are no results
                 if not start_values:
@@ -336,13 +347,15 @@ class GanttElementWdg(BaseTableElementWdg):
                 end_sobj_dates.append(end_values[0])
                 range_data = []
 
-                for start_value, end_value, color in zip(start_values, end_values, colors):
+                for start_value, end_value, color, sub_search_key in zip(start_values, end_values, colors, sub_search_keys):
                     search_key = sobject.get_search_key()
                     data = {}
                     data['start_date'] = start_value
                     data['end_date'] = end_value
                     data['color'] = color
+                    data['search_key'] = sub_search_key
                     range_data.append(data) 
+
                     if start_value and (not min_date or start_value < min_date):
                         min_date = start_value
                     if end_value and (not max_date or end_value > max_date):
@@ -385,7 +398,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
-            #print "gantt_data: ", gantt_data
             # new way where the web_data is a list of different data for different widgets
             if isinstance(gantt_data, list):
                 gantt_data = gantt_data[0]
@@ -1039,6 +1051,8 @@ class GanttElementWdg(BaseTableElementWdg):
                 if not color:
                     color = "#555"
 
+            auto_key = properties.get('auto_key')
+           
             key = properties.get('key')
             if not key:
                 key = index
@@ -1073,17 +1087,19 @@ class GanttElementWdg(BaseTableElementWdg):
             else:
                 day_data = jsonloads(day_data)
 
-
-            for range_data in sobject_data:
-
+            for bar_idx, range_data in enumerate(sobject_data):
                 if range_data.get("color"):
                     cur_color = range_data.get("color")
                 else:
                     cur_color = color
+                if auto_key:
+                    key = "%s_%s" %(auto_key, bar_idx)
+                 
 
                 bar = my.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
+
                 bar.add_style("z-index: 2")
-                bar.add_style("position: absolute")
+                #bar.add_style("position: absolute")
                 bar.add_style("padding-top: 2px")
                 bar.add_style("padding-bottom: 2px")
                 #bar.add_style("border: solid 1px red")
@@ -1095,7 +1111,10 @@ class GanttElementWdg(BaseTableElementWdg):
 
                 if not my.overlap:
                     inner_div.add("<br clear='all'>")
+                    bar.add_style("padding-top: 13px !important")
+                    bar.add_style("position: relative")
                 else:
+                    bar.add_style("position: absolute")
                     inner_div.add("<br class='spt_overlap' style='display: none' clear='all'>")
 
 
@@ -1135,9 +1154,13 @@ class GanttElementWdg(BaseTableElementWdg):
             index = my.get_current_index() - 2
 
         #range_data = None
+        search_key = None
         if range_data:
             start_sobj_date = range_data.get('start_date')
             end_sobj_date = range_data.get('end_date')
+
+            search_key = range_data.get('search_key')
+
         elif index < 0 or index >= len(my.start_sobj_dates[count]):
             start_sobj_date = None
             end_sobj_date = None
@@ -1213,7 +1236,12 @@ class GanttElementWdg(BaseTableElementWdg):
         info['max_width'] = my.total_width
         info['range_start_date'] = str(my.start_date)
         info['range_end_date'] = str(my.end_date)
-        info['search_key'] = my.search_key
+        #info['search_key'] = my.search_key
+        # under most cases, the bar's search key is available and used
+        if search_key:
+            info['search_key'] = search_key
+        else:
+            info['search_key'] = my.search_key
         start_width, end_width = info.get('width')
 
 
@@ -1624,7 +1652,7 @@ class GanttElementWdg(BaseTableElementWdg):
         divider_wdg = DivWdg()
 
         divider_wdg.add_style("width: 100%")
-        divider_wdg.add_style("height: 100px")
+        divider_wdg.add_style("height: 100%")
         divider_wdg.add_style("z-index: 1")
         divider_wdg.add_style("position: absolute")
 
@@ -1818,15 +1846,15 @@ class GanttCbk(DatabaseAction):
         else:
             gantt_data = gantt_data.get('gantt_data')
             gantt_data = jsonloads(gantt_data)
-
+        
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):
                 continue
-
+            
             index = data.get("index")
+
             if not index:
                 index = 0
-          
             try:
                 options = options_list[index]
             except IndexError, e:
@@ -1842,9 +1870,12 @@ class GanttCbk(DatabaseAction):
             # mode can be "cascade" or "default"
             # cascade would apply timedelta to each task
             mode = options.get("mode")
-
             # get the tasks
             tasks = Search.eval(expression, [my.sobject])
+            task_dict = {}
+            for task in tasks:
+                task_dict[task.get_search_key()] = task
+
             start_date_col = options.get('start_date_col')
             if not start_date_col:
                 start_date_col = '%s_start_date' % prefix;
@@ -1857,6 +1888,7 @@ class GanttCbk(DatabaseAction):
             end_date = data.get('end_date')
             orig_start_date = data.get('orig_start_date')
             orig_end_date = data.get('orig_end_date')
+            search_key = data.get('search_key')
 
             colors = data.get('colors')
             labels = data.get('labels')
@@ -1864,6 +1896,7 @@ class GanttCbk(DatabaseAction):
             day_data = {}
             day_data['colors'] = colors
             day_data['labels'] = labels
+
             day_data = jsondumps(day_data)
 
             # parsing the expression if any
@@ -1894,16 +1927,29 @@ class GanttCbk(DatabaseAction):
                     task.set_value("data", day_data)
 
                     task.commit()
-            else: # default to just change current date
-                # usually only contain 1 task, the current task
-                for task in tasks:
+            #elif mode == 'multiple': 
+            else:
+                task = task_dict.get(search_key)
+                if task:
                     task.set_value(start_date_col, start_date)
                     task.set_value(end_date_col, end_date)
                     task.set_value("data", day_data)
                     task.commit()
 
+            """
+            else:
+                # default to just change current date
+                # usually only contain 1 task, the current task
+                for task in tasks:
+
+                    task.set_value(start_date_col, start_date)
+                    task.set_value(end_date_col, end_date)
+                    task.set_value("data", day_data)
+
+                    task.commit()
 
 
+            """
 
 class GanttLegendWdg(BaseRefreshWdg):
 
@@ -2700,7 +2746,7 @@ spt.gantt.drag2_setup = function(evt, bvr, mouse_411)
         var end_offset = data.drag_duration.getStyle('width');
         data.end_offset = parseFloat( end_offset.replace('%', '') );
 
-        // set the search of the sobject
+        // set the search key of the sobject
         data.search_key = search_keys[i];
 
     }
@@ -2949,11 +2995,12 @@ spt.gantt.drag2_action = function(evt, bvr, mouse_411)
             gantt_value = {};
             gantt_data_wdg.value = JSON.stringify(gantt_value);
         }
-
         // gather all of the gantt_data
         gantt_value[info.key] = {};
         var gantt_key_data = gantt_value[info.key];
+
         gantt_key_data['index'] = info.index;
+        gantt_key_data['search_key'] = info.search_key;
         gantt_key_data['start_date'] = start_date_str;
         gantt_key_data['end_date'] = end_date_str;
         gantt_key_data['orig_start_date'] = data.orig_start_date;
@@ -2962,8 +3009,6 @@ spt.gantt.drag2_action = function(evt, bvr, mouse_411)
 
         gantt_key_data['colors'] = spt.gantt.colors;
         gantt_key_data['labels'] = spt.gantt.labels;
-
-
 
 
         
@@ -2998,6 +3043,7 @@ spt.gantt.set_data = function(table) {
     // get all of the selected rows
     var tbodies = spt.has_class(table, 'spt_table_table') ?  spt.table.get_all_rows(): spt.dg_table.get_all_tbodies(table);
     var ranges = [];
+
     for (var i = 0; i < tbodies.length; i++) {
         // there can be many ranges in each cell.  Each range is a 
         // single date row within a cell
