@@ -788,7 +788,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             var count = -1;
 
-            var view_panel = layout.getParent('.spt_view_panel');
+            //var view_panel = layout.getParent('.spt_view_panel');
+            var view_panel = spt.table.get_panel(layout);
+
             if (view_panel) {
                 var search_top = view_panel.getElement('.spt_search');
                 var search_dict = spt.table.get_search_values(search_top);
@@ -2386,6 +2388,25 @@ spt.table.get_layout = function() {
     return spt.table.layout;
 }
 
+spt.table.get_panel = function(element)
+{
+    var panel = element.getParent('.spt_view_panel');
+    // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an embedded table
+    if( panel ) {
+        var pnode = $(element.parentNode);
+        var table_top_count = 0;
+        while( pnode && pnode.hasClass && !pnode.hasClass("spt_view_panel") ) {
+            if( pnode.hasClass("spt_table_top") ) {
+                table_top_count ++;
+            }
+            pnode = $(pnode.parentNode);
+        }
+        if( table_top_count > 1 ) {
+            panel = null;
+        }
+    }
+    return panel;
+}
 
 
 

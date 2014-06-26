@@ -394,6 +394,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     keyword_filter.alter_search(search)
 
 
+        web = WebContainer.get_web()
 
         # solution for state filter grouping or what not
         # combine the 2 filters from kwarg and state
@@ -411,17 +412,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         order = WebContainer.get_web().get_form_value('order')
         
         # user-chosen order has top priority
+        set_order = False
         if order:
+            set_order = True
             my.order_element = order
-            if not values:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
-                
-                widget = my.get_widget(tmp_order_element)
-                my.order_widget = widget
-                try:
-                    widget.alter_order_by(search, direction)
-                except AttributeError:
-                    search.add_order_by(my.order_element, direction)
+            # not sure why it was only done when there is no group prefix values
+            #if not values:
+            tmp_order_element, direction  = my.get_order_element(my.order_element)
+            
+            widget = my.get_widget(tmp_order_element)
+            my.order_widget = widget
+            try:
+                widget.alter_order_by(search, direction)
+            except AttributeError:
+                search.add_order_by(my.order_element, direction)
 
         if values:
 
@@ -440,20 +444,30 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 my.group_element = False
 
-            my.order_element = group_values.get("order")
+            tmp_order_element = group_values.get("order")
+            if not set_order and tmp_order_element:
+                my.order_element = tmp_order_element
 
-            if my.order_element:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
+            # the group order can have a chance to apply a 2nd tier order_by
+            # but if a set_order is already True, my.order_element would not adopt this group order value
+            if tmp_order_element:
+                tmp_order_element, direction  = my.get_order_element(tmp_order_element)
                 widget = my.get_widget(tmp_order_element)
                 my.order_widget = widget
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
                     search.add_order_by(tmp_order_element, direction)
+                set_order = True
 
-            my.show_retired_element = group_values.get("show_retired")
+            my.show_retired_element = group_values.get("show_retired") or  web.get_form_value('show_retired')
             if my.show_retired_element == "true":
                 search.set_show_retired(True)
+
+        else:
+            if web.get_form_value('show_retired') == 'true':
+                search.set_show_retired(True)
+
 
 
         order_by = my.kwargs.get('order_by')
