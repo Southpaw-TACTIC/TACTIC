@@ -1833,9 +1833,9 @@ class GanttCbk(DatabaseAction):
             
             index = data.get("index")
             
-            if not index:
+            if not index or mode == 'default':
                 index = 0
-            index = 0
+
             try:
                 options = options_list[index]
             except IndexError, e:
@@ -1906,20 +1906,26 @@ class GanttCbk(DatabaseAction):
                     task.set_value("data", day_data)
 
                     task.commit()
-            else: # default to just change current date
-                # usually only contain 1 task, the current task
+            elif mode == 'multiple': 
+
                 key = (len(tasks) - 1) - int(key[9:])
+
                 tasks[key].set_value(start_date_col, start_date)
                 tasks[key].set_value(end_date_col, end_date)
                 tasks[key].set_value("data", day_data)
                 tasks[key].commit()
-                '''for task in tasks:
+
+
+            else:
+                # default to just change current date
+                # usually only contain 1 task, the current task
+                for task in tasks:
 
                     task.set_value(start_date_col, start_date)
                     task.set_value(end_date_col, end_date)
                     task.set_value("data", day_data)
 
-                    task.commit()'''
+                    task.commit()
 
 
 
