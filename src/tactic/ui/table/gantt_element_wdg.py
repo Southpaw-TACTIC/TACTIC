@@ -385,7 +385,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
-            #print "gantt_data: ", gantt_data
             # new way where the web_data is a list of different data for different widgets
             if isinstance(gantt_data, list):
                 gantt_data = gantt_data[0]
@@ -1040,6 +1039,8 @@ class GanttElementWdg(BaseTableElementWdg):
                 if not color:
                     color = "#555"
 
+            auto_key = properties.get('auto_key')
+           
             key = properties.get('key')
             if not key:
                 key = index
@@ -1075,14 +1076,17 @@ class GanttElementWdg(BaseTableElementWdg):
                 day_data = jsonloads(day_data)
 
 
-            for range_data in sobject_data:
-
+            for bar_idx, range_data in enumerate(reversed(sobject_data)):
+                #print "RANGE data ", range_data
                 if range_data.get("color"):
                     cur_color = range_data.get("color")
                 else:
                     cur_color = color
-
+                if auto_key:
+                    key = "%s_%s" %(auto_key, bar_idx)
+                    index = bar_idx
                 bar = my.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
+
                 bar.add_style("z-index: 2")
                 #bar.add_style("position: absolute")
                 bar.add_style("padding-top: 2px")
@@ -1096,6 +1100,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
                 if not my.overlap:
                     inner_div.add("<br clear='all'>")
+                    bar.add_style("padding-top: 13px !important")
                     bar.add_style("position: relative")
                 else:
                     bar.add_style("position: absolute")
@@ -1627,7 +1632,7 @@ class GanttElementWdg(BaseTableElementWdg):
         divider_wdg = DivWdg()
 
         divider_wdg.add_style("width: 100%")
-        divider_wdg.add_style("height: 100px")
+        divider_wdg.add_style("height: 100%")
         divider_wdg.add_style("z-index: 1")
         divider_wdg.add_style("position: absolute")
 
@@ -1825,11 +1830,12 @@ class GanttCbk(DatabaseAction):
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):
                 continue
-
+            
             index = data.get("index")
+            
             if not index:
                 index = 0
-          
+            index = 0
             try:
                 options = options_list[index]
             except IndexError, e:
@@ -1848,6 +1854,8 @@ class GanttCbk(DatabaseAction):
 
             # get the tasks
             tasks = Search.eval(expression, [my.sobject])
+
+
             start_date_col = options.get('start_date_col')
             if not start_date_col:
                 start_date_col = '%s_start_date' % prefix;
@@ -1867,6 +1875,7 @@ class GanttCbk(DatabaseAction):
             day_data = {}
             day_data['colors'] = colors
             day_data['labels'] = labels
+
             day_data = jsondumps(day_data)
 
             # parsing the expression if any
@@ -1899,11 +1908,18 @@ class GanttCbk(DatabaseAction):
                     task.commit()
             else: # default to just change current date
                 # usually only contain 1 task, the current task
-                for task in tasks:
+                key = (len(tasks) - 1) - int(key[9:])
+                tasks[key].set_value(start_date_col, start_date)
+                tasks[key].set_value(end_date_col, end_date)
+                tasks[key].set_value("data", day_data)
+                tasks[key].commit()
+                '''for task in tasks:
+
                     task.set_value(start_date_col, start_date)
                     task.set_value(end_date_col, end_date)
                     task.set_value("data", day_data)
-                    task.commit()
+
+                    task.commit()'''
 
 
 
@@ -2964,10 +2980,10 @@ spt.gantt.drag2_action = function(evt, bvr, mouse_411)
             gantt_value = {};
             gantt_data_wdg.value = JSON.stringify(gantt_value);
         }
-
         // gather all of the gantt_data
         gantt_value[info.key] = {};
         var gantt_key_data = gantt_value[info.key];
+
         gantt_key_data['index'] = info.index;
         gantt_key_data['start_date'] = start_date_str;
         gantt_key_data['end_date'] = end_date_str;
@@ -2977,8 +2993,6 @@ spt.gantt.drag2_action = function(evt, bvr, mouse_411)
 
         gantt_key_data['colors'] = spt.gantt.colors;
         gantt_key_data['labels'] = spt.gantt.labels;
-
-
 
 
         
@@ -3013,6 +3027,7 @@ spt.gantt.set_data = function(table) {
     // get all of the selected rows
     var tbodies = spt.has_class(table, 'spt_table_table') ?  spt.table.get_all_rows(): spt.dg_table.get_all_tbodies(table);
     var ranges = [];
+
     for (var i = 0; i < tbodies.length; i++) {
         // there can be many ranges in each cell.  Each range is a 
         // single date row within a cell
