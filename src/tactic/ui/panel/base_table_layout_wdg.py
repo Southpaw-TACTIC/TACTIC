@@ -127,7 +127,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         config = my.kwargs.get("config")
         config_xml = my.kwargs.get("config_xml")
         my.config_xml = config_xml
-
         if config_xml:
             # get the base configs
             config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
@@ -135,6 +134,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             config.get_configs().insert(0, extra_config)
 
         elif not config:
+            custom_column_configs = WidgetConfigView.get_by_type("column") 
+            
             # handle element names explicitly set
             my.element_names = my.kwargs.get("element_names")
             if my.element_names:
@@ -156,12 +157,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 config.get_configs().insert(0, extra_config)
 
 
-                config.get_configs().extend( WidgetConfigView.get_by_type("column") )
-
 
             else:
                 config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
-
+            
+            config.get_configs().extend( custom_column_configs )
         #
         # FIXME: For backwards compatibility. Remove this
         #
