@@ -1826,16 +1826,17 @@ class GanttCbk(DatabaseAction):
         else:
             gantt_data = gantt_data.get('gantt_data')
             gantt_data = jsonloads(gantt_data)
-
+        
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):
                 continue
             
             index = data.get("index")
             
-            if not index or mode == 'default':
-                index = 0
 
+            if not index:
+                index = 0
+            index = 0
             try:
                 options = options_list[index]
             except IndexError, e:
