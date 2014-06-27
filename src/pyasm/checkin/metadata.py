@@ -339,7 +339,7 @@ class BaseMetadataParser(object):
 
         # find all words between tags.
         # aka, search for words btween <tag>words</tag>
-        keywords_list = re.findall('>.*<', dc_subject_str)
+        keywords_list = re.findall('>\S*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
         for i in range(len(keywords_list)):
