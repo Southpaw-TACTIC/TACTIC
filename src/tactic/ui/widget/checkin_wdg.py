@@ -58,7 +58,7 @@ class CheckinWdg(BaseRefreshWdg):
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
         'show_links': 'true|false: determines whether show the button rows at the top',
-        'use_applet': 'true|false: deterines whether or not to use an appet or pure html5'
+        'use_applet': 'true|false: deterines whether to use an applet or pure html5'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
     }
@@ -110,11 +110,11 @@ class CheckinWdg(BaseRefreshWdg):
 
         my.mode = my.kwargs.get('mode')
         my.use_applet = my.kwargs.get('use_applet')
-        if my.use_applet in ['false', False]:
+        if my.use_applet in ['false', 'False', False]:
             my.use_applet = False
         else:
             my.use_applet = Config.get_value("checkin", "use_applet")
-            if my.use_applet in ['false', False]:
+            if my.use_applet in ['false', 'False', False]:
                 my.use_applet = False
             else:
                 my.use_applet = True
@@ -1162,7 +1162,8 @@ spt.checkin.drop_files = function(evt, el) {
         location: 'client',
         paths: file_names,
         sizes: sizes,
-        md5s: md5s
+        md5s: md5s,
+        use_applet: 'false'
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
