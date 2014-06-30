@@ -133,7 +133,10 @@ class EmailHandler(object):
 
             # turn prev_data and update_data from input into sobjects
             prev_data = SearchType.create("sthpw/virtual")
-            del prev_data.data["id"]
+            id_col = prev_data.get_id_col()
+
+            if id_col:
+                del prev_data.data[id_col]
 
             for name, value in my.input.get("prev_data").items():
                 if value != None:
@@ -141,7 +144,10 @@ class EmailHandler(object):
 
 
             update_data = SearchType.create("sthpw/virtual")
-            del update_data.data["id"]
+            id_col = update_data.get_id_col()
+
+            if id_col:
+                del update_data.data[id_col]
 
             for name, value in my.input.get("update_data").items():
                 if value != None:
