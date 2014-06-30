@@ -24,7 +24,7 @@ from pyasm.widget import HiddenWdg, TextWdg, IconWdg
 from pyasm.biz import ExpressionParser
 
 from tactic.ui.widget import IconButtonWdg
-
+from subcontext_wdg import ProcessElementWdg
 import datetime
 from dateutil import rrule
 from dateutil import parser
@@ -282,15 +282,20 @@ class GanttElementWdg(BaseTableElementWdg):
             # get the start and end dates
             start_sobj_dates = []
             end_sobj_dates = []
-
+            from pyasm.search import SObject
             # go through each row sobject
             for sobject in my.sobjects:
-
+                sub_search_keys = []
                 if sobject_expr:
                     search_key = sobject.get_search_key()
                     gantt_sobjects = gantt_data.get(search_key)
                     if not gantt_sobjects:
                         gantt_sobjects = []
+                    else:
+                        # sort the task according to pipeline order if applicable
+                        if gantt_sobjects[0].get_base_search_type() == 'sthpw/task':
+                            gantt_sobjects = ProcessElementWdg.process_sobjects(gantt_sobjects)
+
 
                     xstart_values = expr_parser.eval(my.start_date_expr, gantt_sobjects, dictionary=True)
                     xend_values = expr_parser.eval(my.end_date_expr, gantt_sobjects, dictionary=True)
@@ -300,6 +305,8 @@ class GanttElementWdg(BaseTableElementWdg):
                     colors = []
                     for x in gantt_sobjects:
                         search_key = x.get_search_key()
+                        sub_search_keys.append(search_key)
+                        
                         start_values.extend( xstart_values.get(search_key) )
                         end_values.extend( xend_values.get(search_key) )
 
@@ -311,6 +318,9 @@ class GanttElementWdg(BaseTableElementWdg):
                 else:
                     start_values = expr_parser.eval(my.start_date_expr, sobject, list=True)
                     end_values = expr_parser.eval(my.end_date_expr, sobject, list=True)
+
+                    search_key = sobject.get_search_key()
+                    sub_search_keys.append(search_key)
                     # getting the attribute directly from this sobject
                     colors = []
                     # only support getting the current column type of expression inferred above
@@ -319,6 +329,7 @@ class GanttElementWdg(BaseTableElementWdg):
                         color_value = sobject.get_value(color_mode)
                         color_dict = my.get_colors(sobject, color_mode)
                         colors.append(color_dict.get(color_value))
+
 
                 # handle condition where there are no results
                 if not start_values:
@@ -336,13 +347,15 @@ class GanttElementWdg(BaseTableElementWdg):
                 end_sobj_dates.append(end_values[0])
                 range_data = []
 
-                for start_value, end_value, color in zip(start_values, end_values, colors):
+                for start_value, end_value, color, sub_search_key in zip(start_values, end_values, colors, sub_search_keys):
                     search_key = sobject.get_search_key()
                     data = {}
                     data['start_date'] = start_value
                     data['end_date'] = end_value
                     data['color'] = color
+                    data['search_key'] = sub_search_key
                     range_data.append(data) 
+
                     if start_value and (not min_date or start_value < min_date):
                         min_date = start_value
                     if end_value and (not max_date or end_value > max_date):
@@ -1075,16 +1088,15 @@ class GanttElementWdg(BaseTableElementWdg):
             else:
                 day_data = jsonloads(day_data)
 
-
-            for bar_idx, range_data in enumerate(reversed(sobject_data)):
-                #print "RANGE data ", range_data
+            for bar_idx, range_data in enumerate(sobject_data):
                 if range_data.get("color"):
                     cur_color = range_data.get("color")
                 else:
                     cur_color = color
                 if auto_key:
                     key = "%s_%s" %(auto_key, bar_idx)
-                    index = bar_idx
+                 
+
                 bar = my.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
 
                 bar.add_style("z-index: 2")
@@ -1143,9 +1155,13 @@ class GanttElementWdg(BaseTableElementWdg):
             index = my.get_current_index() - 2
 
         #range_data = None
+        search_key = None
         if range_data:
             start_sobj_date = range_data.get('start_date')
             end_sobj_date = range_data.get('end_date')
+
+            search_key = range_data.get('search_key')
+
         elif index < 0 or index >= len(my.start_sobj_dates[count]):
             start_sobj_date = None
             end_sobj_date = None
@@ -1221,7 +1237,12 @@ class GanttElementWdg(BaseTableElementWdg):
         info['max_width'] = my.total_width
         info['range_start_date'] = str(my.start_date)
         info['range_end_date'] = str(my.end_date)
-        info['search_key'] = my.search_key
+        #info['search_key'] = my.search_key
+        # under most cases, the bar's search key is available and used
+        if search_key:
+            info['search_key'] = search_key
+        else:
+            info['search_key'] = my.search_key
         start_width, end_width = info.get('width')
 
 
@@ -1832,11 +1853,9 @@ class GanttCbk(DatabaseAction):
                 continue
             
             index = data.get("index")
-            
 
             if not index:
                 index = 0
-            index = 0
             try:
                 options = options_list[index]
             except IndexError, e:
@@ -1849,13 +1868,14 @@ class GanttCbk(DatabaseAction):
             if not prefix:
                 prefix = 'bid'
 
-            # mode can be "cascade" or "default"
+            # mode can be "cascade", "multiple", or "default"
             # cascade would apply timedelta to each task
             mode = options.get("mode")
-
             # get the tasks
             tasks = Search.eval(expression, [my.sobject])
-
+            task_dict = {}
+            for task in tasks:
+                task_dict[task.get_search_key()] = task
 
             start_date_col = options.get('start_date_col')
             if not start_date_col:
@@ -1869,6 +1889,7 @@ class GanttCbk(DatabaseAction):
             end_date = data.get('end_date')
             orig_start_date = data.get('orig_start_date')
             orig_end_date = data.get('orig_end_date')
+            search_key = data.get('search_key')
 
             colors = data.get('colors')
             labels = data.get('labels')
@@ -1909,12 +1930,12 @@ class GanttCbk(DatabaseAction):
                     task.commit()
             elif mode == 'multiple': 
 
-                key = (len(tasks) - 1) - int(key[9:])
-
-                tasks[key].set_value(start_date_col, start_date)
-                tasks[key].set_value(end_date_col, end_date)
-                tasks[key].set_value("data", day_data)
-                tasks[key].commit()
+                task = task_dict.get(search_key)
+                if task:
+                    task.set_value(start_date_col, start_date)
+                    task.set_value(end_date_col, end_date)
+                    task.set_value("data", day_data)
+                    task.commit()
 
 
             else:
@@ -2738,7 +2759,7 @@ spt.gantt.drag2_setup = function(evt, bvr, mouse_411)
         var end_offset = data.drag_duration.getStyle('width');
         data.end_offset = parseFloat( end_offset.replace('%', '') );
 
-        // set the search of the sobject
+        // set the search key of the sobject
         data.search_key = search_keys[i];
 
     }
@@ -2992,6 +3013,7 @@ spt.gantt.drag2_action = function(evt, bvr, mouse_411)
         var gantt_key_data = gantt_value[info.key];
 
         gantt_key_data['index'] = info.index;
+        gantt_key_data['search_key'] = info.search_key;
         gantt_key_data['start_date'] = start_date_str;
         gantt_key_data['end_date'] = end_date_str;
         gantt_key_data['orig_start_date'] = data.orig_start_date;
