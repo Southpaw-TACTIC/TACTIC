@@ -664,6 +664,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div = DivWdg()
         #thumb_div.add_styles('margin-left: auto; margin-right: auto')
         thumb_div.add_class("spt_tile_content")
+        thumb_div.add_style("background: #fff")
         #thumb_div.add_class("spt_tile_detail")
         div.add(thumb_div)
 
@@ -1063,12 +1064,18 @@ class ThumbWdg2(BaseRefreshWdg):
     def get_display(my):
 
         width = my.width or "100%"
-        height = "100%"
+        height = "auto"
 
         sobject = my.get_current_sobject()
 
         div = DivWdg()
         div.add_class("spt_thumb_top")
+        div.add_style("height: 200px !important")
+        div.add_style("width: 200px")
+        div.add_style("margin-left: auto")
+        div.add_style("margin-right: auto")
+        div.add_style("display: table-cell")
+        div.add_style("vertical-align: middle")
 
         path = my.path
         if path:
@@ -1106,7 +1113,7 @@ class ThumbWdg2(BaseRefreshWdg):
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             div.add(name_hover)
 
-        div.add_style("height: 100%")
+        div.add_style("height: 200px")
 
 
         return div
