@@ -289,6 +289,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         my.aspect_ratio = my.kwargs.get('aspect_ratio')
+
         
         if isinstance(my.aspect_ratio, list):
             pass
@@ -676,7 +677,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         #thumb_div.add_style("overflow: hidden")
 
         kwargs = {
-            'show_hover_name':my.show_hover_name
+            'show_hover_name':my.show_hover_name,
+            'aspect_ratio': my.aspect_ratio
         }
 
         if my.aspect_ratio[0] == 'auto':
@@ -1045,9 +1047,13 @@ __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
 
     def init(my):
+
         my.path = None
         my.show_hover_name = my.kwargs.get('show_hover_name')
+        
         my.width = my.kwargs.get('width')
+        my.aspect_ratio = my.kwargs.get('aspect_ratio')
+
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)
@@ -1065,13 +1071,14 @@ class ThumbWdg2(BaseRefreshWdg):
 
         width = my.width or "100%"
         height = "auto"
+  
 
         sobject = my.get_current_sobject()
 
         div = DivWdg()
         div.add_class("spt_thumb_top")
-        div.add_style("height: 200px !important")
-        div.add_style("width: 200px")
+        div.add_style("height: %s !important" % my.aspect_ratio[1])
+        div.add_style("width: %s" % my.aspect_ratio[0])
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("display: table-cell")
@@ -1113,7 +1120,7 @@ class ThumbWdg2(BaseRefreshWdg):
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             div.add(name_hover)
 
-        div.add_style("height: 200px")
+        div.add_style("height: %s" % my.aspect_ratio[1])
 
 
         return div
