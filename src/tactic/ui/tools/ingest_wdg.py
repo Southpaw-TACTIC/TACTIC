@@ -574,6 +574,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
+        var create_icon = bvr.kwargs.create_icon;
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -609,6 +610,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var kwargs = {
             search_type: search_type,
             relative_dir: relative_dir,
+            create_icon: create_icon,
             filenames: filenames,
             key: key,
             parent_key: parent_key,
@@ -674,6 +676,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         upload_div.add_style("margin-bottom: 15px")
         upload_div.add("<br clear='all'/>")
 
+        create_icon = my.kwargs.get("create_icon")
 
         action_handler = my.kwargs.get("action_handler")
         if not action_handler:
@@ -684,7 +687,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             'action_handler': action_handler,
             'kwargs': {
                 'search_type': my.search_type,
-                'relative_dir': relative_dir
+                'relative_dir': relative_dir,
+                #Luke-added
+                'create_icon': create_icon
             },
             'cbjs_action': '''
 
@@ -1118,7 +1123,13 @@ class IngestUploadCmd(Command):
                 context = "%s/%s" % (process, filename)
             
 
-            server.simple_checkin(search_key, context, filename, mode='uploaded')
+            # Luke-added
+            if my.kwargs.get("create_icon") == "False":
+                create_icon = False
+            else:
+                create_icon = True
+
+            server.simple_checkin(search_key, context, filename, mode='uploaded', create_icon=create_icon)
             percent = int((float(count)+1) / len(filenames)*100)
             print "checking in: ", filename, percent
 
