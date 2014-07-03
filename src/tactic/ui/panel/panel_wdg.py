@@ -2768,6 +2768,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             'empty': 'true',
             'values': 'simple|insert',
             'order': 11
+        },
+        "simple_search_search_type": {
+            'description': 'Search type that only the simple search works with',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Search'
         }
 
     }
@@ -3004,6 +3010,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_search_type = my.kwargs.get('simple_search_search_type')
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
@@ -3013,6 +3020,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             custom_simple_search_view = my.kwargs.get("search_view")
 
         if search_class:
+            # if simple_search_search_type, then allow for the search bar to search
+            # outside of the current search type
+            if simple_search_search_type:
+                search_type = simple_search_search_type
             kwargs = {
                 "search_type": search_type,
                 "search_view": custom_simple_search_view
