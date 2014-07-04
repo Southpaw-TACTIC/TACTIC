@@ -3151,6 +3151,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['expand_mode'] = my.kwargs.get("expand_mode")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             kwargs['show_hover_name'] = my.kwargs.get("show_hover_name")
+            kwargs['show_name'] = my.kwargs.get('show_name')
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
