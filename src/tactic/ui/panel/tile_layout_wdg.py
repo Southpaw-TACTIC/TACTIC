@@ -83,6 +83,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['show_hover_name'] = {
+
+            'description': 'If set to true, the name is displayed',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '09',
+            'category': 'Display'
+
+    }
 
     
 
@@ -312,7 +321,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         my.expand_mode = my.kwargs.get('expand_mode')
         my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
-        my.show_hover_name = my.kwargs.get('show_hover_name')
+        my.show_hover_name = my.kwargs.get("show_hover_name")
+        if my.show_hover_name == None:
+            my.show_hover_name = "true"
         super(TileLayoutWdg, my).init()
 
 
@@ -677,7 +688,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         #thumb_div.add_style("overflow: hidden")
 
         kwargs = {
-            'show_hover_name':my.show_hover_name,
+            'show_hover_name': my.show_hover_name,
             'aspect_ratio': my.aspect_ratio
         }
 
@@ -1050,7 +1061,6 @@ class ThumbWdg2(BaseRefreshWdg):
 
         my.path = None
         my.show_hover_name = my.kwargs.get('show_hover_name')
-        
         my.width = my.kwargs.get('width')
         my.aspect_ratio = my.kwargs.get('aspect_ratio')
 
