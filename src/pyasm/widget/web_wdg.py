@@ -1159,13 +1159,14 @@ class WebLoginWdg(Widget):
         box.add_style("width: 400px")
         box.add_style("text-align: center")
 
-        box.add_event("onkeyup", "tactic_login(event)")
-        script = HtmlElement.script('''function tactic_login(e) {
-                if (!e) var e = window.event;
-                if (e.keyCode == 13) {
+        
+        script = '''
+                if (!event) {var event = window.event};
+                if (event.keyCode == 13) {
                     document.form.submit();
-                }}
-                ''')
+                }
+                '''
+        box.add_event("onkeyup", script)
         
         div = DivWdg()
         div.add_style("margin: 0px 0px")
