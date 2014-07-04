@@ -83,8 +83,16 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['show_name'] = {
 
-    
+            'description': 'If set to true, the name is displayed always',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '09',
+            'category': 'Display'
+
+    }
+
 
     def can_select(my):
         return True
@@ -312,7 +320,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         my.expand_mode = my.kwargs.get('expand_mode')
         my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
-        my.show_hover_name = my.kwargs.get('show_hover_name')
+        my.show_hover_name = my.kwargs.get("show_hover_name")
+        my.show_name = my.kwargs.get('show_name')
+        print(my.kwargs.get('show_name'))
+        if my.show_hover_name == None:
+            my.show_hover_name = "true"
         super(TileLayoutWdg, my).init()
 
 
@@ -677,7 +689,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         #thumb_div.add_style("overflow: hidden")
 
         kwargs = {
-            'show_hover_name':my.show_hover_name,
+            'show_hover_name': my.show_hover_name,
+            'show_name': my.show_name,
             'aspect_ratio': my.aspect_ratio
         }
 
@@ -1050,7 +1063,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         my.path = None
         my.show_hover_name = my.kwargs.get('show_hover_name')
-        
+        my.show_name = my.kwargs.get('show_name')
         my.width = my.kwargs.get('width')
         my.aspect_ratio = my.kwargs.get('aspect_ratio')
 
@@ -1119,6 +1132,13 @@ class ThumbWdg2(BaseRefreshWdg):
             name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             div.add(name_hover)
+
+        if my.show_name:
+            name_show = DivWdg()
+            name_show.add_class("spt_name_hover")
+            name_show.add(sobject.get('name'))
+            name_show.add_style("opacity: 1")
+            div.add(name_show)
 
         div.add_style("height: %s" % my.aspect_ratio[1])
 
