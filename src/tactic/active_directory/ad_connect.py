@@ -100,7 +100,7 @@ import sys, getopt
 
 def usage():
     print "ADS credentials checker"
-    print "Usage: adslogon.py [Option]"
+    print "Usage: ad_connect.py [Option]"
     print "Check for ADS connectivity"
     print ""
     print "-u <username>        username"
@@ -148,7 +148,7 @@ def main(argv):
                 usage()
                 sys.exit()
     else:
-        print ("Try 'adslogon.py -h' for more information.")
+        print ("Try 'ad_connect.py -h' for more information.")
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -131,10 +131,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '07'
         },
         'show_context_menu': {
-            'description': 'Flag to determine whether to show the context menu',
+            'description': 'Flag to determine whether to show the tactic context menu, default, or none',
             'category': 'Optional',
             'type': 'SelectWdg',
-            'values': 'true|false',
+            'values': 'true|false|none',
             'order': '08'
         },
         
@@ -680,6 +680,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         show_context_menu = my.kwargs.get("show_context_menu")
         if show_context_menu in ['false', False]:
             show_context_menu = False
+        elif show_context_menu == 'none':
+            pass
         else:
             show_context_menu = True
 
@@ -691,11 +693,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if show_context_menu:
                 menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
                 menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+            elif show_context_menu == 'none':
+                div.add_event('oncontextmenu', 'return false;')
             if menus_in:
                 SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
+            #if my.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             my.drawn_widgets[widget.__class__.__name__] = True
         
@@ -1585,7 +1590,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             header_div.add_behavior(behavior)
-            th.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
+            table.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
 
 
 
@@ -1875,10 +1880,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
         else:
 
+            no_results_msg = my.kwargs.get("no_results_msg")
+
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             msg.set_box_shadow("0px 0px 5px")
-            if my.get_show_insert():
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
                 msg.add("<br/><br/>Click on the ")
                 icon = IconWdg("Add", IconWdg.ADD)
                 msg.add(icon)
@@ -1952,6 +1963,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
+        tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
         display_value = sobject.get_display_value(long=True)

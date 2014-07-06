@@ -222,10 +222,6 @@ class CherryPyStartup(object):
         cmd.init_scheduler()
 
         # start up the queue system ...
-        #print "Starting Job Queue ..."
-        #from tactic.command.queue import JobTask
-        #JobTask.start()
-
         if Config.get_value("sync", "enabled") == "true":
             # start up the sync system ...
             print "Starting Transaction Sync ..."

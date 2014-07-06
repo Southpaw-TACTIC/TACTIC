@@ -8,6 +8,8 @@
 #    or disclosed in any way without written permission.
 #
 #
+__all__ = ['JobTask', 'Queue']
+
 import tacticenv
 
 from pyasm.security import Batch
@@ -19,18 +21,23 @@ from tactic.command import Scheduler, SchedulerTask
 
 import os
 
-__all__ = ['JobTask', 'Queue']
 
 
 class Queue:
-    def get_next_job(queue_type=None):
+
+    def get_next_job(job_search_type="sthpw/queue", queue_type=None, server_code=None):
 
         sql = DbContainer.get("sthpw")
 
+        search_type_obj = SearchType.get(job_search_type)
+        table = search_type_obj.get_table()
+
         # get the entire queue
-        search = Search("sthpw/queue")
+        search = Search(job_search_type)
         if queue_type:
             search.add_filter("queue", queue_type)
+        if server_code:
+            search.add_filter("server_code", server_code)
         search.add_filter("state", "pending")
         search.add_order_by("timestamp")
 
@@ -46,7 +53,7 @@ class Queue:
 
             # attempt to lock this queue
             # have to do this manually
-            update = "UPDATE queue SET state = 'locked' where id = '%s' and state = 'pending'" % queue_id
+            update = """UPDATE "%s" SET state = 'locked' where id = '%s' and state = 'pending'""" % (table, queue_id)
 
             sql.do_update(update)
             row_count = sql.get_row_count()
@@ -57,7 +64,7 @@ class Queue:
                 queue_id = 0
 
         if queue_id:
-            queue = Search.get_by_id("sthpw/queue", queue_id)
+            queue = Search.get_by_id(job_search_type, queue_id)
             return queue
         else:
             return None
@@ -159,7 +166,6 @@ class JobTask(SchedulerTask):
 
 
     def cleanup(my, count=0):
-        #print "Cleaning up ..."
         if count >= 3:
             return
         try:
@@ -189,15 +195,19 @@ class JobTask(SchedulerTask):
         import atexit
         import time
         atexit.register( my.cleanup )
-
         while 1:
+            
             my.check_existing_jobs()
             my.check_new_job()
             time.sleep(my.check_interval)
-            #DbContainer.close_thread_sql()
+            DbContainer.close_thread_sql()
 
             if my.max_jobs_completed != -1 and my.jobs_completed > my.max_jobs_completed:
                 Common.restart()
+                while 1:
+                    print "Waiting to restart..."
+                    time.sleep(1)
+
 
 
     def check_existing_jobs(my):
@@ -236,8 +246,7 @@ class JobTask(SchedulerTask):
         if num_jobs >= my.max_jobs:
             print "Already at max jobs [%s]" % my.max_jobs
             return
-
-
+        
         my.job = my.get_next_job()
         if not my.job:
             return
@@ -252,12 +261,12 @@ class JobTask(SchedulerTask):
         # get some info from the job
         command = my.job.get_value("command")
         job_code = my.job.get_value("code")
-        print "Grabbing job [%s] ... " % job_code
 
         try: 
             kwargs = my.job.get_json_value("data")
         except:
             try:
+                # DEPRECATED
                 kwargs = my.job.get_json_value("serialized")
             except:
                 kwargs = {}
@@ -305,7 +314,9 @@ class JobTask(SchedulerTask):
         queue = my.job.get_value("queue", no_exception=True)
         queue_type = 'repeat'
 
-        print "running job: ", my.job.get_value("code") 
+        stop_on_error = False
+
+        print "Running job: ", my.job.get_value("code") 
 
         if queue_type == 'inline':
 
@@ -329,12 +340,12 @@ class JobTask(SchedulerTask):
 
             cmd = Common.create_from_class_path(command, kwargs=kwargs)
             attempts = 0
-            max_attempts = 5
-            retry_interval = 10
+            max_attempts = 3
+            retry_interval = 5
             while 1:
                 try:
-                    #Command.execute_cmd(cmd)
-                    cmd.execute()
+                    Command.execute_cmd(cmd)
+                    #cmd.execute()
 
                     # set job to complete
                     my.job.set_value("state", "complete")
@@ -349,7 +360,8 @@ class JobTask(SchedulerTask):
 
 
                 except Exception, e:
-                    raise
+                    if stop_on_error:
+                        raise
                     print "WARNING in Queue: ", e
                     import time
                     time.sleep(retry_interval)
@@ -436,10 +448,9 @@ class JobTask(SchedulerTask):
 
 
     def start(**kwargs):
-
+         
         scheduler = Scheduler.get()
         scheduler.start_thread()
-
         task = JobTask(**kwargs)
         task.cleanup_db_jobs()
 

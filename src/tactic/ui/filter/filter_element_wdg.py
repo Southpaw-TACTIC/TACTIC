@@ -163,7 +163,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         #print "value: ", value, type(value)
         if not value:
-            default =  my.kwargs.get('default')
+            default = my.kwargs.get('default')
             if not my.values and default:
                 value = default
             else:
@@ -173,8 +173,6 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         op = my.values.get("op")
         if not op:
             op = '='
-
-       
 
        
         # go through the hierarchy
@@ -307,6 +305,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         select = SelectWdg("value")
         select.add_style("width: 150px")
 
+        default_value = my.kwargs.get("default")
+
         # TODO: this is needed for multiple selection, but it is ugly
         #select.set_attr("multiple", "1")
         #select.add_attr("spt_is_multiple", "true")
@@ -328,6 +328,9 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         # FIXME: this is probably a bug in SelectWdg
         select.set_value('')
         value = my.values.get("value")
+        if not value:
+            value = default_value
+
         if value:
             select.set_value(value)
 
@@ -542,15 +545,22 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         my.overall_search_type = ''
 
         my.columns = []
-        
+        my.look_ahead_columns = []
         my.relevant = my.get_option("relevant")
         my.mode = my.get_option("mode")
         my.cross_db = my.get_option("cross_db") =='true'
         column = my.get_option("column")
+        full_text_column = my.get_option("full_text_column")
+       
         if column:
             if my.mode=='global':
                 raise SetupException('You are advised to use [keyword] mode since you have specified the column option.')
             my.columns = column.split('|')
+            my.look_ahead_columns = my.columns[:]
+
+        if full_text_column:
+            my.columns = [full_text_column]
+
         my.case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
 
         my.do_search = my.kwargs.get("do_search")
@@ -662,7 +672,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             else:
                 overall_search.add_op('begin')
                 #search.add_op('begin')
-
+            
+            # single col does not matter
+            # we should just use the AND logic for single_col or multi keywords column.
+            # Drawback is that multiple columns defined for the same sType may cause a return of 0 result
+            # if words from multi columns are used in the search. This is in line with partial_op = 'and' for 
+            # db not supporting full text search
             single_col = len(my.columns) == 1
             partial_op = 'and'
             for column in my.columns:
@@ -676,8 +691,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 keywords = value
                 # keywords_list is used for add_keyword_filter()
                 keywords_list = keywords.split(" ")
-                if single_col:
-                    keywords = keywords_list
+                #if single_col:
+                # AND logic in full text search will be adopted if keywords is a list as oopposed to string
+                keywords = keywords_list
                 
                 if my.has_index and is_ascii:
                     
@@ -938,7 +954,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 custom_cbk=custom_cbk,
                 filter_search_type=my.filter_search_type,
                 search_type=search_type,
-                column=my.columns,
+                column=my.look_ahead_columns,
                 relevant = my.relevant,
                 width ='230',
                 hint_text=hint_text,

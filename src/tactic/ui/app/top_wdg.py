@@ -525,6 +525,8 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
 
+        # TEST
+        Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
 
 
         # get all of the registered css file

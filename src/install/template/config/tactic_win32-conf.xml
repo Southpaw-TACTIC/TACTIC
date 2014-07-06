@@ -78,6 +78,7 @@
 <security>
     <version>2</version>
     <ticket_expiry>10 hour</ticket_expiry>
+    <case_insensitive_login>false</case_insensitive_login>
     <authenticate_mode>default</authenticate_mode>
     <authenticate_class></authenticate_class>
     <authenticate_domains></authenticate_domains>
@@ -86,6 +87,13 @@
     <api_require_password>true</api_require_password>
     <api_password></api_password>
 </security>
+
+<active_directory>
+    <domains></domains>
+    <handle_groups>true</handle_groups>
+    <default_groups>user</default_groups>
+    <default_license_type>user</default_license_type>
+</active_directory>
 
 <look>
     <palette>AQUA</palette>

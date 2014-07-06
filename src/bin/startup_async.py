@@ -13,26 +13,37 @@
 
 import tacticenv
 
-from pyasm.common import Common
-from tactic.command import JobTask
+from tactic.command import TransactionQueueManager, WatchServerFolderTask
 
 import time
 
 def main():
-    #print "Starting Job Queue ..."
     from pyasm.security import Batch
     Batch()
 
-    JobTask.start(
-            check_interval=0.1,
-            max_jobs_completed=50
-    )
+
+
+
+    # start up the sync system ...
+    print "Starting Transaction Sync Service ..."
+    from tactic.command import TransactionQueueManager
+    TransactionQueueManager.start()
+
+    # start up the sync system ...
+    print "Starting Watch Folder Service ..."
+    from tactic.command import WatchServerFolderTask
+    WatchServerFolderTask.start()
+
+
     while 1:
         try:
             time.sleep(1)
         except (KeyboardInterrupt, SystemExit), e:
             print "Exiting ..."
             raise
+
+
+
 
 
 

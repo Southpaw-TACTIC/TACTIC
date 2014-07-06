@@ -68,11 +68,12 @@ class CheckinTest(unittest.TestCase, Command):
         search = Search("sthpw/snapshot")
 
         my.person = Person.create( "Unit", "Test",
-                "ComputerWorld", "")
+                "ComputerWorld", "unittest/checkin_test")
 
        
         
         my._test_checkin()
+        my._test_copycheckin()
         my._test_groupcheckin()
         my._test_inplace_checkin()
         my._test_preallocation_checkin()
@@ -95,6 +96,33 @@ class CheckinTest(unittest.TestCase, Command):
         Container.put("Naming:cache:unittest:current", None)
         Container.put("Naming:cache:unittest", None)
         Container.put("Naming:namings", None)
+
+    def _test_copycheckin(my):
+
+        # create a new copy_test.txt file
+        file_path = "./copy_test.txt"
+        file = open(file_path, 'w')
+        file.write("copy contents")
+        file.close()
+
+        file_paths = [file_path]
+        file_types = ['main']
+        context = "publish"
+        from pyasm.checkin import FileCheckin
+        checkin = FileCheckin(
+                    my.person,
+                    file_paths=file_paths,
+                    file_types=file_types,
+                    context=context,
+                    mode="copy"
+            )
+        checkin.execute()
+        my.assertEquals(True, os.path.exists(file_path) )
+
+        snap = checkin.get_snapshot()
+        file_obj = snap.get_file_by_type('main')
+        file_name = file_obj.get_file_name()
+        my.assertEquals(file_name, 'copy_test_v002.txt')
 
     def _test_checkin(my):
 
@@ -308,7 +336,7 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_get_children(my):
         # test to make sure get_all_children is able to get all the snapshots
         snapshots = my.person.get_all_children("sthpw/snapshot")
-        num_snapshots = 4
+        num_snapshots = 5
         my.assertEquals(num_snapshots, len(snapshots))
 
 
@@ -708,7 +736,7 @@ class CheckinTest(unittest.TestCase, Command):
             'alias': '/tmp/tactic/alias',
             'alias2': '/tmp/tactic/alias2',
         });
-
+        # "plugins" is assumed in some branch 
         asset_dict = Environment.get_asset_dirs()
         default_dir = asset_dict.get("default")
         my.assertEquals( "/tmp/tactic/default", default_dir)

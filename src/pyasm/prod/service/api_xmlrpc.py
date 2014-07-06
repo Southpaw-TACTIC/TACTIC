@@ -241,6 +241,9 @@ QUERY_METHODS = {
     'get_doc_link': 0
 }
 
+TRANS_OPTIONAL_METHODS = {
+    'execute_cmd': 3
+}
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -277,6 +280,13 @@ def xmlrpc_decorator(meth):
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(my, meth, ticket, args)
+                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                        cmd = get_simple_cmd(my, meth, ticket, args)
+                    else:
+                        cmd = get_full_cmd(my, meth, ticket, args)
+
                 else:
                     cmd = get_full_cmd(my, meth, ticket, args)
 
@@ -932,6 +942,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
         message = Search.get_by_code("sthpw/message", key)
         sobject_dict = my._get_sobject_dict(message)
         return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_messages(my, ticket, keys):
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        messages = search.get_sobjects()
+
+        results = []
+        for message in messages:
+            sobject_dict = my._get_sobject_dict(message)
+            results.append(sobject_dict)
+
+        return results
+
+
 
 
     @xmlrpc_decorator
@@ -3568,7 +3594,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         if mode:
-            assert mode in ['move', 'copy', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
+            assert mode in ['move', 'copy','create', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
 
 
         # file_path can be an array of files:
@@ -3718,7 +3744,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #filename = File.get_filesystem_name(filename)
 
         if mode:
-            assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
+            assert mode in ['move', 'copy', 'create','preallocate', 'upload', 'inplace']
         if mode == 'preallocate':
             keep_file_name = True
             # create a virtual file object for dir naming

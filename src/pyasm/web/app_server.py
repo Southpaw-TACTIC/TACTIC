@@ -344,7 +344,7 @@ class BaseAppServer(Base):
             access = True
 
 
-
+        access = True
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
@@ -367,7 +367,23 @@ class BaseAppServer(Base):
                 return
 
 
-
+        if login_name == 'guest' and guest_mode == "full":
+            # some extra security for guest users
+            guest_url_allow = Config.get_value("security", "guest_url_allow")
+            if guest_url_allow:
+                items = guest_url_allow.split("|")
+                allowed = False
+                if my.hash:
+                    url = my.hash[0]
+                else:
+                    url = "index"
+                for item in items:
+                    item = item.strip("/")
+                    if item == url:
+                        allowed = True
+                        break
+                if not allowed:
+                    return my.handle_not_logged_in()
 
 
 

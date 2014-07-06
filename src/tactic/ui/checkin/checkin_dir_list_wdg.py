@@ -955,7 +955,7 @@ spt.checkin_list.select_preselected();
         } )
 
 
-        menu_item = MenuItem(type='action', label='Use as Preview Image')
+        menu_item = MenuItem(type='action', label='Check in Preview Image')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',

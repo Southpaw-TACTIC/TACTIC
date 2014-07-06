@@ -12,10 +12,10 @@
 
 # scripts that starts up a number of Tactic and monitors them
 
-__all__ = ['TacticThread', 'TacticTimedThread', 'TacticMonitor']
+__all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, random
+import os, sys, threading, time, urllib, random, subprocess, re
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -28,7 +28,7 @@ app_server = "cherrypy"
 #    pass
 
 
-from pyasm.common import Environment, Common, Date, Config
+from pyasm.common import Environment, Common, Date, Config, jsonloads, jsondumps
 from pyasm.search import Search, DbContainer, SearchType
 
 python = Config.get_value("services", "python")
@@ -43,7 +43,8 @@ STARTUP_DEV_EXEC = '%s "%s/src/bin/startup_dev.py"' % (python, tactic_install_di
 
 class BaseProcessThread(threading.Thread):
     '''Each Thread runs a separate TACTIC service'''
-    def __init__(my):
+    def __init__(my, **kwargs):
+        my.kwargs = kwargs
         my.num_checks = 0
         my.kill_interval = 30 + random.randint(0,30)
         my.kill_interval = 1
@@ -51,14 +52,17 @@ class BaseProcessThread(threading.Thread):
         super(BaseProcessThread,my).__init__()
 
     def run(my):
+        print "Starting %s ..." % my.get_title()
+
         while 1:
+
             my.execute()
 
             # TACTIC has exited
             time.sleep(1)
             
             if my.end:
-                print "Stopping port %s ..." % my.get_title()
+                print "Stopping %s ..." % my.get_title()
                 break
             else:
                 print "Restarting %s ..." % my.get_title()
@@ -164,6 +168,53 @@ class TacticThread(BaseProcessThread):
 
 
 
+class CustomPythonProcessThread(BaseProcessThread):
+
+    def get_title(my):
+        return my.kwargs.get("title")
+
+    def execute(my):
+        # Run the job queue service
+        path = my.kwargs.get("path")
+
+        plugin_dir = Environment.get_plugin_dir()
+        path = path.replace("${TACTIC_PLUGIN_DIR}", plugin_dir)
+
+        cmd_list = []
+        cmd_list.append(python)
+        cmd_list.append(path)
+
+        program = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        #program.wait()
+
+        buffer = []
+        while 1:
+            char = program.stdout.read(1)
+            if not char:
+                break
+
+            if char == "\n":
+                line = "".join(buffer)
+                print line
+
+            buffer.append(char)
+ 
+
+
+
+class ASyncThread(BaseProcessThread):
+
+    def get_title(my):
+        return "aSync Queue"
+
+    def execute(my):
+        # Run the job queue service
+        executable = '%s "%s/src/bin/startup_async.py"' % (python, tactic_install_dir)
+        os.system('%s' % (executable) )
+
+
+
+
 class JobQueueThread(BaseProcessThread):
 
     def get_title(my):
@@ -208,7 +259,7 @@ class WatchFolderThread(BaseProcessThread):
 
 
 
-# DEPRECATED: use SchedulerThread below
+# DEPRECATED: use TacticSchedulerThread below
 class TacticTimedThread(threading.Thread):
 
     def __init__(my):
@@ -510,29 +561,37 @@ class TacticMonitor(object):
 
         tactic_threads = []
 
-        #use_tactic = Config.get_value("services", "tactic")
-        #use_job_queue = Config.get_value("services", "job_queue")
-        #use_watch_folder = Config.get_value("services", "watch_folder")
+        #start_tactic = Config.get_value("services", "tactic")
+        #start_job_queue = Config.get_value("services", "job_queue")
+        #start_watch_folder = Config.get_value("services", "watch_folder")
 
-        use_tactic = False
-        use_job_queue = False
-        use_watch_folder = False
+        start_tactic = False
+        start_job_queue = False
+        start_watch_folder = False
+        start_async = False
 
         services = Config.get_value("services", "enable")
+        custom_services = []
         if services:
-            services = services.split("|")
-            if 'tactic' in services:
-                use_tactic = True
-            if 'job_queue' in services:
-                use_job_queue = True
-            if 'watch_folder' in services:
-                use_watch_folder = True
+            #services = services.split("|")
+            services = re.split("[|,]", services)
+            for service in services:
+                if service == 'tactic':
+                    start_tactic = True
+                elif service == 'job_queue':
+                    start_job_queue = True
+                elif service == 'watch_folder':
+                    start_watch_folder = True
+                elif service == 'async':
+                    start_async = True
+                else:
+                    custom_services.append(service)
         else:
-            use_tactic = True
+            start_tactic = True
 
 
         # create a number of processes
-        if use_tactic:
+        if start_tactic:
             #for i in range(0, my.num_processes):
             for port in ports:
 
@@ -546,8 +605,22 @@ class TacticMonitor(object):
                 #port += 1
 
 
+        # aSync Queue services
+        if start_async:
+            num_processes = Config.get_value("async", "process_count")
+            if not num_processes:
+                num_processes = 1
+            else:
+                num_processes = int(num_processes)
+
+            for i in range(0, num_processes):
+                job_thread = ASyncThread()
+                job_thread.start()
+                tactic_threads.append(job_thread)
+
+
         # Job Queue services
-        if use_job_queue:
+        if start_job_queue:
             num_processes = Config.get_value("services", "queue_process_count")
             if not num_processes:
                 num_processes = 1
@@ -561,7 +634,7 @@ class TacticMonitor(object):
 
 
         # Watch Folder services
-        if use_watch_folder:
+        if start_watch_folder:
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
@@ -594,6 +667,14 @@ class TacticMonitor(object):
 
 
 
+        # set up custom services 
+        for service in custom_services:
+            kwargs = Config.get_section_values(service)
+            custom_thread = CustomPythonProcessThread(**kwargs)
+            custom_thread.start()
+            tactic_threads.append(custom_thread)
+
+
 
         if len(tactic_threads) == 0:
             print
@@ -611,8 +692,8 @@ class TacticMonitor(object):
 
         # create a separate thread for scheduler processes
 
-        use_scheduler = Config.get_value("services", "scheduler")
-        if use_scheduler == 'true':
+        start_scheduler = Config.get_value("services", "scheduler")
+        if start_scheduler == 'true':
             tactic_scheduler_thread = TacticSchedulerThread()
             tactic_scheduler_thread.start()
             tactic_threads.append(tactic_scheduler_thread)

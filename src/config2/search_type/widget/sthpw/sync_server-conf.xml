@@ -37,6 +37,7 @@
 
 
     <element name="sync_mode"/>
+    <element name="file_mode"/>
     <element name="base_dir"/>
 
     <element name='access_rules_hidden' title='Access Rules'>
@@ -65,6 +66,7 @@
     <element name="state"/>
     <element name="description"/>
     <element name="sync_mode"/>
+    <element name="file_mode"/>
     <element name="host"/>
     <element name="ticket"/>
     <!--
@@ -85,6 +87,13 @@
             <values>xmlrpc|file</values>
         </display>
     </element>
+    <element name='file_mode'>
+        <display class='SelectWdg'>
+            <values>upload|delayed</values>
+        </display>
+    </element>
+
+
 </edit_definition>
 
 

@@ -171,6 +171,9 @@ class NamingTest(unittest.TestCase):
         my.transaction = Transaction.get(create=True)
         try:
             my.create_snapshot()
+
+            my._test_base_alias()
+
             my._test_file_naming()
             my._test_file_naming_base()
             my._test_dir_naming()
@@ -192,6 +195,17 @@ class NamingTest(unittest.TestCase):
             my.sobj.set_value(key, value)
         my.sobj.commit()
         """
+
+
+    def _test_base_alias(my):
+
+        plugin_dir = Environment.get_web_dir(alias="plugins")
+        my.assertEquals("/plugins", plugin_dir)
+
+        plugin_dir = Environment.get_plugin_dir()
+        plugin_dir2 = Environment.get_asset_dir(alias="plugins")
+        my.assertEquals(plugin_dir, plugin_dir2)
+
 
     def clear_naming(my):
         Container.put("Naming:cache", None)

@@ -231,7 +231,7 @@ class EmailTrigger(Trigger):
             email_set.add(email)
     add_email = classmethod(add_email)
 
-    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[]):
+    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[], from_user=None):
 
         cc = set()
         sender = set()
@@ -245,10 +245,14 @@ class EmailTrigger(Trigger):
         if bcc_emails:
             total_bcc_emails.update(bcc_emails)
 
-        user_email = Environment.get_login().get_full_email()
-        if not user_email:
-            raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
-        sender.add(user_email)
+        if from_user:
+            sender.add(from_user)
+            user_email = from_user
+        else:
+            user_email = Environment.get_login().get_full_email()
+            if not user_email:
+                raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+            sender.add(user_email)
 
         for x in to_users:
             if isinstance(x, Login):

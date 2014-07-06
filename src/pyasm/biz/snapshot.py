@@ -262,7 +262,7 @@ class Snapshot(SObject):
 
 
 
-    def get_files_by_snapshots(cls, snapshots):
+    def get_files_by_snapshots(cls, snapshots, file_type=None):
         '''get all of the file objects in a snsapshot'''
         if not snapshots:
             return []
@@ -277,6 +277,8 @@ class Snapshot(SObject):
 
         search = Search("sthpw/file")
         search.add_filters("code", all_file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         search.add_order_by("code")
         file_objects = search.get_sobjects()
         return file_objects
@@ -284,12 +286,12 @@ class Snapshot(SObject):
 
 
 
-    def get_files_dict_by_snapshots(cls, snapshots, attr="snapshot_code"):
+    def get_files_dict_by_snapshots(cls, snapshots, attr="snapshot_code", file_type=None):
         '''gets all of the file objects in a dict of lists.  The keys are
         sorted by the attr argument'''
         # preprocess and get all file objects
         all_files = {}
-        files = Snapshot.get_files_by_snapshots(snapshots)
+        files = Snapshot.get_files_by_snapshots(snapshots, file_type=file_type)
         for file in files:
             snapshot_code = file.get_value(attr)
 
@@ -1227,14 +1229,20 @@ class Snapshot(SObject):
     #get_by_sobject = staticmethod(get_by_sobject)
 
 
-    def get_by_sobject(sobject, context=None):
+    def get_by_sobject(sobject, context=None, process=None, is_latest=False, order_by="timestamp desc"):
         search = Search(Snapshot.SEARCH_TYPE)
 
         if context != None:
             search.add_filter("context", context)
 
+        if process != None:
+            search.add_filter("process", process)
+
+        if is_latest:
+            search.add_filter('is_latest', True)
+
         search.add_sobject_filter(sobject)
-        search.add_order_by("timestamp desc")
+        search.add_order_by(order_by)
 
         return search.do_search()
     get_by_sobject = staticmethod(get_by_sobject)

@@ -3703,6 +3703,7 @@ class SObject(object):
                 "sthpw/sync_log",
                 'sthpw/message',
                 'sthpw/message_log',
+                'sthpw/queue',
 
         ] \
                 and sobject and sobject.has_value("code"):
@@ -4250,7 +4251,6 @@ class SObject(object):
                 statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
             else:
                 statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
-
 
             sql.do_update(statement)
 
@@ -6054,6 +6054,7 @@ class SObjectUndo:
                 "sthpw/sync_log",
                 "sthpw/sync_server",
                 "sthpw/cache",
+                "sthpw/queue",
 
                 'sthpw/message',
                 'sthpw/message_log',
@@ -6169,6 +6170,7 @@ class SObjectUndo:
                 "sthpw/change_timestamp",
                 "sthpw/sync_job",
                 "sthpw/sync_log",
+                "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
         ]:
@@ -6305,7 +6307,7 @@ class SObjectUndo:
 
 
     def redo(node, no_exception=True):
-        no_exception=False
+        #no_exception=False
 
         import time
         start = time.time()
@@ -6491,8 +6493,8 @@ class SObjectUndo:
                     print "WARNING: %s" % error
                 else:
                     raise MissingException(error)
-
-            sobject.delete(log=False)
+            else:
+                sobject.delete(log=False)
 
 
     redo = staticmethod(redo)
