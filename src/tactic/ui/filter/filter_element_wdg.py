@@ -699,11 +699,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     
                     #print "column: ", column
                     search = Search(overall_search.get_search_type())
+                    local_table = True
                     if column.find(".") != -1:
                         parts = column.split(".")
                         search_types = parts[:-1]
                         column = parts[-1]
-
+                        local_table = False
                         if my.cross_db:
                             search_types.reverse()
                             top_search_type = search_types[0]
@@ -723,7 +724,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                                 search.add_join(next_stype, prev_stype, path=path)
                                 prev_stype = next_stype
                             table = SearchType.get(next_stype).get_table()
-
                     
                     if partial:
                         if my.cross_db:
@@ -754,19 +754,25 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             else:
                                 sub_search = search2
                         else:
-                            
-                            search.add_text_search_filter(column, keywords, table=table)
-                            overall_search.add_relationship_search_filter(search, op="in")
+                            if local_table:
+                                
+                                overall_search.add_text_search_filter(column, keywords, table=table)
+                            else:    
+                                
+                                search.add_text_search_filter(column, keywords, table=table)
+                                overall_search.add_relationship_search_filter(search, op="in")
                 else:
                     #value = value.replace(",", " ")
                     search_type_obj = overall_search.get_search_type_obj() 
                     table = search_type_obj.get_table()
                     column_type = None
                     search = Search(overall_search.get_search_type())
+                    local_table = True
                     if column.find(".") != -1:
                         parts = column.split(".")
                         search_types = parts[:-1]
                         column = parts[-1]
+                        local_table = False
 
                         if my.cross_db:
                             search_types.reverse()
@@ -800,8 +806,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         else:
                             sub_search = search2
                     else:
-                        search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
-                        overall_search.add_relationship_search_filter(search, op="in")
+                        if local_table:
+                            overall_search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                        else:
+                            search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                            overall_search.add_relationship_search_filter(search, op="in")
                 if my.cross_db:
                     sub_search_list.append(sub_search)
 
