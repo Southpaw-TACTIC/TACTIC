@@ -916,7 +916,6 @@ class SwapDisplayWdg(HtmlElement):
         else:
             icon1 = IconWdg('closed', IconWdg.INFO_CLOSED_SMALL)
             icon2 = IconWdg('open', IconWdg.INFO_OPEN_SMALL)
-
         if is_open:
             swap_wdg.set_display_widgets(icon2, icon1)
         else:
@@ -1387,7 +1386,7 @@ class WebLoginWdg(Widget):
         div.add(table2)
         div.add(HiddenWdg(my.LOGIN_MSG))
 
-        box.add(script)
+        #box.add(script)
 
         widget = Widget()
         #widget.add( HtmlElement.br(3) )
