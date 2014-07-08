@@ -92,6 +92,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['show_name_hover'] = {
+
+            'description': 'If set to true, the name is displayed when hover',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '10',
+            'category': 'Display'
+
+    }
 
 
     def can_select(my):
@@ -322,7 +331,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
         my.show_hover_name = my.kwargs.get("show_hover_name")
         my.show_name = my.kwargs.get('show_name')
-        print(my.kwargs.get('show_name'))
         if my.show_hover_name == None:
             my.show_hover_name = "true"
         super(TileLayoutWdg, my).init()
@@ -1135,10 +1143,12 @@ class ThumbWdg2(BaseRefreshWdg):
 
         if my.show_name:
             name_show = DivWdg()
-            name_show.add_class("spt_name_hover")
-            name_show.add(sobject.get('name'))
+            name_show.add_class("spt_name_show")
+            name_show.add("<p class='show_name'>" + sobject.get('name') + "</p>")
             name_show.add_style("opacity: 1")
             div.add(name_show)
+
+        
 
         div.add_style("height: %s" % my.aspect_ratio[1])
 
