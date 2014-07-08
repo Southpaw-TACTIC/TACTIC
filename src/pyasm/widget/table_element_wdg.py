@@ -118,6 +118,9 @@ class BaseTableElementWdg(HtmlElement):
     can_async_load = classmethod(can_async_load)
 
 
+    def get_width(my):
+        return my.width
+
 
     # This should be a widget that is very high up in the hierarchy
     # where global behaviors can be put in

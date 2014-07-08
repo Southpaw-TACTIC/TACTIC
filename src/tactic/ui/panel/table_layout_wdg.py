@@ -657,12 +657,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         for i, widget in enumerate(my.widgets):
 
-            # TODO: ask the widget for a default
-            name = widget.get_name()
-            if name == "notes":
-                default_width = 400
-            else:
-                default_width = 100
+            default_width = widget.get_width()
+            if not default_width:
+                name = widget.get_name()
+                if name == "notes":
+                    default_width = 400
+                else:
+                    default_width = 100
 
             if i >= len(column_widths):
                 # default width
@@ -685,6 +686,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         #my.kwargs["column_widths"] = []
         #table_width = "100%"
+
+        my.kwargs["column_widths"] = column_widths
 
 
 

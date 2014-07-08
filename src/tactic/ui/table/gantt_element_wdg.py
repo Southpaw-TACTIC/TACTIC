@@ -225,6 +225,7 @@ class GanttElementWdg(BaseTableElementWdg):
             #} )
 
 
+        print "options: ", my.options
 
         expr_parser = ExpressionParser()
 
@@ -383,6 +384,12 @@ class GanttElementWdg(BaseTableElementWdg):
         my.offset_width = -300 
         my.visible_width = 500
 
+        if my.kwargs.get("test"):
+            test_width = my.kwargs.get("test")
+            my.total_width = test_width
+            my.offset_width = 0
+            my.visible_width = test_width
+
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
             #print "gantt_data: ", gantt_data
@@ -415,7 +422,8 @@ class GanttElementWdg(BaseTableElementWdg):
                 my.start_date = parser.parse( start_date_option )
                 my.end_date = parser.parse( end_date_option )
 
-                buffer = 45
+                #buffer = 45
+                buffer = 0
 
                 # buffer start date and end date
                 my.start_date = my.start_date - datetime.timedelta(days=buffer)

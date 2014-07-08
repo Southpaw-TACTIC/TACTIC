@@ -309,6 +309,10 @@ class TaskElementWdg(BaseTableElementWdg):
         my.permission = {}
 
 
+    def get_width(my):
+        return 400
+
+
     def is_editable(cls):
         '''to avoid all those CellEditWdg'''
         return False
@@ -713,9 +717,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_title(my):
-        show_processes_in_title = False
+        show_processes_in_title = True
         if show_processes_in_title:
             table = Table()
+            table.add_style("margin-top: 4px")
 
             sobject = my.get_current_sobject()
             if not sobject:
