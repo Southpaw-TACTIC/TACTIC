@@ -617,8 +617,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         # keywords in a list is treated with AND in full-text search
         # which is usually preferred in global search, it may be reassigned as a string in keyword mode
-        keywords = value.split(" ")
-        
+        tmp_keywords = value.split(" ")
+        keywords = []
+        for keyword in tmp_keywords:
+            if not keyword or len(keyword) == 1:
+                continue
+            keywords.append(keyword)
 
         if search_type == 'sthpw/sobject_list':
             column = "keywords"
