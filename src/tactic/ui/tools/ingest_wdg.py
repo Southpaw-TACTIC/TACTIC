@@ -643,8 +643,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             var info_el = top.getElement(".spt_upload_info");
             info_el.innerHTML = ''; 
 
-            # no refresh after upload completed
-            //spt.table.run_search();
+            // no refresh after upload completed
+            // spt.table.run_search();
 
         };
 
