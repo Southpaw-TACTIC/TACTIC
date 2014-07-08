@@ -1868,7 +1868,7 @@ class GanttCbk(DatabaseAction):
             if not prefix:
                 prefix = 'bid'
 
-            # mode can be "cascade", "multiple", or "default"
+            # mode can be "cascade" or "default"
             # cascade would apply timedelta to each task
             mode = options.get("mode")
             # get the tasks
@@ -1928,8 +1928,8 @@ class GanttCbk(DatabaseAction):
                     task.set_value("data", day_data)
 
                     task.commit()
-            elif mode == 'multiple': 
-
+            #elif mode == 'multiple': 
+            else:
                 task = task_dict.get(search_key)
                 if task:
                     task.set_value(start_date_col, start_date)
@@ -1937,7 +1937,7 @@ class GanttCbk(DatabaseAction):
                     task.set_value("data", day_data)
                     task.commit()
 
-
+            """
             else:
                 # default to just change current date
                 # usually only contain 1 task, the current task
@@ -1950,7 +1950,7 @@ class GanttCbk(DatabaseAction):
                     task.commit()
 
 
-
+            """
 
 class GanttLegendWdg(BaseRefreshWdg):
 
