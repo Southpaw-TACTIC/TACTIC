@@ -62,6 +62,8 @@ class ADAuthenticate(Authenticate):
 
         # confirm that there is a domain present if required
         require_domain = Config.get_value("active_directory", "require_domain")
+        domain_component = Config.get_value("active_directory","domain_component")
+
         if require_domain == "true" and not domain:
             raise SecurityException("Domain Selection Required")
 
@@ -80,13 +82,16 @@ class ADAuthenticate(Authenticate):
             lookup_domain = info[1]
         except:
             lookup_domain = ''
+
         # lookup domain takes prescedence
         if lookup_domain:
             domain = lookup_domain
-            ad_connect.set_domain(lookup_domain)
+            #ad_connect.set_domain(lookup_domain)
         elif domain:
             print "set select ", domain
-            ad_connect.set_domain(domain)
+            #ad_connect.set_domain(domain)
+        domain = "%s%s"%(domain,domain_component)
+        ad_connect.set_domain(domain)
 
         #ad_connect.set_user(base_login_name)
         #ad_connect.set_password(password)
