@@ -235,7 +235,7 @@ class SearchWdg(BaseRefreshWdg):
         my.use_last_search = True
         parent_key = my.kwargs.get('parent_key')
         state = my.kwargs.get('state')
-        if parent_key or state or my.kwargs.get('use_last_search') == False:
+        if parent_key or state or my.kwargs.get('use_last_search') in ['false', False, 'False']:
             my.use_last_search = False
        
         my.prefix_namespace = my.kwargs.get('prefix_namespace')
@@ -349,7 +349,9 @@ class SearchWdg(BaseRefreshWdg):
         if not my.config:
             # get the approprate filter definition
             my.config = my.get_default_filter_config()
+
             if my.use_last_search: 
+
                 my.set_filter_data(my.search_type, my.view)
 
 
