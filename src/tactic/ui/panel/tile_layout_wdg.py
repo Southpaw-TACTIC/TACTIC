@@ -691,7 +691,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         if not my.aspect_ratio[0] == "auto":
-            thumb_div.add_style("width: %s" % my.aspect_ratio[0])
+            thumb_div.add_style("width: %spx" % my.aspect_ratio[0])
 
         thumb_div.add_style("height: %spx" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
@@ -1098,8 +1098,8 @@ class ThumbWdg2(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_thumb_top")
-        div.add_style("height: %s !important" % my.aspect_ratio[1])
-        div.add_style("width: %s" % my.aspect_ratio[0])
+        div.add_style("height: %spx !important" % my.aspect_ratio[1])
+        div.add_style("width: %spx" % my.aspect_ratio[0])
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("display: table-cell")
@@ -1150,7 +1150,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         
 
-        div.add_style("height: %s" % my.aspect_ratio[1])
+        div.add_style("height: %spx" % my.aspect_ratio[1])
 
 
         return div
