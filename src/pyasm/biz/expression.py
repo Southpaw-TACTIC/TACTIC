@@ -1855,7 +1855,6 @@ class MethodMode(ExpressionParser):
         key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
-        Container.clear_dict(my.EXPRESSION_KEY)
         results = Container.get_dict(my.EXPRESSION_KEY, key)
      
         if results != None:
