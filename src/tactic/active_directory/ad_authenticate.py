@@ -63,7 +63,7 @@ class ADAuthenticate(Authenticate):
         # confirm that there is a domain present if required
         require_domain = Config.get_value("active_directory", "require_domain")
         domain_component = Config.get_value("active_directory","domain_component")
-		script_path = Config.get_value("active_directory","allow_script")
+        script_path = Config.get_value("active_directory","allow_script")
         
         if script_path:
             flag = False
@@ -77,8 +77,8 @@ class ADAuthenticate(Authenticate):
             except Exception, e:
                 print e
                 raise
-            if (flag != True):  
-                return False    
+            if (flag != True):
+                return False  
         
         if require_domain == "true" and not domain:
             raise SecurityException("Domain Selection Required")
@@ -103,7 +103,12 @@ class ADAuthenticate(Authenticate):
         if lookup_domain:
             domain = lookup_domain
             #ad_connect.set_domain(lookup_domain)
+<<<<<<< HEAD
         elif domain:
+=======
+        elif domain:
+            pass
+>>>>>>> c00d895... BRANCH:4.2-105
             
             #ad_connect.set_domain(domain)
         domain = "%s%s"%(domain,domain_component)
