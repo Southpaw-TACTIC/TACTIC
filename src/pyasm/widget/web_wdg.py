@@ -1151,6 +1151,11 @@ class WebLoginWdg(Widget):
 
 
     def get_display(my):
+        name_label = my.kwargs.get('name_label')
+        password_label = my.kwargs.get('password_label')
+        if not name_label:
+            name_label = "Name"
+
 
         web = WebContainer.get_web()
             
@@ -1281,7 +1286,9 @@ class WebLoginWdg(Widget):
             table.add_cell( domain_wdg )
             table.add_row()
 
-        table.add_header( "<b>Name: </b>")
+        
+
+        table.add_header( "<b>%s: </b>"%name_label)
         text_wdg = TextWdg("login")
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
