@@ -1332,6 +1332,9 @@ class ThumbCmd(Command):
             server = TacticServerStub.get()
             snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
             """
+            if not path:
+                print "Snapshot code [%s] has an empty lib path" %snapshot.get_code()
+                return
 
             icon_creator = IconCreator(path)
             icon_creator.execute()
