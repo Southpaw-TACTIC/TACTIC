@@ -65,8 +65,8 @@ class ADAuthenticate(Authenticate):
         domain_component = Config.get_value("active_directory","domain_component")
 		script_path = Config.get_value("active_directory","allow_script")
         
-		if script_path:
-		    flag = False
+        if script_path:
+            flag = False
             try:
                 from tactic.command import PythonCmd
                 from pyasm.command import Command
@@ -78,8 +78,7 @@ class ADAuthenticate(Authenticate):
                 print e
                 raise
             if (flag != True):  
-                return False
-		    
+                return False    
         
         if require_domain == "true" and not domain:
             raise SecurityException("Domain Selection Required")
