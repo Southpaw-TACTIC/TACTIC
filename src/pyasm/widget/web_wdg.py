@@ -1147,6 +1147,8 @@ class WebLoginWdg(Widget):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+        # hidden is for inline login when a session expires
+        my.hidden = kwargs.get('hidden') in  [True, 'True']
         super(WebLoginWdg,my).__init__("div")
 
 
@@ -1295,6 +1297,9 @@ class WebLoginWdg(Widget):
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
         text_wdg.add_style("padding: 2px")
+        if my.hidden:
+            login_name = Environment.get_user_name()
+            text_wdg.set_value(login_name)
         #text_wdg.add_event("onLoad", "this.focus()")
         table.add_cell( text_wdg )
 
@@ -1336,7 +1341,7 @@ class WebLoginWdg(Widget):
 
         table2 = Table()
         table2.center()
-        table2.add_style("width: 240px")
+        table2.add_style("width: 280px")
 
         table2.add_row()
 
@@ -1360,16 +1365,21 @@ class WebLoginWdg(Widget):
         
         msg = web.get_form_value(my.LOGIN_MSG)
         td = table2.add_cell(css='center_content')
+        
+        if my.hidden:
+            msg = 'Your session has expired. Please login again.'
+            div.add_style("height: 230px")
+
         if msg:
             from tactic.ui.widget import ResetPasswordWdg
             if msg == ResetPasswordWdg.RESET_MSG:
                 td.add(IconWdg("INFO", IconWdg.INFO))
             else:
-                td.add(IconWdg("ERROR", IconWdg.ERROR))
+                pass
 
             td.add(HtmlElement.b(msg))
             td.add_style('line-height', '14px')
-            td.add_style('padding-top', '5px')
+            td.add_style('padding-top', '10px')
 
             tr = table2.add_row()
             tr.add_style('line-height: 70px')
@@ -1385,6 +1395,7 @@ class WebLoginWdg(Widget):
                 link = HtmlElement.js_href(js, data=access_msg)
                 link.add_color('color','color', 60)
                 td.add(link)
+
         else:
             div.add_style("height: 210px")
 
@@ -1400,6 +1411,13 @@ class WebLoginWdg(Widget):
         widget = Widget()
         #widget.add( HtmlElement.br(3) )
         table = Table()
+        table.add_class('spt_login_screen')
+        if my.hidden:
+            table.add_style('display','none')
+            table.add_style('top','0px')
+            table.add_style('position','absolute')
+
+
         table.add_style("width: 100%")
         table.add_style("height: 85%")
         table.add_row()
