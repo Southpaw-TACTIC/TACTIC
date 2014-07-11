@@ -77,7 +77,7 @@ class ADAuthenticate(Authenticate):
             except Exception, e:
                 print e
                 raise
-            if (flag != True):
+            if flag != True:
                 return False  
         
         if require_domain == "true" and not domain:
