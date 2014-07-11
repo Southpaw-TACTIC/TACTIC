@@ -22,6 +22,12 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.2.0.a01
     #
 
+    def upgrade_v4_2_0_a01_014(my):
+        my.run_sql('''
+        INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
+        ''')
+            
+
     def upgrade_v4_2_0_a01_013(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''
