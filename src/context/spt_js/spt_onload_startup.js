@@ -118,7 +118,7 @@ spt.hash.onpopstate = function(evt) {
 
     if (spt.hash.ignore) {
         spt.hash.ignore = false;
-        return;
+        //return;
     }
 
 
@@ -126,6 +126,8 @@ spt.hash.onpopstate = function(evt) {
         var hash = "";
         var title = "";
         var name = "";
+        var kwargs = "";
+        var mode = "";
     }
 
     else {
@@ -135,31 +137,50 @@ spt.hash.onpopstate = function(evt) {
         var hash = state.hash;
         var title = state.title;
         var name = state.element_name;
-
+        var kwargs = state.kwargs;
+        var mode = state.mode;
     }
 
 
-    if (hash == "/" || hash == "") {
-        if (spt.hash.index_hash) {
-            hash = spt.hash.index_hash;
+    if (hash) {
+        if (hash == "/" || hash == "") {
+            if (spt.hash.index_hash) {
+                hash = spt.hash.index_hash;
+            }
+            else {
+                return;
+            }
         }
-        else {
-            return;
+        if (hash.substr(0,1) != "/") {
+            hash = "/" + hash;
         }
-    }
-    if (hash.substr(0,1) != "/") {
-        hash = "/" + hash;
-    }
 
-    var class_name = "tactic.ui.panel.HashPanelWdg";
-    var tab = spt.tab.set_main_body_tab();
-    if (tab) {
-        var set_hash = false;
+        var class_name = "tactic.ui.panel.HashPanelWdg";
         var kwargs = {
             hash: hash,
             use_index: false
         }
-        spt.tab.add_new(name, title, class_name, kwargs, {}, set_hash);
+
+    }
+    else {
+        var class_name = "tactic.ui.panel.CustomLayoutWdg";
+    }
+
+    if (mode == "tab") {
+        var tab = spt.tab.set_main_body_tab();
+        if (tab) {
+            var set_hash = false;
+            spt.tab.add_new(name, title, class_name, kwargs, {}, set_hash);
+        }
+    }
+    else if (mode == "panel") {
+        var panel = state.panel;
+        if (!panel) {
+            document.location.reload();
+            return;
+        }
+        var panel = $(panel);
+        spt.panel.load(panel, class_name, kwargs);
     }
     else {
         document.location.reload();
