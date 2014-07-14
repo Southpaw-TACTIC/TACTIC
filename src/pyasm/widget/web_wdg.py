@@ -1477,6 +1477,8 @@ class WebLoginCmd(Command):
                 login.set_password(verify_password)
 
 
+        # return true on successful login
+        return True
 
 
 

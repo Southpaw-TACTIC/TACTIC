@@ -804,7 +804,11 @@ class Security(Base):
         return get_security_version()
     get_version = classmethod(get_version)
 
-    def is_logged_in(my):
+    def is_logged_in(my, login=None):
+        if login:
+            # check if it's a specific use that is logged in
+            if my._is_logged_in:
+                return my._login_var.get_value("login") == login
         return my._is_logged_in
 
     def is_admin(my):
