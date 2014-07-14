@@ -418,7 +418,10 @@ class Snapshot(SObject):
     def get_file_code_by_type(my, type):
         '''gets the file_code'''
         xml = my.get_snapshot_xml()
-        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if type.find("'") != -1:
+            node = xml.get_node('snapshot/file[@type="%s"]'%type)
+        else:
+            node = xml.get_node("snapshot/file[@type='%s']"%type)
         if node is not None:
             return Xml.get_attribute(node, "file_code")
         else:
@@ -908,7 +911,10 @@ class Snapshot(SObject):
         '''determines whether a given file uses naming convention to find
         it's path'''
         xml = my.get_snapshot_xml()
-        use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
+        if file_type.find("'") != -1:
+            use_naming = xml.get_value('snapshot/file[@type="%s"]/@use_naming' % file_type)
+        else:
+            use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
         if use_naming == "false":
             return False
         else:

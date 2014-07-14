@@ -287,12 +287,13 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
                 hash = encodeURI( hash );
             }
             var state = {
+                mode: 'tab',
                 hash: hash,
                 element_name: options.element_name,
                 title: title
             };
             var url = "link/"+options.element_name;
-            spt.hash.set_hash( {hash: hash}, title, url );
+            spt.hash.set_hash( state, title, url );
 
         }
         else {
