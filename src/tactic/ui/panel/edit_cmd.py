@@ -139,11 +139,11 @@ class EditCmd(Command):
         # discover any default handlers
         default_elements = []
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
-        xxconfig = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+        tmp_config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
 
-        xxelement_names = xxconfig.get_element_names()
-        for element_name in xxelement_names:
-            action_handler = xxconfig.get_action_handler(element_name)
+        tmp_element_names = tmp_config.get_element_names()
+        for element_name in tmp_element_names:
+            action_handler = tmp_config.get_action_handler(element_name)
             if action_handler == 'DefaultValueDatabaseAction':
                 default_elements.append(element_name)
 

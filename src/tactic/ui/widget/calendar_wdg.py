@@ -880,7 +880,15 @@ class CalendarInputWdg(BaseInputWdg):
         
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
-        input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
+
+        edit_mode = "table"
+        if edit_mode == "table":
+            input = TextWdg(name=name)
+            text = input
+        else:
+            input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
+            text = input.get_text()
+
 
         if read_only == True:
             read_only = 'true'
@@ -910,7 +918,8 @@ class CalendarInputWdg(BaseInputWdg):
         my.top.add(input_div)
 
 
-        text = input.get_text()
+
+
         text.add_class("spt_calendar_input") 
         # explicity true means no calendar on click
         if read_only == 'true':
@@ -931,10 +940,11 @@ class CalendarInputWdg(BaseInputWdg):
                     '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
                     if (!el)  {
                         el = spt.calendar.get(); 
+                        el.setStyle("width", "200px");
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
-                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:15, y:0}});
+                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:0, y:0}});
                     }
                     
                     spt.show(el);

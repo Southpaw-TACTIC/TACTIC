@@ -2131,8 +2131,19 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             element_name = widget.get_name()
 
             # TEST TEST TEST
-            if row > 0 and element_name == "gantt_test":
-                continue
+            """
+            if element_name == "gantt_test":
+                if row > 0:
+                    td = table.add_cell()
+                    td.add_class("spt_cell_edit")
+                    td.add_attr("spt_input_value", "gantt chart")
+                    if row == 2:
+                        td.add_class("spt_cell_changed")
+                        tr.add_class("spt_row_changed")
+                        td.add("test")
+
+                    continue
+            """
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
@@ -2725,6 +2736,21 @@ spt.table.get_row_by_cell = function(cell) {
     }
     return row;
 }
+
+
+
+spt.table.get_row_by_search_key = function(search_key) {
+    var rows = spt.table.get_all_rows();
+    for (var i = 0; i < rows.length; i++) {
+        var row_search_key = rows[i].getAttribute("spt_search_key_v2");
+        if (search_key == row_search_key) {
+            return rows[i];
+        }
+    }
+    return null;
+}
+
+
 
 
 spt.table.get_cells = function(element_name, tr) {
@@ -4085,22 +4111,6 @@ spt.table.save_changes = function(kwargs) {
    
 
     //add to the values here for gantt and inline elements
-    /*
-    if (td.getAttribute("spt_input_type") =='inline') {
-        var xx = spt.api.Utility.get_input_values(td, '.spt_data', false);
-        values['data'] = xx;
-    }
-    else if (td.getAttribute("spt_input_type") =='gantt') {
-        //var gantt_values = spt.api.Utility.get_input_values(td);
-        var gantt_values = spt.api.Utility.get_input_values(td, '.spt_gantt_data', false);
-        values['gantt_data'] = gantt_values['gantt_data'];
-    }
-    else if (td.hasClass('spt_uber_notes')) {
-        var option_el = td.getElement('.spt_uber_note_option');
-        var note_options = spt.api.Utility.get_input_values(option_el, '.spt_input', false);
-        values[column + '_option'] = note_options;
-
-    }*/
     web_data = JSON.stringify(web_data);
     
     var search_top = null;
