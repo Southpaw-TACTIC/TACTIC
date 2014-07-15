@@ -736,13 +736,16 @@ class CheckinTest(unittest.TestCase, Command):
             'alias': '/tmp/tactic/alias',
             'alias2': '/tmp/tactic/alias2',
         });
-        # "plugins" is assumed in some branch 
         asset_dict = Environment.get_asset_dirs()
         default_dir = asset_dict.get("default")
         my.assertEquals( "/tmp/tactic/default", default_dir)
 
         aliases = asset_dict.keys()
-        my.assertEquals( 3, len(aliases))
+        # "plugins" is assumed in some branch 
+        if 'plugins' in aliases:
+            my.assertEquals( 4, len(aliases))
+        else:
+            my.assertEquals( 3, len(aliases))
         my.assertNotEquals( None, "alias" in aliases )
 
         # create a naming

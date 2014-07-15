@@ -430,6 +430,9 @@ class File(SObject):
         py_exec = Config.get_value("services", "python")
         if not py_exec:
             py_exec = "python"
+
+        if isinstance(path, unicode):
+            path = path.encode('utf-8')
         popen =  subprocess.Popen([py_exec, '%s/src/bin/get_md5.py'%Environment.get_install_dir(), path], shell=False, stdout=subprocess.PIPE)
         popen.wait()
         output = ''
