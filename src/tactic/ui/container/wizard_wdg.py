@@ -150,7 +150,11 @@ class WizardWdg(BaseRefreshWdg):
             else:
                 on_dot.add_style("display: none")
 
+            dots_div.add_style("position: relative")
+
             dot_div = DivWdg()
+            dot_div.add_attr("spt_selected_index", i)
+            dot_div.add_class("spt_wizard_link")
             dots_div.add(dot_div)
             dot_div.add(on_dot)
             dot_div.add(off_dot)
@@ -165,7 +169,7 @@ class WizardWdg(BaseRefreshWdg):
                 arrow_div.add_style("float: left")
                 arrow_div.add_style("position: absolute")
                 arrow_div.add_style("margin-left: %spx" % ((width+left)*(i+1.2)))
-                arrow_div.add_style("margin-top: -3px")
+                arrow_div.add_style("top: -4px")
                 arrow_div.add_style("text-align: center")
                 icon = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
                 arrow_div.add(icon)
@@ -175,9 +179,59 @@ class WizardWdg(BaseRefreshWdg):
         dots_div.add("<br clear='all'/>")
 
 
-        for widget in my.widgets:
+        div.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_wizard_link',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_wizard_top");
+            var top = bvr.src_el.getParent(".spt_wizard_top");
+            var pages = top.getElements(".spt_wizard_page");
+            var on_dots = top.getElements(".spt_wizard_on_dot");
+            var off_dots = top.getElements(".spt_wizard_off_dot");
+
+            var selected_index = parseInt( bvr.src_el.getAttribute("spt_selected_index"));
+
+            for (var i = 0; i < pages.length; i++) {
+                var page = pages[i];
+                var on_dot = on_dots[i];
+                var off_dot = off_dots[i];
+                if (page.hasClass("spt_wizard_selected")) {
+                    page.removeClass("spt_wizard_selected");
+                }
+                page.setStyle("display", "none");
+                on_dot.setStyle("display", "none");
+                off_dot.setStyle("display", "");
+            }
+
+            var back = top.getElement(".spt_wizard_back");
+            var next = top.getElement(".spt_wizard_next");
+            next.setStyle("display", "");
+            back.setStyle("display", "");
+            if (selected_index == 0) {
+                back.setStyle("display", "none");
+            }
+            else if (selected_index == pages.length-1) {
+                next.setStyle("display", "none");
+            }
+
+            var page = pages[selected_index];
+            page.setStyle("display", "");
+            page.addClass("spt_wizard_selected");
+            var on_dot = on_dots[selected_index];
+            var off_dot = off_dots[selected_index];
+            on_dot.setStyle("display", "");
+            off_dot.setStyle("display", "none");
+
+            '''
+        } )
+
+
+        for i, widget in enumerate(my.widgets):
             name_div = DivWdg()
             div.add(name_div)
+            name_div.add_class("spt_wizard_link")
+            name_div.add_attr("spt_selected_index", i)
+            name_div.add_class("hand")
             name_div.add_style("float: left")
             name_div.add_style("margin-left: %spx" % left)
             name = widget.get_name()
