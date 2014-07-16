@@ -1224,9 +1224,6 @@ spt.edit.edit_form_cbk = function( evt, bvr )
                 spt.named_events.fire_event(bvr.save_event, bvr);
             }
             
-            update_event = "update|" + bvr.search_key;
-            
-            spt.named_events.fire_event(update_event, {});
             // for fast table
             var tmps = spt.split_search_key(bvr.search_key)
             var tmps2 = tmps[0].split('?');
