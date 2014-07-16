@@ -308,7 +308,8 @@ class ChartGrid(BaseRefreshWdg):
         top = my.top
 
         font_color = top.get_color("color")
-        font = '12px san-serif';
+        #font = '12px san-serif';
+        font = '12px arial';
         grid_color = top.get_color("border")
 
         rotate_x_axis = my.kwargs.get("rotate_x_axis") 

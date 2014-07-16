@@ -881,7 +881,7 @@ class CalendarInputWdg(BaseInputWdg):
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
 
-        edit_mode = "table"
+        edit_mode = "inline"
         if edit_mode == "table":
             input = TextWdg(name=name)
             text = input
