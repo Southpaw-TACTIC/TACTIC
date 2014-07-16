@@ -1209,7 +1209,11 @@ spt.message.set_interval = function(key, callback, interval, element) {
             alert(e);
         }
         if (message.status == "complete") {
-            console.log("stopping interval: " + key);
+            var myNav = navigator.userAgent.toLowerCase();
+            var version = (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+            if (version > 10) {
+                console.log("stopping interval: " + key);
+            }
             spt.message.stop_interval(key);
         }
     }
