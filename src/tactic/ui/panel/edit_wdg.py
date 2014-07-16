@@ -1223,6 +1223,19 @@ spt.edit.edit_form_cbk = function( evt, bvr )
             if (bvr.save_event) {
                 spt.named_events.fire_event(bvr.save_event, bvr);
             }
+            
+            update_event = "update|" + bvr.search_key;
+            
+            spt.named_events.fire_event(update_event, {});
+            // for fast table
+            var tmps = spt.split_search_key(bvr.search_key)
+            var tmps2 = tmps[0].split('?');
+            var update_st_event = "update|" + tmps2[0];
+            var bvr_fire = {};
+            var kwargs = {'update_data': values};
+            var input = {'search_key': bvr.search_key, 'kwargs': kwargs};
+            bvr_fire.options = input;
+            spt.named_events.fire_event(update_st_event, bvr_fire);
         }
     }
     catch(e) {
