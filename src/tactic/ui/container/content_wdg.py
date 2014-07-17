@@ -67,7 +67,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         }
 
         .spt_content_box_max .spt_content_box_content {
-            height: 100%% !important;
+            //height: 100%% !important;
         }
 
 

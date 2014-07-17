@@ -534,14 +534,12 @@
   </element>
 
 
-  <!--
   <element name="freeform" title="Free Form Layout Tool" icon="NEW" help='main'>
 
     <display class="LinkWdg">
       <class_name>tactic.ui.tools.FreeFormLayoutToolWdg</class_name>
     </display>
   </element>
-  -->
 
   <!--
   <element name="sync" title="Sync Dashboard" icon="REFRESH">
@@ -858,7 +856,7 @@
 
   <!--<element name="ingestion"/>-->
   <element name="plugins"/>
-  <!--<element name="freeform"/>-->
+  <element name="freeform"/>
   <!--<element name="sync"/>-->
 </_project_admin>
 

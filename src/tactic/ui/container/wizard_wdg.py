@@ -63,6 +63,7 @@ class WizardWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         if not width:
             width = "550px"
+        my.width = width
 
         inner = DivWdg()
         top.add(inner)
@@ -71,11 +72,13 @@ class WizardWdg(BaseRefreshWdg):
         title = my.kwargs.get("title")
         if not title:
             title = "No Title"
-        title_wdg = DivWdg()
-        inner.add(title_wdg)
-        title_wdg.add(title)
-        title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("font-weight: bold")
+        
+        if title != "none":
+            title_wdg = DivWdg()
+            inner.add(title_wdg)
+            title_wdg.add(title)
+            title_wdg.add_style("font-size: 16px")
+            title_wdg.add_style("font-weight: bold")
 
         inner.add("<br/>")
 
@@ -94,6 +97,7 @@ class WizardWdg(BaseRefreshWdg):
 
         header_wdg = my.get_header_wdg()
         inner.add(header_wdg)
+        #header_wdg.add_color("background", "background", -5)
 
         inner.add("<br/>")
 
@@ -101,6 +105,9 @@ class WizardWdg(BaseRefreshWdg):
 
         for i, widget in enumerate(my.widgets):
             page_div = DivWdg()
+            page_div.add_class("spt_wizard_page")
+            inner.add(page_div)
+
             page_div.add_style("padding: 10px")
 
             page_div.add_style("min-height: 300px")
@@ -114,8 +121,6 @@ class WizardWdg(BaseRefreshWdg):
             else:
                 page_div.add_class("spt_wizard_selected")
 
-            page_div.add_class("spt_wizard_page")
-            inner.add(page_div)
             page_div.add(widget)
 
 
@@ -131,20 +136,47 @@ class WizardWdg(BaseRefreshWdg):
 
     def get_header_wdg(my):
         div = DivWdg()
+        div.add_style("text-align: center")
+        div.add_style("width: %s" % my.width)
 
         div.add("<hr/>")
 
         dots_div = DivWdg()
-        dots_div.add_style("margin-top: -12px")
+        dots_div.add_style("margin: -28px auto 0px auto")
         div.add(dots_div)
 
+        titles = my.kwargs.get("titles")
+        if not titles:
+            titles = []
+
         left = 50
-        width = 60
+        width = 50
+
+        dots_div.add_style("width", (left+width)*len(my.widgets)+left)
+
         for i, widget in enumerate(my.widgets):
-            on_dot = IconWdg("", IconWdg.DOT_GREEN)
+            on_dot = DivWdg()
+            on_dot.add_style("width: 30px")
+            on_dot.add_style("height: 30px")
+            on_dot.add_style("border-radius: 30px")
+            on_dot.add_style("background: rgba(188,215,207,1.0)")
+            on_dot.add_style("margin: 5 auto")
+            on_dot.add("&nbsp;")
+            on_dot.add_border()
+            #on_dot = IconWdg("", IconWdg.DOT_GREEN)
             on_dot.add_class("spt_wizard_on_dot")
-            off_dot = IconWdg("", IconWdg.DOT_GREY)
+
+            off_dot = DivWdg()
+            off_dot.add_style("width: 15px")
+            off_dot.add_style("height: 15px")
+            off_dot.add_style("border-radius: 30px")
+            off_dot.add_style("background: rgba(215,188,207,1.0)")
+            off_dot.add_style("margin: 13 auto 12 auto")
+            off_dot.add("&nbsp;")
+            off_dot.add_border()
+            #off_dot = IconWdg("", IconWdg.DOT_GREY)
             off_dot.add_class("spt_wizard_off_dot")
+
             if i == 0:
                 off_dot.add_style("display: none")
             else:
@@ -153,8 +185,10 @@ class WizardWdg(BaseRefreshWdg):
             dots_div.add_style("position: relative")
 
             dot_div = DivWdg()
+            dot_div.add_style("text-align: center")
             dot_div.add_attr("spt_selected_index", i)
             dot_div.add_class("spt_wizard_link")
+            dot_div.add_class("hand")
             dots_div.add(dot_div)
             dot_div.add(on_dot)
             dot_div.add(off_dot)
@@ -163,6 +197,21 @@ class WizardWdg(BaseRefreshWdg):
             dot_div.add_style("margin-left: %spx" % left)
             dot_div.add_style("text-align: center")
 
+            name_div = DivWdg()
+            dot_div.add(name_div)
+
+            if i < len(titles):
+                title = titles[i]
+            else:
+                title = widget.get_name()
+                title = title.replace(".", " ")
+                title = Common.get_display_title(title)
+
+            name_div.add(title)
+            name_div.add_style("font-weight: bold")
+
+
+            """
             if (i+1) < len(my.widgets):
                 arrow_div = DivWdg()
                 dots_div.add(arrow_div)
@@ -173,7 +222,7 @@ class WizardWdg(BaseRefreshWdg):
                 arrow_div.add_style("text-align: center")
                 icon = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
                 arrow_div.add(icon)
-
+            """
 
 
         dots_div.add("<br clear='all'/>")
@@ -226,6 +275,7 @@ class WizardWdg(BaseRefreshWdg):
         } )
 
 
+        """
         for i, widget in enumerate(my.widgets):
             name_div = DivWdg()
             div.add(name_div)
@@ -238,6 +288,7 @@ class WizardWdg(BaseRefreshWdg):
             name_div.add(name)
             name_div.add_style("width: %spx" % width)
             name_div.add_style("text-align: center")
+        """
 
         div.add("<br clear='all'/>")
         return div

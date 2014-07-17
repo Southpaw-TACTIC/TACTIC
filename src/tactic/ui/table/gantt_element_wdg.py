@@ -1825,7 +1825,10 @@ class GanttCbk(DatabaseAction):
             gantt_data = jsonloads(gantt_data)
         else:
             gantt_data = gantt_data.get('gantt_data')
-            gantt_data = jsonloads(gantt_data)
+            if gantt_data:
+                gantt_data = jsonloads(gantt_data)
+            else:
+                gantt_data = {}
 
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):
