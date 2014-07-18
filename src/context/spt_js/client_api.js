@@ -1486,9 +1486,10 @@ TacticServerStub = function() {
                 if( ret_val.contains("faultCode") ) {
                     spt.exception.handle_fault_response( ret_val );
                 }
-                else{
-                    alert("Error parsing [" + value + "]");
-                }
+                // Temporary fix so as not to annoy clients with this message
+                //else{
+                //    alert("Error parsing [" + value + "]");
+                //}
                 return {};
             }
         }
