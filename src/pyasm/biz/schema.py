@@ -75,7 +75,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 -->
 
 
-    <connect to="sthpw/project_type" from="sthpw/project" type='hierarchy' from_col='type'/>
+    <connect to="sthpw/project_type" from="sthpw/project" type='hierarchy' relationship="code" from_col='type'/>
 
     <connect from="sthpw/project" to="sthpw/db_resource" from_col="db_resource" relationship="code"/>
 
