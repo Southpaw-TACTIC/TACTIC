@@ -777,11 +777,11 @@ class IconCreator(object):
             if sys.platform == 'darwin':
                 cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
                     % (thumb_size[0], small_path, large_path)
-                print "cmd: ", cmd
+                print "cmd: ", cmd.encode('utf-8')
             else:
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
                     % (thumb_size[0], thumb_size[1], large_path, small_path)
-                print "cmd: ", cmd
+                print "cmd: ", cmd.encode('utf-8')
    
             large_path = large_path.encode('utf-8')
             #os.system(cmd)
