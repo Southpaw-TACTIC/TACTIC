@@ -176,7 +176,7 @@ class SearchLimitWdg(Widget):
         # look at the stated search limit only if there is no chunk_size
         if not my.chunk_size:
             search_limit = my.stated_search_limit
-            if search_limit:
+            if search_limit and my.search_limit != -1:
                 try:
                     my.search_limit = int(search_limit)
                 except ValueError:
