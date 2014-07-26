@@ -132,6 +132,10 @@ class TacticServerStub(object):
         '''set the login ticket'''
         my.set_login_ticket(ticket)
 
+        # reset the handoff_dir
+        my.handoff_dir = None
+
+
     def set_login_ticket(my, ticket):
         '''Function: set_login_ticket(ticket)
            Set the login ticket with the ticket key'''
