@@ -2231,6 +2231,8 @@ class MethodMode(ExpressionParser):
                 value = sobject.get_base_search_type()
             elif column == '__project__':
                 value = sobject.get_project_code()
+            elif column == '__all__':
+                value = sobject.get_data()
             else:
                 value = sobject.get_value(column)
             

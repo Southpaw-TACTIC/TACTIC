@@ -3009,6 +3009,7 @@ class SObject(object):
 
         security = Environment.get_security()
 
+        # unspecified default makes the access level edit
         if not security.check_access("sobject_column", key , "edit"):
             raise SecurityException("Column [%s] not editable for search type [%s]" % (name,my.get_search_type()) )
 
@@ -3041,7 +3042,7 @@ class SObject(object):
         elif column_info.get('data_type') in ['varchar','text']:
             if isinstance(value, str):
                 # this may be needed for those \x60 formatted string from a text file
-                #value = value.decode('string_escape')
+                #value = value.decode('string_escape'))
                 try:
                     value = value.decode('utf-8', 'ignore')
                 except UnicodeDecodeError, e:
@@ -4177,7 +4178,7 @@ class SObject(object):
         # remember the data
         data = my.data.copy()
 
-        # call a delete event
+        # call a retire event
         from pyasm.command import Trigger
         output = {}
         output["is_retire"] = True
@@ -4207,7 +4208,7 @@ class SObject(object):
 
 
     def delete(my, log=True, triggers=True):
-        '''deletes the sobject (only the database)
+        '''delete the sobject (only the database)
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
@@ -4215,10 +4216,38 @@ class SObject(object):
         if id == -1:
             return
 
+        security = Environment.get_security()
+        base_search_type = my.get_base_search_type()
+
+        current_project_code = my.get_project_code()
+        
+        # special conditions of task, note and work_hour
+        if base_search_type in ['sthpw/task', 'sthpw/note','sthpw/snapshot','sthpw/file','sthpw/work_hour']:
+            sobject_project_code = my.get_value('project_code')
+            key = { "code": base_search_type }
+            key2 = { "code": base_search_type, "project": sobject_project_code }
+            key3 = { "code": "*" }
+            key4 = { "code": "*", "project": sobject_project_code }
+            keys = [key, key2, key3, key4]
+            default = "allow"
+
+            if not security.check_access("search_type", keys, "delete", default=default):
+                raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
+        elif not base_search_type.startswith("sthpw/") and not base_search_type.startswith("config/"):
+            # default to deny delete of any non sthpw or config sobjects
+            key = { "code": base_search_type }
+            key2 = { "code": base_search_type, "project": current_project_code }
+            key3 = { "code": "*" }
+            key4 = { "code": "*", "project": current_project_code }
+            keys = [key, key2, key3, key4]
+            default = "deny"
+            if not security.check_access("search_type", keys, "delete", default=default):
+                print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type)
+                raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
+
         # remember the data
         data = my.data.copy()
 
-        base_search_type = my.get_base_search_type()
         database_impl = my.get_database_impl()
         database_type = database_impl.get_database_type()
 
@@ -4285,7 +4314,7 @@ class SObject(object):
             if sobject:
                 sobject.delete(log=log)
 
-      
+       
 
 
 

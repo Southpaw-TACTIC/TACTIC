@@ -105,12 +105,14 @@ class SecurityTest(unittest.TestCase):
         l_in_g.commit()
 
     def _tear_down(my):
-        #transaction = Transaction.get()
+        #my.transaction = Transaction.get()
         my.transaction.rollback()
         # this is necessary cuz the set_value() was caught in a security exception possibly, needs investigation
-        if my.person:
-            my.person.delete()
-
+        #if my.person:
+        #    my.person.delete()
+        tasks = Search.eval("@SOBJECT(sthpw/task['project_code','in','unittest|sample3d'])")
+        for task in tasks:
+            task.delete(triggers=False)
 
     def test_all(my):
         batch = Batch()
@@ -124,10 +126,12 @@ class SecurityTest(unittest.TestCase):
 
         Project.set_project("unittest")
         try:
+            my.access_manager = Environment.get_security().get_access_manager()   
             my._test_all()
 
         finally:
             #Project.set_project("unittest")
+            Environment.get_security()._access_manager =  my.access_manager
             my._tear_down()
             test_env.delete()
             sample3d_env.delete()
@@ -500,11 +504,18 @@ class SecurityTest(unittest.TestCase):
             <rule group='sobject' search_type='prod/layer'  project='sample3d' access='view'/>
             <rule column='description'  search_type='prod/shot' access='view' group='sobject_column'/>
            
-          <group type='sobject_column' default='view'>
+          <group type='sobject_column' default='edit'>
             <rule key='prod/asset|director_notes' access='deny'/>
             <rule key='prod/asset|sensitive_data' access='deny'/>
           </group>
 
+      
+          <rule group='search_type' code='prod/asset'   access='allow'/>
+
+          <rule group='search_type' code='sthpw/note' project='unittest' access='edit'/>
+          
+           
+          <rule group='search_type' code='unittest/person'  project='unittest' access='allow'/>
         
            </rules>
         ''')
@@ -555,6 +566,45 @@ class SecurityTest(unittest.TestCase):
         test = access_manager.get_access('sobject', 'prod/layer' )
         my.assertEquals(test, None)
 
+        # security version 2 uses group = search_type
+        asset = SearchType.create('prod/asset')
+        asset.set_value('name','unit test obj')
+        asset.commit(triggers=False)
+        # replace the access manager with this 
+        Environment.get_security()._access_manager = access_manager
+        
+        test = access_manager.check_access('search_type',{'search_type':'prod/asset','project':'sample3d'},'delete')
+        my.assertEquals(test, False)
+
+        asset.delete()
+
+        note = SearchType.create('sthpw/note')
+        note.set_value('note','unit test note obj')
+        note.set_value('project_code','unittest')
+        note.commit(triggers=False)
+        
+
+        test = access_manager.get_access('search_type', [{'code':'sthpw/note', 'project':'unittest'}] )
+        my.assertEquals(test, 'edit')
+        msg = ''
+        # delete of unittest note should fail
+        try:
+            note.delete()
+        except SObjectException, e:
+            msg = 'delete error'
+        my.assertEquals(msg, 'delete error')
+            
+        note = SearchType.create('sthpw/note')
+        note.set_value('note','unit test sample3d note obj')
+        note.set_value('project_code','sample3d')
+        note.commit(triggers=False)
+        
+        # this should pass since it's a sthpw/ prefix
+        note.delete()
+
+        test = access_manager.check_access('search_type',{'search_type':'sthpw/note','project':'unittest'},'delete')
+        my.assertEquals(test, False)
+        
 
 
     def _test_crypto(my):
