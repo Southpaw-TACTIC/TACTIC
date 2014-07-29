@@ -35,7 +35,11 @@ class Queue:
         # get the entire queue
         search = Search(job_search_type)
         if queue_type:
-            search.add_filter("queue", queue_type)
+            if isinstance(queue_type, basestring):
+                search.add_filters("queue", queue_type.split("|"))
+            else:
+                search.add_filters("queue", queue_type)
+
         if server_code:
             search.add_filter("server_code", server_code)
         search.add_filter("state", "pending")
@@ -126,6 +130,8 @@ class JobTask(SchedulerTask):
 
         my.max_jobs = 2
 
+        my.queue_type = kwargs.get("queue")
+
         super(JobTask, my).__init__()
 
 
@@ -147,9 +153,8 @@ class JobTask(SchedulerTask):
         return "sthpw/queue"
 
 
-    def get_next_job(my):
-        #from pyasm.prod.queue import Queue
-        return Queue.get_next_job();
+    def get_next_job(my, queue_type=None):
+        return Queue.get_next_job(queue_type=queue_type);
 
 
 
@@ -198,7 +203,7 @@ class JobTask(SchedulerTask):
         while 1:
             
             my.check_existing_jobs()
-            my.check_new_job()
+            my.check_new_job(queue_type=my.queue_type)
             time.sleep(my.check_interval)
             DbContainer.close_thread_sql()
 
@@ -240,14 +245,14 @@ class JobTask(SchedulerTask):
 
 
 
-    def check_new_job(my):
+    def check_new_job(my, queue_type=None):
 
         num_jobs = len(my.jobs)
         if num_jobs >= my.max_jobs:
             print "Already at max jobs [%s]" % my.max_jobs
             return
-        
-        my.job = my.get_next_job()
+       
+        my.job = my.get_next_job(queue_type)
         if not my.job:
             return
 
@@ -448,7 +453,7 @@ class JobTask(SchedulerTask):
 
 
     def start(**kwargs):
-         
+
         scheduler = Scheduler.get()
         scheduler.start_thread()
         task = JobTask(**kwargs)
