@@ -44,6 +44,11 @@ class EmbedWdg(BaseRefreshWdg):
         if file:
             src = file.get_web_path()
 
+        opacity = 1.0
+        if not src:
+            src = "/context/icons/logo/tactic_silver.png"
+            opacity = 0.6
+
 
         height = my.kwargs.get("height")
         width = my.kwargs.get("width")
@@ -53,6 +58,7 @@ class EmbedWdg(BaseRefreshWdg):
         #div = DivWdg()
         #top.add(div)
         div = top
+        div.add_style("opacity", opacity)
         div.add_style("overflow-x: hidden")
         div.add_style("overflow-y: hidden")
         div.add_style("margin-left: auto")

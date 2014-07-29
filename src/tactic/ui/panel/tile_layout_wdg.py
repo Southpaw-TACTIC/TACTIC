@@ -12,6 +12,7 @@
 __all__ = ["TileLayoutWdg"]
 
 import re
+from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -83,6 +84,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['script_path'] = {
+            'description': 'Script to execute when clicked on',
+            'type': 'TextWdg',
+            'order' : '09',
+            'category': 'Display'
+
+    }
+
 
     
 
@@ -313,7 +322,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             var name = top.getAttribute("spt_name");
             var search_code = top.getAttribute("spt_search_code");
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
-            //var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
             var kwargs = {
                 search_key: search_key
             };
@@ -389,7 +397,28 @@ class TileLayoutWdg(ToolLayoutWdg):
                 '''
             } )
  
+        elif mode == "custom":
+            
+            script_path = my.kwargs.get("script_path")
+            script = None
+            if script_path:
+                script_obj = CustomScript.get_by_path(script_path)
+                script = script_obj.get_value("script")
 
+            if not script:
+                script = my.kwargs.get("script")
+
+            if not script:
+                script = '''
+                alert("Script path [%s] not implemented");
+                ''' % script_path
+
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': script
+            } )
+ 
 
 
         bg1 = layout_wdg.get_color("background3")

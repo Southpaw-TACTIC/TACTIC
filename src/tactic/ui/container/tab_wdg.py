@@ -1084,8 +1084,13 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             content_top.add_style("min-width: %s" % width)
 
         content_top.add_class("tab_content_top")
-        content_top.add_color("color", "color")
-        content_top.add_color("background", "background")
+
+        color_mode = my.kwargs.get("color_mode")
+        if color_mode == "transparent":
+            pass
+        else:
+            content_top.add_color("color", "color")
+            content_top.add_color("background", "background")
 
 
         """

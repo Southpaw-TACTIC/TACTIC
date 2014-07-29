@@ -148,7 +148,6 @@ class JobTask(SchedulerTask):
 
 
     def get_next_job(my):
-        #from pyasm.prod.queue import Queue
         return Queue.get_next_job();
 
 
