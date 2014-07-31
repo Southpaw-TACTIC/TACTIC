@@ -381,8 +381,10 @@ class DeleteDelegateCmd(Command):
         else:
             related_types = None
        
+        
         # filter out the empty ones
-        related_types = [x for x in related_types if x]
+        if related_types:
+            related_types = [x for x in related_types if x]
         
         # this is no dependency case
         if not related_types:
@@ -390,7 +392,8 @@ class DeleteDelegateCmd(Command):
             cmd = DeleteCmd(search_keys=search_keys, values = {'related_types': related_types})
             cmd.execute()
             return
-
+        
+       
 
         for related_type in related_types:
             if not related_type:
