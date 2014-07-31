@@ -3198,10 +3198,7 @@ spt.table.add_new_item = function(kwargs) {
         kwargs = {};
     }
 
-    var layout = spt.table.get_layout();
-    //var insert_row = layout.getElement(".spt_table_insert_row");
-    insert_rows = layout.getElements(".spt_table_insert_row");
-    var insert_row = insert_rows[insert_rows.length-1];
+    var insert_row = spt.table.get_insert_row();
 
     var row;
     var position;
@@ -3223,7 +3220,19 @@ spt.table.add_new_item = function(kwargs) {
     }
 
     var clone = spt.behavior.clone(insert_row);
-    clone.inject(row, position);
+
+    if (!row) {
+        var first = table.getElement("tr");
+        if (first) {
+            clone.inject(first, position);
+        }
+        else {
+            table.appendChild(clone);
+        }
+    }
+    else {
+        clone.inject(row, position);
+    }
     spt.remove_class(clone, 'spt_clone');
 
     // find the no items row
