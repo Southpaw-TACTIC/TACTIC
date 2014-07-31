@@ -176,10 +176,7 @@
 <insert>
     <element name="login_group" title='Group'/>
     <element name="description"/>
-    <element name="add_to_project">
-        <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
-        <action class="tactic.ui.startup.SecurityAddGroupToProjectAction"/>
-    </element>
+    <element name="add_to_project"/>
 </insert>
 
 
@@ -201,9 +198,10 @@
       </display>
   </element>
 
-
-
-
+    <element name="add_to_project">
+        <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
+        <action class="tactic.ui.startup.SecurityAddGroupToProjectAction"/>
+    </element>
 
 </edit_definition>
 
