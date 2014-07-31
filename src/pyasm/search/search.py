@@ -2557,6 +2557,10 @@ class SObject(object):
         '''get the table which stores the sobject'''
         return my.search_type_obj.get_table()
 
+    def get_search_type_title(my):
+        '''get the search type title of the sobject'''
+        return my.search_type_obj.get_title()
+
 
     def get_code(my):
         if my.has_value("code"):

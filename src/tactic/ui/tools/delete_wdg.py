@@ -9,24 +9,131 @@
 #
 #
 #
-__all__ = ["DeleteToolWdg", "DeleteCmd", "DeleteSearchTypeToolWdg", 'DeleteSearchTypeCmd', "DeleteProjectToolWdg", "DeleteProjectCmd"]
+__all__ = ["DeleteToolWdg", "DeleteDelegateCmd", "DeleteCmd", "DeleteSearchTypeToolWdg", 'DeleteSearchTypeCmd', "DeleteProjectToolWdg", "DeleteProjectCmd"]
 
 from pyasm.common import Common, TacticException, Container, Environment
 from pyasm.biz import Schema, Project
 from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType, TableDropUndo, FileUndo, SqlException, SearchException
-from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement
-from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, TextWdg, TextAreaWdg, SelectWdg, HiddenWdg, WidgetConfig, CheckboxWdg, RadioWdg
+from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
+from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, TextWdg, TextAreaWdg, SelectWdg, HiddenWdg, WidgetConfig, CheckboxWdg, RadioWdg, SwapDisplayWdg
 
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
 
+
 import random
 
 
 
+
+
 class DeleteToolWdg(BaseRefreshWdg):
+    
+   
+    def init(my):
+        my.search_keys_dict = {}
+        my.warning_msg = None
+        my.level_dict = {}
+
+    def get_level(my, search_type, level):
+        ''' Get the level of this search_type in the hierarchy. 
+            e.g.If vfx/sequce is 0, vfx/shot is 1 and vfx/layout is 2''' 
+        cur_level = my.level_dict.get(search_type)
+        if cur_level == None:
+            if not level:
+                cur_level = 0
+            else:
+                cur_level = level
+            my.level_dict[search_type] = cur_level
+
+        return level
+
+    def populate_checklist(my, content, sobjects, level=0):
+        
+        search_type = sobjects[0].get_base_search_type()
+
+        if sobjects:
+            search_keys = [x.get_search_key() for x in sobjects]
+            if my.search_keys_dict.get(search_type):
+                my.warning_msg = "When looking through dependecies, [%s] has been detected more than once in the search."%search_type
+            my.search_keys_dict[search_type] = search_keys
+
+
+        # find all the relationships
+        related_types = SearchType.get_related_types(search_type, direction='children') 
+        
+     
+        if not related_types:
+            return 0
+    
+        related_div = DivWdg()
+
+        
+        checkbox = CheckboxWdg('related_to')
+        checkbox.add_behavior({'type': 'click_up',
+            'current_stype': search_type,
+            'cbjs_action': ''' var top = bvr.src_el.getParent('.spt_delete_top');
+            var stype = bvr.current_stype.replace('/', '_');
+            var cbs = top.getElements('.spt_' + stype);
+            for (var k=0; k<cbs.length; k++)
+                cbs[k].checked = bvr.src_el.checked;
+            '''})
+
+        related_div.add(checkbox) 
+        content.add(related_div)
+
+        swap = SwapDisplayWdg.get_triangle_wdg()
+        related_div.add(swap)
+        
+        items_div = DivWdg()
+        SwapDisplayWdg.create_swap_title('', swap, items_div, is_open=False)
+        content.add( items_div )
+        
+        items_div.add_style("padding: 10px")
+        valid_related_ctr = 0
+        sub_total = 0
+        
+        level = my.get_level(search_type, level)
+        level +=1
+        for related_type in related_types:
+            
+            if related_type == "*":
+                print "WARNING: related_type is *"
+                continue
+            if related_type == search_type:
+                continue
+            if related_type in ['sthpw/search_object','sthpw/search_type']:
+                continue
+            try:
+                SearchType.get(related_type)
+                check_stype = True
+            except:
+                check_stype = False
+
+            if not check_stype:
+                continue   
+            item_div = my.get_item_div(sobjects, related_type, level)
+            if item_div:
+                items_div.add(item_div)
+                valid_related_ctr += 1
+            expr = "@SOBJECT(%s)"%(related_type)
+            sub_sobjects = Search.eval(expr, sobjects=sobjects)
+            
+          
+            if sub_sobjects: 
+                sub_total += len(sub_sobjects)
+                # If related_tupe is a central sType, ends the search
+                if not sub_sobjects[0].get_base_search_type().startswith('sthpw/'):
+
+                    my.populate_checklist(content, sub_sobjects, level=level)
+        
+        label ="related to %s: (%s) "%(search_type, sub_total) 
+        checkbox.label = label
+        if sub_total > 0:
+            checkbox.set_checked()
+        return valid_related_ctr
 
     def get_display(my):
         top = my.top
@@ -35,11 +142,13 @@ class DeleteToolWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_border()
-        top.add_style("width: 300px")
+        top.add_style("width: 400px")
         top.add_border()
 
 
         search_key = my.kwargs.get("search_key")
+
+        
         search_keys = my.kwargs.get("search_keys")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
@@ -53,6 +162,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             msg =  "%s not found" %search_key
             return msg
         search_type = sobject.get_base_search_type()
+        
 
         if search_type in ['sthpw/project', 'sthpw/search_object']:
             msg = 'You cannot delete these items with this tool'
@@ -65,64 +175,69 @@ class DeleteToolWdg(BaseRefreshWdg):
         title = DivWdg()
         top.add(title)
         title.add_color("background", "background", -10)
-        if my.search_keys:
-            title.add("Delete %s Items" % len(my.search_keys))
+        
+        if len(my.search_keys) > 1:
+            entry_label = 'entries'
+            title.add("Delete %s %s %s" % (len(my.search_keys), sobject.get_search_type_title(), entry_label))
         else:
-            title.add("Delete Item [%s]" % (sobject.get_code()))
+            entry_label = 'entry'
+            title.add("Delete %s %s [%s]" % ( sobject.get_search_type_title(), entry_label, sobject.get_code()))
         title.add_style("font-size: 14px")
-        title.add_style("font-weight: bold")
+        # no bold
         title.add_style("padding: 10px")
 
         content = DivWdg()
+       
         top.add(content)
         content.add_style("padding: 10px")
 
 
-        content.add("The item to be deleted has a number of dependencies as described below:<br/>", 'heading')
+        content.add("The %s to be deleted has a number of dependencies:<br/>" %entry_label, 'heading')
 
-        # find all the relationships
-        related_types = SearchType.get_related_types(search_type, direction='children') 
        
-        items_div = DivWdg()
-        content.add( items_div )
-        items_div.add_style("padding: 10px")
-        valid_related_ctr = 0
-        for related_type in related_types:
-            if related_type == "*":
-                print "WARNING: related_type is *"
-                continue
-            if related_type == search_type:
-                continue
-            if related_type in ['sthpw/search_object','sthpw/search_type']:
-                continue
-
-            item_div = my.get_item_div(sobjects, related_type)
-            if item_div:
-                items_div.add(item_div)
-                valid_related_ctr += 1
-
-
+        related_div = DivWdg()
+        related_div.add_style('padding: 10px')
+        related_div.set_round_corners()
+        related_div.add_color('background','background', -6)
         
+        content.add("<br/>")
+        content.add(related_div)
+
+        valid_related_ctr = my.populate_checklist(related_div, sobjects)
+       
+
+
+        content.add(HtmlElement.br())
 
         if valid_related_ctr > 0:
             icon = IconWdg("WARNING", IconWdg.WARNING)
             icon.add_style("float: left")
-            content.add( icon )
-            content.add("<div><b>WARNING: By selecting the related items above, you can delete them as well when deleting this sObject.</b></div>")
-            content.add("<br/>"*2)
+            table = Table()
+            content.add( table )
+            
+            table.add_row()
+            td =  table.add_cell(icon)
+            td.add_style('vertical-align','top')
+            msg_wdg = Widget()
+            msg_wdg.add("<div><b>WARNING: By selecting the related items above, you will delete them together with this sObject.</b></div>")
+            msg_wdg.add("<br/>"*2)
+            if my.warning_msg:
+                msg_wdg.add(my.warning_msg)
+            table.add_cell(msg_wdg)
         else:
             # changed the heading to say no dependencies
             content.add("The item to be deleted has no dependencies.<br/>", 'heading')
+            related_div.add_style('display: none')
 
 
-        content.add("There are %s items to be deleted" % len(my.search_keys))
-        content.add("<br/>"*2)
+    
 
-        content.add("Do you wish to continue deleting?")
-        content.add("<br/>"*2)
-
+        
         button_div = DivWdg()
-        button_div.add_styles('width: 300px; height: 50px')
+        content.add("Continue to delete?")
+        content.add("<br/>"*2)
+
+        button_div.add_styles('width: 200px; height: 25px; margin-left: auto; margin-right: auto;')
         button = ActionButtonWdg(title="Delete")
         button_div.add(button)
         content.add(button_div)
@@ -130,16 +245,16 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         button.add_behavior( {
         'type': 'click_up',
-        'search_keys': my.search_keys,
+        'search_keys_dict': my.search_keys_dict,
         'cbjs_action': '''
         spt.app_busy.show("Deleting");
 
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
 
-        var class_name = "tactic.ui.tools.DeleteCmd";
+        var class_name = "tactic.ui.tools.DeleteDelegateCmd";
         var kwargs = {
-            'search_keys': bvr.search_keys,
+            'search_keys_dict': bvr.search_keys_dict,
             'values': values
         };
         var server = TacticServerStub.get();
@@ -171,6 +286,7 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title="Cancel")
         button.add_style("float: left")
+        button.add_style("margin-left: 20px")
         button_div.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -188,35 +304,52 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 
-    def get_item_div(my, sobjects, related_type):
+    def get_item_div(my, sobjects, related_type, level):
         item_div = DivWdg()
 
         sobject = sobjects[0]
+        
+        current_type = sobject.get_base_search_type()
+        
 
         checkbox = CheckboxWdg('related_types')
-        item_div.add(checkbox)
-        checkbox.set_attr("value", related_type)
+        tmp_stype = current_type.replace('/','_')
+        checkbox.add_class('spt_%s'%tmp_stype)
 
+        item_div.add(checkbox)
+      
+        # prefix with current sType current_type
+        checkbox.set_attr("value", "%s|%s|%s" %(current_type, related_type, level))
+        checkbox.set_checked() 
         item_div.add(related_type)
         item_div.add(": ")
 
+        
+        related_total = 0
         if related_type.startswith("@SOBJECT"):
             related_sobjects = Search.eval(related_type, [sobject], list=True)
+            related_total =len(related_sobjects)
+            
         else:
             try:
                 related_sobjects = []
                 for sobject in sobjects:
-                    sobjs = sobject.get_related_sobjects(related_type)
-                    related_sobjects.extend(sobjs)
+                    
+                    count = Search.eval("@COUNT(%s)"%related_type, sobjects=[sobject])
+                   
+                    related_total += count
+                    
+                    
 
             except Exception, e:
                 print "WARNING: ", e
-                related_sobjects = []
+                related_total = 0
+                #raise
 
+        
+        item_div.add("(%s)" % (related_total))    
 
-        item_div.add("(%s)" % len(related_sobjects))
-
-        if len(related_sobjects) == 0:
+        if related_total == 0:
             item_div.add_style("opacity: 0.5")
             return None
         else:
@@ -230,6 +363,56 @@ class DeleteToolWdg(BaseRefreshWdg):
         return item_div
 
 
+
+class DeleteDelegateCmd(Command):
+    ''' Delegate the search keys of a particular sType and its checked related types to its own DeleteCmd.'''
+  
+
+    def execute(my):
+
+        related_types_dict = {}
+        stype_level_dict = {}
+
+        search_keys_dict = my.kwargs.get("search_keys_dict")
+
+        values = my.kwargs.get("values")
+        if values:
+            related_types = values.get("related_types")
+        else:
+            related_types = None
+       
+        # filter out the empty ones
+        related_types = [x for x in related_types if x]
+        
+        # this is no dependency case
+        if not related_types:
+            search_keys = search_keys_dict.values()[0]
+            cmd = DeleteCmd(search_keys=search_keys, values = {'related_types': related_types})
+            cmd.execute()
+            return
+
+
+        for related_type in related_types:
+            if not related_type:
+                continue
+            prefix, actual_type, level = related_type.split('|')
+            stype_level_dict[prefix] = level
+            related_types_list = related_types_dict.get(prefix)
+            if related_types_list == None:
+                related_types_list = []
+                related_types_dict[prefix] = related_types_list
+            related_types_list.append(actual_type)
+
+        sort_keys = stype_level_dict.values()
+        # order the delete from bottom up (children to the current sobject)
+        stype_list = sorted(stype_level_dict, key=stype_level_dict.get, reverse=True)
+
+        
+        for stype in stype_list:
+            search_keys = search_keys_dict.get(stype)
+            related_types = related_types_dict.get(stype)
+            cmd = DeleteCmd(search_keys=search_keys, values = {'related_types': related_types})
+            cmd.execute()
 
 
 
@@ -260,13 +443,12 @@ class DeleteCmd(Command):
 
         # find all the relationships
         my.schema = Schema.get()
-
         for sobject in sobjects:
             my.delete_sobject(sobject)
 
             
     
-
+        
     def delete_sobject(my, sobject):
 
         search_type = sobject.get_base_search_type()
@@ -281,6 +463,7 @@ class DeleteCmd(Command):
             related_types = SearchType.get_related_types(search_type, direction="children")
         else:
             related_types = None
+
 
         # always delete notes and task and snapshot
         #if not related_types:
@@ -300,6 +483,7 @@ class DeleteCmd(Command):
                 for related_sobject in related_sobjects:
                     if related_type == 'sthpw/snapshot':
                         my.delete_snapshot(related_sobject)
+
                     else:
                         related_sobject.delete()
 
@@ -548,6 +732,7 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
 
         button = ActionButtonWdg(title="Cancel")
         button.add_style("float: left")
+        button.add_style("margin-left: 20px")
         button_div.add(button)
         button.add_behavior( {
         'type': 'click_up',
