@@ -415,22 +415,6 @@ class DeleteDelegateCmd(Command):
             cmd.execute()
 
 
-    def delete_sobject(my, sobject):
-
-        search_type = sobject.get_base_search_type()
-
-        # this is used by API method delete_sobject
-        auto_discover = my.kwargs.get("auto_discover")
-        
-        values = my.kwargs.get("values")
-        if values:
-            related_types = values.get("related_types")
-        elif auto_discover:
-            related_types = SearchType.get_related_types(search_type, direction="children")
-        else:
-            related_types = None
-
-       
 
 
 class DeleteCmd(Command):
