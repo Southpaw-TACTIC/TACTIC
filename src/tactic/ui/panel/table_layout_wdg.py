@@ -4968,7 +4968,7 @@ spt.table.delete_rows = function(rows) {
     var kwargs = {
       search_keys: search_keys,
     }
-    var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+    var popup = spt.panel.load_popup("Delete", class_name, kwargs);
 
     var on_post_delete = function() {
         var on_complete = function(id) {

@@ -666,7 +666,6 @@ spt.dg_table.delete_selected = function(table, kwargs)
     }
 
     var search_key_info = spt.dg_table.parse_search_key( selected_rows[0].getAttribute("spt_search_key") );
-    var title = 'Retire Delete Items:';
     var msg = 'Deleting ' + num + ' "' + search_key_info.search_type + '" items ...';
 
     var stype_display = search_key_info.search_type.split('/')[1];
@@ -4995,7 +4994,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
     var kwargs = {
       search_key: search_key,
     }
-    var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
+    var popup = spt.panel.load_popup("Delete", class_name, kwargs);
 
     var on_post_delete = function() {
         var on_complete = "$(id).setStyle('display', 'none')";
