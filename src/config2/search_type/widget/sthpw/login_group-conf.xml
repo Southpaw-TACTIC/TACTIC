@@ -165,9 +165,8 @@
         <display class='TextAreaWdg'/>
     </element>
 
-    <element name='add_to_project'>
-        <display class="tactic.ui.startup.SecurityAddGroupToProjectInputWdg"/>
-    </element>
+    <element name='add_to_project'/>
+  
     <!--<element name="sub_groups"/>-->
 </edit>
 
