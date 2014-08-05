@@ -89,7 +89,7 @@ class ZipUtil(object):
         outputZip = zip_path
 
 
-        zipOut = zipfile.ZipFile(outputZip, 'w', compression=zipfile.ZIP_DEFLATED)
+        zipOut = zipfile.ZipFile(outputZip, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True)
         
         rootLen = len(os.path.dirname(inputDir))
         def _ArchiveDirectory(parentDirectory):
