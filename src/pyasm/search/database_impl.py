@@ -1666,7 +1666,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     """
 
     def get_constraints(my, db_resource, table):
-        '''Get contraints primarily UNIQUE for PostgreSQL'''
+        '''Get contraints primarily UNIQUE, FOREIGN KEY for PostgreSQL'''
         from sql import Select, DbContainer
         constraints = []
         try:
@@ -1686,16 +1686,32 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             
             for constraint in constraints:
                 name = constraint.get('name')
-                statement = '''select pg_get_indexdef(oid) from pg_class where relname='%s';''' % name
-                sub_result = db.do_query(statement)
-                value = sub_result[0][0]
-                m = re.search(r'\((.*)\)', value, re.M)
-                group =  m.group()
-                columns = []
-                if group:
-                    columns = group.lstrip('(').rstrip(')')
-                    columns = columns.split(',')
-                constraint['columns'] = columns
+                mode = constraint.get('mode')
+                if mode == 'FOREIGN KEY':
+                    statement = '''select column_name
+                       from information_schema.key_column_usage where constraint_name IN (select constraint_name
+                       from information_schema.referential_constraints where constraint_name ='%s');''' % name
+                    sub_result = db.do_query(statement)
+                    value = sub_result[0][0]
+
+                    constraint['columns'] = [value]
+                    # derive the table(column) reference from constraint name
+                    parts = value.split('_')
+                    reference = '%s(%s)' %('_'.join(parts[:-1]), parts[-1])
+                    
+                    constraint['reference'] = reference
+
+                else:
+                    statement = '''select pg_get_indexdef(oid) from pg_class where relname='%s';''' % name
+                    sub_result = db.do_query(statement)
+                    value = sub_result[0][0]
+                    m = re.search(r'\((.*)\)', value, re.M)
+                    group =  m.group()
+                    columns = []
+                    if group:
+                        columns = group.lstrip('(').rstrip(')')
+                        columns = columns.split(',')
+                    constraint['columns'] = columns
         except Exception, e:
             print e
 
@@ -2748,10 +2764,7 @@ class SqliteImpl(PostgresImpl):
 
 
     def get_constraints(my, db_resource, table):
-
-        # FIXME: this only works with Sqlite!!!
-        # FIXME: this only works with Sqlite!!!
-        # FIXME: this only works with Sqlite!!!
+        '''get constraints for Sqlite'''
 
         from sql import Select, DbContainer
         db = DbContainer.get(db_resource)
@@ -2769,14 +2782,45 @@ class SqliteImpl(PostgresImpl):
                 parts = line.split(" ")
                 name = parts[1].strip('"')
                 mode = parts[2]
-                columns = parts[3].strip("(").strip(")").split(",")
-                # remove unicode
-                columns = [str(x) for x in columns]
+                
+                reference = ''
 
+                if mode == 'FOREIGN':
+                    mode = 'FOREIGN KEY'
+                    parts = line.split("REFERENCES ")
+                    reference = parts[-1]
+                    parts = reference.split(' ')
+                    reference = parts[0]
+                    column = re.sub(r'.*\(', '', reference)
+                    column = re.sub(r'\).*', '', column)
+                    columns = column.split(',')
+                else:
+                    columns = parts[3].strip("(").strip(")").split(",")
+                    # remove unicode
+                    columns = [str(x) for x in columns]
                 info = {
                     'name': name,
                     'columns': columns,
-                    'mode': mode
+                    'mode': mode,
+                    'reference': reference
+                }
+                constraints.append(info)
+            # in case it's created without the CONSTRAINT keyword
+            elif 'FOREIGN KEY' in line:
+                parts = line.split("REFERENCES ")
+                
+                reference = parts[-1]
+                parts = reference.split(' ')
+                reference = parts[0]
+                mode = 'FOREIGN KEY'
+                column = re.sub(r'.*\(', '', reference)
+                column = re.sub(r'\).*', '', column)
+                columns = column.split(',')
+                info = {
+                    'name': '',
+                    'columns': columns,
+                    'mode': mode,
+                    'reference': reference
                 }
                 constraints.append(info)
 

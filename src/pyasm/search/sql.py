@@ -3262,10 +3262,12 @@ class CreateTable(Base):
 
 
 
-    def add_constraint(my, columns, mode="UNIQUE"):
+    def add_constraint(my, columns, mode="UNIQUE", reference=""):
+        assert mode in ['UNIQUE','FOREIGN KEY']
         constraint = {
             'columns': columns,
-            'mode': mode
+            'mode': mode,
+            'reference': reference
         }
         my.constraints.append(constraint)
 
@@ -3320,11 +3322,17 @@ class CreateTable(Base):
         for constraint in my.constraints:
             columns = constraint.get("columns")
             mode = constraint.get("mode")
+            name = constraint.get("name")
             suffix = 'idx'
             if mode.upper() =='UNIQUE':
                 suffix = 'unique'
-            name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
+            if not name:
+                name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
             expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
+            if mode.upper() == 'FOREIGN KEY':
+                reference = constraint.get("reference")
+                expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
+                expr = '%s REFERENCES %s ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED'%(expr, reference)
             expressions.append(expr)
 
             # FIXME: not sure about this. Bad merge?  Besides, this is handled

@@ -18,7 +18,7 @@ from search import *
 from sql import *
 from database_impl import *
 from pyasm.biz import Project
-from pyasm.common import Container
+from pyasm.common import Container, Common
 from pyasm.unittest import UnittestEnvironment
 from pyasm.unittest import UnittestEnvironment
 
@@ -34,7 +34,7 @@ class SqlTest(unittest.TestCase):
 
         my.test_env = UnittestEnvironment()
         my.test_env.create()
-
+    
     def test_all(my):
 
       
@@ -209,7 +209,6 @@ class SqlTest(unittest.TestCase):
 
 
     def _test_create_table(my):
-
         create = CreateTable()
         create.set_table("coffee")
 
@@ -226,20 +225,19 @@ class SqlTest(unittest.TestCase):
         if sql.get_database_type() == "Oracle":
             expected = \
 '''CREATE TABLE "coffee" (
-    "id" NUMBER,
-    "type" VARCHAR2(10),
     "login" VARCHAR2(30),
-    "discussion" CLOB,
-    PRIMARY KEY ("id")
+    "type" VARCHAR2(10),
+    "id" NUMBER PRIMARY KEY,
+    "discussion" CLOB
 );'''
         else:
             expected = \
 '''CREATE TABLE "coffee" (
-    "id" int4,
-    "type" varchar(10),
     "login" varchar(30),
-    "discussion" text,
-    PRIMARY KEY ("id"));'''
+    "type" varchar(10),
+    "id" int4 PRIMARY KEY,
+    "discussion" text
+);'''
 
 
 
@@ -247,11 +245,60 @@ class SqlTest(unittest.TestCase):
         statement = statement.replace("    ", " ")
         statement = statement.replace("\t", " ")
         expected = expected.replace("\n", "")
-        statement = expected.replace("    ", " ")
-        statement = expected.replace("\t", " ")
+        expected = expected.replace("    ", " ")
+        expected = expected.replace("\t", " ")
 
         my.assertEquals(expected, statement)
 
+        # with FK or UNIQUE constraint
+        create = CreateTable()
+        create.set_table("bird")
+    
+        create.add_column("id", "int4")
+        create.add_column("login", "varchar(30)")
+        create.add_column("coffee_id", "int4")
+
+        sorted_dict = Common.sort_dict(create.data)
+        create.set_primary_key("id")
+        create.add_constraint(["login"], mode="UNIQUE")
+        create.add_constraint(["coffee_id"], mode="FOREIGN KEY", reference="coffee(id)")
+
+        
+        statement = create.get_statement()
+        db_res = DbResource.get_default('unittest')
+        sql = DbContainer.get(db_res)
+
+        # columns are not ordered since they are in a dict
+        if sql.get_database_type() == "Oracle":
+            expected = \
+'''CREATE TABLE "bird" (
+    "login" VARCHAR2(30),
+    "id" NUMBER,
+    "coffee_id" NUMBER,
+    PRIMARY KEY ("id")),
+    CONSTRAINT bird_login_unique UNIQUE (login),
+    CONSTRAINT bird_coffee_id FOREIGN KEY (coffee_id) REFERENCES coffee(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+);'''
+        else:
+            expected = \
+'''CREATE TABLE "bird" (
+    "login" varchar(30),
+    "id" int4 PRIMARY KEY,
+    "coffee_id" int4,
+    CONSTRAINT "bird_login_unique" UNIQUE (login),
+    CONSTRAINT "bird_coffee_id_idx" FOREIGN KEY (coffee_id) REFERENCES coffee(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+);'''
+
+
+
+        statement = statement.replace("\n", "")
+        statement = statement.replace("    ", " ")
+        statement = statement.replace("\t", " ")
+        expected = expected.replace("\n", "")
+        expected = expected.replace("    ", " ")
+        expected = expected.replace("\t", " ")
+
+        my.assertEquals(expected, statement)
 
 
 
