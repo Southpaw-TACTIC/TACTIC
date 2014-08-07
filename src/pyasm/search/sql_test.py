@@ -18,7 +18,7 @@ from search import *
 from sql import *
 from database_impl import *
 from pyasm.biz import Project
-from pyasm.common import Container, Common
+from pyasm.common import Container
 from pyasm.unittest import UnittestEnvironment
 from pyasm.unittest import UnittestEnvironment
 
@@ -258,7 +258,6 @@ class SqlTest(unittest.TestCase):
         create.add_column("login", "varchar(30)")
         create.add_column("coffee_id", "int4")
 
-        sorted_dict = Common.sort_dict(create.data)
         create.set_primary_key("id")
         create.add_constraint(["login"], mode="UNIQUE")
         create.add_constraint(["coffee_id"], mode="FOREIGN KEY", reference="coffee(id)")

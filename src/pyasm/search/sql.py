@@ -480,6 +480,9 @@ class Sql(Base):
                 auth = "%s/%s.db" % (db_dir, my.database_name)
                 my.conn = sqlite.connect(auth, isolation_level="DEFERRED" )
 
+                # turn FK ON
+                my.do_query("PRAGMA foreign_keys = ON")
+
                 # immediately cache all of the columns in the database.  This
                 # is because get_column_info in Sqlite requires a PRAGMA
                 # statement which forces a transaction to commit
