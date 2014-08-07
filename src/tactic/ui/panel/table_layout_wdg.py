@@ -1203,10 +1203,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         widths = my.kwargs.get("column_widths")
         #widths = []
+
+        # if no widths are specified, then calculate the widths
         if not widths:
             table.add_behavior( {
             'type': 'load',
-            'widths': widths,
             'cbjs_action': '''
             setTimeout( function() {
 
@@ -1617,7 +1618,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         if my.kwargs.get("show_select") not in [False, 'false']:
-            my.handle_select_header(table)
+            my.handle_select_header(table, border_color)
 
         # this comes from refresh
         widths = my.kwargs.get("column_widths")
@@ -2356,7 +2357,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
 
 
-    def handle_select_header(my, table):
+    def handle_select_header(my, table, border_color=None):
 
         if my.group_columns:
             spacing = len(my.group_columns) * 20
@@ -2366,7 +2367,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         th = table.add_cell()
         #th.add_gradient("background", "background", -10)
-        border_color = table.get_color("table_border", 0, default="border")
+        if not border_color:
+            border_color = table.get_color("table_border", 0, default="border")
         th.add_style("border", "solid 1px %s" % border_color)
         th.add_looks( 'dg_row_select_box' )
         th.add_style('width: 30px')
@@ -3218,6 +3220,7 @@ spt.table.add_new_item = function(kwargs) {
         row = table.getElement(".spt_table_row");
         position = "before";
     }
+
 
     var clone = spt.behavior.clone(insert_row);
 
@@ -4800,6 +4803,7 @@ spt.table.set_column_width = function(element_name, width) {
 
 
 
+
     var curr_header = spt.table.get_header_by_cell(cell);
 
     table.setStyle("width", total_width);
@@ -4809,8 +4813,8 @@ spt.table.set_column_width = function(element_name, width) {
     curr_header.setStyle("width", width);
     cell.setStyle("width", width);
 
-    size = curr_header.getSize();
-    size = cell.getSize();
+    //size = curr_header.getSize();
+    //size = cell.getSize();
 
 }
 
@@ -4861,7 +4865,7 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     return;
 
 
-
+    /*
     spt.table.smallest_size = -1;
 
     // set all of the header sizes
@@ -4899,6 +4903,7 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
         if (el == null) { continue; }
         spt.table.resize_div.push( el );
     }
+    */
 
 
 }

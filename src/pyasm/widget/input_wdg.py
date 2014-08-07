@@ -1314,7 +1314,6 @@ class SelectWdg(BaseInputWdg):
         my.add_color("color", "color")
         my.add_border()
 
-
         # default select element size to max of 20 ...
         sz = '20'
 
