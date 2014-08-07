@@ -558,9 +558,9 @@ class SecurityWdg(BaseRefreshWdg):
         div.add_style("margin: 10px")
         #div.add_style("width: 209px")
         #div.add_style("height: 64px")
-    div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
-    #div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
 
