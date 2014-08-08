@@ -959,6 +959,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         wdg_list = []
 
+        if my.kwargs.get("show_refresh") != 'false':
+            from tactic.ui.widget import ActionButtonWdg
+            button_div = DivWdg()
+            #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
+            button = ActionButtonWdg(title='Search')
+            my.run_search_bvr = my.kwargs.get('run_search_bvr')
+            if my.run_search_bvr:
+                button.add_behavior(my.run_search_bvr)
+            else:
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
+            } )
+
+            button_div.add(button)
+            button_div.add_style("margin-left: 10px")
+            wdg_list.append({'wdg': button_div})
+
+
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
@@ -1100,6 +1119,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         button_row_wdg = ButtonRowWdg(show_title=True)
 
+        """
         if my.kwargs.get("show_refresh") != 'false':
             button = ButtonNewWdg(title='Refresh', icon=IconWdg.REFRESH_GRAY)
             button_row_wdg.add(button)
@@ -1111,6 +1131,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
             } )
+        """
 
 
         # add an item button
@@ -1330,10 +1351,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         show_expand = my.kwargs.get("show_expand")
-        if show_expand in ['false', False]:
-            show_expand = False
-        else:
+        #if show_expand in ['false', False]:
+        #    show_expand = False
+        #else:
+        #    show_expand = True
+        if show_expand in ['true', True]:
             show_expand = True
+        else:
+            show_expand = False
         if not my.can_expand():
             show_expand = False
 
