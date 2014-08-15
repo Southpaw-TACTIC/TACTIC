@@ -567,7 +567,10 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 else:
                     text.add_attr('input_field_type', 'st')
 
-                text.set_option('read_only','true')
+                if my.kwargs.get('show_all_users')=='false':
+                    pass
+                else:
+                    text.set_option('read_only','true')
                 #TODO: while we may have multiple entries per task, we will only use the latest one here
                 # for now, making the UI cleaner
 
