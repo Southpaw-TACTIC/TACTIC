@@ -17,7 +17,7 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps
+from pyasm.common import jsonloads, jsondumps, Common
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
@@ -310,7 +310,16 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
     def get_width(my):
-        return 400
+        if my.sobjects:
+            sobject = my.sobjects[0]
+            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if not pipeline:
+                pipeline = Pipeline.get_by_code("task")
+            processes = pipeline.get_process_names()
+            return 120 * len(processes) + 10
+        else:
+            return 400
 
 
     def is_editable(cls):
@@ -737,7 +746,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             table.add_row()
             for process in processes:
-                td = table.add_cell(process)
+                title = Common.get_display_title(process)
+                td = table.add_cell(title)
                 td.add_style("width: 117px")
                 td.add_style("text-align: center")
                 td.add_style("font-weight: bold")
