@@ -405,9 +405,11 @@ spt.drop.src_el = null;
 spt.drop.sobject_drop_setup = function( evt, bvr )
 {
     var ghost_el = $("drag_ghost_copy");
-    ghost_el.setStyle("width","auto");
-    ghost_el.setStyle("height","auto");
-    ghost_el.setStyle("text-align","left");
+    if (ghost_el) {
+        ghost_el.setStyle("width","auto");
+        ghost_el.setStyle("height","auto");
+        ghost_el.setStyle("text-align","left");
+    }
 
     // Assumes that source items being dragged are from a DG table ...
     //var src_el = bvr.src_el; 
@@ -445,7 +447,9 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
     }
     inner_html.push("</pre>");
 
-    ghost_el.innerHTML = inner_html.join("");
+    if (ghost_el) {
+        ghost_el.innerHTML = inner_html.join("");
+    }
 }
 
 
