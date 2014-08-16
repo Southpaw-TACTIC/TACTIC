@@ -319,7 +319,7 @@ class WidgetConfig(Base):
                     value = value.replace("&amp;", "&")
                 values[name] = value
                  
-        elif handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg']:
+        elif handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg']:
             children = my.xml.get_children(node)
             values = {}
             for child in children:
