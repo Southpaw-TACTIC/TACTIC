@@ -765,7 +765,7 @@ class FileGroupCheckin(FileCheckin):
             else:
                 # create file_object
                 file_object = File.create(file_path, \
-                    my.sobject.get_search_type(), my.sobject.get_id(), file_type=file_type, st_size=my.file_sizes[i] )
+                    my.sobject.get_search_type(), my.sobject.get_id(), file_type=file_type, st_size=my.file_sizes[idx] )
                     
 
             if file_object == None:

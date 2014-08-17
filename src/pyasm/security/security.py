@@ -1208,7 +1208,7 @@ class Security(Base):
             try:
                 authenticate.add_user_info( my._login, password)
             except Exception, e:
-                raise SecurityException("Error updaing user info: %s" % e.__str__())
+                raise SecurityException("Error updating user info: %s" % e.__str__())
                 
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users

@@ -111,7 +111,9 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
             'currency':     ['-$1,234',
                              '-$1,234.00',
                              '-$1,234.--',
-                             '-1,234.00 CAD'],
+                             '-1,234.00 CAD',
+                             '($1,234.00)',
+                             ],
 
             'date':         ['31/12/99',
                              'December 31, 1999',

@@ -86,7 +86,7 @@ class IndexWdg2(Widget):
         search.add_order_by("category")
 
         projects = search.get_sobjects()
-
+        
         num = len(projects)
         # sort by project
         if num < 5:
@@ -291,6 +291,9 @@ class IndexWdg2(Widget):
              
                 code = project.get_code()
                 title = project.get_value("title")
+                # Restrict the length of project name
+                if len(title) >= 36:
+                    title = title[:36] + "..."
                 if app_name != 'Browser':
                     href = HtmlElement.href(HtmlElement.h2(title), ref='/tactic/%s/%s'\
                         %(code, app_name))
@@ -326,6 +329,7 @@ class IndexWdg2(Widget):
 
                 project_div = DivWdg()
                 td.add(project_div)
+                td.add_style("width: 230px")
                 project_div.add_style("font-size: 16px")
                 project_div.add_style("font-weight: bold")
                 project_div.add_style("vertical-align: middle")
@@ -337,6 +341,7 @@ class IndexWdg2(Widget):
                 project_div.add_style("height: %spx" % (icon_size-10))
 
                 project_div.add_style("padding: 8px 10px 2px 20px")
+                
                 project_div.add_color("background", "background")
                 project_div.add_behavior( {
                 'type': 'hover',

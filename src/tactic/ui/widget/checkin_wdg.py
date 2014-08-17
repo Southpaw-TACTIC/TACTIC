@@ -2199,6 +2199,7 @@ spt.app_busy.hide();
         # separate behavior for html5 check-in
         html5_behavior = {
             'type': 'click_up',
+            'validate_script_path': my.validate_script_path,
             'cbjs_action': '''
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
@@ -2221,6 +2222,12 @@ spt.checkin.html5_checkin = function(files) {
     var upload_complete = function() {
 
         try {
+            if (bvr.validate_script_path){
+                var script = spt.CustomProject.get_script_by_path(bvr.validate_script_path);
+                bvr['script'] = script;
+                spt.app_busy.show("Running Validation", bvr.validate_script_path);
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            } 
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2231,9 +2238,8 @@ spt.checkin.html5_checkin = function(files) {
         }
         catch(e) {
             progress.setStyle("background", "#F00");
-            alert(e);
-            progress.setStyle("background", "#F00");
             progress.setStyle("display", "none");
+            alert(e);
             throw(e);
             
         }

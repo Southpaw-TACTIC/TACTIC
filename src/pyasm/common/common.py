@@ -462,12 +462,11 @@ class Common(Base):
             # this part is too slow
             if not skip_dir_details:
                 for (path, dirs, files) in os.walk(unicode(dir)):
-                    
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
                             # ignore links
-                            pass
+                            pass                        
                         else:
                             try: 
                                 dir_size += os.path.getsize(filename)

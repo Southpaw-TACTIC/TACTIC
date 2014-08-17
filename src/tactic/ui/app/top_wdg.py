@@ -18,7 +18,7 @@ import js_includes
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads
 from pyasm.biz import Project
-from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette
+from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
 from pyasm.search import Search
 
@@ -741,6 +741,9 @@ class IndexWdg(Widget):
         return
 
 
+
+
+
 class SitePage(AppServer):
     def __init__(my, context=None):
         super(SitePage,my).__init__()
@@ -804,23 +807,36 @@ class SitePage(AppServer):
             hash = "/".join(hash)
         else:
             hash = None
+
+        # default index widget
         index = IndexWdg(hash=hash)
+
         return index
 
 
     def get_top_wdg(my):
+        #if not my.hash and not my.custom_url:
+        #    search = Search("config/url")
+        #    search.add_filter("url", "/index")
+        #    my.custom_url = search.get_sobject()
+
 
 
         # NOTE: this is not the right place for this, but it allows the
         # top widget to completely be customized
+
 
         # if there is a custom url, then handle it separately
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
+            elif bootstrap == 'true':
+                widget = BootstrapIndexWdg()
+                return widget
             else:
                 web = WebContainer.get_web()
                 hash = "/".join(my.hash)
@@ -831,6 +847,19 @@ class SitePage(AppServer):
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
         return my.top
+
+
+
+class BootstrapIndexWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = Widget()
+        from tactic.ui.panel import CustomLayoutWdg
+        widget = CustomLayoutWdg(view="bootstrap.basic.test_no_js", is_top=True)
+        top.add(widget)
+        return top
+
 
 
 

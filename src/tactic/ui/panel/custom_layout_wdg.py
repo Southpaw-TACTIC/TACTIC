@@ -424,8 +424,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 break
 
+            
+        if my.kwargs.get("is_top") in ['true', True]:
+            return html
 
-        if my.kwargs.get("is_refresh"):
+        elif my.kwargs.get("is_refresh"):
             return content
         else:
             return top

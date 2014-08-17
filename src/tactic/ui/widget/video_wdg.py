@@ -131,6 +131,7 @@ class VideoWdg(BaseRefreshWdg):
                 }
             }
             
+            
             '''
         } )
         #video.add_attr("data-setup", "{}")
