@@ -740,6 +740,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             table = my.table
             table.add_class("spt_table_table")
+            #table.add_style("font-size: 8px")
             scroll.add(table)
             #my.handle_headers(table)
             if table_width:
