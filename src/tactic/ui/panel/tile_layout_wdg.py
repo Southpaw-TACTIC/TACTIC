@@ -1136,7 +1136,10 @@ class ThumbWdg2(BaseRefreshWdg):
         if my.show_hover_name:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
-            name_hover.add(sobject.get('name'))
+            if sobject.get('title'):
+                name_hover.add(sobject.get('title'))
+            else:
+                name_hover.add(sobject.get('name'))
             name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
             div.add(name_hover)
