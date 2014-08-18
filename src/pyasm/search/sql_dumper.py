@@ -134,10 +134,22 @@ class TableSchemaDumper(object):
         for constraint in constraints:
             name = constraint.get("name")
             columns = constraint.get("columns")
+            reference = constraint.get("reference")
+            if not reference:
+                reference = ""
+            encoded_columns = []
+            for col in columns:
+                if isinstance(col, unicode):
+                    col = col.encode('utf-8')
+                encoded_columns.append(col)
             mode = constraint.get("mode")
             if not name:
-                name = "%s_%s_idx" % (name, "_".join(columns))
-            f.write('''table.add_constraint(%s, mode="%s")\n''' % (columns, mode))
+                name = "%s_%s_idx" % (name, "_".join(encoded_columns))
+            if reference:
+                f.write('''table.add_constraint(%s, mode="%s", reference="%s")\n''' % (encoded_columns, mode, reference))
+            else:
+                f.write('''table.add_constraint(%s, mode="%s")\n''' % (encoded_columns, mode))
+
             #def add_constraint(my, columns, mode="UNIQUE"):
 
 
