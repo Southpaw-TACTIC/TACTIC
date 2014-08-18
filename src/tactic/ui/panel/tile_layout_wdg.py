@@ -92,7 +92,16 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
-    ARGS_KEYS['show_name_hover'] = {
+    ARGS_KEYS['show_hover_name'] = {
+
+            'description': 'If set to true, the name is displayed when hover',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '10',
+            'category': 'Display'
+
+    }
+    ARGS_KEYS['use_title'] = {
 
             'description': 'If set to true, the name is displayed when hover',
             'type': 'SelectWdg',
@@ -330,9 +339,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.expand_mode = my.kwargs.get('expand_mode')
         my.show_drop_shadow = my.kwargs.get("show_drop_shadow")
         my.show_hover_name = my.kwargs.get("show_hover_name")
+        my.use_title = my.kwargs.get("use_title")
         my.show_name = my.kwargs.get('show_name')
         if my.show_hover_name == None:
             my.show_hover_name = "true"
+        if my.use_title == None:
+            my.use_title = "false"
         super(TileLayoutWdg, my).init()
 
 
@@ -698,6 +710,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         kwargs = {
             'show_hover_name': my.show_hover_name,
+            'use_title': my.use_title,
             'show_name': my.show_name,
             'aspect_ratio': my.aspect_ratio
         }
@@ -1071,6 +1084,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         my.path = None
         my.show_hover_name = my.kwargs.get('show_hover_name')
+        my.use_title = my.kwargs.get('use_title')
         my.show_name = my.kwargs.get('show_name')
         my.width = my.kwargs.get('width')
         my.aspect_ratio = my.kwargs.get('aspect_ratio')
@@ -1136,7 +1150,7 @@ class ThumbWdg2(BaseRefreshWdg):
         if my.show_hover_name:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
-            if sobject.get('title'):
+            if my.use_title == "true":
                 name_hover.add(sobject.get('title'))
             else:
                 name_hover.add(sobject.get('name'))
