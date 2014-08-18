@@ -1298,7 +1298,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return container
 
 
-
+    # DEPRECATED
+    """
     def get_container(my, xml):
         # handle the container
 
@@ -1368,7 +1369,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         container.add(title_wdg)
 
         return container
-
+    """
 
 
 
@@ -1458,7 +1459,7 @@ class TestStateWdg(BaseRefreshWdg):
 
 
 # DEPRECATED
-
+"""
 class ContainerWdg(BaseRefreshWdg):
 
     def get_args_keys(my):
@@ -1583,6 +1584,7 @@ class ContainerWdg(BaseRefreshWdg):
 
         return divider_div
 
+"""
 
 
 
@@ -1623,7 +1625,6 @@ class SObjectHeaderWdg(BaseRefreshWdg):
         div.add(HtmlElement.hr())
 
         return div
-
 
 
 

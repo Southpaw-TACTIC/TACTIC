@@ -21,7 +21,6 @@ from pyasm.command import Command
 from pyasm.widget import CheckboxWdg, BaseTableElementWdg, IconWdg, IconButtonWdg, ProdIconButtonWdg, HiddenWdg
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import RoundedCornerDivWdg
 from tactic.ui.widget import ActionButtonWdg
 
 
@@ -116,9 +115,6 @@ class SecurityManagerWdg(BaseRefreshWdg):
         project_div.add_style("padding: 10px")
         project_div.add_border()
         project_div.add_style("width: 300px")
-
-        #project_div = RoundedCornerDivWdg(hex_color_code="949494",corner_size="10")
-        #project_div.set_dimensions( width_str='175px', content_height_str='100px' )
 
         group = SearchKey.get_by_search_key(my.search_key)
 

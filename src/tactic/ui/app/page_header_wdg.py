@@ -20,7 +20,7 @@ from pyasm.widget import ThumbWdg, SelectWdg, ButtonWdg, TextWdg, CheckboxWdg, I
 
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import PopupWdg, RoundedCornerDivWdg, SmartMenu
+from tactic.ui.container import PopupWdg, SmartMenu
 #from tactic.ui.popups import HelpPopupWdg, ActionBarWdg
 from tactic.ui.widget import PageHeaderGearMenuWdg, TextBtnWdg, ActionButtonWdg
 from tactic.ui.input import UploadButtonWdg

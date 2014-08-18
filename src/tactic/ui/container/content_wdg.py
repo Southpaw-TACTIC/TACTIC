@@ -17,7 +17,6 @@ from pyasm.web import HtmlElement, DivWdg, Table
 from pyasm.widget import IconWdg, WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.panel import CustomLayoutWdg
 from tactic.ui.widget import IconButtonWdg
 
 
@@ -25,6 +24,9 @@ from tactic.ui.widget import IconButtonWdg
 class ContentBoxWdg(BaseRefreshWdg):
 
     def get_display(my):
+
+
+        from tactic.ui.panel import CustomLayoutWdg
 
         top = my.top
         top.add_class("spt_content_box")

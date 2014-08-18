@@ -23,7 +23,7 @@ from pyasm.web import DivWdg, SpanWdg, Table, WebContainer, HtmlElement, Widget
 from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, TextAreaWdg, TextWdg, ProdIconButtonWdg, CheckboxWdg, IconWdg, SwapDisplayWdg
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.filter import FilterData
-from tactic.ui.container import RoundedCornerDivWdg, TabWdg
+from tactic.ui.container import TabWdg
 from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWdg, ActionButtonWdg
 
 from dateutil import parser

@@ -4467,9 +4467,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
         aux_div.add_color("background", "background" )
         aux_div.add_color("color", "color" )
 
-        from tactic.ui.container import RoundedCornerDivWdg
-        #aux_rounded = RoundedCornerDivWdg(hex_color_code="2F2F2F",corner_size="10")
-        #aux_rounded.set_dimensions( width_str='100%', content_height_str=None )
         aux_rounded = DivWdg()
 
         aux_div.add(aux_rounded)

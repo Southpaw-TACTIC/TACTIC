@@ -19,7 +19,6 @@ from pyasm.search import TransactionLog, SearchType, Search
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer
 from pyasm.widget import FilterSelectWdg, IconRefreshWdg, CheckboxWdg, DateSelectWdg, DateTimeWdg
 from pyasm.biz import Project
-from pyasm.prod.web import DateFilterWdg
 
 
 
@@ -71,6 +70,7 @@ class UndoLogWdg(DivWdg):
 
 
         # add a time filter
+        from pyasm.prod.web import DateFilterWdg
         select = DateFilterWdg("undo_time_filter", label="Show Transaction Log From: ")
         select.set_label(["1 Hour Ago", "Today", "1 Day Ago", "1 Week Ago", "1 Month Ago"])
         select.set_value(["1 Hour", "today", "1 Day", "1 Week", "1 Month"])

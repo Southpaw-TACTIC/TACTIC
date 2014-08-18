@@ -501,7 +501,7 @@ class TopWdg(Widget):
 
         # add the copyright information
         widget.add( "<!--   -->\n")
-        widget.add( "<!-- Copyright (c) 2005-2013, Southpaw Technology - All Rights Reserved -->\n")
+        widget.add( "<!-- Copyright (c) 2005-2014, Southpaw Technology - All Rights Reserved -->\n")
         widget.add( "<!--   -->\n")
 
         return widget
@@ -516,6 +516,11 @@ class TopWdg(Widget):
 
         skin = web.get_skin()
 
+
+        # Bootstrap
+        #Container.append_seq("Page:css", "/plugins/spt/ui/bootstrap/css/bootstrap.min.css")
+
+
         # first load context css
         Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
@@ -524,6 +529,8 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
+
+
 
         # TEST
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
@@ -553,12 +560,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
-        # FIXME: this logic should not be located here.
-        # no reason to have the edit_area_full.js
-        #if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
-        #    if "edit_area/edit_area_full.js" in third_party:
-        #        third_party.remove("edit_area/edit_area_full.js")
-
 
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
@@ -577,9 +578,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
             for include in js_includes.legacy_app:
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
-
-        #Container.append_seq("Page:js", "http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject.js")
-        #Container.append_seq("Page:js", "/context/spt_js/UnityObject.js")
 
 
         widget = Widget()
@@ -856,7 +854,9 @@ class BootstrapIndexWdg(BaseRefreshWdg):
 
         top = Widget()
         from tactic.ui.panel import CustomLayoutWdg
-        widget = CustomLayoutWdg(view="bootstrap.basic.test_no_js", is_top=True)
+        #widget = CustomLayoutWdg(view="bootstrap.basic.test_mootools", is_top=True)
+        #widget = CustomLayoutWdg(view="bootstrap.basic.test2", is_top=True)
+        widget = CustomLayoutWdg(view="bootstrap.themes.jumbotron.main2", is_top=True)
         top.add(widget)
         return top
 

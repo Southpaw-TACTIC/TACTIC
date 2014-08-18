@@ -22,11 +22,11 @@ from pyasm.search import SearchType, Search, WidgetDbConfig, CreateTable, DbCont
 from pyasm.common import Xml, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 from tactic.ui.container import PopupWdg, DynamicListWdg
 from tactic.ui.widget import SearchTypeSelectWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 from tactic.ui.input import UploadButtonWdg 
+from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 
 class SearchTypeToolWdg(BaseRefreshWdg):
 
