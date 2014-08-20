@@ -17,6 +17,9 @@ from pyasm.widget import IconWdg
 from tactic.ui.common import BaseRefreshWdg
 
 
+# DEPRECATED
+
+
 class PopWindowWdg(BaseRefreshWdg):
 
     def get_args_keys(my):

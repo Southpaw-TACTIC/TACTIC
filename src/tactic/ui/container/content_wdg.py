@@ -14,7 +14,7 @@
 __all__ = ['ContentBoxWdg']
 
 from pyasm.web import HtmlElement, DivWdg, Table
-from pyasm.widget import IconWdg
+from pyasm.widget import IconWdg, WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import CustomLayoutWdg
@@ -157,6 +157,10 @@ class ContentBoxWdg(BaseRefreshWdg):
             if content_margin:
                 layout.add_style("margin", content_margin)
 
+        if config_xml:
+            config = WidgetConfig.get(view="tab", xml=config_xml)
+            layout = config.get_display_widget("content")
+            content_div.add(layout)
 
 
 
