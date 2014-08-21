@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['MainWdg']
+__all__ = ['MainWdg', 'SectionWdg']
 
 from pyasm.common import Environment, Common
 from pyasm.search import Search
@@ -23,18 +23,18 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 from tactic.ui.app import SearchWdg
 
-class MainWdg(BaseRefreshWdg):
-    '''This is the welcome widget widget will appear on creation of a new
-    project
-    '''
 
-    def get_args_keys(my):
-        return {
-        }
 
-    def init(my):
-        # clear the widget settings of last_search:sthpw/sobject_list
-        SearchWdg.clear_search_data('sthpw/sobject_list')
+class SectionWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        title = my.kwargs.get("title")
+        description = my.kwargs.get("description")
+        image = my.kwargs.get("image")
+        behavior = my.kwargs.get("behavior")
+
+        return my.get_main_section_wdg(title, description, image, behavior)
 
     def get_main_section_wdg(my, title, description, image, behavior):
 
@@ -80,10 +80,6 @@ class MainWdg(BaseRefreshWdg):
         bvr.src_el.setStyle("box-shadow", "0px 0px 15px " + bvr.shadow);
         ''',
         } )
-
-
-
-
 
         desc_div = DivWdg()
         desc_div.add(description)
@@ -159,6 +155,31 @@ class MainWdg(BaseRefreshWdg):
 
         return section_wdg
 
+
+
+
+class MainWdg(BaseRefreshWdg):
+    '''This is the welcome widget widget will appear on creation of a new
+    project
+    '''
+
+    def get_args_keys(my):
+        return {
+        }
+
+    def init(my):
+        # clear the widget settings of last_search:sthpw/sobject_list
+        SearchWdg.clear_search_data('sthpw/sobject_list')
+
+
+
+    def get_main_section_wdg(my, title, description, image, behavior):
+        section_wdg = SectionWdg()
+        return section_wdg.get_main_section_wdg(title, description, image, behavior)
+
+    def get_small_section_wdg(my, title, description, image, behavior):
+        section_wdg = SectionWdg()
+        return section_wdg.get_small_section_wdg(title, description, image, behavior)
 
 
     def get_display(my):

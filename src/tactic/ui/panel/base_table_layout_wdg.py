@@ -821,7 +821,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         column = "keywords"
         show_keyword_search = my.kwargs.get("show_keyword_search")
-        if show_keyword_search in ['True', 'true']:
+        if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
