@@ -157,6 +157,7 @@ class ContentBoxWdg(BaseRefreshWdg):
             if content_margin:
                 layout.add_style("margin", content_margin)
 
+        config_xml = my.kwargs.get("config_xml")
         if config_xml:
             config = WidgetConfig.get(view="tab", xml=config_xml)
             layout = config.get_display_widget("content")
