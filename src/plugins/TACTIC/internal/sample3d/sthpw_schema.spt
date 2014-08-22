@@ -1,0 +1,17 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/schema')
+insert.set_value('code', """sample3d""")
+insert.set_value('description', """sample3d test""")
+insert.set_value('schema', """<schema parent="__NONE__">
+  
+   <search_type name='prod/sequence'/>
+  
+   <search_type name='prod/shot'/>
+  
+   <search_type name='prod/asset'/>
+
+   <connect from='prod/shot' to='prod/sequence' relationship='code' type='hierarchy'/>
+
+ </schema>""")
+#-- End Entry --#
+

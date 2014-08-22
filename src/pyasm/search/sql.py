@@ -3327,6 +3327,9 @@ class CreateTable(Base):
             suffix = 'idx'
             if mode.upper() =='UNIQUE':
                 suffix = 'unique'
+            # could be a dangling constraint
+            if not columns:
+                continue
             name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
             expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
             expressions.append(expr)
