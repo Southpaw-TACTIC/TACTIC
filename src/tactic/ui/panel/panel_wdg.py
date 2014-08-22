@@ -2768,8 +2768,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'empty': 'true',
             'values': 'simple|insert',
             'order': 11
+        },
+        "show_name_hover" : {
+            'description': 'On hover over a tile, show the name of the image',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : 12
         }
-
     }
 
     def get_display(my):
@@ -3062,7 +3067,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
-
+        show_name_hover = my.kwargs.get("show_name_hover")
+        aspect_ratio = my.kwargs.get("aspect_ratio")
+        expand_mode = my.kwargs.get("expand_mode")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3123,8 +3130,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
             "mode": mode,
+            "expand_mode": expand_mode,
             "keywords": keywords,
             "filter": filter,
+            "show_name_hover": show_name_hover,
+            "aspect_ratio": aspect_ratio,
+            "expand_mode": expand_mode
             #"search_wdg": search_wdg
             
         }
