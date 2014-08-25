@@ -2928,6 +2928,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var do_initial_search = target.getAttribute("spt_do_initial_search");
     var init_load_num = target.getAttribute("spt_init_load_num");
     var mode = target.getAttribute("spt_mode");
+    var show_name_hover = target.getAttribute("spt_show_name_hover");
+    var expand_mode = target.getAttribute("spt_expand_mode");
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -2997,6 +2999,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'mode': mode,
         'is_refresh': 'true',
         'search_keys': search_keys,
+        'show_name_hover': show_name_hover,
+        'expand_mode': expand_mode
     }
 
     if (bvr.extra_args) {
