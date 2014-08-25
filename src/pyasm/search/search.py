@@ -4119,7 +4119,7 @@ class SObject(object):
         whenver there is a commit'''
         defaults = {}
         from pyasm.biz import ProdSetting
-        if ProdSetting.get_by_key('autofill_pipeline_code') != 'false':
+        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
             base_search_type = my.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
