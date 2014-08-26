@@ -779,7 +779,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #    if my.enable_eval_listener:
         #        my.add_js_expression(div, sobject, expression)
 
-        return div
+        return div, result
 
 
 
