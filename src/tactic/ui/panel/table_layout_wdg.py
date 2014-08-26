@@ -726,7 +726,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             init_load_num = int(init_load_num)
        
         # override init_load_num if group column has group_bottom
-        if my.has_group_bottom() or my.has_buttom():
+        if my.has_group_bottom() or my.has_get_bottom_wdg():
             init_load_num = -1
 
 
@@ -1657,7 +1657,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     return True
             
         return False
-    def has_buttom(my):
+    def has_get_bottom_wdg(my):
         '''return True if it has to deal with all tasks instead of four'''
         for widget in my.widgets:
 
