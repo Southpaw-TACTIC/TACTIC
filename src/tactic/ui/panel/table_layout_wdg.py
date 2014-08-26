@@ -726,7 +726,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             init_load_num = int(init_load_num)
        
         # override init_load_num if group column has group_bottom
-        if my.has_group_bottom():
+        if my.has_group_bottom() or my.has_bottom_wdg():
             init_load_num = -1
 
 
@@ -1656,6 +1656,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if expression:
                     return True
             
+        return False
+    def has_bottom_wdg(my):
+        '''return True if a widget has bottom widget defined'''
+        for widget in my.widgets:
+
+            if widget.get_bottom_wdg():
+                return True
+
         return False
 
     def postprocess_groups(my):

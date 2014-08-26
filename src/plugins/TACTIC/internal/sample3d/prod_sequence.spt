@@ -1,0 +1,26 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """prod/sequence""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """sequence""")
+insert.set_value('namespace', """prod""")
+insert.set_value('search_type', """prod/sequence""")
+insert.set_value('table_name', """sequence""")
+insert.set_value('default_layout', """table""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('prod/sequence')
+table.add('code',                     'varchar', length='30', not_null=True )
+table.add('description',              'text' )
+table.add('episode_code',             'varchar', length='256' )
+table.add('id',                       'serial', primary_key=True)
+table.add('s_status',                 'varchar', length='30' )
+table.add('sort_order',               'integer' )
+table.add('timestamp',                'timestamp' )
+table.add_constraint([u'code'], mode="UNIQUE")
+table.add_constraint(None, mode="FOREIGN KEY")
+#-- End Entry --#
+

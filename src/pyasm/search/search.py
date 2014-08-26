@@ -624,7 +624,8 @@ class Search(Base):
             return
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+
+        schema = Schema.get(project_code=my.project_code)
 
         if not relationship:
             relationship = schema.get_relationship(parent_search_type, search_type)
@@ -677,7 +678,7 @@ class Search(Base):
             return
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type, path)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -757,7 +758,8 @@ class Search(Base):
 
         search_type = my.get_base_search_type()
         related_type = sobjects[0].get_base_search_type()
-
+        project_code = my.project_code
+        # should go by this search_type's project_code
 
         # handle case where both search types are the same
         if search_type == related_type:
@@ -770,7 +772,7 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -928,7 +930,7 @@ class Search(Base):
             return True
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -1339,7 +1341,7 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(from_search_type, to_search_type, path=path)
         if not attrs:
             return
@@ -1994,6 +1996,7 @@ class Search(Base):
              return {}
 
         search_type = sobject.get_base_search_type()
+        project_code = sobject.get_project_code()
         if related_type == search_type:
             print "WARNING: source type is the same as related type [%s]" % search_type
             return {}
@@ -2017,7 +2020,7 @@ class Search(Base):
         related_type = SearchKey.extract_base_search_type(related_type)
         
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=project_code)
         attrs = schema.get_relationship_attrs(related_type, search_type, path=path )
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
@@ -3243,6 +3246,7 @@ class SObject(object):
     def set_sobject_value(my, sobject, type=None):
         # makes a relation to this input sobject
         from pyasm.biz import Schema
+
         schema = Schema.get()
         attrs = schema.get_relationship_attrs(
             my.get_base_search_type(),
@@ -4115,7 +4119,7 @@ class SObject(object):
         whenver there is a commit'''
         defaults = {}
         from pyasm.biz import ProdSetting
-        if ProdSetting.get_by_key('autofill_pipeline_code') != 'false':
+        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
             base_search_type = my.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
@@ -4543,7 +4547,8 @@ class SObject(object):
         search_type = my.get_base_search_type()
 
         from pyasm.biz import Schema
-        attrs = Schema.get().get_relationship_attrs(search_type, related_type)
+        schema = Schema.get(project_code=my.get_project_code())
+        attrs = schema.get_relationship_attrs(search_type, related_type)
         relationship = attrs.get('relationship')
         if relationship == 'many_to_many':
             return []
@@ -5997,9 +6002,10 @@ class SearchType(SObject):
 
     def get_related_types(cls, search_type, direction="children"):
         '''find all the downstream related types for delete purpose in delete_sobject() or DeleteToolWdg'''
+        from pyasm.biz import Schema, Project
+        project_code = Project.extract_project_code(search_type)
         
-        from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=project_code)
         related_types = schema.get_related_search_types(search_type, direction=direction)
         parent_type = schema.get_parent_type(search_type)
 

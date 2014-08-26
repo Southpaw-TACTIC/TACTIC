@@ -28,7 +28,7 @@ from pyasm.unittest import Person
 from task import Task
 from project import Project
 
-from pyasm.unittest import UnittestEnvironment
+from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 from expression import *
 
@@ -45,6 +45,8 @@ class ExpressionTest(unittest.TestCase):
 
         test_env = UnittestEnvironment()
         test_env.create()
+        sample3d_env = Sample3dEnvironment()
+        sample3d_env.create()
 
         Project.set_project("unittest")
 
@@ -147,10 +149,36 @@ class ExpressionTest(unittest.TestCase):
             my._test_color()
             my._test_connection()
             my._test_cache()
+            my._test_cross_proj_count()
         finally:
             my.transaction.rollback()
 
             test_env.delete()
+            sample3d_env.delete()
+
+    def _test_cross_proj_count(my):
+
+        Project.set_project("sample3d")
+        expression = "@COUNT(prod/shot?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+        expression = "@COUNT(prod/sequence?project=sample3d.prod/shot)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+
+        expression = "@COUNT(prod/sequence?project=sample3d.prod/shot?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+
+        expression = "@COUNT(prod/sequence?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 1
+        my.assertEquals(count, result)
+        
+        Project.set_project("unittest")
 
     def _test_utf8(my):
         desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
