@@ -27,6 +27,8 @@ from layout_wdg import SwitchLayoutMenu
 import random, types, re
 
 
+
+
 class BaseTableLayoutWdg(BaseConfigWdg):
 
     GROUP_WEEKLY = "weekly"
@@ -506,7 +508,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             my.search_limit.set_search(search)
             my.search_limit.alter_search(search)
-
 
 
 
@@ -1832,7 +1833,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                               'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
-         # Group By Week Optional menu item ...
+        # Group By Week Optional menu item ...
         menu_data.append( {
             "type": "action",
             "label": "Group By Month",
@@ -1859,6 +1860,55 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                               'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
+        # Group Advanced menu item ...
+        menu_data.append( {
+            "type": "action",
+            "label": "Group (Advanced)",
+
+            
+            "bvr_cb": {
+                "args": {
+                    'title': 'Group - Advanced',
+                    'search_type': my.search_type,
+                    'target_id': my.target_id
+                },
+
+                'cbjs_action':
+                '''
+                var activator = spt.smenu.get_activator(bvr);
+
+
+                    var search_group_el = activator.getParent(".spt_layout").getElement(".spt_search_group");
+                    //var group_by = activator.getProperty("spt_element_name");
+                    var group_by = search_group_el.value;
+
+                    var activator = spt.smenu.get_activator(bvr);
+                    var table = activator.getParent('.spt_table');
+                    var panel = activator.getParent('.spt_panel');
+                    var layout = activator.getParent('.spt_layout');
+                   
+
+                    if (layout.getAttribute("spt_version") == "2") {
+                        spt.table.set_layout(layout);
+                        element_names = spt.table.get_element_names();
+                    }
+                    else {
+                        element_names = spt.dg_table.get_element_names(table); 
+                    }
+                    bvr.args.element_names = element_names;
+                    
+                    bvr.args.group_by = group_by;
+
+
+                    var class_name = 'tactic.ui.panel.TableGroupManageWdg';
+                    var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    popup.activator = activator;
+                    popup.panel = panel;
+                '''
+            },
+            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+        } )    
       
         menu_data.append( {
             "type": "separator"
@@ -2063,6 +2113,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "args": {
                     'title': 'Column Manager',
                     'search_type': my.search_type,
+                    'target_id': my.target_id
                 },
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
@@ -2121,13 +2172,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
 
+        group_columns = my.kwargs.get("group_elements")
+        
         # Remove Grouping menu item ...
         menu_data.append( {
             "type": "action",
             "label": "Remove Grouping",
             "bvr_cb": {
+                "group_elements": group_columns,
                 'cbjs_action':
                     '''
+                    if (bvr.group_elements) {
+                        spt.info('[' + bvr.group_elements +  '] has been defined for this view for grouping. Only user-controlled grouping is removed. ');
+                    }
                     var activator = spt.smenu.get_activator(bvr);
                     var el = activator.getParent(".spt_layout").getElement(".spt_search_group");
                     el.value = "";
