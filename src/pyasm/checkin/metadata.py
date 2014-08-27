@@ -531,12 +531,14 @@ class FFProbeMetadataParser(BaseMetadataParser):
         }
 
 
-'''Grab IPTC data from files. This requires use of ExifMetadataParser.'''
-class IPTCDataExtractor(BaseMetadataParser):
 
-    '''Function by Christina. Extracts IPTC metadata given a path to an image.
-       Returns IPTC metadata as a dictionary'''
+class IPTCDataExtractor(BaseMetadataParser):
+    '''Grab IPTC data from files. This requires use of ExifMetadataParser.'''
+
+    
     def get_iptc_keywords(my, path, parser_path = ""):
+        '''Extracts IPTC metadata given a path to an image.
+        Returns IPTC metadata as a dictionary'''
 
         ret = {} # dictionary with metadata to be returned
 
@@ -570,9 +572,10 @@ class IPTCDataExtractor(BaseMetadataParser):
         return ret
 
 
-    '''Function by Christia: Given XMP data as a string, parse it for Keywords of IPTC metadata, and
-       return it as a string, with values separated by spaces.'''
+    
     def get_keywords_metadata_from_xmp(my, xmp_data):
+        '''Given XMP data as a string, parse it for Keywords of IPTC metadata, and
+       return it as a string, with values separated by spaces.'''
 
         keywords_list = []
         
@@ -585,7 +588,7 @@ class IPTCDataExtractor(BaseMetadataParser):
 
         # find all words between tags.
         # aka, search for words btween <tag>words</tag>
-        keywords_list = re.findall('>\S*<', dc_subject_str)
+        keywords_list = re.findall('>[^ <\t\n\r\f\v]*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
         for i in range(len(keywords_list)):
@@ -602,8 +605,6 @@ class IPTCDataExtractor(BaseMetadataParser):
 
         import subprocess, re
 
-        # Christina's stuff
-
         iptc_data = {} # dictionary to hold iptc data
 
         # make it an option to extract IPTC data from a file
@@ -615,8 +616,6 @@ class IPTCDataExtractor(BaseMetadataParser):
             else:
                 iptc_data = my.get_iptc_keywords(path)
             return iptc_data
-
-        # end Christina's stuff
 
 
 
