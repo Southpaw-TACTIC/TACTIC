@@ -1290,12 +1290,14 @@ class GanttElementWdg(BaseTableElementWdg):
 
         corners = ['TL','TR','BL','BR']
 
+        start_sobj_date = start_sobj_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_sobj_date = end_sobj_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
         duration_width = end_width - start_width
         diff = end_sobj_date - start_sobj_date
 
 
-        my.days = round(float(diff.seconds)/3600/24) + diff.days + 1
+        my.days = diff.days + 1
 
         duration = my.get_duration_wdg( duration_width, color, height, corners=corners, day_data=day_data)
         widget.add(duration)
