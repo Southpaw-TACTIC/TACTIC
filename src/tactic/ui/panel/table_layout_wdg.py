@@ -1658,7 +1658,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             
         return False
     def has_bottom_wdg(my):
-        '''return True if it has get_bottom_wdg'''
+        '''return True if a widget has bottom widget defined'''
         for widget in my.widgets:
 
             if widget.get_bottom_wdg():
