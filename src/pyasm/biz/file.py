@@ -621,7 +621,11 @@ class IconCreator(object):
         try:
             subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
                     "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
-            my.web_path = tmp_web_path
+            
+            if os.path.exists(tmp_web_path):
+                my.web_path = tmp_web_path
+            else:
+                my.web_path = None
 
         except IOError, e:
             Environment.add_warning("Could not process file", \
@@ -631,24 +635,17 @@ class IconCreator(object):
         try:
             subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
-            my.icon_path = tmp_icon_path
+            
+            if os.path.exists(tmp_icon_path):
+                my.icon_path = tmp_icon_path
+            else:
+                my.icon_path = None
 
         except IOError, e:
             Environment.add_warning("Could not process file", \
                 "%s - %s" % (my.file_path, e.__str__()))
             pass
         
-        exists_web = os.path.exists(tmp_web_path)
-        exists_icon = os.path.exists(tmp_icon_path)
-
-        if not exists_web:
-            my.web_path = None
-        if not exists_icon:
-            my.icon_path = None
-
-
-
-
 
     def _process_image(my, file_name):
 
