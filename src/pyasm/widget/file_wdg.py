@@ -784,7 +784,13 @@ class ThumbWdg(BaseTableElementWdg):
             return my.get_no_icon_wdg(missing=True)
 
         if my.icon_type == 'default':
-            if icon_size > 120:
+            # Fix Template icon_size=100% icon_type always load web versions
+            if type(icon_size) == types.StringType and icon_size.endswith("%"):
+                icon_size_check = int(icon_size[0:-1])
+            else:
+                icon_size_check = icon_size
+	
+            if icon_size_check > 120:
                 icon_type = 'web'
             else:
                 icon_type = 'icon'
