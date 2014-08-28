@@ -3135,7 +3135,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             "filter": filter,
             "show_name_hover": show_name_hover,
             "aspect_ratio": aspect_ratio,
-            "expand_mode": expand_mode
             #"search_wdg": search_wdg
             
         }
