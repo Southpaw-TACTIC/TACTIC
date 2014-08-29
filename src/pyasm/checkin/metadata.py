@@ -546,6 +546,13 @@ class IPTCDataExtractor(BaseMetadataParser):
         type_start = path.rfind(".")
         image_type = path[type_start:]
 
+        # check if exiftool exists first:
+        from distutils.spawn import find_executable
+        exiftool_exists = find_executable("exiftool", path=parser_path)
+        if not exiftool_exists:
+            print "WARNING: exiftool does not exist at path %s" %(parser_path)
+            return "WARNING: exiftool does not exist at path %s" %(parser_path)
+
         # get IPTC data from exiftool
 
         # For windows, use parser_path for exiftool.exe
@@ -553,7 +560,7 @@ class IPTCDataExtractor(BaseMetadataParser):
             exif_process = subprocess.Popen([parser_path,'-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
             exif_process = subprocess.Popen([parser_path,'-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
  
-         # For linux, use command-line exiftool
+        # For linux, use command-line exiftool
         else:
             exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
             exif_process = subprocess.Popen(['exiftool','-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
