@@ -173,13 +173,13 @@ class FormatElementWdg(SimpleTableElementWdg):
             title = ''
 
         format = my.get_option('format')
-        result = my.get_format_value( result, format )
+        formatted_result = my.get_format_value( result, format )
 
         div = DivWdg()
-        div.add(str(result))
+        div.add(str(formatted_result))
         div.add_style("text-align: right")
 
-        return div
+        return div, result
 
 
 
