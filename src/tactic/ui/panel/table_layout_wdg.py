@@ -1739,7 +1739,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 tmp = widget.get_group_bottom_wdg(sobjects)
                 option = my.widget_summary_option.get(widget)
                 
-                if tmp and len(tmp) == 2:
+                if tmp and isinstance(tmp, tuple):
                     group_widget = tmp[0]
                     result = tmp[1]
                 else:
@@ -5676,6 +5676,8 @@ class TableGroupManageWdg(BaseRefreshWdg):
             elements_wdg.add(menu_item)
 
         group_drop = FloatDivWdg()
+        color = group_drop.get_color('color2')
+        group_drop.add_border(color=color)
         group_title = DivWdg('Group Columns')
         group_title.add_style('font-size: 14px')
         group_title.add_style('margin-bottom', '10px')
@@ -5688,7 +5690,6 @@ class TableGroupManageWdg(BaseRefreshWdg):
                                } ) 
         group_drop.add_behavior( { 'type': 'load', 
                                "cbjs_action": '''var del_els = bvr.src_el.getElements('.spt_del');
-                               //console.log(del_els)
                                                 for (var k =0; k < del_els.length; k++)
                                                     spt.show(del_els[k]);
 
