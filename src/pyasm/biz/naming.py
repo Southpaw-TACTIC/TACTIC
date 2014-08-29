@@ -793,7 +793,7 @@ class NamingUtil(object):
                 env_sobjects = {
                     'snapshot': snapshot,
                 }
-                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, vars=vars, single=True)
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
             
             elif part.find(".") != -1:
                 # explict declarasions
