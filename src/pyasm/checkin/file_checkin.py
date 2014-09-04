@@ -822,7 +822,7 @@ class FileGroupCheckin(FileCheckin):
             
         if new_file_path.find('#') == -1 and new_file_path.find('%') == -1:
             file_dir,file_ext = os.path.splitext(new_file_path)
-            new_file_path = "%s_####%s" % (file_dir,file_ext)
+            new_file_path = "%s.####%s" % (file_dir,file_ext)
 
             #raise CheckinException('The naming convention should be returning\
             #a path name with #### or %%0.4d notation in it. [%s] found instead.' % new_file_path)
