@@ -1444,21 +1444,18 @@ class WebLoginCmd(Command):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def re_enable_user(my,loginSobject,delay):
+    def reenable_user(my, login_sobject, delay):
         class EnableUserTask(SchedulerTask):
             def execute(my):
                 Batch()
-                print("inside execute")
                 reset_attempts = 0
-                loginSobject = my.kwargs.get('sobject')
-                print(loginSobject)
-                loginSobject.set_value("license_type","user")
-                loginSobject.set_value("login_attempt",reset_attempts)
-                loginSobject.commit()
+                login_sobject = my.kwargs.get('sobject')
+                login_sobject.set_value("license_type", "user")
+                login_sobject.set_value("login_attempt", reset_attempts)
+                login_sobject.commit()
 
         scheduler = Scheduler.get()
-        print(loginSobject)
-        task = EnableUserTask(sobject=loginSobject,delay=delay)
+        task = EnableUserTask(sobject=login_sobject, delay=delay)
         scheduler.add_single_task(task, delay)
         scheduler.start_thread()
 
@@ -1514,22 +1511,22 @@ class WebLoginCmd(Command):
 
             search = Search("sthpw/login")
             search.add_filter('login',my.login)
-            loginSobject = search.get_sobject()
+            login_sobject = search.get_sobject()
             max_attempts=-1
             try:
                 max_attempts = int(Config.get_value("security", "max_attempts"))
             except:
                 pass
             if max_attempts >0:
-                login_attempt = loginSobject.get_value('login_attempt')
+                login_attempt = login_sobject.get_value('login_attempt')
 
                 login_attempt = login_attempt+1
-                loginSobject.set_value('login_attempt',login_attempt)
+                login_sobject.set_value('login_attempt', login_attempt)
 
-                if login_attempt >= max_attempts:
+                if login_attempt == max_attempts:
                     #set license_Type to disabled and set off the thread to re-enable it
-                    loginSobject.set_value('license_type','disabled')
-                    disabled_time = Config.get_value("security","account_disable_time")
+                    login_sobject.set_value('license_type', 'disabled')
+                    disabled_time = Config.get_value("security", "account_disable_time")
                     delay,unit = disabled_time.split(" ")
                     if "minute" in unit:
                         delay = int(delay)*60
@@ -1540,10 +1537,10 @@ class WebLoginCmd(Command):
                     else:
                         delay = int(delay)
 
-                    my.re_enable_user(loginSobject,delay)
+                    my.reenable_user(login_sobject, delay)
 
                 
-            loginSobject.commit()
+            login_sobject.commit()
             
         if security.is_logged_in():
 
