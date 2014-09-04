@@ -627,8 +627,8 @@ class IconCreator(object):
             else:
                 my.web_path = None
 
-            except Exception, e:
-                Environment.add_warning("Could not process file", \
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
            
@@ -641,11 +641,10 @@ class IconCreator(object):
             else:
                 my.icon_path = None
 
-            except Exception, e:
-                Environment.add_warning("Could not process file", \
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
                     "%s - %s" % (my.file_path, e.__str__()))
             pass
-        
 
     def _process_image(my, file_name):
 
