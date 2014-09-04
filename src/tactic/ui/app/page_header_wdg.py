@@ -50,8 +50,9 @@ class PageHeaderWdg(Widget):
 
 
         # tactic logo and release info
-        skin = web.get_skin()
-        src = '/context/skins/' + skin + '/images/tactic_logo.png'
+        #skin = web.get_skin()
+        #src = '/context/skins/' + skin + '/images/tactic_logo.png'
+        src = '/context/tactic_logo.png'
         img = HtmlElement.img(src)
         img.add_class('hand')
         img.add_attr('title', 'Go to home page')

@@ -124,7 +124,7 @@ class TextInputWdg(BaseInputWdg):
         my.border_color = my.text.get_color("border")
 
         my.text.add_class("spt_text_input")
-        my.text.add_style("padding: 4px")
+        #my.text.add_style("padding: 4px")
 
         if my.readonly:
             bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
@@ -134,6 +134,9 @@ class TextInputWdg(BaseInputWdg):
 
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
+
+            # DEPRECATED
+            """
             my.text.add_behavior( {
                 'type': 'blur',
                 'bgcolor': bgcolor,
@@ -162,6 +165,7 @@ class TextInputWdg(BaseInputWdg):
                 spt.input.set_error(bvr.src_el);
                 '''
                 } )
+            """
  
        
         my.top = DivWdg()
@@ -382,8 +386,55 @@ class TextInputWdg(BaseInputWdg):
             height = 32 
 
 
+
+
+        # BOOTSTRAP
+        div = DivWdg()
+        top.add(div)
+        div.add_class("form-group")
+        label = None
+        if label:
+            label_wdg = HtmlElement.label()
+            div.add(label)
+            label_wdg.add_class("control-label")
+            label_wdg.add_attr("for", "inputSuccess1")
+            label_wdg.add(my.name)
+
+        #text = TextWdg(my.name)
+        #text = HtmlElement.text()
+        #text.add_attr("name", my.name)
+        #text.add_class("form-control")
+
+        div.add(my.text)
+        my.text.add_class("form-control")
+
+        """
+        <div class="form-group">
+          <label class="control-label" for="inputSuccess1">Test Input</label>
+          <input type="text" class="form-control" id="inputSuccess1"/>
+        </div>
+        """
+
+        my.text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var el = bvr.src_el.getParent(".form-group");
+            if (value == "foo") {
+                el.addClass("has-error");
+                el.removeClass("has-success");
+            }
+            else {
+                el.addClass("has-success");
+                el.removeClass("has-error");
+            }
+            '''
+        } )
+
+
+
         table = Table()
-        top.add(table)
+        #top.add(table)
         tr = table.add_row()
         table.add_style("width: %s" % my.width)
 
@@ -430,14 +481,17 @@ class TextInputWdg(BaseInputWdg):
         #my.text.add_style("-moz-border-radius: 5px")
         #my.text.set_round_corners()
 
-        td = table.add_cell(my.text)
+        td = table.add_cell()
+
+        td.add(my.text)
         td.add_style("position: relative")
+
 
 
         td.add_style("border-color: %s" % my.border_color)
         td.add_style("border-width: 1px 0px 1px 1px")
         td.add_style("border-style: solid")
-        my.text.add_style("border: none")
+        #my.text.add_style("border: none")
 
         my.text.add_style("width: 100%")
 
@@ -463,20 +517,16 @@ class TextInputWdg(BaseInputWdg):
         if WebContainer.get_web().get_browser() in ['Webkit', 'Qt']:
             top_offset = '-2'
             right_offset = '6'
-        #elif WebContainer.get_web().get_browser() == 'Qt':
-        #    top_offset = '4'
-        #    right_offset = '6'
         else:
             top_offset = '6'
             right_offset = '8'
 
-        #icon_wdg.add_style("top: %spx" %top_offset)
-        #icon_wdg.add_style("right: %spx" % right_offset)
         icon_wdg.add_style("top: 0px")
         icon_wdg.add_style("right: 0px")
 
 
         if not my.readonly:
+            """
 
             icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE, inline=False)
             icon.add_class("spt_icon_inactive")
@@ -527,6 +577,7 @@ class TextInputWdg(BaseInputWdg):
                 spt.validation.onchange_cbk(evt, bvr2);
                 '''%input_type
             } )
+            """
 
         return top
 

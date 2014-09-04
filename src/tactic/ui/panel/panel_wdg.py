@@ -1445,8 +1445,6 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         if width == "100%":
             div.add_style("min-width: 175px")
 
-        div.add("cowcowcow")
-
 
         # create the top widgets
         label = SpanWdg()

@@ -518,7 +518,7 @@ class TopWdg(Widget):
 
 
         # Bootstrap
-        #Container.append_seq("Page:css", "/plugins/spt/ui/bootstrap/css/bootstrap.min.css")
+        Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
 
 
         # first load context css
@@ -813,6 +813,8 @@ class SitePage(AppServer):
 
 
     def get_top_wdg(my):
+
+
         #if not my.hash and not my.custom_url:
         #    search = Search("config/url")
         #    search.add_filter("url", "/index")
@@ -855,8 +857,8 @@ class BootstrapIndexWdg(BaseRefreshWdg):
         top = Widget()
         from tactic.ui.panel import CustomLayoutWdg
         #widget = CustomLayoutWdg(view="bootstrap.basic.test_mootools", is_top=True)
-        #widget = CustomLayoutWdg(view="bootstrap.basic.test2", is_top=True)
         widget = CustomLayoutWdg(view="bootstrap.themes.jumbotron.main2", is_top=True)
+        #widget = CustomLayoutWdg(view="bootstrap.basic.test2", is_top=True)
         top.add(widget)
         return top
 

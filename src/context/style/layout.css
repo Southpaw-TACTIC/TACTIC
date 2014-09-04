@@ -40,12 +40,12 @@ table {
 
 
 /* style for all "select" and "text" and "password" input fields */
+/*
 .inputfield {
     font-family: sans-serif, times;
     font-size: 1.0em;
     margin: 0px;
 }
-
 
 input {
     font-size: 1.0em;
@@ -64,10 +64,15 @@ textarea {
 select {
     font-size: 0.9em;
 }
+*/
+
+
 
 div {
     margin: 0px 0px 0px 0px;
-    border-width: 1px
+    border-width: 1px;
+    box-sizing: content-box;
+    -webkit-box-sizing: content-box;
 }
 
 span {

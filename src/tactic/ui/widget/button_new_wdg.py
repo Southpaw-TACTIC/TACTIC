@@ -1229,6 +1229,12 @@ class ActionButtonWdg(DivWdg):
         else:
 	    button.add_style("top: 6px")
 
+        # BOOTSTRAP
+        button.add_class('btn')
+        button.add_class('btn-default')
+        button.add_class('btn-sm')
+        button.add_style("top: 0px")
+
 
         button.add_attr('spt_text_label', title)
         td.add_class("spt_action_button_hit")

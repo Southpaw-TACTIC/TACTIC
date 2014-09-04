@@ -569,13 +569,11 @@ class TextWdg(BaseTextWdg):
     def __init__(my,name=None, label=None):
         super(TextWdg,my).__init__(name,"input", label=label)
         my.css = "inputfield"
-        my.add_class(my.css)
+        #my.add_class(my.css)
         my.add_class("spt_input")
-        #my.add_class("spt_input_text")
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        #my.add_style("width: 200px")
-        my.add_border()
+        #my.add_color("background", "background", 10)
+        #my.add_color("color", "color")
+        #my.add_border()
     
    
 
@@ -999,6 +997,7 @@ class SelectWdg(BaseInputWdg):
         my.add_class("spt_input")
 
 
+
     def get_related_type(my):
         # In order to get the related type, the dom options need to have
         # been processed
@@ -1331,6 +1330,9 @@ class SelectWdg(BaseInputWdg):
         # store configured size of SELECT to be used later on the client side to set the
         # SELECT drop down size ...
         my.set_attr('spt_select_size',sz)
+
+        # BOOTSTRAP
+        my.add_class("form-control")
 
 
         # assign all the labels and values

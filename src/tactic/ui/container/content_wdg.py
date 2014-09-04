@@ -78,7 +78,7 @@ class ContentBoxWdg(BaseRefreshWdg):
             border: none;
             background: %(background3)s;
             color: %(color3)s;
-            height: 20px;
+            height: 18px;
             padding: 6px 8px;
             font-weight: bold;
             font-size: 1.2em;
