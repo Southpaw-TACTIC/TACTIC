@@ -29,10 +29,11 @@ import types
 
 from pyasm.common import *
 from pyasm.security import *
-from pyasm.command import Command, PasswordAction
+from pyasm.command import Command, PasswordAction, SignOutCmd
 from pyasm.biz import Schema
 from pyasm.web import *
 
+from tactic.command import Scheduler, SchedulerTask
 from input_wdg import *
 from shadowbox_wdg import *
 from icon_wdg import *
@@ -1442,6 +1443,22 @@ class WebLoginCmd(Command):
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
+
+    def reenable_user(my, login_sobject, delay):
+        class EnableUserTask(SchedulerTask):
+            def execute(my):
+                Batch()
+                reset_attempts = 0
+                login_sobject = my.kwargs.get('sobject')
+                login_sobject.set_value("license_type", "user")
+                login_sobject.set_value("login_attempt", reset_attempts)
+                login_sobject.commit()
+
+        scheduler = Scheduler.get()
+        task = EnableUserTask(sobject=login_sobject, delay=delay)
+        scheduler.add_single_task(task, delay)
+        scheduler.start_thread()
+
               
     def execute(my):
 
@@ -1490,6 +1507,41 @@ class WebLoginCmd(Command):
                 msg = "Incorrect username or password"
             web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
 
+            login_code = "admin"
+
+            search = Search("sthpw/login")
+            search.add_filter('login',my.login)
+            login_sobject = search.get_sobject()
+            max_attempts=-1
+            try:
+                max_attempts = int(Config.get_value("security", "max_attempts"))
+            except:
+                pass
+            if max_attempts >0:
+                login_attempt = login_sobject.get_value('login_attempt')
+
+                login_attempt = login_attempt+1
+                login_sobject.set_value('login_attempt', login_attempt)
+
+                if login_attempt == max_attempts:
+                    #set license_Type to disabled and set off the thread to re-enable it
+                    login_sobject.set_value('license_type', 'disabled')
+                    disabled_time = Config.get_value("security", "account_disable_time")
+                    delay,unit = disabled_time.split(" ")
+                    if "minute" in unit:
+                        delay = int(delay)*60
+                    
+                    elif "hour" in unit:
+                        delay =int(delay)*3600
+                    
+                    else:
+                        delay = int(delay)
+
+                    my.reenable_user(login_sobject, delay)
+
+                
+                login_sobject.commit()
+            
         if security.is_logged_in():
 
             # set the cookie in the browser

@@ -4756,6 +4756,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp = hpy()
         hp.setrelheap()
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
 
         try:
             try:
@@ -4909,6 +4913,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return ret_val
 
+   
+
         
     @xmlrpc_decorator
     def execute_cmd(my, ticket, class_name, args={}, values={}, use_transaction=True):
@@ -4924,6 +4930,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
+        
         ret_val = {}
 
         try:
