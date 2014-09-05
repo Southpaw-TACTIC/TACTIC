@@ -4756,8 +4756,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp = hpy()
         hp.setrelheap()
         '''
-        
-        Ticket.update_session_expiry()
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
 
         try:
             try:
@@ -4928,7 +4930,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
-        Ticket.update_session_expiry()
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
         
         ret_val = {}
 

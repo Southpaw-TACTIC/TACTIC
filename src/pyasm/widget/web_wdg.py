@@ -1540,7 +1540,7 @@ class WebLoginCmd(Command):
                     my.reenable_user(login_sobject, delay)
 
                 
-            login_sobject.commit()
+                login_sobject.commit()
             
         if security.is_logged_in():
 
