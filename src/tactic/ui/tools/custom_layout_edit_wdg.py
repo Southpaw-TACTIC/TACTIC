@@ -1266,7 +1266,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: left")
-        button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
+        button = ButtonNewWdg(title="Refresh", icon="BS_REFRESH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1281,7 +1281,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon=IconWdg.SAVE)
+        button = ButtonNewWdg(title="Save", icon="BS_FLOPPY_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1362,7 +1362,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add New", icon=IconWdg.ADD)
+        button = ButtonNewWdg(title="Add New", icon="BS_PLUS")
         button_row.add(button)
 
 
@@ -1377,7 +1377,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add Elements", icon=IconWdg.GEAR, show_arrow=True)
+        button = ButtonNewWdg(title="Add Elements", icon=IconWdg.G_SETTINGS_GRAY, show_arrow=True)
         button_row.add(button)
 
         # add in a context menu
@@ -1390,7 +1390,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Test", icon=IconWdg.ARROW_RIGHT)
+        #button = ButtonNewWdg(title="Test", icon=IconWdg.ARROW_RIGHT)
+        button = ButtonNewWdg(title="Test", icon="BS_PLAY")
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
@@ -1427,7 +1428,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         #shelf_wdg.add(help_button)
         #help_button.add_style("float: left")
 
-        button = ButtonNewWdg(title="Link Actions", icon=IconWdg.LINK, show_arrow=True)
+        #button = ButtonNewWdg(title="Link Actions", icon=IconWdg.LINK, show_arrow=True)
+        button = ButtonNewWdg(title="Link Actions", icon="BS_LINK", show_arrow=True)
         button_row.add(button)
 
         menu = my.get_link_menu()
@@ -1439,7 +1441,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
+        #help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
+        help_button = ButtonNewWdg(title="Help", icon="BS_QUESTION_SIGN")
         button_row.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',

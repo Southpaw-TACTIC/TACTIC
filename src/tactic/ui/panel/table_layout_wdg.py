@@ -725,7 +725,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            scroll.add_style("max-height: 350px")
+            scroll.add_style("height: 100%")
+            scroll.add_style("height: 500px")
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
@@ -737,6 +738,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
                 } )
             """
+
 
             table = my.table
             table.add_class("spt_table_table")

@@ -518,7 +518,9 @@ class TopWdg(Widget):
 
 
         # Bootstrap
-        Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
+        use_bootstrap = True
+        if use_bootstrap:
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
 
 
         # first load context css

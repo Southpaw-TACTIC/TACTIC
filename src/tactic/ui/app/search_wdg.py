@@ -588,6 +588,8 @@ class SearchWdg(BaseRefreshWdg):
         
 
         select = SelectWdg("filter_mode")
+        select.add_style("width: 100px")
+
         select.add_class("spt_search_filter_mode")
         select.set_persist_on_submit(prefix)
         select.remove_empty_option() 

@@ -337,6 +337,8 @@ class IconWdg(DivWdg):
     'G_FOLDER'            : '/context/icons/glyphs/folder.png',
     'G_MAXIMIZE'          : '/context/icons/glyphs/maximize.png',
     'G_SETTINGS'          : '/context/icons/glyphs/settings.png',
+    'G_SETTINGS_BLACK'    : '/context/icons/glyphs/settings_black.png',
+    'G_SETTINGS_GRAY'     : '/context/icons/glyphs/settings_gray.png',
     'G_CALENDAR'          : '/context/icons/glyphs/calendar.png',
     'G_UP'                : '/context/icons/glyphs/chevron_up.png',
     'G_DOWN'              : '/context/icons/glyphs/chevron_down.png',
@@ -379,7 +381,7 @@ class IconWdg(DivWdg):
     get_icon_path = staticmethod(get_icon_path)
 
 
-    def __init__(my, name=None, icon=None, long=False, css='', right_margin='3px', width='', **kwargs):
+    def __init__(my, name=None, icon=None, long=False, css='', right_margin='3px', width='', opacity=None, **kwargs):
         try:
             my.icon_path = eval("IconWdg.%s" % icon.upper())
         except:
@@ -390,17 +392,37 @@ class IconWdg(DivWdg):
         my.right_margin = right_margin
         my.width = width
         my.kwargs = kwargs
+        my.opacity = opacity
         super(IconWdg,my).__init__()
 
 
     def init(my):
-        if not my.icon_path.startswith("/"):
+        if my.icon_path.startswith("BS"):
+            icon_path = my.icon_path
+        elif not my.icon_path.startswith("/"):
             # icon_path = "/context/icons/oo/%s" % my.icon_path
             icon_path = "/context/icons/silk/%s" % my.icon_path
         else:
             icon_path = my.icon_path
 
-        icon = HtmlElement.img(icon_path)
+        if icon_path.startswith("BS_"):
+            icon = HtmlElement.span()
+            icon.add_class("glyphicon")
+            part = icon_path.replace("BS_", "")
+            part = part.lower()
+            part = part.replace("_","-")
+            icon.add_class("glyphicon-%s" % part)
+            icon.add_style("font-size: 16px")
+            icon.add_style("opacity: 0.6")
+            if not my.opacity:
+                my.opacity = 0.6
+        else:
+            icon = HtmlElement.img(icon_path)
+
+        if my.opacity:
+            icon.add_style("opacity: %s" % my.opacity)
+
+
         if my.text and my.text != "":
             icon.set_attr("title", my.text)
         if my.right_margin:
@@ -428,7 +450,10 @@ class IconWdg(DivWdg):
             my.add(my.text)
 
         if my.width:
-            my.icon.add_style('width', my.width)
+            if my.icon_path.startswith("BS_"):
+                my.icon.add_style('font-size', my.width)
+            else:
+                my.icon.add_style('width', my.width)
         return super(IconWdg,my).get_display()
 
     def get_icon(my):
@@ -447,7 +472,7 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles=''):
+    def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
         my.text = name
         my.icon_path = icon
         my.long = long

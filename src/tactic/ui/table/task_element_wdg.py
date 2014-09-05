@@ -736,13 +736,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 return "Tasks"
 
 
-            pipeline_code = sobject.get_value("pipeline_code")
+            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
             if pipeline_code:
                 pipeline = Pipeline.get_by_code(pipeline_code)
                 if not pipeline:
                     pipeline = Pipeline.get_by_code("task")
 
                 processes = pipeline.get_process_names()
+            else:
+                processes = ['publish']
 
             table.add_row()
             for process in processes:
@@ -1471,7 +1473,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 end_date = parser.parse(end_date)
                 end_date = end_date.strftime("%m/%d")
 
-            if not end_date:
+            if not start_date and not end_date:
+                date_div.add("-")
+            elif not end_date:
                 date_div.add(start_date)
             else:
                 date_div.add("%s - %s" % (start_date, end_date) )

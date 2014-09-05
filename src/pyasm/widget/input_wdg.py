@@ -996,6 +996,10 @@ class SelectWdg(BaseInputWdg):
         my.add_class("inputfield")
         my.add_class("spt_input")
 
+        # BOOTSTRAP
+        my.add_class("form-control")
+        my.add_class("input-sm")
+
 
 
     def get_related_type(my):
@@ -1330,9 +1334,6 @@ class SelectWdg(BaseInputWdg):
         # store configured size of SELECT to be used later on the client side to set the
         # SELECT drop down size ...
         my.set_attr('spt_select_size',sz)
-
-        # BOOTSTRAP
-        my.add_class("form-control")
 
 
         # assign all the labels and values

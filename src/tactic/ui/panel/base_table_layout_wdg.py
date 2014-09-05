@@ -20,7 +20,7 @@ from pyasm.biz import ExpressionParser
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
-from tactic.ui.widget import DgTableGearMenuWdg
+from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
 
 from layout_wdg import SwitchLayoutMenu
 
@@ -937,6 +937,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         search_button_row = my.get_search_button_row_wdg()
+        save_button = my.get_save_button()
         layout_wdg = None
         column_wdg = None
         
@@ -960,7 +961,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         wdg_list = []
 
         if my.kwargs.get("show_refresh") != 'false':
-            from tactic.ui.widget import ActionButtonWdg
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
             button = ActionButtonWdg(title='Search')
@@ -976,6 +976,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button_div.add(button)
             button_div.add_style("margin-left: 10px")
             wdg_list.append({'wdg': button_div})
+
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
 
 
         if keyword_div:
@@ -1107,6 +1111,52 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+    def get_save_button(my):
+        show_save = True
+
+        if my.edit_permission == False:
+            show_save = False
+
+        if not my.can_save():
+            show_save = False
+
+        if not show_save:
+            return
+
+        # Save button
+        save_button = ActionButtonWdg(title="Save", is_disabled=False)
+        save_button_top = save_button.get_top()
+        save_button_top.add_style("display", "none")
+        save_button_top.add_class("spt_save_button")
+
+        
+        save_button.add_behavior({
+        'type': 'click_up',
+        'update_current_only': True,
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_layout");
+        var version = top.getAttribute("spt_version");
+        if (version == "2") {
+            var dummy = top.getElement('.spt_button_row');
+            if (dummy) dummy.focus();
+
+            spt.table.set_layout(top);
+            spt.table.save_changes();
+        }
+        else {
+            spt.dg_table.update_row(evt, bvr)
+        }
+        bvr.src_el.getElement(".spt_save_button").setStyle("display", "none");
+        ''',
+        })
+
+        return save_button
+
+
+
+
+
+
     def get_button_row_wdg(my):
         '''draws the button row in the shelf'''
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
@@ -1158,7 +1208,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
+            #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
+            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -1317,11 +1368,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
             SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
 
-           
-        if show_save:
+        # NOTE: Changed to a button 
+        #if show_save:
+        if False:
 
             # Save button
-            save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+            #save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+            save_button = ButtonNewWdg(title='Save Current Table', icon="BS_SAVE", is_disabled=False)
             save_button_top = save_button.get_top()
             save_button_top.add_style("display", "none")
             save_button_top.add_class("spt_save_button")
@@ -1424,7 +1477,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
-            button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
+            #button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.gear_menus } )
@@ -1446,7 +1500,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_search and search_dialog_id:
             div = DivWdg()
             my.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
+            #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title='View Advanced Search', icon="BS_SEARCH", show_menu=False, show_arrow=False)
             #button.add_style("float: left")
             div.add(button)
 
@@ -1539,7 +1594,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_layout_wdg(my):
 
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
+        #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="BS_TH", show_arrow=True)
 
         SwitchLayoutMenu(search_type=my.search_type, view=my.view, activator=layout.get_button_wdg())
         return layout
@@ -1630,7 +1686,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
 
-        button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
+        #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="BS_TH_LIST", show_arrow=False)
 
         search_type_obj = SearchType.get(my.search_type)
 

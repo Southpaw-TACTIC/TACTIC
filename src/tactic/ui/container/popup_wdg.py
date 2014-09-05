@@ -285,7 +285,8 @@ class PopupWdg(BaseRefreshWdg):
         # create the 'close' button ...
         if my.allow_close:
             close_wdg = SpanWdg()
-            close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            close_wdg.add( IconWdg("Close", "BS_REMOVE") )
             close_wdg.add_style("margin: 5px 1px 3px 1px")
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
@@ -301,7 +302,8 @@ class PopupWdg(BaseRefreshWdg):
             # create the 'minimize' button ...
             minimize_wdg = SpanWdg()
             minimize_wdg.add_style("margin: 5px 1px 3px 1px")
-            minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {

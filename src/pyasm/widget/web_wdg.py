@@ -1281,7 +1281,8 @@ class WebLoginWdg(Widget):
             table.add_cell( domain_wdg )
             table.add_row()
 
-        table.add_header( "<b>Name: </b>")
+        th = table.add_header( "<b>Name: </b>")
+        th.add_style("padding: 10px 5px")
         text_wdg = TextWdg("login")
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
@@ -1306,7 +1307,8 @@ class WebLoginWdg(Widget):
         password_wdg.add_style("background: #EEE")
         password_wdg.add_style("padding: 2px")
         password_wdg.add_style("width: 130px")
-        table.add_header( "<b>Password: </b>" )
+        th = table.add_header( "<b>Password: </b>" )
+        th.add_style("padding: 5px")
         table.add_cell( password_wdg )
 
 
@@ -1345,7 +1347,8 @@ class WebLoginWdg(Widget):
         span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
         span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
         span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
-        table2.add_header(span)
+        th = table2.add_header(span)
+        th.add_style("text-align: center")
 
         table2.add_row()
         
