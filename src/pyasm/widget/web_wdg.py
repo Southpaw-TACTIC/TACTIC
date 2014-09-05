@@ -1452,7 +1452,7 @@ class WebLoginCmd(Command):
                 login_sobject = my.kwargs.get('sobject')
                 login_sobject.set_value("license_type", "user")
                 login_sobject.set_value("login_attempt", reset_attempts)
-                login_sobject.commit()
+                login_sobject.commit(triggers=False)
 
         scheduler = Scheduler.get()
         task = EnableUserTask(sobject=login_sobject, delay=delay)
@@ -1540,7 +1540,7 @@ class WebLoginCmd(Command):
                     my.reenable_user(login_sobject, delay)
 
                 
-                login_sobject.commit()
+                login_sobject.commit(triggers=False)
             
         if security.is_logged_in():
 
