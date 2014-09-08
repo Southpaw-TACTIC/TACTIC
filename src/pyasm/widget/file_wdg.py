@@ -171,8 +171,26 @@ class ThumbWdg(BaseTableElementWdg):
             'use_delta': 'true',
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
-            'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
-            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background"))
+            #'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+             # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
+            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+
+            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                            var target_el = spt.get_event_target(evt);
+                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                            if (target_el) {
+                                var orig_border_color = target_el.getStyle('border-color');
+                                var orig_border_style = target_el.getStyle('border-style');
+                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                                if (!target_el.getAttribute('orig_border_color')) {
+                                    target_el.setAttribute('orig_border_color', orig_border_color);
+                                    target_el.setAttribute('orig_border_style', orig_border_style);
+                                }
+                            }''',
+
+            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
         } )
 
 

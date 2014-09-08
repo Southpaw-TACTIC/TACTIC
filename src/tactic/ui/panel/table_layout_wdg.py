@@ -1317,16 +1317,33 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-
+        border_color = table.get_color('border', modifier=20)
         # Drag will allow the dragging of items from a table to anywhere else
         table.add_behavior( { 'type': 'smart_drag', 'drag_el': 'drag_ghost_copy',
                                 'bvr_match_class': 'spt_table_select',
                                'use_copy': 'true',
+                               'border_color': border_color,
                                'use_delta': 'true', 'dx': 10, 'dy': 10,
                                'drop_code': 'DROP_ROW',
-                               'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
                                'copy_styles': 'background: #393950; color: #c2c2c2; border: solid 1px black;' \
-                                                ' text-align: left; padding: 10px;'
+                                                ' text-align: left; padding: 10px;',
+                                # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+
+                                "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                                                var target_el = spt.get_event_target(evt);
+                                                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                                                if (target_el) {
+                                                    var orig_border_color = target_el.getStyle('border-color');
+                                                    var orig_border_style = target_el.getStyle('border-style');
+                                                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                                                    if (!target_el.getAttribute('orig_border_color')) {
+                                                        target_el.setAttribute('orig_border_color', orig_border_color);
+                                                        target_el.setAttribute('orig_border_style', orig_border_style);
+                                                    }
+                                                }''',
+
+                                "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
                                } )
 
 
@@ -1339,14 +1356,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         'type': 'smart_click_up',
         'bvr_match_class': 'spt_table_select',
         'cbjs_action': '''
-        spt.table.set_table(bvr.src_el);
-        var row = bvr.src_el.getParent(".spt_table_row");
-        if (row.hasClass("spt_table_selected")) {
-            spt.table.unselect_row(row);
-        }
-        else {
-            spt.table.select_row(row);
-        }
+            spt.table.set_table(bvr.src_el);
+            var row = bvr.src_el.getParent(".spt_table_row");
+            if (row.hasClass("spt_table_selected")) {
+                spt.table.unselect_row(row);
+            }
+            else {
+                spt.table.select_row(row);
+            }
         '''
         } )
 
@@ -2862,7 +2879,17 @@ spt.table.get_selected_search_keys = function() {
     return search_keys;
 }
 
-
+spt.table.get_selected_codes = function() {
+    var rows = spt.table.get_selected_rows();
+    var codes = [];
+    var server = TacticServerStub.get();
+    for (var i = 0; i < rows.length; i++) {
+        var search_key = rows[i].getAttribute("spt_search_key_v2");
+        var tmps = server.split_search_key(search_key)
+        codes.push(tmps[1]);
+    }
+    return codes;
+}
 
 
 
