@@ -1514,7 +1514,7 @@ class WebLoginCmd(Command):
             login_sobject = search.get_sobject()
             max_attempts=-1
             try:
-                max_attempts = int(Config.get_value("security", "max_attempts"))
+                max_attempts = int(Config.get_value("security", "max_login_attempt"))
             except:
                 pass
             if max_attempts >0:
@@ -1526,16 +1526,23 @@ class WebLoginCmd(Command):
                 if login_attempt == max_attempts:
                     #set license_Type to disabled and set off the thread to re-enable it
                     login_sobject.set_value('license_type', 'disabled')
-                    disabled_time = Config.get_value("security", "account_disable_time")
-                    delay,unit = disabled_time.split(" ")
+                    disabled_time = Config.get_value("security", "account_lockout_duration")
+                    if not disabled_time:
+                        disabled_time = "30 minutes"
+
+
+                    delay,unit = disabled_time.split(" ",1)
                     if "minute" in unit:
                         delay = int(delay)*60
                     
                     elif "hour" in unit:
                         delay =int(delay)*3600
                     
-                    else:
+                    elif "second" in unit:
                         delay = int(delay)
+                    else:
+                        #make delay default to 30 min
+                        delay = 30*60
 
                     my.reenable_user(login_sobject, delay)
 
