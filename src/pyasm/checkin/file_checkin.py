@@ -815,11 +815,15 @@ class FileGroupCheckin(FileCheckin):
 
 
     def move_file(my, file_path, new_file_path):
+    
         if file_path.find('#') == -1 and file_path.find('%') == -1:
             shutil.move(file_path, new_file_path)
             return
+            
         if new_file_path.find('#') == -1 and new_file_path.find('%') == -1:
-            new_file_path = "%s.####" % new_file_path
+            file_dir,file_ext = os.path.splitext(new_file_path)
+            new_file_path = "%s.####%s" % (file_dir,file_ext)
+
             #raise CheckinException('The naming convention should be returning\
             #a path name with #### or %%0.4d notation in it. [%s] found instead.' % new_file_path)
         file_paths = FileGroup.expand_paths(file_path, my.file_range)

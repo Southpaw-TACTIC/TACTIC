@@ -1292,6 +1292,12 @@ class ThumbCmd(Command):
             file_type = "main"
             path = sobject.get_lib_path_by_type(file_type)
 
+            #To check if it is a sequence checkin
+            all_snapshots=sobject.get_all_file_objects()
+            for single_snapshot in all_snapshots:
+                if single_snapshot.get('base_type') == 'sequence':
+                    return
+
             icon_creator = IconCreator(path)
             icon_creator.execute()
 
@@ -1316,6 +1322,12 @@ class ThumbCmd(Command):
             if not snapshot:
                 return
 
+            #To check if it is a sequence checkin
+            all_snapshots=snapshot.get_all_file_objects()
+            for single_snapshot in all_snapshots:
+                if single_snapshot.get('base_type') == 'sequence':
+                    return
+
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
             ext = File.get_extension(path)
@@ -1323,8 +1335,6 @@ class ThumbCmd(Command):
             if ext in File.NORMAL_EXT:
 
                 return
-
-
 
             # use api
             """
