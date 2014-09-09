@@ -462,7 +462,7 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
         var row = src_el.getParent(".spt_table_row");
         var src_search_key = row.getAttribute("spt_search_key_v2");
         var tmps = server.split_search_key(src_search_key)
-        if (tmps[1] != null) {
+        if (tmps && tmps[1] != null) {
             src_search_keys = [tmps[1]];
         }
     }
