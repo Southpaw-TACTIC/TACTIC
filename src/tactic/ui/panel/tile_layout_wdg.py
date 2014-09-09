@@ -129,6 +129,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         }
 
 
+   
+
     def get_content_wdg(my):
         div = DivWdg()
         div.add_class("spt_tile_layout_top")
@@ -311,6 +313,36 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def add_layout_behaviors(my, layout_wdg):
+        layout_wdg.add_behavior( {
+            'type': 'smart_drag',
+            'bvr_match_class': 'spt_tile_select',
+            'drag_el': 'drag_ghost_copy',
+            'use_copy': 'true',
+            'use_delta': 'true',
+            'dx': 10, 'dy': 10,
+            'drop_code': 'DROP_ROW',
+            
+             # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' \
+                    % (layout_wdg.get_color("border"), layout_wdg.get_color("background")),
+            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+
+            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                            var target_el = spt.get_event_target(evt);
+                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                            if (target_el) {
+                                var orig_border_color = target_el.getStyle('border-color');
+                                var orig_border_style = target_el.getStyle('border-style');
+                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                                if (!target_el.getAttribute('orig_border_color')) {
+                                    target_el.setAttribute('orig_border_color', orig_border_color);
+                                    target_el.setAttribute('orig_border_style', orig_border_style);
+                                }
+                            }''',
+
+            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
+        } )
 
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
@@ -328,11 +360,10 @@ class TileLayoutWdg(ToolLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
-
         mode = my.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
-
+        
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
@@ -363,7 +394,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
             gallery_div.add_class("spt_tile_gallery")
-
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
@@ -420,7 +450,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             } )
  
 
-
         bg1 = layout_wdg.get_color("background3")
         bg2 = layout_wdg.get_color("background3", 5)
         layout_wdg.add_relay_behavior( {
@@ -445,6 +474,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             ''' % bg1
         } )
 
+        
 
 
         layout_wdg.add_behavior( {
@@ -513,7 +543,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         
         border = layout_wdg.get_color("border")
-
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'border': border,
@@ -577,7 +606,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         var size = row.getSize();
                         row.setStyle("width", size.x-10);
                         row.setStyle("height", size.y-10);
-                        row.setStyle("border", "solid 5px yellow");
+                        row.setStyle("border", "solid 3px yellow");
                         spt.table.select_row(row);
 
                     }
@@ -602,12 +631,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 }
                 else {
                     checkbox.checked = true;
-                    //row.addClass("spt_table_selected");
+                    
+                    row.addClass("spt_table_selected");
 
                     var size = row.getSize();
                     row.setStyle("width", size.x-10);
                     row.setStyle("height", size.y-10);
-                    row.setStyle("border", "solid 5px yellow");
+                    row.setStyle("border", "solid 3px yellow");
                     spt.table.select_row(row);
 
 
@@ -622,11 +652,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-
     def get_tile_wdg(my, sobject):
 
         div = DivWdg()
+
+        
         div.add_class("spt_tile_top")
+        div.add_class("unselectable")
         div.add_style('margin', my.spacing)
         div.add_style('background-color','transparent')
 
@@ -641,9 +673,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
 
-        div.add_attr("spt_search_key", sobject.get_search_key())
+        div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+        div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
+
+        display_value = sobject.get_display_value(long=True)
+        div.add_attr("spt_display_value", display_value)
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
@@ -657,6 +693,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style("float: left")
 
         thumb_div = DivWdg()
+
         #thumb_div.add_styles('margin-left: auto; margin-right: auto')
         thumb_div.add_class("spt_tile_content")
         #thumb_div.add_class("spt_tile_detail")
@@ -680,12 +717,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
-
+        
 
         div.add_attr("ondragenter", "return false")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
-
 
         return div
 
@@ -839,7 +875,6 @@ spt.tile_layout.setup_control = function() {
         '''
         } )
 
-
         table = Table()
         div.add(table)
         table.add_row()
@@ -983,7 +1018,7 @@ spt.tile_layout.setup_control = function() {
 
         header_div = DivWdg()
         header_div.add_class("spt_tile_select")
-        header_div.add_class("hand")
+        header_div.add_attr("title",'[ draggable ]')
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")
@@ -991,6 +1026,8 @@ spt.tile_layout.setup_control = function() {
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
+        # to prevent clicking on the checkbox directly and not turning on the yellow border
+        checkbox.add_attr("disabled","disabled")
 
         title = sobject.get_name()
         if not title:
@@ -1013,6 +1050,7 @@ spt.tile_layout.setup_control = function() {
         #title_div.add_style("white-space", "nowrap")
         #td.add_style("overflow: hidden")
         title_div.add("<br clear='all'/>")
+        title_div.add_class("hand")
 
 
         description = sobject.get_value("description", no_exception=True)
