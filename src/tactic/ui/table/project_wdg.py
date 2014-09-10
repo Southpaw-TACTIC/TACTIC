@@ -28,6 +28,9 @@ class ProjectWdg(BaseTableElementWdg):
     def preprocess(my):
         my.version = Environment.get_release_version()
 
+    def get_width(my):
+        return 100
+
     def get_display(my):
 
         widget = Widget()

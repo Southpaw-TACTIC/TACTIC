@@ -96,6 +96,16 @@ class FormatElementWdg(SimpleTableElementWdg):
         } )
 
 
+    def get_width(my):
+        widget_type = my.get_option("type")
+        if widget_type in ['integer']:
+            return 30
+        elif widget_type in ['float', 'date', 'timecode', 'currency']:
+            return 75
+        else:
+            return 100
+
+
 
     def get_display(my):
 
