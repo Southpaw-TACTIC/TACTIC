@@ -486,13 +486,15 @@ class Search(Base):
             if not filter:
                 continue
             if type(filter) in types.StringTypes or len(filter) == 1:
+                raise SearchException('Single argument filter is no longer supported. Try to use 2 or 3 arguments.')
                 # straight where clause (TODO: should this be allowed?)
+                """
                 if isinstance(filter, basestring):
                     where = filter
                 else:
                     where = filter[0]
                 my.add_where(where)
-
+                """
             elif len(filter) == 2:
                 name, value = filter
                 table = ""
