@@ -1523,7 +1523,6 @@ TacticServerStub = function() {
         } catch(e) {
             // assume it is just a string
             value = jsontext;
-            console.log(jsontext);
             if (func_name != 'start') {
 
                 ret_val = ret_val.responseText;
