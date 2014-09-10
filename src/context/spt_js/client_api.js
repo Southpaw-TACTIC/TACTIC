@@ -1512,12 +1512,18 @@ TacticServerStub = function() {
             jsontext = child.textContent;
         }
 
+        if (jsontext == "OK") {
+            return ret_val;
+        }
+
+
         var value;
         try {
             value = JSON.parse(jsontext);
         } catch(e) {
             // assume it is just a string
             value = jsontext;
+            console.log(jsontext);
             if (func_name != 'start') {
 
                 ret_val = ret_val.responseText;
