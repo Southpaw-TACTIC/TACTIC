@@ -1331,6 +1331,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
+
+    def get_float(my, not_null=False):
+        parts = []
+        parts.append("float")
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
     def get_text(my, not_null=False):
         parts = []
         parts.append("text")

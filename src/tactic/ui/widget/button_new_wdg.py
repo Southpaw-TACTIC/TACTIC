@@ -40,6 +40,7 @@ class ButtonRowWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
+        top.add_class("SPT_DTS")
         # make it focusable
         top.set_attr('tabIndex','-1')
         buttons = []
