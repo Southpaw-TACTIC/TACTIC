@@ -23,7 +23,7 @@ import re
 
 from pyasm.common import Environment, Date, Common
 from pyasm.security import Batch
-from pyasm.search import Transaction, SearchType, Search, SearchKey, SObject
+from pyasm.search import Transaction, SearchType, Search, SearchKey, SObject, SearchException
 from pyasm.unittest import Person
 from task import Task
 from project import Project
@@ -424,7 +424,6 @@ class ExpressionTest(unittest.TestCase):
 
 
     def _test_args(my):
-
         expression = "@SEARCH(unittest/person.sthpw/task)"
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
@@ -496,6 +495,19 @@ class ExpressionTest(unittest.TestCase):
         related = my.parser.get_plain_related_types(expression)
         my.assertEquals(['unittest/city','unittest/person'], related)
 
+        expression ="@SOBJECT(unittest/city.unittest/person['name is NULL'])"
+
+        try:
+            related = my.parser.eval(expression)
+        except SearchException, e:
+            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
+            
+
+        expression ='''@SOBJECT(unittest/city.unittest/person["name ='ben'"])'''
+        try:
+            related = my.parser.eval(expression)
+        except SearchException, e:
+            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
     
 
         # test for missing ] bracket Syntax Error
