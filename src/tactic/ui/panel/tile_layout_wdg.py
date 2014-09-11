@@ -304,12 +304,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def add_layout_behaviors(my, layout_wdg):
+        border_color = layout_wdg.get_color('border', modifier=20)
         layout_wdg.add_behavior( {
             'type': 'smart_drag',
             'bvr_match_class': 'spt_tile_select',
             'drag_el': 'drag_ghost_copy',
             'use_copy': 'true',
             'use_delta': 'true',
+            'border_color': border_color,
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
             
