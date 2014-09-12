@@ -101,7 +101,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         if widget_type in ['integer']:
             return 30
         elif widget_type in ['float', 'date', 'timecode', 'currency']:
-            return 75
+            return 80
         else:
             return 100
 
@@ -291,11 +291,12 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         elif format == '($1,234.00)':
             # break the value up by 3s
-            if not value:
-                value = 0
-            value = my.currency_format(value, grouping=True)
-            if value.startswith("-"):
-                value = "<span style='color: #F00'>(%s)</span>" % value.replace("-", "")
+            if not value or value == "0":
+                value = " "
+            else:
+                value = my.currency_format(value, grouping=True)
+                if value.startswith("-"):
+                    value = "<span style='color: #F00'>(%s)</span>" % value.replace("-", "")
 
 
         # ------------------------------------------------
