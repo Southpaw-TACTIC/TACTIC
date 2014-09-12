@@ -655,6 +655,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             column_widths = [60]
             my.kwargs["column_widths"] = column_widths
 
+        my.element_names = my.config.get_element_names()  
+        #my.element_widths = my.config.get_element_widths()
         for i, widget in enumerate(my.widgets):
 
             default_width = widget.get_width()
@@ -676,6 +678,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 width = my.attributes[i].get("width")
                 if width:
                     column_widths[i] = width
+
+
+
 
         table_width = 30
         for i in range(0, len(column_widths)):
@@ -714,12 +719,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             my.header_table = Table()
             scroll.add(my.header_table)
 
+
             my.header_table.add_class("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
             if table_width:
                 my.header_table.add_style("width: %s" % table_width)
-
 
             scroll = DivWdg()
             h_scroll.add(scroll)
@@ -1664,8 +1669,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("min-width: 20px")
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
+
+            # FIXME:
             inner_div.add_style("min-height: 30px")
-            inner_div.add_style("cursor: move")
 
 
 
@@ -1774,6 +1780,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #if not width_set:
         #    table.add_style('width', '100%')
 
+
+
+
     def has_group_bottom(my):
         '''return True if group_column has group_bottom'''
         if not my.group_columns:
@@ -1874,6 +1883,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
  
 
     def handle_groups(my, table, row, sobject):
+
+        if row == 0:
+            my.group_bottom = []
+
+            tr = table.add_row()
+            tr.add_class("spt_table_hidden_group_row")
+            td = table.add_cell()
+            td.add_style("width", "20px")
+            td.add_style("min-width", "20px")
+            td.add_style("max-width", "20px")
+            td = table.add_cell()
+            td.add_style("width", "30px")
+            td.add_style("min-width", "30px")
+            td.add_style("max-width", "30px")
+            for widget in my.widgets:
+                td = table.add_cell()
+                td.add_class("spt_table_hidden_group_td")
+                td.add_attr("spt_element_name", widget.get_name())
+
+
         
         last_group_column = None
         for i, group_column in enumerate(my.group_columns):
@@ -1888,15 +1917,31 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if not group_value:
                 group_value = "__NONE__"
             last_value = my.group_values.get(group_column)
-            
+           
+            # if this is the first row or the group value has changed,
+            # then create a new group
             if last_value == None or group_value != last_value:
+
+                if last_value != None:
+                    tr, td = table.add_row_cell()
+                    tr.set_sobjects(my.group_bottom)
+                    tr.add_border(size=2)
+                    tr.add_style("background", "#EEF")
+
+                    my.group_bottom = []
+                    my.group_rows.append(tr)
+
+
                 my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
 
+            my.group_bottom.append(sobject)
 
-        # what does this do?
+
+
+        # Add the current sobject to the latest group
         if my.group_rows:
             my.group_rows[-1].get_sobjects().append(sobject)
 
@@ -2367,6 +2412,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th = table.add_cell()
             th.add_style("min-width: %spx" % spacing)
             th.add_style("width: %spx" % spacing)
+            th.add_style("max-width: %spx" % spacing)
 
         th = table.add_cell()
         #th.add_gradient("background", "background", -10)
@@ -2406,9 +2452,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #my.is_grouped = my.kwargs.get("is_grouped")
         #if my.is_grouped or my.group_columns:
 
-        if my.group_columns:
-            td = table.add_cell()
-            #td.add_color("background-color", "background",-0)
+        
+        if my.group_columns or True:
+            spacing = len(my.group_columns) * 20
+            td = table.add_cell("&nbsp;")
+            td.add_style("min-width: %spx" % spacing)
+            td.add_style("width: %spx" % spacing)
+            td.add_style("max-width: %spx" % spacing)
+
+
 
         td = table.add_cell()
         td.add_class("spt_table_select")
@@ -4786,6 +4838,18 @@ spt.table.set_column_width = function(element_name, width) {
     if (!cell) {
         //alert("Cell for ["+element_name+"] does not exist");
         return;
+    }
+
+    var row = table.getElement(".spt_table_hidden_group_row");
+    if (row) {
+        var els = row.getElements(".spt_table_hidden_group_td");
+        for (var i = 0; i < els.length; i++) {
+            if (element_name == els[i].getAttribute("spt_element_name")) {
+                els[i].setStyle("width", width);
+                continue;
+            }
+            
+        }
     }
 
 

@@ -333,6 +333,9 @@ class WidgetConfig(Base):
                     value = value.replace("</config>", "</tab></config>")
                     value = value.strip()
                     name = 'config_xml'
+
+                    # convert all & back to &amp;
+                    value = value.replace("&", "&amp;")
                 else:
                     value = my.xml.get_node_value(child)
                     value = value.replace("&amp;", "&")
@@ -579,7 +582,7 @@ class WidgetConfigView(Base):
     def get_element_widths(my):
         '''get the width of each element in a list.'''
         # the order dictates the order of preference
-        return my.get_element_names(type='', attrs=['width'])
+        return my.get_element_names(type='', attrs=['width'], include_definition=True)
 
 
 
