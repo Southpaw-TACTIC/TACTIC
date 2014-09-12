@@ -362,6 +362,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
             op_select = SelectWdg("op")
+            op_select.add_style("width: 75px")
             # only support in or not in for multi stypes column
             if my.multi_search_types:
                 op_select.set_option("labels", "is|is not")

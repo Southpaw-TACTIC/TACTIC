@@ -148,10 +148,25 @@ class Note(SObject):
         note.set_user()
         project = sobject.get_project_code()
         note.set_value("project_code", project)
+
+
         if context:
             note.set_value("context", context)
         if process:
             note.set_value("process", process)
+
+        if not context and process:
+            note.set_value("context", process)
+
+        if not process and context:
+            parts = context.split("/")
+            note.set_value("process", parts[0])
+
+        if not process and not context:
+            note.set_value("process", "publish")
+            note.set_value("context", "publish")
+
+
         if parent_id:
             note.set_value("parent_id", parent_id)
         if time:

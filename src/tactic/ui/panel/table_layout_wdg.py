@@ -692,12 +692,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         sticky_header = my.kwargs.get("sticky_header")
-        if sticky_header in [True, 'true']:
-            sticky_header = True
-        else:
+        if sticky_header in [False, 'false']:
             sticky_header = False
-
-        sticky_header = True
+        else:
+            sticky_header = True
 
         inner.add_style("width: 100%")
 
@@ -742,7 +740,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             table = my.table
             table.add_class("spt_table_table")
-            #table.add_style("font-size: 8px")
+            font_size = my.kwargs.get("font-size")
+            if font_size:
+                table.add_style("font-size: %s" % font_size)
             scroll.add(table)
             #my.handle_headers(table)
             if table_width:

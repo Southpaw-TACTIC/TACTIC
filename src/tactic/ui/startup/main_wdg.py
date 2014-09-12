@@ -39,13 +39,14 @@ class SectionWdg(BaseRefreshWdg):
     def get_main_section_wdg(my, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
+        #section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
-        section_wdg.add_style("height: 180px")
+        section_wdg.add_style("height: 225px")
         section_wdg.add_style("overflow: hidden")
-        section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow()
+        section_wdg.add_style("margin: -5px 5px 10px 5px")
+        #section_wdg.add_style("margin: 10px")
+        #section_wdg.set_box_shadow()
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)

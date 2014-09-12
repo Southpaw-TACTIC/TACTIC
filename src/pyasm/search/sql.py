@@ -3481,6 +3481,8 @@ class AlterTable(CreateTable):
             expr = my.impl.get_varchar(length=length, not_null=False)
         elif type == "int":
             expr = my.impl.get_int(not_null=False)
+        elif type == "float":
+            expr = my.impl.get_float(not_null=False)
         elif type == "timestamp":
             if my.impl.get_database_type() == 'SQLServer':
                 expr = my.impl.get_timestamp(not_null=False, default=None)
