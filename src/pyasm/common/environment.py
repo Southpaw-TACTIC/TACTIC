@@ -599,6 +599,8 @@ class Environment(Base):
     def get_ticket():
         '''get the upload dir which relies on the ticket info'''
         security = Environment.get_security()
+        if not security:
+            return ""
         ticket = security.get_ticket_key()
         return ticket
     get_ticket = staticmethod(get_ticket)

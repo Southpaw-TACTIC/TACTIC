@@ -1190,14 +1190,6 @@ class DbContainer(Base):
         @return:
         object - Sql object
         '''
-        # DEPRECATED
-        #
-        # Sessions connections are maintained across transactions and are 
-        # used by the client api to maintain a connected database
-        # throught multiple calls. 
-        #if Container.get("API:xmlrpc_transaction") == True:
-        #    sql = DbContainer.get_session_sql(db_resource)
-
 
         # STRICT ENFORCEMENT to ensure that only DbResources come through
         from sql import DbResource
@@ -1424,107 +1416,6 @@ class DbContainer(Base):
             lock.release()
 
     release_thread_sql = classmethod(release_thread_sql)
-
-
-
-    # DEPRECATED: This is not being used
-
-    # FIXME: this still uses database name as the key
-    # It should use database_key from DbResource
-    """
-    def get_session_sql(cls, database_name):
-        '''get an sql handle from the session based on ticket'''
-        # prune the old sessions
-        cls.prune_session_sql()
-
-
-        # security checks will have not ticket
-        security = Environment.get_security()
-        if not security:
-            #print "WARNING: security not defined"
-            return None
-        if not security.is_logged_in():
-            return None
-
-
-        # if this ticket has an sql connection reserved, then use it.
-        ticket = security.get_ticket_key()
-        sql_dict = cls.session_sql_dict.get(ticket)
-        if sql_dict:
-            sql = sql_dict.get(database_name)
-            if sql:
-                #print "reusing: ", database_name, sql
-                return sql
-        else:
-            # create a new session
-            sql_dict = {}
-            cls.session_sql_dict[ticket] = sql_dict
-            import time
-            cls.session_time_dict[ticket] = time.time()
-
-
-        # create a new database
-        sql = Sql(database_name)
-        cls.session_seq.append(sql)
-        sql.connect()
-        sql_dict[database_name] = sql
-
-        return sql
-
-    get_session_sql = classmethod(get_session_sql)
-
-    session_seq = []
-
-
-    def close_session_sql(cls):
-        '''closes all of the session database connections for this ticket'''
-        security = Environment.get_security()
-        if not security:
-            print "WARNING: security not defined"
-            return None
-        if not security.is_logged_in():
-            return None
-
-        ticket = security.get_ticket_key()
-
-        sql_dict = cls.session_sql_dict.get(ticket)
-        if not sql_dict:
-            return
-
-        for sql in sql_dict.values():
-            sql.close()
-
-        del(cls.session_time_dict[ticket])
-        del(cls.session_sql_dict[ticket])
-
-    close_session_sql = classmethod(close_session_sql)
-
-
-    def prune_session_sql(cls):
-        '''closes all of the session database connections for this ticket'''
-
-        import time
-        for ticket, start_time in cls.session_time_dict.items():
-            time_elapsed = int(time.time() - start_time)
-            if time_elapsed < cls.session_max_lifespan:
-                continue
-            
-            print("WARNING: closing session for ticket [%s]" % ticket)
-            sql_dict = cls.session_sql_dict.get(ticket)
-            if sql_dict:
-                # close all of the connections
-                for sql in sql_dict.values():
-                    print "pruning: ", sql.database_name
-                    sql.close()
-
-            del(cls.session_time_dict[ticket])
-            del(cls.session_sql_dict[ticket])
-
-    prune_session_sql = classmethod(prune_session_sql)
-    """
-
-
-
 
 
 

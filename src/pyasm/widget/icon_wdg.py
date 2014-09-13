@@ -393,6 +393,7 @@ class IconWdg(DivWdg):
         my.width = width
         my.kwargs = kwargs
         my.opacity = opacity
+        my.size = kwargs.get("size")
         super(IconWdg,my).__init__()
 
 
@@ -412,8 +413,9 @@ class IconWdg(DivWdg):
             part = part.lower()
             part = part.replace("_","-")
             icon.add_class("glyphicon-%s" % part)
-            icon.add_style("font-size: 16px")
-            icon.add_style("opacity: 0.6")
+            if not my.size:
+                my.size = "16px"
+            icon.add_style("font-size: %s" % my.size)
             if not my.opacity:
                 my.opacity = 0.6
         else:

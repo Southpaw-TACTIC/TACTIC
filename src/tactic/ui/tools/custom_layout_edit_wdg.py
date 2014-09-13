@@ -930,13 +930,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             type_wdg = DivWdg()
             shelf_wdg.add(type_wdg)
             type_wdg.add_style("float: left")
-            type_wdg.add_style("margin: 5px 5px 5px 20px")
+            type_wdg.add_style("margin: -2px 5px 5px 20px")
 
             select = SelectWdg(name="widget_type")
             if widget_type:
                 select.set_value(widget_type)
-            type_wdg.add("<b>Type: &nbsp;</b>")
+            select.add_style("width: 100px")
+            type_wdg.add("<b>Type: &nbsp;</b>&nbsp;&nbsp;")
             type_wdg.add(select)
+            select.add_style("display: inline")
             select.set_option("values", "widget|theme|column|chart|report|dashboard|layout_tool")
             select.add_empty_option("-- None ---")
 
