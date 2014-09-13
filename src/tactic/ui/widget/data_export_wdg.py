@@ -323,15 +323,19 @@ class CsvImportWdg(BaseRefreshWdg):
             my.file_path =  web.get_form_value('file_path')
 
         if not my.file_path:
-            file_name =  web.get_form_value('file_name')
-            ticket =  web.get_form_value('html5_ticket')
+            ticket = web.get_form_value('html5_ticket')
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
-                
-            if file_name:
-                # this is treated the same in FileUplaod class
-                #file_name = File.get_filesystem_name(str(file_name))
-                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+
+            data = web.get_form_value("data")
+            file_name =  web.get_form_value('file_name')
+            if not file_name:
+                file_name = "%s.csv" % ticket
+
+            my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+            f = open(my.file_path, "wb")
+            f.write(data)
+            f.close()
 
 
 
@@ -557,7 +561,6 @@ class CsvImportWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_import_top");
                 var el = top.getElement(".spt_import_cut_paste");
-                var applet = spt.Applet.get();
 
                 var value = el.value;
                 var csv = [];
@@ -583,7 +586,9 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 csv = csv.join("\\n")
 
+                /*
                 // FIXME: need to get a local temp directory
+                var applet = spt.Applet.get();
                 var path = spt.browser.os_is_Windows() ? "C:/sthpw/copy_n_paste.csv" : "/tmp/sthpw/copy_n_paste.csv";
                 applet.create_file(path, csv);
 
@@ -597,10 +602,13 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 var file_name = spt.path.get_basename(hidden.value);
                 file_name = spt.path.get_filesystem_name(file_name); 
+                */
+
                 var class_name = 'tactic.ui.widget.CsvImportWdg';
                 var values = spt.api.Utility.get_input_values('csv_import_main');
                 values['is_refresh'] = true;
-                values['file_name'] = file_name;
+                //values['file_name'] = file_name;
+                values['data'] = csv;
                 var info = spt.panel.load('csv_import_main', class_name, {}, values);
                 '''
             } )

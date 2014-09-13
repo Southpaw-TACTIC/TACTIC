@@ -1676,7 +1676,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
-            # FIXME:
             inner_div.add_style("min-height: 30px")
 
 
@@ -1711,6 +1710,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
+            header_div.add_class("spt_table_header_content")
 
 
             if my.kwargs.get("wrap_headers") not in ["true", True]:
@@ -1813,7 +1813,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             group_row.add_attr("spt_table_state", "open")
 
             for td in group_row.get_widgets():
-                td.add_style("overflow: hidden")
+                #td.add_style("overflow: hidden")
                 td.add_attr("colspan", "2")
 
 
@@ -1832,11 +1832,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 for group_widget in group_widgets:
                     td = HtmlElement.td()
                     td.add_class('spt_group_cell')
-                    td.add_style("padding: 6px 3px")
+                    td.add_style("padding: 8px 3px")
                     td.add_style("overflow-x: hidden")
 
-                    td.add_border(color="#BBB")
-                    td.add_color("background", "#F0F0F0")
+                    if group_widget:
+                        td.add_border(color="#BBB")
+                    else:
+                        td.add_border(color="#BBB", size="1px 0px")
 
                     group_row.add(td)
                     td.add(group_widget)
@@ -1970,6 +1972,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if i != 0 and not my.is_on:
             tr.add_style("display: none")
 
+        tr.add_class("spt_table_group_row")
+
         unique_id = tr.set_unique_id()
 
         if my.group_mode in ["top"]:
@@ -1978,7 +1982,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if group_value == '__NONE__':
             label = '---'
         else:
-            label = Common.process_unicode_string(group_value)
+            group_label_expr = my.kwargs.get("group_label_expr")
+            if group_label_expr:
+                label = Search.eval(group_label_expr, sobject, single=True)
+            else:
+                label = Common.process_unicode_string(group_value)
 
         title = label
         if my.group_by_time:
@@ -1995,15 +2003,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
         swap.set_behavior_top(my.table)
         td.add(swap)
+        swap.add_style("width: 800px")
+        swap.add_style("font-weight: bold")
 
         td.add_style("height: 25px")
         td.add_style("padding-left: %spx" % (i*15))
-        """
-        td.add_style("border-style: solid")
-        border_color = td.get_color("border")
-        td.add_style("border-width: 0px 0px 0px 1px")
-        td.add_style("border-color: %s" % border_color)
-        """
 
 
         tr.add_border(size=1)
@@ -2444,6 +2448,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             border_color = table.get_color("table_border", 0, default="border")
         th.add_style("border", "solid 1px %s" % border_color)
         th.add_looks( 'dg_row_select_box' )
+        th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
         th.add_style('max-width: 30px')
