@@ -25,6 +25,7 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
+
 from misc_input_wdg import SearchTypeSelectWdg
 from upload_wdg import SimpleUploadWdg
 from button_new_wdg import ActionButtonWdg
@@ -328,14 +329,15 @@ class CsvImportWdg(BaseRefreshWdg):
                 ticket =  web.get_form_value('csv_import|ticket')
 
             data = web.get_form_value("data")
-            file_name =  web.get_form_value('file_name')
-            if not file_name:
-                file_name = "%s.csv" % ticket
+            if data:
+                file_name =  web.get_form_value('file_name')
+                if not file_name:
+                    file_name = "%s.csv" % ticket
 
-            my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
-            f = open(my.file_path, "wb")
-            f.write(data)
-            f.close()
+                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                f = open(my.file_path, "wb")
+                f.write(data)
+                f.close()
 
 
 
@@ -486,13 +488,13 @@ class CsvImportWdg(BaseRefreshWdg):
 
             msg = DivWdg()
             widget.add(msg)
-            msg.add( "<div style='float: left; padding-left: 100px; padding-top: 6px'><b>Upload a csv file: </b></div>")
+            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 60px'><b>Upload a csv file: </b></div>")
             msg.add_border()
             msg.add_style("width: 400px")
             msg.add_color("background", "background3")
             msg.add_style("padding: 20px")
             msg.add_style("margin: 30 auto")
-            msg.add_style("text-align: center")
+            #msg.add_style("text-align: center")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -538,21 +540,25 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(upload_wdg)
           
             #widget.add(span)
-            msg.add("<br/><br/>-- OR --</br/><br/>")
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
-            msg.add("<b>Published URL: </b>") 
-            text = TextWdg("web_url")
+            msg.add("<b>Published URL: </b><br/>") 
+            from tactic.ui.input import TextInputWdg
+            text = TextInputWdg(name="web_url")
+            text.add_style("width: 100%")
             msg.add(text)
  
 
 
-            msg.add("<br/><br/>-- OR --</br/><br/>")
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
-            msg.add("<b>Copy and Paste from a Spreadsheet: </b>") 
+            msg.add("<b>Copy and Paste from a Spreadsheet: </b><br/>") 
             text = TextAreaWdg("data")
-            text.add_style('width: 33em')
+            text.add_style('width: 100%')
+            text.add_style('height: 100px')
             text.add_class("spt_import_cut_paste")
             msg.add(text)
+            msg.add("<br/>"*3)
             button = ActionButtonWdg(title="Parse")
             button.add_style("margin: 5px auto")
             msg.add(button)
