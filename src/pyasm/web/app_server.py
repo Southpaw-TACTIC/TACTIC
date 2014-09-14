@@ -550,11 +550,14 @@ class BaseAppServer(Base):
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
         elif login and password:
+            from pyasm.security import Site
             if not site:
                 # get from the login
-                from pyasm.security import Site
                 site_obj = Site.get()
                 site = site_obj.get_by_login(login)
+                site_obj.set_site(site)
+            else:
+                site_obj = Site.get()
                 site_obj.set_site(site)
 
             if login == "guest":
@@ -566,6 +569,13 @@ class BaseAppServer(Base):
                 ticket_key = security.get_ticket_key()
 
         elif ticket_key:
+
+            # get from the login
+            if site:
+                from pyasm.security import Site
+                site_obj = Site.get()
+                site_obj.set_site(site)
+
             security.login_with_ticket(ticket_key, add_access_rules=False)
 
         if not security.is_logged_in():

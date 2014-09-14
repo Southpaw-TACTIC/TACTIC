@@ -661,7 +661,7 @@ class Site(object):
         class_name = Config.get_value("security", "site_class")
         if not class_name:
             class_name = "pyasm.security.Site"
-        class_name = "spt.modules.portal.PortalSite"
+        #class_name = "spt.modules.portal.PortalSite"
         site = Common.create_from_class_path(class_name)
         return site
     get = classmethod(get)

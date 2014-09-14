@@ -3337,7 +3337,18 @@ spt.table.add_new_item = function(kwargs) {
         }
     }
     else {
+        var clone_cells = clone.getElements("td");
+        var cells = row.getElements("td");
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            var clone_cell = clone_cells[i];
+            var size = cell.getSize();
+            clone_cell.setStyle("width", size.x);
+        }
+
         clone.inject(row, position);
+
+
     }
     spt.remove_class(clone, 'spt_clone');
 
