@@ -632,77 +632,55 @@ class Site(object):
     the location of database.'''
 
 
-    def get_by_login(login):
-        import random
-        if random.randint(0,1) == 1:
-            print "foo"
-            return "foo"
-        else:
-            print "foo2"
-            return "foo2"
-    get_by_login = staticmethod(get_by_login)
+
+    #
+    # Virtual methods
+    #
+    def get_by_login(cls, login):
+        return ""
+    get_by_login = classmethod(get_by_login)
 
 
-    def get_by_ticket(ticket):
-        if ticket.startswith("XX"):
-            parts = ticket.split("-")
-            site = parts[1]
-            return site
-        else:
-            return ""
-    get_by_ticket = staticmethod(get_by_ticket)
+    def build_ticket(cls, ticket):
+        return ticket
+    build_ticket = classmethod(build_ticket)
+
+    def get_by_ticket(cls, ticket):
+        return ""
+    get_by_ticket = classmethod(get_by_ticket)
 
 
-    def get_site_data(site):
-
-        # get the default from the config
-        from pyasm.search import DbResource, DbContainer
-        db_resource = DbResource.get_default("sthpw", use_cache=False, use_config=True)
-        db = DbContainer.get(db_resource)
-        db.close()
-
-        #sql = "select * from site"
-        #print db.do_query(sql)
-
-        print "---"
-        print "    GET SITE:", site
-        print "---"
-
-        if site == "foo":
-            site = {
-                    'host': 'localhost',
-                    'port': '5432',
-                    'vendor': 'PostgreSQL',
-                    'password': '',
-                    'user': 'postgres'
-            }
-        else:
-            site = {
-                    'host': 'localhost',
-                    'port': '5433',
-                    'vendor': 'PostgreSQL',
-                    'password': '',
-                    'user': 'postgres'
-            }
-
-        return site
-    get_site_data = staticmethod(get_site_data)
+    def get_site_data(cls, site):
+        return {}
+    get_site_data = classmethod(get_site_data)
  
 
-    def get():
+    #######################
+
+    def get(cls):
+        class_name = Config.get_value("security", "site_class")
+        if not class_name:
+            class_name = "pyasm.security.Site"
+        class_name = "spt.modules.portal.PortalSite"
+        site = Common.create_from_class_path(class_name)
+        return site
+    get = classmethod(get)
+
+
+    def get_site(cls):
         '''Set the global site for this "session"'''
         site = Container.get("site")
         if not site:
             return ""
         return site
-    get = staticmethod(get)
+    get_site = classmethod(get_site)
 
-    def set(site):
+    def set_site(cls, site):
         '''Set the global site for this "session"'''
         if not site:
             return
         Container.put("site", site)
-    set = staticmethod(set)
+    set_site = classmethod(set_site)
 
 
 
@@ -1066,8 +1044,8 @@ class Security(Base):
             return None
 
         # set the site if the key has one
-        site = Site.get_by_ticket(key)
-        Site.set(site)
+        site = Site.get().get_by_ticket(key)
+        Site.get().set_site(site)
 
         my.add_access_rules_flag = add_access_rules
 
@@ -1421,9 +1399,7 @@ class Security(Base):
         # create a new ticket for the user
         ticket_key = Common.generate_random_key()
 
-        site = Site.get()
-        if site:
-            ticket_key = "XX-%s-%s" % (site, ticket_key)
+        ticket_key = Site.get().build_ticket(ticket_key)
 
         ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
         return ticket

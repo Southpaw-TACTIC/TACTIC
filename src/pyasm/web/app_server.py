@@ -544,7 +544,6 @@ class BaseAppServer(Base):
         password = web.get_form_value("password")
         site = web.get_form_value("site")
 
-        from pyasm.security import Site
 
         if session_key:
             ticket_key = web.get_cookie(session_key)
@@ -553,8 +552,10 @@ class BaseAppServer(Base):
         elif login and password:
             if not site:
                 # get from the login
-                site = Site.get_by_login(login)
-                Site.set(site)
+                from pyasm.security import Site
+                site_obj = Site.get()
+                site = site_obj.get_by_login(login)
+                site_obj.set_site(site)
 
             if login == "guest":
                 pass

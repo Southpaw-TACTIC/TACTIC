@@ -857,7 +857,6 @@ class Sql(Base):
     def close(my):
         if my.conn == None:
             return
-        #print "CONNECT: close: ", my
 
         my.conn.close()
         my.conn = None
@@ -1146,22 +1145,25 @@ class DbResource(Base):
         ticket = Environment.get_ticket()
 
         from pyasm.security import Site
+        site_obj = Site.get()
         site = None
         if ticket:
-            site = Site.get_by_ticket(ticket)
+            site = site_obj.get_by_ticket(ticket)
         if not site:
-            site = Site.get()
+            site = site_obj.get_site()
 
+        data = None
         if not use_config and site:
-            data = Site.get_site_data(site)
+            data = site_obj.get_site_data(site)
+            if data:
+                host = data.get('host')
+                port = data.get('port')
+                vendor = data.get('vendor')
+                user = data.get('user')
+                password = data.get('password')
 
-            host = data.get('host')
-            port = data.get('port')
-            vendor = data.get('vendor')
-            user = data.get('user')
-            password = data.get('password')
-
-        else:
+        # get the defaults
+        if not data:
             host = Config.get_value("database", "host")
             port = Config.get_value("database", "port")
             vendor = Config.get_value("database", "vendor")
@@ -1228,8 +1230,11 @@ class DbContainer(Base):
             db_resource = DbResource.get_default("sthpw")
 
         sql = cls.get_connection_pool_sql(db_resource)
+
         if sql and sql.get_connection():
             DbContainer.register_connection(sql) 
+
+        assert sql.get_connection()
         return sql
 
     get = classmethod(get)
@@ -1337,7 +1342,6 @@ class DbContainer(Base):
                     raise SQLException("Denied access to [%s]" % db_resource)
                 """
 
-
                 sql = Sql(db_resource)
                 sql.connect()
 
@@ -1354,6 +1358,7 @@ class DbContainer(Base):
         finally:
             lock.release()
 
+        assert sql.get_connection()
         return sql
         
     get_connection_pool_sql = classmethod(get_connection_pool_sql)
