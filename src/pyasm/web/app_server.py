@@ -540,6 +540,19 @@ class BaseAppServer(Base):
         login = web.get_form_value("login")
         password = web.get_form_value("password")
 
+        # Get global site is one is specified
+        from pyasm.security import Site
+        site = web.get_form_value("site")
+        site = "foo"
+        if not site:
+            # get from the login
+            site = Site.get_by_login(login)
+
+        if site:
+            Site.set(site)
+
+
+
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -548,10 +561,12 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
-                from pyasm.widget import WebLoginCmd
+                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+
+
         elif ticket_key:
             security.login_with_ticket(ticket_key, add_access_rules=False)
 
@@ -566,7 +581,7 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
             else:
-                from pyasm.widget import WebLoginCmd
+                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()

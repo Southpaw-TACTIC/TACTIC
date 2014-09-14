@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Login", "LoginInGroup", "LoginGroup", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
+__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
 
@@ -626,8 +626,65 @@ class LoginInGroup(SObject):
 
 
 
+class Site(object):
+    '''This is used to manage various "sites" (databases) within a single
+    TACTIC installation.  Tickets are scoped by site which determines
+    the location of database.'''
 
 
+    def get_by_login(login):
+        return "foo"
+    get_by_login = staticmethod(get_by_login)
+
+
+    def get_by_ticket(ticket):
+        if ticket.startswith("XX"):
+            parts = ticket.split(":")
+            site = parts[1]
+            return site
+        else:
+            return ""
+    get_by_ticket = staticmethod(get_by_ticket)
+
+
+    def get_site_data(site):
+
+        # get the default from the config
+        from pyasm.search import DbResource, DbContainer
+        db_resource = DbResource.get_default("sthpw", use_cache=False, use_config=True)
+        db = DbContainer.get(db_resource)
+
+        #sql = "select * from site"
+        #print db.do_query(sql)
+
+        print "---"
+        print "    GET SITE:", site
+        print "---"
+
+        # FIXME: Return dummy data
+        site = {
+                'host': 'localhost',
+                'port': '5433',
+                'vendor': 'PostgreSQL',
+                'password': '',
+                'user': 'postgres'
+        }
+        return site
+    get_site_data = staticmethod(get_site_data)
+ 
+
+    def get():
+        '''Set the global site for this "session"'''
+        site = Container.get("site")
+        if not site:
+            return ""
+        return site
+    get = staticmethod(get)
+
+    def set(site):
+        '''Set the global site for this "session"'''
+        Container.put("site", site)
+    set = staticmethod(set)
 
 
 
@@ -1047,15 +1104,13 @@ class Security(Base):
         # TEST: this is a test authentication with Drupal
         my.add_access_rules_flag = add_access_rules
 
-        print "sid: ", sid
-
         from pyasm.security import Sudo
         sudo = Sudo()
 
         # authenticate use some external method
         if sid:
             expr = '''@SOBJECT(table/sessions?project=drupal['sid','%s'])''' % sid
-            print "expr: ", expr
+            #print "expr: ", expr
             session = server.eval(expr, single=True)
         else:
             session = {}
@@ -1077,7 +1132,7 @@ class Security(Base):
         # at this point, the user is authenticated
 
         user_name = drupal_user.get("name")
-        print "login: ", user_name
+        #print "login: ", user_name
 
         # if the user doesn't exist, then autocreate one
         
@@ -1345,9 +1400,9 @@ class Security(Base):
         # create a new ticket for the user
         ticket_key = Common.generate_random_key()
 
-        # Guest does not get a ticket
-        #if login_name == "guest":
-        #    return None
+        site = Site.get()
+        if site:
+            ticket_key = "XX:%s:%s" % (site, ticket_key)
 
         ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
         return ticket

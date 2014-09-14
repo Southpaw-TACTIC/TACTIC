@@ -1133,24 +1133,61 @@ class DbResource(Base):
 
 
 
-    def get_default(database, use_cache=True):
-        # FIXME: this should be moved DatabaseImpl
+    def get_default(cls, database, use_cache=True, use_config=False):
+        # NOTE: this should be moved DatabaseImpl
         if use_cache:
             key = "Project:db_resource:%s"%database
             db_resource = Container.get(key)
             if db_resource != None:
                 return db_resource
-        host = Config.get_value("database", "host")
-        port = Config.get_value("database", "port")
-        vendor = Config.get_value("database", "vendor")
-        user = Config.get_value("database", "user")
-        #password = Config.get_value("database", "password")
-        password = DbPasswordUtil.get_password()
+
+
+        # evaluate ticket
+        ticket = Environment.get_ticket()
+        ticket = "XX:foo:%s" % ticket
+        if not ticket:
+            print "TICKET IS NONE: ", database
+
+        from pyasm.security import Site
+        site = Site.get_by_ticket(ticket)
+        if not site:
+            site = Site.get()
+
+        print "site: ", site
+
+
+        if not use_config and site:
+            # get the default from the config
+            #db_resource = cls.get_default("sthpw", use_cache=False, use_config=True)
+            #db = DbContainer.get(db_resource)
+            #print "---"
+            #print "    GET SITE:", site, " for db: ", database
+            #print "---"
+            data = Site.get_site_data(site)
+
+            host = data.get('host')
+            port = data.get('port')
+            vendor = data.get('vendor')
+            user = data.get('user')
+            password = data.get('password')
+
+        else:
+            host = Config.get_value("database", "host")
+            port = Config.get_value("database", "port")
+            vendor = Config.get_value("database", "vendor")
+            user = Config.get_value("database", "user")
+
+            #password = Config.get_value("database", "password")
+            password = DbPasswordUtil.get_password()
+
+
         db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
         if use_cache:
             Container.put(key, db_resource)
         return db_resource
-    get_default = staticmethod(get_default)
+    get_default = classmethod(get_default)
+
+
 
     def is_instance(inst):
         '''return True if it is an instance of DbResource'''
@@ -1296,12 +1333,23 @@ class DbContainer(Base):
         sql = None
         try:
             if not global_pool:
+
+                # before making a connection, make sure the user is even
+                # allowed to do so based on site locking
+                """
+                ticket = Environment.get_ticket()
+                site = "foo"
+                host = "localhost"
+                port = "5432"
+                if db_resource.get_port() != port:
+                    raise SQLException("Denied access to [%s]" % db_resource)
+                if db_resource.get_host() != host:
+                    raise SQLException("Denied access to [%s]" % db_resource)
+                """
+
+
                 sql = Sql(db_resource)
                 sql.connect()
-                #import thread as xx
-                #import traceback
-                #print "CONNECT: create: ", database_key, sql, xx.get_ident()
-                #traceback.print_stack()
 
             else:
 
