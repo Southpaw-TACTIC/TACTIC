@@ -1144,25 +1144,15 @@ class DbResource(Base):
 
         # evaluate ticket
         ticket = Environment.get_ticket()
-        ticket = "XX:foo:%s" % ticket
-        if not ticket:
-            print "TICKET IS NONE: ", database
 
         from pyasm.security import Site
-        site = Site.get_by_ticket(ticket)
+        site = None
+        if ticket:
+            site = Site.get_by_ticket(ticket)
         if not site:
             site = Site.get()
 
-        print "site: ", site
-
-
         if not use_config and site:
-            # get the default from the config
-            #db_resource = cls.get_default("sthpw", use_cache=False, use_config=True)
-            #db = DbContainer.get(db_resource)
-            #print "---"
-            #print "    GET SITE:", site, " for db: ", database
-            #print "---"
             data = Site.get_site_data(site)
 
             host = data.get('host')

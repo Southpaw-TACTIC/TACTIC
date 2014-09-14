@@ -633,13 +633,19 @@ class Site(object):
 
 
     def get_by_login(login):
-        return "foo"
+        import random
+        if random.randint(0,1) == 1:
+            print "foo"
+            return "foo"
+        else:
+            print "foo2"
+            return "foo2"
     get_by_login = staticmethod(get_by_login)
 
 
     def get_by_ticket(ticket):
         if ticket.startswith("XX"):
-            parts = ticket.split(":")
+            parts = ticket.split("-")
             site = parts[1]
             return site
         else:
@@ -653,6 +659,7 @@ class Site(object):
         from pyasm.search import DbResource, DbContainer
         db_resource = DbResource.get_default("sthpw", use_cache=False, use_config=True)
         db = DbContainer.get(db_resource)
+        db.close()
 
         #sql = "select * from site"
         #print db.do_query(sql)
@@ -661,14 +668,23 @@ class Site(object):
         print "    GET SITE:", site
         print "---"
 
-        # FIXME: Return dummy data
-        site = {
-                'host': 'localhost',
-                'port': '5433',
-                'vendor': 'PostgreSQL',
-                'password': '',
-                'user': 'postgres'
-        }
+        if site == "foo":
+            site = {
+                    'host': 'localhost',
+                    'port': '5432',
+                    'vendor': 'PostgreSQL',
+                    'password': '',
+                    'user': 'postgres'
+            }
+        else:
+            site = {
+                    'host': 'localhost',
+                    'port': '5433',
+                    'vendor': 'PostgreSQL',
+                    'password': '',
+                    'user': 'postgres'
+            }
+
         return site
     get_site_data = staticmethod(get_site_data)
  
@@ -683,6 +699,8 @@ class Site(object):
 
     def set(site):
         '''Set the global site for this "session"'''
+        if not site:
+            return
         Container.put("site", site)
     set = staticmethod(set)
 
@@ -836,7 +854,7 @@ class Security(Base):
         # define an access manager object
         my._access_manager = AccessManager()
 
-        my.license = License.get()
+        my.license = License.get(verify=False)
 
 
         my.login_cache = None
@@ -1047,6 +1065,10 @@ class Security(Base):
         if key == "":
             return None
 
+        # set the site if the key has one
+        site = Site.get_by_ticket(key)
+        Site.set(site)
+
         my.add_access_rules_flag = add_access_rules
 
         #from pyasm.biz import CacheContainer
@@ -1054,7 +1076,6 @@ class Security(Base):
         #cache.build_cache_by_column("ticket")
         #ticket = cache.get_sobject_by_key("ticket", key)
         ticket = Ticket.get_by_valid_key(key)
-
         if ticket is None:
             # if ticket does not exist, make sure we are signed out and leave
             return None
@@ -1402,7 +1423,7 @@ class Security(Base):
 
         site = Site.get()
         if site:
-            ticket_key = "XX:%s:%s" % (site, ticket_key)
+            ticket_key = "XX-%s-%s" % (site, ticket_key)
 
         ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
         return ticket
@@ -1723,7 +1744,6 @@ class License(object):
         return value
 
     def get_current_users(my):
-        # FIXME: hard coded database
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
@@ -1896,7 +1916,7 @@ class License(object):
     LAST_CHECK = None
     LAST_MTIME = None
 
-    def get(cls):
+    def get(cls, verify=True):
         # reparse every hour
         now = Date()
         now = now.get_db_time()
@@ -1918,7 +1938,13 @@ class License(object):
                 or mtime > cls.LAST_MTIME:
             cls.LICENSE = License()
         else:
-            cls.LICENSE.verify()
+            if verify:
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                cls.LICENSE.verify()
 
         cls.LAST_CHECK = now
         cls.LAST_MTIME = mtime
