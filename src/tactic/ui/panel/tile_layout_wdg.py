@@ -1152,6 +1152,7 @@ class ThumbWdg2(BaseRefreshWdg):
             if sobject.get("title"):                
                 name_hover = DivWdg()
                 name_hover.add_class("spt_name_hover")
+                name_hover.add_style("word-break", "normal")
                 #if my.use_title == "true":
                 #    name_hover.add(sobject.get('title'))
                 #else:
@@ -1163,6 +1164,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")
+            name_hover.add_style("word-break", "normal")
             #if my.use_title == "true":
             #    name_hover.add(sobject.get('title'))
             #else:
