@@ -46,7 +46,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'order': 1
     },
     'use_parent': {
-        'description': 'Determines whether or not to enter notes for parent sObject',
+        'description': 'Determine whether or not to enter notes for parent sObject',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -54,14 +54,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
     }
     ,
     'show_fullscreen_button': {
-        'description': 'Determines whether or not to show the expand notes icon button',
+        'description': 'Determine whether or not to show the expand notes icon button',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 3
     },
     'note_format': {
-        'description': 'Determines if the notes are shown in compact or full mode. Full- shows thumbnail, login-info, email and notes. Compact- shows just the notes.',
+        'description': 'Determine if the notes are shown in compact or full mode. Full- shows thumbnail, login-info, email and notes. Compact- shows just the notes.',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'compact|full',
@@ -69,7 +69,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
 
     'show_note_status': {
-        'description': 'Determines whether or not to show the note status in abbreviated form.',
+        'description': 'Determine whether or not to show the note status in abbreviated form.',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -77,7 +77,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
     # FIXME: need a better name for this
     'show_context_notes': {
-        'description': 'Determines if the notes in the context are hidden',
+        'description': 'Determine if the notes in the context are hidden',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -85,18 +85,26 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
     
     'note_expandable': {
-        'description': 'Determines whether or not a note is expandable. True- shows a short version of the note that can be expanded. False- shows the full note',
+        'description': 'Determine whether or not a note is expandable. True- shows a short version of the note that can be expanded. False- shows the full note',
         'category' : 'Options',
         'type' : 'SelectWdg',
         'values' : 'true|false',
         'order' : 7        
     },
 
-     'append_process': {
+    'append_process': {
         'description': 'Append a list of comma separated processes in addition of the ones defined in the pipeline',
         'category' : 'Options',
         'type' : 'TextWdg',
         'order' : 8        
+    },
+
+    'allow_email': {
+        'description': 'Allow email to be sent out directly in this widget',
+        'category' : 'Options',
+        'type' : 'SelectWdg',
+        'values' : 'true|false',
+        'order': 9
     }
 
     }
@@ -141,13 +149,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
       
 
-        DiscussionWdg.add_layout_behaviors(layout, my.hidden)
+        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
         
 
 
     def init(my):
        
         my.hidden = False
+        my.allow_email = my.kwargs.get('allow_email') != 'false'
         my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
         
 
@@ -403,7 +412,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parents = []
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
-
+        my.allow_email = my.kwargs.get('allow_email')
         
 
 
@@ -431,7 +440,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def add_layout_behaviors(cls, layout, hidden=False):
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
         '''hidden means it's a hidden row table'''
         
 
@@ -457,7 +466,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'type': 'mouseup',
             'bvr_match_class': match_class,
             'hidden': hidden,
-
+            'allow_email': allow_email,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -477,6 +486,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
                 kwargs.hidden = bvr.hidden;
+                kwargs.allow_email = bvr.allow_email;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -893,6 +903,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         my.hidden = my.kwargs.get('hidden') == True 
         
+
         my.show_border = my.kwargs.get("show_border")
         if my.show_border in ['false', False]:
             my.show_border = False
@@ -973,7 +984,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.load_js(top)
             
                 if my.kwargs.get("add_behaviors") != False:
-                    my.add_layout_behaviors(top)
+                    my.add_layout_behaviors(top, allow_email=my.allow_email)
 
 
             # add a refresh listener
@@ -1690,6 +1701,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             my.append_processes = [x.strip() for x in my.append_processes if x]
 
         my.upload_id = my.kwargs.get("upload_id")
+        
+        my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
+        
 
     def get_display(my):
 
@@ -1899,6 +1913,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         attachment_div.add(HtmlElement.br())
 
+        if not my.allow_email:
+            return content_div
+
         swap = SwapDisplayWdg()
         content_div.add(swap)
         swap.add_style("float: left")
@@ -1946,7 +1963,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         mail_div.add(HtmlElement.br())
         # mail cc and bcc
-        mail_div.add("Extra list of emails to send mail to (separated by commas):")
+        mail_div.add("Extra list of email addresses - comma separated:")
 
 
 
