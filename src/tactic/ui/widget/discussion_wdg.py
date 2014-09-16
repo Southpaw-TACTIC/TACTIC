@@ -203,6 +203,8 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def get_text_value(my):
         '''for csv export'''
+
+        from dateutil import parser
         comment_area = []
         
         idx = my.get_current_index()
@@ -225,7 +227,12 @@ class DiscussionElementWdg(BaseTableElementWdg):
             
             child_notes = note.get_child_notes()
             # draw note item
+            date = note.get_value('timestamp')
+            value = parser.parse(date)
+            setting = "%Y-%m-%d %H:%M"
+            date_value = value.strftime(setting)
             comment_area.append(note.get_value("login"))
+            comment_area.append(date_value)
             comment_area.append(note.get_value("note"))
             comment_area.append('\n')
             if child_notes:
