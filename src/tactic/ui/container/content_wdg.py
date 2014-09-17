@@ -258,10 +258,17 @@ class ContentBoxWdg(BaseRefreshWdg):
             if (top.hasClass("spt_content_box_max")) {
                 top.removeClass("spt_content_box_max");
                 top.addClass("spt_content_box_inline");
+                top.size = top.getSize();
+                var window_size = window.getSize();
+                top.setStyle("height", window_size.y)
+
+
             }
             else {
                 top.addClass("spt_content_box_max");
                 top.removeClass("spt_content_box_inline");
+                var size = top.size;
+                top.setStyle("height", size.y)
             }
             '''
         } )

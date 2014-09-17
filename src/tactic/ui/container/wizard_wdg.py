@@ -226,7 +226,7 @@ class WizardWdg(BaseRefreshWdg):
             """
 
 
-        dots_div.add("<br clear='all'/>")
+        #dots_div.add("<br clear='all'/>")
 
 
         div.add_relay_behavior( {

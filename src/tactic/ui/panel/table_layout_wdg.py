@@ -284,6 +284,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.is_on = True
         my.grouping_data = False
 
+        my.group_mode = my.kwargs.get("group_mode")
+        if not my.group_mode:
+            my.group_mode = "top"
+
 
         # set some grouping parameters
         my.current_groups = []
@@ -655,15 +659,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             column_widths = [60]
             my.kwargs["column_widths"] = column_widths
 
+        my.element_names = my.config.get_element_names()  
+        #my.element_widths = my.config.get_element_widths()
         for i, widget in enumerate(my.widgets):
 
-            default_width = widget.get_width()
+            default_width = my.kwargs.get("default_width")
             if not default_width:
-                name = widget.get_name()
-                if name == "notes":
-                    default_width = 400
-                else:
-                    default_width = 100
+                default_width = widget.get_width()
+            else:
+                default_width = int(default_width)
+
+            if not default_width:
+                default_width = 100
 
             if i >= len(column_widths):
                 # default width
@@ -676,6 +683,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 width = my.attributes[i].get("width")
                 if width:
                     column_widths[i] = width
+
+
+
 
         table_width = 30
         for i in range(0, len(column_widths)):
@@ -714,12 +724,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             my.header_table = Table()
             scroll.add(my.header_table)
 
+
             my.header_table.add_class("spt_table_with_headers")
             my.header_table.set_unique_id()
             my.handle_headers(my.header_table)
             if table_width:
                 my.header_table.add_style("width: %s" % table_width)
-
 
             scroll = DivWdg()
             h_scroll.add(scroll)
@@ -740,9 +750,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             table = my.table
             table.add_class("spt_table_table")
-            font_size = my.kwargs.get("font-size")
+            font_size = my.kwargs.get("font_size")
             if font_size:
                 table.add_style("font-size: %s" % font_size)
+                my.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
             #my.handle_headers(table)
             if table_width:
@@ -1681,8 +1692,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("min-width: 20px")
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
+
             inner_div.add_style("min-height: 30px")
-            inner_div.add_style("cursor: move")
 
 
 
@@ -1716,6 +1727,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
+            header_div.add_class("spt_table_header_content")
 
 
             if my.kwargs.get("wrap_headers") not in ["true", True]:
@@ -1791,6 +1803,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #if not width_set:
         #    table.add_style('width', '100%')
 
+
+
+
     def has_group_bottom(my):
         '''return True if group_column has group_bottom'''
         if not my.group_columns:
@@ -1815,7 +1830,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             group_row.add_attr("spt_table_state", "open")
 
             for td in group_row.get_widgets():
-                td.add_style("overflow: hidden")
+                #td.add_style("overflow: hidden")
                 td.add_attr("colspan", "2")
 
 
@@ -1834,7 +1849,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 for group_widget in group_widgets:
                     td = HtmlElement.td()
                     td.add_class('spt_group_cell')
-                    td.add_style("padding: 3px")
+                    td.add_style("padding: 8px 3px")
+                    td.add_style("overflow-x: hidden")
+
+                    if group_widget:
+                        td.add_border(color="#BBB")
+                    else:
+                        td.add_border(color="#BBB", size="1px 0px")
+
                     group_row.add(td)
                     td.add(group_widget)
 
@@ -1891,6 +1913,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
  
 
     def handle_groups(my, table, row, sobject):
+
+        if row == 0:
+            my.group_summary = []
+
+            tr = table.add_row()
+            tr.add_class("spt_table_hidden_group_row")
+            td = table.add_cell()
+            td.add_style("width", "20px")
+            td.add_style("min-width", "20px")
+            td.add_style("max-width", "20px")
+            td = table.add_cell()
+            td.add_style("width", "30px")
+            td.add_style("min-width", "30px")
+            td.add_style("max-width", "30px")
+            for widget in my.widgets:
+                td = table.add_cell()
+                td.add_class("spt_table_hidden_group_td")
+                td.add_attr("spt_element_name", widget.get_name())
+
+
         
         last_group_column = None
         for i, group_column in enumerate(my.group_columns):
@@ -1905,15 +1947,37 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if not group_value:
                 group_value = "__NONE__"
             last_value = my.group_values.get(group_column)
-            
+           
+            # if this is the first row or the group value has changed,
+            # then create a new group
             if last_value == None or group_value != last_value:
-                my.handle_group(table, i, sobject, group_column, group_value)
+
+                if last_value != None:
+                    # group summary
+                    if my.group_mode in ["bottom", "both"]:
+                        tr, td = table.add_row_cell()
+                        tr.set_sobjects(my.group_summary)
+                        tr.add_style("background", "#EEF")
+                        tr.add_class("spt_table_group_row")
+
+                        my.group_summary = []
+                        my.group_rows.append(tr)
+
+                    tr, td = table.add_row_cell()
+                    td.add("&nbsp;")
+                    tr.add_border(size=1)
+
+                if my.group_mode in ["top", "both"]:
+                    my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
 
+            my.group_summary.append(sobject)
 
-        # what does this do?
+
+
+        # Add the current sobject to the latest group
         if my.group_rows:
             my.group_rows[-1].get_sobjects().append(sobject)
 
@@ -1925,14 +1989,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if i != 0 and not my.is_on:
             tr.add_style("display: none")
 
+        tr.add_class("spt_table_group_row")
+
         unique_id = tr.set_unique_id()
 
-        my.group_rows.append(tr)
+        if my.group_mode in ["top"]:
+            my.group_rows.append(tr)
         
         if group_value == '__NONE__':
             label = '---'
         else:
-            label = Common.process_unicode_string(group_value)
+            group_label_expr = my.kwargs.get("group_label_expr")
+            if group_label_expr:
+                label = Search.eval(group_label_expr, sobject, single=True)
+            else:
+                label = Common.process_unicode_string(group_value)
 
         title = label
         if my.group_by_time:
@@ -1949,13 +2020,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
         swap.set_behavior_top(my.table)
         td.add(swap)
+        swap.add_style("width: 800px")
+        swap.add_style("font-weight: bold")
 
         td.add_style("height: 25px")
         td.add_style("padding-left: %spx" % (i*15))
-        td.add_style("border-style: solid")
-        border_color = td.get_color("border")
-        td.add_style("border-width: 0px 0px 0px 1px")
-        td.add_style("border-color: %s" % border_color)
+
+
+        tr.add_border(size=1)
+        tr.add_style("background", "#EEF")
         
         tr.add_attr("spt_unique_id", unique_id)
         tr.add_class("spt_group_row")
@@ -2384,6 +2457,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             th = table.add_cell()
             th.add_style("min-width: %spx" % spacing)
             th.add_style("width: %spx" % spacing)
+            th.add_style("max-width: %spx" % spacing)
 
         th = table.add_cell()
         #th.add_gradient("background", "background", -10)
@@ -2391,6 +2465,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             border_color = table.get_color("table_border", 0, default="border")
         th.add_style("border", "solid 1px %s" % border_color)
         th.add_looks( 'dg_row_select_box' )
+        th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
         th.add_style('max-width: 30px')
@@ -2423,9 +2498,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #my.is_grouped = my.kwargs.get("is_grouped")
         #if my.is_grouped or my.group_columns:
 
-        if my.group_columns:
-            td = table.add_cell()
-            #td.add_color("background-color", "background",-0)
+        
+        if my.group_columns or True:
+            spacing = len(my.group_columns) * 20
+            td = table.add_cell("&nbsp;")
+            td.add_style("min-width: %spx" % spacing)
+            td.add_style("width: %spx" % spacing)
+            td.add_style("max-width: %spx" % spacing)
+
+
 
         td = table.add_cell()
         td.add_class("spt_table_select")
@@ -2799,6 +2880,25 @@ spt.table.get_cell = function(element_name, tr) {
         return null;
     }
     return tds[0];
+}
+
+
+
+spt.table.get_group_cells = function(element_name, tr) {
+    
+    var table = spt.table.get_table();
+    var index = spt.table.get_column_index(element_name);
+    
+    // get all of the cells
+    var tds = [];
+    var rows = tr ? [tr] : table.getElements(".spt_table_group_row");
+    for (var i = 0; i < rows.length; i++) {
+        var row_tds = rows[i].getElements(".spt_group_cell");
+        td = row_tds[index];
+        tds.push(td);
+    }
+
+    return tds;
 }
 
 
@@ -4813,6 +4913,18 @@ spt.table.set_column_width = function(element_name, width) {
     if (!cell) {
         //alert("Cell for ["+element_name+"] does not exist");
         return;
+    }
+
+    var row = table.getElement(".spt_table_hidden_group_row");
+    if (row) {
+        var els = row.getElements(".spt_table_hidden_group_td");
+        for (var i = 0; i < els.length; i++) {
+            if (element_name == els[i].getAttribute("spt_element_name")) {
+                els[i].setStyle("width", width);
+                continue;
+            }
+            
+        }
     }
 
 

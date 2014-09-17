@@ -1073,6 +1073,9 @@ class XmlWdg(BaseTableElementWdg):
     def is_editable(my):
         return True
 
+    def get_width(my):
+        return 600
+
     def get_display(my):
         sobject = my.get_current_sobject()
         value = sobject.get_value( my.get_name() )

@@ -137,10 +137,11 @@ class FormatValue(object):
         elif format == '($1,234.00)':
             # break the value up by 3s
             if not value:
-                value = 0
-            value = my.currency_format(value, grouping=True)
-            if value.startswith("-"):
-                value = "(%s)" % value.replace("-", "")
+                value = "-"
+            else:
+                value = my.currency_format(value, grouping=True)
+                if value.startswith("-"):
+                    value = "(%s)" % value.replace("-", "")
 
         # ------------------------------------------------
         # Date

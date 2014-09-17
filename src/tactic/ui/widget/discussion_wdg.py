@@ -113,6 +113,10 @@ class DiscussionElementWdg(BaseTableElementWdg):
         my.menu = edit_wdg.get_menu()
 
         th.add(edit_wdg)
+
+
+    def get_width(my):
+        return 400
        
    
 

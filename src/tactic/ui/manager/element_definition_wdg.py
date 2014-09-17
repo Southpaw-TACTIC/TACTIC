@@ -24,6 +24,7 @@ from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, T
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.filter import FilterData
 from tactic.ui.container import TabWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWdg, ActionButtonWdg
 
 from dateutil import parser
@@ -534,7 +535,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         } )
         title_div = DivWdg()
         top.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin: 0 -1 10 -1")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
@@ -1251,11 +1252,11 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
        
         title_div = DivWdg()
         widget.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
-        title_div.add_style("width: 520px")
+        #title_div.add_style("width: 520px")
         title_div.add_style("height: 18px")
         title_div.add_border()
         title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -1311,19 +1312,9 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         widget.add(table)
 
         tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
+        td.add("<hr/>")
         td.add_style("padding-top: 20px")
 
-
-       
-    
-
-
-        
-
-
-       
 
         tr, td = table.add_row_cell()
         td.add(HtmlElement.br())
@@ -1368,7 +1359,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
     def get_display(my):
         top = DivWdg()
         top.add_class("spt_element_definition")
-        top.add_style("width: 530px")
+        #top.add_style("width: 530px")
         top.add_style("margin-bottom: 10px")
 
         my.is_insert = my.kwargs.get("is_insert")
@@ -1558,7 +1549,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         table = Table()
         table.add_color("color", "color")
         table.add_class("spt_form_top")
-        table.add_style("width: 530px")
+        #table.add_style("width: 530px")
         if mode == 'xml':
             table.add_style("display: none")
         top.add(table)
