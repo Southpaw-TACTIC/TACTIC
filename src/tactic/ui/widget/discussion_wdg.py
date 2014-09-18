@@ -211,6 +211,47 @@ class DiscussionElementWdg(BaseTableElementWdg):
         return None
 
 
+    def get_text_value(my):
+        '''for csv export'''
+
+        from dateutil import parser
+        comment_area = []
+        
+        idx = my.get_current_index()
+        my.discussion.set_current_index(idx)
+
+        my.discussion.preprocess_notes()
+
+        notes = my.discussion.get_notes()
+        
+        if not notes:
+            return ''
+
+        last_context = None
+        for i, note in enumerate(notes):
+            context = note.get_value('context')
+            # explicit compare to None
+            if last_context == None or context != last_context:
+                comment_area.append( "[ %s ] " % context )
+            last_context = context
+            
+            child_notes = note.get_child_notes()
+            # draw note item
+            date = note.get_value('timestamp')
+            value = parser.parse(date)
+            setting = "%Y-%m-%d %H:%M"
+            date_value = value.strftime(setting)
+            comment_area.append(note.get_value("login"))
+            comment_area.append(date_value)
+            comment_area.append(note.get_value("note"))
+            comment_area.append('\n')
+            if child_notes:
+                for child_note in child_notes:
+                    child_note_value = child_note.get_value('note')
+                    comment_area.append( "Reply: %s" %child_note_value)
+                    comment_area.append( '\n' )
+        return ' '.join(comment_area)
+
 
 class DiscussionEditWdg(BaseRefreshWdg):
 
