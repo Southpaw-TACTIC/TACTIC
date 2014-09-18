@@ -1132,6 +1132,10 @@ class ThumbWdg2(BaseRefreshWdg):
         icon_path = None
         path = None
 
+        base_search_type = sobject.get_base_search_type()
+        if base_search_type == "sthpw/snapshot":
+            sobject = sobject.get_parent()
+
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
