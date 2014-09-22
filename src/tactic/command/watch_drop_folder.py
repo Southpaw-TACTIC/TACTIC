@@ -38,9 +38,12 @@ import threading
 import logging
 logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
 
-from watchdog.observers import Observer
-from watchdog.events import LoggingEventHandler
-
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import LoggingEventHandler
+except:
+    Observer = None
+    LoggingEventHandler = object
 
 class TestLoggingEventHandler(LoggingEventHandler):
     """Logs all the events captured."""
