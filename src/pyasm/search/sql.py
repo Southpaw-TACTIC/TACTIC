@@ -2611,11 +2611,12 @@ class Select(object):
         from pyasm.biz import Project
         impl = Project.get_database_impl()
         database_type = impl.get_database_type()
+        time_interval = time_interval.lower()
 
         # FIXME: put this somehow in implmentation classes
         # Use of Search.get_database_impl().get_timestamp_now() is preferred
         if database_type == "Oracle":
-            if time_interval.lower() == 'today':
+            if time_interval == 'today':
                 return "\"%s\" >= TO_TIMESTAMP(SYSDATE)" % name
             else:
                 offset, unit = time_interval.split(" ")
@@ -2623,9 +2624,15 @@ class Select(object):
                     unit = "day"
                     offset = int(offset) * 7
                 return "\"%s\" >= SYSTIMESTAMP - INTERVAL '%s' %s" % (name, offset, unit)
-        elif impl == "SQLServer":
-            if time_interval.lower() == 'today':
-                return "%s >= CAST(FLOOR(CAST ( GETDATE() as FLOAT )) as DATETIME)" % name
+        elif database_type == "SQLServer":
+            if time_interval == 'today':
+                return "%s >= CONVERT(date, GETDATE())" % name
+                #return "%s >= CAST(FLOOR(CAST ( GETDATE() as FLOAT )) as DATETIME)" % name
+            else:
+                offset_time, unit = time_interval.split()
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >=  %s" %(name, offset)
+            """
             elif time_interval.lower() == '1 hour':
                 return  '%s >= DATEADD(hour,-1, GETDATE())' %(name)
             elif time_interval.lower() == '1 day':
@@ -2634,14 +2641,32 @@ class Select(object):
                 return  '%s >= DATEADD(week,-1, GETDATE())' %(name)
             elif time_interval.lower() == '1 month':
                 return  '%s >= DATEADD(month,-1, GETDATE())' %(name)
+            """
+        elif database_type == 'MySQL':
+            if time_interval == 'today':
+                return "%s >= CURDATE()" %name
+            else:
+                offset_time, unit = time_interval.split()
+                offset_time = int(offset_time)
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >= %s" %(name, offset)
+        elif database_type == 'Sqlite':
+            if time_interval == 'today':
+                return "%s >= date('now')" %name
+            else:
+                offset_time, unit = time_interval.split()
+                offset_time = int(offset_time)
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >= %s" %(name, offset)
 
         else:
-            if time_interval.lower() == 'today':
+            if time_interval == 'today':
                 return "%s >= 'today'::timestamp" % name
             else:
                 return "%s >= now() - '%s'::interval" % (name, time_interval)
 
     get_interval_where = staticmethod(get_interval_where)
+
 
 
 
