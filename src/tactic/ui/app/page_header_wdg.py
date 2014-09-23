@@ -94,7 +94,13 @@ class PageHeaderWdg(Widget):
             thumb.set_icon_size("45")
             td.set_style("vertical-align: top; padding-right:14px;padding-left: 3px")
 
-            td = tactic_header.add_cell( project.get_value("title") )
+            from pyasm.security import Site
+            site = Site.get().get_site()
+            if site:
+                title = "%s : %s " % (site, project.get_value("title"))
+            else:
+                title = project.get_value("title")
+            td = tactic_header.add_cell( title )
             #td.add_looks( "fnt_title_1" )
             td.add_style("font-size: 20px")
             td.add_style("white-space: nowrap")

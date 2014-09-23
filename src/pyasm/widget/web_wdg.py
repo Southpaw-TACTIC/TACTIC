@@ -1408,8 +1408,8 @@ class WebLoginWdg(Widget):
 
 
 
-
-
+# DEPRECATED: moved lower to pyasm/web
+"""
 class WebLoginCmd(Command):
 
     def check(my):
@@ -1478,7 +1478,7 @@ class WebLoginCmd(Command):
             login = security.get_login()
             if login.get_value("login") == "admin" and verify_password:
                 login.set_password(verify_password)
-
+"""
 
 
 

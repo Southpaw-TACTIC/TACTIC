@@ -371,25 +371,25 @@ class CsvImportWdg(BaseRefreshWdg):
 
     def get_upload_wdg(my):
         '''get search type select and upload wdg'''
+
+        key = 'csv_import'
+
+
         widget = DivWdg(css='spt_import_csv')
         widget.add_color('color','color')
         widget.add_color('background','background')
         widget.add_style('width: 600px')
 
         # get the search type
-        title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
-        widget.add( title )
-        title.add_style("float: left")
+        stype_div = DivWdg()
+        widget.add(stype_div)
 
+
+        # DEPRECATED
         # handle new search_types
+        """
         new_search_type = CheckboxWdg("new_search_type_checkbox")
         new_search_type.add_event("onclick", "toggle_display('new_search_type_div')")
-        #span = SpanWdg(css="med")
-        #span.add(new_search_type)
-        #span.add("Create new type")
-        #span.add(" ... or ... ")
-        #widget.add(span)
-
         new_search_type_div = DivWdg()
         new_search_type_div.set_id("new_search_type_div")
 
@@ -397,9 +397,6 @@ class CsvImportWdg(BaseRefreshWdg):
         title = TextWdg("asset_title")
         description = TextAreaWdg("asset_description")
 
-        
- 
-        key='csv_import'
         table = Table()
         table.set_id('csv_main_body')
         table.add_style("margin: 10px 10px")
@@ -418,24 +415,32 @@ class CsvImportWdg(BaseRefreshWdg):
         new_search_type_div.add(table)
         new_search_type_div.add_style("display: none")
         #widget.add(new_search_type_div)
+        """
 
-        div = DivWdg()
 
-       
-        search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
-        search_type_select.add_empty_option("-- Select --")
-        if not search_type_select.get_value():
-            search_type_select.set_value(my.search_type)
-        search_type_select.set_persist_on_submit()
-       
+        show_stype_select = my.kwargs.get("show_stype_select")
+        if show_stype_select in ['true',True] or not my.search_type:
 
-        div.add(search_type_select)
+            title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
+            stype_div.add( title )
+            title.add_style("float: left")
 
-        widget.add(div)
+            search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
+            search_type_select.add_empty_option("-- Select --")
+            if not search_type_select.get_value():
+                search_type_select.set_value(my.search_type)
+            search_type_select.set_persist_on_submit()
 
-        search_type_select.add_behavior( {'type': 'change', \
-                                  'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                                    'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+            stype_div.add(search_type_select)
+
+
+
+            search_type_select.add_behavior( {'type': 'change', \
+                                      'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
+                                        'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+
+
+
 
         if my.search_type:
             sobj = None
@@ -483,18 +488,18 @@ class CsvImportWdg(BaseRefreshWdg):
                 widget.add(HtmlElement.br())
                 return widget
 
-            widget.add("<br/>")
             widget.add_style("overflow-y: auto")
 
             msg = DivWdg()
             widget.add(msg)
-            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 60px'><b>Upload a csv file: </b></div>")
             msg.add_border()
-            msg.add_style("width: 400px")
+            msg.add_style("width: 500px")
             msg.add_color("background", "background3")
-            msg.add_style("padding: 20px")
-            msg.add_style("margin: 30 auto")
+            msg.add_style("padding: 30px")
+            msg.add_style("margin: 10 auto")
             #msg.add_style("text-align: center")
+
+            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -531,15 +536,14 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(browse)
 
 
-
-
             
             # this is now only used in the copy and paste Upload button for backward-compatibility
             upload_wdg = SimpleUploadWdg(key=key, show_upload=False)
             upload_wdg.add_style('display: none')
             msg.add(upload_wdg)
+
+            msg.add("<br/>")
           
-            #widget.add(span)
             msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
             msg.add("<b>Published URL: </b><br/>") 
