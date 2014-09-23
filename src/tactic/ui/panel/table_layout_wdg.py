@@ -131,10 +131,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '07'
         },
         'show_context_menu': {
-            'description': 'Flag to determine whether to show the context menu',
+            'description': 'Flag to determine whether to show the tactic context menu, default, or none',
             'category': 'Optional',
             'type': 'SelectWdg',
-            'values': 'true|false',
+            'values': 'true|false|none',
             'order': '08'
         },
         
@@ -152,12 +152,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'TextWdg',
             'order': '10'
         },
-        'init_load_num': {
-            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
             'category': 'Optional',
             'order': '11'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '12'
+        },
+
 
 
         "temp" : {
@@ -181,8 +189,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return "tactic.ui.table.HiddenRowElementWdg"
         elif display_handler == "pyasm.widget.HiddenRowToggleWdg":
             return "tactic.ui.table.HiddenRowElementWdg"
-
-    
 
     def remap_sobjects(my):
         # find all the distinct search types in the sobjects
@@ -409,7 +415,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.sobject_levels = []
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
-
+      
         # if a search key has been explicitly set without expression, use that
         expression = my.kwargs.get('expression') 
         matched_search_key = False
@@ -674,6 +680,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         show_context_menu = my.kwargs.get("show_context_menu")
         if show_context_menu in ['false', False]:
             show_context_menu = False
+        elif show_context_menu == 'none':
+            pass
         else:
             show_context_menu = True
 
@@ -685,11 +693,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if show_context_menu:
                 menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
                 menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+            elif show_context_menu == 'none':
+                div.add_event('oncontextmenu', 'return false;')
             if menus_in:
                 SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
+            #if my.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             my.drawn_widgets[widget.__class__.__name__] = True
         
@@ -763,10 +774,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_behavior( {
             'type': 'load',
             'chunk': chunk_size,
+            'unique_id': my.get_table_id(),
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
+
+            var unique_id = "loading|"+bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -792,6 +806,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
+                    spt.named_events.fire_event(unique_id, {});
                     return;
                 }
 
@@ -802,7 +817,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
-
+        elif not temp:
+            table.add_behavior( {
+            'type': 'load',
+            'unique_id': my.get_table_id(),
+            'cbjs_action': '''
+                var unique_id = "loading|"+bvr.unique_id;
+                spt.named_events.fire_event(unique_id, {});
+            '''
+            } )
+ 
 
 
 
@@ -831,20 +855,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-     
-        if my.search_limit:
-            limit_span = DivWdg()
-            inner.add(limit_span)
-            limit_span.add_style("margin-top: 4px")
-            limit_span.add_class("spt_table_search")
-            limit_span.add_style("width: 250px")
-            limit_span.add_style("margin: 5 auto")
-            
+            # An empty div like this is not needed. 
+            """
+            if my.show_search_limit:
+                limit_span = DivWdg()
+                limit_span.add_border()
+                inner.add(limit_span)
+                limit_span.add_style("margin-top: 4px")
+                limit_span.add_class("spt_table_search")
+                limit_span.add_style("width: 250px")
+                limit_span.add_style("margin: 5 auto")
+            """
+        
             info = my.search_limit.get_info()
             if info.get("count") == None:
                 info["count"] = len(my.sobjects)
 
-
+            # this simple limit provides pagination and should always be drawn. Visible where applicable
             from tactic.ui.app import SearchLimitSimpleWdg
             limit_wdg = SearchLimitSimpleWdg(
                 count=info.get("count"),
@@ -852,7 +879,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 current_offset=info.get("current_offset"),
             )
             inner.add(limit_wdg)
-            #inner.add("<br clear='all'/>")
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -1564,7 +1590,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             header_div.add_behavior(behavior)
-            th.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
+            table.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
 
 
 
@@ -1854,10 +1880,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
         else:
 
+            no_results_msg = my.kwargs.get("no_results_msg")
+
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             msg.set_box_shadow("0px 0px 5px")
-            if my.get_show_insert():
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
                 msg.add("<br/><br/>Click on the ")
                 icon = IconWdg("Add", IconWdg.ADD)
                 msg.add(icon)
@@ -1931,6 +1963,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
+        tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
         display_value = sobject.get_display_value(long=True)
@@ -2477,6 +2510,9 @@ spt.table.get_all_search_keys = function() {
     var search_keys = [];
     // Any future custom row may not have search_key
     for (var i = 0; i < rows.length; i++) {
+        if (rows[i].hasClass("spt_removed")) {
+            continue;
+        }
         var search_key = rows[i].getAttribute("spt_search_key");
         if (search_key)
             search_keys.push(search_key);
@@ -2681,7 +2717,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
 
-
     // position the arrow
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
@@ -2708,6 +2743,11 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         }
       }
     }
+    if (spt.table.last_table.hasOwnProperty('hidden_zindex'))
+        spt.table.last_table.hidden_zindex += 1;
+    else
+        spt.table.last_table.hidden_zindex = 100;
+    
 
     // New popup test
     var kwargs = {
@@ -2720,16 +2760,21 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 
         var shadow_color = spt.table.shadow_color;
 
+        var border_color = "#777";
+
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px #777; position: absolute; z-index: 100; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px;'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
+        var cell = src_el.getParent('.spt_cell_no_edit');
+        var elem_name = spt.table.get_element_name_by_cell(cell)
+        clone.setAttribute('column', elem_name);
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
@@ -2763,12 +2808,19 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 }
 
 
-spt.table.remove_hidden_row = function(row) {
-    var sibling = row.getNext();
+spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
+    // if it is hidden_row, just use it as is without getting Next 
+    var sibling = is_hidden ? row: row.getNext();
+    if (col_name) {
+        while (sibling && sibling.getAttribute('column') != col_name) {
+            sibling = sibling.getNext();
+        }
+    }
+    
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
-        //var child = sibling.firstChild.firstChild.firstChild;
         var child = sibling.getElement(".spt_hidden_content");
+
         if (child) {
             sibling.firstChild.firstChild.setStyle("overflow", "hidden");
             var size = child.getSize();
@@ -2776,7 +2828,7 @@ spt.table.remove_hidden_row = function(row) {
                 duration: "short",
             } )
             fx.addEvent("complete", function() {
-                spt.table.remove_hidden_row(sibling);
+                spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
             fx.start('margin-top', -size.y-100+"px");
@@ -2791,8 +2843,9 @@ spt.table.remove_hidden_row = function(row) {
 
 spt.table.remove_hidden_row_from_inside = function(el) {
     var hidden_row = el.getParent(".spt_hidden_row"); 
-    var row = hidden_row.getPrevious();
-    spt.table.remove_hidden_row(row);
+    var col_name = hidden_row.getAttribute('column');
+    
+    spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
 
@@ -3888,8 +3941,19 @@ spt.table.save_changes = function(kwargs) {
         values[column + '_option'] = note_options;
 
     }*/
-
     web_data = JSON.stringify(web_data);
+    
+    var search_top = null;
+    var table = spt.table.get_table();
+    
+    var search_dict = {};
+    var view_panel = table.getParent('.spt_view_panel[table_id=' + table.id + ']' );
+    if (view_panel) {
+        search_top = view_panel.getElement('.spt_search');
+        search_dict = spt.table.get_search_values(search_top);
+       
+    }
+    
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
         var info = result.info;
@@ -3897,7 +3961,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true};
+                var kw = {refresh_bottom : true, json: search_dict};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }
@@ -4037,7 +4101,6 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
-
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -4055,18 +4118,23 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
+    //var layout = spt.table.get_layout();
+    // this is more reliable when multi table are drawn in the same page while
+    // refresh is happening
+    var layout = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout);
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
-    var layout = spt.table.get_layout();
+
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
 
     
     var table_top = layout.getParent('.spt_table_top');
-    
-    var show_select = table_top.getAttribute("spt_show_select");
+    //note: sometimes table_top is null
+    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
@@ -4086,6 +4154,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
+        icon_generate_refresh: kw.icon_generate_refresh,
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
@@ -4102,7 +4171,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
     // update all of the changed rows
-    var kwargs;
     if (kw['cbjs_action']) {
         kwargs = {
           'args': kwargs,
@@ -4903,9 +4971,12 @@ spt.table.delete_rows = function(rows) {
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = function(id) {
+            spt.behavior.destroy_element($(id));
+        }
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+            row.addClass("spt_removed");
             if (layout.getAttribute("spt_version") == "2") {
                 spt.table.remove_hidden_row(row);
             }
@@ -4917,6 +4988,30 @@ spt.table.delete_rows = function(rows) {
 
     return;
 }
+
+
+spt.table.remove_rows = function(rows) {
+    var layout = spt.table.get_layout();
+    var on_complete = function(id) {
+        spt.behavior.destroy_element($(id));
+    }
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        row.addClass("spt_removed");
+        if (layout.getAttribute("spt_version") == "2") {
+            spt.table.remove_hidden_row(row);
+        }
+        Effects.fade_out(row, 500, on_complete);
+    }
+
+}
+
+
+spt.table.remove_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    spt.table.remove_rows(rows);
+}
+
 
 
 spt.table.delete_selected = function()
@@ -4932,11 +5027,6 @@ spt.table.delete_selected = function()
 
     return;
 
-    /*
-    var bvr = { src_el: spt.table.layout };
-    spt.dg_table.drow_smenu_delete_cbk({}, bvr)
-    spt.table.operate_selected('delete');
-    */
 }
 
 spt.table.retire_selected = function()
@@ -5060,12 +5150,10 @@ spt.table.open_ingest_tool = function(search_type) {
             %s
             spt.table.set_table(bvr.src_el);
             
-            
             ''' %cbjs_action
 
 
         hidden_row_color = table.get_color("background3")
-
 
         table.add_behavior( {
             'type': 'load',

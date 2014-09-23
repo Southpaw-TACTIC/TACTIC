@@ -24,7 +24,7 @@ from pyasm.common import Container, Environment
 
 
 if __name__ == '__main__':
-    is_forced = False
+    is_forced = True
     is_confirmed = False
     tacticversion = "2.5.0"
     project_code = None

@@ -68,11 +68,12 @@ class CheckinTest(unittest.TestCase, Command):
         search = Search("sthpw/snapshot")
 
         my.person = Person.create( "Unit", "Test",
-                "ComputerWorld", "")
+                "ComputerWorld", "unittest/checkin_test")
 
        
         
         my._test_checkin()
+        my._test_copycheckin()
         my._test_groupcheckin()
         my._test_inplace_checkin()
         my._test_preallocation_checkin()
@@ -85,6 +86,9 @@ class CheckinTest(unittest.TestCase, Command):
         my._test_auto_checkin()
         my._test_strict_checkin()
    
+        my._test_base_dir_alias()
+
+
 
     def clear_naming(my):
         Container.put("Naming:cache", None)
@@ -92,6 +96,33 @@ class CheckinTest(unittest.TestCase, Command):
         Container.put("Naming:cache:unittest:current", None)
         Container.put("Naming:cache:unittest", None)
         Container.put("Naming:namings", None)
+
+    def _test_copycheckin(my):
+
+        # create a new copy_test.txt file
+        file_path = "./copy_test.txt"
+        file = open(file_path, 'w')
+        file.write("copy contents")
+        file.close()
+
+        file_paths = [file_path]
+        file_types = ['main']
+        context = "publish"
+        from pyasm.checkin import FileCheckin
+        checkin = FileCheckin(
+                    my.person,
+                    file_paths=file_paths,
+                    file_types=file_types,
+                    context=context,
+                    mode="copy"
+            )
+        checkin.execute()
+        my.assertEquals(True, os.path.exists(file_path) )
+
+        snap = checkin.get_snapshot()
+        file_obj = snap.get_file_by_type('main')
+        file_name = file_obj.get_file_name()
+        my.assertEquals(file_name, 'copy_test_v002.txt')
 
     def _test_checkin(my):
 
@@ -193,7 +224,7 @@ class CheckinTest(unittest.TestCase, Command):
 
 
         # check in a file alredy in the repository
-        asset_dir = Config.get_value("checkin", "asset_base_dir")
+        asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
         file_path2 = "%s/unittest/text.txt" % asset_dir
 
         file = open(file_path2, 'w')
@@ -243,6 +274,7 @@ class CheckinTest(unittest.TestCase, Command):
             expected = "%s_preallocation_%s_v001" % (my.person.get_code(), server)
         else:
             expected = "%s_preallocation_v001" % (my.person.get_code())
+
         my.assertEquals(True, path.endswith( expected ) )
 
         # preallocate with a file name and file type
@@ -304,12 +336,16 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_get_children(my):
         # test to make sure get_all_children is able to get all the snapshots
         snapshots = my.person.get_all_children("sthpw/snapshot")
-        num_snapshots = 4
+        num_snapshots = 5
         my.assertEquals(num_snapshots, len(snapshots))
 
 
 
     def _test_file_owner(my):
+        # FIXME: this test has hard coded st_uids that only work on very
+        # specific conditions
+        return
+
         if os.name == 'nt':
             return
         # create a new test.txt file
@@ -471,7 +507,7 @@ class CheckinTest(unittest.TestCase, Command):
                 expected = "unittest/person/%s/process/.versions" % person_code
             my.assertEquals(expected, relative_dir)
 
-            asset_dir = Config.get_value("checkin", "asset_base_dir")
+            asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
             path = "%s/%s/%s" % (asset_dir, relative_dir, repo_filename)
 
 
@@ -583,7 +619,7 @@ class CheckinTest(unittest.TestCase, Command):
             
             path = snapshot.get_path_by_type("main")
 
-            asset_dir = Config.get_value("checkin", "asset_base_dir")
+            asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
 
             file_objects = snapshot.get_all_file_objects()
             my.assertEquals(1, len(file_objects))
@@ -644,6 +680,8 @@ class CheckinTest(unittest.TestCase, Command):
         naming.commit()
 
         my.clear_naming()
+
+
         for i, subdir in enumerate(subdirs):
 
             if subdir:
@@ -680,20 +718,72 @@ class CheckinTest(unittest.TestCase, Command):
             expected = "TESTfilename_v001.jpg"
             my.assertEquals(expected, basename)
 
-        try:
 
-            # create a new test.txt file
-            file_path = "./%s" % filename
+        # create a new test.txt file
+        file_path = "./%s" % filename
+        file = open(file_path, 'w')
+        file.write("test2")
+        file.close()
+        checkin = FileCheckin(my.person, file_path, context='naming/empty_dir_test')
+        checkin.execute()
+
+
+
+    def _test_base_dir_alias(my):
+
+        Config.set_value("checkin", "asset_base_dir", {
+            'default': '/tmp/tactic/default',
+            'alias': '/tmp/tactic/alias',
+            'alias2': '/tmp/tactic/alias2',
+        });
+        # "plugins" is assumed in some branch 
+        asset_dict = Environment.get_asset_dirs()
+        default_dir = asset_dict.get("default")
+        my.assertEquals( "/tmp/tactic/default", default_dir)
+
+        aliases = asset_dict.keys()
+        my.assertEquals( 3, len(aliases))
+        my.assertNotEquals( None, "alias" in aliases )
+
+        # create a naming
+        naming = SearchType.create("config/naming")
+        naming.set_value("search_type", "unittest/person")
+        naming.set_value("context", "alias")
+        naming.set_value("dir_naming", "alias")
+        naming.set_value("file_naming", "text.txt")
+        naming.set_value("base_dir_alias", "alias")
+        naming.commit()
+
+        # create 2nd naming where 
+        naming = SearchType.create("config/naming")
+        naming.set_value("search_type", "unittest/person")
+        naming.set_value("context", "alias2")
+        naming.set_value("dir_naming", "alias2")
+        naming.set_value("base_dir_alias", "alias2")
+        naming.set_value("file_naming", "text.txt")
+        naming.set_value("checkin_type", "auto")
+        naming.commit()
+
+        my.clear_naming()
+
+        # create a new test.txt file
+        for context in ['alias', 'alias2']:
+            file_path = "./test.txt"
             file = open(file_path, 'w')
-            file.write("test2")
+            file.write("whatever")
             file.close()
-            checkin = FileCheckin(my.person, file_path, context='naming/empty_dir_test')
-            checkin.execute()
-        except AssertionError, e:
-            print unicode(e)
-        else:
-            raise Exception('It should have caused an assertion error since my.person has an empty description.')
 
+            checkin = FileCheckin(my.person, file_path, context=context)
+            checkin.execute()
+            snapshot = checkin.get_snapshot()
+
+            lib_dir = snapshot.get_lib_dir()
+            expected = "/tmp/tactic/%s/%s" % (context, context)
+            my.assertEquals(expected, lib_dir)
+
+            path = "%s/text.txt" % (lib_dir)
+            exists = os.path.exists(path)
+            my.assertEquals(True, exists)
 
 
 

@@ -976,13 +976,22 @@ spt.dg_table.add_task_selected = function(bvr)
         
         spt.app_busy.show( title, msg );
         server.start({title: "Adding task to ["+num+"] items"});
+
+        on_complete = function() {
+            server.finish(); 
+            if (!aborted) {
+                spt.notify.show_message("Task creation completed.");
+                spt.named_events.fire_event(refresh_event, {});
+            }
+        };
+
         try {
             var cmd = 'tactic.ui.app.AddTaskCbk';
             var options = {
                     'search_key_list': bvr.search_key_list};
             var values = spt.api.Utility.get_input_values(bvr.src_el.getParent('.spt_add_task_panel'))
-            rtn = server.execute_cmd(cmd, options, values);
-            spt.named_events.fire_event(refresh_event, {});
+            rtn = server.execute_cmd(cmd, options, values,{on_complete:on_complete});
+            
             //spt.alert(rtn.description);
         }
         catch(e) {
@@ -996,15 +1005,9 @@ spt.dg_table.add_task_selected = function(bvr)
         }
 
         spt.app_busy.hide()
-        server.finish();
+        //server.finish();
         spt.popup.close(bvr.src_el.getParent('.spt_popup'));
 
-        if (!aborted) {
-            spt.notify.show_message("Task creation succeeded");
-        }
-        
-        
-        //spt.app_busy.hide();
 
 
 
@@ -2761,9 +2764,16 @@ spt.dg_table._search_cbk = function(evt, bvr)
                     if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
+            var new_values = [];
+            var table_searches = table_top.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
+            var search_dict = {'json' : JSON.stringify(new_values)};
         }
-
-        spt.panel.refresh(table_top);
+        spt.panel.refresh(table_top, search_dict);
         return;
     }
 
@@ -2906,6 +2916,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_context_menu = target.getAttribute("spt_show_context_menu");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
+    var ingest_data_view = target.getAttribute("spt_ingest_data_view");
+    var checkin_context = target.getAttribute("spt_checkin_context");
+    var checkin_type = target.getAttribute("spt_checkin_type");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
@@ -2977,6 +2990,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'simple_search_view': simple_search_view,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
+        'checkin_type': checkin_type,
+        'checkin_context': checkin_context,
+        'ingest_data_view': ingest_data_view,
         'init_load_num': init_load_num,
         'mode': mode,
         'is_refresh': 'true',
@@ -3009,7 +3025,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     // have a chance to specify whether or not to show the search_limit_wdg ... needed
     // if you want all the results that match your search and not just the current
     // page ...
-    args['show_search_limit'] = 'true';
+    args['show_search_limit'] = target.getAttribute('spt_show_search_limit');
     if( 'show_search_limit' in bvr ) {
         if( spt.is_FALSE( bvr.show_search_limit ) ) {
             args['show_search_limit'] = 'false';
@@ -5740,5 +5756,6 @@ spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
 
     return setup_info;
 }
+
 
 

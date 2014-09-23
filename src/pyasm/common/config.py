@@ -66,7 +66,6 @@ class Config(Base):
                 value = xml_data.get_value(xpath)
 
             value = Common.expand_env(value)
-
             if not value and default:
                 value = default
 
@@ -75,9 +74,14 @@ class Config(Base):
 
             value = value.strip()
             if sub_key:
-                sub_value = eval(value)
-                sub_value = sub_value.get(sub_key)
-                value = sub_value
+                # in case it's not in dict format like asset_base_dir
+                try:
+                    sub_value = eval(value)
+                    sub_value = sub_value.get(sub_key)
+                    value = sub_value
+                except:
+                    pass
+
 
             data[KEY] = value
 
@@ -145,8 +149,34 @@ class Config(Base):
                 Xml.append_child(parent_node, node)
             else:
                 return
+        
+        if isinstance(value, int):
+            value = str(value)
+        elif value.startswith('{'):
+            try:
+                value = eval(value)
+            except Exception, e:
+                print "Config value is invalid ", value 
+                raise e
 
-        xml_data.set_node_value(node, str(value))
+            value = jsondumps(value)
+        else:
+            value = unicode(value, errors='ignore').encode('utf-8')
+        
+        xml_data.set_node_value(node, value)
+
+        data = Container.get(Config.CONFIG_KEY)
+        if data == None:
+            data = {}
+            Container.put(Config.CONFIG_KEY, data)
+
+        KEY = "%s:%s" % (module_name, key)
+        #if sub_key:
+        #    KEY = "%s:%s:%s" % (module_name, key, sub_key)
+        data[KEY] = value
+ 
+
+
 
     set_value = staticmethod(set_value)
 

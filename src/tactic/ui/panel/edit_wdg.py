@@ -404,6 +404,7 @@ class EditWdg(BaseRefreshWdg):
             my.set_as_panel(top_div)
         content_div = DivWdg()
         content_div.add_class("spt_edit_top")
+        content_div.add_class("spt_edit_form_top")
         content_div.set_attr("spt_search_key", my.search_key)
 
         if not Container.get_dict("JSLibraries", "spt_edit"):
@@ -493,6 +494,8 @@ class EditWdg(BaseRefreshWdg):
         inner.add(table)
         if my.color_mode == "default":
             table.add_color("background", "background")
+        elif my.color_mode == "transparent":
+            table.add_style("background", "transparent")
         table.add_color("color", "color")
 
 
@@ -1098,9 +1101,8 @@ class EditWdg(BaseRefreshWdg):
             input.set_options(display_options)
 
         elif element_type =="sqlserver_timestamp":
-            # better then set it to None
-            input = TextWdg()
-            input.add_attr('disabled','disabled')
+            # NoneType Exception is prevented in WidgetConfig already
+            input = None
         else:
             # else try to instantiate it as a class
             print "WARNING: EditWdg handles type [%s] as default TextWdg" %element_type

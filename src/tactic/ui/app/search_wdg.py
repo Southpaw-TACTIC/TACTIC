@@ -279,7 +279,7 @@ class SearchWdg(BaseRefreshWdg):
                 try:
                     filter_data = None
 
-                    # This is for backward compatibilty
+                    # TODO: remove this. This is for backward compatibilty
                     my.config = WidgetConfig.get(xml=filter, view='filter')
                     filter_data = FilterData.get()
                     if not filter_data.get_data():
@@ -393,11 +393,11 @@ class SearchWdg(BaseRefreshWdg):
         filter_data = FilterData.get_from_cgi()
 
         json = filter_data.serialize()
-
         # use widget settings instead
-        key = SearchWdg._get_key(my.search_type, my.view)
-        
-        WidgetSettings.set_value_by_key(key, json)
+        # Using solely TableLayoutWdg will result in having no search view
+        if my.view:
+            key = SearchWdg._get_key(my.search_type, my.view)
+            WidgetSettings.set_value_by_key(key, json)
         #value = WidgetSettings.get_value_by_key(key)
         #print "value: ", value
         return

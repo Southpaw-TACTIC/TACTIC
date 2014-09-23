@@ -28,7 +28,7 @@ class PopulateSObjectListCmd(Command):
             if project_code in ['admin','unittest','sthpw']:
                 continue
 
-            search_types = project.get_search_types()
+            search_types = project.get_search_types(include_multi_project=True)
             for search_type in search_types:
                 search_type.set_value('code', search_type.get_value('search_type'))
                 search_type.commit(triggers=False)

@@ -12,7 +12,7 @@
 
 __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
 
-
+import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
@@ -67,18 +67,28 @@ def get_simple_cmd(my, meth, ticket, args):
             my2.start_time = time.time()
             global REQUEST_COUNT, LAST_RSS
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
+           
             if my.get_protocol() != "local":
                 print "request_id: ", request_id
                 now = datetime.datetime.now()
                 
-                print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                print "user: ", Environment.get_user_name()
-                print "simple method: ", meth
-                print "ticket: ", ticket
-                Container.put("CHECK", my2.check)
-                Container.put("NUM_SOBJECTS", 1)
-                Common.pretty_print(args)
-
+                def print_info(my2, args):
+                    print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
+                    print "user: ", Environment.get_user_name()
+                    print "simple method: ", meth
+                    print "ticket: ", ticket
+                    Container.put("CHECK", my2.check)
+                    Container.put("NUM_SOBJECTS", 1)
+                    Common.pretty_print(args)
+                
+                if meth.__name__ == 'get_widget':
+                    first_arg = args[0]
+                    if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                        print_info(my2, args)
+                else:
+                    print_info(my2, args)
+                
+                    
             try:
                 # actually execute the method
                 my2.results = exec_meth(my, ticket, meth, args)
@@ -231,6 +241,9 @@ QUERY_METHODS = {
     'get_doc_link': 0
 }
 
+TRANS_OPTIONAL_METHODS = {
+    'execute_cmd': 3
+}
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -267,6 +280,13 @@ def xmlrpc_decorator(meth):
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(my, meth, ticket, args)
+                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                        cmd = get_simple_cmd(my, meth, ticket, args)
+                    else:
+                        cmd = get_full_cmd(my, meth, ticket, args)
+
                 else:
                     cmd = get_full_cmd(my, meth, ticket, args)
 
@@ -328,9 +348,11 @@ def xmlrpc_decorator(meth):
 
                 if isinstance(message, unicode):
                     error_msg = message.encode('utf-8')
-                else:
+                elif isinstance(message, str):
                     error_msg = unicode(message, errors='ignore').encode('utf-8')
-                print "Error: ", error_msg
+                else:
+                    error_msg = message
+                print "Error: ", error_msg  
                 print "-"*50
                 raise
 
@@ -371,6 +393,7 @@ def profile_execute():
 
 def trace_decorator(meth):
     def new(my, *args):
+        
         print "method: ", meth.__name__, args
 
         try:
@@ -811,6 +834,9 @@ class BaseApiXMLRPC(XmlrpcServer):
                             continue
                     elif isinstance(value, long) and value > MAXINT:
                         value = str(value)
+                    elif isinstance(value, decimal.Decimal):
+                        # use str to avoid loss of precision
+                        value = str(value)
                     elif isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
@@ -916,6 +942,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
         message = Search.get_by_code("sthpw/message", key)
         sobject_dict = my._get_sobject_dict(message)
         return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_messages(my, ticket, keys):
+        search = Search("sthpw/message")
+        search.add_filters("code", keys)
+        messages = search.get_sobjects()
+
+        results = []
+        for message in messages:
+            sobject_dict = my._get_sobject_dict(message)
+            results.append(sobject_dict)
+
+        return results
+
+
 
 
     @xmlrpc_decorator
@@ -1042,9 +1084,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         subscription  = search.get_sobject()
 
         if subscription:
+            raise ApiException('[%s] has already been subscribed to.'%key)
             # nothing to do ... already subscribed
-            sobject_dict = my._get_sobject_dict(subscription)
-            return sobject_dict
+            #sobject_dict = my._get_sobject_dict(subscription)
+            #return sobject_dict
 
         project_code = Project.get_project_code()
 
@@ -3451,7 +3494,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def add_dependency(my, ticket, snapshot_code, file_path, type='ref', tag='main'):
-        '''method to append a dependency reference to an existing checkin
+        '''method to append a dependency reference to an existing checkin.
         The snapshot that this is attached will be auto-discovered
        
         @params
@@ -3469,7 +3512,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
-        snapshot = Snapshot.get_by_code(snapshot_code)
+        elif snapshot_code.startswith("sthpw/snapshot?"):
+            snapshot = Search.get_by_search_key(snapshot_code)
+        else:
+            snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
                 snapshot_code)
@@ -3481,6 +3527,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot.commit()
 
         return my._get_sobject_dict(snapshot)
+
 
 
     @xmlrpc_decorator
@@ -3511,7 +3558,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         snapshot = Snapshot.get_by_code(to_snapshot_code)
         if not snapshot:
             raise ApiException("Snapshot with code [%s] does not exist" % \
-                snapshot_code)
+                to_snapshot_code)
 
         xml = snapshot.get_xml_value("snapshot")
         builder = SnapshotBuilder(xml)
@@ -3547,7 +3594,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         if mode:
-            assert mode in ['move', 'copy', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
+            assert mode in ['move', 'copy','create', 'preallocate', 'upload', 'uploaded', 'manual', 'inplace']
 
 
         # file_path can be an array of files:
@@ -3697,7 +3744,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #filename = File.get_filesystem_name(filename)
 
         if mode:
-            assert mode in ['move', 'copy','preallocate', 'upload', 'inplace']
+            assert mode in ['move', 'copy', 'create','preallocate', 'upload', 'inplace']
         if mode == 'preallocate':
             keep_file_name = True
             # create a virtual file object for dir naming
@@ -3984,6 +4031,44 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
+
+
+    @xmlrpc_decorator
+    def get_snapshots_by_relative_dir(my, ticket, relative_dir, base_dir_alias=""):
+        '''Get all of the snapshots associated with a particular relative
+        directory.
+
+        @params
+        ticket - authentication ticket
+        relative_dir - the relative directory in the server
+
+        @return
+        list of snapshots
+        '''
+
+
+        search = Search("sthpw/file")
+        search.add_op("begin")
+        search.add_filter("relative_dir", "%s/%%" % relative_dir, op="like")
+        search.add_filter("relative_dir", "%s" % relative_dir, op="=")
+        search.add_op("or")
+
+        search2 = Search("sthpw/snapshot")
+        search2.add_relationship_search_filter(search)
+        search2.add_filter("is_latest", True)
+
+        sobjects = search2.get_sobjects()
+        sobject_dicts = []
+        for sobject in sobjects:
+            sobject_dict = my._get_sobject_dict(sobject)
+            sobject_dicts.append(sobject_dict)
+        return sobject_dicts
+ 
+
+
+
+
+
     @xmlrpc_decorator
     def get_snapshot(my, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''method to retrieve snapshots
@@ -4038,6 +4123,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         else:
             level_type = None
             level_id = None
+
+        # if a process is given the context is overridden
+        if process:
+            context = None
 
         if not versionless:
             snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
@@ -4115,6 +4204,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 snapshot_code)
 
         return snapshot.get_full_snapshot_xml()
+
+
 
 
     @xmlrpc_decorator
@@ -4626,6 +4717,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             filter_data = FilterData(values)
             filter_data.set_to_cgi()
 
+
+        # initialize the translation module
+        from pyasm.biz import Translation
+        Translation.install()
+
         # NOTE: this is deprecated.  The state is in the ticket passed
         # in, so restoration of transaction state is not really necessary
         if my.get_protocol() == "xmlrpc" and not Project.get():
@@ -4677,11 +4773,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 Container.put("request_top_wdg", widget)
 
                 html = widget.get_buffer_display()
-
-                print "SQL Query Count: ", Container.get('Search:sql_query')
-                print "BVR Count: ", Container.get('Widget:bvr_count')
-                print "Sending: %s KB" % (len(html)/1024)
-                print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
+                    print "SQL Query Count: ", Container.get('Search:sql_query')
+                    print "BVR Count: ", Container.get('Widget:bvr_count')
+                    print "Sending: %s KB" % (len(html)/1024)
+                    print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
 
                 return html
 

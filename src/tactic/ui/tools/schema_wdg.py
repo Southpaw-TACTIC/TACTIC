@@ -212,7 +212,6 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         var to_node = item.get_to_node();
 
         var connector = spt.pipeline.get_selected_connector();
-
         var kwargs = {
             from_search_type: spt.pipeline.get_node_name(from_node),
             to_search_type: spt.pipeline.get_node_name(to_node),
@@ -220,7 +219,10 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
             to_col: connector.get_attr("to_col")
         };
         var content = dialog.getElement(".spt_dialog_content");
-        spt.panel.load(content, class_name, kwargs);
+        
+        setTimeout( function() {spt.panel.load(content, class_name, kwargs); 
+                                connector.select();}, 300);
+        
         
         '''
         } )
@@ -913,7 +915,8 @@ class SchemaConnectorWdg(BaseRefreshWdg):
              inner.add_behavior({'type':'load',
             'cbjs_action': '''
             var connector = spt.pipeline.get_selected_connector();
-            connector.draw_line(true);
+            if (connector) 
+                connector.draw_line(true);
             '''})
         div.add(inner)
 
@@ -1042,6 +1045,12 @@ class SchemaConnectorWdg(BaseRefreshWdg):
 
         // get the selected connector
         var connector = spt.pipeline.get_selected_connector();
+        if (!connector) {
+           spt.alert('connector line is not selected. Please click on it and try again.');
+           spt.app_busy.hide();
+           return;
+       }
+
         var left_node = connector.get_from_node();
         var right_node = connector.get_to_node();
 
@@ -1652,7 +1661,7 @@ class SchemaConnectorCbk(Command):
         namespace, left_table = left_search_type.split("/")
         namespace, right_table = right_search_type.split("/")
 
-
+        # an attempt to simplify the element_name by stripping _code or _id for edit view
         element_name = left
         if element_name.endswith("_code"):
             element_name2 = left.replace("_code", "")
@@ -1660,7 +1669,10 @@ class SchemaConnectorCbk(Command):
             element_name2 = left.replace("_id", "")
         else:
             element_name2 = ""
-
+    
+        label_attr = 'name'
+        if not SearchType.column_exists(right_search_type, 'name'):
+            label_attr = 'code'
 
         # create a view definition
         element_xml = '''
@@ -1675,11 +1687,11 @@ class SchemaConnectorCbk(Command):
                 element_xml = '''
                 <element name='%s' edit="true">
                   <display widget='expression'>
-                    <expression>@GET(%s.name)</expression>
+                    <expression>@GET(%s.%s)</expression>
                     <calc_mode>fast</calc_mode>
                   </display>
                 </element>
-                ''' % (element_name2, right_search_type)
+                ''' % (element_name2, right_search_type, label_attr)
                 config.append_xml_element(element_name2, element_xml)
             config.commit_config()
 
@@ -1691,7 +1703,7 @@ class SchemaConnectorCbk(Command):
         <element name='%s'>
           <display class='SelectWdg'>
             <empty>-- Select --</empty>
-            <query>%s|code|code</query>
+            <values_expr>@GET(%s.code)</values_expr>
           </display>
         </element>
         ''' % (element_name, right_search_type)
@@ -1710,13 +1722,14 @@ class SchemaConnectorCbk(Command):
             <element name='%s'>
               <display class='SelectWdg'>
                 <empty>-- Select --</empty>
-                <query>%s|code|name</query>
+                <values_expr>@GET(%s.code)</values_expr>
+                <labels_expr>@GET(%s.%s)</labels_expr>
               </display>
               <action class='DatabaseAction'>
                 <column>%s</column>
               </action>
             </element>
-            ''' % (element_name2, right_search_type, element_name)
+            ''' % (element_name2, right_search_type, right_search_type, label_attr, element_name)
 
             config.append_xml_element(element_name2, element_xml)
 

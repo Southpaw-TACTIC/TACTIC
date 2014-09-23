@@ -178,7 +178,7 @@ class DialogWdg(BaseRefreshWdg):
             var init_offset = {x: bvr.offset.x, y: bvr.offset.y + 5};
             var offset = {
                 x: pos.x + bvr.offset.x,
-                y: pos.y + size.y + bvr.offset.y + 5
+                y: pos.y + size.y + bvr.offset.y + 10
             };
             
             var dialog = $(bvr.dialog_id);
@@ -207,7 +207,7 @@ class DialogWdg(BaseRefreshWdg):
                 var pointer = dialog.getElement(".spt_popup_pointer");
                 if (pointer) {
                     pointer_pos = pointer.getPosition();
-                    pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
+                    //pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
                 }
 
             }
@@ -281,22 +281,17 @@ class DialogWdg(BaseRefreshWdg):
 
         show_pointer = my.kwargs.get("show_pointer")
         if show_pointer not in [False, 'false']:
-        
-            pointer_wdg = DivWdg()
-            widget.add(pointer_wdg)
-            pointer_wdg.add_class("spt_popup_pointer")
-            pointer_wdg.add_style("border-left: 12px solid transparent")
-            pointer_wdg.add_style("border-right: 12px solid transparent")
-            bgcolor = pointer_wdg.get_color("background", -10)
-            pointer_wdg.add_style("border-bottom: 14px solid %s" % bgcolor)
-            pointer_wdg.add_style("position: absolute")
-
-            pointer_wdg.add_style("left: %s" % (15-offset.get('x')))
-            pointer_wdg.add_style("top: -24")
-            pointer_wdg.add_style("height: 11")
-
-            pointer_wdg.add_style("z-index: 10")
-
+            from tactic.ui.container import ArrowWdg
+            offset_x = 15 - offset.get('x')
+            offset_y = offset.get("y")
+            arrow = ArrowWdg(
+                    offset_x=offset_x,
+                    offset_y=offset_y,
+                    color=widget.get_color("background", -10)
+            )
+            arrow.add_class("spt_popup_pointer")
+            arrow.add_style("z-index: 10")
+            widget.add(arrow)
 
 
         # create the 'close' button ...

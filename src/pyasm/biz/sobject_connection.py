@@ -198,7 +198,7 @@ class SObjectConnection(SObject):
             raise TacticException('Only unique stypes are supported for the passed in sobjects')
 
         src_sobjects = []
-        
+         
         src_stype = None
         src_stypes = SObject.get_values(connections, "%s_search_type" % prefixB, unique=True)
         src_ids = SObject.get_values(connections, "%s_search_id" % prefixB, unique=True)
@@ -219,7 +219,7 @@ class SObjectConnection(SObject):
                     new_search.add_filters('id', src_ids)
                 if filters:
                     new_search.add_op_filters(filters)
-                src_objects = new_search.get_sobjects()
+                src_sobjects = new_search.get_sobjects()
 
         else:
             for connection in connections:

@@ -1328,8 +1328,8 @@ class TacticServerStub(object):
 
 
 
-    def delete_sobject(my, search_key):
-        '''API Function: delete_sobject(search_key)
+    def delete_sobject(my, search_key, include_dependencies=False):
+        '''API Function: delete_sobject(search_key, include_dependencies=False)
         Invoke the delete method.  Note: this function may fail due
         to dependencies.  Tactic will not cascade delete.  This function
         should be used with extreme caution because, if successful, it will
@@ -1339,12 +1339,15 @@ class TacticServerStub(object):
             search_key - a unique identifier key representing an sobject.
             Note: this can also be an array.
 
+        @keyparam:
+            include_dependencies - True/False
+
         @return:
             dictionary - a sobject that represents values of the sobject in the
             form name:value pairs
         '''
 
-        return my.server.delete_sobject(my.ticket, search_key)
+        return my.server.delete_sobject(my.ticket, search_key, include_dependencies)
 
 
 
@@ -1634,7 +1637,7 @@ class TacticServerStub(object):
 
 
 
-    def upload_file(my, path):
+    def upload_file(my, path, base_dir=None):
         '''API Function: upload_file(path)
         Use http protocol to upload a file through http
 
@@ -1650,7 +1653,21 @@ class TacticServerStub(object):
         else:
             upload_server_url = "http://%s/tactic/default/UploadServer/" % my.server_name
 
+
+        if base_dir:
+            basename = os.path.basename(path)
+            dirname = os.path.dirname(path)
+            if not path.startswith(dirname):
+                raise TacticApiException("Path [%s] does not start with base_dir [%s]" % (path, base_dir))
+            base_dir = base_dir.rstrip("/")
+            sub_dir = dirname.replace("%s/" % base_dir, "")
+            if sub_dir:
+                upload.set_subdir(sub_dir)
+
+
+
         upload.set_upload_server(upload_server_url)
+        #upload.set_subdir("blah")
         upload.execute(path)
 
         # upload a file
@@ -1825,9 +1842,13 @@ class TacticServerStub(object):
                 basename = os.path.basename(file_path)
 
                 if mode == 'move':
+                    
                     shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
                 elif mode == 'copy':
                     shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    # it moves to repo from handoff dir later
+                    mode = 'create'
 
             elif mode in ['local']:
                 # do nothing
@@ -1841,22 +1862,19 @@ class TacticServerStub(object):
             # get the naming conventions and move the file to the local repo
             files = my.server.eval(my.ticket, "@SOBJECT(sthpw/file)", snapshot)
 
-            # FIXME: this only works on the python implementation
+            # FIXME: this only works on the python implementation .. should
+            # use JSON
             files = eval(files)
 
             # TODO: maybe cache this??
             base_dirs = my.server.get_base_dirs(my.ticket)
             if os.name == 'nt':
                 client_repo_dir = base_dirs.get("win32_local_repo_dir")
-                # DEPRECATED
-                if not client_repo_dir:
-                    client_repo_dir = base_dirs.get("win32_local_base_dir")
-                    client_repo_dir = "%s/repo" % client_repo_dir
             else:
                 client_repo_dir = base_dirs.get("linux_local_repo_dir")
-                if not client_repo_dir:
-                    client_repo_dir = base_dirs.get("win32_local_base_dir")
-                    client_repo_dir = "%s/repo" % client_repo_dir
+
+            if not client_repo_dir:
+                raise TacticApiException('No local_repo_dir defined in server config file')
 
 
             for file in files:
@@ -1865,7 +1883,11 @@ class TacticServerStub(object):
                 repo_dir = os.path.dirname(repo_path)
                 if not os.path.exists(repo_dir):
                     os.makedirs(repo_dir)
-                shutil.copy(file_path, repo_path)
+                basename = os.path.basename(repo_path)
+                dirname = os.path.dirname(repo_path)
+                temp_repo_path = "%s/.%s.temp" % (dirname, basename)
+                shutil.copy(file_path, temp_repo_path)
+                shutil.move(temp_repo_path, repo_path)
 
 
 
@@ -1930,6 +1952,7 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 handoff_dir = my.get_handoff_dir()
                 expanded_paths = my._expand_paths(file_path, file_range)
@@ -1937,6 +1960,8 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                # it moves to repo from handoff dir later
+                mode = 'create'
             elif mode == 'upload':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
@@ -2007,8 +2032,11 @@ class TacticServerStub(object):
 
         if mode == 'move':
             shutil.move(dir, "%s/%s" % (handoff_dir, basename))
+            mode = 'create'
         elif mode == 'copy':
             shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
+            # it moves to repo from handoff dir later
+            mode = 'create'
 
         use_handoff_dir = True
 
@@ -2229,6 +2257,7 @@ class TacticServerStub(object):
                         shutil.move(file_path, "%s/%s" % (handoff_dir, basename))
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
+                    mode = 'create'
 
         return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming, checkin_type)
 
@@ -2269,12 +2298,14 @@ class TacticServerStub(object):
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'copy':
                 expanded_paths = my._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
+                mode = 'create'
             elif mode == 'upload':
                 my.upload_group(file_path, file_range)
                 use_handoff_dir = False
@@ -2344,6 +2375,7 @@ class TacticServerStub(object):
             elif mode == 'copy':
                 shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
 
+            mode = 'create'
 
         use_handoff_dir = True
         create_icon = False
@@ -3248,16 +3280,20 @@ class TacticServerStub(object):
             string - html form of the widget
 
         @example:
-        class_name = 'TableLayoutWdg'
+        class_name = 'tactic.ui.panel.TableLayoutWdg'
 
         args = {
-                'view': 'manage',
-                'search_type': 'prod/asset',
+                'view': 'task_list',
+                'search_type': 'sthpw/task',
                }
 
-        widget = server.get_widget(class_name, args))
+        filter =  [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"}, {"prefix":"main_body","main_body_enabled":"on","main_body_column":"search_type","main_body_relation":"is not","main_body_value":"sthpw/project"}]
+        
+        from simplejson import dumps
+        values  = {'json': dumps(filter)}
+        widget_html = server.get_widget(class_name, args, values)
         '''
-        return my.server.get_widget(my.ticket, class_name, args)
+        return my.server.get_widget(my.ticket, class_name, args, values)
 
 
 

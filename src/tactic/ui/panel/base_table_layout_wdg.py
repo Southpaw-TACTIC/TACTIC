@@ -50,6 +50,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def can_select(my):
         return True
 
+    def can_use_gear(my):
+        return True
+
+
+
 
 
 
@@ -88,6 +93,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
+        my.ingest_data_view = kwargs.get("ingest_data_view")
 
         # DEPRECATED: Do not use
         if not my.view:
@@ -133,6 +139,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
                 if type(my.element_names) in types.StringTypes:
                     my.element_names = my.element_names.split(",")
+                    my.element_names = [x.strip() for x in my.element_names]
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in my.element_names:
@@ -272,11 +279,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
-        if not my.show_search_limit:
-            my.search_limit = None
-        else:
-            from tactic.ui.app import SearchLimitWdg
-            my.search_limit = SearchLimitWdg()
+        # Always instantiate the search limit for the pagination at the bottom
+        
+        from tactic.ui.app import SearchLimitWdg
+        my.search_limit = SearchLimitWdg()
 
         my.items_found = 0
 
@@ -311,6 +317,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # a dictionary of widget class name and boolean True as they are drawn
         my.drawn_widgets = {}
 
+    def get_aux_info(my):
+        return my.aux_info
 
     def get_kwargs(my):
         return my.kwargs
@@ -386,7 +394,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_value = keyword_values[0].get('value')
             if keyword_value and search.column_exists(column):
                     from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=column)
+                    keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
@@ -764,7 +772,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add gear menu here
         my.view_save_dialog = None
-        if my.kwargs.get("show_gear") != "false":
+        if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
             # Handle configuration for custom script (or straight javascript script) on "post-action on delete"
             # activity ...
             cbjs_post_delete = ''
@@ -791,7 +799,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 parent_key=my.parent_key,
                 cbjs_post_delete=cbjs_post_delete, show_delete=show_delete,
                 custom_menus=custom_gear_menus,
-                show_retired=show_retired, embedded_table=embedded_table
+                show_retired=show_retired, embedded_table=embedded_table,
+                ingest_data_view = my.ingest_data_view
             )
 
             my.gear_menus = btn_dd.get_menu_data()
@@ -824,7 +833,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column)
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
         else:
@@ -833,7 +842,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         spacing_divs = []
-        for i in range(0, 5):
+        for i in range(0, 6):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
             spacing_div.add_style("height: 32px")
@@ -866,9 +875,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.items_found = my.search.get_count()
 
         if my.items_found == 1:
-            num_div.add( "%s item found" % my.items_found)
+            num_div.add( "%s %s" % (my.items_found, _("item found")))
         else:
-            num_div.add( "%s items found" % my.items_found)
+            num_div.add( "%s %s" % (my.items_found, _("items found")))
         num_div.add_style("margin-right: 0px")
         num_div.add_border(style="none")
         num_div.set_round_corners(6)
@@ -879,7 +888,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- PAGINATION TOOLS
         limit_span = DivWdg()
         limit_span.add_style("margin-top: 4px")
-        if my.search_limit:
+        if my.show_search_limit:
             search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
             num_div.add(search_limit_button)
             from tactic.ui.container import DialogWdg
@@ -988,6 +997,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[4] } )
             wdg_list.append( { 'wdg': help_wdg } )
 
+
+        shelf_wdg = my.get_shelf_wdg()
+        if shelf_wdg:
+            wdg_list.append( { 'wdg': spacing_divs[5] } )
+            wdg_list.append( { 'wdg': shelf_wdg } )
+
+
         horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
         xx = DivWdg()
         xx.add(horiz_wdg)
@@ -1022,7 +1038,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         outer.add(div)
-        if my.search_limit:
+        if my.show_search_limit:
             outer.add(dialog)
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
@@ -1055,6 +1071,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         return outer
+
+
+
+    def get_shelf_wdg(my):
+        return None
 
 
 
@@ -1361,7 +1382,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        if my.kwargs.get("show_gear") != "false":
+        if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
             button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
             button_row_wdg.add(button)
 
@@ -1378,12 +1399,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg, SingleButtonWdg
 
         my.filter_num_div = None
-
         # Search button
         search_dialog_id = my.kwargs.get("search_dialog_id")
         show_search = my.kwargs.get("show_search") != 'false'
-    
-        if show_search and (my.is_refresh or search_dialog_id):
+        if show_search and search_dialog_id:
             div = DivWdg()
             my.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
@@ -2512,48 +2531,68 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 }])
 
-        spec_list.extend( [
+        subscribe_label = 'Item'
+        if my.search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
+            subscribe_label = 'Parent'
+        elif my.search_type.startswith('sthpw') or my.search_type.startswith('config'): 
+            subscribe_label = None
+       
+        if subscribe_label:
+            spec_list.extend( [
 
-                { "type": "separator" },
+                    { "type": "separator" },
 
-                { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
-                    "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
-                    "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
-                                      'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
-                },
-
-                { "type": "action", "label": "Subscribe to Item", "icon": IconWdg.CONTENTS,
-                    "bvr_cb": { 'cbjs_action': '''
-                    var activator = spt.smenu.get_activator(bvr);
-                    var layout = activator.getParent(".spt_layout");
-                    var version = layout.getAttribute("spt_version");
-
-                    var search_key;
-
-                    var tbody;
-                    if (version == "2") {
-                        spt.table.set_layout(layout);
-                        tbody = activator;
-                    }
-                    else {
-                        tbody = activator.getParent('.spt_table_tbody');
-                    }
+                    { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
+                        "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    },
                     
-                    var search_key = tbody.getAttribute("spt_search_key");
-                    var server = TacticServerStub.get();
-                    // search_key here is "id" based: need code based
-                    var sobject = server.get_by_search_key(search_key);
-                    search_key = sobject.__search_key__;
+                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.PICTURE_EDIT,
+                        "bvr_cb": { 'cbjs_action': '''
+                        var activator = spt.smenu.get_activator(bvr);
+                        var layout = activator.getParent(".spt_layout");
+                        var version = layout.getAttribute("spt_version");
 
-                    server.subscribe(search_key, {category: "sobject" } );
- 
-                    ''' },
-                    "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
-                                      'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
-                },
+                        var search_key;
 
+                        var tbody;
+                        if (version == "2") {
+                            spt.table.set_layout(layout);
+                            tbody = activator;
+                        }
+                        else {
+                            tbody = activator.getParent('.spt_table_tbody');
+                        }
+                        
+                        var search_key = tbody.getAttribute("spt_search_key");
+                        var server = TacticServerStub.get();
+                        // search_key here is "id" based: need code based
+                        var sobject = server.get_by_search_key(search_key);
+                        var temps = server.split_search_key(search_key);
+                        var st = temps[0];
+                        
+                        if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
+                            search_key = server.build_search_key(sobject.search_type, sobject.search_code);
+                        else
+                            search_key = sobject.__search_key__;
+                       
+                        try {
+                            var sub = server.subscribe(search_key, {category: "sobject"} );
+                            spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
+                        } catch(e) {
+                            spt.info(spt.exception.handler(e));
+                        }
+     
+                        ''' },
+                        "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
+                                          'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
+                                                                 my.look_row_selected, my.look_row ] }
+                    }
+                    ])   
+
+        spec_list.extend( [
 
                 { "type": "title", "label": 'All Table Items' },
 

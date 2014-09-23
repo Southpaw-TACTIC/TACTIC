@@ -11,7 +11,6 @@
 #
 
 # web framework interface and implementations
-from translation import *
 from web_environment import *
 from palette import *
 

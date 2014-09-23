@@ -190,18 +190,9 @@ class WebInit(Common):
         #from tactic.command.queue import JobTask
         #JobTask.start()
 
-
         from pyasm.biz import Snapshot
         Snapshot.add_integral_trigger()
 
-
-        # restart sync scheduler
-        #event = "change|sthpw/sync_server"
-        #trigger = SearchType.create("sthpw/trigger")
-        #trigger.set_value("event", event)
-        #trigger.set_value("class_name", "")
-        #trigger.set_value("mode", "same process,same transaction")
-        #Trigger.append_static_trigger(trigger, startup=True)
 
 
 

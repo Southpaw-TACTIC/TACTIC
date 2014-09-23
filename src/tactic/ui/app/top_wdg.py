@@ -120,8 +120,9 @@ class TopWdg(Widget):
 
         my.body.add_style("background-attachment: fixed !important")
         #my.body.add_style("min-height: 1200px")
-        my.body.add_style("height: 100%")
+        #my.body.add_style("height: 100%")
         my.body.add_style("margin: 0px")
+        my.body.add_style("padding: 0px")
 
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
@@ -522,7 +523,10 @@ class TopWdg(Widget):
         # add the color wheel css
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
+        Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
 
+        # TEST
+        Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
 
 
         # get all of the registered css file
@@ -771,6 +775,8 @@ class SitePage(AppServer):
             Project.set_project("sthpw")
             from pyasm.widget import Error404Wdg
             page = Error404Wdg()
+            page.set_message(e.__str__())
+            page.status = ''
 
 
         application = my.get_top_wdg()

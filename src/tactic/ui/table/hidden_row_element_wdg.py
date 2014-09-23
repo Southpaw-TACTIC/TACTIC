@@ -71,6 +71,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
         my.layout.add_relay_behavior( {
         'type': 'click',
+        'col_name': name,
         'bvr_match_class': 'spt_hidden_row_%s' % name,
         'class_name': class_name,
         'cbjs_action': '''
@@ -90,7 +91,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         kwargs['src_el'] = bvr.src_el;
 
         if (state == 'on') {
-            spt.table.remove_hidden_row(row);
+            spt.table.remove_hidden_row(row, bvr.col_name);
         }
         else {
             //spt.table.add_hidden_row(row, bvr.class_name, bvr.kwargs);

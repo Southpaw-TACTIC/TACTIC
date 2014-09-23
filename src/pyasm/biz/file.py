@@ -55,16 +55,25 @@ class FileException(TacticException):
 
 class File(SObject):
 
-    NORMAL_EXT = ['gz','max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf']
+    NORMAL_EXT = ['max','ma','xls' ,'xlsx', 'doc', 'docx','txt', 'rtf', 'odt','fla','psd', 'xsi', 'scn', 'hip', 'xml','eani','pdf', 'fbx',
+            'gz', 'zip', 'rar',
+            'ini', 'db', 'py', 'pyd', 'spt'
+    ]
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax',
-                'wm','wvx','ogg','webm','mkv','m4v','mxf'] 
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v']
+
+    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds']
+                
+
 
 
     SEARCH_TYPE = "sthpw/file"
     BASE_TYPE_SEQ = "sequence"
     BASE_TYPE_DIR = "directory"
     BASE_TYPE_FILE = "file"
+
+
 
     def get_code(my):
         return my.get_value("code")
@@ -77,6 +86,20 @@ class File(SObject):
 
     def get_type(my):
         return my.get_value("type")
+
+
+    def get_media_type_by_path(cls, path):
+        tmp, ext = os.path.splitext(path)
+        ext = ext.lstrip(".")
+        ext = ext.lower()
+        if ext in File.VIDEO_EXT:
+            return "video"
+        elif ext in File.NORMAL_EXT:
+            return "document"
+        else:
+            return "image"
+    get_media_type_by_path = classmethod(get_media_type_by_path)
+
 
     def get_sobject(my):
         '''get the sobject associated with this file'''
@@ -132,7 +155,7 @@ class File(SObject):
     ##################
     # Static Methods
     ##################
-
+    """
     # DEPRERECATED
     PADDING = 10
 
@@ -205,6 +228,7 @@ class File(SObject):
         else:
             return True
     has_file_code = staticmethod(has_file_code)
+    """
 
 
     def get_extension(file_path):
@@ -223,11 +247,13 @@ class File(SObject):
     get_extensions = staticmethod(get_extensions)
 
 
-    def get_by_snapshot(cls, snapshot):
+    def get_by_snapshot(cls, snapshot, file_type=None):
         xml = snapshot.get_xml_value("snapshot")
         file_codes = xml.get_values("snapshot/file/@file_code")
         search = Search( cls.SEARCH_TYPE)
         search.add_filters("code", file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         return search.get_sobjects()
     get_by_snapshot = classmethod(get_by_snapshot)
 
@@ -251,7 +277,7 @@ class File(SObject):
 
 
 
-    def get_by_snapshots(cls, snapshots):
+    def get_by_snapshots(cls, snapshots, file_type=None):
         all_file_codes = []
         for snapshot in snapshots:
             xml = snapshot.get_xml_value("snapshot")
@@ -260,6 +286,8 @@ class File(SObject):
 
         search = Search( cls.SEARCH_TYPE)
         search.add_filters("code", all_file_codes)
+        if file_type:
+            search.add_filter("type", file_type)
         files = search.get_sobjects()
 
         # cache these
@@ -271,8 +299,8 @@ class File(SObject):
     get_by_snapshots = classmethod(get_by_snapshots)
 
 
-
-
+    # DEPRECATED
+    """
     def get_by_path(path):
         file_code = File.extract_file_code(path)
         if file_code == 0:
@@ -282,6 +310,24 @@ class File(SObject):
         search.add_id_filter(file_code)
         file = search.get_sobject()
         return file
+    get_by_path = staticmethod(get_by_path)
+    """
+
+
+    def get_by_path(path):
+        asset_dir = Environment.get_asset_dir()
+        path = path.replace("%s/" % asset_dir, "")
+        relative_dir = os.path.dirname(path)
+        file_name = os.path.basename(path)
+
+        # NOTE: this does not work with base_dir_alias
+
+        search = Search("sthpw/file")
+        search.add_filter("relative_dir", relative_dir)
+        search.add_filter("file_name", file_name)
+        sobject = search.get_sobject()
+        return sobject
+
     get_by_path = staticmethod(get_by_path)
 
 
@@ -478,9 +524,17 @@ class IconCreator(object):
 
         if type == "pdf":
             my._process_pdf( file_name )
-        elif type in File.NORMAL_EXT or type in File.VIDEO_EXT:
+        elif type in File.NORMAL_EXT:
             # skip icon generation for normal or video files
             pass
+        elif type in File.VIDEO_EXT:
+            try:
+                my._process_video( file_name )
+            except IOError, e:
+                '''This is an unknown file type.  Do nothing and except as a
+                file'''
+                print "WARNING: ", e.__str__()
+                Environmnet.add_warning("Unknown file type", e.__str__())
         else:
             # assume it is an image
             try:
@@ -524,6 +578,59 @@ class IconCreator(object):
             print "Warning: [%s] did not get created from pdf" % tmp_icon_path
 
 
+    def get_web_file_size(my):
+        from pyasm.prod.biz import ProdSetting
+        web_file_size = ProdSetting.get_value_by_key('web_file_size')
+        thumb_size = (640, 480)
+        if web_file_size:
+            parts = re.split('[\Wx]+', web_file_size)
+            
+            thumb_size = (640, 480)
+            if len(parts) == 2:
+                try:
+                    thumb_size = (int(parts[0]), int(parts[1]))
+                except ValueError:
+                    thumb_size = (640, 480)
+
+        return thumb_size
+
+    def _process_video(my, file_name):
+        ffmpeg = Common.which("ffmpeg")
+        if not ffmpeg:
+            return
+
+        thumb_web_size = my.get_web_file_size()
+        thumb_icon_size = (120, 100)
+
+        exts = File.get_extensions(file_name)
+
+        base, ext = os.path.splitext(file_name)
+        icon_file_name = "%s_icon.png" % base
+        web_file_name = "%s_web.jpg" % base
+
+        tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
+        tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
+
+        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -s %sx%s -f image2 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
+        #os.system(cmd)
+        import subprocess
+        try:
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
+                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]), "-f","image2", tmp_web_path])
+
+            my.web_path = tmp_web_path
+        except:
+            pass
+           
+        try:
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
+                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]), "-f","image2", tmp_icon_path])
+            my.icon_path = tmp_icon_path
+
+        except:
+            pass    
+
+
 
 
 
@@ -549,7 +656,6 @@ class IconCreator(object):
             web_file_name = "%s_web.jpg" % base
 
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
-
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
         # create the web image
@@ -578,18 +684,9 @@ class IconCreator(object):
 
 
             else:
-                from pyasm.prod.biz import ProdSetting
-                web_file_size = ProdSetting.get_value_by_key('web_file_size')
-                thumb_size = (640, 480)
-                if web_file_size:
-                    parts = re.split('[\Wx]+', web_file_size)
-                    
-                    thumb_size = (640, 480)
-                    if len(parts) == 2:
-                        try:
-                            thumb_size = (int(parts[0]), int(parts[1]))
-                        except ValueError:
-                            thumb_size = (640, 480)
+                
+                thumb_size = my.get_web_file_size()
+                
                 try:
                     my._resize_image(my.file_path, tmp_web_path, thumb_size)
                 except TacticException:
@@ -633,16 +730,26 @@ class IconCreator(object):
             if not HAS_PIL:
                 raise Exception("No PIL installed")
 
+
             # create the thumbnail
             im = Image.open(large_path)
 
+            try:
+                im.seek(1)
+            except EOFError:
+                is_animated = False
+            else:
+                is_animated = True
+                im.seek(0)
+                im = im.convert('RGB')
+
             x,y = im.size
-            ext = "PNG"
+            to_ext = "PNG"
             if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
-                ext = "JPEG"
+                to_ext = "JPEG"
             if x >= y:
                 im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
-                im.save(small_path, ext)
+                im.save(small_path, to_ext)
             else:
                 
                 #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
@@ -658,14 +765,15 @@ class IconCreator(object):
                 im2 = Image.new( "RGB", thumb_size, (255,255,255) )
                 offset = (thumb_size[0]/2) - (im.size[0]/2)
                 im2.paste(im, (offset,0) )
-                im2.save(small_path, ext)
+                im2.save(small_path, to_ext)
                 
         except Exception, e:
+            print "Error: ", e
             # there could be any kind of Exception by PIL, not just IOError
             # maximum geometry mode aspect ratio preserved
             if sys.platform == 'darwin':
-                cmd = '''sips --resampleHeightWidthMax %s %s --out "%s" "%s"''' \
-                    % (thumb_size[0], thumb_size[1], small_path, large_path)
+                cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
+                    % (thumb_size[0], small_path, large_path)
                 print "cmd: ", cmd
             else:
                 cmd = '''convert -resize %sx%s "%s" "%s"''' \
@@ -673,13 +781,17 @@ class IconCreator(object):
                 print "cmd: ", cmd
    
             large_path = large_path.encode('utf-8')
+            #os.system(cmd)
+            # use subprocess to call instead
             import subprocess
             try:
-                subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                if sys.platform == 'darwin':
+                    subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
+                else:
+                    subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
             except:
                 pass
-            #os.system(cmd)
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
                 raise TacticException('Icon generation failed')

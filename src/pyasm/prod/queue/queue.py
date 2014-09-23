@@ -10,6 +10,10 @@
 #
 #
 
+
+# DEPRECATED: now in tactic.ui.command.queue.py
+
+
 __all__ = ['Queue']
 
 

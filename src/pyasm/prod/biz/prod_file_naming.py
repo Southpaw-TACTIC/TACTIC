@@ -69,7 +69,7 @@ class ProdFileNaming(FileNaming):
         file_type = my.get_file_type()
 
         # backwards compatibility
-        if file_type not in ['maya','main','geo','xml']:
+        if file_type and file_type not in ['maya','main','geo','xml']:
             parts.append(file_type)
         #if file_type in ['web','icon']:
         #    parts.append(file_type)
@@ -78,9 +78,9 @@ class ProdFileNaming(FileNaming):
         if value == "true":
             project = Project.get()
             initials = Project.get().get_initials()
-            parts.append(initials)
+            if initials:
+                parts.append(initials)
 
-        
         filename = "_".join(parts)
         if ext:
             filename = "%s%s" % (filename, ext)

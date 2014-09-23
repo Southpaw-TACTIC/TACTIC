@@ -17,7 +17,7 @@ import tacticenv
 from pyasm.common import Environment, Xml, TacticException, Config, Container
 from pyasm.biz import Project
 from pyasm.command import Command, Trigger
-from pyasm.search import SearchType, Search, SObject
+from pyasm.search import SearchType, Search, SObject, DbContainer
 
 from scheduler import Scheduler
 
@@ -38,7 +38,8 @@ class TransactionQueueAppendCmd(Trigger):
 
         
         project = Project.get()
-        # Things done in the Admin project are not sync'd.
+
+        # Block admin project from syncing
         # NOTE: maybe need an option to enable this?
         if project.get_code() == 'admin':
             return
@@ -54,18 +55,21 @@ class TransactionQueueAppendCmd(Trigger):
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         servers = search.get_sobjects()
-
-
         #print "servers: ", len(servers)
 
-        mode = input.get('mode')
-        if not mode or mode == 'default':
-            mode = 'xmlrpc'
-        # This will transaction into a "file" folder
-        mode = "file"
 
 
-        file_mode = 'upload'
+
+        # These are usually determined by the server entry
+        #sync_mode = input.get('mode')
+        #if not sync_mode or sync_mode == 'default':
+        #    sync_mode = 'xmlrpc'
+        ## This will transaction into a "file" folder
+        #sync_mode = "file"
+
+        #file_mode = 'delayed'
+        #file_mode = 'upload'
+
 
         # get some user info
         env = Environment.get()
@@ -80,7 +84,6 @@ class TransactionQueueAppendCmd(Trigger):
 
         for server in servers:
 
-            # FIXME
             # check security
             #if not my.check_security(server):
             #    print "Transaction denied due to security restrictions"
@@ -129,9 +132,9 @@ class TransactionQueueAppendCmd(Trigger):
             kwargs = {
                 'server': server.get_value("code"),
                 'transaction_code': transaction_code,
-                'file_mode': file_mode,
                 'project_code': project_code,
-                'mode': mode
+                #'file_mode': file_mode,
+                #'sync_mode': sync_mode
             }
             job.set_json_value("data", kwargs)
             job.commit()
@@ -158,13 +161,8 @@ class TransactionQueueAppendCmd(Trigger):
 from queue import JobTask
 class TransactionQueueManager(JobTask):
 
-    def __init__(my):
-        my.job = None
-        my.jobs = []
-
-
-        my.check_interval = 1
-        my.max_jobs = 2
+    def __init__(my, **kwargs):
+        super(TransactionQueueManager, my).__init__(**kwargs)
 
         trigger = TransactionQueueServersTrigger()
         trigger.execute()
@@ -179,7 +177,6 @@ class TransactionQueueManager(JobTask):
         Trigger.append_static_trigger(trigger, startup=True)
 
 
-        super(TransactionQueueManager, my).__init__()
 
 
     def set_check_interval(my, interval):
@@ -197,10 +194,10 @@ class TransactionQueueManager(JobTask):
 
 
     def get_next_job(my):
-        from pyasm.prod.queue import Queue
+        from queue import Queue
         import random
         import time
-        interval = 0.2
+        interval = 0.05
         time.sleep(interval)
         job_search_type = my.get_job_search_type()
         servers_tried = []
@@ -228,27 +225,30 @@ class TransactionQueueManager(JobTask):
 
             server_code = my.servers[server_index].get_code()
             #print "server_code: ", server_code
-            job = Queue.get_job(job_search_type=job_search_type, server_code=server_code)
+            job = Queue.get_next_job(job_search_type=job_search_type, server_code=server_code)
             if job:
                 break
 
             servers_tried.append(server_index)
             if len(servers_tried) == len(my.servers):
                 break
-
         return job
 
 
 
     def start():
-
+        
         scheduler = Scheduler.get()
         scheduler.start_thread()
-
-        task = TransactionQueueManager()
+        task = TransactionQueueManager(
+            #check_interval=0.1,
+            max_jobs_completed=20
+        )
         task.cleanup_db_jobs()
-
         scheduler.add_single_task(task, mode='threaded', delay=1)
+        # important to close connection after adding tasks
+        DbContainer.close_all()
+
     start = staticmethod(start)
 
 
@@ -275,9 +275,14 @@ class TransactionQueueCmd(Command):
 
     def execute(my):
 
-        print "Executing sync job ..."
 
         transaction_code = my.kwargs.get("transaction_code")
+        job = my.kwargs.get("job")
+        job_code = ''
+        if job:
+            job_code = job.get_code()
+
+        print "Executing sync job [%s] ... "% job_code
         if not transaction_code:
             raise TacticException("WARNING: No transaction_code provided")
 
@@ -291,18 +296,22 @@ class TransactionQueueCmd(Command):
         host = server.get_value("host")
 
 
+        # file mode is usually determined by the server
         file_mode = my.kwargs.get("file_mode")
+        if not file_mode:
+            file_mode = server.get_value("file_mode", no_exception=True)
         if not file_mode:
             file_mode = 'upload'
 
 
 
-        # mode can default|undo
-        mode = my.kwargs.get("sync_mode")
-        if not mode:
-            mode = server.get_value("sync_mode", no_exception=True)
-        if not mode or mode == 'default':
-            mode = "xmlrpc"
+        # sync mode is usually determined by the server
+        sync_mode = my.kwargs.get("sync_mode")
+        if not sync_mode:
+            sync_mode = server.get_value("sync_mode", no_exception=True)
+        if not sync_mode or sync_mode == 'default':
+            # defautl is xmlrpc
+            sync_mode = "xmlrpc"
 
 
         project_code = my.kwargs.get("project_code")
@@ -340,9 +349,20 @@ class TransactionQueueCmd(Command):
             return
 
 
+        import zlib, binascii
+        #transaction_data = Common.process_unicode_string(transaction_xml)
+        transaction_data = transaction_xml.to_string()
+        if isinstance(transaction_data, unicode):
+            transaction_data = transaction_data.encode('utf-8')
+        length_before = len(transaction_data)
+        compressed = zlib.compress(transaction_data)
+        ztransaction_data = binascii.hexlify(compressed)
+        ztransaction_data = "zlib:%s" % ztransaction_data
+        length_after = len(ztransaction_data)
+        print "transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
         # reset the transaction log sobject with the new xml.  This
         # should be harmless because it is never commited
-        log.set_value("transaction", transaction_xml.to_string())
+        log.set_value("transaction", ztransaction_data)
 
 
 
@@ -354,7 +374,7 @@ class TransactionQueueCmd(Command):
         from pyasm.search import TableDataDumper
 
         # drop the transaction into a folder
-        if mode == 'file':
+        if sync_mode == 'file':
             base_dir = server.get_value("base_dir", no_exception=True)
             if not base_dir:
                 base_dir = Config.get_value("checkin", "win32_dropbox_dir")
@@ -383,8 +403,7 @@ class TransactionQueueCmd(Command):
 
 
         # if the mode is undo, then execute an undo
-        if mode == 'undo':
-            print "mode = undo"
+        if sync_mode == 'undo':
             remote_server.undo(transaction_id=log.get_code(), is_sync=True)
         else:            
 
@@ -612,6 +631,15 @@ class RunTransactionCmd(Command):
 
         transaction_code = transaction.get_value("code")
 
+        # see if this transaction already exists
+        search = Search("sthpw/transaction_log")
+        search.add_filter("code", transaction_code)
+        if search.get_count():
+            print "WARNING: transaction [%s] already exists" % transaction_code
+            return
+
+
+
         security = Environment.get_security()
         ticket = security.get_ticket_key()
 
@@ -628,7 +656,7 @@ class RunTransactionCmd(Command):
             ignore = ['file']
         else:
             ignore = []
-        ignore = []
+        #ignore = []
 
 
         # this will switch to use rel_path in transaction to get the files

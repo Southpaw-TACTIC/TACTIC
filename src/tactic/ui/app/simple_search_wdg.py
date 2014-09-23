@@ -132,7 +132,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             widget = config.get_display_widget(element_name)
             if not widget:
-                widget = KeywordFilterElementWdg()
+                widget = KeywordFilterElementWdg(column='code|description')
                 widget.set_name(element_name)
 
             data = element_data_dict.get(element_name)
@@ -445,7 +445,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             if not widget:
-                widget = KeywordFilterElementWdg()
+                # the default for KeywordFilterElementWdg is mode=keyword
+                widget = KeywordFilterElementWdg(column='code|description')
                 widget.set_name(element_name)
                 
 

@@ -14,6 +14,7 @@ __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObj
 
 
 import string, types, re, sys
+import decimal
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
@@ -232,8 +233,11 @@ class Search(Base):
         # add the table
         my.select.add_table(table)
 
+        
         # remember the order bys
         my.order_bys = []
+        # order_by is applied by default if available
+        my.order_by = True
 
 
 
@@ -914,7 +918,8 @@ class Search(Base):
 
         search_type_obj = my.get_search_type_obj()
         table = search_type_obj.get_table()
-
+        
+        search.order_by = False
 
         if search_type == related_type:
             #print "WARNING: related type and search type are the same for [%s]" % search_type
@@ -933,10 +938,10 @@ class Search(Base):
 
 
         my_is_from = attrs['from'] == search_type
-        
         if relationship in ['id', 'code']:
             from_col = attrs['from_col']
             to_col = attrs['to_col']
+
             if my_is_from:
                 search.add_column(to_col)
                 my.add_search_filter(from_col, search, op, table=table )
@@ -1223,8 +1228,11 @@ class Search(Base):
         if isinstance(keywords, basestring):
             raise SearchException('Expects a list for add_keyword_filter')
 
-        if op == 'or':
-            my.select.add_op('begin')
+        
+        # defaults to and
+        if not op:
+            op = 'and'
+        my.select.add_op('begin')
         for keyword in keywords:
             if not keyword:
                 continue
@@ -1237,13 +1245,13 @@ class Search(Base):
                 # cast integer as string
                 expr = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
             else:
-                expr = '''lower("%s"."%s") like lower('%%%s%%')''' % (table, column, keyword)
+                # don't add lower() here to allow index to function
+                expr = '''"%s"."%s" like '%%%s%%' ''' % (table, column, keyword)
             my.select.add_where(expr)
-        if op == 'or':
-            my.select.add_op(op)
+        my.select.add_op(op)
 
 
-    def add_startswith_keyword_filter(my, column, keywords):
+    def add_startswith_keyword_filter(my, column, keywords, case_sensitive=False):
 
         if column.find(".") != -1:
             parts = column.split(".")
@@ -1287,18 +1295,22 @@ class Search(Base):
                 # cast as a string first for integer supported by postgres, SQLServer, MySQL
                 expr1 = """CAST("%s"."%s" AS varchar(10)) like '%% %s%%'""" % (table, column, keyword)
                 expr2 = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
-                #expr1 = """"%s"."%s" = '%s'""" % (table, column, keyword)
             else:
-                keyword = keyword.lower()
-                expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
-                expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
+                if case_sensitive:
+                    
+                    expr1 = '''"%s"."%s" like '%% %s%%' ''' % (table, column, keyword)
+                    expr2 = '''"%s"."%s" like '%s%%' ''' % (table, column, keyword)
+                else:
+                    keyword = keyword.lower()
+                    expr1 = '''lower("%s"."%s") like lower('%% %s%%')''' % (table, column, keyword)
+                    # NOTE: lower() on the column disables the use of index, resulting in much slower performance
+                    expr2 = '''lower("%s"."%s") like lower('%s%%')''' % (table, column, keyword)
 
             my.select.add_op("begin")
 
             my.select.add_where(expr1)
             my.select.add_where(expr2)
             my.select.add_op("or")
-
 
 
     def add_text_search_filter(my, column, keywords, table=None):
@@ -1586,22 +1598,24 @@ class Search(Base):
                     print "order: ", search_type, order_by
         '''
         # Hard coded replacement.  This is done for performance reasons
-        if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
-            my.add_order_by("timestamp", direction="desc")
-        elif search_type == 'sthpw/task':
-            my.add_order_by("search_type")
-            if my.column_exists("search_code"):
-                my.add_order_by("search_code")
-        elif search_type == 'sthpw/login':
-            my.add_order_by("login")
-        elif search_type == 'sthpw/login_group':
-            my.add_order_by("login_group")
-        elif search_type == 'config/process':
-            my.add_order_by("pipeline_code,sort_order")
-        elif search_type == 'sthpw/message_log':
-            my.add_order_by("timestamp", direction="desc")
-        elif "code" in columns:
-            my.add_order_by("code")
+        if my.order_by:
+
+            if search_type in ['sthpw/snapshot', 'sthpw/note','sthpw/sobject_log', 'sthpw/transaction_log', 'sthpw/status_log']:
+                my.add_order_by("timestamp", direction="desc")
+            elif search_type == 'sthpw/task':
+                my.add_order_by("search_type")
+                if my.column_exists("search_code"):
+                    my.add_order_by("search_code")
+            elif search_type == 'sthpw/login':
+                my.add_order_by("login")
+            elif search_type == 'sthpw/login_group':
+                my.add_order_by("login_group")
+            elif search_type == 'config/process':
+                my.add_order_by("pipeline_code,sort_order")
+            elif search_type == 'sthpw/message_log':
+                my.add_order_by("timestamp", direction="desc")
+            elif "code" in columns:
+                my.add_order_by("code")
 
 
 
@@ -1638,6 +1652,7 @@ class Search(Base):
             if not statement:
                 statement = my.select.get_statement()
             #print "statement: ", statement
+            
             results = sql.do_query(statement)
 
             # this gets the actual order of columns in this SQL
@@ -1993,8 +2008,10 @@ class Search(Base):
         search.add_relationship_filters(sobjects, path=path)
         related_sobjects = search.get_sobjects()
 
-        if not related_sobjects:
-            return tmp_data
+        # to maintain returned data consistency, it should let it 
+        # return search_key: related_sobjects even if related_sobjects is []
+        # if not related_sobjects:
+        #    return tmp_data
 
         # get the base related type to avoid getting a None relationship
         related_type = SearchKey.extract_base_search_type(related_type)
@@ -2445,6 +2462,13 @@ class SObject(object):
         return project_code
 
 
+
+    def get_columns(my):
+        columns = SearchType.get_columns(my.get_search_type())
+        return columns
+
+
+
     def get_data(my, merged=True):
         if merged:
             data = my.data.copy()
@@ -2651,7 +2675,7 @@ class SObject(object):
 
 
 
-    def get_dynamic_value(my, name, no_exceptions=False):
+    def _get_dynamic_value(my, name, no_exceptions=False):
 
         search_type = my.get_search_type()
         if search_type.startswith("sthpw/"):
@@ -2724,13 +2748,20 @@ class SObject(object):
         '''get the value of the named attribute stored as metadata in the
         sobject.  The no_exception argument determines whethere or not
         an exception is raised if the sobject does not have this attr'''
-        # check security
-        #my._check_value_security(name)
 
         # DISABLING
-        #value = my.get_dynamic_value(name, no_exception)
+        #value = my._get_dynamic_value(name, no_exception)
         #if value != None:
         #    return value
+
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
@@ -2833,7 +2864,6 @@ class SObject(object):
 
 
     def set_json_value(my, name, value):
-
         if not value:
             my.set_value(name, value)
             return
@@ -2910,6 +2940,16 @@ class SObject(object):
     def set_value(my, name, value, quoted=1, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
+
+
+        from pyasm.biz import Translation
+        lang = Translation.get_language()
+        if lang:
+            tmp_name = "%s_%s" % (name, lang)
+            if not my.full_search_type.startswith("sthpw/") and SearchType.column_exists(my.full_search_type, tmp_name):
+                name = tmp_name
+
+
 
         if temp:
             my._set_value(name, value, quoted=quoted)
@@ -3067,6 +3107,7 @@ class SObject(object):
     # Metadata: this allows setting of arbitrary metadata without having to
     #   create a whole new column
     #
+    # NOTE: metadata is no longer stored as XML, it is stored as JSON
     def get_metadata_xml(my):
         metadata_mode = "json"
         if not my.metadata:
@@ -3662,6 +3703,7 @@ class SObject(object):
                 "sthpw/sync_log",
                 'sthpw/message',
                 'sthpw/message_log',
+                'sthpw/queue',
 
         ] \
                 and sobject and sobject.has_value("code"):
@@ -3670,7 +3712,7 @@ class SObject(object):
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if search_code and transaction:
+            if not is_insert and search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -3691,7 +3733,6 @@ class SObject(object):
                     changed_by[name] = login
                 log.set_json_value("changed_on", changed_on)
                 log.set_json_value("changed_by", changed_by)
-
 
 
         # store the undo information.  The transaction_log needs to
@@ -3796,7 +3837,7 @@ class SObject(object):
                     parent_type = my.get_base_search_type()
                 my._call_triggers(trigger_update_data, mode, output, process, parent_type, triggers)
 
-
+            
                 # add message only if triggers is true
                 if triggers:
                     my._add_message(sobject, output, mode)
@@ -3863,14 +3904,21 @@ class SObject(object):
         #    return
         """
 
+        search = Search("sthpw/message")
+        search.add_filter("code", message_code)
+        message = search.get_sobject()
+
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
             message.set_value("category", "sobject")
 
-        data = unicode(data)
-        json_data = jsondumps(data)
-        json_data = json_data.replace("\\", "\\\\")
+        # not suitable to make a dictionary unicode string
+        #data = unicode(data)
+        json_data = jsondumps(data, ensure_ascii=True)
+
+        # this is not needed even for string literals with \
+        #json_data = json_data.replace("\\", "\\\\")
         message.set_value("message", json_data )
         message.set_value("timestamp", "NOW")
         message.set_value("project_code", project_code)
@@ -3923,7 +3971,14 @@ class SObject(object):
             'change',
             'change|%s' % search_type
         ]
+
+        from pyasm.biz import Project
+        project_code = Project.get_project_code()
+
         for column in trigger_update_data.keys():
+            # skip timestamp column
+            if column == 'timestamp':
+                continue
             events.append( '%s|%s|%s' % (mode, search_type, column) )
             events.append( 'change|%s|%s' % (search_type, column) )
 
@@ -3932,24 +3987,24 @@ class SObject(object):
 
             # first key
             key = {'event': event}
-            Trigger.call_by_key(key, my, output, integral_only=integral_only)
+            Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
             key = {'event': event}
             if process:
                 key['process'] = process
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
             key = {'event': event}
             if parent_type:
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
             key = {'event': event}
             if process and parent_type:
                 key['process'] = process
                 key['search_type'] = parent_type
-                Trigger.call_by_key(key, my, output, integral_only=integral_only)
+                Trigger.call_by_key(key, my, output, integral_only=integral_only, project_code=project_code)
 
 
 
@@ -4135,11 +4190,15 @@ class SObject(object):
         output["data"] = data
         output["sobject"] = my.get_sobject_dict()
 
-        Trigger.call(my, "retire", output)
-        Trigger.call(my, "retire|%s" % my.get_base_search_type(), output )
-        Trigger.call(my, "change", output)
-        Trigger.call(my, "change|%s" % my.get_base_search_type(), output )
+        from pyasm.biz import Project
+        project_code = Project.get_project_code()
+        Trigger.call(my, "retire", output, project_code=project_code)
+        Trigger.call(my, "retire|%s" % my.get_base_search_type(), output, project_code=project_code)
+        Trigger.call(my, "change", output, project_code=project_code)
+        Trigger.call(my, "change|%s" % my.get_base_search_type(), output, project_code=project_code)
 
+        # add message
+        my._add_message(my, output, 'retire')
 
     def reactivate(my):
         '''reactivate a retired asset'''
@@ -4195,7 +4254,6 @@ class SObject(object):
             else:
                 statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
 
-
             sql.do_update(statement)
 
         # record the delete unless specifically not requested (for undo)
@@ -4205,6 +4263,8 @@ class SObject(object):
         if triggers:
             # call a delete event
             from pyasm.command import Trigger
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
             output = {}
             output["is_delete"] = True
             output["mode"] = "delete"
@@ -4214,10 +4274,9 @@ class SObject(object):
             output["data"] = data
             output["sobject"] = my.get_sobject_dict()
             Trigger.call(my, "delete", output)
-            Trigger.call(my, "delete|%s" % base_search_type, output )
+            Trigger.call(my, "delete|%s" % base_search_type, output, project_code=project_code)
             Trigger.call(my, "change", output)
-            Trigger.call(my, "change|%s" % base_search_type, output )
-
+            Trigger.call(my, "change|%s" % base_search_type, output, project_code=project_code)
 
         # delete the sobject_list entry
         if base_search_type not in ['sthpw/sobject_list']:
@@ -4564,9 +4623,6 @@ class SObject(object):
 
         from pyasm.biz import Schema
         attrs = Schema.get().get_relationship_attrs(search_type1, search_type2)
-        print "search_type1: ", search_type1
-        print "search_type2: ", search_type2
-        print "attrs: ", attrs
         relationship = attrs.get("relationship")
         if relationship != "instance":
             raise SearchException("Not an instance relationship")
@@ -4862,6 +4918,7 @@ class SObject(object):
         search = Search( cls.SEARCH_TYPE )
         search.set_show_retired(show_retired)
         search.add_id_filter(id)
+      
         search_type = search.get_search_type()
         key = SearchKey.build_search_key(search_type, id, column='id', project_code=search.project_code)
         if show_retired == False:
@@ -5004,6 +5061,9 @@ class SObject(object):
                     if value == '':
                         value = None
                 if isinstance(value, datetime.datetime):
+                    value = str(value)
+                elif isinstance(value, decimal.Decimal):
+                    # use str to avoid loss of precision
                     value = str(value)
 
 
@@ -5996,6 +6056,7 @@ class SObjectUndo:
                 "sthpw/sync_log",
                 "sthpw/sync_server",
                 "sthpw/cache",
+                "sthpw/queue",
 
                 'sthpw/message',
                 'sthpw/message_log',
@@ -6111,6 +6172,7 @@ class SObjectUndo:
                 "sthpw/change_timestamp",
                 "sthpw/sync_job",
                 "sthpw/sync_log",
+                "sthpw/sync_server",
                 "sthpw/transaction_log",
                 "sthpw/ticket",
         ]:
@@ -6247,7 +6309,7 @@ class SObjectUndo:
 
 
     def redo(node, no_exception=True):
-        no_exception=False
+        #no_exception=False
 
         import time
         start = time.time()
@@ -6433,8 +6495,8 @@ class SObjectUndo:
                     print "WARNING: %s" % error
                 else:
                     raise MissingException(error)
-
-            sobject.delete(log=False)
+            else:
+                sobject.delete(log=False)
 
 
     redo = staticmethod(redo)

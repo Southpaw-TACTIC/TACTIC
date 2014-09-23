@@ -57,7 +57,8 @@ class CheckinWdg(BaseRefreshWdg):
         'checkin_ui_options': 'a json string of dictionary of ui options like is_current',
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
-        'show_links': 'true|false: determines whether show the button rows at the top'
+        'show_links': 'true|false: determines whether show the button rows at the top',
+        'use_applet': 'true|false: deterines whether or not to use an appet or pure html5'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
     }
@@ -108,6 +109,17 @@ class CheckinWdg(BaseRefreshWdg):
 
 
         my.mode = my.kwargs.get('mode')
+        my.use_applet = my.kwargs.get('use_applet')
+        if my.use_applet in ['false', False]:
+            my.use_applet = False
+        else:
+            my.use_applet = Config.get_value("checkin", "use_applet")
+            if my.use_applet in ['false', False]:
+                my.use_applet = False
+            else:
+                my.use_applet = True
+
+
         my.checkin_command = my.kwargs.get('checkin_command')
         my.show_file_selector = my.kwargs.get('show_file_selector') != 'false'
         my.checkout_script_path = my.kwargs.get('checkout_script_path')
@@ -301,43 +313,42 @@ class CheckinWdg(BaseRefreshWdg):
             # set the transfer mode based on the users environment
             # TODO: maybe should have a separate transfer mode for checkin
             # and checkout?
-            js_div.add_behavior( {
-            'type': 'load',
-            'handoff_dir': handoff_dir,
-            'asset_dir': asset_dir,
-            'wdg_transfer_mode': my.transfer_mode,
-            'cbjs_action': '''
-            
-            var env = spt.Environment.get();
-            if (bvr.wdg_transfer_mode) {
-                //each widget can be different, should not set here
-                //env.set_transfer_mode(bvr.wdg_transfer_mode);
-                return;
-            }
-
-            if (env.is_local_url()) {
-                env.set_transfer_mode("copy");
-            }
-
-            if (!env.get_transfer_mode()) {
-                var applet = spt.Applet.get();
-                var handoff_state = applet.exists(bvr.handoff_dir);
-                var asset_state = applet.exists(bvr.asset_dir);
-                if (asset_state == false) {
-                    env.set_transfer_mode("web");
+            if my.use_applet:
+                js_div.add_behavior( {
+                'type': 'load',
+                'handoff_dir': handoff_dir,
+                'asset_dir': asset_dir,
+                'wdg_transfer_mode': my.transfer_mode,
+                'cbjs_action': '''
+                
+                var env = spt.Environment.get();
+                if (bvr.wdg_transfer_mode) {
+                    //each widget can be different, should not set here
+                    //env.set_transfer_mode(bvr.wdg_transfer_mode);
+                    return;
                 }
-                else if (handoff_state == false) {
-                    env.set_transfer_mode("web");
-                }
-                else {
+
+                if (env.is_local_url()) {
                     env.set_transfer_mode("copy");
                 }
-            }
 
+                if (!env.get_transfer_mode()) {
+                    var applet = spt.Applet.get();
+                    var handoff_state = applet.exists(bvr.handoff_dir);
+                    var asset_state = applet.exists(bvr.asset_dir);
+                    if (asset_state == false) {
+                        env.set_transfer_mode("web");
+                    }
+                    else if (handoff_state == false) {
+                        env.set_transfer_mode("web");
+                    }
+                    else {
+                        env.set_transfer_mode("copy");
+                    }
+                }
 
-
-            '''
-            } )
+                '''
+                } )
 
 
 
@@ -392,6 +403,7 @@ class CheckinWdg(BaseRefreshWdg):
                 'pipeline_code' : pipeline_code,
                 'transfer_mode':my.transfer_mode,
                 'mode':my.mode,
+                'use_applet':my.use_applet,
                 'checkin_command':my.checkin_command,
                 'show_file_selector':my.show_file_selector,
                 'checkout_script_path':my.checkout_script_path,
@@ -745,6 +757,28 @@ spt.checkin.browse_folder = function(current_dir, is_sandbox, refresh, select_di
 
 
 
+spt.checkin.get_selected_items = function() {
+
+    var top = spt.checkin.top;
+    var el = top.getElement(".spt_file_selector");
+
+    var items = el.getElements(".spt_dir_list_item");
+    var selected = [];
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (item.is_selected != true)
+            continue;
+
+        selected.push(item);
+    }
+
+    return selected;
+
+}
+
+
+
+
 spt.checkin.get_selected_paths = function() {
 
     var top = spt.checkin.top;
@@ -1056,6 +1090,46 @@ spt.checkin.checkin_path = function(search_key, file_path, process, options) {
 
 
 
+spt.checkin.add_dependencies = function(snapshot, search_keys, processes) {
+
+    var server = TacticServerStub.get();
+
+    var cmd = 'tactic.ui.widget.CheckinAddDependencyCmd';
+    var kwargs = {
+        snapshot_key: snapshot.__search_key__,
+        search_keys: search_keys,
+        processes: processes
+    };
+
+    server.execute_cmd(cmd, kwargs);
+    return;
+
+    // add dependencies
+    contexts = [];
+
+    if (!search_keys.length) {
+        /*
+        var prev_snapshot = server.get_snapshot();
+
+        var ref_snapshots = server.get_dependencies(prev_snapshot);
+        for (var i = 0; i < ref_snapshots.length; i++) {
+            server.add_dependency_by_code(snapshot, ref_snapshots[i]);
+        }
+        */
+    }
+    else {
+        for (var i = 0; i < search_keys.length; i++) {
+            var search_key = search_keys[i];
+            var process = processes[i];
+            var ref_snapshot = server.get_snapshot(search_key, { process: process } );
+
+            server.add_dependency_by_code(snapshot, ref_snapshot);
+        }
+i   }
+}
+
+
+
 spt.checkin.drop_files = function(evt, el) {
     el = $(el);
     var search_key = el.getAttribute("spt_search_key")
@@ -1070,7 +1144,7 @@ spt.checkin.drop_files = function(evt, el) {
     // If TEAM
     //var applet = spt.Applet.get();
 
-    var base_dir = 'DROPPED FILES';
+    var base_dir = 'Selected Files';
     var file_names = [];
     var sizes = {};
     var md5s = {};
@@ -1349,12 +1423,14 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 tab.add(input_wdg)
 
         if my.show_file_selector:
+            my.use_applet = my.kwargs.get("use_applet")
             kwargs = {
                 'search_key': my.search_key,
                 'process': my.process,
                 'pipeline_code': my.pipeline_code,
                 'context': my.context,
                 'mode': my.mode,
+                'use_applet': my.use_applet,
                 'file_path': file_path,
                 'sandbox_dir': my.sandbox_dir,
                 'context_options': my.context_options,
@@ -1465,6 +1541,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
 
             var search_keys = spt.clipboard.get_search_keys();
+
             for (var i = 0; i < search_keys.length; i++) {
                 var search_key = search_keys[i];
                 var snapshot = server.get_snapshot(search_key, {context: ''});
@@ -2122,7 +2199,12 @@ spt.app_busy.hide();
         # separate behavior for html5 check-in
         html5_behavior = {
             'type': 'click_up',
+            'validate_script_path': my.validate_script_path,
             'cbjs_action': '''
+
+var top = bvr.src_el.getParent(".spt_checkin_top");
+var progress = top.getElement(".spt_checkin_progress");
+progress.setStyle("display", "");
 
 spt.checkin.html5_checkin = function(files) {
     var server = TacticServerStub.get();
@@ -2139,11 +2221,27 @@ spt.checkin.html5_checkin = function(files) {
 
     var upload_complete = function() {
 
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var file_path = file.name;
-            var context = process + '/' + file.name;
-            snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+        try {
+            if (bvr.validate_script_path){
+                var script = spt.CustomProject.get_script_by_path(bvr.validate_script_path);
+                bvr['script'] = script;
+                spt.app_busy.show("Running Validation", bvr.validate_script_path);
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            } 
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var file_path = file.name;
+                var context = process + '/' + file.name;
+                snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+            }
+            progress.setStyle("display", "");
+        }
+        catch(e) {
+            progress.setStyle("background", "#F00");
+            progress.setStyle("display", "none");
+            alert(e);
+            throw(e);
+            
         }
 
         spt.app_busy.hide();
@@ -2152,7 +2250,8 @@ spt.checkin.html5_checkin = function(files) {
     var upload_progress = function(evt) {
 
         var percent = Math.round(evt.loaded * 100 / evt.total);
-        spt.app_busy.show("Uploading ["+percent+"%% complete]");
+        //spt.app_busy.show("Uploading ["+percent+"%% complete]");
+        progress.setStyle("width", percent + "%");
     }
 
     var upload_kwargs = {
@@ -2223,6 +2322,29 @@ if (type == 'workarea_checkin') {
 }
 else {
     file_paths = spt.checkin.get_selected_paths();
+}
+
+
+// TEST Dependencies
+var depend_keys = []
+var depend_processes = []
+var items = spt.checkin.get_selected_items();
+for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    var item_depend_keys = item.getAttribute("spt_depend_keys");
+    if (item_depend_keys) {
+        item_depend_keys = item_depend_keys.split("|");
+    }
+    else {
+        item_depend_keys = [];
+    }
+    depend_keys.push(item_depend_keys);
+
+    var item_depend_processes = [];
+    for (var j = 0; j < item_depend_keys.length; j++) {
+        item_depend_processes.push("publish");
+    }
+    depend_processes.push(item_depend_processes);
 }
 
 
@@ -2523,6 +2645,7 @@ try {
                         snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: transfer_mode, is_current: is_current, context_index_padding: padding, checkin_type: checkin_type});
 
                         checkin_data[file_path] = snapshot;
+
                     }
 
                 }
@@ -2536,6 +2659,13 @@ try {
                     else {
 
                         snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: transfer_mode, is_current: is_current, context_index_padding: padding, checkin_type: checkin_type});
+
+
+                        // TEST Adding Dependency
+                        var dependencies = depend_keys[i];
+                        if (dependencies.length) {
+                            spt.checkin.add_dependencies(snapshot, dependencies, depend_processes[i]);
+                        }
                     }
                     checkin_data[file_path] = snapshot;
 
@@ -2563,7 +2693,6 @@ try {
         }    
 
     }
-
 
     // save info to the file
     var cached_data = spt.checkin.get_cached_data();
@@ -2645,7 +2774,7 @@ else {
 
 
 
-        button =ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
         top.add(button)
         button.add_class("spt_checkin_html5_button")
         button.add_behavior(html5_behavior)
@@ -2655,6 +2784,16 @@ else {
         button.add_style("margin-bottom: 20px")
 
         button.add_style("display: none")
+
+        progress = DivWdg()
+        top.add(progress)
+        progress.add_style("display: none")
+        progress.add_class("spt_checkin_progress")
+        progress.add_style("width: 0%")
+        progress.add_style("height: 10px")
+        progress.add_border()
+        progress.add_color("background", "background")
+
 
 
 
@@ -2803,39 +2942,7 @@ class ContextPanelWdg(BaseRefreshWdg):
             div = Widget()
         else:
             div = FloatDivWdg(css='spt_context_panel')
-            #div.add_style('margin-top: 1px')
             my.set_as_panel(div)
-        #div.add(SpanWdg("-", css='small'))
-
-        """
-        swap = None 
-        if my.context_list:
-            swap = SwapDisplayWdg()
-            subcontext = SpanWdg('/ ', css='small spt_subcontext')
-           
-            # see if this has been overridden, otherwise use the
-            # value passed in the ocnstructor
-            web = WebContainer.get_web()
-            sub_context_value = web.get_form_value('subcontext')
-            if not sub_context_value:
-                sub_context_value = my.subcontext
-
-            if sub_context_value:
-                swap.set_display_widgets(SpanWdg('[-]',css='smaller'), SpanWdg('[+]', css='smaller'))
-                off_script = "var el = bvr.src_el.getParent('.spt_context_panel').getElement('.spt_subcontext'); spt.show(el);"
-                on_script = "var el = bvr.src_el.getParent('.spt_context_panel').getElement('.spt_subcontext'); el.getElement('.spt_input').value=''; spt.hide(el);"
-            else:
-                swap.set_display_widgets(SpanWdg('[+]',css='smaller'), SpanWdg('[-]', css='smaller'))
-                subcontext.add_style('display','none')
-                on_script = "var el = bvr.src_el.getParent('.spt_context_panel').getElement('.spt_subcontext'); spt.show(el);"
-                off_script = "var el = bvr.src_el.getParent('.spt_context_panel').getElement('.spt_subcontext'); el.getElement('.spt_input').value=''; spt.hide(el);"
-
-            subcontext_wdg = my.get_subcontext_wdg(my.context, sub_context_value)
-            subcontext.add(subcontext_wdg)
-            
-            
-            swap.add_action_script(on_script, off_script)
-        """
 
 
         if show_context:
@@ -2965,13 +3072,42 @@ class FileSelectorWdg(BaseRefreshWdg):
 
 
         # add the local files in the sandbox
-        content.add( my.get_dir_list_wdg() )
+        my.use_applet = my.kwargs.get("use_applet")
+        if not my.use_applet:
+            content.add( my.get_drag_files_wdg() )
+        else:
+            content.add( my.get_dir_list_wdg() )
 
 
         if my.kwargs.get("is_refresh"):
             return content
         else:
             return top
+
+
+    def get_drag_files_wdg(my):
+        div = DivWdg()
+
+        title = DivWdg()
+        div.add(title)
+        title.add_style("width: 200px")
+        title.add_style("height: 100px")
+        title.add_style("margin: 100px auto")
+        title.add_style("opacity: 0.3")
+        title.add_style("font-size: 2.0em")
+        title.add("Drag Files Here")
+
+        div.add_class("spt_checkin_content")
+        div.add_style("min-height: 400px")
+        div.add_style("width: auto")
+        div.add_style("padding: 10px")
+        div.add_attr("spt_search_key", my.search_key)
+        div.add_attr("ondragenter", "return false")
+        div.add_attr("ondragover", "return false")
+        div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
+
+
+        return div
 
 
     def get_dir_list_wdg(my):
@@ -3025,7 +3161,6 @@ class FileSelectorWdg(BaseRefreshWdg):
         'cbjs_action': '''
 
 // have to initialize here for Chrome
-var applet = spt.Applet.get();
 spt.checkin.sandbox_dir = bvr.sandbox_dir;
 spt.checkin.tactic_path = spt.checkin.sandbox_dir+"/.tactic/info.txt";
 spt.checkin.get_cached_data = function() {
@@ -3067,194 +3202,196 @@ spt.checkin.write_cached_data = function(cached_data, check) {
 
 
 
-//spt.app_busy.show("Loading ...");
 
-setTimeout(function() {
 
-var cached_data = spt.checkin.get_cached_data();
-var js_paths;
+spt.checkin.load_sandbox = function() {
 
-// these are strings here
-var show_base_dir = true;
-var preselected = false;
-var sandbox_dir = bvr.sandbox_dir;
-//base_dir is preferred for arbitrary file/dir selection
-var base_dir;
+    //spt.app_busy.show("Loading ...");
+    var applet = spt.Applet.get();
+    var cached_data = spt.checkin.get_cached_data();
+    var js_paths;
 
-// arbitrary file or dir selection
-if (bvr.file_paths.length > 0) {
-    js_paths = bvr.file_paths;
-    show_base_dir = false;
-    preselected = true;
-    var path_1 = js_paths[0];
-    // remove trailing slashes for dir
-    path_1 = path_1.replace(/[\/]+$/, '');
-    var tmps = path_1.split('/');
-    tmps.pop();
-    base_dir = tmps.join('/')
+    // these are strings here
+    var show_base_dir = true;
+    var preselected = false;
+    var sandbox_dir = bvr.sandbox_dir;
+    //base_dir is preferred for arbitrary file/dir selection
+    var base_dir;
 
-    if (applet.is_dir(path_1)) {
-    var paths = applet.list_dir(path_1, 3);
-    js_paths = [];
-    
-    for (var i = 0; i < paths.length; i++) {
-        var js_path = paths[i] + "";
-        js_path = js_path.replace(/\\\\/g, "/");
-        if (applet.is_dir(js_path))
-            js_path = js_path + "/";
+    // arbitrary file or dir selection
+    if (bvr.file_paths.length > 0) {
+        js_paths = bvr.file_paths;
+        show_base_dir = false;
+        preselected = true;
+        var path_1 = js_paths[0];
+        // remove trailing slashes for dir
+        path_1 = path_1.replace(/[\/]+$/, '');
+        var tmps = path_1.split('/');
+        tmps.pop();
+        base_dir = tmps.join('/')
 
-        // skip . files and folders
-        var parts = js_path.split('/');
-        var skip = false;
-        for (var j = 0; j < parts.length; j++) {
-            if (parts[j].substr(0, 1) == '.' ) {
-                skip = true;
-                break;
+        if (applet.is_dir(path_1)) {
+        var paths = applet.list_dir(path_1, 3);
+        js_paths = [];
+        
+        for (var i = 0; i < paths.length; i++) {
+            var js_path = paths[i] + "";
+            js_path = js_path.replace(/\\\\/g, "/");
+            if (applet.is_dir(js_path))
+                js_path = js_path + "/";
+
+            // skip . files and folders
+            var parts = js_path.split('/');
+            var skip = false;
+            for (var j = 0; j < parts.length; j++) {
+                if (parts[j].substr(0, 1) == '.' ) {
+                    skip = true;
+                    break;
+                }
             }
-        }
-        if (skip) {
-            continue;
-        }
-
-        js_paths.push(js_path);
-    }
-    }
-}
-else if (! applet.exists(sandbox_dir) ) {
-    js_paths = null;
-    base_dir = sandbox_dir;
-}
-else {
-    base_dir = sandbox_dir;
-    // regular sandbox folder selected
-    var paths = applet.list_dir(sandbox_dir, 3);
-    js_paths = [];
-    for (var i = 0; i < paths.length; i++) {
-        var js_path = paths[i] + "";
-        js_path = js_path.replace(/\\\\/g, "/");
-        if (applet.is_dir(js_path))
-            js_path = js_path + "/";
-
-        // skip . files and folders
-        var parts = js_path.split('/');
-        var skip = false;
-        for (var j = 0; j < parts.length; j++) {
-            if (parts[j].substr(0, 1) == '.' ) {
-                skip = true;
-                break;
+            if (skip) {
+                continue;
             }
-        }
-        if (skip) {
-            continue;
-        }
 
-        js_paths.push(js_path);
-        file_data = cached_data[js_path];
-        if (!file_data) {
-            cached_data[js_path] = {};
+            js_paths.push(js_path);
         }
-
+        }
     }
-}
-
-var md5s = {}; 
-var sizes = {};
-if (js_paths != null) {
-    for (var i = 0; i < js_paths.length; i++) {
-
-        var js_path = js_paths[i];
-        var cache_info = cached_data[js_path];
-
-        var cache_mtime;
-        var cache_md5;
-        if (cache_info) {
-            cache_mtime = cache_info.mtime;
-            cache_md5 = cache_info.md5;
-        }
-        else {
-            cache_info = {};
-        }
-        if (!cache_mtime) {
-            cache_mtime = 0;
-        }
-        if (!cache_md5) {
-            cache_mtime = 0;
-        }
-
-        // get current path info
-        var path_info = applet.get_path_info(js_path);
-        var mtime = path_info.mtime;
-
-        // only calculate md5 if the file has been checkedin
-        var is_checked_in = false;
-        var js_parts = js_path.split("/");
-        var js_name = js_parts[js_parts.length-1];
-        for (var j = 0; j < bvr.source_paths.length; j++) {
-            // since the source path is often not available, just use
-            // the file name
-            var source_parts = bvr.source_paths[j].split("/");
-            var source_name = source_parts[source_parts.length-1];
-
-            //if (bvr.source_paths[j] == js_path) {
-            if (source_name == js_name) {
-                is_checked_in = true;
-                break;
-            }
-        }
-
-        if (is_checked_in) {
-            var md5;
-            if (cache_mtime < mtime) {
-                //console.log("Calculating MD5: " + js_path);
-                md5 = applet.get_md5(js_path);
-            } else {
-                //console.log("cached MD5: " + js_path);
-                md5 = cache_md5;
-            }
-            md5s[js_path] = md5;
-        }
-        else {
-            md5s[js_path] = "";
-        }
-
-        sizes[js_path] = path_info.size;
-
-        cache_info['md5'] = md5;
-        cache_info['mtime'] = mtime;
-        cache_info['size'] = path_info.size;
+    else if (! applet.exists(sandbox_dir) ) {
+        js_paths = null;
+        base_dir = sandbox_dir;
     }
+    else {
+        base_dir = sandbox_dir;
+        // regular sandbox folder selected
+        var paths = applet.list_dir(sandbox_dir, 3);
+        js_paths = [];
+        for (var i = 0; i < paths.length; i++) {
+            var js_path = paths[i] + "";
+            js_path = js_path.replace(/\\\\/g, "/");
+            if (applet.is_dir(js_path))
+                js_path = js_path + "/";
+
+            // skip . files and folders
+            var parts = js_path.split('/');
+            var skip = false;
+            for (var j = 0; j < parts.length; j++) {
+                if (parts[j].substr(0, 1) == '.' ) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip) {
+                continue;
+            }
+
+            js_paths.push(js_path);
+            file_data = cached_data[js_path];
+            if (!file_data) {
+                cached_data[js_path] = {};
+            }
+
+        }
+    }
+
+    var md5s = {}; 
+    var sizes = {};
+    if (js_paths != null) {
+        for (var i = 0; i < js_paths.length; i++) {
+
+            var js_path = js_paths[i];
+            var cache_info = cached_data[js_path];
+
+            var cache_mtime;
+            var cache_md5;
+            if (cache_info) {
+                cache_mtime = cache_info.mtime;
+                cache_md5 = cache_info.md5;
+            }
+            else {
+                cache_info = {};
+            }
+            if (!cache_mtime) {
+                cache_mtime = 0;
+            }
+            if (!cache_md5) {
+                cache_mtime = 0;
+            }
+
+            // get current path info
+            var path_info = applet.get_path_info(js_path);
+            var mtime = path_info.mtime;
+
+            // only calculate md5 if the file has been checkedin
+            var is_checked_in = false;
+            var js_parts = js_path.split("/");
+            var js_name = js_parts[js_parts.length-1];
+            for (var j = 0; j < bvr.source_paths.length; j++) {
+                // since the source path is often not available, just use
+                // the file name
+                var source_parts = bvr.source_paths[j].split("/");
+                var source_name = source_parts[source_parts.length-1];
+
+                if (source_name == js_name) {
+                    is_checked_in = true;
+                    break;
+                }
+            }
+
+            if (is_checked_in) {
+                var md5;
+                if (cache_mtime < mtime) {
+                    //console.log("Calculating MD5: " + js_path);
+                    md5 = applet.get_md5(js_path);
+                } else {
+                    //console.log("cached MD5: " + js_path);
+                    md5 = cache_md5;
+                }
+                md5s[js_path] = md5;
+            }
+            else {
+                md5s[js_path] = "";
+            }
+
+            sizes[js_path] = path_info.size;
+
+            cache_info['md5'] = md5;
+            cache_info['mtime'] = mtime;
+            cache_info['size'] = path_info.size;
+        }
+    }
+    // avoid creating sandbox_dir by accident
+    if (applet.exists(sandbox_dir)) {
+        spt.checkin.write_cached_data(cached_data);
+    }
+
+
+
+    var class_path = 'tactic.ui.widget.CheckinSandboxListWdg';
+    var kwargs = {
+        paths: js_paths,
+        folder_state: bvr.folder_state,
+        md5s: md5s,
+        sizes: sizes,
+        pipeline_code: bvr.pipeline_code,
+        process: bvr.process,
+        base_dir: base_dir,
+        search_key: bvr.search_key,
+        context_options: bvr.context_options,
+        subcontext_options: bvr.subcontext_options,
+        //file_data: JSON.stringify(cached_data)
+        show_base_dir: show_base_dir,
+        preselected: preselected,
+        create_sandbox_script_path: bvr.create_sandbox_script_path,
+        show_links: bvr.show_links,
+        options: bvr.options
+    }
+    spt.panel.load( bvr.src_el, class_path, kwargs);
+
+    spt.app_busy.hide();
+
 }
-// avoid creating sandbox_dir by accident
-if (applet.exists(sandbox_dir)) {
-    spt.checkin.write_cached_data(cached_data);
-}
-
-
-
-var class_path = 'tactic.ui.widget.CheckinSandboxListWdg';
-var kwargs = {
-    paths: js_paths,
-    folder_state: bvr.folder_state,
-    md5s: md5s,
-    sizes: sizes,
-    pipeline_code: bvr.pipeline_code,
-    process: bvr.process,
-    base_dir: base_dir,
-    search_key: bvr.search_key,
-    context_options: bvr.context_options,
-    subcontext_options: bvr.subcontext_options,
-    //file_data: JSON.stringify(cached_data)
-    show_base_dir: show_base_dir,
-    preselected: preselected,
-    create_sandbox_script_path: bvr.create_sandbox_script_path,
-    show_links: bvr.show_links,
-    options: bvr.options
-}
-spt.panel.load( bvr.src_el, class_path, kwargs);
-
-spt.app_busy.hide();
-
-}, 10);
+setTimeout(spt.checkin.load_sandbox, 10);
 
     '''
         } )
@@ -3938,7 +4075,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         snapshots = search.get_sobjects()
         snapshot_codes = [x.get_code() for x in snapshots]
 
-        button = ButtonNewWdg(title='Check-out Tools', icon=IconWdg.CHECK_OUT_SM, show_arrow=True )
+        for snapshot in snapshots:
+            ref_snapshots = Snapshot.get_all_ref_snapshots(snapshot)
+            ref_codes = [x.get_code() for x in ref_snapshots]
+            snapshot_codes.extend(ref_codes)
+
+
+        button = ButtonNewWdg(title='Check-out Files', icon=IconWdg.CHECK_OUT_SM, show_arrow=False )
+        button.set_show_arrow_menu(True)
         button_row.add(button)
 
         menu = Menu(width=220)
@@ -3947,19 +4091,23 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         cbjs_action = my.get_checkout_cbjs_action(my.process)
 
+        behavior = {
+            'type': 'click_up',
+            # Don't specify the sandbox dir at the moment because it will
+            # remove the relative sub directories
+            #'sandbox_dir': my.base_dir,
+            'snapshot_codes': snapshot_codes,
+            'transfer_mode': transfer_mode,
+            'file_types': ['main'],
+            'cbjs_action': cbjs_action,
+            'filename_mode': 'source'
+        }
+        button.add_behavior(behavior)
+
+
         menu_item = MenuItem(type='action', label='Check-out Files')
         menu.add(menu_item)
-        menu_item.add_behavior( {
-        'type': 'click_up',
-        # Don't specify the sandbox dir at the moment because it will
-        # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
-        'snapshot_codes': snapshot_codes,
-        'transfer_mode': transfer_mode,
-        'file_types': ['main'],
-        'cbjs_action': cbjs_action,
-        'filename_mode': 'source'
-        } )
+        menu_item.add_behavior(behavior)
 
         
         menu_item = MenuItem(type='separator')
@@ -4020,11 +4168,23 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'type': 'click_up',
             'sandbox_dir': my.base_dir,
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
             spt.app_busy.show("Checking out from Clipboard");
-            var search_keys = spt.clipboard.get_search_keys();
+            //var search_keys = spt.clipboard.get_search_keys();
+
+            var expr = "@SOBJECT(sthpw/clipboard['category','select']['login',$LOGIN'])";
+            var items = server.eval(expr);
+            var search_keys = [];
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                console.log(item);
+                var search_key = item.search_type + '&code=' + item.search_code;
+                search_keys.push(search_key);
+            }
+
+
             for (var i = 0; i < search_keys.length; i++) {
                 var search_key = search_keys[i];
                 var snapshot = server.get_snapshot(search_key, {context: ''});
@@ -4088,8 +4248,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': menu } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
+        SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'BUTTON_MENU': menu } )
+        SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "BUTTON_MENU", True )
 
 
 
@@ -4278,6 +4438,10 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         
         cbjs_action = '''
         var button = spt.smenu.get_activator(bvr);
+        if (!button) {
+            button = bvr.src_el;
+        }
+
         var filename_mode = bvr.filename_mode;
         if (!filename_mode) {
             filename_mode = 'source';
@@ -5488,3 +5652,57 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         table.set_sobjects(snapshots)
 
         return table
+
+
+__all__.append("CheckinAddDependencyCmd")
+class CheckinAddDependencyCmd(Command):
+    def execute(my):
+
+        snapshot_key = my.kwargs.get("snapshot_key")
+        search_keys = my.kwargs.get("search_keys")
+        processes = my.kwargs.get("processes")
+
+        snapshot = Search.get_by_search_key(snapshot_key)
+
+        from pyasm.checkin import SnapshotBuilder
+        xml = snapshot.get_xml_value("snapshot")
+        builder = SnapshotBuilder(xml)
+
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+
+        # add dependencies
+        contexts = []
+
+        if len(search_keys) == 0:
+            prev_snapshot = snapshot.get_previous()
+            if not prev_snapshot:
+                return
+
+            ref_snapshots = prev_snapshot.get_all_ref_snapshots()
+            for ref_snapshot in ref_snapshots:
+                my.add_dependency_by_code(builder, ref_snapshot)
+
+        else:
+            for i, search_key in enumerate(search_keys):
+                process = processes[i]
+                sobject = Search.get_by_search_key(search_key)
+                ref_snapshot = Snapshot.get_latest_by_sobject(sobject, process=process)
+                if ref_snapshot:
+                    my.add_dependency_by_code(builder, ref_snapshot)
+
+
+        snapshot.set_value("snapshot", builder.to_string() )
+        snapshot.commit()
+
+
+    def add_dependency_by_code(my, builder, from_snapshot, type='ref', tag='main'):
+        from_snapshot_code = from_snapshot.get("code")
+
+        builder.add_ref_by_snapshot_code(from_snapshot_code, type=type, tag=tag)
+
+
+
+
+

@@ -200,9 +200,13 @@ class BaseCheckin(Command):
             metadata_files.append(file)
             metadata_file_objects.append(file_object)
 
-        from metadata import CheckinMetadataHandler
-        handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False)
-        handler.execute()
+
+        search_type = snapshot.get_value("search_type")
+        parser = SearchType.get(search_type).get_value("metadata_parser", no_exception=True)
+        if parser:
+            from metadata import CheckinMetadataHandler
+            handler = CheckinMetadataHandler(snapshot=snapshot, files=metadata_files, file_objects=metadata_file_objects, commit=False, parser=parser)
+            handler.execute()
 
 
 
@@ -297,10 +301,10 @@ class BaseCheckin(Command):
             # set the new filenames
             if file_path != new_file_path:
                 # There is no file to move on the repo when the mode is local.
-                # Also, for free-form mode, do not move the file because this
-                # may cause conflicts.  The move occurs later in 
+                # Also, for move, copy mode, do not move the file because this
+                # may cause conflicts.  The move/copy occurs later in 
                 # handle_system_commands
-                if my.mode not in ['local', 'free_copy', 'free_move']:
+                if my.mode not in ['local', 'copy', 'move']:
                     # remap the new file path and new file name in case
                     # it changed (ie. no #### in the naming convention)
                     ret_file_path = my.move_file(file_path, new_file_path)
@@ -353,10 +357,9 @@ class BaseCheckin(Command):
         # don't bother checking in local mode because the files won't be there
         if my.mode in ['local','inplace']:
             return
-
         for file in file_paths:
-            if File.has_file_code(file):
-                continue
+            #if File.has_file_code(file):
+            #    continue
 
             if not System().exists(file):
                 raise CheckinException("File [%s] does not exist" % file)

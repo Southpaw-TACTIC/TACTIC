@@ -18,6 +18,7 @@ from pyasm.search import SearchKey, Search
 from pyasm.biz import Snapshot, File
 from pyasm.web import DivWdg, SpanWdg
 from pyasm.widget import IconWdg
+from pyasm.widget import CheckboxWdg, TextWdg, SelectWdg, HiddenWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import DirListWdg
@@ -69,6 +70,8 @@ class CheckinDirListWdg(DirListWdg):
             search2.add_filter("process", process)
             search2.add_filter("is_latest", True)
             search2.add_sobject_filter(my.sobject)
+            search2.order_by = False
+
             snapshots = search2.get_sobjects()
             search.add_relationship_search_filter(search2)
         #search.add_filters("source_path", spaths)
@@ -238,6 +241,54 @@ class CheckinDirListWdg(DirListWdg):
         #icon_div.add_style("float: right")
         #icon_div.add_style("margin-top: -1px")
 
+        depend_wdg = DivWdg()
+        #item_div.add(depend_wdg)
+        depend_wdg.add_style("height: 12px")
+        depend_wdg.add_style("float: left")
+        depend_wdg.add_style("overflow: hidden")
+
+
+        file_obj = my.checked_in_paths.get(path)
+        if file_obj:
+            snapshot = file_obj.get_parent()
+            depend_wdg.add_attr("spt_snapshot_key", snapshot.get_search_key() )
+            item_div.add(depend_wdg)
+        if my.sobject:
+            search_key = my.sobject.get_search_key()
+            depend_wdg.add_attr("spt_search_key", search_key)
+
+
+
+        depend_button = IconWdg( "Dependency", IconWdg.CONNECT, width=12 )
+        #depend_wdg.add(depend_button)
+        depend_wdg.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var search_key = bvr.src_el.getAttribute("spt_search_key");
+            var snapshot_key = bvr.src_el.getAttribute("spt_snapshot_key");
+            var top = bvr.src_el.getParent(".spt_dir_list_item");
+            var depend_keys = top.getAttribute("spt_depend_keys");
+
+            var class_name = 'tactic.ui.checkin.CheckinDependencyWdg';
+            var kwargs = {
+                search_key: search_key,
+                snapshot_key: snapshot_key,
+                depend_keys: depend_keys
+            };
+            //var popup = spt.panel.load_popup("Dependencies", class_name, kwargs);
+            //popup.activator = top;
+
+            spt.tab.set_tab_top_from_child(bvr.src_el);
+            var header = spt.tab.add_new("Dependency", "Dependency", class_name, kwargs);
+            var content = spt.tab.get_content("Dependency");
+            content.setStyle("border", "solid 1px red");
+
+            top.setStyle("border", "solid 1px blue");
+            content.activator = top;
+
+            '''
+        } )
+
         item_div.add("<br clear='all'/>")
 
 
@@ -326,15 +377,14 @@ class CheckinDirListWdg(DirListWdg):
 
 
         # DEPRECATED
-        from pyasm.widget import CheckboxWdg, TextWdg, SelectWdg, HiddenWdg
+        """
         checkbox = CheckboxWdg("check")
-      
-
         checkbox.add_style("display: none")
         checkbox.add_class("spt_select")
         checkbox.add_style("float: right")
         checkbox.add_style("margin-top: 1px")
         item_div.add(checkbox)
+        """
 
         subcontext_val = ''
         cat_input = None
@@ -905,7 +955,7 @@ spt.checkin_list.select_preselected();
         } )
 
 
-        menu_item = MenuItem(type='action', label='Use as Preview Image')
+        menu_item = MenuItem(type='action', label='Check in Preview Image')
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
@@ -963,6 +1013,200 @@ spt.checkin_list.select_preselected();
         if my.preselected:
             item_div.add_class("spt_preselected") 
         super(CheckinDirListWdg, my).add_file_behaviors(item_div, dirname, basename)
+
+
+
+
+__all__.append('CheckinDependencyWdg')
+class CheckinDependencyWdg(BaseRefreshWdg):
+    def get_display(my):
+        top = my.top
+        my.set_as_panel(top)
+
+        top.add_class("spt_checkin_dependency_top")
+        top.add_color("background", "background")
+        top.add_color("color", "color")
+        top.add_style("width: 800px")
+
+        title = DivWdg()
+        top.add(title)
+        title.add("Current Dependencies")
+        title.add_color("color", "color3")
+        title.add_color("background", "background3")
+        title.add_style("font-size: 1.2em")
+        title.add_style("font-weight: bold")
+        title.add_style("padding: 10px 10px")
+
+
+        # Not sure what to do with this yet
+        search_key = my.kwargs.get("search_key")
+        search_key = None
+
+        snapshot_key = my.kwargs.get("snapshot_key")
+
+
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
+
+
+        if snapshot_key:
+            snapshot = Search.get_by_search_key(snapshot_key)
+        elif search_key:
+            sobject = Search.get_by_search_key(search_key)
+            snapshot = Snapshot.get_latest_by_sobject(sobject, process=process)
+        else:
+            snapshot = None
+
+        #context = my.kwargs.get("context")
+        #context = "publish/X6.tex"
+
+
+
+
+        from tactic.ui.widget import ActionButtonWdg
+        button = ActionButtonWdg(title="Browse")
+        button.add_style("float: left")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var applet = spt.Applet.get();
+            var files = applet.open_file_browser();
+            alert(files);
+            '''
+        } )
+
+
+
+        from tactic.ui.widget import ActionButtonWdg
+        button = ActionButtonWdg(title="Clipboard")
+        button.add_style("float: left")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': r'''
+
+            var server = TacticServerStub.get();
+            var items = server.eval("@SOBJECT(sthpw/clipboard['category','select']['login',$LOGIN])")
+            var search_keys = spt.table.get_all_search_keys();
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var search_key = item.search_type + "&code=" + item.search_code;
+                search_keys.push(search_key);
+            }
+
+            var top = bvr.src_el.getParent(".spt_checkin_dependency_top");
+            top.setAttribute("spt_snapshot_keys", search_keys.join("|"))
+            spt.panel.refresh(top);
+
+            spt.tab.set_tab_top_from_child(bvr.src_el);
+            var content = spt.tab.get_content("Dependency");
+            var activator = content.activator;
+            activator.setAttribute("spt_depend_keys", search_keys.join("|"));
+            '''
+        } )
+
+
+        button = ActionButtonWdg(title="Remove")
+        button.add_style("float: left")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_checkin_dependency_top");
+            var layout = top.getElement(".spt_layout");
+            spt.table.set_layout(layout);
+
+            spt.table.remove_selected();
+
+            var search_keys = spt.table.get_all_search_keys();
+            alert(search_keys);
+
+            spt.tab.set_tab_top_from_child(bvr.src_el);
+            var content = spt.tab.get_content("Dependency");
+            var activator = content.activator;
+            activator.setAttribute("spt_depend_keys", search_keys.join("|"));
+            activator.setStyle("border", "solid 1px green");
+
+            '''
+        } )
+
+
+
+        """
+        button = ActionButtonWdg(title="Attach")
+        button.add_style("float: left")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_checkin_dependency_top");
+            var layout = top.getElement(".spt_layout");
+            spt.table.set_layout(layout);
+            var search_keys = spt.table.get_selected_search_keys();
+            '''
+        } )
+        """
+
+        top.add("<br clear='all'/>")
+
+
+        sobject_wdg = DivWdg()
+        top.add(sobject_wdg)
+        #text = TextInputWdg("search_type")
+        #sobject_wdg.add(text)
+
+
+
+        depend_keys = my.kwargs.get("depend_keys")
+        print "depend_keys: ", depend_keys
+        if isinstance(depend_keys, basestring):
+            depend_keys = depend_keys.split("|")
+        if depend_keys:
+            ref_snapshots = Search.get_by_search_keys(depend_keys)
+
+        elif snapshot:
+            # get the already existing snapshots
+            ref_snapshots = snapshot.get_all_ref_snapshots(snapshot)
+        else:
+            ref_snapshots = []
+
+        snapshot_keys = my.kwargs.get("snapshot_keys")
+        if snapshot_keys:
+            snapshot_keys = snapshot_keys.split("|")
+            extra_snapshots = Search.get_by_search_keys(snapshot_keys)
+            for extra_snapshot in extra_snapshots:
+                extra_snapshot = Snapshot.get_latest_by_sobject(extra_snapshot, process=process)
+                if extra_snapshot:
+                    ref_snapshots.append(extra_snapshot)
+
+
+        if not ref_snapshots:
+            return top
+
+
+
+        print "ref: ", ref_snapshots
+
+        search_type = "jobs/media"
+        search_type = "sthpw/snapshot"
+
+        from tactic.ui.panel import ViewPanelWdg
+        panel = ViewPanelWdg(
+                search_type=search_type,
+                show_shelf=False,
+                )
+                #layout='tile',
+        panel.set_sobjects(ref_snapshots)
+        top.add(panel)
+
+
+
+        return top
+
+
+
 
 
 

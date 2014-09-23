@@ -30,12 +30,17 @@ class UploadServerWdg(Widget):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
+        files = []
+
         # HTML5 upload
         if num_files:
             num_files = int(num_files)
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
+                if not field_storage:
+                    continue
+
                 file_name = web.get_form_value("file_name%s"% i)
                 if not file_name:
                     file_name = my.get_file_name(field_storage)
@@ -45,14 +50,18 @@ class UploadServerWdg(Widget):
 
         else:
             field_storage = web.get_form_value("file")
-            file_name = web.get_form_value("file_name0")
-            if not file_name:
-                file_name = my.get_file_name(field_storage)
+            if field_storage:
+                file_name = web.get_form_value("file_name0")
+                if not file_name:
+                    file_name = my.get_file_name(field_storage)
 
-            files = my.dump(field_storage, file_name)
+                files = my.dump(field_storage, file_name)
 
-        print "files: ", files
-        return "file_name=%s\n" % ','.join(files)
+        if files:
+            print "files: ", files
+            return "file_name=%s\n" % ','.join(files)
+        else:
+            return "NO FILES"
 
 
 
@@ -107,13 +116,30 @@ class UploadServerWdg(Widget):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
-            shutil.move(path, to_path)
+            
+            if os.name == 'nt':
+                # windows does not do anything.. and it shouldn't even get to 
+                # this point for windows.
+                pass
+            else:
+                shutil.move(path, to_path)
+                    
+            # Because _cpreqbody makes use of mkstemp, the file permissions
+            # are set to 600.  This switches to the permissions as defined
+            # by the TACTIC users umask
+            try:
+                current_umask = os.umask(0)
+                os.umask(current_umask)
+                os.chmod(to_path, 0o666 - current_umask)
+            except Exception, e:
+                print "WARNING: ", e
+
             return [to_path]
 
 
 
         # This may be DEPRECATED
-        raise Exception("Upload method is DEPRECATED")
+        #raise Exception("Upload method is DEPRECATED")
 
 
 

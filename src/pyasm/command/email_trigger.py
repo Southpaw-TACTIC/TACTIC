@@ -66,15 +66,17 @@ class EmailTrigger(Trigger):
             msg = "Command [%s] has no sobjects.  Triggers cannot be called" % class_name
             Environment.add_warning("Command has no sobjects", msg)
 
+        input = my.get_input()
+
         # TODO: figure out what to do when there are multiple sobjects
         # Right now, there is a single mail per sobject which may be
         # way too heavy.
         for sobject in sobjects:
-            my.handle_sobject(sobject, command)
+            my.handle_sobject(sobject, command, input)
 
 
 
-    def handle_sobject(my, main_sobject, command):
+    def handle_sobject(my, main_sobject, command, input):
 
         search_type = main_sobject.get_search_type_obj().get_base_key()
         parent = None
@@ -141,7 +143,7 @@ class EmailTrigger(Trigger):
                 is_skipped = False
            
             # allow the handler to check for whether an email should be sent
-            handler = my.get_email_handler(notification, main_sobject, parent, command)
+            handler = my.get_email_handler(notification, main_sobject, parent, command, input)
             if is_skipped or not handler.check_rule():
                 continue
             # if all rules are met then get the groups for this notification
@@ -214,13 +216,13 @@ class EmailTrigger(Trigger):
         return True
 
 
-    def get_email_handler(my, notification, sobject, parent, command):
+    def get_email_handler(my, notification, sobject, parent, command, input={}):
 
         email_handler_cls = notification.get_value("email_handler_cls")
         if not email_handler_cls:
             email_handler_cls = "EmailHandler"
 
-        handler = Common.create_from_class_path(email_handler_cls, [notification, sobject, parent, command])
+        handler = Common.create_from_class_path(email_handler_cls, [notification, sobject, parent, command, input])
         return handler
 
 
@@ -229,7 +231,7 @@ class EmailTrigger(Trigger):
             email_set.add(email)
     add_email = classmethod(add_email)
 
-    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[]):
+    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[], from_user=None):
 
         cc = set()
         sender = set()
@@ -243,10 +245,14 @@ class EmailTrigger(Trigger):
         if bcc_emails:
             total_bcc_emails.update(bcc_emails)
 
-        user_email = Environment.get_login().get_full_email()
-        if not user_email:
-            raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
-        sender.add(user_email)
+        if from_user:
+            sender.add(from_user)
+            user_email = from_user
+        else:
+            user_email = Environment.get_login().get_full_email()
+            if not user_email:
+                raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+            sender.add(user_email)
 
         for x in to_users:
             if isinstance(x, Login):
@@ -390,30 +396,35 @@ class EmailTrigger2(EmailTrigger):
 
         # get the notification
         notification = my.get_trigger_sobj()
-
+        input = my.get_input()
 
         # TODO: figure out what to do when there are multiple sobjects
         # Right now, there is a single mail per sobject which may be
         # too heavy.
         for sobject in sobjects:
-            my.handle_sobject(sobject, caller, notification)
+            my.handle_sobject(sobject, caller, notification, input)
 
 
 
-    def handle_sobject(my, main_sobject, caller, notification):
+    def handle_sobject(my, main_sobject, caller, notification, input):
 
         # TODO: deal with parents later
         parent = main_sobject.get_parent()
 
-
-
+        snapshot = input.get('snapshot')
+        env_sobjects = {}
+        if snapshot:
+            env_sobjects = {
+                'snapshot': snapshot
+            }
+        
         # get the rules from the database
         rules_xml = notification.get_xml_value("rules")
         rule_nodes = rules_xml.get_nodes("rules/rule")
         is_skipped = True
 
         parser = ExpressionParser()
-
+        
         # process the rules
         for rule_node in rule_nodes:
             rule = []
@@ -425,7 +436,7 @@ class EmailTrigger2(EmailTrigger):
             # evaluate the expression if it exists
             expression = Xml.get_node_value(rule_node)
             if expression:
-                result = parser.eval(expression, main_sobject)
+                result = parser.eval(expression, main_sobject, env_sobjects=env_sobjects)
                 if not result:
                     break
                 else:
@@ -460,7 +471,7 @@ class EmailTrigger2(EmailTrigger):
 
 
         # allow the handler to check for whether an email should be sent
-        handler = my.get_email_handler(notification, main_sobject, parent, caller)
+        handler = my.get_email_handler(notification, main_sobject, parent, caller, input)
         if is_skipped or not handler.check_rule():
             my.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return

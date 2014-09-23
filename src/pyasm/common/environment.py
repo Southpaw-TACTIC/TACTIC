@@ -112,7 +112,7 @@ class Environment(Base):
         for dir in dirs:
             System().makedirs(dir)
             try:
-                os.chmod(dir, 0770)
+                os.chmod(dir, 0775)
             except OSError, e:
                 print "WARNING: cannot chmod: ", e
 
@@ -403,32 +403,27 @@ class Environment(Base):
 
         from pyasm.biz import PrefSetting
         base_dir = PrefSetting.get_value_by_key("sandbox_base_dir")
+        client_os = Environment.get_env_object().get_client_os()
 
         if not base_dir:
 
             if alias:
-                if Environment.get_env_object().get_client_os() =='nt':
-                    alias_dict = Config.get_value("checkin", "win32_snapshot_dir_alias", sub_key=alias)
+                if client_os == "nt":
+                    alias_dict = Config.get_dict_value("checkin", "win32_sandbox_dir")
                 else:
-                    alias_dict = Config.get_value("checkin", "linux_snapshot_dir_alias", sub_key=alias)
+                    alias_dict = Config.get_dict_value("checkin", "linux_sandbox_dir")
 
                 if not alias_dict:
-                    alias_dict = Config.get_value("checkin", "snapshot_dir_alias", sub_key=alias)
+                    alias_dict = Config.get_dict_value("checkin", "sandbox_dir")
 
                 base_dir = alias_dict.get("default")
 
         if not base_dir:
-
-            if Environment.get_env_object().get_client_os() =='nt':
-                base_dir = Config.get_value("checkin","win32_sandbox_dir")
-                if base_dir == "":
-                    base_dir = Config.get_value("checkin","win32_local_base_dir")
-                    base_dir += "/sandbox"
+            if client_os == "nt":
+                base_dir = "C:/tactic/sandbox"
             else:
-                base_dir = Config.get_value("checkin","linux_sandbox_dir")
-                if base_dir == "":
-                    base_dir = Config.get_value("checkin","linux_local_base_dir")
-                    base_dir += "/sandbox"
+                base_dir = "/tmp/snadbox"
+
 
         return base_dir
     get_sandbox_dir = staticmethod(get_sandbox_dir)
@@ -491,8 +486,12 @@ class Environment(Base):
     get_upgrade_dir = classmethod(get_upgrade_dir)
 
 
-    def get_asset_dirs():
+    def get_asset_dirs(cls):
         alias_dict = Config.get_dict_value("checkin", "asset_base_dir")
+
+        # add in an implicit plugin dir
+        if not alias_dict.get("plugins"):
+            alias_dict['plugins'] = cls.get_plugin_dir()
 
         # for backwards compatibility:
         alias_dict2 = Config.get_dict_value("checkin", "base_dir_alias")
@@ -501,9 +500,9 @@ class Environment(Base):
                 alias_dict[key] = value
 
         return alias_dict
-    get_asset_dirs = staticmethod(get_asset_dirs)
+    get_asset_dirs = classmethod(get_asset_dirs)
 
-    def get_asset_dir(file_object=None, alias=None):
+    def get_asset_dir(cls, file_object=None, alias=None):
         '''get base asset directory'''
         if file_object:
             alias = file_object.get_value('base_dir_alias')
@@ -511,10 +510,7 @@ class Environment(Base):
         if not alias:
             alias = "default"
 
-        alias_dict = Config.get_dict_value("checkin", "asset_base_dir")
-        if not alias_dict:
-            alias_dict = Config.get_dict_value("checkin", "base_dir_alias")
-
+        alias_dict = cls.get_asset_dirs()
         asset_dir = alias_dict.get(alias)
 
         if not asset_dir:
@@ -524,7 +520,43 @@ class Environment(Base):
 
         return asset_dir
 
-    get_asset_dir = staticmethod(get_asset_dir)
+    get_asset_dir = classmethod(get_asset_dir)
+
+
+    def get_web_dirs(cls):
+        alias_dict = Config.get_dict_value("checkin", "web_base_dir")
+
+        # add in an implicit plugin dir
+        if not alias_dict.get("plugins"):
+            alias_dict['plugins'] = "/plugins"
+
+        # for backwards compatibility:
+        alias_dict2 = Config.get_dict_value("checkin", "base_dir_alias")
+        if alias_dict2:
+            for key,value in alias_dict2.items():
+                alias_dict[key] = value
+
+        return alias_dict
+    get_web_dirs = classmethod(get_web_dirs)
+
+
+    def get_web_dir(cls, file_object=None, alias=None):
+        '''get base web directory'''
+        if file_object:
+            alias = file_object.get_value('base_dir_alias')
+
+        if not alias:
+            alias = "default"
+
+        alias_dict = cls.get_web_dirs()
+        web_dir = alias_dict.get(alias)
+
+        if not web_dir:
+            web_dir = "/assets"
+
+        return web_dir
+    get_web_dir = classmethod(get_web_dir)
+
 
     
     def get_win32_client_repo_dir(cls):
