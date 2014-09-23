@@ -2498,7 +2498,7 @@ class SqliteImpl(PostgresImpl):
             if not type:
                 type = "days"
             elif type.lower() in ['week','weeks']:
-                # doesn't understand week
+                # doesn't understand week, but month, year are fine
                 type = "days"
                 offset = offset * 7
             elif not type.endswith('s'):
@@ -3029,6 +3029,17 @@ class MySQLImpl(PostgresImpl):
         return " ".join(parts)
 
 
+
+    def get_timestamp_now(my, offset=None, type=None, op='+'):
+        '''MySQL get current / offset timestamp from now'''
+        parts = []
+        parts.append("NOW()")
+        if offset:
+            if not type:
+                type = "DAY"
+            parts.append(" INTERVAL %s %s" % (offset, type) )
+        op = ' %s ' % op
+        return op.join(parts)
 
     #
     # Sequence methods
