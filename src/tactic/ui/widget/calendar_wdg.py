@@ -21,6 +21,7 @@ from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
 from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
 from pyasm.search import SObject
 from tactic.ui.common import BaseRefreshWdg
+from button_new_wdg import IconButtonWdg
 
 from datetime import datetime
 from dateutil import parser
@@ -80,7 +81,7 @@ class CalendarWdg(BaseRefreshWdg):
         #my.top_wdg.add_style("background: #444")
         my.top_wdg.add_color("background", "background")
         my.top_wdg.add_color("color", "color")
-        my.top_wdg.add_style("padding: 3px")
+        #my.top_wdg.add_style("padding: 3px")
         my.top_wdg.set_id('calendar')
         my.set_as_panel(my.top_wdg)
 
@@ -291,7 +292,6 @@ class CalendarWdg(BaseRefreshWdg):
         my.year = year
         my.month = month
 
-
         weeks = my.weeks
 
         widget = DivWdg()
@@ -310,12 +310,17 @@ class CalendarWdg(BaseRefreshWdg):
 
         # add the main table
         table = Table()
+        widget.add(table)
         table.add_row()
         table.add_color("color", "color")
         table.add_style("width: 100%")
+        table.add_style("table-layout: fixed")
 
-        table.add_style("margin-left: auto")
-        table.add_style("margin-right: auto")
+        #table.add_style("margin-left: auto")
+        #table.add_style("margin-right: auto")
+
+        if my.kwargs.get("show_header") not in ['false', False]:
+            table.add_style("margin-top: -1px")
 
 
         # get all of the day widgets
@@ -348,9 +353,8 @@ class CalendarWdg(BaseRefreshWdg):
         for day in week:
             td = table.add_cell()
             td.add(my.get_day_header_wdg(day) )
-            # NOTE: not sure why fixing the header td makes the whole table
-            # scale properly with equal size
-            td.add_style("width: 100px")
+            td.add_border()
+
         if has_right_wdgs:
             table.add_cell("&nbsp;")
 
@@ -372,7 +376,6 @@ class CalendarWdg(BaseRefreshWdg):
         
         for i, week in enumerate(weeks):
             table.add_row()
-
             
             if has_left_wdgs:
                 left_wdg = left_wdgs[i]
@@ -406,9 +409,6 @@ class CalendarWdg(BaseRefreshWdg):
                     td.add_cell("&nbsp;")
 
 
-
-    
-        widget.add(table)
 
 
         return widget
@@ -497,7 +497,7 @@ class CalendarWdg(BaseRefreshWdg):
             prev_year -= 1
 
 
-        prev_month_wdg = IconButtonWdg( "Prev Month", IconWdg.LEFT )
+        prev_month_wdg = IconButtonWdg( title="Prev Month", icon=IconWdg.G_LEFT_BLACK )
 
         prev_month_wdg.add_behavior( {
             'type': "click_up",
@@ -520,7 +520,7 @@ class CalendarWdg(BaseRefreshWdg):
             next_year += 1
 
 
-        next_month_wdg = IconButtonWdg( "Next Month", IconWdg.RIGHT )
+        next_month_wdg = IconButtonWdg( title="Next Month", icon=IconWdg.G_RIGHT_BLACK )
 
         next_month_wdg.add_behavior( {
             'type': "click_up",
@@ -582,7 +582,7 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_close_icon(my):
 
-        close_icon = IconWdg("Close", IconWdg.POPUP_WIN_CLOSE, right_margin='0px')
+        close_icon = IconWdg("Close", IconWdg.G_CLOSE_BLACK, right_margin='0px', width=16)
         close_icon.add_class('hand')
 
         # button to close calendar popup ...
@@ -872,10 +872,23 @@ class CalendarInputWdg(BaseInputWdg):
         name = my.get_input_name()
         read_only = my.get_option('read_only')
         required = my.get_option('required')
+
+
+        width = my.get_option('width')
+
+        title = my.get_display_title()
         
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
-        input = TextInputWdg( name=name, read_only=read_only, required=required )
+
+        edit_mode = "inline"
+        if edit_mode == "table":
+            input = TextWdg(name=name)
+            text = input
+        else:
+            input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
+            text = input.get_text()
+
 
         if read_only == True:
             read_only = 'true'
@@ -885,24 +898,28 @@ class CalendarInputWdg(BaseInputWdg):
         show_time = my.get_option("show_time") in [True, 'true']
         time_input_default = my.get_option('time_input_default')
         if show_time:
-            input.add_style("width: 120px")
+            if not width:
+                input.add_style("width: 120px")
             my.top.add_attr("show_time", "true")
             show_time = True
         else:
-            input.add_style("width: 100px")
+            if not width:
+                input.add_style("width: 100px")
             my.top.add_attr("show_time", "false")
             show_time = False
             if time_input_default:
                 input.add_style("width: 120px")
 
+
         input.add_style("text-left: center")
 
-        input_div = FloatDivWdg()
+        input_div = DivWdg()
         input_div.add(input)
         my.top.add(input_div)
 
 
-        text = input.get_text()
+
+
         text.add_class("spt_calendar_input") 
         # explicity true means no calendar on click
         if read_only == 'true':
@@ -923,10 +940,11 @@ class CalendarInputWdg(BaseInputWdg):
                     '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
                     if (!el)  {
                         el = spt.calendar.get(); 
+                        el.setStyle("width", "200px");
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
-                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:15, y:0}});
+                        el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:0, y:0}});
                     }
                     
                     spt.show(el);
@@ -1266,7 +1284,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
         table.add_style("width: 100%")
         table.add_border()
         table.add_row()
-        prev_year_wdg = IconButtonWdg( "Prev Year", IconWdg.LEFT )
+        prev_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.LEFT )
         table.add_cell(prev_year_wdg)
         prev_year_wdg.add_behavior( {
             'type': 'click_up',
@@ -1281,7 +1299,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
         year_div.add_class("spt_year")
         table.add_cell(year_div)
 
-        next_year_wdg = IconButtonWdg( "Prev Year", IconWdg.RIGHT )
+        next_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.RIGHT )
         td = table.add_cell(next_year_wdg)
         td.add_style("text-align: right")
         next_year_wdg.add_behavior( {

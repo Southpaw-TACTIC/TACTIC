@@ -47,6 +47,11 @@ class TaskCompletionWdg(BaseTableElementWdg):
         my.row_completion = 0
         my.expression = None
 
+
+    def get_width(my):
+        return 200
+
+
     def is_editable(cls):
         '''Determines whether this element is editable'''
         return False

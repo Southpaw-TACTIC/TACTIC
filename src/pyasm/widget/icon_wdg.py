@@ -176,6 +176,7 @@ class IconWdg(DivWdg):
     'PLUS_ADD'             : "/context/icons/custom/plus_bw.png",
     'POPUP_ANCHOR'         : "/context/icons/custom/popup_anchor.png",
     'POPUP_WIN_CLOSE'      : "/context/icons/custom/popup_close.png",
+    #'POPUP_WIN_CLOSE'      : "/context/icons/glyphs/test_close.png",
     'POPUP_WIN_MINIMIZE'   : "/context/icons/custom/popup_minimize.png",
     'POPUP_WIN_REFRESH'    : "_spt_popup_window_refresh.png",
     'PREF'                 : "brick.png",
@@ -328,7 +329,28 @@ class IconWdg(DivWdg):
     'HOME_02'             : "/context/icons/common/home_02.png",
 
 
-    'LAYOUT_64'           : "/context/icons/64x64/layout_64.png"
+    'LAYOUT_64'           : "/context/icons/64x64/layout_64.png",
+
+
+
+    # Glyphs
+    'G_FOLDER'            : '/context/icons/glyphs/folder.png',
+    'G_MAXIMIZE'          : '/context/icons/glyphs/maximize.png',
+    'G_SETTINGS'          : '/context/icons/glyphs/settings.png',
+    'G_SETTINGS_BLACK'    : '/context/icons/glyphs/settings_black.png',
+    'G_SETTINGS_GRAY'     : '/context/icons/glyphs/settings_gray.png',
+    'G_CALENDAR'          : '/context/icons/glyphs/calendar.png',
+    'G_UP'                : '/context/icons/glyphs/chevron_up.png',
+    'G_DOWN'              : '/context/icons/glyphs/chevron_down.png',
+    'G_SEARCH'            : '/context/icons/glyphs/search.png',
+    'G_SEARCH_BLACK'      : '/context/icons/glyphs/search_black.png',
+    'G_LEFT'              : '/context/icons/glyphs/chevron_left.png',
+    'G_RIGHT'             : '/context/icons/glyphs/chevron_right.png',
+    'G_LEFT_BLACK'        : '/context/icons/glyphs/chevron_left_black.png',
+    'G_RIGHT_BLACK'       : '/context/icons/glyphs/chevron_right_black.png',
+    'G_CLOSE'             : '/context/icons/glyphs/close.png',
+    'G_CLOSE_BLACK'       : '/context/icons/glyphs/close_black.png',
+    'G_HOME_BLACK'        : '/context/icons/glyphs/home_black.png',
 
 
     
@@ -359,7 +381,7 @@ class IconWdg(DivWdg):
     get_icon_path = staticmethod(get_icon_path)
 
 
-    def __init__(my, name=None, icon=None, long=False, css='', right_margin='3px', width='', **kwargs):
+    def __init__(my, name=None, icon=None, long=False, css='', right_margin='3px', width='', opacity=None, **kwargs):
         try:
             my.icon_path = eval("IconWdg.%s" % icon.upper())
         except:
@@ -370,17 +392,39 @@ class IconWdg(DivWdg):
         my.right_margin = right_margin
         my.width = width
         my.kwargs = kwargs
+        my.opacity = opacity
+        my.size = kwargs.get("size")
         super(IconWdg,my).__init__()
 
 
     def init(my):
-        if not my.icon_path.startswith("/"):
+        if my.icon_path.startswith("BS"):
+            icon_path = my.icon_path
+        elif not my.icon_path.startswith("/"):
             # icon_path = "/context/icons/oo/%s" % my.icon_path
             icon_path = "/context/icons/silk/%s" % my.icon_path
         else:
             icon_path = my.icon_path
 
-        icon = HtmlElement.img(icon_path)
+        if icon_path.startswith("BS_"):
+            icon = HtmlElement.span()
+            icon.add_class("glyphicon")
+            part = icon_path.replace("BS_", "")
+            part = part.lower()
+            part = part.replace("_","-")
+            icon.add_class("glyphicon-%s" % part)
+            if not my.size:
+                my.size = "16px"
+            icon.add_style("font-size: %s" % my.size)
+            if not my.opacity:
+                my.opacity = 0.6
+        else:
+            icon = HtmlElement.img(icon_path)
+
+        if my.opacity:
+            icon.add_style("opacity: %s" % my.opacity)
+
+
         if my.text and my.text != "":
             icon.set_attr("title", my.text)
         if my.right_margin:
@@ -408,7 +452,10 @@ class IconWdg(DivWdg):
             my.add(my.text)
 
         if my.width:
-            my.icon.add_style('width', my.width)
+            if my.icon_path.startswith("BS_"):
+                my.icon.add_style('font-size', my.width)
+            else:
+                my.icon.add_style('width', my.width)
         return super(IconWdg,my).get_display()
 
     def get_icon(my):
@@ -427,7 +474,7 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles=''):
+    def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
         my.text = name
         my.icon_path = icon
         my.long = long

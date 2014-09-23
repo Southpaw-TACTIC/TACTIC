@@ -43,11 +43,11 @@ from filter_data import FilterData
 class BaseFilterElementWdg(BaseRefreshWdg):
     '''represents the base filter'''
     def __init__(my, **kwargs):
+        super(BaseFilterElementWdg, my).__init__(**kwargs)
         my.values = {}
         my.show_title = False
         my.set_flag = False
         my.title = None
-        super(BaseFilterElementWdg, my).__init__(**kwargs)
 
     def is_visible(my):
         return True
@@ -362,6 +362,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
             op_select = SelectWdg("op")
+            op_select.add_style("width: 75px")
             # only support in or not in for multi stypes column
             if my.multi_search_types:
                 op_select.set_option("labels", "is|is not")
@@ -958,7 +959,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 relevant = my.relevant,
                 width ='230',
                 hint_text=hint_text,
-                case_sensitive = my.case_sensitive
+                case_sensitive = my.case_sensitive,
+                icon=my.kwargs.get("icon")
         )
         value = my.values.get("value")
         if value:
@@ -988,12 +990,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         icon_div.add_style("right: 0")
 
         from tactic.ui.container import DialogWdg
-        dialog = DialogWdg(show_title=False, show_pointer=False)
-        dialog.set_as_activator(icon_div, {'x': -150, 'y': 0})
+        dialog = DialogWdg(show_title=False, show_pointer=True)
+        dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
         div.add(dialog)
 
         match_div = DivWdg()
-        match_div.add_style("width: 150")
+        match_div.add_style("width: 175")
         dialog.add(match_div)
         checkbox = CheckboxWdg("partial")
         match_div.add(checkbox)

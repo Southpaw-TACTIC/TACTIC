@@ -2462,7 +2462,6 @@ class SObject(object):
         return project_code
 
 
-
     def get_columns(my):
         columns = SearchType.get_columns(my.get_search_type())
         return columns
@@ -3841,7 +3840,6 @@ class SObject(object):
                 # add message only if triggers is true
                 if triggers:
                     my._add_message(sobject, output, mode)
-
 
 
             # cache this sobject, by code and id

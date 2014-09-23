@@ -32,6 +32,9 @@ class FakeSecurity(object):
         from pyasm.search import SearchType
         ticket = SearchType.create("sthpw/ticket")
         return ticket
+    def get_ticket_key(my):
+        return ""
+
 
 
 def import_bootstrap():

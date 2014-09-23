@@ -448,15 +448,27 @@ class ThumbWdg(BaseTableElementWdg):
 
 
     def handle_th(my, th, cell_idx):
+        th.add_style("min-width", "55px")
+        return
+
         if not my.width:
-            th.add_style("width", "30px")
+            th.add_style("width", "55px")
         else:
             th.add_style("width: %s" % my.width)
 
 
     def handle_td(my, td):
         td.set_attr('spt_input_type', 'upload')
-        td.set_style("width: 1px")
+        td.add_style("min-width", "55px")
+        return
+
+
+        #td.set_style("width: 1px")
+        if not my.width:
+            td.add_style("width", "55px")
+        else:
+            td.add_style("width: %s" % my.width)
+
 
 
     def set_icon_size(my, size):
@@ -534,6 +546,7 @@ class ThumbWdg(BaseTableElementWdg):
 
         div = my.top
         div.add_style("position: relative")
+        div.add_style("margin: 3px")
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         icon_size = my.get_icon_size()
@@ -822,9 +835,10 @@ class ThumbWdg(BaseTableElementWdg):
  
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         div.add_style( "display: block" )
+        div.add_style("margin: 5px")
         div.add_style("%s: %s" % (my.aspect, icon_size) )
         div.add_style("min-%s: %s" % (my.aspect, min_size) )
-        div.set_box_shadow("0px 0px 5px")
+        #div.set_box_shadow("0px 0px 5px")
         div.add_border()
 
         div.add_style("text-align: left" )

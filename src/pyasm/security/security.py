@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Login", "LoginInGroup", "LoginGroup", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
+__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
 
@@ -626,8 +626,61 @@ class LoginInGroup(SObject):
 
 
 
+class Site(object):
+    '''This is used to manage various "sites" (databases) within a single
+    TACTIC installation.  Tickets are scoped by site which determines
+    the location of database.'''
 
 
+
+    #
+    # Virtual methods
+    #
+    def get_by_login(cls, login):
+        return ""
+    get_by_login = classmethod(get_by_login)
+
+
+    def build_ticket(cls, ticket):
+        return ticket
+    build_ticket = classmethod(build_ticket)
+
+    def get_by_ticket(cls, ticket):
+        return ""
+    get_by_ticket = classmethod(get_by_ticket)
+
+
+    def get_site_data(cls, site):
+        return {}
+    get_site_data = classmethod(get_site_data)
+ 
+
+    #######################
+
+    def get(cls):
+        class_name = Config.get_value("security", "site_class")
+        if not class_name:
+            class_name = "pyasm.security.Site"
+        #class_name = "spt.modules.portal.PortalSite"
+        site = Common.create_from_class_path(class_name)
+        return site
+    get = classmethod(get)
+
+
+    def get_site(cls):
+        '''Set the global site for this "session"'''
+        site = Container.get("site")
+        if not site:
+            return ""
+        return site
+    get_site = classmethod(get_site)
+
+    def set_site(cls, site):
+        '''Set the global site for this "session"'''
+        if not site:
+            return
+        Container.put("site", site)
+    set_site = classmethod(set_site)
 
 
 
@@ -779,7 +832,7 @@ class Security(Base):
         # define an access manager object
         my._access_manager = AccessManager()
 
-        my.license = License.get()
+        my.license = License.get(verify=False)
 
 
         my.login_cache = None
@@ -990,6 +1043,10 @@ class Security(Base):
         if key == "":
             return None
 
+        # set the site if the key has one
+        site = Site.get().get_by_ticket(key)
+        Site.get().set_site(site)
+
         my.add_access_rules_flag = add_access_rules
 
         #from pyasm.biz import CacheContainer
@@ -997,7 +1054,6 @@ class Security(Base):
         #cache.build_cache_by_column("ticket")
         #ticket = cache.get_sobject_by_key("ticket", key)
         ticket = Ticket.get_by_valid_key(key)
-
         if ticket is None:
             # if ticket does not exist, make sure we are signed out and leave
             return None
@@ -1047,15 +1103,13 @@ class Security(Base):
         # TEST: this is a test authentication with Drupal
         my.add_access_rules_flag = add_access_rules
 
-        print "sid: ", sid
-
         from pyasm.security import Sudo
         sudo = Sudo()
 
         # authenticate use some external method
         if sid:
             expr = '''@SOBJECT(table/sessions?project=drupal['sid','%s'])''' % sid
-            print "expr: ", expr
+            #print "expr: ", expr
             session = server.eval(expr, single=True)
         else:
             session = {}
@@ -1077,7 +1131,7 @@ class Security(Base):
         # at this point, the user is authenticated
 
         user_name = drupal_user.get("name")
-        print "login: ", user_name
+        #print "login: ", user_name
 
         # if the user doesn't exist, then autocreate one
         
@@ -1345,9 +1399,7 @@ class Security(Base):
         # create a new ticket for the user
         ticket_key = Common.generate_random_key()
 
-        # Guest does not get a ticket
-        #if login_name == "guest":
-        #    return None
+        ticket_key = Site.get().build_ticket(ticket_key)
 
         ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
         return ticket
@@ -1668,7 +1720,6 @@ class License(object):
         return value
 
     def get_current_users(my):
-        # FIXME: hard coded database
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
@@ -1841,7 +1892,7 @@ class License(object):
     LAST_CHECK = None
     LAST_MTIME = None
 
-    def get(cls):
+    def get(cls, verify=True):
         # reparse every hour
         now = Date()
         now = now.get_db_time()
@@ -1863,7 +1914,13 @@ class License(object):
                 or mtime > cls.LAST_MTIME:
             cls.LICENSE = License()
         else:
-            cls.LICENSE.verify()
+            if verify:
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                print "VERIFY License"
+                cls.LICENSE.verify()
 
         cls.LAST_CHECK = now
         cls.LAST_MTIME = mtime

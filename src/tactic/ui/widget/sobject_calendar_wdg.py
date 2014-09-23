@@ -581,10 +581,10 @@ class SObjectCalendarWdg(CalendarWdg):
 
         my.width = my.kwargs.get("cell_width")
         if not my.width:
-            my.width = '120px'
+            my.width = '100%'
         my.height = my.kwargs.get("cell_height")
         if not my.height:
-            my.height = '120px'
+            my.height = '80px'
 
         # preprocess the sobjects so that they are order by date
         my.date_sobjects = {}
@@ -648,7 +648,9 @@ class SObjectCalendarWdg(CalendarWdg):
 
     def get_day_header_wdg(my, day):
         my.size = my.kwargs.get("size")
-        my.size = 2
+        if not my.size:
+            my.size = 3
+
         if my.size:
             weekday = my.WEEKDAYS[day.weekday()][0:my.size]
         else:
@@ -657,7 +659,8 @@ class SObjectCalendarWdg(CalendarWdg):
         div = DivWdg()
 
         div.add_style("font-weight: bold")
-        div.add_style("font-size: 1.0em")
+        div.add_style("font-size: 1.2em")
+        div.add_style("padding: 8px")
         div.add( weekday )
         return div
 
@@ -753,8 +756,12 @@ class SObjectCalendarWdg(CalendarWdg):
         day_div = DivWdg()
         div.add( day_div )
         day_div.add(day.day)
+        day_div.add_style("float: right")
+        day_div.add_style("margin: 2px")
+        div.add("<br clear='all'/>")
 
 
+        """
         mode = my.kwargs.get("mode")
         if mode in ["line","square"]:
             day_div.add_style("font-size: 0.6em")
@@ -762,6 +769,7 @@ class SObjectCalendarWdg(CalendarWdg):
         else:
             day_div.add_style("font-size: 1.2em")
             day_div.add_style("padding: 3px 0 3px 5px")
+        """
 
         if my.width:
             div.add_style("width: %s" % my.width);
@@ -832,12 +840,6 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
 
-        # put a different color for days that are not in the current month
-        if day.month != month:
-            div.add_style("color: #c22")
-            div.add_style("opacity: 0.5")
-
-
         today = datetime.today()
        
 
@@ -850,14 +852,29 @@ class SObjectCalendarWdg(CalendarWdg):
         color1 = div.get_color("background")
         color2 = div.get_color("background", -10)
 
-        if day.year == today.year and day.month == today.month and day.day == today.day:
+
+        # put a different color for days that are not in the current month
+        if day.month != month:
+            div.add_style("color: #c22")
+            div.add_style("opacity: 0.7")
+
+            #div.add_style("background-image", "linear-gradient(135deg, #ccc 0%, #ccc 25%, #bbb 25%, #bbb 50%, #ccc 50%, #ccc 75%, #bbb 75%);");
+            div.add_style("background-size", "15px 15px")
+            div.add_style("background-color", "")
+            div.add_style("background-image", "linear-gradient(135deg, rgba(0, 0, 0, 0.06) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.06) 75%, rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0));")
+
+
+
+
+        elif day.year == today.year and day.month == today.month and day.day == today.day:
             div.add_color("background", "background", [-10, -10, 20])
             color1 = div.get_color("background", [-10, -10, 20])
 
-        
 
-        div.add_event("onmouseover", "$(this).setStyle('background','%s')" % color2)
-        div.add_event("onmouseout", "$(this).setStyle('background','%s')" % color1)
+
+
+        div.add_event("onmouseover", "$(this).setStyle('background-color','%s')" % color2)
+        div.add_event("onmouseout", "$(this).setStyle('background-color','%s')" % color1)
 
         return div
 

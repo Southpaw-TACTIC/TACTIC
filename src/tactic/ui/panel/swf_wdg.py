@@ -20,7 +20,7 @@ from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, 
 from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, WidgetConfigView, TextWdg, ButtonWdg, CheckboxWdg, ProdIconButtonWdg, HiddenWdg
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
+from tactic.ui.container import LabeledHidableWdg, PopupWdg
 from tactic.ui.panel import TableLayoutWdg
 
 from action_wdg import TableActionWdg, ViewActionWdg

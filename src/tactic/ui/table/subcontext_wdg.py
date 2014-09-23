@@ -56,6 +56,9 @@ class ProcessElementWdg(SimpleTableElementWdg):
                     pass    
                 else:
                     raise
+            except Exception, e:
+                print "WARNING: ", e
+
 
         if parent:
             pipeline_code = parent.get_value("pipeline_code", no_exception=True)

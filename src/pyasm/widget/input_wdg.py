@@ -124,6 +124,15 @@ class BaseInputWdg(HtmlElement):
     def set_title(my, title):
         my.title = title
         
+    def get_display_title(my):
+        '''Function that that gives a title represenation of this widget'''
+        if my.title:
+            return my.title
+
+        name = my.get_name()
+        name = name.replace("_", " ")
+        return name.title()
+ 
 
 
     def get_title(my):
@@ -560,12 +569,11 @@ class TextWdg(BaseTextWdg):
     def __init__(my,name=None, label=None):
         super(TextWdg,my).__init__(name,"input", label=label)
         my.css = "inputfield"
-        my.add_class(my.css)
+        #my.add_class(my.css)
         my.add_class("spt_input")
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        #my.add_style("width: 200px")
-        my.add_border()
+        #my.add_color("background", "background", 10)
+        #my.add_color("color", "color")
+        #my.add_border()
     
    
 
@@ -988,6 +996,11 @@ class SelectWdg(BaseInputWdg):
         my.add_class("inputfield")
         my.add_class("spt_input")
 
+        # BOOTSTRAP
+        my.add_class("form-control")
+        my.add_class("input-sm")
+
+
 
     def get_related_type(my):
         # In order to get the related type, the dom options need to have
@@ -1303,7 +1316,6 @@ class SelectWdg(BaseInputWdg):
         my.add_color("background", "background", 10)
         my.add_color("color", "color")
         my.add_border()
-
 
         # default select element size to max of 20 ...
         sz = '20'

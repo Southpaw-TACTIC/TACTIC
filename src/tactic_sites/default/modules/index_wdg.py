@@ -17,7 +17,6 @@ from pyasm.search import Search
 from pyasm.web import Widget, Table, DivWdg, HtmlElement, WebContainer, BaseAppServer
 from pyasm.widget import TableWdg, ThumbWdg, TacticLogoWdg
 
-from tactic.ui.container import RoundedCornerDivWdg
 from tactic.ui.widget import ActionButtonWdg
 
 import os
@@ -116,6 +115,8 @@ class IndexWdg2(Widget):
 
         bg_color = palette.color("background")
         #div.add_color("color", "color")
+
+        from tactic.ui.container import RoundedCornerDivWdg
         div = RoundedCornerDivWdg(hex_color_code=bg_color,corner_size="10")
         div.set_dimensions( width_str='%spx' % width, content_height_str='50px' )
         div.add_border()

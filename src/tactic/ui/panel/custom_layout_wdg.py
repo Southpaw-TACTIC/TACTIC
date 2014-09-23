@@ -424,8 +424,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 break
 
+            
+        if my.kwargs.get("is_top") in ['true', True]:
+            return html
 
-        if my.kwargs.get("is_refresh"):
+        elif my.kwargs.get("is_refresh"):
             return content
         else:
             return top
@@ -1164,7 +1167,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             view = attrs.get("view")
             type = attrs.get("type")
 
-
             if type == "reference":
                 search_type = attrs.get("search_type")
                 my.config = WidgetConfigView.get_by_search_type(search_type, view)
@@ -1177,16 +1179,19 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 container.add(element_wdg)
                 return container
 
-            if not view:
+
+            class_name = attrs.get("display_class")
+
+            # if no class name is defined and not view is defined look
+            # at predefined elements
+            if not view and not class_name:
                 element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
 
 
-
             # look at the attributes
-            class_name = attrs.get("display_class")
             if not class_name:
                 class_name = "tactic.ui.panel.CustomLayoutWdg"
             display_node = xml.create_element("display")
@@ -1293,7 +1298,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return container
 
 
-
+    # DEPRECATED
+    """
     def get_container(my, xml):
         # handle the container
 
@@ -1363,7 +1369,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         container.add(title_wdg)
 
         return container
-
+    """
 
 
 
@@ -1453,7 +1459,7 @@ class TestStateWdg(BaseRefreshWdg):
 
 
 # DEPRECATED
-
+"""
 class ContainerWdg(BaseRefreshWdg):
 
     def get_args_keys(my):
@@ -1578,6 +1584,7 @@ class ContainerWdg(BaseRefreshWdg):
 
         return divider_div
 
+"""
 
 
 
@@ -1618,7 +1625,6 @@ class SObjectHeaderWdg(BaseRefreshWdg):
         div.add(HtmlElement.hr())
 
         return div
-
 
 
 

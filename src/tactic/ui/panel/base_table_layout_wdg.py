@@ -20,7 +20,7 @@ from pyasm.biz import ExpressionParser
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
-from tactic.ui.widget import DgTableGearMenuWdg
+from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
 
 from layout_wdg import SwitchLayoutMenu
 
@@ -393,10 +393,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             column = "keywords"
             keyword_value = keyword_values[0].get('value')
             if keyword_value and search.column_exists(column):
-                    from tactic.ui.filter import KeywordFilterElementWdg
-                    keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
-                    keyword_filter.set_values(keyword_values[0])
-                    keyword_filter.alter_search(search)
+                from tactic.ui.filter import KeywordFilterElementWdg
+                keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
+                keyword_filter.set_values(keyword_values[0])
+                keyword_filter.alter_search(search)
 
 
 
@@ -733,13 +733,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
         #div.add_gradient("background", "background")
-        div.add_color("background", "background",-8)
+        div.add_color("background", "background",-3)
+
         if not my.kwargs.get("__hidden__"):
-            div.add_border()
-            div.add_style("margin-left: -1px")
-            div.add_style("margin-right: -1px")
+            #div.add_style("margin-left: -1px")
+            #div.add_style("margin-right: -1px")
+
+            #div.add_border()
+            div.add_style("border-width: 1px 1px 0px 1px")
+            div.add_style("border-style: solid")
+            div.add_style("border-color: %s" % div.get_color("border"))
+            div.add_style("border-color: #BBB")
+
         else:
-            div.add_style("border-width: 0px 0px 0px 1px")
+            div.add_style("border-width: 0px 0px 0px 0px")
             div.add_style("border-style: solid")
             div.add_style("border-color: %s" % div.get_color("table_border"))
         #div.add_color("background", "background3")
@@ -814,7 +821,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         column = "keywords"
         show_keyword_search = my.kwargs.get("show_keyword_search")
-        if show_keyword_search in ['True', 'true']:
+        if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
@@ -833,9 +840,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type)
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
+            keyword_div.add_style("margin-top: 3px")
+            keyword_div.add_style("margin-left: 8px")
         else:
             keyword_div = None
 
@@ -919,7 +928,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog.add(limit_div)
             limit_div.add_color("color", "color")
             limit_div.add_color("background", "background")
-            limit_div.add_style("width: 250px")
+            limit_div.add_style("width: 300px")
             #limit_div.add_style("height: 50px")
 
             #limit_span.add(my.search_limit)
@@ -928,6 +937,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         search_button_row = my.get_search_button_row_wdg()
+        save_button = my.get_save_button()
         layout_wdg = None
         column_wdg = None
         
@@ -949,6 +959,33 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         wdg_list = []
+
+        if my.kwargs.get("show_refresh") != 'false':
+            button_div = DivWdg()
+            #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
+            button = ActionButtonWdg(title='Search')
+            my.run_search_bvr = my.kwargs.get('run_search_bvr')
+            if my.run_search_bvr:
+                button.add_behavior(my.run_search_bvr)
+            else:
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
+            } )
+
+            button_div.add(button)
+            button_div.add_style("margin-left: 10px")
+            wdg_list.append({'wdg': button_div})
+
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
+
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            wdg_list.append( { 'wdg': spacing_divs[3] } )
+
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
 
@@ -985,11 +1022,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             quick_add_button_row = my.get_quick_add_wdg()
             wdg_list.append( { 'wdg': spacing_divs[2] } )
             wdg_list.append( { 'wdg': quick_add_button_row } )
-
-
-        if keyword_div:
-            wdg_list.append( { 'wdg': spacing_divs[3] } )
-            wdg_list.append( {'wdg': keyword_div} )
 
 
         # add the help widget
@@ -1079,6 +1111,52 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+    def get_save_button(my):
+        show_save = True
+
+        if my.edit_permission == False:
+            show_save = False
+
+        if not my.can_save():
+            show_save = False
+
+        if not show_save:
+            return
+
+        # Save button
+        save_button = ActionButtonWdg(title="Save", is_disabled=False)
+        save_button_top = save_button.get_top()
+        save_button_top.add_style("display", "none")
+        save_button_top.add_class("spt_save_button")
+
+        
+        save_button.add_behavior({
+        'type': 'click_up',
+        'update_current_only': True,
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_layout");
+        var version = top.getAttribute("spt_version");
+        if (version == "2") {
+            var dummy = top.getElement('.spt_button_row');
+            if (dummy) dummy.focus();
+
+            spt.table.set_layout(top);
+            spt.table.save_changes();
+        }
+        else {
+            spt.dg_table.update_row(evt, bvr)
+        }
+        bvr.src_el.getElement(".spt_save_button").setStyle("display", "none");
+        ''',
+        })
+
+        return save_button
+
+
+
+
+
+
     def get_button_row_wdg(my):
         '''draws the button row in the shelf'''
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
@@ -1091,6 +1169,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         button_row_wdg = ButtonRowWdg(show_title=True)
 
+        """
         if my.kwargs.get("show_refresh") != 'false':
             button = ButtonNewWdg(title='Refresh', icon=IconWdg.REFRESH_GRAY)
             button_row_wdg.add(button)
@@ -1102,6 +1181,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
             } )
+        """
 
 
         # add an item button
@@ -1128,7 +1208,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
+            #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
+            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -1287,11 +1368,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
             SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
 
-           
-        if show_save:
+        # NOTE: Changed to a button 
+        #if show_save:
+        if False:
 
             # Save button
-            save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+            #save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
+            save_button = ButtonNewWdg(title='Save Current Table', icon="BS_SAVE", is_disabled=False)
+            save_button_top = save_button.get_top()
+            save_button_top.add_style("display", "none")
+            save_button_top.add_class("spt_save_button")
 
             
             save_button.add_behavior({
@@ -1318,10 +1404,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         show_expand = my.kwargs.get("show_expand")
-        if show_expand in ['false', False]:
-            show_expand = False
-        else:
+        #if show_expand in ['false', False]:
+        #    show_expand = False
+        #else:
+        #    show_expand = True
+        if show_expand in ['true', True]:
             show_expand = True
+        else:
+            show_expand = False
         if not my.can_expand():
             show_expand = False
 
@@ -1341,15 +1431,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var version = layout.getAttribute("spt_version");
                 var headers;
                 var table = null;
+                var header_table = null;
+
                 if (version == '2') {
 
                     spt.table.set_layout(layout);
                     table = spt.table.get_table();
+                    header_table = spt.table.get_header_table();
                     var table_id = table.getAttribute('id');
-                    headers = table.getElements(".spt_table_header_" + table_id);
+                    headers = header_table.getElements(".spt_table_header_" + table_id);
                 }
                 else {
                     table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+                    header_table = table;
                     headers = layout.getElements(".spt_table_th");
                 }
 
@@ -1383,7 +1477,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if my.can_use_gear() and my.kwargs.get("show_gear") not in ["false", False]:
-            button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
+            #button = ButtonNewWdg(title='More Options', icon=IconWdg.GEAR, show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.gear_menus } )
@@ -1405,7 +1500,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_search and search_dialog_id:
             div = DivWdg()
             my.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
+            #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title='View Advanced Search', icon="BS_SEARCH", show_menu=False, show_arrow=False)
             #button.add_style("float: left")
             div.add(button)
 
@@ -1498,7 +1594,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_layout_wdg(my):
 
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
+        #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="BS_TH", show_arrow=True)
 
         SwitchLayoutMenu(search_type=my.search_type, view=my.view, activator=layout.get_button_wdg())
         return layout
@@ -1589,7 +1686,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
 
-        button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
+        #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="BS_TH_LIST", show_arrow=False)
 
         search_type_obj = SearchType.get(my.search_type)
 
@@ -2184,7 +2282,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Edit",
-                "icon": IconWdg.EDIT,
+                #"icon": IconWdg.EDIT,
                 "bvr_cb": {
                     'edit_view': edit_view,
                     'cbjs_action': '''
@@ -2466,7 +2564,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spec_list.append( {
                 "type": "action",
                 "label": "Change Preview Image",
-                "icon": IconWdg.PHOTOS,
+                #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
@@ -2486,7 +2584,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "label": "Check in New File",
                 "upload_id": my.upload_id,
                 "mode": "file",
-                "icon": IconWdg.PHOTOS,
+                #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
@@ -2515,7 +2613,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
-                { "type": "action", "label": "Retire", "icon": IconWdg.RETIRE,
+                { "type": "action", "label": "Retire",
+                    #"icon": IconWdg.RETIRE,
                     "enabled_check_setup_key" : "is_not_retired",
                     "hide_when_disabled" : True,
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_retire_cbk(evt,bvr);' },
@@ -2524,7 +2623,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                                              my.look_row_selected, my.look_row ] }
                 },
 
-                { "type": "action", "label": "Delete", "icon": IconWdg.DELETE,
+                { "type": "action", "label": "Delete",
+                    #"icon": IconWdg.DELETE,
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_delete_cbk(evt,bvr);' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                       'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
@@ -2542,14 +2642,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     { "type": "separator" },
 
-                    { "type": "action", "label": "Item Audit Log", "icon": IconWdg.CONTENTS,
+                    { "type": "action", "label": "Item Audit Log",
+                        #"icon": IconWdg.CONTENTS,
                         "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  my.look_row_selected, my.look_row ] }
                     },
                     
-                    { "type": "action", "label": "Subscribe to %s"%subscribe_label, "icon": IconWdg.PICTURE_EDIT,
+                    { "type": "action", "label": "Subscribe to %s"%subscribe_label,
+                        #"icon": IconWdg.PICTURE_EDIT,
                         "bvr_cb": { 'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
@@ -2598,7 +2700,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 { "type": "action", 
                     "label": "Save All Changes",
-                    "icon": IconWdg.DB,
+                    #"icon": IconWdg.DB,
                     "enabled_check_setup_key" : "commit_enabled",
                     "bvr_cb": { 'cbjs_action':
                     '''

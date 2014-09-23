@@ -148,6 +148,8 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
+            except Exception, e:
+                print "Exception: ", e
 
 
     def handle_td(my, td):

@@ -285,7 +285,8 @@ class PopupWdg(BaseRefreshWdg):
         # create the 'close' button ...
         if my.allow_close:
             close_wdg = SpanWdg()
-            close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            close_wdg.add( IconWdg("Close", "BS_REMOVE") )
             close_wdg.add_style("margin: 5px 1px 3px 1px")
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
@@ -301,7 +302,8 @@ class PopupWdg(BaseRefreshWdg):
             # create the 'minimize' button ...
             minimize_wdg = SpanWdg()
             minimize_wdg.add_style("margin: 5px 1px 3px 1px")
-            minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {
@@ -332,8 +334,9 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 5px;")
-        drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_style("padding: 12px;")
+        #drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
         drag_handle_div.add_style("font-weight", "bold")
         drag_handle_div.add_style("font-size", "12px")
@@ -405,8 +408,7 @@ class PopupWdg(BaseRefreshWdg):
         content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
-
-
+        content_div.add_style("margin", "0px, -1px -0px -1px")
 
         content_div.set_id("%s_content" % my.name)
         content_div.add_class("spt_popup_content")

@@ -5522,18 +5522,12 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         color = filter_wdg.get_color("table_border", default="border")
         filter_wdg.add_style("height: 25px")
 
-        #filter_wdg.add_style("border-width: 1px 1px 0 1px")
-        #filter_wdg.add_style("border-style: solid")
-        #filter_wdg.add_style("border-color: %s" % color)
-
         filter_wdg.add_style("padding: 8px")
         filter_wdg.add_color("color", "color")
-        #filter_wdg.add_gradient("background", "background", -10)
-        #filter_wdg.add_style("margin-top: -2px")
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(tip="Refresh", icon=IconWdg.REFRESH, long=False)
+        button = SingleButtonWdg(tip="Refresh", icon="BS_REFRESH", long=False)
         filter_wdg.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5546,13 +5540,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             '''
         } )
 
-        filter_wdg.add("&nbsp;"*5)
-
-
-
 
         # add a context selector
         select = SelectWdg("history_context")
+        select.add_style("display: inline")
+        select.add_style("width: 125px")
         select.add_class('spt_history_context')
         select.add_behavior( {
             'type': 'change',
@@ -5586,7 +5578,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         select.add_empty_option("-- Select --")
         #select.set_persist_on_submit()
-        span = SpanWdg()
+        span = DivWdg()
+        span.add_style("float: left")
+        span.add("&nbsp;"*5)
         span.add("Context: ")
         span.add(select)
         span.add("&nbsp;"*5)
@@ -5594,6 +5588,8 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # add a versions selector
         my.select = SelectWdg("versions")
+        my.select.add_style("width: 125px")
+        my.select.add_style("display: inline")
         my.select.add_empty_option("-- Select --")
         my.select.add_behavior( {
             'type': 'change',
@@ -5610,8 +5606,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         my.select.set_option("values", "latest|current|today|last 10|all")
         my.select.set_persist_on_submit()
-        span = SpanWdg()
+        span = DivWdg()
         span.add("Versions: ")
+        span.add_style("float: left")
         span.add(my.select)
         span.add("&nbsp;"*5)
         filter_wdg.add(span)

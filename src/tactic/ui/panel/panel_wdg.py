@@ -2881,6 +2881,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             });
 
 
+
         # add refresh information
         top.set_attr("spt_node", "true")
         my.set_as_panel(top, class_name='spt_view_panel')
