@@ -17,7 +17,7 @@ import re, types
 from pyasm.common import *
 from pyasm.search import SObjectFactory, DbContainer, ExceptionLog, SearchType, Search, Sql, DatabaseException
 from pyasm.security import *
-from pyasm.biz import PrefSetting
+from pyasm.biz import PrefSetting, Translation
 
 from web_container import WebContainer
 from widget import Widget, Html
@@ -27,7 +27,6 @@ from event_container import EventContainer
 from web_tools import *
 from html_wdg import *
 from url_security import *
-from translation import *
 
 import os, cStringIO
 
@@ -345,7 +344,7 @@ class BaseAppServer(Base):
             access = True
 
 
-
+        access = True
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
@@ -368,7 +367,23 @@ class BaseAppServer(Base):
                 return
 
 
-
+        if login_name == 'guest' and guest_mode == "full":
+            # some extra security for guest users
+            guest_url_allow = Config.get_value("security", "guest_url_allow")
+            if guest_url_allow:
+                items = guest_url_allow.split("|")
+                allowed = False
+                if my.hash:
+                    url = my.hash[0]
+                else:
+                    url = "index"
+                for item in items:
+                    item = item.strip("/")
+                    if item == url:
+                        allowed = True
+                        break
+                if not allowed:
+                    return my.handle_not_logged_in()
 
 
 
@@ -486,7 +501,7 @@ class BaseAppServer(Base):
 
 
         # install the language
-        #Translation.install()
+        Translation.install()
 
         widget = my.get_content(page_type)
 
@@ -508,6 +523,9 @@ class BaseAppServer(Base):
 
     def handle_security(my, security):
         # set the seucrity object
+
+        print "handle security"
+
         WebContainer.set_security(security)
 
         # see if there is an override
@@ -524,22 +542,41 @@ class BaseAppServer(Base):
 
         login = web.get_form_value("login")
         password = web.get_form_value("password")
+        site = web.get_form_value("site")
+
 
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
         elif login and password:
+            from pyasm.security import Site
+            if not site:
+                # get from the login
+                site_obj = Site.get()
+                site = site_obj.get_by_login(login)
+                site_obj.set_site(site)
+            else:
+                site_obj = Site.get()
+                site_obj.set_site(site)
+
             if login == "guest":
                 pass
             else:
-                from pyasm.widget import WebLoginCmd
+                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-        elif ticket_key:
-            security.login_with_ticket(ticket_key, add_access_rules=False)
 
+        elif ticket_key:
+
+            # get from the login
+            if site:
+                from pyasm.security import Site
+                site_obj = Site.get()
+                site_obj.set_site(site)
+
+            security.login_with_ticket(ticket_key, add_access_rules=False)
 
         if not security.is_logged_in():
             reset_password = web.get_form_value("reset_password") == 'true'
@@ -551,7 +588,7 @@ class BaseAppServer(Base):
                 except TacticException, e:
                     print "Reset failed. %s" %e.__str__()
             else:
-                from pyasm.widget import WebLoginCmd
+                from web_login_cmd import WebLoginCmd
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
@@ -567,6 +604,8 @@ class BaseAppServer(Base):
 
         # for now apply the access rules after
         security.add_access_rules()
+
+        print "... end handle_security"
 
         return security
 

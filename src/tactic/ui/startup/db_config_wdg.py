@@ -209,7 +209,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
             mysql_wdg.add_style("display: none")
             sqlite_wdg.add_style("display: none")
 
-        test_button = ActionButtonWdg(title="<< Test >>", tip="Test connecting to database")
+        test_button = ActionButtonWdg(title=" Test ", tip="Test connecting to database")
         option_div.add(test_button)
         test_button.add_style("margin-left: auto")
         test_button.add_style("margin-right: auto")
@@ -278,7 +278,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         top.add("<hr/>")
         top.add("<br/>")
 
-        title = "Mail Server "
+        title = "Mail Server"
         category = "services"
         options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled', 'mail_sender_disabled']
         top.add( my.configure_category(title, category, options) )
@@ -468,6 +468,10 @@ class DbConfigContentWdg(BaseRefreshWdg):
             }
             catch(e) {
                 log.critical(spt.exception.handler(e));
+                //FIXME: recognize it's a 502 which is normal and pass , otherwise throw the error
+                //spt.error(spt.exception.handler(e));
+                //spt.app_busy.hide();
+                //return;
             }
 
            
@@ -605,7 +609,7 @@ class DbConfigCbk(Command):
 class DbConfigSaveCbk(Command):
 
     def execute(my):
-
+        my.section = None
 
         # make sure tmp config is unset.
         Config.unset_tmp_config()
@@ -635,12 +639,17 @@ class DbConfigSaveCbk(Command):
 
             shutil.copy(install_config_path, dirname)
 
-        my.configure_db()
-        my.configure_install()
-        my.configure_services()
-        my.configure_asset_dir()
-        my.configure_palette()
+        try:
+            my.configure_db()
+            my.configure_install()
+            my.configure_mail_services()
+            my.configure_gen_services()
+            my.configure_asset_dir()
+            my.configure_palette()
+        except Exception, e:
+            raise TacticException('Error in [%s]: %s'%(my.section, e.__str__()))
         # FIXME: if this all fails, then revert back
+        
         my.save_config()
 
         # after saving the config, test the database
@@ -701,7 +710,7 @@ class DbConfigSaveCbk(Command):
 
 
     def configure_install(my):
-
+        my.section = 'Installation'
         web = WebContainer.get_web()
 
         default_project = web.get_form_value("install/default_project")
@@ -720,6 +729,7 @@ class DbConfigSaveCbk(Command):
 
     def configure_db(my):
 
+        my.section = 'Database Setup'
         web = WebContainer.get_web()
 
         vendor = web.get_form_value("database/vendor")
@@ -829,6 +839,7 @@ class DbConfigSaveCbk(Command):
 
 
     def configure_asset_dir(my):
+        my.section = 'Asset Management Setup'
 
         web = WebContainer.get_web()
         keys = web.get_form_keys()
@@ -855,7 +866,7 @@ class DbConfigSaveCbk(Command):
                 Config.set_value("checkin", '%s'%item_dir, "")
 
     def configure_palette(my):
-
+        my.section = 'Look and Feel'
         web = WebContainer.get_web()
         palette = web.get_form_value("look/palette")
 
@@ -866,8 +877,8 @@ class DbConfigSaveCbk(Command):
             #Config.remove("look", "palette")
 
 
-    def configure_services(my):
-
+    def configure_mail_services(my):
+        my.section = 'Mail Server'
         web = WebContainer.get_web()
 
         options = ['server', '_user', '_password', '_port', '_tls_enabled','_sender_disabled']
@@ -880,6 +891,19 @@ class DbConfigSaveCbk(Command):
                 #Config.remove("services", "mail%s"%option)
                 Config.set_value("services", "mail%s"%option,  "")
 
+    def configure_gen_services(my):
+        my.section = 'Services'
+        web = WebContainer.get_web()
+
+        options = ['process_count', 'process_time_alive', 'thread_count', 'python_path']
+        for option in options:
+            value = web.get_form_value("services/%s" %option)
+
+            if value:
+                Config.set_value("services", option, value)
+            else:
+                
+                Config.set_value("services", option,  "")
 
 
 

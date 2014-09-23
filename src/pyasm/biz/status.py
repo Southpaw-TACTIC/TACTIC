@@ -47,7 +47,7 @@ class StatusLog(SObject):
         project_code = Project.get_project_name()
         status_log.set_value("project_code", project_code)
 
-        status_log.commit()
+        status_log.commit(cache=False)
 
         return status_log
 

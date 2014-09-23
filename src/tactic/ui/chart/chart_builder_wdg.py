@@ -12,6 +12,8 @@
 
 __all__ = ["ChartBuilderWdg"]
 
+# DEPRECATED
+
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.biz import Project
 from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table

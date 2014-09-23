@@ -2503,6 +2503,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 parts  = title.split('.', 1)
                 title = parts[1]
             title = " ".join( [x.capitalize() for x in title.split("_")] )
+
+        title = _(title)
         return title
 
 
@@ -2707,13 +2709,21 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'order': '15'
         },
-      
+     
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
+            'type': 'TextWdg',
+            'category': 'Display',
+            'order': '16'
+        },
+
+
         'popup': {
             'description': 'Flag to determine whether or not to open as a popup by default',
             'category': '2.Display',
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': '16',
+            'order': '17',
             'category': 'Display'
         },
 
@@ -2721,7 +2731,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
             'type': 'TextWdg',
             'category': 'Display',
-            'order': '17'
+            'order': '18'
         },    
 
 
@@ -2869,6 +2879,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 'type': 'load',
                 'cbjs_action': my.get_onload_js()
             });
+
 
 
         # add refresh information
@@ -3051,16 +3062,20 @@ class ViewPanelWdg(BaseRefreshWdg):
         init_load_num = my.kwargs.get("init_load_num")
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
+        ingest_data_view = my.kwargs.get("ingest_data_view")
 
        
 
         save_inputs = my.kwargs.get("save_inputs")
         no_results_mode = my.kwargs.get("no_results_mode")
+        no_results_msg = my.kwargs.get("no_results_msg")
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
 
-
+        # this can be used to relate a View Panel to a table in order to 
+        # tell if a table is embedded or not in js
+        top.set_attr('table_id', table_id)
         layout = my.kwargs.get("layout")
         if not layout or layout == "default":
             layout = search_type_obj.get_value("default_layout", no_exception=True)
@@ -3103,9 +3118,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
+            "no_results_msg": no_results_msg,
             "init_load_num": init_load_num, 
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
+            "ingest_data_view" : ingest_data_view,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
@@ -3121,6 +3138,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3198,6 +3216,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 popup.add_title("SQL Error")
                 popup.add(exception_wdg)
                 inner.add(popup)
+
 
         
         target_node.add(layout_table) 

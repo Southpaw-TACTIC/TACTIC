@@ -35,7 +35,8 @@ spt.api.Utility = new Class( {
 //      a single value
 //  return_label: return the labels as well for select
 //  kwargs - cb_boolean: force a checked checkbox to return true as value
-//
+//           retreive: support non INPUT type element and also use the retrieve/store method 
+//                     to get the spt_input_value
 // @return
 //  dict: of all the name values pairs found under element_id
 //
@@ -52,6 +53,7 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 
     if (! kwargs) kwargs = {};
 
+    var retrieve = kwargs.retrieve == true;
     var element = $(element_id);
 
     var input_list; 
@@ -88,18 +90,17 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 
     for (var i = 0; i < input_list.length; i++) {
         var filter = input_list[i];
-
         if (filter.getAttribute("disabled") == "disabled") {
             continue;
         }
-
+        var filter_name = retrieve ? filter.getAttribute('name'): filter.name;
         // protect against elements with no name
-        if (filter.name == undefined) {
+        if (filter_name == undefined) {
             continue;
         }
 
-        if (values[filter.name] == undefined) {
-            values[filter.name] = [];
+        if (values[filter_name] == undefined) {
+            values[filter_name] = [];
         }
 
         // return labels if asked for
@@ -119,13 +120,13 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
                     label = filter.options[index].text;
                 }
             }
-            values[filter.name].push(label);
+            values[filter_name].push(label);
             //spt.js_log.warning("label: " + label);
         }
         else if (filter.type =='checkbox') {
             var is_multiple = filter.getAttribute("spt_is_multiple");
             if (is_multiple == "true") {
-                array_keys[filter.name] = is_multiple;
+                array_keys[filter_name] = is_multiple;
             }
 
             if (filter.checked) {
@@ -135,38 +136,46 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
                 if (!value) {
                     value = "true";
                 }
-                values[filter.name].push(value);
+                values[filter_name].push(value);
             }
             else {
-                values[filter.name].push("");
+                values[filter_name].push("");
             }
         }
         else if (filter.type =='radio') {
             if (filter.checked) {
                 var value = filter.value;
-                values[filter.name].push(value);
+                values[filter_name].push(value);
             }
         }
         else {
-            var value = filter.getAttribute("spt_input_value");
-
+            var value;
+            if (retrieve) 
+                value = filter.retrieve('spt_input_value');
+            else
+                value = filter.getAttribute("spt_input_value");
+          
             var is_multiple = filter.getAttribute("spt_is_multiple");
             if (is_multiple == "true") {
-                array_keys[filter.name] = is_multiple;
+                array_keys[filter_name] = is_multiple;
             }
             
             if (value == null) {
                 if (filter.getAttribute("multiple")){
                     var value_arr = get_multi(filter);
                     for (var k=0; k<value_arr.length; k++)
-                        values[filter.name].push(value_arr[k]);
+                        values[filter_name].push(value_arr[k]);
                 }
                 else {
                     value = filter.value;
-                    values[filter.name].push(value);
+                    values[filter_name].push(value);
                 }
             }
+            else {
+                    values[filter_name].push(value);
+            }
 
+                
             
         }
 
@@ -176,6 +185,7 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
     // it is specifically marked as an array
     if ( return_array == false ) {
         for (var i in values) {
+
             if (array_keys[i]) {
                 continue;
             }

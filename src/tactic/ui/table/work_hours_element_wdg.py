@@ -92,6 +92,11 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         'category': 'Display'
         }
 
+
+    def get_width(my):
+        return 380 
+
+
     def init(my):
         my.preprocessed = False
         my.is_refresh = my.kwargs.get("is_refresh")

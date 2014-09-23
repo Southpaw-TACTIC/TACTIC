@@ -13,7 +13,7 @@
 
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
-from pyasm.common import Date, Common, Environment, FormatValue, TacticException
+from pyasm.common import Date, Common, Environment, FormatValue, SPTDate, TacticException
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
@@ -110,6 +110,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             my.text = TextWdg(name)
 
+        my.text.set_attr('autocomplete','off')
 
         class_name = kwargs.get("class")
         if class_name:
@@ -120,28 +121,31 @@ class TextInputWdg(BaseInputWdg):
             my.set_readonly(True)
 
 
+        my.border_color = my.text.get_color("border")
 
         my.text.add_class("spt_text_input")
-        border_color = my.text.get_color("border")
-        my.text.add_style("border: solid 1px %s" % border_color)
-        my.text.add_style("padding: 4px")
+        #my.text.add_style("padding: 4px")
 
         if my.readonly:
             bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
         else:
-            bgcolor = my.text.get_color("background", -3)
+            bgcolor = my.text.get_color("background")
             my.text.add_style("background", bgcolor)
 
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
+
+            # DEPRECATED
+            """
             my.text.add_behavior( {
                 'type': 'blur',
                 'bgcolor': bgcolor,
                 'bgcolor2': bgcolor2,
                 'cbjs_action': '''
                 
-                if (bvr.src_el.hasClass('spt_input_validation_failed'))
+                if (bvr.src_el.hasClass('spt_input_validation_failed')) {
                     return;
+                }
 
                 var value = bvr.src_el.value;
                 var last_value = bvr.src_el.getAttribute("spt_last_value");
@@ -155,14 +159,16 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
              
-               
-               
                 bvr.src_el.setAttribute("spt_last_value", value);
+
+                //spt.input.set_success(bvr.src_el);
+                spt.input.set_error(bvr.src_el);
                 '''
                 } )
+            """
  
        
-        my.top = SpanWdg()
+        my.top = DivWdg()
 
 
         super(TextInputWdg, my).__init__()
@@ -171,8 +177,15 @@ class TextInputWdg(BaseInputWdg):
         if not my.width:
             my.width = 230
         else:
-            my.width = my.width.replace("px", "")
-            my.width = int(my.width)
+            my.width = str(my.width).replace("px", "")
+            if not my.width.endswith("%"):
+                my.width = int(my.width)
+
+
+        my.icon = my.kwargs.get("icon")
+        if my.icon:
+            my.icon_div = DivWdg()
+
 
 
     def add_style(my, name, value=None):
@@ -180,7 +193,7 @@ class TextInputWdg(BaseInputWdg):
             name, value = name.split(": ")
 
         if name == 'width':
-            my.width = int(value.replace("px",""))
+            my.width = value
         elif name == 'float':
             my.top.add_style(name, value)
         else:
@@ -189,6 +202,10 @@ class TextInputWdg(BaseInputWdg):
 
     def add_behavior(my, behavior):
         my.text.add_behavior(behavior)
+
+
+    def get_icon_wdg(my):
+        return my.icon_div
 
 
 
@@ -214,6 +231,13 @@ class TextInputWdg(BaseInputWdg):
         my.name = name
         my.text.set_name(name)
 
+    def is_datetime_col(my, sobject, name):
+        '''get_column_info call datetime as timestamp, which is the time tactic_type'''
+        tactic_type = SearchType.get_tactic_type(sobject.get_search_type(), name)
+        if tactic_type == 'time':
+            return True
+        else:
+            return False
 
     def fill_data(my):
 
@@ -221,7 +245,6 @@ class TextInputWdg(BaseInputWdg):
             my.name = my.kwargs.get("name")
         name = my.get_input_name()
         my.text.set_name(name)
-
         value = my.kwargs.get("value")
         # value always overrides
         if value:
@@ -244,7 +267,10 @@ class TextInputWdg(BaseInputWdg):
                 if not column:
                     column = my.name
 
-                display = sobject.get_value(column)
+                display = sobject.get_value(column, no_exception=True)
+                if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                    display = SPTDate.convert_to_local(display)
+
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
                     display = unicode(display, errors='ignore').encode('utf-8')
@@ -253,7 +279,6 @@ class TextInputWdg(BaseInputWdg):
                 if format_str:
                     format = FormatValue()
                     display = format.get_format_value( display, format_str )
-
                 my.text.set_value(display)
 
         default = my.kwargs.get("default")
@@ -269,8 +294,7 @@ class TextInputWdg(BaseInputWdg):
         top = my.top
         top.add_style("position: relative")
         top.add_class("spt_text_top")
-        top.add_style("height: 20px")
-        top.add_style("width: %spx" % my.width)
+        top.add_style("width: %s" % my.width)
         top.add_class("spt_input_text_top")
 
 
@@ -326,7 +350,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %spx" % my.width)
+            edit_div.add_style("margin-left: %s" % my.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -354,9 +378,79 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add(icon)
 
 
-        text_div = SpanWdg()
-        top.add(text_div)
-        text_div.add(my.text)
+        height = my.kwargs.get("height")
+        if height:
+            height = height.replace("px", "")
+            height = int(height)
+        else:
+            height = 32 
+
+
+
+
+        # BOOTSTRAP
+        div = DivWdg()
+        top.add(div)
+        div.add_class("form-group")
+        label = None
+        if label:
+            label_wdg = HtmlElement.label()
+            div.add(label)
+            label_wdg.add_class("control-label")
+            label_wdg.add_attr("for", "inputSuccess1")
+            label_wdg.add(my.name)
+
+        #text = TextWdg(my.name)
+        #text = HtmlElement.text()
+        #text.add_attr("name", my.name)
+        #text.add_class("form-control")
+
+        div.add(my.text)
+        my.text.add_class("form-control")
+
+        """
+        <div class="form-group">
+          <label class="control-label" for="inputSuccess1">Test Input</label>
+          <input type="text" class="form-control" id="inputSuccess1"/>
+        </div>
+        """
+
+        my.text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var el = bvr.src_el.getParent(".form-group");
+            if (value == "foo") {
+                el.addClass("has-error");
+                el.removeClass("has-success");
+            }
+            else {
+                el.addClass("has-success");
+                el.removeClass("has-error");
+            }
+            '''
+        } )
+
+
+
+        table = Table()
+        #top.add(table)
+        tr = table.add_row()
+        table.add_style("width: %s" % my.width)
+
+
+        # add in an icon div
+        if my.icon:
+            td = table.add_cell(my.icon_div)
+            td.add_style("width: 20")
+            td.add_style("border: solid 1px %s" % my.border_color)
+
+            icon = IconWdg("", eval("IconWdg.%s" % my.icon), width=16)
+            my.icon_div.add(icon)
+            my.icon_div.add_style("padding: 4px 8px")
+            my.icon_div.add_style("height: %spx" % (height -16))
+            my.icon_div.add_style("overflow-y: hidden")
+            my.icon_div.add_style("margin-right: -1px")
 
 
 
@@ -378,37 +472,61 @@ class TextInputWdg(BaseInputWdg):
                         positionOptions: {
                             offset: {x:5, y:5}}});
                     over.text.setStyle('color','#999');
-                    over.text.setStyle('font-size','11px');
+                    over.text.setStyle('font-size','1.1em');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''})
 
 		
 
         #my.text.add_style("-moz-border-radius: 5px")
-        my.text.set_round_corners()
-        my.text.add_style("width: %spx" % my.width)
-        text_div.add_style("width: %spx" % my.width)
-        text_div.add_style("position: relative")
+        #my.text.set_round_corners()
+
+        td = table.add_cell()
+
+        td.add(my.text)
+        td.add_style("position: relative")
+
+
+
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 0px 1px 1px")
+        td.add_style("border-style: solid")
+        #my.text.add_style("border: none")
+
+        my.text.add_style("width: 100%")
+
+        my.text.add_style("padding: 5px")
+        my.text.add_style("height: %s" % (height-10))
+
+        #td = table.add_cell()
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 1px 1px 1px")
+        td.add_style("border-style: solid")
+
+
+
 
         icon_wdg = DivWdg()
-        text_div.add(icon_wdg)
+        td.add(icon_wdg)
+        icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("right: 0px")
         icon_wdg.add_style("position: absolute")
+
+
         
         if WebContainer.get_web().get_browser() in ['Webkit', 'Qt']:
             top_offset = '-2'
             right_offset = '6'
-        #elif WebContainer.get_web().get_browser() == 'Qt':
-        #    top_offset = '4'
-        #    right_offset = '6'
         else:
-            top_offset = '2'
+            top_offset = '6'
             right_offset = '8'
 
-        icon_wdg.add_style("top: %spx" %top_offset)
-        icon_wdg.add_style("right: %spx" % right_offset)
+        icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("right: 0px")
 
 
         if not my.readonly:
+            """
 
             icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE, inline=False)
             icon.add_class("spt_icon_inactive")
@@ -459,8 +577,7 @@ class TextInputWdg(BaseInputWdg):
                 spt.validation.onchange_cbk(evt, bvr2);
                 '''%input_type
             } )
-
-        top.add("&nbsp;")
+            """
 
         return top
 
@@ -502,6 +619,7 @@ class LookAheadTextInputWdg(TextInputWdg):
 
 
     def init(my):
+        my.text.add_attr("autocomplete", "off")
 
         my.search_type = my.kwargs.get("search_type")
         filter_search_type = my.kwargs.get("filter_search_type")
@@ -517,6 +635,8 @@ class LookAheadTextInputWdg(TextInputWdg):
         relevant = my.kwargs.get("relevant")
         if not column:
             column = 'keywords'
+    
+        case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
 
         value_column = my.kwargs.get("value_column")
         validate = my.kwargs.get("validate") in ['true', None]
@@ -718,6 +838,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'filters': filters,
             'column': column,
             'relevant': relevant,
+            'case_sensitive': case_sensitive,
             'value_column': value_column,
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
@@ -835,6 +956,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     relevant: bvr.relevant,
                     script_path: bvr.script_path,
                     do_search: bvr.do_search,
+                    case_sensitive: bvr.case_sensitive,
                     value: value
                 },
                 cbjs_action: cbk,
@@ -854,7 +976,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 20px")
+        results_div.add_style("top: 25px")
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")
@@ -935,6 +1057,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
         default = my.kwargs.get("default")
 
+        # have to set the name with prefix if applicable
+        name = my.get_input_name()
+        if name:
+            my.text.set_name(name)
+            my.hidden.set_name(name)
 
         # fill in the values
         search_key = my.kwargs.get("search_key")
@@ -1012,6 +1139,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
+    # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
+    LIMIT = 80
+    DISPLAY_LENGTH = 35
+
     def is_number(my, value):
         if has_numbers_module:
             return isinstance(value, numbers.Number)
@@ -1024,7 +1155,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             my.do_search = False
 
     def draw_result(my, top, value):
-        max = 35
+        max = my.DISPLAY_LENGTH
         # assuming it's a list
         results = my.kwargs.get('results')
         if not results:
@@ -1080,21 +1211,46 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_attr("spt_display", keywords)
 
 
-        
+    def get_value_column_result(my, search_dict, search_type, column, value_column, top):
+        results = search_dict.get(search_type).get('results')
+        for result in results:
+            display = result.get_value(column)
+            div = DivWdg()
+            div.add(display)
+            div.add_style("padding: 3px")
+            div.add_class("spt_input_text_result")
+            # turn off cache to prevent ascii error
+            display = HtmlElement.get_json_string(display, use_cache=False)
+            div.add_attr("spt_display", display)
+            div.add_attr("spt_value", result.get_value(value_column))
+            top.add(div)
+        if not results:
+            div = DivWdg()
+            div.add("-- no results --")
+            div.add_style("opacity: 0.5")
+            div.add_style("font-style: italic")
+            div.add_style("text-align: center")
+            top.add(div)
+        return top
+
     def get_display(my):
         top = my.top
-        value = my.kwargs.get("value")
-        
+        orig_value = my.kwargs.get("value")
+        case_sensitive = my.kwargs.get("case_sensitive") in ['true',True]
+
         if not my.do_search:
-            my.draw_result(top, value)
+            my.draw_result(top, orig_value)
             return top
+
+        if not case_sensitive:
+            orig_value = orig_value.lower()
 
         # can only support 1 right now
         relevant = my.kwargs.get("relevant") == 'true'
         connected_col = None
         rel_values = []
 
-        if value.endswith(" "):
+        if orig_value.endswith(" "):
             last_word_complete = True
         else:
             last_word_complete = False
@@ -1119,21 +1275,20 @@ class TextInputResultsWdg(BaseRefreshWdg):
             columns = column
 
 
+        value = orig_value.strip()
 
-        value = value.strip()
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
         else:
-            values = Common.extract_keywords(value)
+            values = Common.extract_keywords(value, lower=not case_sensitive)
             # allow words with speical characters stripped out by Common.extract_keywords to be searched
-            #if value.lower() != " ".join(values):
-            if value.lower() not in values:
-                values.append(value.lower())
+            # FIXME: THIS CAUSES PROBLEMS and is disabled for now
+            #if value.lower() not in values:
+            #    values.append(value.lower())
         # why is this done?
         # so the auto suggestion list the items in the same order as they are typed in
         values.reverse()
-
 
         project_code = Project.get_project_code()
 
@@ -1210,21 +1365,26 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     rel_values = SObject.get_values(rel_sobjs, from_col)
 
                 connected_col = to_col
-            
+           
+            single_col = len(col_list) == 1
+            search_op = 'and'
+            if not single_col:
+                search_op = 'or'
             for col in col_list:
                 #info = column_info.get(column)
                 #if info and info.get("data_type") == 'integer':
                 #    search.add_filter(column,values[0], op='=')
                 #else:
                 #    search.add_startswith_keyword_filter(column, values)
-                search.add_startswith_keyword_filter(col, values)
+                search.add_startswith_keyword_filter(col, values, \
+                   case_sensitive=case_sensitive)
                
             
-            search.add_op("or")
+            
+            search.add_op(search_op)
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
-            
-            search.add_limit(10)
+            search.add_limit(my.LIMIT)
             results = search.get_sobjects()
             info_dict['results'] = results
    
@@ -1234,26 +1394,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         # if the value column is specified then don't use keywords
         # this assume only 1 column is used with "value_column" option
         if value_column:
-            results = search_dict.get(search_type).get('results')
-            for result in results:
-                display = result.get_value(column)
-                div = DivWdg()
-                div.add(display)
-                div.add_style("padding: 3px")
-                div.add_class("spt_input_text_result")
-                # turn off cache to prevent ascii error
-                display = HtmlElement.get_json_string(display, use_cache=False)
-                div.add_attr("spt_display", display)
-                div.add_attr("spt_value", result.get_value(value_column))
-                top.add(div)
-            if not results:
-                div = DivWdg()
-                div.add("-- no results --")
-                div.add_style("opacity: 0.5")
-                div.add_style("font-style: italic")
-                div.add_style("text-align: center")
-                top.add(div)
-            return top
+           return my.get_value_column_result(search_dict, search_type, column, value_column, top)
 
        
 
@@ -1261,7 +1402,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-        max = 35
 
         # English: ???
         ignore = set()
@@ -1292,7 +1432,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         value = str(value)
                     keywords.append(value)
                
-                
                 # NOTE: not sure what this does to non-english words
                 #keywords = str(keywords).translate(None, string.punctuation)
                 # keywords can be a long space delimited string in global mode
@@ -1302,13 +1441,15 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
                 # show the keyword that matched first
                 keywords = keywords.split(" ")
-                keywords = [x.lower().strip() for x in keywords if x]
+                if case_sensitive: 
+                    keywords = [x.strip() for x in keywords if x]
+                else:
+                    keywords = [x.lower().strip() for x in keywords if x]
                 #keywords_set = set()
                 #for keyword in keywords:
                 #    keywords_set.add(keyword)
                 # if x in the comprehension above already does None filtering
                 #keywords = filter(None, keywords)
-
                 matches = []
                 for i, value in enumerate(values):
                     for keyword in keywords:
@@ -1324,7 +1465,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 # if nothing matches, 2nd guess by loosening the rule to find something broader
                 # this only runs most likely in global mode and sometimes in keyword mode
                 # Just take the first value to maintain performance
-                if not matches and values[0].strip():
+                if not matches and values and values[0].strip():
                     for keyword in keywords:
                         compare = values[0] in keyword
                         if compare:
@@ -1334,7 +1475,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 #if len(matches) != len(values):
                 if len(matches) < 1:
                     continue
-
                 for match in matches:
                     keywords.remove(match)
                     keywords.insert(0, match)
@@ -1343,17 +1483,21 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 first = keywords[:len(matches)]
                 first = filter(None, first)
                 first = " ".join(first)
-                if first not in first_filtered:
-                    first_filtered.append(first)
 
+                # add the first word filtered
+                if first.startswith(orig_value) and first not in first_filtered:
+                    first_filtered.append(first)
+                
                 # get all the other keywords
                 for second in keywords[len(matches):]:
                     if first == second:
                         continue
+                    
                     key = "%s %s" % (first, second)
+                    if not key.startswith(orig_value):
+                        continue
                     if key not in second_filtered:
                         second_filtered.append(key)
-
 
         first_filtered.sort()
         filtered.extend(first_filtered)
@@ -1370,8 +1514,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
-            if len(keywords) > max:
-                display = "%s..." % keywords[:max-3]
+            if len(keywords) > my.DISPLAY_LENGTH:
+                display = "%s..." % keywords[:my.DISPLAY_LENGTH-3]
             else:
                 display = keywords
 

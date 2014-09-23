@@ -23,7 +23,8 @@ from pyasm.web import DivWdg, SpanWdg, Table, WebContainer, HtmlElement, Widget
 from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, TextAreaWdg, TextWdg, ProdIconButtonWdg, CheckboxWdg, IconWdg, SwapDisplayWdg
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.filter import FilterData
-from tactic.ui.container import RoundedCornerDivWdg, TabWdg
+from tactic.ui.container import TabWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWdg, ActionButtonWdg
 
 from dateutil import parser
@@ -534,7 +535,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         } )
         title_div = DivWdg()
         top.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin: 0 -1 10 -1")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
@@ -723,6 +724,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 editable_wdg.set_checked()
                 # set a original state to remember it is checked initially
                 editable_wdg.set_attr('orig', 'true')
+
             td.add(editable_wdg)
 
 
@@ -1250,11 +1252,11 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
        
         title_div = DivWdg()
         widget.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
-        title_div.add_style("width: 520px")
+        #title_div.add_style("width: 520px")
         title_div.add_style("height: 18px")
         title_div.add_border()
         title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -1274,6 +1276,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         widget.add(attr_table)
         
+        # for insert view
         td.add("Enable Edit: ")
         editable_wdg = CheckboxWdg("attr|editable")
         editable_wdg.add_attr("size", "50")
@@ -1309,19 +1312,9 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         widget.add(table)
 
         tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
+        td.add("<hr/>")
         td.add_style("padding-top: 20px")
 
-
-       
-    
-
-
-        
-
-
-       
 
         tr, td = table.add_row_cell()
         td.add(HtmlElement.br())
@@ -1366,7 +1359,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
     def get_display(my):
         top = DivWdg()
         top.add_class("spt_element_definition")
-        top.add_style("width: 530px")
+        #top.add_style("width: 530px")
         top.add_style("margin-bottom: 10px")
 
         my.is_insert = my.kwargs.get("is_insert")
@@ -1556,7 +1549,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         table = Table()
         table.add_color("color", "color")
         table.add_class("spt_form_top")
-        table.add_style("width: 530px")
+        #table.add_style("width: 530px")
         if mode == 'xml':
             table.add_style("display: none")
         top.add(table)
@@ -1842,29 +1835,35 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             spt.show(wdg);
             spt.panel.refresh(wdg, values);
 
-            var edit = ui_top.getElement('input[name=attr|editable]');
-            // Manage Side Bar doesn't run the following
-            if (edit) {
-                var edit_orig_state = edit.getAttribute('orig');
-                var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
-                // dynamically toggle edit widget ui based on chosen widget key
-                if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
-                {
-                    edit.checked = false;
-                    if (value != 'expression')
-                        edit.setAttribute('disabled', 'disabled');
-                    else {
-                        edit.removeAttribute('disabled');
-                        if (edit_orig_state == 'true')
-                            edit.checked = true;
+            // there could be 2
+            var edits = ui_top.getElements('input[name=attr|editable]');
+            // Manage Side Bar doesnt run the following
+            // applicable only for the View Mode widget key select
+            if (edits.length > 0 && bvr.prefix=='option') {
+                for (var k=0; k< edits.length; k ++) {
+                var edit = edits[k];
+                    var edit_orig_state = edit.getAttribute('orig');
+                    var form_top = spt.get_cousin(edit,'.spt_element_definition', '.spt_edit_definition');
+                    // dynamically toggle edit widget ui based on chosen widget key
+                    if (['hidden_row','gantt','button','custom_layout','expression'].contains(value))           
+                    {
+                        edit.checked = false;
+                        if (value != 'expression')
+                            edit.setAttribute('disabled', 'disabled');
+                        else {
+                            edit.removeAttribute('disabled');
+                            if (edit_orig_state == 'true') 
+                                edit.checked = true;
+                            
+                        }
+                        spt.hide(form_top);
                     }
-                    spt.hide(form_top);
-                }
-                else {
-                    edit.checked = true;
-                    edit.removeAttribute('disabled');
-                    spt.show(form_top);
-                    
+                    else {
+                        edit.checked = true;
+                        edit.removeAttribute('disabled');
+                        spt.show(form_top);
+                        
+                    }
                 }
             }
 
@@ -1872,10 +1871,12 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         if load_event:
             widget_select.add_behavior( {
                 'type': 'load',
+                'prefix': prefix,
                 'cbjs_action': cbjs_action
             } )
         widget_select.add_behavior( {
             'type': 'change',
+            'prefix': prefix,
             'cbjs_action': cbjs_action
         } )
 

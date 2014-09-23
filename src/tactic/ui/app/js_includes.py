@@ -17,7 +17,6 @@ third_party = [
     # add mootools
     "mootools/mootools-core-1.4.1-full-nocompat-yc.js",
     "mootools/mootools-more-1.4.0.1-yc.js",
-
     "json2.js",
 
 ]
@@ -49,11 +48,9 @@ spt_js = [
     #"require.js",
     "effects.js",
     "utility.js",
-    #"file.js",         # moved to utility.js
     "dynamic_css.js",
     "xmlrpc.js",       # add the xmlrpc libraries
     "api/utility.js",  # only basic form ganther is used here.
-    #"upload.js",       # DEPRECATED: this is all done through java applet now
     "environment.js",
     "applet.js",
     #"command.js",      # moved to dg_table.js which still requires this
@@ -82,12 +79,13 @@ spt_js = [
     "js_logger.js",
     "page_utility_widgets.js",
     "validation.js",
-    #"touch_ui.js",     # DEPRECATED: this code has been disabled in
-                        # layout_wdg.py
     "custom_project.js",
     "spt_onload_startup.js",
     "api/api.js",       # add in the new api
     "load-image.min.js",
+
+    # TEST
+    "mooScrollable/Scrollable.js",
 ]
 
 

@@ -91,7 +91,6 @@ class Naming(SObject):
         mode: find - find the naming
               check - check that a naming is defined
         '''
-
         if not versionless and snapshot:
             version = snapshot.get_value("version")
             if version == -1:
@@ -517,6 +516,10 @@ class NamingUtil(object):
         # FIXME: it's not put in get_filesystem_name since it
         # is used for directory name also, need to modify that
         result = result.replace("/", "_")
+
+        # remove trailing . if any
+        if result and result[-1] == '.':
+            result = result[:-1]
         # post process result so that it looks good
         result = Common.get_filesystem_name(result)
 

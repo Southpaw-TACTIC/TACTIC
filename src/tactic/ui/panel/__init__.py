@@ -19,8 +19,8 @@ from edit_wdg import *
 from edit_cmd import *
 from panel_wdg import *
 from simple_side_bar_wdg import *
-from custom_layout_wdg import *
 from freeform_layout_wdg import *
+from custom_layout_wdg import *
 from table_layout_wdg import *
 from tile_layout_wdg import *
 from sobject_panel_wdg import *

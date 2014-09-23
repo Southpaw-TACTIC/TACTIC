@@ -30,11 +30,11 @@
             </div>
          </div>
          <p>
-                <span class="bold"><strong> add_initial_tasks(search_key, pipeline_code=None, processes=[])</strong></span>
+                <span class="bold"><strong> add_initial_tasks(search_key, pipeline_code=None, processes=[], skip_duplicate=True, offset=0)</strong></span>
                 
          </p>
          <p>Add initial tasks to an sobject</p>
-         <h4><a name="d0e3018"></a>param:
+         <h4><a name="d0e3023"></a>param:
          </h4>
          <p>
                 <span class="bold"><strong>search_key </strong></span>
@@ -42,7 +42,7 @@
                 
          </p>
          <p>the search_type table.</p>
-         <h4><a name="d0e3027"></a>keyparam:
+         <h4><a name="d0e3032"></a>keyparam:
          </h4>
          <p>
                 <span class="bold"><strong>pipeline_code </strong></span>
@@ -54,7 +54,17 @@
                  -  create tasks for the given list of processes
                 
          </p>
-         <h4><a name="d0e3039"></a>return:
+         <p>
+                <span class="bold"><strong>skip_duplicate </strong></span>
+                 -  boolean to skip duplicated task
+                
+         </p>
+         <p>
+                <span class="bold"><strong>offset </strong></span>
+                 -  a number to offset the start date from today's date
+                
+         </p>
+         <h4><a name="d0e3054"></a>return:
          </h4>
          <p>
                 <span class="bold"><strong>list </strong></span>

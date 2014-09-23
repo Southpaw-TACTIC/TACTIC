@@ -268,8 +268,6 @@
           <class_name>tactic.ui.startup.reports_wdg.ReportsWdg</class_name>
       </display>
   </element>
-
-
   
 
   <!-- Built-in sTypes -->
@@ -354,6 +352,15 @@
       </filter>
     </display>
   </element>
+
+
+  <element name="project_translations" title="Translations" icon="community">
+    <display class="LinkWdg">
+      <search_type>config/translation</search_type>
+      <view>table</view>
+    </display>
+  </element>
+
 
 
 
@@ -527,14 +534,12 @@
   </element>
 
 
-  <!--
   <element name="freeform" title="Free Form Layout Tool" icon="NEW" help='main'>
 
     <display class="LinkWdg">
       <class_name>tactic.ui.tools.FreeFormLayoutToolWdg</class_name>
     </display>
   </element>
-  -->
 
   <!--
   <element name="sync" title="Sync Dashboard" icon="REFRESH">
@@ -620,6 +625,13 @@
     </display>
   </element>
 
+
+  <element name="global_translations" title="Global Translations" icon="community">
+    <display class="LinkWdg">
+      <search_type>sthpw/translation</search_type>
+      <view>table</view>
+    </display>
+  </element>
 
 
   <element name="manage_database" title="Manage Database" icon="db_gear" help='main'>
@@ -844,7 +856,7 @@
 
   <!--<element name="ingestion"/>-->
   <element name="plugins"/>
-  <!--<element name="freeform"/>-->
+  <element name="freeform"/>
   <!--<element name="sync"/>-->
 </_project_admin>
 
@@ -856,6 +868,7 @@
   <element name="project_notes"/>
   <element name="project_work_hours"/>
   <element name="project_snapshots"/>
+  <element name="project_translations"/>
 
   <element name="separator"/>
 
@@ -892,6 +905,7 @@
   <element name="users"/>
   <element name="groups"/>
   <element name="users_in_groups"/>
+  <element name="global_translations"/>
 
   <element name="separator"/>
 

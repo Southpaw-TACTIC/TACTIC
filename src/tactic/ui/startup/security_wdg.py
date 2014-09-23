@@ -875,7 +875,7 @@ class SecurityGroupListWdg(BaseRefreshWdg):
     def get_display(my):
         top = my.top
 
-
+        '''
         show_all_groups = True
         if show_all_groups:
             search = Search("sthpw/login_group")
@@ -884,20 +884,14 @@ class SecurityGroupListWdg(BaseRefreshWdg):
             groups = search.get_sobjects()
         else:
             groups = LoginGroup.get_by_project()
-
+        '''
+        
         from tactic.ui.panel import ViewPanelWdg
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            #simple_search_view='simple_search',
-            filter=[
-                {"prefix":"filter_mode","filter_mode":"or"},
-                {"prefix": "group", "group": "project_code"},
-                {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
-                {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is empty","main_body_value":""}
-            ]
+            simple_search_view='simple_search'
         )
-        layout.set_sobjects(groups)
         top.add(layout)
 
         return top
@@ -1101,14 +1095,13 @@ class SecurityAddGroupToProjectAction(DatabaseAction):
     def execute(my):
         value = my.get_value()
         sobject = my.sobject
-
         project = Project.get()
         project_code = project.get_code()
 
         builder = SecurityBuilder(group=sobject)
         builder.add_project(project_code)
-
-        sobject.set_value("access_rules", builder.to_string() )
+        if value:
+            sobject.set_value("access_rules", builder.to_string() )
 
 
 
@@ -1702,7 +1695,7 @@ class ProcessSecurityWdg(ProjectSecurityWdg):
         for sobject in sobjects:
             if sobject.get("search_type") == "sthpw/task":
                 code_list.append(sobject.get("code"))
-
+        code_list.append('task')
         search = Search("config/process")
         search.add_filters("pipeline_code", code_list, op="not in")
         search.add_order_by('pipeline_code')
@@ -1774,7 +1767,7 @@ class TaskSecurityWdg(ProjectSecurityWdg):
         for sobject in sobjects:
             if sobject.get("search_type") == "sthpw/task":
                 code_list.append(sobject.get("code"))
-
+        code_list.append('task')
         search = Search("config/process")
         search.add_filters("pipeline_code", code_list)
         search.add_order_by('pipeline_code')
@@ -2084,6 +2077,7 @@ class ProcessSecurityCbk(Command):
             pipeline_code = ""
             if is_all:
                 process = "*"
+                pipeline_code = "*"
             else:
                 process_sobj = Search.get_by_search_key(search_key)
                 process = process_sobj.get_value("process")

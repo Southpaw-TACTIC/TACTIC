@@ -63,7 +63,7 @@ class ColumnEditWdg(BaseRefreshWdg):
         shelf_wdg = DivWdg()
         inner.add(shelf_wdg)
         shelf_wdg.add_style("height: 30px")
-        button = ActionButtonWdg(title='Create >>', icon=IconWdg.SAVE)
+        button = ActionButtonWdg(title='Create', icon=IconWdg.SAVE)
         shelf_wdg.add(button)
         shelf_wdg.add_style("float: right")
 
@@ -105,8 +105,8 @@ class ColumnEditWdg(BaseRefreshWdg):
 
                 spt.table.add_columns(names)
 
-
-                spt.panel.refresh(top);
+                // prevent grabbing all values, pass in a dummy one
+                spt.panel.refresh(top, {'refresh': true});
 
             } catch(e) {
                 spt.alert(spt.exception.handler(e));

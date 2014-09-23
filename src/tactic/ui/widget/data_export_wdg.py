@@ -25,6 +25,7 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
+
 from misc_input_wdg import SearchTypeSelectWdg
 from upload_wdg import SimpleUploadWdg
 from button_new_wdg import ActionButtonWdg
@@ -61,16 +62,17 @@ class CsvExportWdg(BaseRefreshWdg):
         my.selected_search_keys = []
         my.error_msg = ''
         my.search_type_list = []
+        my.is_test = my.kwargs.get('test') == True
+        my.table = None
 
     def check(my):
         if my.mode == 'export_matched':
             from tactic.ui.panel import TableLayoutWdg
-            
-            table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
+            my.table = TableLayoutWdg(search_type=my.search_type, view=my.view,\
                 show_search_limit='false', search_limit=-1, search_view=my.search_view,\
                 search_class=my.search_class, simple_search_view=my.simple_search_view, init_load_num=-1)
-            table.handle_search()
-            search_objs = table.sobjects
+            my.table.handle_search()
+            search_objs = my.table.sobjects
             my.selected_search_keys = SearchKey.get_by_sobjects(search_objs, use_id=True)
             return True
 
@@ -184,7 +186,6 @@ class CsvExportWdg(BaseRefreshWdg):
         if not my.search_type or not my.view:
             return table
 
-        
         # use overriding element names and derived titles if available
         config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
         if my.element_names and config:
@@ -244,8 +245,7 @@ class CsvExportWdg(BaseRefreshWdg):
         widget.add(hint)
 
         label = string.capwords(my.mode.replace('_', ' '))
-        button = ActionButtonWdg(title=label)
-
+        button = ActionButtonWdg(title=label, size='l')
         is_export_all  = my.mode == 'export_all'
         button.add_behavior({
             'type': "click_up",
@@ -281,6 +281,15 @@ class CsvExportWdg(BaseRefreshWdg):
         top.add(div)
         top.add(HtmlElement.br())
         top.add(action_div)
+
+        if my.is_test:
+            rtn_data = {'columns': my.element_names, 'count': len(my.selected_search_keys)}
+            if my.mode == 'export_matched':
+                rtn_data['sql'] =  my.table.search_wdg.search.get_statement()
+            from pyasm.common import jsondumps
+            rtn_data = jsondumps(rtn_data)
+            return rtn_data
+
         return top
 
 
@@ -315,15 +324,20 @@ class CsvImportWdg(BaseRefreshWdg):
             my.file_path =  web.get_form_value('file_path')
 
         if not my.file_path:
-            file_name =  web.get_form_value('file_name')
-            ticket =  web.get_form_value('html5_ticket')
+            ticket = web.get_form_value('html5_ticket')
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
-                
-            if file_name:
-                # this is treated the same in FileUplaod class
-                #file_name = File.get_filesystem_name(str(file_name))
+
+            data = web.get_form_value("data")
+            if data:
+                file_name =  web.get_form_value('file_name')
+                if not file_name:
+                    file_name = "%s.csv" % ticket
+
                 my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                f = open(my.file_path, "wb")
+                f.write(data)
+                f.close()
 
 
 
@@ -357,25 +371,25 @@ class CsvImportWdg(BaseRefreshWdg):
 
     def get_upload_wdg(my):
         '''get search type select and upload wdg'''
+
+        key = 'csv_import'
+
+
         widget = DivWdg(css='spt_import_csv')
         widget.add_color('color','color')
         widget.add_color('background','background')
         widget.add_style('width: 600px')
 
         # get the search type
-        title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
-        widget.add( title )
-        title.add_style("float: left")
+        stype_div = DivWdg()
+        widget.add(stype_div)
 
+
+        # DEPRECATED
         # handle new search_types
+        """
         new_search_type = CheckboxWdg("new_search_type_checkbox")
         new_search_type.add_event("onclick", "toggle_display('new_search_type_div')")
-        #span = SpanWdg(css="med")
-        #span.add(new_search_type)
-        #span.add("Create new type")
-        #span.add(" ... or ... ")
-        #widget.add(span)
-
         new_search_type_div = DivWdg()
         new_search_type_div.set_id("new_search_type_div")
 
@@ -383,9 +397,6 @@ class CsvImportWdg(BaseRefreshWdg):
         title = TextWdg("asset_title")
         description = TextAreaWdg("asset_description")
 
-        
- 
-        key='csv_import'
         table = Table()
         table.set_id('csv_main_body')
         table.add_style("margin: 10px 10px")
@@ -404,24 +415,32 @@ class CsvImportWdg(BaseRefreshWdg):
         new_search_type_div.add(table)
         new_search_type_div.add_style("display: none")
         #widget.add(new_search_type_div)
+        """
 
-        div = DivWdg()
 
-       
-        search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
-        search_type_select.add_empty_option("-- Select --")
-        if not search_type_select.get_value():
-            search_type_select.set_value(my.search_type)
-        search_type_select.set_persist_on_submit()
-       
+        show_stype_select = my.kwargs.get("show_stype_select")
+        if show_stype_select in ['true',True] or not my.search_type:
 
-        div.add(search_type_select)
+            title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
+            stype_div.add( title )
+            title.add_style("float: left")
 
-        widget.add(div)
+            search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
+            search_type_select.add_empty_option("-- Select --")
+            if not search_type_select.get_value():
+                search_type_select.set_value(my.search_type)
+            search_type_select.set_persist_on_submit()
 
-        search_type_select.add_behavior( {'type': 'change', \
-                                  'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                                    'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+            stype_div.add(search_type_select)
+
+
+
+            search_type_select.add_behavior( {'type': 'change', \
+                                      'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
+                                        'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+
+
+
 
         if my.search_type:
             sobj = None
@@ -469,18 +488,18 @@ class CsvImportWdg(BaseRefreshWdg):
                 widget.add(HtmlElement.br())
                 return widget
 
-            widget.add("<br/>")
             widget.add_style("overflow-y: auto")
 
             msg = DivWdg()
             widget.add(msg)
-            msg.add( "<div style='float: left; padding-left: 100px; padding-top: 6px'><b>Upload a csv file: </b></div>")
             msg.add_border()
-            msg.add_style("width: 400px")
+            msg.add_style("width: 500px")
             msg.add_color("background", "background3")
-            msg.add_style("padding: 20px")
-            msg.add_style("margin: 30 auto")
-            msg.add_style("text-align: center")
+            msg.add_style("padding: 30px")
+            msg.add_style("margin: 10 auto")
+            #msg.add_style("text-align: center")
+
+            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -517,30 +536,33 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(browse)
 
 
-
-
             
             # this is now only used in the copy and paste Upload button for backward-compatibility
             upload_wdg = SimpleUploadWdg(key=key, show_upload=False)
             upload_wdg.add_style('display: none')
             msg.add(upload_wdg)
-          
-            #widget.add(span)
-            msg.add("<br/><br/>-- OR --</br/><br/>")
 
-            msg.add("<b>Published URL: </b>") 
-            text = TextWdg("web_url")
+            msg.add("<br/>")
+          
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
+
+            msg.add("<b>Published URL: </b><br/>") 
+            from tactic.ui.input import TextInputWdg
+            text = TextInputWdg(name="web_url")
+            text.add_style("width: 100%")
             msg.add(text)
  
 
 
-            msg.add("<br/><br/>-- OR --</br/><br/>")
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
-            msg.add("<b>Copy and Paste from a Spreadsheet: </b>") 
+            msg.add("<b>Copy and Paste from a Spreadsheet: </b><br/>") 
             text = TextAreaWdg("data")
-            text.add_style('width: 33em')
+            text.add_style('width: 100%')
+            text.add_style('height: 100px')
             text.add_class("spt_import_cut_paste")
             msg.add(text)
+            msg.add("<br/>"*3)
             button = ActionButtonWdg(title="Parse")
             button.add_style("margin: 5px auto")
             msg.add(button)
@@ -549,7 +571,6 @@ class CsvImportWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_import_top");
                 var el = top.getElement(".spt_import_cut_paste");
-                var applet = spt.Applet.get();
 
                 var value = el.value;
                 var csv = [];
@@ -575,7 +596,9 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 csv = csv.join("\\n")
 
+                /*
                 // FIXME: need to get a local temp directory
+                var applet = spt.Applet.get();
                 var path = spt.browser.os_is_Windows() ? "C:/sthpw/copy_n_paste.csv" : "/tmp/sthpw/copy_n_paste.csv";
                 applet.create_file(path, csv);
 
@@ -589,10 +612,13 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 var file_name = spt.path.get_basename(hidden.value);
                 file_name = spt.path.get_filesystem_name(file_name); 
+                */
+
                 var class_name = 'tactic.ui.widget.CsvImportWdg';
                 var values = spt.api.Utility.get_input_values('csv_import_main');
                 values['is_refresh'] = true;
-                values['file_name'] = file_name;
+                //values['file_name'] = file_name;
+                values['data'] = csv;
                 var info = spt.panel.load('csv_import_main', class_name, {}, values);
                 '''
             } )

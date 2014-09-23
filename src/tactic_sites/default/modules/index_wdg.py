@@ -17,7 +17,6 @@ from pyasm.search import Search
 from pyasm.web import Widget, Table, DivWdg, HtmlElement, WebContainer, BaseAppServer
 from pyasm.widget import TableWdg, ThumbWdg, TacticLogoWdg
 
-from tactic.ui.container import RoundedCornerDivWdg
 from tactic.ui.widget import ActionButtonWdg
 
 import os
@@ -86,7 +85,7 @@ class IndexWdg2(Widget):
         search.add_order_by("category")
 
         projects = search.get_sobjects()
-
+        
         num = len(projects)
         # sort by project
         if num < 5:
@@ -116,6 +115,8 @@ class IndexWdg2(Widget):
 
         bg_color = palette.color("background")
         #div.add_color("color", "color")
+
+        from tactic.ui.container import RoundedCornerDivWdg
         div = RoundedCornerDivWdg(hex_color_code=bg_color,corner_size="10")
         div.set_dimensions( width_str='%spx' % width, content_height_str='50px' )
         div.add_border()
@@ -291,6 +292,9 @@ class IndexWdg2(Widget):
              
                 code = project.get_code()
                 title = project.get_value("title")
+                # Restrict the length of project name
+                if len(title) >= 36:
+                    title = title[:36] + "..."
                 if app_name != 'Browser':
                     href = HtmlElement.href(HtmlElement.h2(title), ref='/tactic/%s/%s'\
                         %(code, app_name))
@@ -326,6 +330,7 @@ class IndexWdg2(Widget):
 
                 project_div = DivWdg()
                 td.add(project_div)
+                td.add_style("width: 230px")
                 project_div.add_style("font-size: 16px")
                 project_div.add_style("font-weight: bold")
                 project_div.add_style("vertical-align: middle")
@@ -337,6 +342,7 @@ class IndexWdg2(Widget):
                 project_div.add_style("height: %spx" % (icon_size-10))
 
                 project_div.add_style("padding: 8px 10px 2px 20px")
+                
                 project_div.add_color("background", "background")
                 project_div.add_behavior( {
                 'type': 'hover',

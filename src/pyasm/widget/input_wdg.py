@@ -124,6 +124,15 @@ class BaseInputWdg(HtmlElement):
     def set_title(my, title):
         my.title = title
         
+    def get_display_title(my):
+        '''Function that that gives a title represenation of this widget'''
+        if my.title:
+            return my.title
+
+        name = my.get_name()
+        name = name.replace("_", " ")
+        return name.title()
+ 
 
 
     def get_title(my):
@@ -560,12 +569,11 @@ class TextWdg(BaseTextWdg):
     def __init__(my,name=None, label=None):
         super(TextWdg,my).__init__(name,"input", label=label)
         my.css = "inputfield"
-        my.add_class(my.css)
+        #my.add_class(my.css)
         my.add_class("spt_input")
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        #my.add_style("width: 200px")
-        my.add_border()
+        #my.add_color("background", "background", 10)
+        #my.add_color("color", "color")
+        #my.add_border()
     
    
 
@@ -656,7 +664,8 @@ class TextAreaWdg(BaseTextWdg):
 
     def __init__(my,name=None, **kwargs):
         super(TextAreaWdg,my).__init__(name,"textarea")
-
+        
+        my.kwargs = kwargs
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
@@ -716,11 +725,14 @@ class TextAreaWdg(BaseTextWdg):
             if my.disabled_look == True:
                 #my.add_class('disabled')
                 my.add_color("background", "background", -10)
-        value = my.get_value(for_display=True)
-       
+        
+        # value always overrides
+        value = my.kwargs.get("value")
+        if not value:
+            value = my.get_value(for_display=True)
         my.add(value)
 
-        my.handle_mode()
+        #my.handle_mode()
 
         return super(TextAreaWdg,my).get_display()
 
@@ -984,6 +996,11 @@ class SelectWdg(BaseInputWdg):
         my.add_class("inputfield")
         my.add_class("spt_input")
 
+        # BOOTSTRAP
+        my.add_class("form-control")
+        my.add_class("input-sm")
+
+
 
     def get_related_type(my):
         # In order to get the related type, the dom options need to have
@@ -1229,7 +1246,7 @@ class SelectWdg(BaseInputWdg):
                 unzipped = zip(*zipped)
                 my.values = list(unzipped[0])
                 my.labels = list(unzipped[1])
-            
+           
         # if there is a search for options stored, then use these
         if my.sobjects_for_options != None:
             my.values = []
@@ -1299,7 +1316,6 @@ class SelectWdg(BaseInputWdg):
         my.add_color("background", "background", 10)
         my.add_color("color", "color")
         my.add_border()
-
 
         # default select element size to max of 20 ...
         sz = '20'

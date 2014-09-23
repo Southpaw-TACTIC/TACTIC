@@ -225,6 +225,7 @@ class GanttElementWdg(BaseTableElementWdg):
             #} )
 
 
+        print "options: ", my.options
 
         expr_parser = ExpressionParser()
 
@@ -270,9 +271,10 @@ class GanttElementWdg(BaseTableElementWdg):
                         my.end_date_expr = '@GET(.bid_end_date)'
 
             if sobject_expr:
-                expr_parser.eval(sobject_expr, my.sobjects, list=True)
-                gantt_data = expr_parser.get_flat_cache(filter_leaf=True)
-
+                # the current parser doesn't support 2 separate calls due to the use of my.related_types. 
+                # Just use one single call 
+                gantt_data = expr_parser.eval(sobject_expr, my.sobjects, dictionary=True)
+                #gantt_data = expr_parser.get_flat_cache(filter_leaf=True)   
 
                 
             else:
@@ -382,6 +384,12 @@ class GanttElementWdg(BaseTableElementWdg):
         my.offset_width = -300 
         my.visible_width = 500
 
+        if my.kwargs.get("test"):
+            test_width = my.kwargs.get("test")
+            my.total_width = test_width
+            my.offset_width = 0
+            my.visible_width = test_width
+
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
             #print "gantt_data: ", gantt_data
@@ -414,7 +422,8 @@ class GanttElementWdg(BaseTableElementWdg):
                 my.start_date = parser.parse( start_date_option )
                 my.end_date = parser.parse( end_date_option )
 
-                buffer = 45
+                #buffer = 45
+                buffer = 0
 
                 # buffer start date and end date
                 my.start_date = my.start_date - datetime.timedelta(days=buffer)
@@ -1816,7 +1825,10 @@ class GanttCbk(DatabaseAction):
             gantt_data = jsonloads(gantt_data)
         else:
             gantt_data = gantt_data.get('gantt_data')
-            gantt_data = jsonloads(gantt_data)
+            if gantt_data:
+                gantt_data = jsonloads(gantt_data)
+            else:
+                gantt_data = {}
 
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):

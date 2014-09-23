@@ -199,6 +199,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
         my.category = my.kwargs.get("category")
         my.search_type = my.kwargs.get("search_type")
 
+        my.encoding = my.kwargs.get("encoding")
+        if not my.encoding:
+             my.encoding = 'utf-8'
+        my.plugin = None
+
         xml = None
 
         
@@ -419,8 +424,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
             else:
                 break
 
+            
+        if my.kwargs.get("is_top") in ['true', True]:
+            return html
 
-        if my.kwargs.get("is_refresh"):
+        elif my.kwargs.get("is_refresh"):
             return content
         else:
             return top
@@ -570,7 +578,11 @@ class CustomLayoutWdg(BaseRefreshWdg):
         html = html.replace("<![CDATA[", "")
         html = html.replace("]]>", "")
         #html = html.decode('utf-8')
-        template = Template(html, output_encoding='utf-8', input_encoding='utf-8')
+      
+        if my.encoding == 'ascii':
+            template = Template(html)
+        else:
+            template = Template(html, output_encoding=my.encoding, input_encoding=my.encoding)
 
         # get the api version of the sobject
         if not my.is_table_element:
@@ -736,17 +748,22 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     bvr['kwargs'] = my.kwargs
                     bvr['class_name'] = Common.get_full_class_name(my)
 
-
                     if relay_class:
                         bvr['bvr_match_class'] = relay_class
                         if not bvr.get("type"):
                             bvr['type'] = 'mouseup'
                         my.content.add_relay_behavior( bvr )
+
+                    elif bvr.get("type") == "smart_drag":
+                        bvr['bvr_match_class'] = css_class
+                        my.content.add_behavior(bvr)
                     else:
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
                         if not bvr.get("type"):
                             bvr['type'] = 'click_up'
                         bvr_div.add_behavior( bvr )
+
+
 
                 except Exception, e:
                     print "Error: ", e
@@ -1150,7 +1167,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
             view = attrs.get("view")
             type = attrs.get("type")
 
-
             if type == "reference":
                 search_type = attrs.get("search_type")
                 my.config = WidgetConfigView.get_by_search_type(search_type, view)
@@ -1163,16 +1179,19 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 container.add(element_wdg)
                 return container
 
-            if not view:
+
+            class_name = attrs.get("display_class")
+
+            # if no class name is defined and not view is defined look
+            # at predefined elements
+            if not view and not class_name:
                 element_wdg = my.config.get_display_widget(element_name, extra_options=attrs)
                 container = DivWdg()
                 container.add(element_wdg)
                 return container
 
 
-
             # look at the attributes
-            class_name = attrs.get("display_class")
             if not class_name:
                 class_name = "tactic.ui.panel.CustomLayoutWdg"
             display_node = xml.create_element("display")
@@ -1279,7 +1298,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return container
 
 
-
+    # DEPRECATED
+    """
     def get_container(my, xml):
         # handle the container
 
@@ -1349,7 +1369,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         container.add(title_wdg)
 
         return container
-
+    """
 
 
 
@@ -1439,7 +1459,7 @@ class TestStateWdg(BaseRefreshWdg):
 
 
 # DEPRECATED
-
+"""
 class ContainerWdg(BaseRefreshWdg):
 
     def get_args_keys(my):
@@ -1564,6 +1584,7 @@ class ContainerWdg(BaseRefreshWdg):
 
         return divider_div
 
+"""
 
 
 
@@ -1604,7 +1625,6 @@ class SObjectHeaderWdg(BaseRefreshWdg):
         div.add(HtmlElement.hr())
 
         return div
-
 
 
 

@@ -135,28 +135,35 @@ class PopupWdg(BaseRefreshWdg):
     def get_display(my):
 
         div = DivWdg()
-        div.add_style("position: fixed")
-        div.add_style("top: 0px")
-        div.add_style("left: 0px")
-        div.add_style("opacity: 0.4")
-        div.add_style("background", "#000")
-        #div.add_color("background", "background2")
-        div.add_style("padding: 100px")
-        div.add_style("height: 100%")
-        div.add_style("width: 100%")
-        div.add_class("spt_popup_background")
-        div.add_style("display: none")
-        div.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.hide(bvr.src_el);
-            '''
-        } ) 
+
+        if not Container.get_dict("JSLibraries", "spt_popup"):
+            div.add_style("position: fixed")
+            div.add_style("top: 0px")
+            div.add_style("left: 0px")
+            div.add_style("opacity: 0.4")
+            div.add_style("background", "#000")
+            div.add_style("padding: 100px")
+            div.add_style("height: 100%")
+            div.add_style("width: 100%")
+            div.add_class("spt_popup_background")
+            div.add_style("display: none")
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.hide(bvr.src_el);
+                '''
+            } ) 
+
+        Container.put("PopupWdg:background", True)
+
+
 
         # This is the absolute outside of a popup, including the drop shadow
         widget = DivWdg()
         div.add(widget)
         widget.add_class("spt_popup")
+
+
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
             widget.add_behavior( {
@@ -265,6 +272,11 @@ class PopupWdg(BaseRefreshWdg):
 
         drag_div = DivWdg()
 
+        #from tactic.ui.container import ArrowWdg
+        #arrow = ArrowWdg()
+        #drag_div.add(arrow)
+
+
         # FIXME: for some reason, this causes popups to stop functioning after
         # close a couple of times
         my.add_header_context_menu(drag_div)
@@ -273,7 +285,8 @@ class PopupWdg(BaseRefreshWdg):
         # create the 'close' button ...
         if my.allow_close:
             close_wdg = SpanWdg()
-            close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+            close_wdg.add( IconWdg("Close", "BS_REMOVE") )
             close_wdg.add_style("margin: 5px 1px 3px 1px")
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
@@ -289,7 +302,8 @@ class PopupWdg(BaseRefreshWdg):
             # create the 'minimize' button ...
             minimize_wdg = SpanWdg()
             minimize_wdg.add_style("margin: 5px 1px 3px 1px")
-            minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
+            minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {
@@ -320,8 +334,9 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 5px;")
-        drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_style("padding: 12px;")
+        #drag_handle_div.add_gradient("background", "background", +10)
+        drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
         drag_handle_div.add_style("font-weight", "bold")
         drag_handle_div.add_style("font-size", "12px")
@@ -393,8 +408,7 @@ class PopupWdg(BaseRefreshWdg):
         content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
-
-
+        content_div.add_style("margin", "0px, -1px -0px -1px")
 
         content_div.set_id("%s_content" % my.name)
         content_div.add_class("spt_popup_content")
@@ -706,6 +720,8 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 
     spt.show( popup );
 
+    spt.popup.show_background();
+
 
     // @@@
     var rsw_content_box = popup.getElement(".SPT_RSW_CONTENT_BOX");
@@ -718,21 +734,30 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 }
 
 
-spt.popup.close = function( popup_el_or_id )
+spt.popup.close = function( popup_el_or_id , fade, close_fn)
 {
-
-    spt.popup.hide_background();
-
-
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
-    if( ! popup ) { return; }
+    popup = popup ? popup : spt.popup.get_popup(popup_el_or_id);
 
-    spt.hide( popup );
-    spt.popup.hide_all_aux_divs( popup );
+    if (!popup) return;
+
+    if (fade) {
+        popup.fade('out').get('tween').chain(
+        function(){ 
+            spt.hide( popup );
+            if (close_fn) close_fn();
+        });
+    }
+    else {
+        spt.hide( popup );
+    }
+    spt.popup.hide_all_aux_divs( popup, fade );
+
 
     if( popup == spt.popup._focus_el ) {
         spt.popup.release_focus( spt.popup._focus_el );
     }
+    spt.popup.hide_background();
 }
 
 
@@ -750,14 +775,17 @@ spt.popup.toggle_display = function( popup_el_or_id, use_safe_position )
 }
 
 
-spt.popup.hide_all_aux_divs = function( popup_el_or_id )
+spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
 {
     var popup = $(popup_el_or_id);
     var aux_divs = popup.getElements('.SPT_AUX');
     for( var c=0; c < aux_divs.length; c++ )
     {
         var aux = aux_divs[c];
-        spt.hide( aux );
+        if (fade)
+            aux.fade('out');
+        else
+            spt.hide( aux );
     }
 }
 
@@ -823,14 +851,22 @@ spt.popup._position = function( popup, use_safe_position )
 }
 
 
-spt.popup.destroy = function( popup_el_or_id )
+spt.popup.destroy = function( popup_el_or_id, fade )
 {
     var popup = $(popup_el_or_id);
 
-    spt.popup.close( popup );
-    spt.behavior.destroy_element( popup );
-}
+    var destroy_fn = function() {
+        spt.behavior.destroy_element( popup );
+    }
+    if (fade) {
+        spt.popup.close( popup, fade, destroy_fn );
+    }
+    else {
+        spt.popup.close( popup);
+        destroy_fn();
+    }
 
+}
 
 // Dynamically clones the template popup and fill it in with a dynamically
 // loaded widget.  This acts as a behavior
@@ -953,23 +989,7 @@ spt.popup.get_widget = function( evt, bvr )
     content_wdg.setAttribute("spt_kwargs", JSON.stringify(options));
 
 
-    var widget_html = options.html;
-    if ( widget_html != null) {
-        spt.behavior.replace_inner_html( content_wdg, widget_html );
-        popup.setStyle("margin-left", 0);
-        return popup
-    }
-
-    // load the content
-    var server = TacticServerStub.get();
-    var values = {};
-    if (bvr.values) {
-        values = bvr.values;
-    }
-    var kwargs = {'args': args, 'values': values};
-
-
-    var callback = function() {
+     var callback = function() {
 
         // place in the middle of the screen
         var size = popup.getSize();
@@ -993,9 +1013,28 @@ spt.popup.get_widget = function( evt, bvr )
 
     };
 
+    var widget_html = options.html;
+    if ( widget_html != null) {
+        spt.behavior.replace_inner_html( content_wdg, widget_html );
+        popup.setStyle("margin-left", 0);
+        callback();
+        return popup
+    }
+
+    // load the content
+    var server = TacticServerStub.get();
+    var values = {};
+    if (bvr.values) {
+        values = bvr.values;
+    }
+    var kwargs = {'args': args, 'values': values};
+
+
+
     //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
     var widget_html = server.get_widget(class_name, kwargs);
     spt.behavior.replace_inner_html( content_wdg, widget_html );
+
     callback();
 
     return popup;
@@ -1107,15 +1146,9 @@ spt.popup._check_focus_by_target = function( target )
 
     var popup = null;
 
-    // -- ORIGINAL check was this:  if( target.hasClass('spt_popup') ) { ... }
-    // -- but it fails in IE, the target object appears to contain MooTools methods, but they can't be
-    // -- accessed for some reason ... not sure why it's this way in IE. To fix we use lower level calls to check
-    // -- contained class name ...
-    //
-    if( target.className ) {
-        if( target.className.contains_word('spt_popup') ) {  // DO NOT combine this if with outer if statement!!
-            popup = target;
-        }
+    //if( target.hasClass('spt_popup') ) {
+    if( spt.has_class(target, 'spt_popup') ) {
+        popup = target;
     }
 
     if( ! popup ) {

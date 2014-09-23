@@ -55,10 +55,19 @@ spt.hash.set_hash = function(state, title, url) {
     var project = env.get_project();
 
     var pathname = document.location.pathname;
-    // if this is the root, the set the whole path
-    if (pathname == "/") {
-        pathname = "tactic/" + project;
-    }
+    // if this is the root / or /tactic the set the whole path
+    // if it's /tactic/, make the path the project_code
+    var keywords = ['tactic','projects'];
+    for (var k=0; k < keywords.length; k++) {
+        if (pathname == '/' || pathname == '/'+keywords[k]) {
+            pathname = keywords[k] + "/" + project;
+            break;
+        }
+        else if (pathname=='/' +keywords[k]+ '/')  {
+            pathname = project;
+            break;
+        }
+    } 
     var parts = pathname.split("/");
 
     var base_url = [];
@@ -82,6 +91,7 @@ spt.hash.set_hash = function(state, title, url) {
     }
 
     try {
+        
         window.history.pushState(state, title, url);
     }
     catch(e) {

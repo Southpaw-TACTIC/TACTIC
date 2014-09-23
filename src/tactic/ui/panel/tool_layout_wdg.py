@@ -11,7 +11,7 @@
 #
 __all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
-from pyasm.common import Common
+from pyasm.common import Common, Container
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table
 from pyasm.widget import ThumbWdg, IconWdg
@@ -47,9 +47,22 @@ class ToolLayoutWdg(FastTableLayoutWdg):
     def can_select(my):
         return False
 
+    def can_use_gear(my):
+        return True
+
+    def can_use_search(my):
+        return True
 
 
-
+    def init(my):
+        # set up the context menus
+        my.show_context_menu = my.kwargs.get("show_context_menu")
+        if my.show_context_menu in ['false', False]:
+            my.show_context_menu = False
+        elif my.show_context_menu == 'none':
+            pass
+        else:
+            my.show_context_menu = True
 
     def get_display(my):
 
@@ -91,28 +104,27 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_color("background", "background")
+        # This is handled elsewhere
+        #inner.add_color("background", "background")
         inner.add_color("color", "color")
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
 
 
-        from tactic.ui.input import Html5UploadWdg
-        upload_wdg = Html5UploadWdg()
-        inner.add(upload_wdg)
-        my.upload_id = upload_wdg.get_upload_id()
+        if not Container.get_dict("JSLibraries", "spt_html5upload"):
+            from tactic.ui.input import Html5UploadWdg
+            upload_wdg = Html5UploadWdg()
+            inner.add(upload_wdg)
+            my.upload_id = upload_wdg.get_upload_id()
 
-        # set up the context menus
-        menus_in = {
-            'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
-        }
-        SmartMenu.attach_smart_context_menu( inner, menus_in, False )
-
-
-        thumb = ThumbWdg()
-        thumb.handle_layout_behaviors(inner)
+            inner.add_attr('upload_id',my.upload_id)
+        
+        
+        
+        # this interferes with Html5Upload function on first load, commenting it out
+        #thumb = ThumbWdg()
+        #thumb.handle_layout_behaviors(inner)
 
         is_refresh = my.kwargs.get("is_refresh")
         if my.kwargs.get("show_shelf") not in ['false', False]:
@@ -329,6 +341,9 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
+
+    def can_use_gear(my):
+        return False
 
     def get_content_wdg(my):
         from tactic.ui.tools import RepoBrowserWdg

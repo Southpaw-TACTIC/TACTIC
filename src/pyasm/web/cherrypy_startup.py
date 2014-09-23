@@ -154,7 +154,10 @@ class CherryPyStartup(object):
     def __init__(my, port=''):
 
         # It is possible on startup that the database is not running.
+        from pyasm.common import Environment
         from pyasm.search import DbContainer, DatabaseException, Sql
+        plugin_dir = Environment.get_plugin_dir()
+        sys.path.insert(0, plugin_dir)
 
         try:
             sql = DbContainer.get("sthpw")
@@ -213,19 +216,20 @@ class CherryPyStartup(object):
 
         # Windows should handle fine
         #start up the caching system if it's not windows
-        mode = 'complete'
-        if os.name == 'nt':
-            mode = 'basic'
+        cache_mode = Config.get_value("install", "cache_mode")
+        if not cache_mode:
+            cache_mode = 'complete'
+            if os.name == 'nt':
+                cache_mode = 'basic'
+            
         from cache_startup import CacheStartup
-        cmd = CacheStartup(mode=mode)
+        cmd = CacheStartup(mode=cache_mode)
         cmd.execute()
         cmd.init_scheduler()
 
+        # DEPRECATED (but keeping it around"
+        """
         # start up the queue system ...
-        #print "Starting Job Queue ..."
-        #from tactic.command.queue import JobTask
-        #JobTask.start()
-
         if Config.get_value("sync", "enabled") == "true":
             # start up the sync system ...
             print "Starting Transaction Sync ..."
@@ -236,12 +240,14 @@ class CherryPyStartup(object):
             print "Starting Watch Folder Service ..."
             from tactic.command import WatchServerFolderTask
             WatchServerFolderTask.start()
+        """
 
         # start up scheduled triggers
         #from tactic.command import ScheduledTriggerMonitor
         #ScheduledTriggerMonitor.start()
 
-
+        #from pyasm.web import Translation
+        #Translation.install()
 
 
         # close all the threads in this startup thread

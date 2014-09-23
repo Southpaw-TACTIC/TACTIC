@@ -400,6 +400,7 @@ class DatabaseImpl(DatabaseImplInterface):
         else:
             value = str(keywords)
 
+
         # explicitly set the config in case there is an index available
         # TODO: this should be configurable
         config = 'english'
@@ -424,7 +425,10 @@ class DatabaseImpl(DatabaseImplInterface):
             value = '%s:*'%value
         
         wheres = []
-        wheres.append('''to_tsvector('%s', %s)''' % (config, column) )
+        if column_type == 'tsvector':
+            wheres.append(column)
+        else:
+            wheres.append('''to_tsvector('%s', %s)''' % (config, column) )
         wheres.append("@@")
         wheres.append("to_tsquery('%s', '%s')" % (config, value) )
 
@@ -1326,6 +1330,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
+
+
+    def get_float(my, not_null=False):
+        parts = []
+        parts.append("float")
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
 
     def get_text(my, not_null=False):
         parts = []

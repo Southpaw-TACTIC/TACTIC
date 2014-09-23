@@ -64,10 +64,6 @@ class Process(Base):
 
     def get_color(my):
         color = Xml.get_attribute( my.node, "color" )
-        from pyasm.web import Palette
-        theme = Palette.get().get_theme()
-        if theme == 'dark':
-            color = Common.modify_color(color, -50)
         return color
 
     def get_label(my):
@@ -318,7 +314,7 @@ class Pipeline(SObject):
         process_sobjs = search.get_sobjects()
         existing_names = SObject.get_values(process_sobjs, 'process')
 
-        count = 0
+        count = 1
         for process_name in process_names:
 
             exists = False

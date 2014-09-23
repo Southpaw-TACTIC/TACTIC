@@ -20,7 +20,7 @@ from pyasm.widget import ThumbWdg, SelectWdg, ButtonWdg, TextWdg, CheckboxWdg, I
 
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import PopupWdg, RoundedCornerDivWdg, SmartMenu
+from tactic.ui.container import PopupWdg, SmartMenu
 #from tactic.ui.popups import HelpPopupWdg, ActionBarWdg
 from tactic.ui.widget import PageHeaderGearMenuWdg, TextBtnWdg, ActionButtonWdg
 from tactic.ui.input import UploadButtonWdg
@@ -50,8 +50,9 @@ class PageHeaderWdg(Widget):
 
 
         # tactic logo and release info
-        skin = web.get_skin()
-        src = '/context/skins/' + skin + '/images/tactic_logo.png'
+        #skin = web.get_skin()
+        #src = '/context/skins/' + skin + '/images/tactic_logo.png'
+        src = '/context/tactic_logo.png'
         img = HtmlElement.img(src)
         img.add_class('hand')
         img.add_attr('title', 'Go to home page')
@@ -93,7 +94,13 @@ class PageHeaderWdg(Widget):
             thumb.set_icon_size("45")
             td.set_style("vertical-align: top; padding-right:14px;padding-left: 3px")
 
-            td = tactic_header.add_cell( project.get_value("title") )
+            from pyasm.security import Site
+            site = Site.get().get_site()
+            if site:
+                title = "%s : %s " % (site, project.get_value("title"))
+            else:
+                title = project.get_value("title")
+            td = tactic_header.add_cell( title )
             #td.add_looks( "fnt_title_1" )
             td.add_style("font-size: 20px")
             td.add_style("white-space: nowrap")
@@ -113,6 +120,11 @@ class PageHeaderWdg(Widget):
             action_div = DivWdg(action_bar_btn_dd)
             action_div.add_style("margin-top: -5px")
             td = tactic_header.add_cell( action_div )
+
+            if PrefSetting.get_value_by_key('subscription_bar') == 'true':
+                from message_wdg import SubscriptionBarWdg
+                sub = SubscriptionBarWdg(mode='popup')
+                tactic_header.add_cell(sub)
 
         # user login
 

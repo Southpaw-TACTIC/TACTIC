@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2005, Southpaw Technology
+                        All Rights Reserved
+
+    PROPRIETARY INFORMATION.  This software is proprietary to
+    Southpaw Technology, and is not to be reproduced, transmitted,
+    or disclosed in any way without written permission.
+
+
+-->
+
+<config>
+
+<definition>
+</definition>
+
+<edit_definition>
+</edit_definition>
+
+
+<table>
+    <element name="id"/>
+    <element name="name"/>
+    <element name="en"/>
+    <element name="fr"/>
+    <element name="ja"/>
+    <element name="es"/>
+</table>
+
+<edit>
+    <element name="id"/>
+    <element name="name"/>
+    <element name="en"/>
+    <element name="fr"/>
+    <element name="ja"/>
+    <element name="es"/>
+</edit>
+
+
+
+</config>

@@ -18,7 +18,8 @@ from pyasm.widget import TextAreaWdg, ButtonWdg, TextWdg, HiddenWdg, ProdIconBut
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg
-from tactic.ui.widget.button_new_wdg import ActionButtonWdg
+from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 import os
 
@@ -304,46 +305,54 @@ class ShelfEditWdg(BaseRefreshWdg):
         button_div.add(button)
         """
 
-        div.add( HtmlElement.br(clear='all') )
-
-        div.add( HtmlElement.hr() )
-
+        div.add( "<br clear='all'/><br/>")
 
         save_wdg = DivWdg()
+        div.add(save_wdg)
         save_wdg.add_style("padding: 2px 5px 6px 5px")
-        save_wdg.add_color("background", "background", -5)
+        #save_wdg.add_color("background", "background", -5)
+
 
         # script code
-        save_span = SpanWdg()
-        save_span.add("<b>Code: </b>")
+        save_span = Table()
         save_wdg.add(save_span)
-        save_text = TextWdg("shelf_code")
-        save_text.set_value(script_code)
-        save_text.add_attr("readonly", "true")
-        save_text.set_id("shelf_code")
-        save_text.add_class("spt_code")
-        save_wdg.add(save_text)
+        save_span.add_row()
 
-        save_wdg.add("&nbsp;&nbsp;")
+        code_span = SpanWdg()
+        code_span.add("<b>Code: &nbsp;</b>")
+        save_span.add_cell(code_span)
+        code_text = TextInputWdg(name="shelf_code")
+        code_text.add_style("display: inline")
+        code_text.add_style("width: 100px")
+        code_text.set_value(script_code)
+        code_text.add_attr("readonly", "true")
+        code_text.set_id("shelf_code")
+        code_text.add_class("spt_code")
+        td = save_span.add_cell(code_text)
+        td.add_style("padding-top: 10px")
+
+        save_span.add_cell("&nbsp;&nbsp;")
 
         # script name (path??)
-        save_span = SpanWdg()
-        save_span.add("<b>Script Path: </b>")
-        save_wdg.add(save_span)
-        save_text = TextWdg("shelf_folder")
+        save_span.add_cell("<b>Script Path: &nbsp;</b>")
+        save_text = TextInputWdg(name="shelf_folder")
+        save_text.add_style("width: 120px")
         save_text.add_attr("size", "40")
         save_text.set_id("shelf_folder")
         save_text.add_class("spt_folder")
         save_text.set_value(script_folder)
-        save_wdg.add(save_text)
-        save_wdg.add(" / ")
-        save_text = TextWdg("shelf_title")
+        td = save_span.add_cell(save_text)
+        td.add_style("padding-top: 10px")
+
+        save_span.add_cell("&nbsp; / &nbsp;")
+        save_text = TextInputWdg(name="shelf_title")
+        save_text.add_style("width: 350px")
         save_text.add_attr("size", "40")
         save_text.set_id("shelf_title")
         save_text.add_class("spt_title")
         save_text.set_value(script_name)
-        save_wdg.add(save_text)
-        div.add(save_wdg)
+        td = save_span.add_cell(save_text)
+        td.add_style("padding-top: 10px")
 
         from tactic.ui.container import ResizableTableWdg
         table = ResizableTableWdg()
@@ -454,9 +463,9 @@ class ShelfEditWdg(BaseRefreshWdg):
         title.add("Saved Scripts")
         title.add_style("font-size: 14px")
         title.add_color("color", "color")
-        title.add_style("padding: 3px")
+        title.add_style("padding: 8px 3px")
         title.add_style("margin: 0 0 0 -1")
-        title.add_gradient("background", "background")
+        title.add_color("background", "background", -5)
         title.add_border()
         widget.add(title)
 
@@ -511,7 +520,7 @@ class ShelfEditWdg(BaseRefreshWdg):
             span.add(" <i>(%s)</i>" % language)
             div.add(span)
 
-            div.add_event("onmouseover", "this.style.background='%s'" % hover_color)
+            div.add_event("onmou8eover", "this.style.background='%s'" % hover_color)
             div.add_event("onmouseout", "this.style.background='%s'" % bg_color)
 
 
@@ -725,6 +734,8 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
         select = SelectWdg("language")
+        select.add_style("width: 100px")
+        select.add_style("display: inline")
         options_div.add(select)
         select.add_class("spt_language")
         select.set_option("values", "javascript|python|expression|xml")
@@ -742,6 +753,8 @@ class AceEditorWdg(BaseRefreshWdg):
         } )
  
         select = SelectWdg("font_size")
+        select.add_style("width: 100px")
+        select.add_style("display: inline")
         options_div.add(select)
         select.set_option("labels", "8 pt|9 pt|10 pt|11 pt|12 pt|14 pt|16 pt")
         select.set_option("values", "8 pt|9pt|10pt|11pt|12pt|14pt|16pt")
@@ -763,6 +776,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
         select = SelectWdg("keybinding")
+        select.add_style("width: 100px")
         #options_div.add(select)
         select.set_option("labels", "Ace|Vim|Emacs")
         select.set_option("values", "ace|vim|emacs")
@@ -833,6 +847,8 @@ class AceEditorWdg(BaseRefreshWdg):
 
         # theme
         select = SelectWdg("theme")
+        select.add_style("width: 100px")
+        select.add_style("display: inline")
         options_div.add(select)
         select.set_option("labels", "Eclipse|Twilight|TextMate|Vibrant Ink|Merbivore|Clouds")
         select.set_option("values", "eclipse|twilight|textmate|vibrant_ink|merbivore|clouds")
@@ -888,8 +904,9 @@ class AceEditorWdg(BaseRefreshWdg):
         bottom_div.add_border()
         bottom_div.add_style("text-align: center")
         bottom_div.add_style("padding: 2px")
+        bottom_div.add_style("height: 20px")
 
-        bottom_title = "TACTIC Script Editor"
+        bottom_title = "Script Editor"
         bottom_div.add(bottom_title)
 
         icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
@@ -906,7 +923,7 @@ class AceEditorWdg(BaseRefreshWdg):
         #hidden = HiddenWdg("size")
         hidden = TextWdg("size")
         bottom_div.add(hidden)
-        hidden.add_style("width: 65px")
+        hidden.add_style("width: 85px")
         hidden.add_style("text-align: center")
         hidden.add_style("float: right")
         hidden.add_class("spt_size")

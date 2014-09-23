@@ -41,6 +41,12 @@
 
 </definition>
 
+<edit_definition>
+    <element name="widget">
+      <display class="pyasm.widget.TextAreaWdg"/>
+    </element>
+</edit_definition>
+
 
 <table>
     <element name="url" width="200px"/>

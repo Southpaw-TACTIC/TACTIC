@@ -131,10 +131,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '07'
         },
         'show_context_menu': {
-            'description': 'Flag to determine whether to show the context menu',
+            'description': 'Flag to determine whether to show the tactic context menu, default, or none',
             'category': 'Optional',
             'type': 'SelectWdg',
-            'values': 'true|false',
+            'values': 'true|false|none',
             'order': '08'
         },
         
@@ -152,12 +152,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'type': 'TextWdg',
             'order': '10'
         },
-        'init_load_num': {
-            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+        'ingest_data_view': {
+            'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
             'category': 'Optional',
             'order': '11'
         },
+
+        'init_load_num': {
+            'description': 'set the number of rows to load initially. If set to -1, it will not load in chunks',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '12'
+        },
+
 
 
         "temp" : {
@@ -181,8 +189,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return "tactic.ui.table.HiddenRowElementWdg"
         elif display_handler == "pyasm.widget.HiddenRowToggleWdg":
             return "tactic.ui.table.HiddenRowElementWdg"
-
-    
 
     def remap_sobjects(my):
         # find all the distinct search types in the sobjects
@@ -277,6 +283,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         my.is_on = True
         my.grouping_data = False
+
+        my.group_mode = my.kwargs.get("group_mode")
+        if not my.group_mode:
+            my.group_mode = "top"
 
 
         # set some grouping parameters
@@ -376,8 +386,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # reassign the widgets that pass security back to my.widgets
         my.widgets = filtered_widgets
-    
+
+
+
+
     def get_display(my):
+
         # fast table should use 0 chunk size
         my.chunk_size = 0
 
@@ -409,7 +423,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.sobject_levels = []
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
-
+      
         # if a search key has been explicitly set without expression, use that
         expression = my.kwargs.get('expression') 
         matched_search_key = False
@@ -467,6 +481,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_sobject_top")
+        top.add_class("spt_layout_top")
 
         # FIXME: still need to set an id for Column Manager
         top.set_id("%s_layout" % my.table_id)
@@ -489,6 +504,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # The version of the table so that external callbacks
         # can key on this
         inner.add_attr("spt_version", "2")
+        inner.add_style("position: relative")
 
 
 
@@ -633,39 +649,143 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not table_width:
             table_width= ''
         #table_width = '100%'
+        table_width = ''
 
-        sticky_header = False
+
+        # handle column widths
+        column_widths = my.kwargs.get("column_widths")
+        if not column_widths:
+            # The first one is the selection widget
+            column_widths = [60]
+            my.kwargs["column_widths"] = column_widths
+
+        my.element_names = my.config.get_element_names()  
+        #my.element_widths = my.config.get_element_widths()
+        for i, widget in enumerate(my.widgets):
+
+            default_width = my.kwargs.get("default_width")
+            if not default_width:
+                default_width = widget.get_width()
+            else:
+                default_width = int(default_width)
+
+            if not default_width:
+                default_width = 100
+
+            if i >= len(column_widths):
+                # default width
+                column_widths.append(default_width)
+
+            elif not column_widths[i]:
+                column_widths[i] = default_width 
+
+            else: # get width from definition 
+                width = my.attributes[i].get("width")
+                if width:
+                    column_widths[i] = width
+
+
+
+
+        table_width = 30
+        for i in range(0, len(column_widths)):
+            width = column_widths[i]
+            if isinstance(width, basestring):
+                continue
+            table_width += column_widths[i]
+
+        #my.kwargs["column_widths"] = []
+        #table_width = "100%"
+
+        my.kwargs["column_widths"] = column_widths
+
+
+
+        sticky_header = my.kwargs.get("sticky_header")
+        if sticky_header in [False, 'false']:
+            sticky_header = False
+        else:
+            sticky_header = True
+
+        inner.add_style("width: 100%")
+
         if sticky_header:
-            table = Table()
-            my.handle_headers(table)
-            inner.add(table)
+
+            h_scroll = DivWdg()
+            inner.add(h_scroll)
+            h_scroll.add_style("overflow-x: hidden")
+            h_scroll.add_style("overflow-y: none")
+
+            scroll = DivWdg()
+            h_scroll.add(scroll)
+            #scroll.add_style("overflow-y: hidden")
+            #scroll.add_style("overflow-x: none")
+
+            my.header_table = Table()
+            scroll.add(my.header_table)
+
+
+            my.header_table.add_class("spt_table_with_headers")
+            my.header_table.set_unique_id()
+            my.handle_headers(my.header_table)
+            if table_width:
+                my.header_table.add_style("width: %s" % table_width)
+
+            scroll = DivWdg()
+            h_scroll.add(scroll)
+            scroll.add_style("height: 100%")
+            scroll.add_style("height: 500px")
+
+            scroll.add_style("overflow-y: auto")
+            scroll.add_style("overflow-x: hidden")
+            """
+            scroll.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                new Scrollable(bvr.src_el);
+                '''
+                } )
+            """
+
+
+            table = my.table
+            table.add_class("spt_table_table")
+            font_size = my.kwargs.get("font_size")
+            if font_size:
+                table.add_style("font-size: %s" % font_size)
+                my.header_table.add_style("font-size: %s" % font_size)
+            scroll.add(table)
+            #my.handle_headers(table)
             if table_width:
                 table.add_style("width: %s" % table_width)
+
             table.add_color("color", "color")
 
-            # draw the main table
-            table = my.table
-            #inner.add(table)
-            xx = DivWdg()
-            inner.add(xx)
-            xx.add(table)
-            xx.add_style("max-height: 800px")
-            xx.add_style("overflow-y: scroll")
-            xx.add_style("overflow-x: hidden")
-            table.add_class("spt_table_table")
-            if table_width:
-                table.add_style("width: %s" % table_width)
-            table.add_color("color", "color")
+            my.header_table.add_style("table-layout", "fixed")
+            my.table.add_style("table-layout", "fixed")
+
         else:
             table = my.table
-            inner.add(table)
+            my.header_table = table
+
+            # TEST scroll of the table
+            scroll = DivWdg()
+            inner.add(scroll)
+            scroll.add_style("width: 100%")
+            scroll.add_style("overflow-x: auto")
+            scroll.add(table)
+
+            #inner.add(table)
+
             table.add_class("spt_table_table")
+            table.add_class("spt_table_with_headers")
             if table_width:
                 table.add_style("width: %s" % table_width)
             table.add_color("color", "color")
 
-            my.handle_headers(table)
+            my.handle_headers(my.header_table)
 
+            inner.add_style("overflow-x: auto")
 
         table.set_id(my.table_id)
         
@@ -674,6 +794,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         show_context_menu = my.kwargs.get("show_context_menu")
         if show_context_menu in ['false', False]:
             show_context_menu = False
+        elif show_context_menu == 'none':
+            pass
         else:
             show_context_menu = True
 
@@ -685,11 +807,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if show_context_menu:
                 menus_in['DG_HEADER_CTX'] = [ my.get_smart_header_context_menu_data() ]
                 menus_in['DG_DROW_SMENU_CTX'] = [ my.get_data_row_smart_context_menu_details() ]
+            elif show_context_menu == 'none':
+                div.add_event('oncontextmenu', 'return false;')
             if menus_in:
                 SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
 
         for widget in my.widgets:
+            #if my.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             my.drawn_widgets[widget.__class__.__name__] = True
         
@@ -759,14 +884,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             level = len(my.group_columns) + my.sobject_levels[row]
             my.handle_row(table, sobject, row, level)
 
+
         if has_loading:
             table.add_behavior( {
             'type': 'load',
             'chunk': chunk_size,
+            'unique_id': my.get_table_id(),
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
+
+            var unique_id = "loading|"+bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -792,6 +921,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
+                    spt.named_events.fire_event(unique_id, {});
                     return;
                 }
 
@@ -802,7 +932,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
-
+        elif not temp:
+            table.add_behavior( {
+            'type': 'load',
+            'unique_id': my.get_table_id(),
+            'cbjs_action': '''
+                var unique_id = "loading|"+bvr.unique_id;
+                spt.named_events.fire_event(unique_id, {});
+            '''
+            } )
+ 
 
 
 
@@ -831,20 +970,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-     
-        if my.search_limit:
-            limit_span = DivWdg()
-            inner.add(limit_span)
-            limit_span.add_style("margin-top: 4px")
-            limit_span.add_class("spt_table_search")
-            limit_span.add_style("width: 250px")
-            limit_span.add_style("margin: 5 auto")
-            
+            # An empty div like this is not needed. 
+            """
+            if my.show_search_limit:
+                limit_span = DivWdg()
+                limit_span.add_border()
+                inner.add(limit_span)
+                limit_span.add_style("margin-top: 4px")
+                limit_span.add_class("spt_table_search")
+                limit_span.add_style("width: 250px")
+                limit_span.add_style("margin: 5 auto")
+            """
+        
             info = my.search_limit.get_info()
             if info.get("count") == None:
                 info["count"] = len(my.sobjects)
 
-
+            # this simple limit provides pagination and should always be drawn. Visible where applicable
             from tactic.ui.app import SearchLimitSimpleWdg
             limit_wdg = SearchLimitSimpleWdg(
                 count=info.get("count"),
@@ -852,7 +994,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 current_offset=info.get("current_offset"),
             )
             inner.add(limit_wdg)
-            #inner.add("<br clear='all'/>")
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -1075,23 +1216,67 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             } )
 
         widths = my.kwargs.get("column_widths")
-        """
+        #widths = []
+
+        # if no widths are specified, then calculate the widths
         if not widths:
             table.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                setTimeout( function() {
-                spt.table.set_table(bvr.src_el);
-                var headers = spt.table.get_headers();
-                for (var i = 0; i < headers.length; i++) {
-                    var size = headers[i].getSize();
-                    headers[i].setStyle("width", size.x);
-                }
-                bvr.src_el.setStyle("width", "0px")
-                }, 100);
-                '''
+            'type': 'load',
+            'cbjs_action': '''
+            setTimeout( function() {
+
+            spt.table.set_table(bvr.src_el);
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var layout_top = layout.getParent(".spt_layout_top");
+            var width = layout_top.getSize().x;
+
+            //layout_top.setStyle("border", "solid 1px red");
+
+            var header_table = spt.table.get_header_table()
+
+            // make sure the headers width are set
+
+            var headers = spt.table.get_headers();
+            var num_headers = headers.length;
+            var mode = "scale";
+
+            if (mode == "full") {
+                header_table.setStyle("width", "100%")
+                var width = 100 / num_headers;
+                width = parseInt(width) + "%";
+            }
+            else {
+                header_table.setStyle("width", "")
+                bvr.src_el.setStyle("width", "")
+                width = width / (num_headers) - 30;
+            }
+
+            if (width == 0) { return; }
+
+            for (var i = 0; i < headers.length; i++) {
+                headers[i].setStyle("width", width);
+            }
+
+
+            var no_items_el = layout.getElements(".spt_table_no_items");
+            if (no_items_el) {
+                header_table.setStyle("width", "100%")
+                bvr.src_el.setStyle("width", "100%")
+                return;
+            }
+
+
+            var row = spt.table.get_first_row();
+            var cells = row.getElements(".spt_cell_edit");
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].setStyle("width", width);
+            }
+
+            }, 100);
+
+            '''
             } )
-        """
+
 
         # all for collapsing of columns
         table.add_behavior( {
@@ -1109,7 +1294,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # column resizing behavior
-        table.add_smart_styles("spt_resize_handle", {
+        my.header_table.add_smart_styles("spt_resize_handle", {
             "position": "absolute",
             "height": "100px",
             "margin-top": "-3px",
@@ -1119,7 +1304,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-color": ''
         } )
 
-        table.add_behavior( {
+        my.header_table.add_behavior( {
             'type': 'smart_drag',
             'drag_el': '@',
             'bvr_match_class': 'spt_resize_handle',
@@ -1128,6 +1313,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "cbjs_motion": 'spt.table.drag_resize_header_motion(evt, bvr, mouse_411)',
             "cbjs_action": 'spt.table.drag_resize_header_action(evt, bvr, mouse_411)',
         } )
+
+
+
+
 
 
         table.add_relay_behavior( {
@@ -1266,7 +1455,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # set styles at the table level to be relayed down
-        border_color = table.get_color("table_border", default="border")
+        border_color = table.get_color("#EEE", default="border")
         table.add_smart_styles("spt_table_select", {
             "border": "solid 1px %s" % border_color,
             "width": "30px",
@@ -1281,6 +1470,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-repeat": "no-repeat",
             "background-position": "bottom right",
         } )
+
 
 
         # Edit behavior
@@ -1405,12 +1595,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
  
 
-    def handle_headers(my, table):
+    def handle_headers(my, table, hidden=False):
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
         #tr.add_style("display: none")
         tr.add_class("SPT_DTS")
+
+        if hidden:
+            tr.add_style("display: none")
 
         
         autofit = my.view_attributes.get("autofit") != 'false'
@@ -1431,13 +1624,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             border_color = table.get_color("table_border", default="border")
             tr.add_gradient("background", "background", -5, -10)
         else:
-            tr.add_gradient("background", "background", -5, -10)
-            border_color = table.get_color("table_border", -10, default="border")
+            #tr.add_gradient("background", "background", -5, -10)
+            #border_color = table.get_color("table_border", -10, default="border")
+            tr.add_color("background", "background", -5)
+            border_color = table.get_color("#E0E0E0", 0, default="border")
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
         if my.kwargs.get("show_select") not in [False, 'false']:
-            my.handle_select_header(table)
+            my.handle_select_header(table, border_color)
 
         # this comes from refresh
         widths = my.kwargs.get("column_widths")
@@ -1449,30 +1644,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             name = widget.get_name()
 
             th = table.add_header()
-            
-            if widths and len(widths) > i:
-                # this leaves the last column unset. Until there is an explanation, comment this out
-                #if i < len(my.widgets) - 1:
+
+            if widths:
                 th.add_style("width", widths[i])
-                width_set = True
-                width = widths[i]
+            th.add_style("padding: 3px")
 
-            else: # get width from definition 
-                width = my.attributes[i].get("width")
-                if width:
-                     th.add_style("width", width)
-                     width_set = True
-            if width and not autofit:
-                th.add_style("min-width", width)
-            else:
-                th.add_style("overflow","hidden")
-
-        # this is meant for views that haven't been saved to default to fit the whole screen
-      
-
-
-
-
+            # this is meant for views that haven't been saved to default
+            # to fit the whole screen
             th.add_style("text-align: left")
             # The smart menu has to be put on the header and not the
             # row to get row specific info.
@@ -1490,25 +1668,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div = DivWdg()
             th.add(inner_div)
             inner_div.add_style("position: relative")
-            inner_div.add_style("width: 100%")
-            inner_div.add_style("min-width: 20px")
+            inner_div.add_style("width: auto")
             inner_div.add_class("spt_table_header_inner")
             inner_div.add_style("overflow: hidden")
-            inner_div.add_style("padding-top: 3px")
-            inner_div.add_style("padding-bottom: 3px")
 
+            inner_div.add_style("min-width: 20px")
+            inner_div.add_style("margin-top: 4px")
+            inner_div.add_style("margin-bottom: 4px")
 
-            #inner_div.add_behavior( {
-            #'type': 'load',
-            #'cbjs_action': '''
-            #var header = bvr.src_el.getParent(".spt_table_header");
-            #var size = header.getSize();
-            #// need to delay this a little bit for it to take effect
-            #setTimeout( function() {
-            #    bvr.src_el.setStyle("width", size.x-3);
-            #}, 1000 );
-            #'''
-            #} )
+            inner_div.add_style("min-height: 30px")
 
 
 
@@ -1538,22 +1706,19 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             resize_div.add_class("spt_resize_handle")
 
 
-            #resize_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -20})" )
-            #resize_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-
 
             header_div = DivWdg()
             inner_div.add(header_div)
             header_div.add_style("padding: 1px 3px 1px 3px")
+            header_div.add_class("spt_table_header_content")
 
 
             if my.kwargs.get("wrap_headers") not in ["true", True]:
-                header_div.add_style("width: 1000%")
+                header_div.add_style("width: 10000%")
                 #header_div.add_style("whitespace: nowrap")
 
 
 
-            # FIXME: make this into a smart drag
             # put reorder directly here
             behavior = {
                 "type": 'drag',
@@ -1564,7 +1729,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             }
 
             header_div.add_behavior(behavior)
-            th.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
+            table.set_attr('SPT_ACCEPT_DROP', 'DgTableColumnReorder')
 
 
 
@@ -1610,14 +1775,19 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 value = Common.get_display_title(element)
 
             header_div.add(value)
+            if isinstance(value, basestring):
+                header_div.add_style("margin-top: 6px")
 
 
             # provide an opportunity for the widget to affect its header
             widget.handle_th(th, i)
 
         # this is for table where the view hasn't been saved yet (auto generated or built-in)
-        if not width_set:
-            table.add_style('width', '100%')
+        #if not width_set:
+        #    table.add_style('width', '100%')
+
+
+
 
     def has_group_bottom(my):
         '''return True if group_column has group_bottom'''
@@ -1643,7 +1813,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             group_row.add_attr("spt_table_state", "open")
 
             for td in group_row.get_widgets():
-                td.add_style("overflow: hidden")
+                #td.add_style("overflow: hidden")
                 td.add_attr("colspan", "2")
 
 
@@ -1662,7 +1832,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 for group_widget in group_widgets:
                     td = HtmlElement.td()
                     td.add_class('spt_group_cell')
-                    td.add_style("padding: 3px")
+                    td.add_style("padding: 8px 3px")
+                    td.add_style("overflow-x: hidden")
+
+                    if group_widget:
+                        td.add_border(color="#BBB")
+                    else:
+                        td.add_border(color="#BBB", size="1px 0px")
+
                     group_row.add(td)
                     td.add(group_widget)
 
@@ -1719,6 +1896,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
  
 
     def handle_groups(my, table, row, sobject):
+
+        if row == 0:
+            my.group_summary = []
+
+            tr = table.add_row()
+            tr.add_class("spt_table_hidden_group_row")
+            td = table.add_cell()
+            td.add_style("width", "20px")
+            td.add_style("min-width", "20px")
+            td.add_style("max-width", "20px")
+            td = table.add_cell()
+            td.add_style("width", "30px")
+            td.add_style("min-width", "30px")
+            td.add_style("max-width", "30px")
+            for widget in my.widgets:
+                td = table.add_cell()
+                td.add_class("spt_table_hidden_group_td")
+                td.add_attr("spt_element_name", widget.get_name())
+
+
         
         last_group_column = None
         for i, group_column in enumerate(my.group_columns):
@@ -1733,15 +1930,37 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if not group_value:
                 group_value = "__NONE__"
             last_value = my.group_values.get(group_column)
-            
+           
+            # if this is the first row or the group value has changed,
+            # then create a new group
             if last_value == None or group_value != last_value:
-                my.handle_group(table, i, sobject, group_column, group_value)
+
+                if last_value != None:
+                    # group summary
+                    if my.group_mode in ["bottom", "both"]:
+                        tr, td = table.add_row_cell()
+                        tr.set_sobjects(my.group_summary)
+                        tr.add_style("background", "#EEF")
+                        tr.add_class("spt_table_group_row")
+
+                        my.group_summary = []
+                        my.group_rows.append(tr)
+
+                    tr, td = table.add_row_cell()
+                    td.add("&nbsp;")
+                    tr.add_border(size=1)
+
+                if my.group_mode in ["top", "both"]:
+                    my.handle_group(table, i, sobject, group_column, group_value)
 
                 my.group_values[group_column] = group_value
                 last_group_column = group_column
 
+            my.group_summary.append(sobject)
 
-        # what does this do?
+
+
+        # Add the current sobject to the latest group
         if my.group_rows:
             my.group_rows[-1].get_sobjects().append(sobject)
 
@@ -1753,14 +1972,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if i != 0 and not my.is_on:
             tr.add_style("display: none")
 
+        tr.add_class("spt_table_group_row")
+
         unique_id = tr.set_unique_id()
 
-        my.group_rows.append(tr)
+        if my.group_mode in ["top"]:
+            my.group_rows.append(tr)
         
         if group_value == '__NONE__':
             label = '---'
         else:
-            label = Common.process_unicode_string(group_value)
+            group_label_expr = my.kwargs.get("group_label_expr")
+            if group_label_expr:
+                label = Search.eval(group_label_expr, sobject, single=True)
+            else:
+                label = Common.process_unicode_string(group_value)
 
         title = label
         if my.group_by_time:
@@ -1777,13 +2003,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap = SwapDisplayWdg(title=title, icon='FOLDER_GRAY',is_on=my.is_on)
         swap.set_behavior_top(my.table)
         td.add(swap)
+        swap.add_style("width: 800px")
+        swap.add_style("font-weight: bold")
 
         td.add_style("height: 25px")
         td.add_style("padding-left: %spx" % (i*15))
-        td.add_style("border-style: solid")
-        border_color = td.get_color("border")
-        td.add_style("border-width: 0px 0px 0px 1px")
-        td.add_style("border-color: %s" % border_color)
+
+
+        tr.add_border(size=1)
+        tr.add_style("background", "#EEF")
         
         tr.add_attr("spt_unique_id", unique_id)
         tr.add_class("spt_group_row")
@@ -1839,7 +2067,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if i % 2:
                 div.add_color("background", "background")
             else:
-                div.add_color("background", "background", -8)
+                div.add_color("background", "background", -3)
 
 
         msg_div = DivWdg()
@@ -1854,10 +2082,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
         else:
 
+            no_results_msg = my.kwargs.get("no_results_msg")
+
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
-            msg.set_box_shadow("0px 0px 5px")
-            if my.get_show_insert():
+            #msg.set_box_shadow("0px 0px 5px")
+            if no_results_msg:
+                msg.add("<br/>"*2)
+                msg.add(no_results_msg)
+
+            elif my.get_show_insert():
                 msg.add("<br/><br/>Click on the ")
                 icon = IconWdg("Add", IconWdg.ADD)
                 msg.add(icon)
@@ -1893,7 +2127,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # remember the original background colors
         bgcolor1 = table.get_color("background")
-        bgcolor2 = table.get_color("background", -3)
+        bgcolor2 = table.get_color("background", -1)
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
@@ -1931,6 +2165,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
+        tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
 
         display_value = sobject.get_display_value(long=True)
@@ -1942,9 +2177,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         elif sobject.is_insert():
             background = tr.add_color("background-color", "background", [10, -10, -10])
         elif row % 2:
-            background = tr.add_color("background-color", "background")
+            background = tr.add_style("background-color", bgcolor1)
         else:
-            background = tr.add_color("background-color", "background", -3)
+            background = tr.add_style("background-color", bgcolor2)
 
 
 
@@ -1972,10 +2207,32 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         for i, widget in enumerate(my.widgets):
             element_name = widget.get_name()
 
+            # TEST TEST TEST
+            """
+            if element_name == "gantt_test":
+                if row > 0:
+                    td = table.add_cell()
+                    td.add_class("spt_cell_edit")
+                    td.add_attr("spt_input_value", "gantt chart")
+                    if row == 2:
+                        td.add_class("spt_cell_changed")
+                        tr.add_class("spt_row_changed")
+                        td.add("test")
+
+                    continue
+            """
+
             td = table.add_cell()
             td.add_class("spt_cell_edit")
 
-            #td.add(element_name)
+            td.add_style("overflow: hidden")
+
+
+            widths = my.kwargs.get("column_widths")
+            if widths:
+                td.add_style("width", widths[i])
+
+
 
             # Qt webkit ignores these
             if my.browser == 'Qt':
@@ -1996,7 +2253,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         html = widget.get_buffer_display()
                         if not html:
-                            html = "<div style='height: 30px'>&nbsp;</div>"
+                            html = "<div style='height: 14px'>&nbsp;</div>"
                         td.add(html)
                 except Exception, e:
 
@@ -2072,15 +2329,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 #td.add_attr("spt_input_column", column)
             else:
                 td.add_class("spt_cell_no_edit")
-
-
-            """
-            import time
-            start = time.time()
-            diff = time.time() - start
-            my.timer += diff
-            print diff, my.timer
-            """
 
 
 
@@ -2185,21 +2433,25 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
 
 
-    def handle_select_header(my, table):
+    def handle_select_header(my, table, border_color=None):
 
         if my.group_columns:
             spacing = len(my.group_columns) * 20
             th = table.add_cell()
             th.add_style("min-width: %spx" % spacing)
             th.add_style("width: %spx" % spacing)
+            th.add_style("max-width: %spx" % spacing)
 
         th = table.add_cell()
         #th.add_gradient("background", "background", -10)
-        border_color = table.get_color("table_border", -10, default="border")
+        if not border_color:
+            border_color = table.get_color("table_border", 0, default="border")
         th.add_style("border", "solid 1px %s" % border_color)
         th.add_looks( 'dg_row_select_box' )
+        th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
+        th.add_style('max-width: 30px')
 
         th.add_behavior( {
         'type': 'click_up',
@@ -2229,9 +2481,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #my.is_grouped = my.kwargs.get("is_grouped")
         #if my.is_grouped or my.group_columns:
 
-        if my.group_columns:
-            td = table.add_cell()
-            #td.add_color("background-color", "background",-0)
+        
+        if my.group_columns or True:
+            spacing = len(my.group_columns) * 20
+            td = table.add_cell("&nbsp;")
+            td.add_style("min-width: %spx" % spacing)
+            td.add_style("width: %spx" % spacing)
+            td.add_style("max-width: %spx" % spacing)
+
+
 
         td = table.add_cell()
         td.add_class("spt_table_select")
@@ -2344,6 +2602,15 @@ spt.table.get_table = function() {
     return spt.table.last_table;
 }
 
+spt.table.get_header_table = function() {
+    var layout = spt.table.layout;
+    var table = layout.getElement(".spt_table_with_headers");
+    if (!table) {
+        table = spt.table.get_table();
+    }
+    return table;
+}
+
 
 spt.table.get_table_id = function() {
     return spt.table.get_table().getAttribute('id');
@@ -2355,14 +2622,9 @@ spt.table.set_table = function(table) {
         log.critical('Cannot run spt.table.set_table() with an undefined table');
      	return;
     }
-   
-    if (!table.hasClass("spt_table_table")) {
-        table = table.getParent(".spt_table_table");
-    }
-    spt.table.last_table = table;
 
-    spt.table.layout = table.getParent(".spt_layout"); 
-    spt.table.element_names = null;
+    var layout = table.getParent(".spt_layout");
+    spt.table.set_layout(layout);
    
 }
 
@@ -2412,7 +2674,7 @@ spt.table.get_element_names = function() {
 spt.table.get_column_index = function(element_name) {
     var index = -1;
 
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
 
     // first find the index
     var header_row = table.getElement(".spt_table_header_row");
@@ -2477,6 +2739,9 @@ spt.table.get_all_search_keys = function() {
     var search_keys = [];
     // Any future custom row may not have search_key
     for (var i = 0; i < rows.length; i++) {
+        if (rows[i].hasClass("spt_removed")) {
+            continue;
+        }
         var search_key = rows[i].getAttribute("spt_search_key");
         if (search_key)
             search_keys.push(search_key);
@@ -2493,7 +2758,7 @@ spt.table.get_group_rows = function() {
 }
 
 spt.table.get_header_row = function() {
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
     var header_row = table.getElement(".spt_table_header_row");
     return header_row;
 }
@@ -2521,7 +2786,7 @@ spt.table.get_header_by_cell = function(cell) {
 
 
 spt.table.get_headers = function() {
-    var table = spt.table.get_table();
+    var table = spt.table.get_header_table();
     if (!table)
         return [];
 
@@ -2542,6 +2807,14 @@ spt.table.get_all_rows = function(embedded) {
 }
 
 
+spt.table.get_first_row = function(embedded) {
+    var table = spt.table.get_table();
+    var row = table.getElement(".spt_table_row");
+    return row;
+}
+
+
+
 spt.table.get_row_by_cell = function(cell) {
     var row = cell.getParent(".spt_table_row");
     if (!row) {
@@ -2549,6 +2822,21 @@ spt.table.get_row_by_cell = function(cell) {
     }
     return row;
 }
+
+
+
+spt.table.get_row_by_search_key = function(search_key) {
+    var rows = spt.table.get_all_rows();
+    for (var i = 0; i < rows.length; i++) {
+        var row_search_key = rows[i].getAttribute("spt_search_key_v2");
+        if (search_key == row_search_key) {
+            return rows[i];
+        }
+    }
+    return null;
+}
+
+
 
 
 spt.table.get_cells = function(element_name, tr) {
@@ -2575,6 +2863,25 @@ spt.table.get_cell = function(element_name, tr) {
         return null;
     }
     return tds[0];
+}
+
+
+
+spt.table.get_group_cells = function(element_name, tr) {
+    
+    var table = spt.table.get_table();
+    var index = spt.table.get_column_index(element_name);
+    
+    // get all of the cells
+    var tds = [];
+    var rows = tr ? [tr] : table.getElements(".spt_table_group_row");
+    for (var i = 0; i < rows.length; i++) {
+        var row_tds = rows[i].getElements(".spt_group_cell");
+        td = row_tds[index];
+        tds.push(td);
+    }
+
+    return tds;
 }
 
 
@@ -2681,7 +2988,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
 
-
     // position the arrow
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
@@ -2708,6 +3014,11 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         }
       }
     }
+    if (spt.table.last_table.hasOwnProperty('hidden_zindex'))
+        spt.table.last_table.hidden_zindex += 1;
+    else
+        spt.table.last_table.hidden_zindex = 100;
+    
 
     // New popup test
     var kwargs = {
@@ -2720,16 +3031,21 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 
         var shadow_color = spt.table.shadow_color;
 
+        var border_color = "#777";
+
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px #777; position: absolute; z-index: 100; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px;'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
+        var cell = src_el.getParent('.spt_cell_no_edit');
+        var elem_name = spt.table.get_element_name_by_cell(cell)
+        clone.setAttribute('column', elem_name);
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
@@ -2763,12 +3079,19 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 }
 
 
-spt.table.remove_hidden_row = function(row) {
-    var sibling = row.getNext();
+spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
+    // if it is hidden_row, just use it as is without getting Next 
+    var sibling = is_hidden ? row: row.getNext();
+    if (col_name) {
+        while (sibling && sibling.getAttribute('column') != col_name) {
+            sibling = sibling.getNext();
+        }
+    }
+    
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
-        //var child = sibling.firstChild.firstChild.firstChild;
         var child = sibling.getElement(".spt_hidden_content");
+
         if (child) {
             sibling.firstChild.firstChild.setStyle("overflow", "hidden");
             var size = child.getSize();
@@ -2776,7 +3099,7 @@ spt.table.remove_hidden_row = function(row) {
                 duration: "short",
             } )
             fx.addEvent("complete", function() {
-                spt.table.remove_hidden_row(sibling);
+                spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
             fx.start('margin-top', -size.y-100+"px");
@@ -2791,8 +3114,9 @@ spt.table.remove_hidden_row = function(row) {
 
 spt.table.remove_hidden_row_from_inside = function(el) {
     var hidden_row = el.getParent(".spt_hidden_row"); 
-    var row = hidden_row.getPrevious();
-    spt.table.remove_hidden_row(row);
+    var col_name = hidden_row.getAttribute('column');
+    
+    spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
 
@@ -2979,12 +3303,10 @@ spt.table.add_new_item = function(kwargs) {
         kwargs = {};
     }
 
-    var layout = spt.table.get_layout();
-    //var insert_row = layout.getElement(".spt_table_insert_row");
-    insert_rows = layout.getElements(".spt_table_insert_row");
-    var insert_row = insert_rows[insert_rows.length-1];
+    var insert_row = spt.table.get_insert_row();
 
     var row;
+    var position;
     var table = spt.table.get_table();
     if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
@@ -2994,13 +3316,40 @@ spt.table.add_new_item = function(kwargs) {
         else {
             row = rows[rows.length-1];
         }
+        position = "after";
+
     }
     else {
-        row = table.getElement(".spt_table_header_row");
+        row = table.getElement(".spt_table_row");
+        position = "before";
     }
 
+
     var clone = spt.behavior.clone(insert_row);
-    clone.inject(row, "after");
+
+    if (!row) {
+        var first = table.getElement("tr");
+        if (first) {
+            clone.inject(first, position);
+        }
+        else {
+            table.appendChild(clone);
+        }
+    }
+    else {
+        var clone_cells = clone.getElements("td");
+        var cells = row.getElements("td");
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            var clone_cell = clone_cells[i];
+            var size = cell.getSize();
+            clone_cell.setStyle("width", size.x);
+        }
+
+        clone.inject(row, position);
+
+
+    }
     spt.remove_class(clone, 'spt_clone');
 
     // find the no items row
@@ -3624,6 +3973,15 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     spt.table.last_edit_wdg = null;
     spt.kbd.clear_handler_stack();
 
+
+    var table_layout = spt.table.get_layout();
+    var save_button = table_layout.getElement(".spt_save_button");
+    if (save_button) {
+        save_button.setStyle("display", "");
+    }
+
+
+
 }
 
 
@@ -3684,6 +4042,13 @@ spt.table.set_changed_color = function(row, cell) {
         row.setStyle("background-color", "#C0CC99");
         cell.setStyle("background-color", "#909977");
         row.setAttribute("spt_background", "#C0CC99");
+        /*
+        var el = cell;
+        el.setStyle("background", "#EFE");
+        el.setStyle("border-color", "#0F0");
+        el.setStyle("border-style", "solid");
+        el.setStyle("border-width", "2px 1px 1px 2px");
+        */
     }
 }
 
@@ -3872,24 +4237,19 @@ spt.table.save_changes = function(kwargs) {
    
 
     //add to the values here for gantt and inline elements
-    /*
-    if (td.getAttribute("spt_input_type") =='inline') {
-        var xx = spt.api.Utility.get_input_values(td, '.spt_data', false);
-        values['data'] = xx;
-    }
-    else if (td.getAttribute("spt_input_type") =='gantt') {
-        //var gantt_values = spt.api.Utility.get_input_values(td);
-        var gantt_values = spt.api.Utility.get_input_values(td, '.spt_gantt_data', false);
-        values['gantt_data'] = gantt_values['gantt_data'];
-    }
-    else if (td.hasClass('spt_uber_notes')) {
-        var option_el = td.getElement('.spt_uber_note_option');
-        var note_options = spt.api.Utility.get_input_values(option_el, '.spt_input', false);
-        values[column + '_option'] = note_options;
-
-    }*/
-
     web_data = JSON.stringify(web_data);
+    
+    var search_top = null;
+    var table = spt.table.get_table();
+    
+    var search_dict = {};
+    var view_panel = table.getParent('.spt_view_panel[table_id=' + table.id + ']' );
+    if (view_panel) {
+        search_top = view_panel.getElement('.spt_search');
+        search_dict = spt.table.get_search_values(search_top);
+       
+    }
+    
     try {
         var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
         var info = result.info;
@@ -3897,7 +4257,7 @@ spt.table.save_changes = function(kwargs) {
             search_keys = info.search_keys;
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
-                var kw = {refresh_bottom : true};
+                var kw = {refresh_bottom : true, json: search_dict};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
             } 
         }
@@ -4037,7 +4397,6 @@ spt.table.get_refresh_kwargs = function(row) {
 
 
 spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
-
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
         for (var i = 0; i < rows.length; i++) {
@@ -4055,18 +4414,23 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
+    //var layout = spt.table.get_layout();
+    // this is more reliable when multi table are drawn in the same page while
+    // refresh is happening
+    var layout = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout);
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
-    var layout = spt.table.get_layout();
+
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
     var config_xml = layout.getAttribute("spt_config_xml");
 
     
     var table_top = layout.getParent('.spt_table_top');
-    
-    var show_select = table_top.getAttribute("spt_show_select");
+    //note: sometimes table_top is null
+    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
@@ -4086,6 +4450,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
+        icon_generate_refresh: kw.icon_generate_refresh,
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
@@ -4102,7 +4467,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
     // update all of the changed rows
-    var kwargs;
     if (kw['cbjs_action']) {
         kwargs = {
           'args': kwargs,
@@ -4287,7 +4651,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         return;
     }
 
-    var header_row = table.getElement(".spt_table_header_row");
+    var header_table = spt.table.get_header_table();
+    var header_row = header_table.getElement(".spt_table_header_row");
 
     // add the headers
     var cells = data_header_row.getElements(".spt_table_header");
@@ -4521,6 +4886,65 @@ spt.table.get_group_states = function() {
 
 
 
+// setting width of columns
+
+spt.table.set_column_width = function(element_name, width) {
+    var table = spt.table.get_table();
+    var header_table = spt.table.get_header_table();
+
+    var row = spt.table.get_first_row();
+    var cell = spt.table.get_cell(element_name, row);
+    if (!cell) {
+        //alert("Cell for ["+element_name+"] does not exist");
+        return;
+    }
+
+    var row = table.getElement(".spt_table_hidden_group_row");
+    if (row) {
+        var els = row.getElements(".spt_table_hidden_group_td");
+        for (var i = 0; i < els.length; i++) {
+            if (element_name == els[i].getAttribute("spt_element_name")) {
+                els[i].setStyle("width", width);
+                continue;
+            }
+            
+        }
+    }
+
+
+    var headers = spt.table.get_headers();
+    var total_width = 0;
+    for (var i = 0; i < headers.length; i++) {
+        var header = headers[i];
+        if (header.getAttribute("spt_element_name") == element_name) {
+            total_width += width;
+        }
+        else {
+            var size = header.getSize();
+            total_width += size.x;
+        }
+        
+
+    }
+
+
+
+
+    var curr_header = spt.table.get_header_by_cell(cell);
+
+    table.setStyle("width", total_width);
+    header_table.setStyle("width", total_width);
+
+
+    curr_header.setStyle("width", width);
+    cell.setStyle("width", width);
+
+    //size = curr_header.getSize();
+    //size = cell.getSize();
+
+}
+
+
 
 
 
@@ -4541,9 +4965,20 @@ spt.table.drag_init();
 spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
+
+    var layout = src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout)
+
+
     var header = src_el.getParent(".spt_table_header");
+
     var header_inner = src_el.getParent(".spt_table_header_inner");
-    var table = src_el.getParent(".spt_table_table");
+
+
+    //var table = src_el.getParent(".spt_table_table");
+    var header_table = spt.table.get_header_table();
+    var table = spt.table.get_table();
+
     spt.table.last_table = table;
     spt.table.last_table_size = table.getSize();
     spt.table.last_header = header;
@@ -4551,6 +4986,12 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     spt.table.last_size = header.getSize();
     spt.table.last_mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
 
+
+
+    return;
+
+
+    /*
     spt.table.smallest_size = -1;
 
     // set all of the header sizes
@@ -4588,6 +5029,7 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
         if (el == null) { continue; }
         spt.table.resize_div.push( el );
     }
+    */
 
 
 }
@@ -4599,6 +5041,15 @@ spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
 
     var dx = mouse_411.curr_x - spt.table.last_mouse_pos.x;
     var x = spt.table.last_size.x + dx;
+
+    var element_name = spt.table.last_header.getAttribute("spt_element_name");
+    spt.table.set_column_width(element_name, x);
+
+
+    return;
+
+
+
 
     /* This is not needed any more
     if ( x < spt.table.smallest_size ) {
@@ -4651,31 +5102,39 @@ spt.table.pos = null;
 spt.table.resize_handles = null;
 spt.table.resize_positions = null;
 spt.table.drop_index = -1;
+spt.table.resize_layout = null;
 
 spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
 {
     var src_el = spt.behavior.get_bvr_src( bvr );
+    var layout = src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout);
+    spt.table.resize_layout = layout;
+
     var table = src_el.getParent(".spt_table_table");
-    var pos = src_el.getPosition();
-    var pos = {x:0, y:0};
 
     var cell = src_el.getParent(".spt_table_header");
     var size = cell.getSize();
 
+
+    var layout_pos = layout.getPosition(document.body);
+
+
     spt.table.last_table = table;
-    spt.table.pos = pos;
+    spt.table.pos = layout_pos;
 
     // create a clone
     var clone = spt.behavior.clone(bvr.src_el);
     spt.table.clone = clone;
 
-    clone.inject(bvr.src_el.parentNode,'before')
+    clone.inject(layout)
 
     clone.setStyle("position", "absolute");
-    clone.setStyle("left", mouse_411.curr_x-pos.x+5);
-    clone.setStyle("top", mouse_411.curr_y-pos.y+5);
+    clone.setStyle("left", mouse_411.curr_x-layout_pos.x+5);
+    clone.setStyle("top", mouse_411.curr_y-layout_pos.y+5);
     clone.setStyle("width", size.x);
-    //clone.setStyle("width", "100%");
+    clone.setStyle("max-width", "200px");
+    clone.setStyle("min-height", "30px");
     //clone.setStyle("height", size.y);
     clone.setStyle("background", "yellow");
     clone.setStyle("border", "solid 1px black");
@@ -4699,13 +5158,16 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
 
 spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
 {
-    var table_pos = spt.table.pos;
+    var layout = spt.table.resize_layout;
+
+    var layout_pos = spt.table.pos;
     var clone = spt.table.clone;
 
     var clone_pos = {
-        x: mouse_411.curr_x-table_pos.x+5,
-        y: mouse_411.curr_y-table_pos.y+5
+        x: mouse_411.curr_x - layout_pos.x,
+        y: mouse_411.curr_y - layout_pos.y
     }
+
     clone.setStyle("left", clone_pos.x+5);
     clone.setStyle("top", clone_pos.y+5);
 
@@ -4713,7 +5175,7 @@ spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
     var smallest_dd = -1;
     var index = -1;
     for (var i = 0; i < spt.table.resize_handles.length; i++) {
-        var pos = spt.table.resize_handles[i].getPosition();
+        var pos = spt.table.resize_handles[i].getPosition(layout);
         var dd = (pos.x-clone_pos.x)*(pos.x-clone_pos.x) + (pos.y-clone_pos.y)*(pos.y-clone_pos.y);
         if (smallest_dd == -1 || dd < smallest_dd) {
             smallest_dd = dd;
@@ -4755,6 +5217,12 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
     // reorder the header
     var headers = spt.table.get_headers();
     headers[src_index].inject(headers[drop_index], "after");
+
+    // It's possible that layout gets reset somewhere during the drag
+    var src_el = spt.behavior.get_bvr_src( bvr );
+    var layout = src_el.getParent(".spt_layout");
+    spt.table.set_layout(layout);
+
 
     // reorder the cells
     var rows = spt.table.get_all_rows();
@@ -4903,9 +5371,12 @@ spt.table.delete_rows = function(rows) {
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = function(id) {
+            spt.behavior.destroy_element($(id));
+        }
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+            row.addClass("spt_removed");
             if (layout.getAttribute("spt_version") == "2") {
                 spt.table.remove_hidden_row(row);
             }
@@ -4917,6 +5388,30 @@ spt.table.delete_rows = function(rows) {
 
     return;
 }
+
+
+spt.table.remove_rows = function(rows) {
+    var layout = spt.table.get_layout();
+    var on_complete = function(id) {
+        spt.behavior.destroy_element($(id));
+    }
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        row.addClass("spt_removed");
+        if (layout.getAttribute("spt_version") == "2") {
+            spt.table.remove_hidden_row(row);
+        }
+        Effects.fade_out(row, 500, on_complete);
+    }
+
+}
+
+
+spt.table.remove_selected = function() {
+    var rows = spt.table.get_selected_rows();
+    spt.table.remove_rows(rows);
+}
+
 
 
 spt.table.delete_selected = function()
@@ -4932,11 +5427,6 @@ spt.table.delete_selected = function()
 
     return;
 
-    /*
-    var bvr = { src_el: spt.table.layout };
-    spt.dg_table.drow_smenu_delete_cbk({}, bvr)
-    spt.table.operate_selected('delete');
-    */
 }
 
 spt.table.retire_selected = function()
@@ -5060,12 +5550,10 @@ spt.table.open_ingest_tool = function(search_type) {
             %s
             spt.table.set_table(bvr.src_el);
             
-            
             ''' %cbjs_action
 
 
         hidden_row_color = table.get_color("background3")
-
 
         table.add_behavior( {
             'type': 'load',
@@ -5082,7 +5570,39 @@ spt.table.open_ingest_tool = function(search_type) {
         } )
 
 
+        element_names = my.element_names
+        column_widths = my.kwargs.get("column_widths")
+        if not column_widths:
+            column_widths = []
+        table.add_behavior( {
+            'type': 'load',
+            'element_names': my.element_names,
+            'column_widths': column_widths,
+            'cbjs_action': '''
 
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            // determine the widths of the screen
+            var size = layout.getSize();
+
+            var total_size = 30 + 32;
+            for (var i = 0; i < bvr.column_widths.length; i++) {
+                total_size += bvr.column_widths[i];
+            }
+
+            if (size.x > total_size) {
+                bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
+            }
+
+
+            for (var i = 0; i < bvr.element_names.length; i++) {
+                var name = bvr.element_names[i];
+                var width = bvr.column_widths[i];
+                spt.table.set_column_width(name, width);
+            }
+            '''
+        } )
 
 
     #

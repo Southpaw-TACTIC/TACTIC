@@ -216,6 +216,12 @@ TacticServerStub = function() {
         return this._delegate("get_message", arguments);
     }
 
+    this.get_messages = function(keys) {
+        return this._delegate("get_messages", arguments);
+    }
+
+
+
 
     this.log_message = function(key, message, kwargs) {
         return this._delegate("log_message", arguments, kwargs);
@@ -332,7 +338,9 @@ TacticServerStub = function() {
             }
             else if (mode == 'copy') {
                 applet.copy_file(file_path, handoff_dir + '/' +  basename);
+                // it moves from handoff to repo during check-in
             }
+            mode = 'create';
 
             // this is meant for 3.8, commented out for now
             /*
@@ -379,8 +387,10 @@ TacticServerStub = function() {
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var rel_path = file.relative_dir + "/" + file.file_name;
-                var repo_path = client_repo_dir + "/" + rel_path
-                applet.copy_file(file_path, repo_path);
+                var repo_path = client_repo_dir + "/" + rel_path;
+                var tmp_path = repo_path + ".temp";
+                applet.copy_file(file_path, tmp_path);
+                applet.move_file(tmp_path, repo_path);
                 var md5 = applet.get_md5(repo_path);
                 this.update(file, {md5: md5});
 
@@ -429,6 +439,7 @@ TacticServerStub = function() {
                     applet.move_file(path, handoff_dir+'/'+basename);
                 }
                 use_handoff_dir = true;
+                mode = 'create';
             }
             else if (mode == 'copy') {
                 for (var i = 0; i < expanded_paths.length; i++) {
@@ -439,6 +450,7 @@ TacticServerStub = function() {
                     applet.copy_file(path, handoff_dir+'/'+basename);
                 }
                 use_handoff_dir = true;
+                mode = 'create';
             }
             // use a custom protocol
             else if (mode == 'custom') {
@@ -526,6 +538,7 @@ TacticServerStub = function() {
                 applet.copytree(dir, handoff_dir + "/" + basename);
                 kwargs.use_handoff_dir = true;
             }
+            mode = 'create';
         }
         else if (mode == 'upload') {
             var files = applet.upload_directory(dir);
@@ -591,6 +604,7 @@ TacticServerStub = function() {
                 applet.copytree(dir, handoff_dir + "/" + basename);
             }
             use_handoff_dir = true;
+            mode = 'create';
         }
         else if (mode in {'manual':''}) {
             // files are already in handoff
@@ -641,6 +655,7 @@ TacticServerStub = function() {
                 applet.copy_file(file, handoff_dir + "/" + basename);
             }
             use_handoff_dir = true;
+            mode = 'create';
         }
         else if (mode in {'manual':''}) {
             // files are already in handoff
@@ -753,6 +768,10 @@ TacticServerStub = function() {
             transfer_mode = spt.Environment.get().get_transfer_mode();
             kwargs.mode = transfer_mode;
         }
+        if (! kwargs.mode ) {
+            kwargs.mode = 'web';
+        }
+
 
         if (kwargs.mode in {'client_repo':'', 'web':''} == false) {
             throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
@@ -851,6 +870,17 @@ TacticServerStub = function() {
     this.get_snapshot = function(search_key, kwargs) {
         return this._delegate("get_snapshot", arguments, kwargs);
     }
+
+
+    this.get_snapshots_by_relative_dir = function(relative_dir, kwargs) {
+        return this._delegate("get_snapshots_by_relative_dir", arguments, kwargs);
+    }
+
+    this.get_sobjects_by_relative_dir = function(relative_dir, kwargs) {
+        return this._delegate("get_sobjects_by_relative_dir", arguments, kwargs);
+    }
+
+
 
     this.get_client_dir = function(snapshot_code, kwargs) {
         return this._delegate("get_client_dir", arguments, kwargs);
@@ -1119,7 +1149,7 @@ TacticServerStub = function() {
 
 
     
-    this.execute_execute_transaction = function(transaction_xml, kwargs) {
+    this.execute_transaction = function(transaction_xml, kwargs) {
         return this._delegate("execute_transaction", arguments, kwargs);
     }
 

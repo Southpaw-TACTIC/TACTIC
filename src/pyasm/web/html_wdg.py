@@ -843,7 +843,13 @@ class HtmlElement(Widget):
         href.add_event('onclick', '%s; return false;'%script)
         return href
     js_href = staticmethod(js_href)
-    
+
+    def label(widget=None):
+        element = HtmlElement("label")
+        element.add(widget)
+        return element
+    label = staticmethod(label)
+
     def div(widget=None):
         element = HtmlElement("div")
         element.add(widget)
@@ -934,6 +940,14 @@ class HtmlElement(Widget):
         return element
     button = staticmethod(button)
 
+
+    def text(value=""):
+        element = HtmlElement("input")
+        if value:
+            element.add_attr("value", value)
+        element.set_attr("type", "text")
+        return element
+    text = staticmethod(text)
 
     def textarea(rows=1,cols=10,widget=None):
         element = HtmlElement("textarea")

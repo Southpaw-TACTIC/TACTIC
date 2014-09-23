@@ -30,12 +30,18 @@ class UploadServerWdg(Widget):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
+        files = []
+
+
         # HTML5 upload
         if num_files:
             num_files = int(num_files)
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
+                if not field_storage:
+                    continue
+
                 file_name = web.get_form_value("file_name%s"% i)
                 if not file_name:
                     file_name = my.get_file_name(field_storage)
@@ -45,14 +51,21 @@ class UploadServerWdg(Widget):
 
         else:
             field_storage = web.get_form_value("file")
-            file_name = web.get_form_value("file_name0")
-            if not file_name:
-                file_name = my.get_file_name(field_storage)
+            if field_storage:
+                file_name = web.get_form_value("file_name0")
+                if not file_name:
+                    file_name = web.get_form_value("filename")
 
-            files = my.dump(field_storage, file_name)
+                if not file_name:
+                    file_name = my.get_file_name(field_storage)
 
-        print "files: ", files
-        return "file_name=%s\n" % ','.join(files)
+                files = my.dump(field_storage, file_name)
+
+        if files:
+            print "files: ", files
+            return "file_name=%s\n" % ','.join(files)
+        else:
+            return "NO FILES"
 
 
 
@@ -97,23 +110,51 @@ class UploadServerWdg(Widget):
             file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
 
 
-
         # With some recent change done in cherrypy._cpreqbody line 294
         # we can use the field storage directly and just move the file
         # without using FileUpload
         path = field_storage.get_path()
         if path and file_name:
+
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
-            shutil.move(path, to_path)
+            
+            if os.name == 'nt':
+                # windows does not do anything.. and it shouldn't even get to 
+                # this point for windows.
+                pass
+            else:
+                f = open(path, 'rb')
+                header = f.read(22)
+                if header.startswith("data:image/png;base64,"):
+                    data = f.read()
+                    import base64
+                    decode = base64.b64decode(data)
+                    f2 = open(to_path, 'wb')
+                    f2.write(decode)
+                    f2.close()
+                else:
+                    shutil.move(path, to_path)
+                f.close()
+                    
+            # Because _cpreqbody makes use of mkstemp, the file permissions
+            # are set to 600.  This switches to the permissions as defined
+            # by the TACTIC users umask
+            try:
+                current_umask = os.umask(0)
+                os.umask(current_umask)
+                os.chmod(to_path, 0o666 - current_umask)
+            except Exception, e:
+                print "WARNING: ", e
+
             return [to_path]
 
 
 
         # This may be DEPRECATED
-        raise Exception("Upload method is DEPRECATED")
+        #raise Exception("Upload method is DEPRECATED")
 
 
 

@@ -178,7 +178,7 @@ class DialogWdg(BaseRefreshWdg):
             var init_offset = {x: bvr.offset.x, y: bvr.offset.y + 5};
             var offset = {
                 x: pos.x + bvr.offset.x,
-                y: pos.y + size.y + bvr.offset.y + 5
+                y: pos.y + size.y + bvr.offset.y + 10
             };
             
             var dialog = $(bvr.dialog_id);
@@ -207,7 +207,7 @@ class DialogWdg(BaseRefreshWdg):
                 var pointer = dialog.getElement(".spt_popup_pointer");
                 if (pointer) {
                     pointer_pos = pointer.getPosition();
-                    pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
+                    //pointer.position({position: 'upperleft', relativeTo: bvr.src_el, offset: init_offset } );
                 }
 
             }
@@ -281,27 +281,22 @@ class DialogWdg(BaseRefreshWdg):
 
         show_pointer = my.kwargs.get("show_pointer")
         if show_pointer not in [False, 'false']:
-        
-            pointer_wdg = DivWdg()
-            widget.add(pointer_wdg)
-            pointer_wdg.add_class("spt_popup_pointer")
-            pointer_wdg.add_style("border-left: 12px solid transparent")
-            pointer_wdg.add_style("border-right: 12px solid transparent")
-            bgcolor = pointer_wdg.get_color("background", -10)
-            pointer_wdg.add_style("border-bottom: 14px solid %s" % bgcolor)
-            pointer_wdg.add_style("position: absolute")
-
-            pointer_wdg.add_style("left: %s" % (15-offset.get('x')))
-            pointer_wdg.add_style("top: -24")
-            pointer_wdg.add_style("height: 11")
-
-            pointer_wdg.add_style("z-index: 10")
-
+            from tactic.ui.container import ArrowWdg
+            offset_x = 15 - offset.get('x')
+            offset_y = offset.get("y")
+            arrow = ArrowWdg(
+                    offset_x=offset_x,
+                    offset_y=offset_y,
+                    color=widget.get_color("background", -10)
+            )
+            arrow.add_class("spt_popup_pointer")
+            arrow.add_style("z-index: 10")
+            widget.add(arrow)
 
 
         # create the 'close' button ...
         close_wdg = SpanWdg()
-        close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
+        close_wdg.add( IconWdg("Close", "BS_REMOVE") )
         close_wdg.add_style("float: right")
         close_wdg.add_class("hand")
         close_wdg.add_style("margin: 3px 1px 3px 1px")
@@ -317,7 +312,7 @@ class DialogWdg(BaseRefreshWdg):
         anchor_wdg = SpanWdg()
         drag_div.add(anchor_wdg)
         anchor_wdg.add_style("margin: 3px 1px 3px 1px")
-        anchor_wdg.add( IconWdg("Anchor Dialog", IconWdg.POPUP_ANCHOR) )
+        anchor_wdg.add( IconWdg("Anchor Dialog", "BS_PUSHPIN") )
         anchor_wdg.add_style("float: right")
         anchor_wdg.add_class("hand")
 
@@ -365,6 +360,7 @@ class DialogWdg(BaseRefreshWdg):
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -10)
         drag_handle_div.add_color("color", "color")
+        drag_handle_div.add_style("padding: 8px 5px 8px 8px")
 
         drag_handle_div.add_behavior({
             'type': 'double_click',
@@ -387,6 +383,8 @@ class DialogWdg(BaseRefreshWdg):
         } )
 
 
+        # add the content
+        content_div = DivWdg()
         
         title_wdg = my.title_wdg
         if not title_wdg:
@@ -394,6 +392,8 @@ class DialogWdg(BaseRefreshWdg):
             # if the title is empty, just don't show
         if my.kwargs.get("show_title") in [False, 'false']:
             drag_div.add_style("display: none")
+        #else:
+        #    content_div.add_style("margin-top: -1px")
 
 
         drag_handle_div.add(title_wdg)
@@ -401,8 +401,6 @@ class DialogWdg(BaseRefreshWdg):
         drag_handle_div.add_style("font-weight: bold")
 
 
-        # add the content
-        content_div = DivWdg()
         widget.add(content_div)
         content_div.add_color("color", "color2")
         content_div.add_gradient( "background", "background2" )

@@ -118,6 +118,9 @@ class BaseTableElementWdg(HtmlElement):
     can_async_load = classmethod(can_async_load)
 
 
+    def get_width(my):
+        return my.width
+
 
     # This should be a widget that is very high up in the hierarchy
     # where global behaviors can be put in
@@ -178,14 +181,14 @@ class BaseTableElementWdg(HtmlElement):
         column'''
         if my.title:
             title = my.title
-            return title
+        else:
+            title = my.name
+            if not title:
+                title = ""
+                return title
 
-        title = my.name
-        if not title:
-            title = ""
-            return title
-
-        title = Common.get_display_title(title)
+            title = Common.get_display_title(title)
+        title = _(title)
         return title
 
 
@@ -1069,6 +1072,9 @@ class XmlWdg(BaseTableElementWdg):
 
     def is_editable(my):
         return True
+
+    def get_width(my):
+        return 600
 
     def get_display(my):
         sobject = my.get_current_sobject()

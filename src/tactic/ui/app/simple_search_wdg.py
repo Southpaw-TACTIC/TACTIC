@@ -132,7 +132,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             widget = config.get_display_widget(element_name)
             if not widget:
-                widget = KeywordFilterElementWdg()
+                widget = KeywordFilterElementWdg(column='code|description')
                 widget.set_name(element_name)
 
             data = element_data_dict.get(element_name)
@@ -179,18 +179,20 @@ class SimpleSearchWdg(BaseRefreshWdg):
         my.content.add_style("margin: -2 -1 -2 -2")
 
 
-        search_wdg = my.get_search_wdg()
-        table.add_row()
-        search_wdg.add_style("float: middle")
+        show_search = False
+        if show_search:
+            search_wdg = my.get_search_wdg()
+            table.add_row()
+            search_wdg.add_style("float: middle")
 
-        search_wdg.add_style("padding-top: 6px")
-        search_wdg.add_style("height: 33px")
+            search_wdg.add_style("padding-top: 6px")
+            search_wdg.add_style("padding-left: 10px")
+            search_wdg.add_style("height: 33px")
 
-
-        td = table.add_cell()
-        td.add_border()
-        td.add(search_wdg)
-        td.add_color("background", "background", -10)
+            td = table.add_cell()
+            td.add_border()
+            td.add(search_wdg)
+            td.add_color("background", "background", -10)
 
 
 
@@ -445,7 +447,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             if not widget:
-                widget = KeywordFilterElementWdg()
+                # the default for KeywordFilterElementWdg is mode=keyword
+                widget = KeywordFilterElementWdg(column='code|description')
                 widget.set_name(element_name)
                 
 

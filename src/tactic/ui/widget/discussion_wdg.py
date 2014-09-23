@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -108,11 +108,15 @@ class DiscussionElementWdg(BaseTableElementWdg):
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
+
         edit_wdg = DiscussionEditWdg()
-        my.menu  = edit_wdg.get_menu()
+        my.menu = edit_wdg.get_menu()
 
         th.add(edit_wdg)
-       
+
+
+    def get_width(my):
+        return 400
        
    
 
@@ -188,9 +192,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
 
         return top
-
-    def handle_td(my, td):
-        td.add_style("padding: 0px")
 
 
 
@@ -452,10 +453,11 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-        match_class = cls.get_note_class(hidden)
+        match_class = cls.get_note_class(hidden, 'spt_discussion_add')
         layout.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': match_class,
+            'hidden': hidden,
 
             'cbjs_action': '''
 
@@ -475,6 +477,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var layout = spt.table.get_layout();
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
+                kwargs.hidden = bvr.hidden;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -534,10 +537,11 @@ class DiscussionWdg(BaseRefreshWdg):
             '''
             } )
 
+        submit_class = cls.get_note_class(hidden, 'spt_discussion_submit') 
         # for the Submit button
         layout.add_relay_behavior( {
         'type': 'mouseup',
-        'bvr_match_class': 'spt_discussion_submit',
+        'bvr_match_class': submit_class,
         'cbjs_action': '''
 
         var note_top = bvr.src_el.getParent(".spt_add_note_top");
@@ -608,12 +612,12 @@ class DiscussionWdg(BaseRefreshWdg):
         parent = sobject.get_parent()
         return parent
 
-    def get_note_class(cls, hidden):
+    def get_note_class(cls, hidden, cls_name):
         ''' An attempt to separate the main table relay and hidden table relay. Otherwise it will toggle twice making it look like the button doesn't work'''
         if hidden == True:
-            return 'spt_discussion_add_hidden'
+            return '%s_hidden'%cls_name
         else:
-            return 'spt_discussion_add'
+            return cls_name
 
     get_note_class = classmethod(get_note_class)
 
@@ -1043,7 +1047,7 @@ class DiscussionWdg(BaseRefreshWdg):
             #add_wdg.add_style("margin-top: -7px")
             #add_wdg.add_style("margin-right: -2px")
   
-            add_class = my.get_note_class(my.hidden) 
+            add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
             #add_wdg.add_class(add_class)
 
             no_notes_msg = DivWdg()
@@ -1053,7 +1057,8 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_div.add(no_notes_msg)
             add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
             no_notes_msg.add(add_wdg)
-            no_notes_msg.add("<i>-- No notes. Click to add. --</i>")
+            msg = "No notes. Click to add."
+            no_notes_msg.add("<i>-- %s --</i>" % _(msg))
             no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
 
@@ -1256,7 +1261,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                     add_wdg.add_attr("spt_process", process)
                     add_wdg.add_attr("spt_context", context)
-                    add_class = my.get_note_class(my.hidden) 
+                    add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
                     add_wdg.add_class(add_class)
 
                     sk = my.parent.get_search_key(use_id=True)
@@ -1379,9 +1384,6 @@ class DiscussionWdg(BaseRefreshWdg):
             add_wdg.add_style("margin-top: -7px")
             add_wdg.add_style("margin-right: -3px")
             #dialog.set_as_activator(add_wdg)
-
-            add_class = my.get_note_class(my.hidden) 
-            add_wdg.add_class(add_class)
 
             add_wdg.add_attr("spt_process", process)
             add_wdg.add_attr("spt_context", context)
@@ -1531,6 +1533,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         date_obj = dateutil.parser.parse(date)
+        date_obj = SPTDate.convert_to_local(date_obj)
         display_date_full = date_obj.strftime("%b %d, %Y %H:%M")
         display_date = date_obj.strftime("%b %d - %H:%M")
         title.add(display_date)
@@ -1680,6 +1683,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
     def init(my):
+        my.hidden = my.kwargs.get("hidden")
         my.append_processes = my.kwargs.get("append_process")
         if my.append_processes:
             my.append_processes = my.append_processes.split(",")
@@ -1833,7 +1837,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         add_button = ActionButtonWdg(title="Submit", tip='Submit information to create a new note')
         content_div.add(add_button)
         add_button.add_style("float: right")
-        add_button.add_class("spt_discussion_submit")
+
+        submit_class = DiscussionWdg.get_note_class(my.hidden, 'spt_discussion_submit') 
+        add_button.add_class(submit_class)
 
 
         # attachments
