@@ -860,8 +860,9 @@ class Task(SObject):
                 bid_duration = int(bid_duration)
 
             end_date = start_date.copy()
-            # for a task to be x days long, we need duration x-1.
-            end_date.add_days(duration-1)
+            if duration >= 1:
+                # for a task to be x days long, we need duration x-1.
+                end_date.add_days(duration-1)
 
 
             # output contexts could be duplicated from 2 different outout processes
