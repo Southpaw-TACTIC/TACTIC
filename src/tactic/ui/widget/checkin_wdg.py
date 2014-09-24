@@ -5426,6 +5426,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         my.base_search_type = Project.extract_base_search_type(my.search_type)
 
         my.search_id = my.parent.get_id()
+        # Fix History context filter can't list contexts
+        # add search_code value
+        my.search_code = my.parent.get_code()
 
         my.context = my.kwargs.get("history_context")
         state = my.get_state()
@@ -5444,9 +5447,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         return "latest"
 
 
-    def get_snapshot_contexts(my, search_type, search_id):
+    # Fix History context filter can't list contexts
+    # Change search_id to search_code
+    def get_snapshot_contexts(my, search_type, search_code):
         '''get the contexts for the snapshots'''
-        return Snapshot.get_contexts(search_type, search_id)
+        return Snapshot.get_contexts(search_type, search_code)
 
 
     def get_display(my):
@@ -5458,10 +5463,17 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             my.search_type = args.get('search_type')
         if not my.search_id:
             my.search_id = args.get('search_id')
+        # Fix History context filter can't list contexts
+        # add search_code value
+        if not my.search_code:
+            my.search_code = args.get('search_code')
         # get from cgi
         if not my.search_type:
             my.search_type = web.get_form_value("search_type")
             my.search_id = web.get_form_value("search_id")
+            # Fix History context filter can't list contexts
+            # add search_code value
+            my.search_code = web.get_form_value("search_code")
 
 
 
@@ -5481,7 +5493,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
 
-        div.add( my.get_filter_wdg(my.search_type, my.search_id) )
+        # Fix History context filter can't list contexts
+        # Change search_id to search_code
+        div.add( my.get_filter_wdg(my.search_type, my.search_code) )
 
         # get the sobject
         sobject = Search.get_by_id(my.search_type, my.search_id)
@@ -5528,7 +5542,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         return div
 
 
-    def get_filter_wdg(my, search_type, search_id):
+    # Fix History context filter can't list contexts
+    # Change search_id to search_code
+    def get_filter_wdg(my, search_type, search_code):
         filter_wdg = DivWdg()
 
         color = filter_wdg.get_color("table_border", default="border")
@@ -5578,7 +5594,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # find all of the contexts that have been checked in
         
-        contexts = my.get_snapshot_contexts(search_type, search_id)
+        # Fix History context filter can't list contexts
+        # Change search_id to search_code
+        contexts = my.get_snapshot_contexts(search_type, search_code)
 
 
         # set the context if one has been passed in
