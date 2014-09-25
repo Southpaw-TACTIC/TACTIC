@@ -682,7 +682,7 @@ class Search(Base):
 
         from pyasm.biz import Schema
 
-        if project_code == 'sthpw':
+        if my.project_code == 'sthpw':
             related_project_code = sobject.get_project_code()
             schema = Schema.get(project_code=related_project_code)
         else:
@@ -787,6 +787,7 @@ class Search(Base):
             schema = Schema.get(project_code=related_project_code)
         else:
             schema = Schema.get(project_code=project_code)
+
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )

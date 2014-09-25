@@ -420,13 +420,16 @@ class SearchTest(unittest.TestCase):
         my.assertEquals("Cowser", name_last )
 
         # test related search
-        sto_search = Search('vfx/storyboard?project=vfx')
+        sto_search = Search('prod/shot?project=sample3d')
         sobjects = sto_search.get_sobjects()
+        my.assertEquals(len(sobjects) > 1, True)
+
         search = Search('sthpw/login')
 
         # this should not cause errors if there is schema connection between storyboard and login
         login_sobjects = search.add_relationship_filters(sobjects)
-        login_sobject = search.add_relationship_filter(sobjects[0])
+        if sobjects:
+            login_sobject = search.add_relationship_filter(sobjects[0])
 
 
     def _test_search_type(my):
