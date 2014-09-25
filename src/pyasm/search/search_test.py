@@ -419,7 +419,14 @@ class SearchTest(unittest.TestCase):
         name_last = person.get_attr_value("name_last")
         my.assertEquals("Cowser", name_last )
 
+        # test related search
+        sto_search = Search('vfx/storyboard?project=vfx')
+        sobjects = sto_search.get_sobjects()
+        search = Search('sthpw/login')
 
+        # this should not cause errors if there is schema connection between storyboard and login
+        login_sobjects = search.add_relationship_filters(sobjects)
+        login_sobject = search.add_relationship_filter(sobjects[0])
 
 
     def _test_search_type(my):

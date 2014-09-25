@@ -674,14 +674,20 @@ class Search(Base):
         #related_type = sobject.get_base_search_type()
         search_type = my.get_search_type()
         related_type = sobject.get_search_type()
-
+        
         if search_type == related_type:
             print "WARNING: related type and search type are the same for [%s]" % search_type
             my.add_id_filter(sobject.get_id())
             return
 
         from pyasm.biz import Schema
-        schema = Schema.get(project_code=my.project_code)
+
+        if project_code == 'sthpw':
+            related_project_code = sobject.get_project_code()
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=my.project_code)
+        
         attrs = schema.get_relationship_attrs(search_type, related_type, path)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -761,6 +767,7 @@ class Search(Base):
 
         search_type = my.get_base_search_type()
         related_type = sobjects[0].get_base_search_type()
+        
         project_code = my.project_code
         # should go by this search_type's project_code
 
@@ -775,7 +782,11 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get(project_code=project_code)
+        if project_code == 'sthpw':
+            related_project_code = sobjects[0].get_project_code()
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -933,7 +944,11 @@ class Search(Base):
             return True
 
         from pyasm.biz import Schema
-        schema = Schema.get(project_code=my.project_code)
+        if my.project_code == 'sthpw':
+            related_project_code = search.project_code
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
