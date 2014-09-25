@@ -514,6 +514,11 @@ class TacticMonitor(object):
         my.check_interval = 120
         my.num_processes = num_processes
         my.dev_mode = False
+
+        import sys
+        plugin_dir = Environment.get_plugin_dir()
+        sys.path.insert(0, plugin_dir)
+
         sql = DbContainer.get("sthpw")
         # before batch, clean up the ticket with a NULL code
         sql.do_update('DELETE from "ticket" where "code" is NULL;')
