@@ -627,9 +627,11 @@ class CalendarWdg(BaseRefreshWdg):
             weekday = my.WEEKDAYS[day.weekday()]
 
         div = DivWdg()
-        div.add_style("border-bottom: solid 1px %s" % div.get_color("border"))
+        #div.add_style("border-bottom: solid 1px %s" % div.get_color("border"))
 
         div.add_style("font-weight: bold")
+        div.add_style("padding: 3px 0px 3px 0px")
+        div.add_style("text-align: center")
         div.add( weekday )
         return div
 
@@ -641,7 +643,7 @@ class CalendarWdg(BaseRefreshWdg):
         div.add_style("text-align: center")
         div.add_class("spt_calendar_day hand")
 
-        div.add_style("padding: 3px 6px 3px 6px")
+        div.add_style("padding: 9px 12px 6px 12px")
 
         # NOTE: The bvr below is now added thru relay behavior
 
@@ -829,14 +831,16 @@ class CalendarInputWdg(BaseInputWdg):
 
 
         if show_activator:
-            icon = IconWdg("Calendar", IconWdg.DATE)
+            #icon = IconWdg("Calendar", IconWdg.DATE)
+            icon = IconWdg("Calendar", "BS_CALENDAR")
             icon.add_class('hand')
 
             icon_div = DivWdg(icon)
             icon_div.add_class("spt_cal_input_show_cal_btn")  # tag this button so we can find it to hide/show
             icon_div.add_class("APP_CLICK_OFF_TOP_EL")
-            icon_div.add_styles("float: left; margin-top: 4px")
+            icon_div.add_style("margin-top: 4px")
             my.top.add(icon_div)
+            icon_div.add_style("float: left")
 
             icon.add_behavior( {
                 "type": "click_up",

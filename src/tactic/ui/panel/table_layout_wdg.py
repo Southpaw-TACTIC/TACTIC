@@ -1304,6 +1304,31 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "background-color": ''
         } )
 
+
+
+        my.header_table.add_relay_behavior( {
+            'type': 'mouseover',
+            'drag_el': '@',
+            'bvr_match_class': 'spt_resize_handle',
+            "cbjs_action": '''
+            bvr.src_el.setStyle("background", "#FF0");
+            '''
+        } )
+
+        my.header_table.add_relay_behavior( {
+            'type': 'mouseout',
+            'drag_el': '@',
+            'bvr_match_class': 'spt_resize_handle',
+            "cbjs_action": '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+
+
+
+
         my.header_table.add_behavior( {
             'type': 'smart_drag',
             'drag_el': '@',
@@ -1709,10 +1734,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # Qt webkit ignores these
             # This is fixed in PySide 1.1.2.  Need to update OSX version
             # before commenting this all out
-            if my.browser == 'Qt' and os.name != 'nt':
-                th.add_style("background-repeat: no-repeat")
-                th.add_style("background-position: bottom right")
-                th.add_style("vertical-align: top")
+            th.add_style("background-repeat: no-repeat")
+            th.add_style("background-position: bottom center")
+            th.add_style("vertical-align: top")
 
 
 
@@ -2109,8 +2133,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 msg.add(no_results_msg)
 
             elif my.get_show_insert():
-                msg.add("<br/><br/>Click on the ")
-                icon = IconWdg("Add", IconWdg.ADD)
+                msg.add("<br/><br/>Click on the &nbsp;")
+                icon = IconWdg("Add", "BS_PLUS")
                 msg.add(icon)
                 msg.add(" button to add new items")
                 msg.add("<br/>")

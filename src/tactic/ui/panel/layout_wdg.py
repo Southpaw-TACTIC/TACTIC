@@ -5076,7 +5076,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         title_wdg = DivWdg()
         content_wdg.add(title_wdg)
-        title_wdg.add_style("padding: 3px")
+        title_wdg.add_style("padding: 10px 3px")
         title_wdg.add_color("background", "background3")
         title_wdg.add_color("color", "color")
         title_wdg.add_style("margin: 0px -10px 5px -10px")
@@ -5313,8 +5313,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.widget import SingleButtonWdg
-        add_button = SingleButtonWdg(title="Add New Custom Columns", icon=IconWdg.ADD)
+        from tactic.ui.widget import ActionButtonWdg
+        add_button = ActionButtonWdg(title="Add")
         shelf_wdg.add(add_button)
         shelf_wdg.add("<br clear='all'/>")
 

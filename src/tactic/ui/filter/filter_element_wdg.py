@@ -960,7 +960,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 width ='230',
                 hint_text=hint_text,
                 case_sensitive = my.case_sensitive,
-                icon=my.kwargs.get("icon")
+                icon=my.kwargs.get("icon"),
+                height="42px"
         )
         value = my.values.get("value")
         if value:

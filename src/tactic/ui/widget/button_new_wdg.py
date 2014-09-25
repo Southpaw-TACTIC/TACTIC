@@ -1109,6 +1109,8 @@ class ActionButtonWdg(DivWdg):
         # no need to define top
         #my.add(top)
 
+        my.add_style("margin: 0px 3px")
+
         opacity = my.kwargs.get("opacity")
         if not opacity:
             opacity = 1.0 
@@ -1225,10 +1227,10 @@ class ActionButtonWdg(DivWdg):
 
 
 
-	if my.browser == 'Qt' and os.name != 'nt':
+        if my.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
         else:
-	    button.add_style("top: 6px")
+            button.add_style("top: 6px")
 
         # BOOTSTRAP
         button.add_class('btn')

@@ -808,10 +808,11 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add_class("spt_panel_user_top")
         top.add_style("min-width: 400px")
 
-        button = SingleButtonWdg(title="Advanced Security", icon=IconWdg.LOCK)
+        #button = SingleButtonWdg(title="Advanced Security", icon=IconWdg.LOCK)
+        button = ActionButtonWdg(title="Security")
         top.add(button)
         button.add_style("float: right")
-        button.add_style("margin-top: -8px")
+        #button.add_style("margin-top: -8px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -823,10 +824,11 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New User", icon=IconWdg.ADD)
+        #button = SingleButtonWdg(title="Add", tip="Add New User", icon=IconWdg.ADD)
+        button = ActionButtonWdg(title="Add", tip="Add New User")
         top.add(button)
         button.add_style("float: left")
-        button.add_style("margin-top: -8px")
+        #button.add_style("margin-top: -8px")
         top.add("<br clear='all'/>")
         button.add_behavior( {
             'type': 'click_up',

@@ -504,7 +504,7 @@ class EditWdg(BaseRefreshWdg):
         if not width:
             width = my.kwargs.get("width")
         if not width:
-            width = 500
+            width = 600
         table.add_style("width: %s" % width)
 
         height = attrs.get('height')
@@ -611,7 +611,7 @@ class EditWdg(BaseRefreshWdg):
                     if i % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -5)
+                        tr.add_color("background", "background", -3)
 
 
 
