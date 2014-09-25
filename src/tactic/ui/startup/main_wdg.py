@@ -36,7 +36,7 @@ class SectionWdg(BaseRefreshWdg):
 
         return my.get_main_section_wdg(title, description, image, behavior)
 
-    def get_main_section_wdg(my, title, description, image, behavior):
+    def get_main_section_wdg(my, title, description, image, behavior, img_height="64px"):
 
         section_wdg = DivWdg()
         #section_wdg.set_round_corners()
@@ -86,17 +86,17 @@ class SectionWdg(BaseRefreshWdg):
         desc_div.add(description)
         desc_div.add_style("padding: 5px 10px 10px 10px")
         #desc_div.add_style("font-size: 1.5em")
-	#desc_div.add_style("font-weight: bold")	
+        #desc_div.add_style("font-weight: bold")	
 
         div = DivWdg()
         section_wdg.add(div)
         div.add_style("padding: 3px")
         div.add_style("margin: 10px")
         div.add_style("width: 209px")
-        div.add_style("height: 64px")
-	div.add_style("text-align: center")
+        div.add_style("height: %s" % img_height)
+        div.add_style("text-align: center")
         div.add(image)
-	#div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
 
