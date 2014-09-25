@@ -654,6 +654,16 @@ class Site(object):
         return {}
     get_site_data = classmethod(get_site_data)
  
+    def get_asset_dir(cls):
+        return
+    get_asset_dir = classmethod(get_asset_dir)
+ 
+ 
+    def get_web_dir(cls):
+        return
+    get_web_dir = classmethod(get_web_dir)
+ 
+
 
     #######################
 
@@ -662,7 +672,10 @@ class Site(object):
         if not class_name:
             class_name = "pyasm.security.Site"
         #class_name = "spt.modules.portal.PortalSite"
-        site = Common.create_from_class_path(class_name)
+        try:
+            site = Common.create_from_class_path(class_name)
+        except Exception, e:
+            site = Site()
         return site
     get = classmethod(get)
 

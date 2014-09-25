@@ -524,8 +524,6 @@ class BaseAppServer(Base):
     def handle_security(my, security):
         # set the seucrity object
 
-        print "handle security"
-
         WebContainer.set_security(security)
 
         # see if there is an override
@@ -604,8 +602,6 @@ class BaseAppServer(Base):
 
         # for now apply the access rules after
         security.add_access_rules()
-
-        print "... end handle_security"
 
         return security
 

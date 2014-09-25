@@ -24,6 +24,10 @@ class Batch(Environment):
     def __init__(my, project_code=None, login_code=None):
         my.set_app_server("batch")
 
+        plugin_dir = Environment.get_plugin_dir()
+        if plugin_dir not in sys.path:
+            sys.path.insert(0, plugin_dir)
+
         super(Batch,my).__init__()
 
         my.login_code = login_code

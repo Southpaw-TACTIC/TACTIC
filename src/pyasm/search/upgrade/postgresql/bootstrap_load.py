@@ -18,7 +18,7 @@ from pyasm.search import DatabaseImpl
 
 from tactic.command import PluginCreator, PluginInstaller
 
-import os
+import os, sys
 
 
 class FakeSecurity(object):
@@ -41,6 +41,9 @@ class FakeSecurity(object):
 def import_bootstrap():
     print "Importing bootstrap ..."
     vendor = "PostgreSQL"
+
+    plugin_dir = Environment.get_plugin_dir()
+    sys.path.insert(0, plugin_dir)
 
     impl = DatabaseImpl.get(vendor)
     impl.create_database("sthpw")

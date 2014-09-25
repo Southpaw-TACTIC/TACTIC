@@ -89,6 +89,7 @@ class CherryPyStartup(CherryPyStartup20):
         #print stacktrace_str
         #print "-"*50
 
+        # Dump out the error
         print "WARNING: ", path, status, message
         try:
             eval("cherrypy.root.tactic.%s" % project_code)
@@ -99,10 +100,18 @@ class CherryPyStartup(CherryPyStartup20):
             has_project = True
 
 
+        # make sure the appropriate site is set (based on the ticket)
+        from pyasm.security import Site
+        cookie = cherrypy.request.cookie["login_ticket"].value
+        site = Site.get().get_by_ticket(cookie)
+        Site.set_site(site)
+
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
         project = Project.get_by_code(project_code)
         if not has_project and project and project.get_value("type") != 'resource':
+
+            print "register ..."
 
             startup = cherrypy.startup
             config = startup.config

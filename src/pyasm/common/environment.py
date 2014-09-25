@@ -504,6 +504,13 @@ class Environment(Base):
 
     def get_asset_dir(cls, file_object=None, alias=None):
         '''get base asset directory'''
+
+        from pyasm.security import Site
+        asset_dir = Site.get().get_asset_dir()
+        if asset_dir:
+            return asset_dir
+
+
         if file_object:
             alias = file_object.get_value('base_dir_alias')
 
@@ -518,12 +525,14 @@ class Environment(Base):
             if data_dir:
                 asset_dir = "%s/assets" % data_dir
 
+
         return asset_dir
 
     get_asset_dir = classmethod(get_asset_dir)
 
 
     def get_web_dirs(cls):
+
         alias_dict = Config.get_dict_value("checkin", "web_base_dir")
 
         # add in an implicit plugin dir
@@ -542,6 +551,13 @@ class Environment(Base):
 
     def get_web_dir(cls, file_object=None, alias=None):
         '''get base web directory'''
+
+        from pyasm.security import Site
+        web_dir = Site.get().get_web_dir()
+        if web_dir:
+            return web_dir
+
+
         if file_object:
             alias = file_object.get_value('base_dir_alias')
 
