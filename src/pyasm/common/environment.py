@@ -505,17 +505,19 @@ class Environment(Base):
     def get_asset_dir(cls, file_object=None, alias=None):
         '''get base asset directory'''
 
-        from pyasm.security import Site
-        asset_dir = Site.get().get_asset_dir()
-        if asset_dir:
-            return asset_dir
-
-
         if file_object:
             alias = file_object.get_value('base_dir_alias')
 
         if not alias:
             alias = "default"
+
+
+
+        from pyasm.security import Site
+        asset_dir = Site.get().get_asset_dir(file_object=file_object,alias=alias)
+        if asset_dir:
+            return asset_dir
+
 
         alias_dict = cls.get_asset_dirs()
         asset_dir = alias_dict.get(alias)
@@ -552,17 +554,17 @@ class Environment(Base):
     def get_web_dir(cls, file_object=None, alias=None):
         '''get base web directory'''
 
-        from pyasm.security import Site
-        web_dir = Site.get().get_web_dir()
-        if web_dir:
-            return web_dir
-
-
         if file_object:
             alias = file_object.get_value('base_dir_alias')
 
         if not alias:
             alias = "default"
+
+        from pyasm.security import Site
+        web_dir = Site.get().get_web_dir(file_object=file_object,alias=alias)
+        if web_dir:
+            return web_dir
+
 
         alias_dict = cls.get_web_dirs()
         web_dir = alias_dict.get(alias)

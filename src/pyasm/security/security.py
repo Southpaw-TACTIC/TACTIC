@@ -654,14 +654,18 @@ class Site(object):
         return {}
     get_site_data = classmethod(get_site_data)
  
-    def get_asset_dir(cls):
+    def get_asset_dir(cls, file_object=None, alias=None):
         return
     get_asset_dir = classmethod(get_asset_dir)
  
  
-    def get_web_dir(cls):
+    def get_web_dir(cls, file_object=None, alias=None):
         return
     get_web_dir = classmethod(get_web_dir)
+
+
+    def get_default_project(cls):
+        return
  
 
 
@@ -912,6 +916,9 @@ class Security(Base):
             return my._ticket.get_key()
         else:
             return ""
+
+    def clear_ticket(my):
+        my_ticket = ""
 
 
     def get_access_manager(my):

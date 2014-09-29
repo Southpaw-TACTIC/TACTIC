@@ -2684,9 +2684,13 @@ class ExceptionMinimalWdg(Widget):
 
 
         # ignore
+        button_div = DivWdg()
+        widget.add(button_div)
+        button_div.add_style("width: 75px")
+        button_div.add_style("margin: 0 auto")
+
         button = ActionButtonWdg(title="Go to Admin")
-        widget.add(button)
-        button.add_style("margin: 0 auto")
+        button_div.add(button)
 
         # click the top layout and jump to default page
         button.add_event('onclick', '''window.location='%s' '''%url )

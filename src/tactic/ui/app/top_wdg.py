@@ -747,20 +747,27 @@ class IndexWdg(Widget):
 class SitePage(AppServer):
     def __init__(my, context=None):
         super(SitePage,my).__init__()
-        my.context = context
+        my.project_code = context
         my.custom_url = None
 
 
     def set_templates(my):
-        if my.context:
-            context = my.context
-        else:
-            context = WebContainer.get_web().get_full_context_name()
+
+        #if my.project_code:
+        #    project_code = my.project_code
+        #else:
+        #    project_code = WebContainer.get_web().get_full_context_name()
+        project_code = WebContainer.get_web().get_full_context_name()
+        if project_code == "default":
+            project_code = Project.get_default_project()
+
+        #if not project_code:
+        #    project_code = my.project_code
+        print "project_code: ", project_code
+        print "project_code2: ", my.project_code
 
         try:
-
-            SearchType.set_global_template("project", context)
-
+            SearchType.set_global_template("project", project_code)
         except SecurityException, e:
             print "WARNING: ", e
 

@@ -750,7 +750,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         info_page.add("<b>Is Main Project? </b>")
 
         checkbox = CheckboxWdg("is_main_project")
-        default_project_code = Config.get_value("install", "default_project")
+        default_project_code = Project.get_default_project()
         info_page.add(checkbox)
         if default_project_code:
             default_project = Project.get_by_code(default_project_code)

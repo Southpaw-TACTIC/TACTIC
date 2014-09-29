@@ -1132,14 +1132,30 @@ class DbResource(Base):
 
 
 
+    def clear_cache(cls):
+        key = "Project:db_resource_cache"
+        Container.put(key, None)
+    clear_cache = classmethod(clear_cache)
+
+
     def get_default(cls, database, use_cache=True, use_config=False):
+        key = "Project:db_resource_cache"
+
         # NOTE: this should be moved DatabaseImpl
         if use_cache:
-            key = "Project:db_resource:%s"%database
-            db_resource = Container.get(key)
+            #key = "Project:db_resource:%s"%database
+            #db_resource = Container.get(key)
+            #if db_resource != None:
+            #    return db_resource
+
+            db_resource_dict = Container.get(key)
+            if not db_resource_dict:
+                db_resource_dict = {}
+                Container.put(key, db_resource_dict)
+
+            db_resource = db_resource_dict.get(database)
             if db_resource != None:
                 return db_resource
-
 
         # evaluate ticket
         ticket = Environment.get_ticket()
@@ -1175,7 +1191,9 @@ class DbResource(Base):
 
         db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
         if use_cache:
-            Container.put(key, db_resource)
+            db_resource_dict[database] = db_resource
+
+
         return db_resource
     get_default = classmethod(get_default)
 

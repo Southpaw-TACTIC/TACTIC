@@ -254,6 +254,7 @@ class CherryPyStartup(CherryPyStartup20):
 
         # find out if one of the projects is the root
         root_initialized = False
+        """
         for project in projects:
             project_code = project.get_code()
             if False:
@@ -262,9 +263,10 @@ class CherryPyStartup(CherryPyStartup20):
                 cherrypy.root.projects = SitePage(project_code)
                 root_initialized = True
                 break
+        """
 
         if not root_initialized:
-            project_code = Config.get_value("install", "default_project")
+            project_code = Project.get_default_project()
             if project_code and project_code !='default':
                 from tactic.ui.app import SitePage
                 cherrypy.root.tactic = SitePage(project_code)
