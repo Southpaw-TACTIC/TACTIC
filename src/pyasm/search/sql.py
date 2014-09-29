@@ -1157,6 +1157,7 @@ class DbResource(Base):
             if db_resource != None:
                 return db_resource
 
+
         # evaluate ticket
         ticket = Environment.get_ticket()
 

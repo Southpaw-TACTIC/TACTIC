@@ -74,11 +74,22 @@ class SectionWdg(BaseRefreshWdg):
         bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
         '''
         } )
+
         section_wdg.add_behavior( {
-        'type': 'mouseout',
+        'type': 'mouseenter',
         'shadow': shadow,
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 15px " + bvr.shadow);
+        bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
+        ''',
+        } )
+
+
+
+        section_wdg.add_behavior( {
+        'type': 'mouseleave',
+        'shadow': shadow,
+        'cbjs_action': '''
+        bvr.src_el.setStyle("box-shadow", "0px 0px 0px " + bvr.shadow);
         ''',
         } )
 

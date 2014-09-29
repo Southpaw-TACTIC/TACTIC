@@ -597,14 +597,6 @@ class Project(SObject):
         if search_type.startswith('sthpw/'):
             # get the local db_resource
             db_resource = DbResource.get_default('sthpw')
-            """
-            host = Config.get_value("database", "host")
-            vendor = Config.get_value("database", "vendor")
-            port = Config.get_value("database", "port")
-            user = Config.get_value("database", "user")
-            password = DbPasswordUtil.get_password()
-            db_resource = DbResource(database="sthpw", host=host, port=port, vendor=vendor, user=user, password=password)
-            """
             return db_resource
 
 
