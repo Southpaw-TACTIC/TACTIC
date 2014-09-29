@@ -561,7 +561,8 @@ class Environment(Base):
             alias = "default"
 
         from pyasm.security import Site
-        web_dir = Site.get().get_web_dir(file_object=file_object,alias=alias)
+        site = Site.get()
+        web_dir = site.get_web_dir(file_object=file_object,alias=alias)
         if web_dir:
             return web_dir
 
