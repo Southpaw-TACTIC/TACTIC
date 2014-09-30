@@ -206,11 +206,13 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panels = []
 
+        show_security = my.kwargs.get("show_security")
+
 
         user_panel = DivWdg()
         user_panel.add_style("padding-top: 3px")
         user_panel.add_style("overflow-y: auto")
-        user_panel.add( UserPanelWdg() )
+        user_panel.add( UserPanelWdg(show_security=show_security) )
         user_panel.add_style("min-height: 100px")
         user_panel.add_style("height: 400px")
         user_panel.add_class("spt_resizable")
@@ -223,7 +225,9 @@ class UserConfigWdg(ProjectConfigWdg):
 
 
         from tactic.ui.container import TabWdg
-        config_xml = '''
+        config_xml = []
+
+        config_xml.append('''
         <config>
         <tab>
         <element name="Help">
@@ -231,13 +235,20 @@ class UserConfigWdg(ProjectConfigWdg):
               <alias>main</alias>
               <width>1000px</width>
             </display>
-        </element>
+        </element>''')
+
+
+        config_xml.append('''
         <element name="Users in Project">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
         </tab>
         </config>
-        '''
+        ''')
+
+
+        config_xml = "\n".join(config_xml)
+
         tab = TabWdg(show_add=False, config_xml=config_xml)
 
 
@@ -808,19 +819,20 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add_class("spt_panel_user_top")
         top.add_style("min-width: 400px")
 
-        #button = SingleButtonWdg(title="Advanced Security", icon=IconWdg.LOCK)
-        button = ActionButtonWdg(title="Security")
-        top.add(button)
-        button.add_style("float: right")
-        #button.add_style("margin-top: -8px")
-        button.add_behavior( {
+        show_security = my.kwargs.get("show_security")
+        if show_security not in ['false', False]:
+            button = ActionButtonWdg(title="Security")
+            top.add(button)
+            button.add_style("float: right")
+            #button.add_style("margin-top: -8px")
+            button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
             var class_name = 'tactic.ui.startup.SecurityWdg';
             spt.tab.set_main_body_tab()
             spt.tab.add_new("Security", "Security", class_name)
             '''
-        } )
+            } )
 
 
 
