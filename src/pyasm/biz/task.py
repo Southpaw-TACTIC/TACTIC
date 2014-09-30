@@ -282,7 +282,7 @@ class Task(SObject):
                 parent = my.get_parent()
             except Exception, e:
                 print "WARNING: ", e
-                parent = Project.get_project()
+                parent = Project.get()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
             else:
