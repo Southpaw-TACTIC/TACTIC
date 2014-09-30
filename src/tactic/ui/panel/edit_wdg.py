@@ -582,6 +582,10 @@ class EditWdg(BaseRefreshWdg):
             if my.input_prefix:
                 widget.set_input_prefix(my.input_prefix)
 
+            # Bootstrap
+            widget.add_class("form-control")
+            widget.add_style("width: 100%")
+
            
             if isinstance(widget, HiddenWdg):
                 content_div.add(widget)
@@ -611,7 +615,7 @@ class EditWdg(BaseRefreshWdg):
                     if i % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -3)
+                        tr.add_color("background", "background", -2)
 
 
 

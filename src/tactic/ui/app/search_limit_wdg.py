@@ -14,9 +14,11 @@ __all__ = ['SearchLimitWdg', 'SearchLimitSimpleWdg']
 
 from pyasm.common import Environment
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, SpanWdg, Table
-from pyasm.widget import HiddenWdg, SubmitWdg, SelectWdg, TextWdg, IconButtonWdg, IconSubmitWdg, IconWdg, SwapDisplayWdg
+from pyasm.widget import HiddenWdg, SubmitWdg, SelectWdg, TextWdg, IconSubmitWdg, IconWdg, SwapDisplayWdg
 from tactic.ui.filter import FilterData
 from tactic.ui.common import BaseRefreshWdg
+
+from tactic.ui.widget import IconButtonWdg
        
 class SearchLimitWdg(Widget):
     DETAIL = "detail_style"
@@ -304,12 +306,14 @@ class SearchLimitWdg(Widget):
 
     
         if my.refresh: 
-            prev = SpanWdg( IconButtonWdg("Prev", IconWdg.LEFT, False ) )
+            prev = SpanWdg( IconButtonWdg(title="Prev", icon="BS_CHEVRON_LEFT") )
             prev.add_style("margin-left: 8px")
             prev.add_style("margin-right: 6px")
-            prev.add_style("margin-top: -2px")
-            next = IconButtonWdg("Next", IconWdg.RIGHT, False, icon_pos="right" )
+            prev.add_style("margin-top: 5px")
+
+            next = SpanWdg( IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" ))
             next.add_style("margin-left: 6px")
+            next.add_style("margin-top: 5px")
 
             prev.add_behavior( {
                 'type': 'click_up',
@@ -319,14 +323,18 @@ class SearchLimitWdg(Widget):
                 'type': 'click_up',
                 'cbjs_action': my.refresh_script
             } )
+
+            prev.add_style("float: left")
+            next.add_style("float: left")
+
         else: # the old code pre 2.5
-            prev = IconButtonWdg("Prev", IconWdg.LEFT, False )
+            prev = IconButtonWdg(title="Prev", icon="BS_CHEVRON_LEFT" )
             hidden_name = my.prev_hidden_name
             hidden = HiddenWdg(hidden_name,"")
             prev.add(hidden)
             prev.add_event('onclick'," spt.api.Utility.get_input(document,'%s').value ='Prev';%s"\
                     %(hidden_name, my.refresh_script))
-            next = IconButtonWdg("Next", IconWdg.RIGHT, False, icon_pos="right" )
+            next = IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" )
             hidden_name = my.next_hidden_name
             hidden = HiddenWdg(hidden_name,"")
             next.add(hidden)
@@ -339,11 +347,13 @@ class SearchLimitWdg(Widget):
         showing_wdg.add_style("padding: 20px")
         showing_wdg.add_style("margin: 10px")
         showing_wdg.add_color("background", "background", -5)
-        showing_wdg.add_color("text-align", "center")
+        #showing_wdg.add_color("text-align", "center")
         showing_wdg.add_border()
 
         label_span = SpanWdg("Showing: ")
         showing_wdg.add(label_span)
+        showing_wdg.add("<br clear='all'/>")
+        showing_wdg.add("<br/>")
         showing_wdg.add( prev )
        
 
@@ -374,6 +384,9 @@ class SearchLimitWdg(Widget):
             } )
 
             selector.set_style(my.style)
+            selector.select.add_style("width: 100px")
+            #selector.add_style("display: inline")
+            selector.add_style("float: left")
 
             selector.set_value(current_value)
             selector.set_display_label(False)
@@ -381,6 +394,11 @@ class SearchLimitWdg(Widget):
             showing_wdg.add( selector) 
 
         showing_wdg.add( next )
+
+
+        showing_wdg.add("<br clear='all'/>")
+        showing_wdg.add("<br clear='all'/>")
+
 
         #showing_wdg.add( " x ")
         showing_wdg.add(my.text)
@@ -452,7 +470,7 @@ class SearchLimitWdg(Widget):
             is_custom = True
 
         limit_select.add_behavior( {
-            'type': 'click_up',
+            'type': 'change',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_search_limit_top");
             var value = bvr.src_el.value;

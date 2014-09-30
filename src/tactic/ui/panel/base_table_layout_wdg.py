@@ -1208,12 +1208,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
+            search_type_obj = SearchType.get(my.search_type)
+            search_type_title = search_type_obj.get_value("title")
+
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
             button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
+                'title': search_type_title,
                 'table_id': my.table_id,
                 #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                 'cbjs_action': '''
@@ -1226,10 +1230,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   view: bvr.view,
                   mode: 'insert',
                   //num_columns: 2,
-                  save_event: 'search_table_' + bvr.table_id
-                 
+                  save_event: 'search_table_' + bvr.table_id,
+                  show_header: false,
                 };
-                spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
             } )
