@@ -552,8 +552,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-                # clear the password
-                web.set_form_value('password','')
+                
         elif ticket_key:
             security.login_with_ticket(ticket_key, add_access_rules=False)
 
@@ -572,6 +571,8 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+        # clear the password
+        web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)
