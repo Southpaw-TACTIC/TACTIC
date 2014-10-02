@@ -548,6 +548,7 @@ class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             behavior = {
                 "type": 'drag',
                 "drag_el": 'drag_ghost_copy',
+                "use_copy": True,
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp'
             }
