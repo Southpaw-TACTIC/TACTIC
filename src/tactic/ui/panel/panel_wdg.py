@@ -921,6 +921,11 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
     //}
 
     var ghost_el = $(bvr.drag_el);
+    if (!ghost_el) {
+        var ghost_el = spt.mouse._create_drag_copy( bvr.src_el );
+        bvr.drag_el = ghost_el;
+    }
+
     if( ghost_el )
     {
         // Make a clone of the source div that we clicked on to drag ...
@@ -3029,7 +3034,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 
-
+            # TEST
+            simple_search_wdg.add_style("display: none")
+            simple_search_wdg.add_style("position: absolute")
+            simple_search_wdg.add_style("z-index: 100")
+            simple_search_wdg.add_style("top: 90px")
+            simple_search_wdg.add_style("left: 30px")
+            simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 
 
