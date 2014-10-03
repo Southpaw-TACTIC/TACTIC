@@ -974,7 +974,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
          
             tasks = sorted(tasks,get_compare(processes))
 
-	
         return tasks
 
     def _get_display_options(my):
@@ -1200,6 +1199,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             last = len(items) - 1
             for idx, tasks in enumerate(items):
+
                 if my.layout in ['vertical']:
                     table.add_row()
                 td = table.add_cell()

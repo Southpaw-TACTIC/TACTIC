@@ -1085,7 +1085,7 @@ class ThumbWdg2(BaseRefreshWdg):
     def get_display(my):
 
         width = "100%"
-        height = "100%"
+        height = my.kwargs.get("height")
 
         sobject = my.get_current_sobject()
 
@@ -1112,7 +1112,8 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("width: 70%")
         elif path:
             img.add_style("width: %s" % width)
-            img.add_style("height: %s" % height)
+            if height:
+                img.add_style("height: %s" % height)
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 
@@ -1121,7 +1122,8 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        div.add_style("height: 100%")
+        if height:
+            div.add_style("height: 100%")
 
 
         return div
