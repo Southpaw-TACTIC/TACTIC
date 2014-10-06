@@ -1095,6 +1095,17 @@ class ThumbWdg2(BaseRefreshWdg):
             name_hover.add(sobject.get('name'))
             name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
             name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+            name_hover.add_style('opacity: 0')
+            name_hover.add_style('position: absolute')
+            name_hover.add_style('top: 0px')
+            name_hover.add_style('padding-top: 20px')
+            name_hover.add_style('color: #d9d9d9')
+            name_hover.add_style('height: 100%')
+            name_hover.add_style('width: 100%')
+            name_hover.add_style('text-align: center')
+            name_hover.add_style('transition: opacity 0s ease-out')
+            name_hover.add_style('background-color: rgba(0,0,0,0.6)')
+            name_hover.add_style('font-size: 16px')
             div.add(name_hover)
 
         return div
