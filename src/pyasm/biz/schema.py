@@ -67,6 +67,9 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/cache"/>
     <search_type name="sthpw/queue"/>
     <search_type name="sthpw/watch_folder"/>
+    <search_type name="sthpw/message"/>
+    <search_type name="sthpw/message_log"/>
+    <search_type name="sthpw/subscription"/>
 
 
 
