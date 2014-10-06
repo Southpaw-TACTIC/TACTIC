@@ -3006,6 +3006,17 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'search_keys': search_keys,
     }
 
+    var pat = /TileLayoutWdg/;
+    if (pat.test(class_name)) {
+        var attr_list = ['expand_mode','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow']
+        for (var k=0; k < attr_list.length; k++) {
+            var attr_val = target.getAttribute('spt_'+ attr_list[k]);
+            if (attr_val)
+                args[attr_list[k]] = attr_val;
+        }
+      
+    }
+
     if (bvr.extra_args) {
         for (k in bvr.extra_args)
             args[k] = bvr.extra_args[k];

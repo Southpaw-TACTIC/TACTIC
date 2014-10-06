@@ -3063,6 +3063,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
+        expand_mode = my.kwargs.get("expand_mode")
 
        
 
@@ -3126,6 +3127,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
+            "expand_mode": expand_mode
             #"search_wdg": search_wdg
             
         }
