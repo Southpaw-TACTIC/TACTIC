@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser']
+__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -529,6 +529,106 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'fps': 'video:r_frame_rate',
             'codec': 'video:codec_name'
         }
+
+
+
+class IPTCMetadataParser(BaseMetadataParser):
+    '''Grab IPTC data from files. This requires use of exiftool.
+    Basically read xmp metadata of a file and consider IPTC data points'''
+
+    
+    def get_iptc_keywords(my, path, parser_path = ""):
+        '''Extracts IPTC metadata given a path to an image.
+        Returns IPTC metadata as a dictionary'''
+
+        ret = {} # dictionary with metadata to be returned
+
+        # determine file format of image path
+        type_start = path.rfind(".")
+        image_type = path[type_start:]
+
+        # check if exiftool exists first:
+        from distutils.spawn import find_executable
+        if os.name == "nt":
+            exiftool_exists = find_executable("exiftool", path=parser_path)
+        else:
+            exiftool_exists = find_executable("exiftool")
+        
+        if not exiftool_exists:
+            print "WARNING: exiftool does not exist at path %s" %(parser_path)
+            return "WARNING: exiftool does not exist at path %s" %(parser_path)
+
+        # get IPTC data from exiftool
+
+        # For windows, use parser_path for exiftool.exe
+        if os.name == "nt" and parser_path:
+            exif_process = subprocess.Popen([parser_path,'-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+            exif_process = subprocess.Popen([parser_path,'-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+ 
+        # For linux, use command-line exiftool
+        else:
+            exif_process = subprocess.Popen(['exiftool','-ext', 'dng', '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+            exif_process = subprocess.Popen(['exiftool','-ext', image_type, '-xmp', '-b', path], shell=False, stdout=subprocess.PIPE)
+
+        ret_val, error = exif_process.communicate()
+
+        if error:
+            return ret
+
+        # parse and clean the metadata
+        keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
+
+        # add keywords metadata to the dictionary to be returned: "ret"
+        ret["Keywords"] = keyword_values
+
+        return ret
+
+
+    
+    def get_keywords_metadata_from_xmp(my, xmp_data):
+        '''Given XMP data as a string, parse it for Keywords of IPTC metadata, and
+       return it as a string, with values separated by spaces.'''
+
+        keywords_list = []
+        
+        # find the chunk of data in xmp_data where the keywords resides
+        starting_index = xmp_data.find("<dc:subject>")
+        end_index = xmp_data.find("</dc:subject>")
+
+        # section of xmp data containing keywords metadata
+        dc_subject_str = xmp_data[starting_index:end_index]
+
+        # find all words between tags in the xmp data using regular expression.
+        # aka, search for words between <tag>words</tag>
+        # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
+        keywords_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
+
+        # get rid of the > and < around words in keywords_list
+        for i in range(len(keywords_list)):
+            keywords_list[i] = keywords_list[i][1:-1]
+ 
+        # take the list, and turn it into a string, separated by spaces
+        keywords_string = " ".join(keywords_list)
+
+        return keywords_string
+
+
+    def get_metadata(my):
+        path = my.kwargs.get("path")
+
+        import subprocess, re
+
+        iptc_data = {} # dictionary to hold iptc data
+
+        # make it an option to extract IPTC data from a file
+        if my.kwargs.get("extract_iptc_keywords_only") in ["true", "True", True]:
+            # Option to specify where exiftool is.
+            parser_path = my.kwargs.get('parser_path')
+            if parser_path:
+                iptc_data = my.get_iptc_keywords(path, parser_path=parser_path)
+            else:
+                iptc_data = my.get_iptc_keywords(path)
+            return iptc_data
 
 
 
