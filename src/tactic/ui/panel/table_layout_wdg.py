@@ -123,7 +123,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '06'
         },
 
-        'show_keyword_search': {
+       'show_keyword_search': {
             'description': 'Flag to determine whether or not to show the Keyword Search button',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -471,7 +471,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # Force the mode to widget because raw does work with FastTable
-	# anymore (due to fast table constantly asking widgets for info)
+        # anymore (due to fast table constantly asking widgets for info)
         #my.mode = my.kwargs.get("mode")
         #if my.mode != 'raw':
         #    my.mode = 'widget'
@@ -1198,7 +1198,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # add the search_table_<table_id> listener used by widgets 
         # like Add Task to Selected
-	if my.kwargs.get('temp') != True:
+        if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'listen',
                 'event_name': 'search_table_%s' % my.table_id,
@@ -1215,6 +1215,46 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
 
+
+
+        element_names = my.element_names
+        column_widths = my.kwargs.get("column_widths")
+        if not column_widths:
+            column_widths = []
+
+        if my.kwargs.get('temp') != True:
+            table.add_behavior( {
+                'type': 'load',
+                'element_names': my.element_names,
+                'column_widths': column_widths,
+                'cbjs_action': '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+
+                // determine the widths of the screen
+                var size = layout.getSize();
+
+                var total_size = 30 + 32;
+                for (var i = 0; i < bvr.column_widths.length; i++) {
+                    total_size += bvr.column_widths[i];
+                }
+
+                if (size.x > total_size) {
+                    bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
+                }
+
+                for (var i = 0; i < bvr.element_names.length-1; i++) {
+                    var name = bvr.element_names[i];
+                    var width = bvr.column_widths[i];
+                    spt.table.set_column_width(name, width);
+                }
+                '''
+            } )
+
+
+
+        """
         widths = my.kwargs.get("column_widths")
         #widths = []
 
@@ -1276,6 +1316,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
+        """
 
 
         # all for collapsing of columns
@@ -2051,7 +2092,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_style("padding-left: %spx" % (i*15))
 
 
-        tr.add_border(size=1)
+        tr.add_border(size="1px 0px 0px 0px")
         tr.add_style("background", "#EEF")
         
         tr.add_attr("spt_unique_id", unique_id)
@@ -3650,7 +3691,9 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
-    clone.setStyle("position: absolute");
+    clone.setStyle("position", "relative");
+    clone.setStyle("top", "0px");
+    clone.setStyle("left", "0px");
 
     var size = cell.getSize();
     if (typeof(size) != 'undefined') {
@@ -4534,6 +4577,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
 
+            console.log("get column_widths");
+            var widths = spt.table.get_column_widths();
+            console.log(widths);
+
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
             for (var i = 0; i < new_rows.length; i++) {
@@ -4544,7 +4591,16 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
                 // replace the new row
                 new_rows[i].inject( rows[i], "after" );
+
+                // destroy the old row
                 rows[i].destroy();
+
+                // transfer the widths to the new row
+                for (var element_name in widths) {
+                    var width = widths[element_name];
+                    spt.table.set_column_width(element_name, width);
+                }
+ 
             }
             
             // for efficiency, we do not redraw the whole table to calculate the
@@ -4886,6 +4942,16 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
     }
 
+    var swap_top = group_row.getElement(".spt_swap_top");
+    if (swap_top) {
+        var on = swap_top.getElement(".SPT_SWAP_ON");
+        var off = swap_top.getElement(".SPT_SWAP_OFF");
+
+        spt.show(off);
+        spt.hide(on);
+        swap_top.setAttribute("spt_state", "off");
+    }
+
 
     // get the rows after the group
     var last_row = group_row;
@@ -4996,6 +5062,22 @@ spt.table.set_column_width = function(element_name, width) {
 }
 
 
+
+spt.table.get_column_widths = function() {
+    var headers = spt.table.get_headers();
+
+    var widths = {};
+
+    for (var i = 0; i < headers.length; i++) {
+        var header = headers[i];
+        var element_name = header.getAttribute("spt_element_name")
+        var size = header.getSize();
+        var width = header.getStyle("width");
+        widths[element_name] = parseInt( width.replace("px", "") );
+    }
+
+    return widths;
+}
 
 
 
@@ -5618,41 +5700,6 @@ spt.table.open_ingest_tool = function(search_type) {
             'select_color': select_color,
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
-        } )
-
-
-        element_names = my.element_names
-        column_widths = my.kwargs.get("column_widths")
-        if not column_widths:
-            column_widths = []
-        table.add_behavior( {
-            'type': 'load',
-            'element_names': my.element_names,
-            'column_widths': column_widths,
-            'cbjs_action': '''
-
-            var layout = bvr.src_el.getParent(".spt_layout");
-            spt.table.set_layout(layout);
-
-            // determine the widths of the screen
-            var size = layout.getSize();
-
-            var total_size = 30 + 32;
-            for (var i = 0; i < bvr.column_widths.length; i++) {
-                total_size += bvr.column_widths[i];
-            }
-
-            if (size.x > total_size) {
-                bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
-            }
-
-
-            for (var i = 0; i < bvr.element_names.length; i++) {
-                var name = bvr.element_names[i];
-                var width = bvr.column_widths[i];
-                spt.table.set_column_width(name, width);
-            }
-            '''
         } )
 
 

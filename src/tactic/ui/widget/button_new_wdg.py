@@ -1233,8 +1233,15 @@ class ActionButtonWdg(DivWdg):
             button.add_style("top: 6px")
 
         # BOOTSTRAP
+        color = my.kwargs.get("color")
         button.add_class('btn')
-        button.add_class('btn-default')
+        if color:
+            if color.startswith("#"):
+                button.add_style("background", color)
+            else:
+                button.add_class('btn-%s' % color)
+        else:
+            button.add_class('btn-default')
         button.add_class('btn-sm')
         button.add_style("top: 0px")
 

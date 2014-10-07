@@ -296,7 +296,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
         elements_wdg.add_style("padding-top: 10px")
         elements_wdg.add_style("padding-bottom: 15px")
 
-        elements_wdg.add_color("background", "background3", 0)
+        #elements_wdg.add_color("background", "background3", 0)
+        elements_wdg.add_color("background", "background", -3)
         elements_wdg.add_border()
 
 
