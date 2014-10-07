@@ -3556,7 +3556,18 @@ spt.table.show_edit = function(cell) {
 
 
     // add the edit to do the dom
+    cell.setStyle("position", "relative");
+    cell.setStyle("overflow", "");
+
     cell.appendChild(edit_wdg);
+    edit_wdg.setStyle("position", "absolute");
+    edit_wdg.setStyle("top", "0px");
+    edit_wdg.setStyle("left", "0px");
+    edit_wdg.setStyle("margin", "-1px");
+    edit_wdg.setStyle("z-index", 500);
+
+
+
     
     // code here to adjust the size of the edit widget
     spt.table.alter_edit_wdg(cell, edit_wdg, size);
@@ -3691,10 +3702,11 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
-    clone.setStyle("position", "relative");
-    clone.setStyle("top", "0px");
-    clone.setStyle("left", "0px");
+    //clone.setStyle("position", "absolute");
+    //clone.setStyle("top", "0px");
+    //clone.setStyle("left", "0px");
 
+    /*
     var size = cell.getSize();
     if (typeof(size) != 'undefined') {
         clone.setStyle("margin-top", (-3)+"px");
@@ -3703,6 +3715,7 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         clone.setStyle("margin-top", "-3px");
     }
     clone.setStyle("margin-left", "-3px");
+    */
 
 
     return clone;
@@ -4040,6 +4053,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
             if (set_display) {
                 cell.innerHTML = "";
+                cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
         }
@@ -4050,6 +4064,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
         if (set_display) {
             edited_cell.innerHTML = "";
+            edited_cell.setStyle("overflow", "hidden");
             spt.table.set_display(edited_cell, display_value, input_type);
         }
 
@@ -4577,9 +4592,14 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
 
-            console.log("get column_widths");
+            // transfer the widths to the new row
             var widths = spt.table.get_column_widths();
-            console.log(widths);
+            for (var element_name in widths) {
+                var width = widths[element_name];
+                spt.table.set_column_width(element_name, width);
+            }
+
+
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
@@ -4595,11 +4615,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 // destroy the old row
                 rows[i].destroy();
 
-                // transfer the widths to the new row
-                for (var element_name in widths) {
-                    var width = widths[element_name];
-                    spt.table.set_column_width(element_name, width);
-                }
  
             }
             
