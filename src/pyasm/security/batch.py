@@ -17,11 +17,11 @@ import os, sys
 from pyasm.common import Environment, Container, Config, Common, SecurityException
 
 from pyasm.search import DbContainer
-from security import Security
+from security import Security, Site
 
 class Batch(Environment):
     '''Environment object that is used for batch operations'''
-    def __init__(my, project_code=None, login_code=None):
+    def __init__(my, project_code=None, login_code=None, site=None):
         my.set_app_server("batch")
 
         plugin_dir = Environment.get_plugin_dir()
@@ -34,6 +34,9 @@ class Batch(Environment):
 
         # clear the main container
         Container.create()
+
+        if site:
+            Site.set_site(site)
 
         # set this as the environment
         if not project_code:

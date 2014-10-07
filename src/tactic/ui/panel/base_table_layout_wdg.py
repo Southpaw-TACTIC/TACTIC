@@ -825,6 +825,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_keyword_search = True
         else:
             show_keyword_search = False
+
+        # TEST
+        show_keyword_search = True
+        column = "code"
+
         if show_keyword_search and SearchType.column_exists(my.search_type,column):
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
@@ -843,8 +848,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
-            keyword_div.add_style("margin-top: 3px")
-            keyword_div.add_style("margin-left: 8px")
+            keyword_div.add_style("margin-top: 0px")
+            keyword_div.add_style("height: 32px")
+            keyword_div.add_style("margin-left: 0px")
+
+            keyword_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_view_panel_top");
+                if (top) {
+                    var simple_search = top.getElement(".spt_simple_search");
+                    if (simple_search) {
+                        simple_search.setStyle("display", "");
+                    }
+                }
+
+                '''
+            } )
         else:
             keyword_div = None
 
@@ -978,13 +998,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append({'wdg': button_div})
 
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
-
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
@@ -1128,6 +1148,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         save_button_top = save_button.get_top()
         save_button_top.add_style("display", "none")
         save_button_top.add_class("spt_save_button")
+        #save_button_top.add_class("btn-primary")
 
         
         save_button.add_behavior({
@@ -1146,7 +1167,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else {
             spt.dg_table.update_row(evt, bvr)
         }
-        bvr.src_el.getElement(".spt_save_button").setStyle("display", "none");
+        var save_button = bvr.src_el.getElement(".spt_save_button");
+        if (save_button) {
+            save_button.setStyle("display", "none");
+        }
         ''',
         })
 

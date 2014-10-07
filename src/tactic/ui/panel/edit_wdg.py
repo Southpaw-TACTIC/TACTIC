@@ -620,7 +620,17 @@ class EditWdg(BaseRefreshWdg):
 
 
            
-            show_title = (widget.get_option("show_title") != "false")
+            show_title = widget.get_option("show_title")
+            if not show_title:
+                show_title = my.kwargs.get("show_title")
+
+            if show_title in ['false', False]:
+                show_title = False
+            else:
+                show_title = True
+
+
+
             if show_title:
                 title = widget.get_title()
 

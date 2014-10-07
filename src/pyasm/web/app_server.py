@@ -295,8 +295,12 @@ class BaseAppServer(Base):
         web = WebContainer.get_web()
 
         security = Security()
-        security = my.handle_security(security)
-        is_logged_in = security.is_logged_in()
+        try:
+            security = my.handle_security(security)
+            is_logged_in = security.is_logged_in()
+        except Exception, e:
+            site_obj = Site.get()
+            return my.handle_not_logged_in()
 
 
         # guest mode
@@ -554,6 +558,7 @@ class BaseAppServer(Base):
         print "ticket_key: ", ticket_key
         print "login: ", login
         print "password: ", password
+        print "site: ", site
 
 
         if session_key:
@@ -581,6 +586,7 @@ class BaseAppServer(Base):
         elif ticket_key:
             # get from the login
             site_obj = Site.get()
+            site = site_obj.get_by_ticket(ticket_key)
             if site:
                 site_obj.set_site(site)
 
