@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCDataExtractor']
+__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -532,8 +532,9 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
 
 
-class IPTCDataExtractor(BaseMetadataParser):
-    '''Grab IPTC data from files. This requires use of ExifMetadataParser.'''
+class IPTCMetadataParser(BaseMetadataParser):
+    '''Grab IPTC data from files. This requires use of exiftool.
+    Basically read xmp metadata of a file and consider IPTC data points'''
 
     
     def get_iptc_keywords(my, path, parser_path = ""):
@@ -578,7 +579,7 @@ class IPTCDataExtractor(BaseMetadataParser):
         keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
 
         # add keywords metadata to the dictionary to be returned: "ret"
-        ret["IPTC: Keywords"] = keyword_values
+        ret["Keywords"] = keyword_values
 
         return ret
 
@@ -597,8 +598,9 @@ class IPTCDataExtractor(BaseMetadataParser):
         # section of xmp data containing keywords metadata
         dc_subject_str = xmp_data[starting_index:end_index]
 
-        # find all words between tags.
-        # aka, search for words btween <tag>words</tag>
+        # find all words between tags in the xmp data using regular expression.
+        # aka, search for words between <tag>words</tag>
+        # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
         keywords_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
