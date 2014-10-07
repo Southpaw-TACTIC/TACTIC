@@ -54,7 +54,7 @@ OTHER_COLORS = {
     "Final":    "#a3d991",
     "Revise":   "#e84a4d",
     "Ready":    "#a3d991",
-    "In-Progress":"#e9e386",
+    "In_Progress":"#e9e386",
 }
 
 
@@ -93,12 +93,12 @@ class Task(SObject):
     def get_default_color(process):
         global default_xml
         global OTHER_COLORS
-        node = default_xml.get_node("pipeline/process[@name='%s']" % process)
+        node = default_xml.get_node("pipeline/process[@name='%s']" % process.title())
         if node is None:
-            return OTHER_COLORS.get(process)
+            return OTHER_COLORS.get(process.title())
         color = default_xml.get_attribute(node, "color")
         if not color:
-            color = OTHER_COLORS.get(process)
+            color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
         theme = Palette.get()

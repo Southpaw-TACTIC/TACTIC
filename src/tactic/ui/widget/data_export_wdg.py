@@ -329,8 +329,8 @@ class CsvImportWdg(BaseRefreshWdg):
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
 
+            file_name =  web.get_form_value('file_name')
             if my.data:
-                file_name =  web.get_form_value('file_name')
                 if not file_name:
                     file_name = "%s.csv" % ticket
 
@@ -338,7 +338,9 @@ class CsvImportWdg(BaseRefreshWdg):
                 f = open(my.file_path, "wb")
                 f.write(my.data)
                 f.close()
-
+            elif file_name:
+                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                
 
 
 
