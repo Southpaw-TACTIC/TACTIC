@@ -339,9 +339,10 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_get_children(my):
         # test to make sure get_all_children is able to get all the snapshots
         snapshots = my.person.get_all_children("sthpw/snapshot")
-       
-        # 3 versionless + 5 new snapshots = 8
-        num_snapshots = 8
+        #for snap in snapshots:
+        #    print snap.get_version() ,  snap.get_description()
+        # 2 versionless + 5 new snapshots = 7
+        num_snapshots = 7
         my.assertEquals(num_snapshots, len(snapshots))
 
 
