@@ -41,6 +41,8 @@ class BaseFileNaming(object):
 
 class FileNaming(object):
 
+    VERSIONLESS_EXPR = "{basefile}_{snapshot.process}.{ext}"
+
     def __init__(my, sobject=None, snapshot=None, file_object=None, ext='', naming_expr=None):
         my.sobject = sobject
         my.snapshot = snapshot
@@ -49,6 +51,7 @@ class FileNaming(object):
         my.set_ext(ext)
 
         my.naming_expr = naming_expr
+        my.checkin_type = ''
 
 
     def add_default_ending(my, parts, auto_version=True, is_sequence=True):
@@ -198,6 +201,8 @@ class FileNaming(object):
     def set_naming(my, naming_expr):
         my.naming_expr = naming_expr
 
+    def set_checkin_type(my, checkin_type):
+        my.checkin_type = checkin_type
  
     def set_file_object(my, file_object):
         my.file_object = file_object
@@ -283,6 +288,14 @@ class FileNaming(object):
 
         if not naming:
             return None
+
+        if naming and my.checkin_type:
+            checkin_type = naming.get_value('checkin_type')
+            if checkin_type and my.checkin_type != checkin_type:
+                print "mismatched checkin_type!"
+                naming = None
+                return None
+
         naming_util = NamingUtil()
 
         # Provide a mechanism for a custom class

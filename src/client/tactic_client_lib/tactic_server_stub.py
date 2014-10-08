@@ -1773,7 +1773,7 @@ class TacticServerStub(object):
             keep_file_name=False, create_icon=True, 
             checkin_cls='pyasm.checkin.FileCheckin',
             context_index_padding=None,
-            checkin_type="strict", source_path=None,
+            checkin_type="", source_path=None,
             version=None
     ):
         '''API Function: simple_checkin( search_key, context, file_path, snapshot_type="file", description="No description", use_handoff_dir=False, file_type="main", is_current=True, level_key=None, breadcrumb=False, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None )
@@ -2228,6 +2228,10 @@ class TacticServerStub(object):
             file_types = [file_type]
         else:
             file_types = file_type
+
+        for path in file_paths:
+            if os.path.isdir(path):
+                raise TacticApiException('[%s] is a directory. Use add_directory() instead' %path)
 
         mode_options = ['upload', 'copy', 'move', 'preallocate','inplace']
         if mode:
@@ -3145,8 +3149,8 @@ class TacticServerStub(object):
         return my.server.get_all_paths_from_snapshot(my.ticket, snapshot_code, mode, expand_paths, filename_mode, file_types)
 
 
-    def get_preallocated_path(my, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext=''):
-        '''API Function: get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='')
+    def get_preallocated_path(my, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='',checkin_type=''):
+        '''API Function: get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='', checkin_type='')
         
         Get the preallocated path for this snapshot.  It assumes that
         this checkin actually exists in the repository and will create virtual
@@ -3171,6 +3175,7 @@ class TacticServerStub(object):
             protocol - It's either client_repo, sandbox, or None. It determines whether the
                 path is from a client or server perspective
             ext - force the extension of the file name returned
+            checkin_type - strict, auto , or '' can be used.. A naming entry in the naming, if found,  will be used to determine the checkin type
 
         @return:
             string - the path where add_file() expects the file to be checked into
@@ -3194,13 +3199,13 @@ class TacticServerStub(object):
         [/code]
            
         '''
-        return my.server.get_preallocated_path(my.ticket, snapshot_code, file_type, file_name, mkdir, protocol, ext)
+        return my.server.get_preallocated_path(my.ticket, snapshot_code, file_type, file_name, mkdir, protocol, ext, checkin_type)
 
 
 
 
-    def get_virtual_snapshot_path(my, search_key, context="publish", snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext=''):
-        '''API Function: get_virtual_snapshot_path(search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='')
+    def get_virtual_snapshot_path(my, search_key, context="publish", snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type=''):
+        '''API Function: get_virtual_snapshot_path(search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type='')
         Create a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions.  This is most useful
         testing naming conventions.
@@ -3234,11 +3239,14 @@ class TacticServerStub(object):
                 path is from a client or server perspective
             ext - force the extension of the file name returned
 
+            checkin_type - strict, auto, '' can be used to preset the checkin_type
+
+
 
         @return:
             string - path as determined by the naming conventions
         '''
-        return my.server.get_virtual_snapshot_path(my.ticket, search_key, context, snapshot_type, level_key, file_type, file_name, mkdirs, protocol, ext)
+        return my.server.get_virtual_snapshot_path(my.ticket, search_key, context, snapshot_type, level_key, file_type, file_name, mkdirs, protocol, ext, checkin_type)
 
 
 
