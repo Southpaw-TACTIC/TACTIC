@@ -980,6 +980,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         wdg_list = []
 
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
+
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
@@ -1003,8 +1007,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
@@ -1149,6 +1151,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         save_button_top.add_style("display", "none")
         save_button_top.add_class("spt_save_button")
         #save_button_top.add_class("btn-primary")
+        save_button.add_style("margin-left: 10px")
 
         
         save_button.add_behavior({

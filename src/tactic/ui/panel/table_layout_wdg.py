@@ -3816,7 +3816,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
             input.setStyle( "width", size.x+30 + 'px');
-            edit_wdg.setStyle('background','white');
+            //edit_wdg.setStyle('background','white');
+            //edit_wdg.setStyle('color','black');
 
             //setting date time
             //if (value && value.test( /^\d\d\d\d-\d\d-\d\d .*/ ) ) {
@@ -3877,7 +3878,10 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             select_size_to_set = parseInt( spt_size );
         }
 
+        input.setStyle("height", "auto");
+
         edit_wdg.setStyle("position", "absolute");
+        edit_wdg.setStyle("margin-right", "-3px");
 
 
         set_focus = true;
@@ -3902,7 +3906,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             }
         }
         // to avoid overlapping select in UI 
-        edit_wdg.setStyle( 'z-index', '100' );
+        edit_wdg.setStyle('z-index', '100' );
     } 
 
     else {
