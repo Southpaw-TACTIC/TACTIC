@@ -1622,7 +1622,7 @@ class ClientApiTest(unittest.TestCase):
         # test virtual snapshot path
         context = 'virtual'
         ext = ".jpg"
-        path = my.server.get_virtual_snapshot_path(search_key, context, ext=ext)
+        path = my.server.get_virtual_snapshot_path(search_key, context, ext=ext, checkin_type='auto')
         expected = "assets/unittest/person/\w+/%s/.versions/joe_virtual_v001.jpg$" %context
         my.assertEquals(True, None != re.search(expected, path))
 

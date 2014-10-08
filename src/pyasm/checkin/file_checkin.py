@@ -956,7 +956,7 @@ class FileGroupAppendCheckin(FileGroupCheckin):
         Note: this is functionally the same as FileAppendCheckin but it 
         is derived from FileGroupCheckin
     '''
-    def __init__(my, snapshot_code, file_paths, file_types, file_range, keep_file_name=False, mode=None, checkin_type=''):
+    def __init__(my, snapshot_code, file_paths, file_types, file_range, keep_file_name=False, mode=None, checkin_type='strict'):
         '''
         @params
         snapshot_code - the already existing snapshot to append to

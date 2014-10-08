@@ -3149,8 +3149,8 @@ class TacticServerStub(object):
         return my.server.get_all_paths_from_snapshot(my.ticket, snapshot_code, mode, expand_paths, filename_mode, file_types)
 
 
-    def get_preallocated_path(my, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='',checkin_type=''):
-        '''API Function: get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='', checkin_type='')
+    def get_preallocated_path(my, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='', checkin_type='strict'):
+        '''API Function: get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='', checkin_type='strict')
         
         Get the preallocated path for this snapshot.  It assumes that
         this checkin actually exists in the repository and will create virtual
@@ -3204,8 +3204,8 @@ class TacticServerStub(object):
 
 
 
-    def get_virtual_snapshot_path(my, search_key, context="publish", snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type=''):
-        '''API Function: get_virtual_snapshot_path(search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type='')
+    def get_virtual_snapshot_path(my, search_key, context="publish", snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type='strict'):
+        '''API Function: get_virtual_snapshot_path(search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type='strict')
         Create a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions.  This is most useful
         testing naming conventions.

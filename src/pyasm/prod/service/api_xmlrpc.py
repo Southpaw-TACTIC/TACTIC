@@ -3016,7 +3016,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext='', checkin_type=''):
+    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext='', checkin_type='strict'):
         '''Gets the preallocated path for this snapshot.  It not assumed that
         this checkin actually exists in the repository and will create virtual
         entities to simulate a checkin.  This method can be used to determine

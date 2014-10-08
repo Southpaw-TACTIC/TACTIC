@@ -269,8 +269,7 @@ class DirNaming(object):
         dirs.append( project_code )
         #db_name = search_type_obj.get_database()
         #dirs.append( db_name )
-
-        from pyasm.prod.biz import ProdSetting
+        from pyasm.biz import ProdSetting
         if project_code not in ["admin", 'sthpw']:
             icon_separation = ProdSetting.get_value_by_key("use_icon_separation")           
             if not icon_separation:
