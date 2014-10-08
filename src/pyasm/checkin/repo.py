@@ -74,11 +74,15 @@ class TacticRepo(BaseRepo):
             to_name = file_object.get_full_file_name()
             file_type = snapshot.get_type_by_file_name(to_name)
 
-            lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
-            # it should have been created in postprocess_snapshot
-            System().makedirs(lib_dir)
+            if mode == 'preallocate':
+                to_path = file
+            else:
+                lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
+                # it should have been created in postprocess_snapshot
+                System().makedirs(lib_dir)
 
-            to_path = "%s/%s" % (lib_dir, to_name )
+                to_path = "%s/%s" % (lib_dir, to_name )
+
 
             #print "path: ", i, files[i]
             #print to_path, os.path.exists(to_path)
