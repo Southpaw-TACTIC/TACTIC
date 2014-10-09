@@ -19,6 +19,7 @@ import string, sys, types
 from pyasm.common import *
 from pyasm.search import Search, SearchType, SearchKey, SqlException
 from pyasm.command import Command
+from pyasm.common import TacticException
 
 class EditCmdException(Exception):
     pass
@@ -238,6 +239,8 @@ class EditCmd(Command):
         sobject = None
         if my.search_key:
             sobject = SearchKey.get_by_search_key(my.search_key)
+            if not sobject:
+                raise TacticException('This search key [%s] no longer exists.'%my.search_key)
             # this is needed for action handler below
             my.search_type = sobject.get_search_type()
 

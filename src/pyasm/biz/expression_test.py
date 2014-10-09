@@ -23,12 +23,12 @@ import re
 
 from pyasm.common import Environment, Date, Common
 from pyasm.security import Batch
-from pyasm.search import Transaction, SearchType, Search, SearchKey, SObject
+from pyasm.search import Transaction, SearchType, Search, SearchKey, SObject, SearchException
 from pyasm.unittest import Person
 from task import Task
 from project import Project
 
-from pyasm.unittest import UnittestEnvironment
+from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 from expression import *
 
@@ -45,6 +45,8 @@ class ExpressionTest(unittest.TestCase):
 
         test_env = UnittestEnvironment()
         test_env.create()
+        sample3d_env = Sample3dEnvironment()
+        sample3d_env.create()
 
         Project.set_project("unittest")
 
@@ -147,10 +149,36 @@ class ExpressionTest(unittest.TestCase):
             my._test_color()
             my._test_connection()
             my._test_cache()
+            my._test_cross_proj_count()
         finally:
             my.transaction.rollback()
 
             test_env.delete()
+            sample3d_env.delete()
+
+    def _test_cross_proj_count(my):
+
+        Project.set_project("sample3d")
+        expression = "@COUNT(prod/shot?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+        expression = "@COUNT(prod/sequence?project=sample3d.prod/shot)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+
+        expression = "@COUNT(prod/sequence?project=sample3d.prod/shot?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 30
+        my.assertEquals(count, result)
+
+        expression = "@COUNT(prod/sequence?project=sample3d)"
+        result = my.parser.eval(expression)
+        count = 1
+        my.assertEquals(count, result)
+        
+        Project.set_project("unittest")
 
     def _test_utf8(my):
         desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
@@ -396,7 +424,6 @@ class ExpressionTest(unittest.TestCase):
 
 
     def _test_args(my):
-
         expression = "@SEARCH(unittest/person.sthpw/task)"
         search = my.parser.eval(expression)
         my.assertEquals(isinstance(search, Search), True)
@@ -468,6 +495,19 @@ class ExpressionTest(unittest.TestCase):
         related = my.parser.get_plain_related_types(expression)
         my.assertEquals(['unittest/city','unittest/person'], related)
 
+        expression ="@SOBJECT(unittest/city.unittest/person['name is NULL'])"
+
+        try:
+            related = my.parser.eval(expression)
+        except SearchException, e:
+            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
+            
+
+        expression ='''@SOBJECT(unittest/city.unittest/person["name ='ben'"])'''
+        try:
+            related = my.parser.eval(expression)
+        except SearchException, e:
+            my.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
     
 
         # test for missing ] bracket Syntax Error

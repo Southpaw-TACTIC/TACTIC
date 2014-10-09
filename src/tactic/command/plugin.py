@@ -351,6 +351,8 @@ class PluginCreator(PluginBase):
                 my.handle_search_type(node)
             elif name == 'include':
                 my.handle_include(node)
+            elif name == 'python':
+                my.handle_python(node)
 
 
         # make sure there is a data node and handle it
@@ -481,13 +483,15 @@ class PluginCreator(PluginBase):
                     from tactic.command import PythonCmd
                     cmd = PythonCmd(file_path=path)
                     manifest = cmd.execute()
+                    if manifest:
+                        xml = Xml()
+                        xml.read_string(manifest)
+                        include_nodes = xml.get_nodes("manifest/*")
 
-                    xml = Xml()
-                    xml.read_string(manifest)
-                    include_nodes = xml.get_nodes("manifest/*")
-
-                    my.delete_files(include_nodes)
-
+                        my.delete_files(include_nodes)
+            elif name == "python":
+                # don't delete python node file
+                pass
             else:
                 path = my.get_path_from_node(node)
                 if path and os.path.exists(path):
@@ -674,7 +678,7 @@ class PluginCreator(PluginBase):
     def handle_include(my, node):
         path = my.xml.get_attribute(node, "path")
         if not path:
-            raise TacticException("No path found for search type in manifest")
+            raise TacticException("No path found for include in manifest")
 
         path = "%s/%s" % (my.plugin_dir, path)
 
@@ -682,6 +686,10 @@ class PluginCreator(PluginBase):
             from tactic.command import PythonCmd
             cmd = PythonCmd(file_path=path)
             manifest = cmd.execute()
+
+        if not manifest:
+            print "No manifest discovered in [%s]" %path
+            return
 
         xml = Xml()
         xml.read_string(manifest)
@@ -701,9 +709,17 @@ class PluginCreator(PluginBase):
                 my.handle_include(node)
 
 
+    def handle_python(my, node):
+        path = my.xml.get_attribute(node, "path")
+        if not path:
+            raise TacticException("No path found for python in manifest")
 
+        if not path.endswith('.py'):
+            raise TacticException("Path should have the .py extension for python in manifest")
 
-
+        path = "%s/%s" % (my.plugin_dir, path)
+        if not os.path.exists(path):
+            raise TacticException("Path [%s] does not exist." %path)
 
 
 
@@ -962,6 +978,8 @@ class PluginInstaller(PluginBase):
                 # jobs doesn't matter for sobject node
                 jobs = my.import_data(path, unique=unique)
 
+                # reset it in case it needs to execute a PYTHON tag right after
+                Schema.get(reset_cache=True)
                 # compare sequence 
                 st_obj = SearchType.get(search_type)
                 SearchType.sequence_nextval(search_type)
@@ -999,11 +1017,24 @@ class PluginInstaller(PluginBase):
                 cmd = PythonCmd(file_path=path)
                 manifest = cmd.execute()
 
-                xml = Xml()
-                xml.read_string(manifest)
-                nodes = xml.get_nodes("manifest/*")
+                if manifest:
+                    xml = Xml()
+                    xml.read_string(manifest)
+                    nodes = xml.get_nodes("manifest/*")
 
-                my.import_manifest(nodes)
+                    my.import_manifest(nodes)
+
+            elif node_name == 'python':
+
+                path = my.xml.get_attribute(node, "path")
+                path = "%s/%s" % (my.plugin_dir, path)
+
+                # just run the python script
+                from tactic.command import PythonCmd
+                cmd = PythonCmd(file_path=path)
+                cmd.execute()
+
+               
 
 
 
@@ -1146,6 +1177,7 @@ class PluginInstaller(PluginBase):
                                 if old_schema:
                                     old_schema.delete()
 
+
                             sobject.set_value("code", project_code)
 
 
@@ -1229,6 +1261,8 @@ class PluginUninstaller(PluginBase):
                 my.remove_sobjects(node)
             elif node_name == 'include':
                 my.handle_include(node)
+            elif node_name == 'python':
+                my.handle_python(node)
 
 
         # remove plugin contents
@@ -1322,6 +1356,9 @@ class PluginUninstaller(PluginBase):
             cmd = PythonCmd(file_path=path)
             manifest = cmd.execute()
 
+        if not manifest:
+            return
+
         xml = Xml()
         xml.read_string(manifest)
         nodes = xml.get_nodes("manifest/*")
@@ -1329,7 +1366,27 @@ class PluginUninstaller(PluginBase):
 
         my.handle_nodes(nodes)
 
- 
+
+    def handle_python(my, node):
+        '''during uninstall, handle the python undo_path'''
+        path = my.xml.get_attribute(node, "undo_path")
+        
+        # if no path, then nothing to undo
+        if not path:
+            print "No undo_path defined for this python node"
+            return
+
+        if not path.endswith('.py'):
+            raise TacticException("Path should have the .py extension for python in manifest")
+
+        path = "%s/%s" % (my.plugin_dir, path)
+        if not os.path.exists(path):
+            raise TacticException("Undo Path [%s] does not exist python in manifest" %path)
+        if path.endswith(".py"):
+            from tactic.command import PythonCmd
+            cmd = PythonCmd(file_path=path)
+            cmd.execute()
+        
 
 
 

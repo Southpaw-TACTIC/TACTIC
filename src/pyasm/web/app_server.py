@@ -524,7 +524,7 @@ class BaseAppServer(Base):
     def handle_security(my, security):
         # set the seucrity object
 
-        print "handle security"
+        #print "handle security"
 
         WebContainer.set_security(security)
 
@@ -567,7 +567,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-
+                
         elif ticket_key:
 
             # get from the login
@@ -592,20 +592,22 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+        # clear the password
+        web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
 
-
+            
         # set up default securities
         my.set_default_security(security)
 
         # for now apply the access rules after
         security.add_access_rules()
 
-        print "... end handle_security"
+        #print "... end handle_security"
 
         return security
 

@@ -44,3 +44,22 @@ CREATE TABLE person (
 );
 
 
+CREATE TABLE person_in_car (
+    id integer PRIMARY KEY AUTOINCREMENT,
+    code character varying(256),
+    person_code character varying(256),
+    car_code character varying(256),
+    CONSTRAINT "person_in_car_code_idx" UNIQUE (code)
+);
+
+
+CREATE TABLE car (
+    id integer PRIMARY KEY AUTOINCREMENT,
+    code character varying(256),
+    model character varying(256),
+    CONSTRAINT "person_code_idx" UNIQUE (code)
+);
+
+
+
+

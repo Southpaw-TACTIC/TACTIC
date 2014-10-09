@@ -171,8 +171,26 @@ class ThumbWdg(BaseTableElementWdg):
             'use_delta': 'true',
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
-            'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
-            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background"))
+            #'cbjs_pre_motion_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+             # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' % (layout.get_color("border"), layout.get_color("background")),
+            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+
+            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                            var target_el = spt.get_event_target(evt);
+                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                            if (target_el) {
+                                var orig_border_color = target_el.getStyle('border-color');
+                                var orig_border_style = target_el.getStyle('border-style');
+                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                                if (!target_el.getAttribute('orig_border_color')) {
+                                    target_el.setAttribute('orig_border_color', orig_border_color);
+                                    target_el.setAttribute('orig_border_style', orig_border_style);
+                                }
+                            }''',
+
+            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
         } )
 
 
@@ -797,7 +815,13 @@ class ThumbWdg(BaseTableElementWdg):
             return my.get_no_icon_wdg(missing=True)
 
         if my.icon_type == 'default':
-            if icon_size > 120:
+            # fix template icon_size=100% icon_type which always loads web version
+            if type(icon_size) == types.StringType and icon_size.endswith("%"):
+               icon_size_check = int(icon_size[0:-1])
+            else:
+               icon_size_check = icon_size
+	
+            if icon_size_check > 120:    
                 icon_type = 'web'
             else:
                 icon_type = 'icon'
@@ -1306,6 +1330,12 @@ class ThumbCmd(Command):
             file_type = "main"
             path = sobject.get_lib_path_by_type(file_type)
 
+            #To check if it is a sequence checkin
+            all_snapshots=sobject.get_all_file_objects()
+            for single_snapshot in all_snapshots:
+                if single_snapshot.get('base_type') == 'sequence':
+                    return
+
             icon_creator = IconCreator(path)
             icon_creator.execute()
 
@@ -1330,6 +1360,12 @@ class ThumbCmd(Command):
             if not snapshot:
                 return
 
+            #To check if it is a sequence checkin
+            all_snapshots=snapshot.get_all_file_objects()
+            for single_snapshot in all_snapshots:
+                if single_snapshot.get('base_type') == 'sequence':
+                    return
+
             file_type = "main"
             path = snapshot.get_lib_path_by_type(file_type)
             ext = File.get_extension(path)
@@ -1337,8 +1373,6 @@ class ThumbCmd(Command):
             if ext in File.NORMAL_EXT:
 
                 return
-
-
 
             # use api
             """

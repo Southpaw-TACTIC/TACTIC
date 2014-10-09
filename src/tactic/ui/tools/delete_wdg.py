@@ -142,6 +142,19 @@ class DeleteToolWdg(BaseRefreshWdg):
             'search_keys': bvr.search_keys,
             'values': values
         };
+
+        var del_trigger = function() {
+            
+            // for fast table
+            var tmps = spt.split_search_key(bvr.search_keys[0])
+            var tmps2 = tmps[0].split('?');
+            var del_st_event = "delete|" + tmps2[0];
+            var bvr_fire = {};
+            var input = {'search_keys': bvr.search_keys};
+            bvr_fire.options = input;
+            spt.named_events.fire_event(del_st_event, bvr_fire);
+        }
+
         var server = TacticServerStub.get();
         try {
             server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_keys + ']'});
@@ -153,6 +166,8 @@ class DeleteToolWdg(BaseRefreshWdg):
             if (popup.spt_on_post_delete) {
                 popup.spt_on_post_delete();
             }
+
+            del_trigger();
 
             spt.popup.destroy(popup);
 

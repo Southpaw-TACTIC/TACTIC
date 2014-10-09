@@ -324,7 +324,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         return my.vars
 
 
-
+   
     def get_group_bottom_wdg(my, sobjects):
 
         summary = my.get_option("total_summary")
@@ -339,14 +339,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
         except Exception, e:
             print "WARNING: ", e.message
-            result = "Calculation Error"
+            result = 0
             title = ''
 
         div = DivWdg()
         div.add(str(result))
         div.add_style("text-align: right")
 
-        return div
+        return div, result
 
 
 

@@ -235,7 +235,7 @@ class WatchFolderThread(BaseProcessThread):
         my.base_dir = kwargs.get("base_dir")
         my.search_type = kwargs.get("search_type")
         my.process = kwargs.get("process")
-
+        my.script_path=kwargs.get("script_path")
  
     def get_title(my):
         return "Watch Folder"
@@ -249,6 +249,7 @@ class WatchFolderThread(BaseProcessThread):
         parts.append('--project="%s"' % my.project_code)
         parts.append('--drop_path="%s"' % my.base_dir)
         parts.append('--search_type="%s"' % my.search_type)
+        parts.append('--script_path="%s"'%my.script_path)
         if my.process:
             parts.append('--process="%s"' % my.process)
 
@@ -643,6 +644,7 @@ class TacticMonitor(object):
                 base_dir = watch_folder.get("base_dir")
                 search_type = watch_folder.get("search_type")
                 process = watch_folder.get("process")
+                script_path = watch_folder.get("script_path")
 
                 if not project_code:
                     print "Watch Folder missing project_code ... skipping"
@@ -660,7 +662,8 @@ class TacticMonitor(object):
                         project_code=project_code,
                         base_dir=base_dir,
                         search_type=search_type,
-                        process=process
+                        process=process,
+                        script_path = script_path
                         )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)

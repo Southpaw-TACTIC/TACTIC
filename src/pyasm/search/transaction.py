@@ -965,10 +965,7 @@ class FileUndo:
             if not os.path.exists(src):
                 os.makedirs(src)
         elif type == "create":
-
-            security = Environment.get_security()
-            ticket = security.get_ticket_key()
-
+            
             tmp_dir = Environment.get_tmp_dir()
 
             # first check the upload, then the cache

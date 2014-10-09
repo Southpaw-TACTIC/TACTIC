@@ -194,9 +194,15 @@ class SnapshotDirListWdg(DirListWdg):
             'bvr_match_class': 'spt_dir_list_item',
             'cbjs_action': '''
             var path = bvr.src_el.getAttribute("spt_path");
+            
+            if (path.indexOf('####') != -1) {
+                spt.info('Cannot open the file sequence');
+            } 
+            else {
             var asset_dir = '%s';
             var url = "/assets/" + path.replace(asset_dir, "");
             window.open(url);
+            }
             ''' % asset_dir
             } )
 

@@ -777,7 +777,8 @@ class BizTest(unittest.TestCase):
         # use a non-existent index , i.e. 2 
         template = "{name_last}_{name_first}_{context[2]}.png"
         file_name = naming.naming_to_file(template, my.person, snapshot)
-        my.assertEquals("Test_Unit_.png", file_name)
+        # unknown context index returns !
+        my.assertEquals("Test_Unit_!.png", file_name)
 
         
         # explicit declarations of objects

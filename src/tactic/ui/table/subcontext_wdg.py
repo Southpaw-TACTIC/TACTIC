@@ -67,7 +67,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
             
 
 
-    def process_sobjects(my, sobjects, search=None):
+    def process_sobjects(sobjects, search=None):
         '''process sobjects order according to pipeline process order'''
         if not sobjects:
             return
@@ -93,7 +93,8 @@ class ProcessElementWdg(SimpleTableElementWdg):
             search_id = sobject.get_value("search_id")
             parent_key = "%s|%s" % (search_type, search_id)
             process = sobject.get_value('process')
-
+            
+            
             if parent_key != last_parent_key:
                 parent = SearchKey.get_by_search_key(parent_key)
                 parents.append(parent)
@@ -136,7 +137,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
 
        
         return new_sobjects
-
+    process_sobjects = staticmethod(process_sobjects)
 
 
 class SubContextElementWdg(BaseTableElementWdg):

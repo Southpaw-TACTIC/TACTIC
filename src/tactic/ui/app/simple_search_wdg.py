@@ -465,12 +465,19 @@ class SimpleSearchWdg(BaseRefreshWdg):
             widget.set_show_title(False)
             #element_wdg.add("%s: " % title)
             data = element_data_dict.get(element_name)
+			
+			
+            view_panel_keywords = my.kwargs.get("keywords")
+            #user data takes precedence over view_panel_keywords
+            if isinstance(widget, KeywordFilterElementWdg):
+                if view_panel_keywords:
+                    widget.set_value("value", view_panel_keywords)
             if data:
                 widget.set_values(data)
 
-                if isinstance(widget, KeywordFilterElementWdg):
-                    if not data.get("keywords") and my.kwargs.get("keywords"):
-                        widget.set_value("value", my.kwargs.get("keywords"))
+                
+           
+			    
                     
 
             if isinstance(widget, KeywordFilterElementWdg) and not full_search_type.startswith('sthpw/sobject_list'):
