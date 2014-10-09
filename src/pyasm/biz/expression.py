@@ -2261,7 +2261,10 @@ class MethodMode(ExpressionParser):
             if not value:
                 continue
             if type(value) in types.StringTypes:
-                value = float(value)
+                try:
+                    value = float(value)
+                except:
+                    value = 0
             total += value
 
         return total

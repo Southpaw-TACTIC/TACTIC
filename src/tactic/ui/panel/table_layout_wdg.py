@@ -733,8 +733,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            scroll.add_style("height: 100%")
-            scroll.add_style("height: 500px")
+            height = my.kwargs.get("height")
+            if not height:
+                height = "500px"
+            scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
@@ -987,13 +989,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 info["count"] = len(my.sobjects)
 
             # this simple limit provides pagination and should always be drawn. Visible where applicable
-            from tactic.ui.app import SearchLimitSimpleWdg
-            limit_wdg = SearchLimitSimpleWdg(
-                count=info.get("count"),
-                search_limit=info.get("search_limit"),
-                current_offset=info.get("current_offset"),
-            )
-            inner.add(limit_wdg)
+            if my.kwargs.get("show_search_limit") not in ['false', False]:
+                from tactic.ui.app import SearchLimitSimpleWdg
+                limit_wdg = SearchLimitSimpleWdg(
+                    count=info.get("count"),
+                    search_limit=info.get("search_limit"),
+                    current_offset=info.get("current_offset"),
+                )
+                inner.add(limit_wdg)
 
 
         if my.kwargs.get("is_refresh") == 'true':

@@ -845,7 +845,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM", width="100", show_partial=False)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -860,11 +860,32 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     var simple_search = top.getElement(".spt_simple_search");
                     if (simple_search) {
                         simple_search.setStyle("display", "");
+                        spt.body.add_focus_element(simple_search);
                     }
                 }
 
+                var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "230px");
+                bvr.src_el.setStyle("width", "230px");
+                el.focus();
+                el.select();
+
                 '''
             } )
+
+
+            keyword_div.add_relay_behavior( {
+                'type': 'blur',
+                'bvr_match_class': "spt_text_input",
+                'cbjs_action': '''
+
+                var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "50px");
+
+                '''
+            } )
+
+
         else:
             keyword_div = None
 
@@ -998,7 +1019,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 10px")
+            button_div.add_style("margin-left: 5px")
             wdg_list.append({'wdg': button_div})
 
 

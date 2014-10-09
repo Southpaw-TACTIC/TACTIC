@@ -1171,7 +1171,7 @@ class DbResource(Base):
 
         data = None
         if not use_config and site:
-            data = site_obj.get_site_data(site)
+            data = site_obj.get_connect_data(site)
             if data:
                 host = data.get('host')
                 port = data.get('port')

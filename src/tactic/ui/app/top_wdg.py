@@ -763,8 +763,6 @@ class SitePage(AppServer):
 
         #if not project_code:
         #    project_code = my.project_code
-        print "project_code: ", project_code
-        print "project_code2: ", my.project_code
 
         try:
             SearchType.set_global_template("project", project_code)

@@ -1003,7 +1003,7 @@ spt.tile_layout.setup_control = function() {
 
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
-        div.add_style("height: 16px")
+        div.add_style("height: 20px")
 
 
         detail_div = DivWdg()
@@ -1022,6 +1022,7 @@ spt.tile_layout.setup_control = function() {
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")
+        header_div.add_style("overflow-y: hidden")
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")

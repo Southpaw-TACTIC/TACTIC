@@ -144,9 +144,8 @@ class ContentBoxWdg(BaseRefreshWdg):
         content_div.add_style("width: auto")
 
         content_height = my.kwargs.get("content_height")
-        if not content_height:
-            content_height = "300px"
-        #content_div.add_style("max-height: %s" % content_height)
+        if content_height:
+            content_div.add_style("height: %s" % content_height)
         content_div.add_style("overflow-x: auto")
 
         content_view = my.kwargs.get("content_view")

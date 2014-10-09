@@ -650,9 +650,9 @@ class Site(object):
     get_by_ticket = classmethod(get_by_ticket)
 
 
-    def get_site_data(cls, site):
+    def get_connect_data(cls, site):
         return {}
-    get_site_data = classmethod(get_site_data)
+    get_connect_data = classmethod(get_connect_data)
  
     def get_asset_dir(cls, file_object=None, alias=None):
         return
