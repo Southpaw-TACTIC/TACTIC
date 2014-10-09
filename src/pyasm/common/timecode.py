@@ -23,7 +23,7 @@ class TimeCode(object):
         my.fps = kwargs.get("fps")
         if not my.fps:
             from pyasm.prod.biz import ProdSetting
-            my.fps = ProdSetting.get_by_key("fps")
+            my.fps = ProdSetting.get_value_by_key("fps")
         if not my.fps:
             my.fps = 24
 

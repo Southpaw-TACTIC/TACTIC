@@ -58,7 +58,7 @@ class CheckinWdg(BaseRefreshWdg):
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
         'show_links': 'true|false: determines whether show the button rows at the top',
-        'use_applet': 'true|false: deterines whether or not to use an appet or pure html5'
+        'use_applet': 'true|false: deterines whether to use an applet or pure html5'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
     }
@@ -110,11 +110,11 @@ class CheckinWdg(BaseRefreshWdg):
 
         my.mode = my.kwargs.get('mode')
         my.use_applet = my.kwargs.get('use_applet')
-        if my.use_applet in ['false', False]:
+        if my.use_applet in ['false', 'False', False]:
             my.use_applet = False
         else:
             my.use_applet = Config.get_value("checkin", "use_applet")
-            if my.use_applet in ['false', False]:
+            if my.use_applet in ['false', 'False', False]:
                 my.use_applet = False
             else:
                 my.use_applet = True
@@ -1162,7 +1162,8 @@ spt.checkin.drop_files = function(evt, el) {
         location: 'client',
         paths: file_names,
         sizes: sizes,
-        md5s: md5s
+        md5s: md5s,
+        use_applet: 'false'
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
@@ -1958,8 +1959,13 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             checkbox = CheckboxWdg("deliver")
             delivery_div.add(checkbox)
             delivery_div.add_style("padding-top: 15px")
+
             delivery_div.add("Deliver to: ")
             top.add(delivery_div)
+            if my.context_options:
+                checkbox.add_class('disabled')
+                checkbox.set_attr('disabled', 'disabled')
+                checkbox.add_attr('title','Disabled since context options is set for this process')
             """
             checkbox.add_behavior( {
                 'type': 'change',
@@ -2042,9 +2048,15 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             select.set_option("labels", label_names)
             if process_names:
                 select.set_value(process_names[0])
+
             else:
                 #disable the checkbox
                 checkbox.set_attr('disabled','disabled')
+            
+            if my.context_options:
+                select.add_class('disabled')
+                select.set_attr('disabled', 'disabled')
+
             select.add_style("margin-left: 20px")
             select.add_style("margin-top: 5px")
             select.add_style("width: 200px")
@@ -2415,6 +2427,7 @@ var values = {
 bvr.values = values;
 
 
+
 spt.app_busy.show("Check-in", file_paths[0]);
 
 
@@ -2437,7 +2450,8 @@ try {
             return this_context;
 
         if (subcontext) {
-            this_context = context + "/" + subcontext;
+
+            this_context = process + "/" + subcontext;
         }
         else if (use_file_name) {
             file_path = file_path.replace(/\\\\/g, "/");
@@ -2651,7 +2665,6 @@ try {
                 }
                 else {
                     var this_context = _get_context(context, subcontext, is_context, file_path, use_file_name);
-
                     padding = 0 ;
                     spt.app_busy.show("Checking in ...", file_path)
                     if (transfer_mode == 'preallocate')

@@ -659,14 +659,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         dirname_div.add("<br/>")
 
 
-        expr = "{sobject.name}_v{version}.{ext}"
+        expr = "{sobject.name}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
 
 
-        expr = "{sobject.code}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code", mode="file") )
 
-        expr = "{sobject.code}_{process}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_{process}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code with Process", mode="file") )
 
 
@@ -1734,8 +1734,9 @@ class SearchTypeCreatorCmd(Command):
             sql = DbContainer.get(db_resource)
 
             
-            # put an index on code
-            statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
+            # put a unique constraint on code, which works automatically with Plugin creation
+            statement = 'ALTER TABLE "%s" ADD CONSTRAINT "%s_code_unique" UNIQUE ("code")' % (table, table)
+            #statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
             sql.do_update(statement)
         
 

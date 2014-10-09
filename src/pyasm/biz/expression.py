@@ -1245,8 +1245,10 @@ class MethodMode(ExpressionParser):
                 first_arg = args[0]
                 if my.sobjects:
                     sobject = my.sobjects[0]
-                    cmd = PythonCmd(script_path=first_arg, sobject=sobject)
-                    results = cmd.execute()
+                else:
+                    sobject = None
+                cmd = PythonCmd(script_path=first_arg, sobject=sobject)
+                results = cmd.execute()
 
 
         elif method == 'SUM':
@@ -2231,6 +2233,8 @@ class MethodMode(ExpressionParser):
                 value = sobject.get_base_search_type()
             elif column == '__project__':
                 value = sobject.get_project_code()
+            elif column == '__all__':
+                value = sobject.get_data()
             else:
                 value = sobject.get_value(column)
             

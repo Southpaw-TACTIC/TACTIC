@@ -312,7 +312,7 @@ class Task(SObject):
         bid_start_date = my.get_value("bid_start_date")
         bid_end_date = my.get_value("bid_end_date")
 
-        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
 
@@ -765,7 +765,7 @@ class Task(SObject):
         start_date = Date()
         start_date.add_days(start_offset)
         
-        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
 
@@ -860,8 +860,9 @@ class Task(SObject):
                 bid_duration = int(bid_duration)
 
             end_date = start_date.copy()
-            # for a task to be x days long, we need duration x-1.
-            end_date.add_days(duration-1)
+            if duration >= 1:
+                # for a task to be x days long, we need duration x-1.
+                end_date.add_days(duration-1)
 
 
             # output contexts could be duplicated from 2 different outout processes

@@ -1117,7 +1117,11 @@ TacticServerStub = function() {
             return ret_val;
         }
         catch(e) {
-            alert(e);
+            var e_msg = spt.exception.handler(e);
+            if (/Cannot login with key/.test(e_msg)) 
+                this._redirect_login();
+            else
+                alert(e_msg);
             return;
         }
     }
@@ -1135,7 +1139,7 @@ TacticServerStub = function() {
             return;
         }
         if (ret_val && ret_val.status == "ERROR") {
-            // FIXME: put in a propert error here
+            // FIXME: put in a proper error here
             //alert("ERROR: " + ret_val.msg);
             throw ret_val;
         }
@@ -1378,6 +1382,29 @@ TacticServerStub = function() {
 
     }
 
+    this._show_login = function() {
+        
+        var spinners = $$('.spt_spin');
+        spinners.each(function(x) {spt.hide(x)});
+        var login_scr = document.getElement('.spt_login_screen');
+        login_scr.setStyle('z-index','1100');
+        var custom_content = login_scr.getParent('.spt_custom_content');
+        if (custom_content) {
+            custom_content.setStyle('position','absolute');
+            custom_content.setStyle('top','30%');
+            custom_content.setStyle('left','50%');
+        }
+        spt.popup.show_background();
+        spt.show(login_scr);
+
+    }
+    this._redirect_login = function() {
+       
+        var ok = function() {
+            window.location.reload();
+        };
+        spt.info('You session has expired.', {'click': ok});
+    }
     this.async_callback = function(client, request) {
         if (request.readyState == 4) {
             if (request.status == 200) {
@@ -1385,7 +1412,12 @@ TacticServerStub = function() {
                     var data = this._handle_ret_val(client.func_name, request, client.ret_type);
                     client.callback(data);
                 } catch(e) {
-                    spt.alert(spt.exception.handler(e));
+                    var e_msg = spt.exception.handler(e);
+                    if (/Cannot login with key/.test(e_msg)) {
+                        this._redirect_login();
+                    }
+                    else
+                        spt.alert(e_msg);
                 }
             } else {
                 //alert("status is " + request.status);
@@ -1480,6 +1512,10 @@ TacticServerStub = function() {
             jsontext = child.textContent;
         }
 
+        if (jsontext == "OK") {
+            return ret_val;
+        }
+                
         var value;
         try {
             value = JSON.parse(jsontext);

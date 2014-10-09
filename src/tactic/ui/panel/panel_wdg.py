@@ -287,12 +287,13 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
                 hash = encodeURI( hash );
             }
             var state = {
+                mode: 'tab',
                 hash: hash,
                 element_name: options.element_name,
                 title: title
             };
             var url = "link/"+options.element_name;
-            spt.hash.set_hash( {hash: hash}, title, url );
+            spt.hash.set_hash( state, title, url );
 
         }
         else {
@@ -2768,6 +2769,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'empty': 'true',
             'values': 'simple|insert',
             'order': 11
+        },
+        "group_elements" : {
+            'description': 'a preset one or more columns for grouping e.g. sort_order,category',
+            'type': 'TextWdg',
+            'order': 12
         }
 
     }
@@ -3063,9 +3069,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
-        expand_mode = my.kwargs.get("expand_mode")
+        group_elements = my.kwargs.get("group_elements")        expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
-
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3125,6 +3130,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
+            "group_elements" : group_elements,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,

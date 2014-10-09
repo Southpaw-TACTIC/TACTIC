@@ -60,8 +60,8 @@ class File(SObject):
             'ini', 'db', 'py', 'pyd', 'spt'
     ]
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v']
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
 
     IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds']
                 
@@ -430,6 +430,9 @@ class File(SObject):
         py_exec = Config.get_value("services", "python")
         if not py_exec:
             py_exec = "python"
+
+        if isinstance(path, unicode):
+            path = path.encode('utf-8')
         popen =  subprocess.Popen([py_exec, '%s/src/bin/get_md5.py'%Environment.get_install_dir(), path], shell=False, stdout=subprocess.PIPE)
         popen.wait()
         output = ''
@@ -611,28 +614,37 @@ class IconCreator(object):
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
-        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -s %sx%s -f image2 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
+        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
         #os.system(cmd)
+
         import subprocess
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
-                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]), "-f","image2", tmp_web_path])
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
+            
+            if os.path.exists(tmp_web_path):
+                my.web_path = tmp_web_path
+            else:
+                my.web_path = None
 
-            my.web_path = tmp_web_path
-        except:
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
+                    "%s - %s" % (my.file_path, e.__str__()))
             pass
            
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
-                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]), "-f","image2", tmp_icon_path])
-            my.icon_path = tmp_icon_path
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
+            
+            if os.path.exists(tmp_icon_path):
+                my.icon_path = tmp_icon_path
+            else:
+                my.icon_path = None
 
-        except:
-            pass    
-
-
-
-
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
+                    "%s - %s" % (my.file_path, e.__str__()))
+            pass
 
     def _process_image(my, file_name):
 
