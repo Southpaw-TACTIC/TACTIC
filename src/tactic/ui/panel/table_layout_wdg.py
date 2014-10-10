@@ -2106,16 +2106,19 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if row == 0:
             my.group_summary = []
 
+            spacing = len(my.group_columns) * 20
+
             tr = table.add_row()
             tr.add_class("spt_table_hidden_group_row")
             td = table.add_cell()
-            td.add_style("width", "20px")
-            td.add_style("min-width", "20px")
-            td.add_style("max-width", "20px")
-            td = table.add_cell()
-            td.add_style("width", "30px")
-            td.add_style("min-width", "30px")
-            td.add_style("max-width", "30px")
+            td.add_style("width", "%spx" %spacing)
+            td.add_style("width: %spx" % spacing)
+            td.add_style("max-width: %spx" % spacing)
+            if my.kwargs.get("show_select") not in [False, 'false']:
+                td = table.add_cell()
+                td.add_style("width", "30px")
+                td.add_style("min-width", "30px")
+                td.add_style("max-width", "30px")
             for widget in my.widgets:
                 td = table.add_cell()
                 td.add_class("spt_table_hidden_group_td")
@@ -2663,6 +2666,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
     def handle_select_header(my, table, border_color=None):
 
         if my.group_columns:
+            
             spacing = len(my.group_columns) * 20
             th = table.add_cell()
             th.add_style("min-width: %spx" % spacing)
