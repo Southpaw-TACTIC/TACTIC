@@ -3069,7 +3069,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
-        group_elements = my.kwargs.get("group_elements")        expand_mode = my.kwargs.get("expand_mode")
+        group_elements = my.kwargs.get("group_elements")
+        expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
        
 
