@@ -309,6 +309,7 @@ class CsvImportWdg(BaseRefreshWdg):
             my.search_type = web.get_form_value('search_type_filter')
         my.close_cbfn = my.kwargs.get('close_cbfn')
 
+        my.data = web.get_form_value("data")
         my.web_url = web.get_form_value("web_url")
         my.file_path = None
         if my.web_url:
@@ -328,17 +329,18 @@ class CsvImportWdg(BaseRefreshWdg):
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
 
-            data = web.get_form_value("data")
-            if data:
-                file_name =  web.get_form_value('file_name')
+            file_name =  web.get_form_value('file_name')
+            if my.data:
                 if not file_name:
                     file_name = "%s.csv" % ticket
 
                 my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
                 f = open(my.file_path, "wb")
-                f.write(data)
+                f.write(my.data)
                 f.close()
-
+            elif file_name:
+                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                
 
 
 
@@ -436,10 +438,13 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
             search_type_select.add_behavior( {'type': 'change', \
-                                      'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                                        'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+                  'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
+                  'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
 
-
+        else:
+            hidden = HiddenWdg("search_type_filter")
+            stype_div.add(hidden)
+            hidden.set_value(my.search_type)
 
 
         if my.search_type:
@@ -471,8 +476,13 @@ class CsvImportWdg(BaseRefreshWdg):
                 
                 if my.web_url:
                     file_span = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
+
                 else:
-                    file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    if not my.data:
+                        file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    else:
+                        lines = len(my.data.split("\n"))
+                        file_span = FloatDivWdg("Uploaded [%s] lines of entries: &nbsp; " % lines)
                 file_span.add_color('color','color')
                 file_span.add_style('margin: 8px 0 0 10px')
                 file_span.add_style('font-size: 14px')
@@ -680,7 +690,7 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div_top.add_color('background','background', -5)
         option_div_top.add_style("padding: 10px")
         option_div_top.add_border()
-        option_div_top.add_style("width: 300px")
+        option_div_top.add_style("width: auto")
 
         swap = SwapDisplayWdg(title="Parsing Options")
         option_div_top.add(swap)
@@ -699,7 +709,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         # first row and second row
         #option_div.add( HtmlElement.br() )
-        option_div.add(SpanWdg("Use Title Row: ", css='small'))
+        option_div.add(SpanWdg("Use Title Row: ", css='med'))
         title_row_checkbox = CheckboxWdg("has_title")
         title_row_checkbox.set_default_checked()
 
@@ -712,7 +722,7 @@ class CsvImportWdg(BaseRefreshWdg):
         
 
         option_div.add( HtmlElement.br(2) )
-        option_div.add(SpanWdg("Use Lowercase Title: ", css='small'))
+        option_div.add(SpanWdg("Use Lowercase Title: ", css='med'))
         lower_title_checkbox = CheckboxWdg("lowercase_title")
 
         lower_title_checkbox.add_behavior({'type' : 'click_up',
@@ -722,7 +732,7 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add(lower_title_checkbox)
         option_div.add( HtmlElement.br(2) )
 
-        option_div.add(SpanWdg("Sample Data Row: ", css='small'))
+        option_div.add(SpanWdg("Sample Data Row: ", css='med'))
         data_row_text = SelectWdg("data_row")
         data_row_text.set_option('values', '1|2|3|4|5')
         data_row_text.set_value('1')
@@ -735,7 +745,7 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add( HtmlElement.br(2) )
       
         # encoder
-        option_div.add(SpanWdg("Encoder: ", css='small'))
+        option_div.add(SpanWdg("Encoder: ", css='med'))
         select_wdg = SelectWdg('encoder')
         select_wdg.set_option('values', ['','utf-8', 'iso_8859-1']) 
         select_wdg.set_option('labels', ['ASCII (default)','UTF-8','Excel ISO 8859-1']) 
@@ -746,7 +756,7 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add( HtmlElement.br(2) )
 
 
-        option_div.add(SpanWdg("Identifying Column: ", css='small'))
+        option_div.add(SpanWdg("Identifying Column: ", css='med'))
         select_wdg = SelectWdg('id_col')
         select_wdg.set_option('empty','true')
         #columns = my.search_type_obj.get_columns()
@@ -767,7 +777,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         
         # triggers mode
-        option_div.add(SpanWdg("Triggers: ", css='small'))
+        option_div.add(SpanWdg("Triggers: ", css='med'))
         select_wdg = SelectWdg('triggers_mode')
         select_wdg.set_option('values', ['','False', 'True', 'none']) 
         select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers']) 
@@ -864,12 +874,14 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         div.add( IconWdg("Important", IconWdg.CREATE) )
         div.add("Use the sample row to match which columns the data will be imported into TACTIC<br/><br/>")
-        table = Table(css='spt_csv_table')
+        #table = Table(css='spt_csv_table')
+        table = Table()
         table.add_color('background','background')
         table.add_color('color','color')
+        table.add_style("width: 100%")
 
         table.set_attr("cellpadding", "7")
-        table.set_attr("border", "1")
+        table.add_border()
 
 
         table.add_row()
@@ -963,6 +975,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             table.add_cell(cb) 
             td = table.add_cell(cell)
+            td.add_style("padding: 3px")
             
             # this is an optimal max width
             td.add_style('max-width: 600px')
@@ -1160,9 +1173,10 @@ class PreviewDataWdg(BaseRefreshWdg):
         div = DivWdg(css='spt_csv_sample')
         widget.add(div)
         h3 = DivWdg("Preview Data") 
-        h3.add_border()
+        #h3.add_border()
         h3.add_color('color','color')
-        h3.add_gradient('background','background', -5)
+        #h3.add_gradient('background','background', -5)
+        h3.add("<hr style='dashed'/>")
         h3.add_style("padding: 5px")
         h3.add_style("font-weight: bold")
         h3.add_style("margin-left: -20px")
@@ -1243,7 +1257,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         table_div = DivWdg()
         widget.add(table_div)
-        table_div.add_style("max-width: 650px")
+        table_div.add_style("max-width: 800px")
         table_div.add_style("overflow-x: auto")
 
 

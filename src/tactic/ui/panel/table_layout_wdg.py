@@ -124,7 +124,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '06'
         },
 
-        'show_keyword_search': {
+       'show_keyword_search': {
             'description': 'Flag to determine whether or not to show the Keyword Search button',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -475,7 +475,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         # Force the mode to widget because raw does work with FastTable
-	# anymore (due to fast table constantly asking widgets for info)
+        # anymore (due to fast table constantly asking widgets for info)
         #my.mode = my.kwargs.get("mode")
         #if my.mode != 'raw':
         #    my.mode = 'widget'
@@ -733,8 +733,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             h_scroll.add(scroll)
-            scroll.add_style("height: 100%")
-            scroll.add_style("height: 500px")
+            height = my.kwargs.get("height")
+            if not height:
+                height = "500px"
+            scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
@@ -990,13 +992,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 info["count"] = len(my.sobjects)
 
             # this simple limit provides pagination and should always be drawn. Visible where applicable
-            from tactic.ui.app import SearchLimitSimpleWdg
-            limit_wdg = SearchLimitSimpleWdg(
-                count=info.get("count"),
-                search_limit=info.get("search_limit"),
-                current_offset=info.get("current_offset"),
-            )
-            inner.add(limit_wdg)
+            if my.kwargs.get("show_search_limit") not in ['false', False]:
+                from tactic.ui.app import SearchLimitSimpleWdg
+                limit_wdg = SearchLimitSimpleWdg(
+                    count=info.get("count"),
+                    search_limit=info.get("search_limit"),
+                    current_offset=info.get("current_offset"),
+                )
+                inner.add(limit_wdg)
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -1225,7 +1228,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # add the search_table_<table_id> listener used by widgets 
         # like Add Task to Selected
-	if my.kwargs.get('temp') != True:
+        if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'listen',
                 'event_name': 'search_table_%s' % my.table_id,
@@ -1242,6 +1245,46 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 '''
             } )
 
+
+
+        element_names = my.element_names
+        column_widths = my.kwargs.get("column_widths")
+        if not column_widths:
+            column_widths = []
+
+        if my.kwargs.get('temp') != True:
+            table.add_behavior( {
+                'type': 'load',
+                'element_names': my.element_names,
+                'column_widths': column_widths,
+                'cbjs_action': '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+
+                // determine the widths of the screen
+                var size = layout.getSize();
+
+                var total_size = 30 + 32;
+                for (var i = 0; i < bvr.column_widths.length; i++) {
+                    total_size += bvr.column_widths[i];
+                }
+
+                if (size.x > total_size) {
+                    bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
+                }
+
+                for (var i = 0; i < bvr.element_names.length-1; i++) {
+                    var name = bvr.element_names[i];
+                    var width = bvr.column_widths[i];
+                    spt.table.set_column_width(name, width);
+                }
+                '''
+            } )
+
+
+
+        """
         widths = my.kwargs.get("column_widths")
         #widths = []
 
@@ -1303,6 +1346,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
             } )
+        """
 
 
         # all for collapsing of columns
@@ -1330,6 +1374,31 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             "cursor": "e-resize",
             "background-color": ''
         } )
+
+
+
+        my.header_table.add_relay_behavior( {
+            'type': 'mouseover',
+            'drag_el': '@',
+            'bvr_match_class': 'spt_resize_handle',
+            "cbjs_action": '''
+            bvr.src_el.setStyle("background", "#FF0");
+            '''
+        } )
+
+        my.header_table.add_relay_behavior( {
+            'type': 'mouseout',
+            'drag_el': '@',
+            'bvr_match_class': 'spt_resize_handle',
+            "cbjs_action": '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+
+
+
 
         my.header_table.add_behavior( {
             'type': 'smart_drag',
@@ -1736,10 +1805,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # Qt webkit ignores these
             # This is fixed in PySide 1.1.2.  Need to update OSX version
             # before commenting this all out
-            if my.browser == 'Qt' and os.name != 'nt':
-                th.add_style("background-repeat: no-repeat")
-                th.add_style("background-position: bottom right")
-                th.add_style("vertical-align: top")
+            th.add_style("background-repeat: no-repeat")
+            th.add_style("background-position: bottom center")
+            th.add_style("vertical-align: top")
 
 
 
@@ -1998,11 +2066,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr = table.add_row()
             # don't use spt_table_row which is meant for regular row
             tr.add_class('spt_table_bottom_row')
-            tr.add_color("background", "background", -20)
+            tr.add_color("background", "background", -3)
             if my.group_columns:
                 last_group_column = my.group_columns[-1]
                 tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
                 td = table.add_cell()
+
+            td = table.add_cell("&nbsp;")
+            td.add_border(color="#BBB")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
@@ -2162,7 +2233,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         td.add_style("padding-left: %spx" % (i*15))
 
 
-        tr.add_border(size=1)
+        tr.add_border(size="1px 0px 0px 0px")
         tr.add_style("background", "#EEF")
         
         tr.add_attr("spt_unique_id", unique_id)
@@ -2248,8 +2319,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 msg.add(no_results_msg)
 
             elif my.get_show_insert():
-                msg.add("<br/><br/>Click on the ")
-                icon = IconWdg("Add", IconWdg.ADD)
+                msg.add("<br/><br/>Click on the &nbsp;")
+                icon = IconWdg("Add", "BS_PLUS")
                 msg.add(icon)
                 msg.add(" button to add new items")
                 msg.add("<br/>")
@@ -3634,7 +3705,18 @@ spt.table.show_edit = function(cell) {
 
 
     // add the edit to do the dom
+    cell.setStyle("position", "relative");
+    cell.setStyle("overflow", "");
+
     cell.appendChild(edit_wdg);
+    edit_wdg.setStyle("position", "absolute");
+    edit_wdg.setStyle("top", "0px");
+    edit_wdg.setStyle("left", "0px");
+    edit_wdg.setStyle("margin", "-1px");
+    edit_wdg.setStyle("z-index", 500);
+
+
+
     
     // code here to adjust the size of the edit widget
     spt.table.alter_edit_wdg(cell, edit_wdg, size);
@@ -3769,8 +3851,11 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
-    clone.setStyle("position: absolute");
+    //clone.setStyle("position", "absolute");
+    //clone.setStyle("top", "0px");
+    //clone.setStyle("left", "0px");
 
+    /*
     var size = cell.getSize();
     if (typeof(size) != 'undefined') {
         clone.setStyle("margin-top", (-3)+"px");
@@ -3779,6 +3864,7 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         clone.setStyle("margin-top", "-3px");
     }
     clone.setStyle("margin-left", "-3px");
+    */
 
 
     return clone;
@@ -3879,7 +3965,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
             input.setStyle( "width", size.x+30 + 'px');
-            edit_wdg.setStyle('background','white');
+            //edit_wdg.setStyle('background','white');
+            //edit_wdg.setStyle('color','black');
 
             //setting date time
             //if (value && value.test( /^\d\d\d\d-\d\d-\d\d .*/ ) ) {
@@ -3940,8 +4027,13 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             select_size_to_set = parseInt( spt_size );
         }
 
-        edit_wdg.setStyle("position", "absolute");
+        input.setStyle("height", "auto");
+        input.setStyle("min-width", "100px");
+        input.setStyle("width", "auto");
 
+        edit_wdg.setStyle("position", "absolute");
+        edit_wdg.setStyle("margin-right", "-3px");
+        edit_wdg.setStyle("min-width", "100px");
 
         set_focus = true;
         accept_event = 'change';
@@ -3954,6 +4046,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             input.size = input.options.length;
         }
 
+
         // FIXME: check if this is stil needed
         if( spt.browser.is_IE() ) {
             mult = 15;
@@ -3965,7 +4058,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             }
         }
         // to avoid overlapping select in UI 
-        edit_wdg.setStyle( 'z-index', '100' );
+        edit_wdg.setStyle('z-index', '100' );
     } 
 
     else {
@@ -4116,6 +4209,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
             if (set_display) {
                 cell.innerHTML = "";
+                cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
         }
@@ -4126,6 +4220,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
         if (set_display) {
             edited_cell.innerHTML = "";
+            edited_cell.setStyle("overflow", "hidden");
             spt.table.set_display(edited_cell, display_value, input_type);
         }
 
@@ -4653,6 +4748,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var dummy = document.createElement("div");
             spt.behavior.replace_inner_html(dummy, widget_html);
 
+            // transfer the widths to the new row
+            var widths = spt.table.get_column_widths();
+            for (var element_name in widths) {
+                var width = widths[element_name];
+                spt.table.set_column_width(element_name, width);
+            }
+
+
+
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
             for (var i = 0; i < new_rows.length; i++) {
@@ -4663,7 +4767,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
                 // replace the new row
                 new_rows[i].inject( rows[i], "after" );
+
+                // destroy the old row
                 rows[i].destroy();
+
+ 
             }
             
             // for efficiency, we do not redraw the whole table to calculate the
@@ -5008,6 +5116,16 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
     }
 
+    var swap_top = group_row.getElement(".spt_swap_top");
+    if (swap_top) {
+        var on = swap_top.getElement(".SPT_SWAP_ON");
+        var off = swap_top.getElement(".SPT_SWAP_OFF");
+
+        spt.show(off);
+        spt.hide(on);
+        swap_top.setAttribute("spt_state", "off");
+    }
+
 
     // get the rows after the group
     var last_row = group_row;
@@ -5129,6 +5247,22 @@ spt.table.set_column_width = function(element_name, width) {
 }
 
 
+
+spt.table.get_column_widths = function() {
+    var headers = spt.table.get_headers();
+
+    var widths = {};
+
+    for (var i = 0; i < headers.length; i++) {
+        var header = headers[i];
+        var element_name = header.getAttribute("spt_element_name")
+        var size = header.getSize();
+        var width = header.getStyle("width");
+        widths[element_name] = parseInt( width.replace("px", "") );
+    }
+
+    return widths;
+}
 
 
 
@@ -5753,41 +5887,6 @@ spt.table.open_ingest_tool = function(search_type) {
             'select_color': select_color,
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
-        } )
-
-
-        element_names = my.element_names
-        column_widths = my.kwargs.get("column_widths")
-        if not column_widths:
-            column_widths = []
-        table.add_behavior( {
-            'type': 'load',
-            'element_names': my.element_names,
-            'column_widths': column_widths,
-            'cbjs_action': '''
-
-            var layout = bvr.src_el.getParent(".spt_layout");
-            spt.table.set_layout(layout);
-
-            // determine the widths of the screen
-            var size = layout.getSize();
-
-            var total_size = 30 + 32;
-            for (var i = 0; i < bvr.column_widths.length; i++) {
-                total_size += bvr.column_widths[i];
-            }
-
-            if (size.x > total_size) {
-                bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
-            }
-
-
-            for (var i = 0; i < bvr.element_names.length; i++) {
-                var name = bvr.element_names[i];
-                var width = bvr.column_widths[i];
-                spt.table.set_column_width(name, width);
-            }
-            '''
         } )
 
 

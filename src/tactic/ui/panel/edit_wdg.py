@@ -504,7 +504,7 @@ class EditWdg(BaseRefreshWdg):
         if not width:
             width = my.kwargs.get("width")
         if not width:
-            width = 500
+            width = 600
         table.add_style("width: %s" % width)
 
         height = attrs.get('height')
@@ -582,6 +582,10 @@ class EditWdg(BaseRefreshWdg):
             if my.input_prefix:
                 widget.set_input_prefix(my.input_prefix)
 
+            # Bootstrap
+            widget.add_class("form-control")
+            widget.add_style("width: 100%")
+
            
             if isinstance(widget, HiddenWdg):
                 content_div.add(widget)
@@ -611,12 +615,22 @@ class EditWdg(BaseRefreshWdg):
                     if i % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -5)
+                        tr.add_color("background", "background", -2)
 
 
 
            
-            show_title = (widget.get_option("show_title") != "false")
+            show_title = widget.get_option("show_title")
+            if not show_title:
+                show_title = my.kwargs.get("show_title")
+
+            if show_title in ['false', False]:
+                show_title = False
+            else:
+                show_title = True
+
+
+
             if show_title:
                 title = widget.get_title()
 

@@ -826,6 +826,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_keyword_search = True
         else:
             show_keyword_search = False
+
+        # TEST
+        show_keyword_search = True
+        column = "code"
+
         if show_keyword_search and SearchType.column_exists(my.search_type,column):
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
@@ -841,11 +846,47 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
+            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM", width="100", show_partial=False)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
-            keyword_div.add_style("margin-top: 3px")
-            keyword_div.add_style("margin-left: 8px")
+            keyword_div.add_style("margin-top: 0px")
+            keyword_div.add_style("height: 32px")
+            keyword_div.add_style("margin-left: 0px")
+
+            keyword_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_view_panel_top");
+                if (top) {
+                    var simple_search = top.getElement(".spt_simple_search");
+                    if (simple_search) {
+                        simple_search.setStyle("display", "");
+                        spt.body.add_focus_element(simple_search);
+                    }
+                }
+
+                var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "230px");
+                bvr.src_el.setStyle("width", "230px");
+                el.focus();
+                el.select();
+
+                '''
+            } )
+
+
+            keyword_div.add_relay_behavior( {
+                'type': 'blur',
+                'bvr_match_class': "spt_text_input",
+                'cbjs_action': '''
+
+                var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "50px");
+
+                '''
+            } )
+
+
         else:
             keyword_div = None
 
@@ -961,6 +1002,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         wdg_list = []
 
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
+
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
@@ -975,17 +1020,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 10px")
+            button_div.add_style("margin-left: 5px")
             wdg_list.append({'wdg': button_div})
 
-
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
 
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
+
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
@@ -1129,6 +1172,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         save_button_top = save_button.get_top()
         save_button_top.add_style("display", "none")
         save_button_top.add_class("spt_save_button")
+        #save_button_top.add_class("btn-primary")
+        save_button.add_style("margin-left: 10px")
 
         
         save_button.add_behavior({
@@ -1147,7 +1192,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else {
             spt.dg_table.update_row(evt, bvr)
         }
-        bvr.src_el.getElement(".spt_save_button").setStyle("display", "none");
+        var save_button = bvr.src_el.getElement(".spt_save_button");
+        if (save_button) {
+            save_button.setStyle("display", "none");
+        }
         ''',
         })
 
@@ -1209,12 +1257,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
+            search_type_obj = SearchType.get(my.search_type)
+            search_type_title = search_type_obj.get_value("title")
+
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
             button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
+                'title': search_type_title,
                 'table_id': my.table_id,
                 #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                 'cbjs_action': '''
@@ -1227,10 +1279,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   view: bvr.view,
                   mode: 'insert',
                   //num_columns: 2,
-                  save_event: 'search_table_' + bvr.table_id
-                 
+                  save_event: 'search_table_' + bvr.table_id,
+                  show_header: false,
                 };
-                spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
             } )

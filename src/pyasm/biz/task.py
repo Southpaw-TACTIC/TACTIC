@@ -29,13 +29,13 @@ from dateutil import parser
 
 TASK_PIPELINE = '''
 <pipeline type="serial">
-  <process completion="0" color="#ffc500" name="Assignment"/>
-  <process completion="10" color="#34def2" name="Pending"/>
-  <process completion="20" color="#01949b" name="In Progress"/>
-  <process completion="20" color="#4212ae" name="Waiting"/>
-  <process completion="30" color="#4212ae" name="Need Assistance"/>
-  <process completion="80" color="#ff0800" name="Review"/>
-  <process completion="100" color="#00c611" name="Approved"/>
+  <process completion="0" color="#ecbf7f" name="Assignment"/>
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="20" color="#a96ccf" name="Waiting"/>
+  <process completion="30" color="#a96ccf" name="Need Assistance"/>
+  <process completion="80" color="#e84a4d" name="Review"/>
+  <process completion="100" color="#a3d991" name="Approved"/>
   <connect to="Review" from="Need Assistance"/>
   <connect to="In Progress" from="Pending"/>
   <connect to="Pending" from="Assignment"/>
@@ -49,12 +49,12 @@ default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
 OTHER_COLORS = {
-    "Complete": "#00c611",
-    "Done":     "#00c611",
-    "Final":    "#00c611",
-    "Revise":   "#ff0800",
-    "Ready":    "#34def2",
-    "In-Progress":"#34def2",
+    "Complete": "#a3d991",
+    "Done":     "#a3d991",
+    "Final":    "#a3d991",
+    "Revise":   "#e84a4d",
+    "Ready":    "#a3d991",
+    "In_Progress":"#e9e386",
 }
 
 
@@ -93,12 +93,12 @@ class Task(SObject):
     def get_default_color(process):
         global default_xml
         global OTHER_COLORS
-        node = default_xml.get_node("pipeline/process[@name='%s']" % process)
+        node = default_xml.get_node("pipeline/process[@name='%s']" % process.title())
         if node is None:
-            return OTHER_COLORS.get(process)
+            return OTHER_COLORS.get(process.title())
         color = default_xml.get_attribute(node, "color")
         if not color:
-            color = OTHER_COLORS.get(process)
+            color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
         theme = Palette.get()
@@ -282,7 +282,7 @@ class Task(SObject):
                 parent = my.get_parent()
             except Exception, e:
                 print "WARNING: ", e
-                parent = Project.get_project()
+                parent = Project.get()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
             else:

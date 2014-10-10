@@ -492,8 +492,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         # add in the mode selected
         mode_wdg = DivWdg()
-        mode_wdg.add("Mode: ")
+        mode_wdg.add("<div style='float: left; margin-right: 10px'>Mode: </div>")
         mode_select = SelectWdg("mode")
+        mode_select.add_style("width: 100px")
         mode_select.add_class('spt_element_def_mode')
         mode_select.set_option("labels", "Form|XML")
         mode_select.set_option("values", "form|xml")
@@ -519,7 +520,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             '''
         })
         mode_wdg.add(mode_select)
-        mode_wdg.add_styles("float: right; margin: 0px 8px 0 0")
+        mode_wdg.add_style("float: right")
+        mode_wdg.add_style("margin: 0px 8px 0 0")
+        mode_wdg.add_style("width: 160px")
         mode = mode_select.get_value()
 
 
@@ -540,7 +543,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
         #title_div.add_style("width: 520px")
-        title_div.add_style("height: 18px")
+        title_div.add_style("height: 30px")
         title_div.add_border()
         if my.is_insert:
             title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -729,10 +732,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
         tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
         td.add_style("padding-top: 20px")
-
 
        
         is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
@@ -749,6 +749,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             title_wdg = DivWdg()
             title_wdg.add("Display")
             title_wdg.add_style("margin-top: -25px")
+            title_wdg.add_style("font-size: 1.2em")
             attr_wdg.add(title_wdg)
             td.add(attr_wdg)
 
@@ -1063,6 +1064,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             color_input.set_input(text)
 
             select = SelectWdg("color|column")
+            select.add_style("width: 150px")
             select.set_option("values", existing_values)
             first_row.add("&nbsp;"*2)
             first_row.add(select)
@@ -1501,7 +1503,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
         title_div.add_style("width: 520px")
-        title_div.add_style("height: 18px")
+        title_div.add_style("height: 24px")
         title_div.add_border()
         if my.is_insert:
             title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -1792,6 +1794,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # put xxx_ in front to separate from other options
         widget_select = SelectWdg("xxx_%s|widget_key" % prefix)
         widget_select.add_class("spt_widget_key")
+        widget_select.add_style("width: 250px")
         #if not default_class:
         #    widget_select.add_empty_option()
         widget_select.set_option("labels", class_labels)
@@ -2529,6 +2532,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
             elif widget_type == 'SelectWdg':
                 edit_wdg = SelectWdg(name)
+                edit_wdg.add_style("width: 350px")
                 edit_wdg.add_empty_option('-- Select --')
                 values = option.get('values')
                 edit_wdg.set_option('values', values)

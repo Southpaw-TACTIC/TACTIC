@@ -907,7 +907,7 @@ spt.tile_layout.setup_control = function() {
         med_color = div.get_color('color2')
         
         slider_div = DivWdg(css='spt_slider')
-        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 200px;'% light_color)
+        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 100px;'% light_color)
         knob_div = DivWdg(css='knob')
         knob_div.add_behavior({'type':'click',
                 'cbjs_action': 'spt.tile_layout.set_layout(bvr.src_el)'
@@ -1008,7 +1008,7 @@ spt.tile_layout.setup_control = function() {
 
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
-        div.add_style("height: 16px")
+        div.add_style("height: 20px")
 
 
         detail_div = DivWdg()
@@ -1027,6 +1027,7 @@ spt.tile_layout.setup_control = function() {
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")
+        header_div.add_style("overflow-y: hidden")
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")
@@ -1091,7 +1092,7 @@ class ThumbWdg2(BaseRefreshWdg):
     def get_display(my):
 
         width = "100%"
-        height = "100%"
+        height = my.kwargs.get("height")
 
         sobject = my.get_current_sobject()
 
@@ -1118,7 +1119,8 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("width: 70%")
         elif path:
             img.add_style("width: %s" % width)
-            img.add_style("height: %s" % height)
+            if height:
+                img.add_style("height: %s" % height)
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 
@@ -1127,7 +1129,8 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        div.add_style("height: 100%")
+        if height:
+            div.add_style("height: 100%")
 
         if my.show_name_hover in ["True","true",True]:
             name_hover = DivWdg()
@@ -1148,6 +1151,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
         icon_path = None
         path = None
+
+        base_search_type = sobject.get_base_search_type()
+        if base_search_type == "sthpw/snapshot":
+            sobject = sobject.get_parent()
 
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code", no_exception=True)

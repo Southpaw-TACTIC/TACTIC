@@ -271,10 +271,10 @@ class HashPanelWdg(BaseRefreshWdg):
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
 
-        # guest user should never be able to see admin site
         if key != 'login':
             security = Environment.get_security()
             login = security.get_user_name()
+            # guest user should never be able to see admin site
             if login == "guest" and key == 'admin':
                 #from pyasm.widget import Error403Wdg
                 #return Error403Wdg().get_buffer_display()
@@ -389,8 +389,6 @@ class HashPanelWdg(BaseRefreshWdg):
         widget.set_name(name)
 
         return widget
-
-
 
     get_widget_from_hash = classmethod(get_widget_from_hash)
 

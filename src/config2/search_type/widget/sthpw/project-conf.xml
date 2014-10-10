@@ -200,7 +200,7 @@
 
     <element name="palette">
         <display class="SelectWdg">
-            <values>Aqua|Dark|Bright|Silver|Origami|Bon Noche|Aviator</values>
+            <values>Aqua|Dark|Bright|Silver|Origami|Bon Noche|Aviator|Black</values>
             <empty>-- Default --</empty>
         </display>
     </element>

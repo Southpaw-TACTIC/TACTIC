@@ -91,10 +91,11 @@ class Error404Wdg(ErrorWdg):
         div.add(error_div)
         error_div.add_style("font-size: 16px")
         error_div.add_style("font-weight: bold")
-        error_div.add_style("width: 97%")
+        error_div.add_style("width: auto")
         error_div.add_gradient("background", "background")
         error_div.add_border()
         error_div.add_style("margin-left: 5px")
+        error_div.add_style("margin-right: 5px")
         error_div.add_style("margin-top: -10px")
 
         div.add("<br/>")
@@ -120,18 +121,21 @@ class Error404Wdg(ErrorWdg):
         div.add(HtmlElement.br())
 
         from tactic.ui.widget import ActionButtonWdg
+        button_div = DivWdg()
+        button_div.add_style("width: 90px")
+        button_div.add_style("margin: 0px auto")
+
+        div.add(button_div)
         button = ActionButtonWdg(title="Go to Main", tip='Click to go to main page')
-        div.add(button)
+        button_div.add(button)
         
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        document.location = '/tactic';
+        document.location = '/';
         '''
         } )
-        button.add_event("onmouseup", "document.location='/tactic'")
-        button.add_style("margin-left: auto")
-        button.add_style("margin-right: auto")
+        button.add_event("onmouseup", "document.location='/'")
 
         return div
 

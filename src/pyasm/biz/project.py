@@ -66,10 +66,20 @@ class Project(SObject):
         # get the db resource for attached to this particular project.
         # Not the db_resource for "sthpw/project" for which
         # project.get_db_resource() does
-        key = "Project:db_resource:%s" % my.get_code()
-        resource = Container.get(key)
-        if resource != None:
-            return resource
+        key = "Project:db_resource_cache"
+        resource_dict = Container.get(key)
+        if resource_dict:
+            resource = resource_dict.get( my.get_code() )
+            if resource != None:
+                return resource
+        else:
+            resource_dict = {}
+            Container.put(key, resource_dict)
+
+        #key = "Project:db_resource:%s" % my.get_code()
+        #resource = Container.get(key)
+        #if resource != None:
+        #    return resource
 
         # the project defines the resource
         database = my.get_database_name()
@@ -85,12 +95,14 @@ class Project(SObject):
             # this could be any project, not just sthpw
             # already looked at cache, so set use_cache to False
             db_resource = DbResource.get_default(database, use_cache=False)
-            Container.put(key, db_resource)
+            #Container.put(key, db_resource)
+            resource_dict[key] = db_resource
             return db_resource
         #elif isinstance(db_resource_code, DbResource):
         elif DbResource.is_instance(db_resource_code):   
             db_resource = db_resource_code
-            Container.put(key, db_resource)
+            #Container.put(key, db_resource)
+            resource_dict[key] = db_resource
             return db_resource
 
 
@@ -110,7 +122,8 @@ class Project(SObject):
         password = db_resource_sobj.get_value("password")
        
         db_resource = DbResource(database=database, host=host, port=port, vendor=vendor, password=password)
-        Container.put(key, db_resource)
+        #Container.put(key, db_resource)
+        resource_dict[key] = db_resource
 
         return db_resource
 
@@ -242,6 +255,17 @@ class Project(SObject):
 
         return project
     get = classmethod(get)
+
+
+    def get_default_project(cls):
+        from pyasm.security import Site
+        project = Site.get().get_default_project()
+        if project:
+            return project
+        project = Config.get_value("install", "default_project")
+        return project
+    get_default_project = classmethod(get_default_project) 
+
 
 
     def get_all_projects(cls):
@@ -573,14 +597,6 @@ class Project(SObject):
         if search_type.startswith('sthpw/'):
             # get the local db_resource
             db_resource = DbResource.get_default('sthpw')
-            """
-            host = Config.get_value("database", "host")
-            vendor = Config.get_value("database", "vendor")
-            port = Config.get_value("database", "port")
-            user = Config.get_value("database", "user")
-            password = DbPasswordUtil.get_password()
-            db_resource = DbResource(database="sthpw", host=host, port=port, vendor=vendor, user=user, password=password)
-            """
             return db_resource
 
 

@@ -516,12 +516,12 @@ class TestHtml5UploadWdg(BaseRefreshWdg):
                 var percent = Math.round(evt.loaded * 100 / evt.total);
             }
 
-      var onchange = function () {
+            var onchange = function () {
                 spt.html5upload.upload_file( {
                   upload_complete: upload_complete,
                   upload_progress: upload_progress 
                 } );
-      }
+            }
 
 
   

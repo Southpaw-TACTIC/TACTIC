@@ -198,10 +198,11 @@ class GroupAssignWdg(BaseRefreshWdg):
 
 
         title = DivWdg()
-        title.add( login.get_full_name() )
+        title.add( "User: %s" % login.get_full_name() )
         top.add(title)
         title.add_gradient("background", "background3")
         title.add_style("padding: 10px")
+        title.add_style("margin-bottom: 5px")
         title.add_style("font-weight: bold")
 
 

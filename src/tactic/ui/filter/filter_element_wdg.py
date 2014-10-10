@@ -961,6 +961,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         
         # search_type is a list matching the column for potential join
+        width = my.kwargs.get("width")
+        if not width:
+            width = "230"
+
         text = LookAheadTextInputWdg(
                 name="value",
                 do_search=my.do_search,
@@ -970,10 +974,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 search_type=search_type,
                 column=my.look_ahead_columns,
                 relevant = my.relevant,
-                width ='230',
+                width = width,
                 hint_text=hint_text,
                 case_sensitive = my.case_sensitive,
-                icon=my.kwargs.get("icon")
+                icon=my.kwargs.get("icon"),
+                height="42px"
         )
         value = my.values.get("value")
         if value:
@@ -993,41 +998,44 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         div.add(text)
 
 
-        from pyasm.widget import IconWdg
-        icon_div = DivWdg()
-        icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
-        icon_div.add(icon)
-        icon_div.add_class("hand")
-        icon_div.add_style("position: absolute")
-        icon_div.add_style("top: 5")
-        icon_div.add_style("right: 0")
+        show_partial = my.get_option("show_partial")
+        if show_partial not in ['false', False]:
 
-        from tactic.ui.container import DialogWdg
-        dialog = DialogWdg(show_title=False, show_pointer=True)
-        dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
-        div.add(dialog)
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
+            icon_div.add(icon)
+            icon_div.add_class("hand")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 5")
+            icon_div.add_style("right: 0")
 
-        match_div = DivWdg()
-        match_div.add_style("width: 175")
-        dialog.add(match_div)
-        checkbox = CheckboxWdg("partial")
-        match_div.add(checkbox)
-        checkbox.add_attr("title", "Use partial word match (slower)")
-        match_div.add_style("padding: 10px")
-        match_div.add_color("color", "color")
-        match_div.add_color("background", "background")
-        match_div.add(" Use partial word match")
+            from tactic.ui.container import DialogWdg
+            dialog = DialogWdg(show_title=False, show_pointer=True)
+            dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
+            div.add(dialog)
+
+            match_div = DivWdg()
+            match_div.add_style("width: 175")
+            dialog.add(match_div)
+            checkbox = CheckboxWdg("partial")
+            match_div.add(checkbox)
+            checkbox.add_attr("title", "Use partial word match (slower)")
+            match_div.add_style("padding: 10px")
+            match_div.add_color("color", "color")
+            match_div.add_color("background", "background")
+            match_div.add(" Use partial word match")
 
 
-        if my.mode == 'keyword' and my.has_index:
-            div.add(icon_div)
-        elif my.mode =='global' and my.has_index:
-            div.add(icon_div)
-        else:
-            # partial is implied otherwise
-            hidden = HiddenWdg("partial")
-            div.add(hidden)
-            hidden.set_value("on")
+            if my.mode == 'keyword' and my.has_index:
+                div.add(icon_div)
+            elif my.mode =='global' and my.has_index:
+                div.add(icon_div)
+            else:
+                # partial is implied otherwise
+                hidden = HiddenWdg("partial")
+                div.add(hidden)
+                hidden.set_value("on")
 
 
 

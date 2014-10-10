@@ -571,6 +571,7 @@ class TextWdg(BaseTextWdg):
         my.css = "inputfield"
         #my.add_class(my.css)
         my.add_class("spt_input")
+        #my.add_class("form-control")
         #my.add_color("background", "background", 10)
         #my.add_color("color", "color")
         #my.add_border()

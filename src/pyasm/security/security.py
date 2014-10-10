@@ -650,10 +650,24 @@ class Site(object):
     get_by_ticket = classmethod(get_by_ticket)
 
 
-    def get_site_data(cls, site):
+    def get_connect_data(cls, site):
         return {}
-    get_site_data = classmethod(get_site_data)
+    get_connect_data = classmethod(get_connect_data)
  
+    def get_asset_dir(cls, file_object=None, alias=None):
+        return
+    get_asset_dir = classmethod(get_asset_dir)
+ 
+ 
+    def get_web_dir(cls, file_object=None, alias=None):
+        return
+    get_web_dir = classmethod(get_web_dir)
+
+
+    def get_default_project(cls):
+        return
+ 
+
 
     #######################
 
@@ -662,7 +676,10 @@ class Site(object):
         if not class_name:
             class_name = "pyasm.security.Site"
         #class_name = "spt.modules.portal.PortalSite"
-        site = Common.create_from_class_path(class_name)
+        try:
+            site = Common.create_from_class_path(class_name)
+        except Exception, e:
+            site = Site()
         return site
     get = classmethod(get)
 
@@ -918,6 +935,9 @@ class Security(Base):
             return my._ticket.get_key()
         else:
             return ""
+
+    def clear_ticket(my):
+        my_ticket = ""
 
 
     def get_access_manager(my):

@@ -5795,6 +5795,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         try:
             ticket = my.init(ticket, reuse_container=False)
 
+            from pyasm.security import Site
+            transaction_ticket = Site.get().build_ticket(transaction_ticket)
+
             # set the server in transaction?
             my.set_transaction_state(True)
 

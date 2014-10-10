@@ -436,7 +436,7 @@ class TaskElementWdg(BaseTableElementWdg):
         my.assigned_label_attr = my.kwargs.get('assigned_label_attr')
         my.assigned_values_expr = my.kwargs.get('assigned_values_expr')
         if not my.assigned_values_expr:
-            my.assigned_values_expr = "@SOBJECT(sthpw/login)"
+            my.assigned_values_expr = "@SOBJECT(sthpw/login['@ORDER_BY','display_name'])"
 
         if assigned == 'true':
             if my.assigned_label_attr:
@@ -456,7 +456,8 @@ class TaskElementWdg(BaseTableElementWdg):
             else:
                 users = Search.eval(my.assigned_values_expr)
                 user_names = SObject.get_values(users, 'login')
-                my.assignee_labels = user_names
+                display_names = SObject.get_values(users, 'display_name')
+                my.assignee_labels = display_names
 
             my.assignee = user_names
         else:
@@ -973,7 +974,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
          
             tasks = sorted(tasks,get_compare(processes))
 
-	
         return tasks
 
     def _get_display_options(my):
@@ -1199,6 +1199,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             last = len(items) - 1
             for idx, tasks in enumerate(items):
+
                 if my.layout in ['vertical']:
                     table.add_row()
                 td = table.add_cell()
