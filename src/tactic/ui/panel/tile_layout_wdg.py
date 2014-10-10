@@ -902,7 +902,7 @@ spt.tile_layout.setup_control = function() {
         med_color = div.get_color('color2')
         
         slider_div = DivWdg(css='spt_slider')
-        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 200px;'% light_color)
+        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 100px;'% light_color)
         knob_div = DivWdg(css='knob')
         knob_div.add_behavior({'type':'click',
                 'cbjs_action': 'spt.tile_layout.set_layout(bvr.src_el)'

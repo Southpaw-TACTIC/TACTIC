@@ -1948,11 +1948,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr = table.add_row()
             # don't use spt_table_row which is meant for regular row
             tr.add_class('spt_table_bottom_row')
-            tr.add_color("background", "background", -20)
+            tr.add_color("background", "background", -3)
             if my.group_columns:
                 last_group_column = my.group_columns[-1]
                 tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
                 td = table.add_cell()
+
+            td = table.add_cell("&nbsp;")
+            td.add_border(color="#BBB")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
@@ -3882,10 +3885,12 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
+        input.setStyle("min-width", "100px");
+        input.setStyle("width", "auto");
 
         edit_wdg.setStyle("position", "absolute");
         edit_wdg.setStyle("margin-right", "-3px");
-
+        edit_wdg.setStyle("min-width", "100px");
 
         set_focus = true;
         accept_event = 'change';
@@ -3897,6 +3902,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         } else {
             input.size = input.options.length;
         }
+
 
         // FIXME: check if this is stil needed
         if( spt.browser.is_IE() ) {

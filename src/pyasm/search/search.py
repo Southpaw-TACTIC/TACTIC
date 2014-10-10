@@ -3276,6 +3276,9 @@ class SObject(object):
                 else:
                     my.set_value("search_code", sobject.get_value("code") )
 
+        elif relationship in ['general']:
+            print 'WARNING: relationship [%s] not supported' % relationship
+
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
 
