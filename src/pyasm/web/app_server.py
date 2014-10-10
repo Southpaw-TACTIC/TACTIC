@@ -582,7 +582,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-
+                
         elif ticket_key:
             # get from the login
             site_obj = Site.get()
@@ -607,13 +607,15 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+        # clear the password
+        web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
 
-
+            
         # set up default securities
         my.set_default_security(security)
 

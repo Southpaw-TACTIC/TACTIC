@@ -303,6 +303,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             my.aspect_ratio = (240, 160)
 
+        my.show_name_hover = my.kwargs.get('show_name_hover')
 
         my.top_styles = my.kwargs.get('styles')
         my.spacing = my.kwargs.get('spacing')
@@ -313,12 +314,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def add_layout_behaviors(my, layout_wdg):
+        border_color = layout_wdg.get_color('border', modifier=20)
         layout_wdg.add_behavior( {
             'type': 'smart_drag',
             'bvr_match_class': 'spt_tile_select',
             'drag_el': 'drag_ghost_copy',
             'use_copy': 'true',
             'use_delta': 'true',
+            'border_color': border_color,
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
             
@@ -706,7 +709,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_style("height: %s" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
-        thumb = ThumbWdg2()
+        kwargs = {'show_name_hover': my.show_name_hover}
+
+        thumb = ThumbWdg2(**kwargs)
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
         thumb_div.add_border()
@@ -1070,6 +1075,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def init(my):
         my.path = None
+        my.show_name_hover = my.kwargs.get("show_name_hover")
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)
@@ -1126,6 +1132,17 @@ class ThumbWdg2(BaseRefreshWdg):
         if height:
             div.add_style("height: 100%")
 
+        if my.show_name_hover in ["True","true",True]:
+            name_hover = DivWdg()
+            name_hover.add_class("spt_name_hover")
+            name_hover.add(sobject.get('name'))
+            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
+            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+            name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \
+                                transition: opacity 0s ease-out; -webkit-transition: opacity 0s ease-out; \
+                                height: 100%; width: 100%; position: absolute; padding-top: 20px; \
+                                text-align: center; background-color: rgba(0, 0, 0, 0.6);')
+            div.add(name_hover)
 
         return div
 

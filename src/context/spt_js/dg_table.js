@@ -2926,6 +2926,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
+    var group_elements = target.getAttribute("spt_group_elements");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
@@ -2970,6 +2971,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'table_id': table_id,
         'search_type': search_type,
         'element_names': element_names,
+        'group_elements': group_elements,
         'column_widths': column_widths,
         'view': view,
         'search_view': search_view,
@@ -3004,6 +3006,17 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'mode': mode,
         'is_refresh': 'true',
         'search_keys': search_keys,
+    }
+
+    var pat = /TileLayoutWdg/;
+    if (pat.test(class_name)) {
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow']
+        for (var k=0; k < attr_list.length; k++) {
+            var attr_val = target.getAttribute('spt_'+ attr_list[k]);
+            if (attr_val)
+                args[attr_list[k]] = attr_val;
+        }
+      
     }
 
     if (bvr.extra_args) {

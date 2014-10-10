@@ -559,9 +559,9 @@ class SecurityWdg(BaseRefreshWdg):
         div.add_style("margin: 10px")
         #div.add_style("width: 209px")
         #div.add_style("height: 64px")
-	div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
-	#div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
 
@@ -1182,7 +1182,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         group_names = [x.get_value("login_group") for x in groups]
 
         config_xml = []
-        config_xml.append('''<config><ttt>''')
+        config_xml.append('''<config><table edit='false'>''')
 
 
         filter = []
@@ -1222,11 +1222,11 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-        config_xml.append('''</ttt></config>''')
+        config_xml.append('''</table></config>''')
         config_xml = "\n".join(config_xml)
 
         from pyasm.widget import WidgetConfig
-        config = WidgetConfig.get(view="ttt", xml=config_xml)
+        config = WidgetConfig.get(view="table", xml=config_xml)
 
 
         from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg
@@ -1306,7 +1306,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
         # these are virtual sobjects, don't show search limit to avoid pagination 
         layout = FastTableLayoutWdg(
-            search_type='sthpw/virtual', view='ttt',
+            search_type='sthpw/virtual', view='table',
             show_shelf=False,
             show_search_limit="false",
             #show_select=False,

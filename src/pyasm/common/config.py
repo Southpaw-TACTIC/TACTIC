@@ -152,6 +152,8 @@ class Config(Base):
         
         if isinstance(value, int):
             value = str(value)
+        elif isinstance(value, dict):
+            value = jsondumps(value)
         elif value.startswith('{'):
             try:
                 value = eval(value)

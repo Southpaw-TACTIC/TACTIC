@@ -6,4 +6,6 @@
   </data>
   <search_type code="prod/asset"/>
   <search_type code="prod/shot"/>
+  <search_type code="prod/sequence"/>
+  <sobject search_type="sthpw/schema" path="sthpw_schema.spt" ignore_columns="timestamp" expression="@SOBJECT(sthpw/schema['code','sample3d'])"/>
 </manifest>

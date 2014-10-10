@@ -733,9 +733,6 @@ class Ticket(SObject):
         ticket = search.get_sobject()
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
-
-       
-
       
 
 
@@ -794,6 +791,28 @@ class Ticket(SObject):
         return ticket
     create = staticmethod(create)
         
+    def update_session_expiry():
+        security = Environment.get_security()
+        login_ticket = security.get_ticket()    
+        impl = Sql.get_default_database_impl()
+        timeout = Config.get_value("security","inactive_ticket_expiry")
+        if not timeout:
+            return
+        offset,type = timeout.split(" ")
+        expiry = impl.get_timestamp_now(offset=offset, type=type)
+        Ticket.update_expiry(login_ticket,expiry)
+        
+    update_session_expiry = staticmethod(update_session_expiry)
+
+
+
+    def update_expiry(ticket,expiry):
+        
+        
+        ticket.set_value("expiry", expiry, quoted=0)
+        ticket.commit(triggers="none")
+
+    update_expiry = staticmethod(update_expiry)
 
 
 

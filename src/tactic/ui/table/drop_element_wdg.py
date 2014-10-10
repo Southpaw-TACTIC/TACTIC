@@ -22,6 +22,7 @@ from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project
 from pyasm.prod.biz import ShotInstance
 from pyasm.widget import HiddenWdg, IconWdg
+from pyasm.biz import ExpressionParser
 
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -320,6 +321,7 @@ class DropElementWdg(SimpleTableElementWdg):
         item_div.add_class("spt_drop_display_value")
 
         add_icon = True
+        ExpressionParser.clear_cache()
         if sobject:
             if add_icon:
                 my._add_icon(sobject, item_div)

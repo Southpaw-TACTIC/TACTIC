@@ -422,6 +422,23 @@ class FormatValue(object):
             value = timecode.get_timecode(format)
 
         # ------------------------------------------------
+        # Dictionary
+        elif format == "DICT":
+
+            dict_as_str = ""
+            dict_list = []
+
+            if not value:
+                value = ''
+
+            else:
+                for key, value in sorted(value.iteritems()):
+                    dict_list.append("%s : %s" % (key, value))
+
+            dict_as_str = "<br />".join(dict_list)
+            value = dict_as_str
+
+        # ------------------------------------------------
         # File Size
         elif format in ['KB']:
 
