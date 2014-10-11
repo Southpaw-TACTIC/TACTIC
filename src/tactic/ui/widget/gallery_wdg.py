@@ -381,21 +381,22 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
-        icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
-        icon = DivWdg()
-        icon.add("X")
-        icon.add_style("font-size: 42px")
-        icon.add_style("color: #ddd")
-        icon.add_style("width: 48px")
-        icon.add_style("height: 48px")
-        icon.add_style("text-align: center")
-        icon.add_style("border-radius: 30px")
-        icon.add_style("border: solid 3px #ddd")
+        icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
         inner.add(icon)
+        #icon = DivWdg()
+        #icon.add("X")
+        #icon.add_style("font-size: 42px")
+        #icon.add_style("color: #ddd")
+        #icon.add_style("width: 48px")
+        #icon.add_style("height: 48px")
+        #icon.add_style("text-align: center")
+        #icon.add_style("border-radius: 30px")
+        #icon.add_style("border: solid 3px #ddd")
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 125px")
+        icon.add_style("bottom: 80px")
         icon.add_style("left: 38px")
+        icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
@@ -405,7 +406,7 @@ class GalleryWdg(BaseRefreshWdg):
         } )
 
 
-        icon = IconWdg(title="Previous", icon="/plugins/remington/pos/icons/chevron_left.png")
+        icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
         inner.add(icon)
         icon.add_class('spt_left_arrow')
         icon.add_style("cursor: pointer")
@@ -422,7 +423,7 @@ class GalleryWdg(BaseRefreshWdg):
         } )
 
 
-        icon = IconWdg(title="Next", icon="/plugins/remington/pos/icons/chevron_right.png")
+        icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
         inner.add(icon)
         icon.add_class('spt_right_arrow')
         icon.add_style("position: absolute")
