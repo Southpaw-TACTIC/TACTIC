@@ -770,15 +770,19 @@ class IconCreator(object):
                 if sys.platform == 'darwin':
                     subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
                 else:
-                    subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
-                    "%s"%large_path,  "%s"%small_path ]) 
+                    if os.path.exists('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe'):
+                        subprocess.call(['C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe',\
+                        '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                        "%s"%large_path,  "%s"%small_path ])
+                    
+                    else:
+                        subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                        "%s"%large_path,  "%s"%small_path ]) 
+            
+                    
+            
             except:
-                try:
-                    subprocess.call(['C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe',\
-                    '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
-                    "%s"%large_path,  "%s"%small_path ])
-                except:
-                    pass
+                pass
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
                 raise TacticException('Icon generation failed')
