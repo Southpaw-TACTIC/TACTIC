@@ -773,7 +773,12 @@ class IconCreator(object):
                     subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
                     "%s"%large_path,  "%s"%small_path ]) 
             except:
-                pass
+                try:
+                    subprocess.call(['C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe',\
+                    '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
+                    "%s"%large_path,  "%s"%small_path ])
+                except:
+                    pass
             # raise to alert the caller to set this icon_path to None
             if not os.path.exists(small_path):
                 raise TacticException('Icon generation failed')
