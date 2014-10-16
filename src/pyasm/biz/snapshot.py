@@ -14,6 +14,7 @@ __all__ = ["Snapshot","SnapshotType","SObjectNotFoundException"]
 
 
 import os, string, types
+import re
 
 from pyasm.common import Container, Xml, Environment, Common, Config
 from pyasm.search import *
@@ -1113,9 +1114,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None, checkin_type=''):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent, checkin_type=checkin_type)
 
 
 
@@ -2047,7 +2048,7 @@ class Snapshot(SObject):
 
 
 
-    def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type=None):
+    def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type=None, naming=None):
 
         # NOTE: no triggers a run on this operation (for performance reasons)
 
@@ -2092,6 +2093,7 @@ class Snapshot(SObject):
             if not is_latest:
                 return
 
+        
 
         # if os is linux, it should be symbolic link as a default
         if os.name == 'posix':
@@ -2167,8 +2169,10 @@ class Snapshot(SObject):
         file_objects = []
 
         paths = {}
+        rejected  = False
         for node in nodes:
             node_name = Xml.get_node_name(node)
+
             if node_name in  ["ref", "input_ref"]:
                 builder.copy_node(node, None)
                 continue
@@ -2176,6 +2180,7 @@ class Snapshot(SObject):
 
 
             file_name = my._get_file_name(node)
+
             file_path = "%s/%s" % (lib_dir,file_name)
             file_code = my._get_file_code(node)
             file_type = my._get_file_type(node)
@@ -2226,7 +2231,7 @@ class Snapshot(SObject):
 
         
             # build the file name
-            # ... if there is a versionless naming, use it
+            # if there is a versionless naming, use it
             if checkin_type == 'strict' or has_versionless:
                 file_naming = Project.get_file_naming()
                 file_naming.set_sobject(sobject)
@@ -2238,10 +2243,29 @@ class Snapshot(SObject):
                 dir_naming = None
             else:
                 # These naming conventions are for the versionless file, not the checked in file
-
-                # with checkin_type = auto ..
+                
                 from pyasm.biz import FileNaming
-                file_naming = FileNaming(naming_expr="{basefile}_{snapshot.process}.{ext}")
+                file_expr = FileNaming.VERSIONLESS_EXPR
+                
+                if not naming and not rejected and not has_versionless and checkin_type == 'auto':
+                   
+                    naming = Naming.get(sobject, my, file_path=file_path)
+                    # reject the naming if it is meant for strict
+                    if naming and naming.get_value('checkin_type') == 'strict':
+                        naming = None
+                        rejected = True
+            
+
+
+                if naming:
+                    file_expr = naming.get_value('file_naming')
+                    # case-insensitive v or V are considered
+                    file_expr = re.sub(r'(?i)_v{version}|_v{snapshot.version}', '' , file_expr)
+                    
+
+                
+                # with checkin_type = auto ..
+                file_naming = FileNaming(naming_expr=file_expr)
                 file_naming.set_sobject(sobject)
                 file_naming.set_snapshot(versionless)
                 file_naming.set_file_object(file_object)
@@ -2259,24 +2283,30 @@ class Snapshot(SObject):
                 else:
                     subdir = ""
 
+                if naming:
+                    dir_naming = naming.get_value('dir_naming')
+                    dir_naming = dir_naming.replace('.versions', '')
+                    if subdir:
+                        dir_naming = '%s/%s'%(dir_naming, subdir)
 
-                # build dir_naming
-                parts = []
-                parts.append("{project.code}")
-                parts.append("{search_type.table_name}")
-                if has_code:
-                    parts.append("{code}")
                 else:
-                    parts.append("{id}")
-                parts.append("{snapshot.process}")
+                    # build dir_naming
+                    parts = []
+                    parts.append("{project.code}")
+                    parts.append("{search_type.table_name}")
+                    if has_code:
+                        parts.append("{code}")
+                    else:
+                        parts.append("{id}")
+                    parts.append("{snapshot.process}")
 
-                # versionless is not in the version dir
-                #parts.append(".versions")
+                    # versionless is not in the version dir
+                    #parts.append(".versions")
 
-                if subdir:
-                    parts.append(subdir)
+                    if subdir:
+                        parts.append(subdir)
 
-                dir_naming = "/".join(parts)
+                    dir_naming = "/".join(parts)
 
 
             
