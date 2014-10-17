@@ -850,8 +850,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
-            keyword_div.add_style("height: 32px")
-            keyword_div.add_style("margin-left: 0px")
+            keyword_div.add_style("height: 30px")
+            keyword_div.add_style("margin-left: -6px")
 
             keyword_div.add_behavior( {
                 'type': 'click_up',
@@ -1857,8 +1857,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         # Order By (Descending) menu item ...
@@ -1882,8 +1882,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         menu_data.append( {
@@ -1918,8 +1918,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -1952,8 +1952,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...
@@ -1979,8 +1979,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_WEEKLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
         # Group By Week Optional menu item ...
@@ -2006,8 +2006,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_MONTHLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
         # Group Advanced menu item ...
@@ -2056,8 +2056,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     popup.panel = panel;
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
       
         menu_data.append( {
@@ -2166,8 +2166,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
             """
@@ -2210,8 +2210,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
             """
 
@@ -2242,9 +2242,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ]
-                      }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
         
        
@@ -2311,8 +2310,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
 

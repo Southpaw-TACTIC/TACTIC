@@ -838,7 +838,6 @@ class CalendarInputWdg(BaseInputWdg):
             icon_div = DivWdg(icon)
             icon_div.add_class("spt_cal_input_show_cal_btn")  # tag this button so we can find it to hide/show
             icon_div.add_class("APP_CLICK_OFF_TOP_EL")
-            icon_div.add_style("margin-top: 4px")
             my.top.add(icon_div)
             icon_div.add_style("float: left")
 

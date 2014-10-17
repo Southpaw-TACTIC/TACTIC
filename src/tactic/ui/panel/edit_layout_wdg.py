@@ -158,19 +158,14 @@ class EditLayoutWdg(TableLayoutWdg):
                 if isinstance(title, HtmlElement):
                     title.add_style("float: left")
                 th = table.add_header(title)
-                th.add(" : ")
                 th.add_class("spt_header")
                 td = table.add_cell(widget.get_buffer_display())
                 td.add_class("spt_cell_edit")
 
 
                 if j % 2 == 0:
-                    #th.add_color("background-color", "background", -10)
-                    #td.add_color("background-color", "background", -5)
                     tr.add_color("background-color", "background", -5)
                 else:
-                    #th.add_color("background-color", "background", -10)
-                    #td.add_color("background-color", "background")
                     tr.add_color("background-color", "background")
 
 

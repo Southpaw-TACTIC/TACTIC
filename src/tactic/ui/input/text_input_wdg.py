@@ -408,6 +408,7 @@ class TextInputWdg(BaseInputWdg):
         div.add(my.text)
         my.text.add_class("form-control")
 
+        # Bootstrap example hierarchy
         """
         <div class="form-group">
           <label class="control-label" for="inputSuccess1">Test Input</label>
@@ -470,9 +471,9 @@ class TextInputWdg(BaseInputWdg):
                     'cbjs_action': '''
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
-                            offset: {x:5, y:5}}});
-                    over.text.setStyle('color','#999');
-                    over.text.setStyle('font-size','1.1em');
+                            offset: {x:5, y:8}}});
+                    over.text.setStyle('color','#CCC');
+                    over.text.setStyle('font-size','1.0em');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''})
 

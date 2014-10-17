@@ -4834,7 +4834,7 @@ class SObject(object):
             else:
                 prefix = ""
 
-            search_type = my.get_value("%ssearch_type" % prefix)
+            search_type = my.get_value("%ssearch_type" % prefix, no_exception=True)
             # it could be an insert mode sobject
             if not search_type:
                 return None

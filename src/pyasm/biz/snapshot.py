@@ -1619,13 +1619,18 @@ class Snapshot(SObject):
             has_code = SearchType.column_exists(search_type, "code")
             if not has_code:
                 search_ids = []
+                use_id = True
                 for x in sobjects:
                     id = x.get_id()
                     try:
                         id = int(id)
-                        search.add_filters('search_id', search_ids)
                     except:
-                        search.add_filters('search_code', search_ids)
+                        use_id  = False
+                    search_ids.append(id)
+                if use_id:
+                    search.add_filters('search_id', search_ids)
+                else:
+                    search.add_filters('search_code', search_ids)
             else:
                 search_codes = [x.get_value("code") for x in sobjects if x]
                 search.add_filters('search_code', search_codes)
