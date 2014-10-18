@@ -329,21 +329,24 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 
             'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' \
                     % (layout_wdg.get_color("border"), layout_wdg.get_color("background")),
-            'cbjs_setup': 'if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}',
+            'cbjs_setup': '''
+            if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}
+            ''',
 
-            "cbjs_motion": '''spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
-                            var target_el = spt.get_event_target(evt);
-                            target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
-                            if (target_el) {
-                                var orig_border_color = target_el.getStyle('border-color');
-                                var orig_border_style = target_el.getStyle('border-style');
-                                target_el.setStyle('border','dashed 2px ' + bvr.border_color);
-                                if (!target_el.getAttribute('orig_border_color')) {
-                                    target_el.setAttribute('orig_border_color', orig_border_color);
-                                    target_el.setAttribute('orig_border_style', orig_border_style);
-                                }
-                            }''',
-
+            "cbjs_motion": '''
+                spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                var target_el = spt.get_event_target(evt);
+                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                if (target_el) {
+                    var orig_border_color = target_el.getStyle('border-color');
+                    var orig_border_style = target_el.getStyle('border-style');
+                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                    if (!target_el.getAttribute('orig_border_color')) {
+                        target_el.setAttribute('orig_border_color', orig_border_color);
+                        target_el.setAttribute('orig_border_style', orig_border_style);
+                    }
+                }
+            ''',
             "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
         } )
 
@@ -363,6 +366,10 @@ class TileLayoutWdg(ToolLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
+
+
+
+
         mode = my.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
@@ -482,27 +489,74 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         layout_wdg.add_behavior( {
             'type': 'load',
+            'search_type': my.search_type,
             'cbjs_action': '''
 
             spt.thumb = {};
 
             spt.thumb.background_drop = function(evt, el) {
+
+                var search_type = bvr.search_type;
+
                 evt.stopPropagation();
                 evt.preventDefault();
 
                 var top = $(el);
-                top.setStyle("background", "#0F0");
+
+                var server = TacticServerStub.get();
+
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                for (var i = 0; i < files.length; i++) {
+                    var size = files[i].size;
+                    var file = files[i];
+
+                    var filename = file.name;
+
+                    var data = {
+                        name: filename
+                    }
+                    var item = server.insert(search_type, data);
+                    var search_key = item.__search_key__;
+
+                    var context = "publish" + "/" + filename;
+
+                    var upload_file_kwargs =  {
+                        files: [files[i]],
+                        upload_complete: function() {
+                            var server = TacticServerStub.get();
+                            var kwargs = {mode: 'uploaded'};
+                            server.simple_checkin( search_key, context, filename, kwargs);
+
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+
+                            spt.table.run_search();
+
+                        }
+                    };
+                    spt.html5upload.upload_file(upload_file_kwargs);
+
+                    // just support one file at the moment
+                    break;
+         
+                }
+
             }
  
 
             spt.thumb.noop = function(evt, el) {
-                evt.stopPropagation();
-                evt.preventDefault();
                 evt.dataTransfer.dropEffect = 'copy';
                 var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
 
                 var top = $(el);
                 var thumb_el = top.getElement(".spt_thumb_top");
+
 
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
@@ -523,8 +577,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var search_key = top.getAttribute("spt_search_key");
                     var filename = file.name;
                     var context = "publish" + "/" + filename;
-
-
 
                     var upload_file_kwargs =  {
                         files: files,
@@ -592,25 +644,21 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var row = rows[i];
                     var checkbox = row.getElement(".spt_tile_checkbox");
 
-                    if (!select) {
-                        checkbox.checked = false;
+                    if (select) {
+                        checkbox.checked = true;
                         row.removeClass("spt_table_selected");
 
-                        row.setStyle("border", "solid 1px " + bvr.border);
-                        var size = row.getSize();
-                        row.setStyle("width", size.x+6);
-                        row.setStyle("height", size.y+6);
+                        spt.table.select_row(row);
+                        row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
 
                     }
                     else {
-                        checkbox.checked = true;
-                        //row.addClass("spt_table_selected");
-                        var size = row.getSize();
-                        row.setStyle("width", size.x-10);
-                        row.setStyle("height", size.y-10);
-                        row.setStyle("border", "solid 3px yellow");
-                        spt.table.select_row(row);
+                        checkbox.checked = false;
+                        row.addClass("spt_table_selected");
+                        spt.table.unselect_row(row);
+
+                        row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
 
                     }
                 }
@@ -624,26 +672,15 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
                     row.removeClass("spt_table_selected");
-
-                    row.setStyle("border", "solid 1px " + bvr.border);
-
-                    var size = row.getSize();
-                    row.setStyle("width", size.x+6);
-                    row.setStyle("height", size.y+6);
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
 
                 }
                 else {
                     checkbox.checked = true;
-                    
                     row.addClass("spt_table_selected");
-
-                    var size = row.getSize();
-                    row.setStyle("width", size.x-10);
-                    row.setStyle("height", size.y-10);
-                    row.setStyle("border", "solid 3px yellow");
                     spt.table.select_row(row);
-
-
+                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
                 }
 
@@ -651,6 +688,22 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             '''
         } )
+
+
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_checkbox',
+            'cbjs_action': '''
+            if (bvr.src_el.checked) {
+                bvr.src_el.checked = false;
+            }
+            else {
+                bvr.src_el.checked = true;
+            }
+            evt.stopPropagation();
+            '''
+        } )
+
 
 
 
@@ -1033,7 +1086,7 @@ spt.tile_layout.setup_control = function() {
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
         # to prevent clicking on the checkbox directly and not turning on the yellow border
-        checkbox.add_attr("disabled","disabled")
+        #checkbox.add_attr("disabled","disabled")
 
         title = sobject.get_name()
         if not title:

@@ -61,6 +61,10 @@ class DropElementWdg(SimpleTableElementWdg):
     get_args_keys = classmethod(get_args_keys)
     """
 
+
+    def get_width(my):
+        return "150px"
+
     
     def _get_sorted_instances(my):
         sobject = my.get_current_sobject()

@@ -179,20 +179,21 @@ class SimpleSearchWdg(BaseRefreshWdg):
         my.content.add_style("margin: -2 -1 -2 -2")
 
 
-        show_search = False
+        show_search = True
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
-            search_wdg.add_style("float: middle")
+            search_wdg.add_style("float: right")
 
             search_wdg.add_style("padding-top: 6px")
             search_wdg.add_style("padding-left: 10px")
             search_wdg.add_style("height: 33px")
 
             td = table.add_cell()
-            td.add_border()
             td.add(search_wdg)
-            td.add_color("background", "background", -10)
+            td.add_style("padding: 10px 20px")
+            #td.add_border()
+            #td.add_color("background", "background", -10)
 
 
 

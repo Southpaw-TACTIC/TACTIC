@@ -130,7 +130,7 @@ class EditLayoutWdg(TableLayoutWdg):
         inner.add_smart_style("spt_header", "width", "150px")
         inner.add_smart_style("spt_header", "padding", "5px")
         border = inner.get_color("table_border")
-        inner.add_smart_style("spt_header", "border", "solid 1px %s" % border)
+        #inner.add_smart_style("spt_header", "border", "solid 1px %s" % border)
 
         inner.add_smart_style("spt_cell_edit", "background-repeat", "no-repeat")
         inner.add_smart_style("spt_cell_edit", "background-position", "bottom right")

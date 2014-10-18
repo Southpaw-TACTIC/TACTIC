@@ -143,9 +143,30 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if my.parent:
             thumb.set_sobject(my.parent)
+            search_key = my.parent.get_search_key()
         else:
             thumb.set_sobject(my.sobject)
+            search_key = my.sobject.get_search_key()
 
+        gallery_div = DivWdg()
+        div.add( gallery_div )
+        gallery_div.add_class("spt_tile_gallery")
+ 
+        thumb_table.add_behavior( {
+            'type': 'click_up',
+            'search_key': search_key,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_sobject_detail_top");
+                var gallery_el = top.getElement(".spt_tile_gallery");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_key: bvr.search_key,
+                    search_keys: [bvr.search_key],
+                };
+                spt.panel.load(gallery_el, class_name, kwargs);
+            ''' } )
+ 
 
         # prefer to see the original image, then web
         #thumb.set_option('image_link_order', 'main|web|icon')

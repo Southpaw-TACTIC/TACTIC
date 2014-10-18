@@ -2880,9 +2880,11 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = my.top
+        top.add_class("spt_view_panel_top");
+
         inner = DivWdg()
         top.add(inner)
-        top.add_class("spt_view_panel_top");
+        inner.add_style("position: relative")
 
 
         if not Container.get_dict("JSLibraries", "spt_view_panel"):
@@ -3044,8 +3046,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             simple_search_wdg.add_style("display: none")
             simple_search_wdg.add_style("position: absolute")
             simple_search_wdg.add_style("z-index: 100")
-            simple_search_wdg.add_style("top: 90px")
-            simple_search_wdg.add_style("left: 30px")
+            simple_search_wdg.add_style("top: 50px")
+            simple_search_wdg.add_style("left: 0px")
             simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 

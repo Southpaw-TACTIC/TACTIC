@@ -24,6 +24,7 @@ from pyasm.widget import TextAreaWdg, TextWdg, ButtonWdg, ProdIconButtonWdg, Hin
 from pyasm.security import AccessRuleBuilder
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.activator import ButtonForDropdownMenuWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.widget import SearchTypeSelectWdg, TextBtnWdg, TextBtnSetWdg, IconChooserWdg, ButtonRowWdg, ButtonNewWdg, ActionButtonWdg
 from tactic.ui.container import HorizLayoutWdg, PopupWdg, RoundedCornerDivWdg, Menu, MenuItem, SmartMenu
 
@@ -824,6 +825,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         # put in the selection for simple or advanced
         detail_wdg.add("Mode: ")
         select = SelectWdg("config_mode")
+        select.add_style("width: 75px")
         values = ['simple', 'advanced']
         select.set_option("values", values)
         
@@ -1012,9 +1014,9 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         title_label = SpanWdg()
         title_label.add("Title: ")
         detail_wdg.add(title_label)
-        input = TextWdg("config_title")
+        input = TextInputWdg(name="config_title")
         input.set_id("config_title")
-        input.set_option("size", "70")
+        input.add_style("width: auto")
         if my.title_string:
             input.set_value(my.title_string)
         detail_wdg.add(input)

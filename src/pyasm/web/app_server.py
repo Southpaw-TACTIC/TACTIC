@@ -517,7 +517,17 @@ class BaseAppServer(Base):
         # install the language
         Translation.install()
 
-        widget = my.get_content(page_type)
+        try:
+            widget = my.get_content(page_type)
+        except Error, e:
+            print "ERROR: ", e
+            from pyasm.widget import weblicensewdg, bottomwdg, error403wdg
+            widget = widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( error403wdg() )
+            widget.add( bottomwdg() )
+            widget.get_display()
 
         # put an annoying alert if there is a problem with the licensed
         if not is_licensed:

@@ -658,8 +658,6 @@ class EditWdg(BaseRefreshWdg):
 
             if not show_title:
                 th, td = table.add_row_cell( widget )
-                #td.add_border()
-
                 continue
             else:
                 td = table.add_cell( widget )

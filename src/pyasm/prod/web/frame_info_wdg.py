@@ -182,10 +182,8 @@ class FrameRangeWdg(BaseTableElementWdg):
     '''widget that displays a simple frame range'''
 
     def get_title(my):
-        widget = Widget()
-        widget.add("Frame Range")
+        return "Frame Range"
         
-        return widget
 
     def get_simple_display(my):
         sobject = my.get_current_sobject()
@@ -278,8 +276,8 @@ class FrameRangeWdg(BaseTableElementWdg):
         div.add_style('width', wdg_width)
         
         total = frame_range.frame_end - frame_range.frame_start + 1
-        start_frame = SpanWdg(str(frame_range.frame_start), css='small smaller')
-        end_frame = SpanWdg(str(frame_range.frame_end), css='small smaller')
+        start_frame = SpanWdg(str(frame_range.frame_start))
+        end_frame = SpanWdg(str(frame_range.frame_end))
 
         end_div = FloatDivWdg(end_frame)
 
@@ -293,12 +291,15 @@ class FrameRangeWdg(BaseTableElementWdg):
         duration = FloatDivWdg( width=duration_width )
         duration.add_style("border: 1px dotted %s" % duration_color)
         duration.add_style("margin-top: 3px")
+        duration.add_style("margin-left: 5px")
+        duration.add_style("margin-right: 5px")
         duration.add_style("height: 3px")
         duration.add_style("line-height: 3px")
         div.add(start_div)
         div.add(duration)
         div.add(end_div)
-        dur_text = FloatDivWdg('(%s)' %total, css='smaller')
+        dur_text = FloatDivWdg('(%s)' %total)
+        dur_text.add_style("opacity", "0.5")
         div.add(dur_text)
         widget.add(div)
         widget.add(HtmlElement.br())
@@ -310,8 +311,8 @@ class FrameRangeWdg(BaseTableElementWdg):
             div.add_style('width', wdg_width)
             
             handle_total = frame_out - frame_in + 1
-            in_frame = SpanWdg(str(frame_in), css='small smaller')
-            out_frame = SpanWdg(str(frame_out), css='small smaller')
+            in_frame = SpanWdg(str(frame_in))
+            out_frame = SpanWdg(str(frame_out))
            
             if frame_range.frame_start == 0:
                 frame_range.frame_start = 0.001
@@ -331,6 +332,8 @@ class FrameRangeWdg(BaseTableElementWdg):
             duration.add_style("border: 1px solid %s" % duration_color)
             duration.add_style("background", duration_color)
             duration.add_style("margin-top: 5px")
+            duration.add_style("margin-left: 5px")
+            duration.add_style("margin-right: 5px")
             duration.add_style("line-height: 1px")
             duration.add('&nbsp;')
             
@@ -347,7 +350,7 @@ class FrameRangeWdg(BaseTableElementWdg):
             div.add(out_div)
             
 
-            dur_text = SpanWdg('(%s)' %handle_total, css='smaller')
+            dur_text = SpanWdg('(%s)' %handle_total)
             div.add(dur_text)
             widget.add(div)
       

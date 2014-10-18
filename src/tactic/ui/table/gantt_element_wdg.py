@@ -676,7 +676,7 @@ class GanttElementWdg(BaseTableElementWdg):
         day_wdg.add_class("spt_gantt_day");
         day_wdg.add_class("spt_gantt_scalable")
 
-        if pixel_per_day < 10:
+        if pixel_per_day < 12:
             #wday_wdg.add_style("display", "none")
             day_wdg.add_style("display", "none")
             #pass
