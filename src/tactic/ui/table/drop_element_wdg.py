@@ -563,7 +563,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
     for (var i = 0; i < src_rows.length; i++) {
         var row = src_rows[i];
 
-        var search_key = row.getAttribute("spt_search_key");
+        var search_key = row.getAttribute("spt_search_key_v2");
         src_search_keys.push(search_key);
 
         var display_value = row.getAttribute("spt_display_value");
@@ -616,6 +616,13 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
     for (var i=0; i<src_search_keys.length; i++) {
         var src_search_key = src_search_keys[i];
         var src_display_value = src_display_values[i];
+
+        if (value.indexOf(src_search_key) != -1) {
+            alert("Item ["+src_display_value+"] already present");
+            continue;
+        }
+
+
 
         var clone = spt.behavior.clone(template);
         var item = clone.getElement(".spt_drop_display_value");

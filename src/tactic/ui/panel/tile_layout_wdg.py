@@ -317,7 +317,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         border_color = layout_wdg.get_color('border', modifier=20)
         layout_wdg.add_behavior( {
             'type': 'smart_drag',
-            'bvr_match_class': 'spt_tile_select',
+            'bvr_match_class': 'spt_tile_checkbox',
             'drag_el': 'drag_ghost_copy',
             'use_copy': 'true',
             'use_delta': 'true',
@@ -329,7 +329,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 
             'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' \
                     % (layout_wdg.get_color("border"), layout_wdg.get_color("background")),
+
             'cbjs_setup': '''
+            console.log("drag");
             if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}
             ''',
 
@@ -373,6 +375,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         mode = my.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
+
+        # FIXME
+        #mode = ""
         
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:
@@ -748,12 +753,26 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div.add_style("float: left")
 
-        thumb_div = DivWdg()
+        border_color = div.get_color('border', modifier=20)
 
-        #thumb_div.add_styles('margin-left: auto; margin-right: auto')
+        thumb_drag_div = DivWdg()
+        div.add(thumb_drag_div)
+        thumb_drag_div.add_class("spt_tile_drag")
+        thumb_drag_div.add_style("width: auto")
+        thumb_drag_div.add_style("height: auto")
+        thumb_drag_div.add_behavior( {
+            "type": "drag",
+            #'drag_el': 'drag_ghost_copy',
+            #//'use_copy': 'true',
+            "drag_el": '@',
+            'drop_code': 'DROP_ROW',
+            'border_color': border_color,
+            "cb_set_prefix": 'spt.tile_layout.image_drag'
+        } )
+
+        thumb_div = DivWdg()
+        thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
-        #thumb_div.add_class("spt_tile_detail")
-        div.add(thumb_div)
 
 
         
@@ -920,6 +939,41 @@ spt.tile_layout.setup_control = function() {
 }
 
 
+
+spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
+    bvr.use_copy = true;
+    bvr.use_delta = true;
+    //bvr.border_color = border_color;
+    bvr.dx = 10;
+    bvr.dy = 10;
+    bvr.drop_code = 'DROP_ROW';
+
+
+}
+
+spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
+
+    spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+    var target_el = spt.get_event_target(evt);
+    target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+    if (target_el) {
+        var orig_border_color = target_el.getStyle('border-color');
+        var orig_border_style = target_el.getStyle('border-style');
+        target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+        if (!target_el.getAttribute('orig_border_color')) {
+            target_el.setAttribute('orig_border_color', orig_border_color);
+            target_el.setAttribute('orig_border_style', orig_border_style);
+        }
+    }
+
+}
+
+spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
+    //spt.behavior.destroy_element(bvr.drag_el);
+    //bvr.drag_el = null;
+    spt.drop.sobject_drop_action(evt, bvr);
+}
+
         ''' } )
 
 
@@ -1076,7 +1130,7 @@ spt.tile_layout.setup_control = function() {
 
         header_div = DivWdg()
         header_div.add_class("spt_tile_select")
-        header_div.add_attr("title",'[ draggable ]')
+        #header_div.add_attr("title",'[ draggable ]')
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")

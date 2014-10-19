@@ -975,17 +975,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-            # An empty div like this is not needed. 
-            """
-            if my.show_search_limit:
-                limit_span = DivWdg()
-                limit_span.add_border()
-                inner.add(limit_span)
-                limit_span.add_style("margin-top: 4px")
-                limit_span.add_class("spt_table_search")
-                limit_span.add_style("width: 250px")
-                limit_span.add_style("margin: 5 auto")
-            """
         
             info = my.search_limit.get_info()
             if info.get("count") == None:
@@ -1274,7 +1263,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
                 }
 
-                for (var i = 0; i < bvr.element_names.length; i++) {
+                // FIXME: don't do the last one because it messes up some
+                // tables by making them huge ... not sure why?!
+                for (var i = 0; i < bvr.element_names.length-1; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
                     spt.table.set_column_width(name, width);

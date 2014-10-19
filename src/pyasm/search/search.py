@@ -2612,11 +2612,12 @@ class SObject(object):
         if my.has_value("name"):
             name = my.get_value("name")
         if long:
-            id = my.get_id()
+            code = my.get_code()
             if name:
-                name = '%s (%s)' %(name, id)
+                name = '%s (%s)' %(name, code)
             else:
                 code = my.get_code()
+                id = my.get_id()
                 if code != id:
                     name = '%s (%s)' %(code, id)
                 else:

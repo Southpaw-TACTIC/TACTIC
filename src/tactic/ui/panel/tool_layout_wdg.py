@@ -73,6 +73,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #my.kwargs['show_gear'] = 'false'
 
+        from tile_layout_wdg import TileLayoutWdg
+        my.tile_layout = TileLayoutWdg(search_type=my.search_type)
+
 
         # set the sobjects to all the widgets then preprocess
         for widget in my.widgets:
@@ -180,6 +183,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add(limit_wdg)
 
 
+
         my.add_layout_behaviors(inner)
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -190,6 +194,10 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
     def add_layout_behaviors(my, layout_wdg):
 
+
+        my.tile_layout.add_layout_behaviors(layout_wdg)
+
+        """
         layout_wdg.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_item_content',
@@ -206,6 +214,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
+        """
 
         main_bg1 = layout_wdg.get_color("background")
         main_bg2 = layout_wdg.get_color("background", 5)
@@ -380,6 +389,12 @@ class CardLayoutWdg(ToolLayoutWdg):
         return div
 
 
+
+    def get_shelf_wdg(my):
+        return my.tile_layout.get_scale_wdg()
+
+
+
     def get_item_wdg(my, sobject):
 
         div = DivWdg()
@@ -407,10 +422,10 @@ class CardLayoutWdg(ToolLayoutWdg):
         td.add_style("width: %s" % width);
         td.add_style("vertical-align: top")
 
-
+        """
         from tile_layout_wdg import ThumbWdg2
         thumb_div = DivWdg()
-        td.add(thumb_div)
+        #td.add(thumb_div)
         thumb_div.add_border()
         thumb_div.set_box_shadow("0px 0px 5px")
         thumb_div.add_color("background", "background", -5)
@@ -420,6 +435,11 @@ class CardLayoutWdg(ToolLayoutWdg):
         thumb = ThumbWdg2()
         thumb_div.add(thumb)
         thumb.set_sobject(sobject)
+        """
+
+
+        tile_wdg = my.tile_layout.get_tile_wdg(sobject)
+        td.add(tile_wdg)
 
         info_div = my.get_info_wdg(sobject)
         td = table.add_cell(info_div)
@@ -432,11 +452,15 @@ class CardLayoutWdg(ToolLayoutWdg):
     def get_info_wdg(my, sobject):
 
         div = DivWdg()
-        div.add_style("margin: 0px 20px 20px 20px")
+        div.add_style("margin: 10px 20px 20px 20px")
         div.add_style("padding: 20px")
-        div.add_color("background", "background3")
+        div.add_color("background", "background", -3)
+        div.add_border()
         div.add_color("color", "color3")
         div.set_round_corners(5)
+
+        div.add_style("height", "100%")
+        div.add_style("position: relative")
 
         element_names = my.kwargs.get("element_names")
         if not element_names:
@@ -453,6 +477,7 @@ class CardLayoutWdg(ToolLayoutWdg):
 
 
         table = Table()
+        table.add_style("height", "100%")
         div.add(table)
         for element_name in element_names:
             table.add_row()
