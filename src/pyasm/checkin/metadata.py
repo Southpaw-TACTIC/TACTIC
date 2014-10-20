@@ -288,7 +288,7 @@ class BaseMetadataParser(object):
 
 
 
-    '''Function by Christina. Extracts IPTC metadata given a path to an image.
+    '''Extracts IPTC metadata given a path to an image.
        Returns IPTC metadata as a dictionary'''
     def get_iptc_keywords(my, path, parser_path = ""):
 
@@ -339,7 +339,7 @@ class BaseMetadataParser(object):
 
         # find all words between tags.
         # aka, search for words btween <tag>words</tag>
-        keywords_list = re.findall('>\S*<', dc_subject_str)
+        keywords_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
         for i in range(len(keywords_list)):
