@@ -15,6 +15,7 @@ __all__ = ["FileException", "File", "FileAccess", "IconCreator", "FileGroup", "F
 from pyasm.common import Common, Xml, TacticException, Environment, System, Config
 from pyasm.search import *
 from project import Project
+from subprocess import Popen,PIPE
 
 import sys, os, string, re, stat
 
@@ -35,11 +36,13 @@ except:
     except:
         HAS_PIL = False
 
-if Common.which("convert"):
+# check whether imagemagick is installed; could be in PATH or in an install location
+convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
+convert_return,convert_err = convert_process.communicate()
+if 'ImageMagick' in convert_return or os.path.exists('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe'):
     HAS_IMAGE_MAGICK = True
 else:
     HAS_IMAGE_MAGICK = False
-
 if Common.which("ffprobe"):
     HAS_FFMPEG = True
 else:
@@ -704,89 +707,75 @@ class IconCreator(object):
 
     def _resize_image(my, large_path, small_path, thumb_size):
         try:
-            if not HAS_PIL:
-                raise Exception("No PIL installed")
+            large_path = large_path.encode('utf-8')
+            small_path = small_path.encode('utf-8')
 
-
-            # create the thumbnail
-            im = Image.open(large_path)
-
-            try:
-                im.seek(1)
-            except EOFError:
-                is_animated = False
-            else:
-                is_animated = True
-                im.seek(0)
-                im = im.convert('RGB')
-
-            x,y = im.size
-            to_ext = "PNG"
-            if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
-                to_ext = "JPEG"
+            if not HAS_PIL and sys.platform == 'darwin':
+                convert_cmd = ['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path]
             
-            from pyasm.prod.biz import ProdSetting
-            #white_canvas = ProdSetting.get_value_by_key('icon_white_canvas')
-            white_canvas = 'false';
+            if HAS_IMAGE_MAGICK:
+                # generate imagemagick command
+                convert_cmd = []
+                if os.name == 'nt' and os.path.exists('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe'):
+                    convert_cmd.append('"C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe"')
+                else:
+                    convert_cmd.append('convert')
+                # png's and psd's can have multiple layers which need to be flattened to make an accurate thumbnail
+                if large_path.lower().endswith('png') or large_path.lower().endswith('psd'):
+                    convert_cmd.append('-flatten')
+                convert_cmd.append('-resize')
+                convert_cmd.append('%sx%s'%(thumb_size[0], thumb_size[1]))
+                convert_cmd.append('%s'%(large_path))
+                convert_cmd.append('%s'%(small_path))
 
-            if x >= y or white_canvas == 'false':
-                im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
-                im.save(small_path, to_ext)
-            else:
-                
-                #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
+            elif HAS_PIL:
+                # use PIL
+                # create the thumbnail
+                im = Image.open(large_path)
+
+                try:
+                    im.seek(1)
+                except EOFError:
+                    is_animated = False
+                else:
+                    is_animated = True
+                    im.seek(0)
+                    im = im.convert('RGB')
+
                 x,y = im.size
+                to_ext = "PNG"
+                if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
+                    to_ext = "JPEG"
+                if x >= y:
+                    im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
+                    im.save(small_path, to_ext)
+                else:
+                    
+                    #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
+                    x,y = im.size
 
-                # first resize to match this thumb_size
-                base_height = thumb_size[1]
-                h_percent = (base_height/float(y))
-                base_width = int((float(x) * float(h_percent)))
-                im = im.resize((base_width, base_height), Image.ANTIALIAS )
+                    # first resize to match this thumb_size
+                    base_height = thumb_size[1]
+                    h_percent = (base_height/float(y))
+                    base_width = int((float(x) * float(h_percent)))
+                    im = im.resize((base_width, base_height), Image.ANTIALIAS )
 
-                # then paste to white image
-                im2 = Image.new( "RGB", thumb_size, (255,255,255) )
-                offset = (thumb_size[0]/2) - (im.size[0]/2)
-                im2.paste(im, (offset,0) )
-                im2.save(small_path, to_ext)
-                
+                    # then paste to white image
+                    im2 = Image.new( "RGB", thumb_size, (255,255,255) )
+                    offset = (thumb_size[0]/2) - (im.size[0]/2)
+                    im2.paste(im, (offset,0) )
+                    im2.save(small_path, to_ext)
+            else:
+                raise TacticException('No image manipulation tool installed')
+
+            subprocess.call(convert_cmd)
+
+            if not os.path.exists(small_path):
+                raise TacticException('Icon generation failed')
         except Exception, e:
             print "Error: ", e
             # there could be any kind of Exception by PIL, not just IOError
             # maximum geometry mode aspect ratio preserved
-            if sys.platform == 'darwin':
-                cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
-                    % (thumb_size[0], small_path, large_path)
-                print "cmd: ", cmd
-            else:
-                cmd = '''convert -resize %sx%s "%s" "%s"''' \
-                    % (thumb_size[0], thumb_size[1], large_path, small_path)
-                print "cmd: ", cmd
-   
-            large_path = large_path.encode('utf-8')
-            #os.system(cmd)
-            # use subprocess to call instead
-            import subprocess
-            try:
-                if sys.platform == 'darwin':
-                    subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
-                else:
-                    if os.path.exists('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe'):
-                        subprocess.call(['C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe',\
-                        '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
-                        "%s"%large_path,  "%s"%small_path ])
-                    
-                    else:
-                        subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
-                        "%s"%large_path,  "%s"%small_path ]) 
-            
-                    
-            
-            except:
-                pass
-            # raise to alert the caller to set this icon_path to None
-            if not os.path.exists(small_path):
-                raise TacticException('Icon generation failed')
-
 
 
 
