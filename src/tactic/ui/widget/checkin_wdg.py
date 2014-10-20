@@ -2212,6 +2212,7 @@ spt.app_busy.hide();
         html5_behavior = {
             'type': 'click_up',
             'validate_script_path': my.validate_script_path,
+            'script_path': script_path,
             'cbjs_action': '''
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
@@ -2239,7 +2240,13 @@ spt.checkin.html5_checkin = function(files) {
                 bvr['script'] = script;
                 spt.app_busy.show("Running Validation", bvr.validate_script_path);
                 spt.CustomProject.exec_custom_script(evt, bvr);
-            } 
+            }
+            // Run a custom checkin script
+            if (bvr.script_path != null) {
+                script = spt.CustomProject.get_script_by_path(bvr.script_path);
+                bvr['script'] = script;
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            }
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2281,6 +2288,7 @@ var top = bvr.src_el.getParent(".spt_checkin_top");
 var el = top.getElement(".spt_checkin_content");
 var files = el.files;
 spt.checkin.html5_checkin(files);
+spt.info("Check-in Complete");
 
             '''
         }
