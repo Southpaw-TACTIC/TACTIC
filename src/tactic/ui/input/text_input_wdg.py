@@ -383,9 +383,10 @@ class TextInputWdg(BaseInputWdg):
             height = height.replace("px", "")
             height = int(height)
         else:
-            height = 32 
+            height = 40
 
 
+        my.text.add_style("height: %s" % height)
 
 
         # BOOTSTRAP
@@ -438,7 +439,6 @@ class TextInputWdg(BaseInputWdg):
         #top.add(table)
         tr = table.add_row()
         table.add_style("width: %s" % my.width)
-
 
         # add in an icon div
         if my.icon:

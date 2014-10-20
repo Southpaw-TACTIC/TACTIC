@@ -425,7 +425,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 }
 
                 var tile_top = bvr.src_el.getParent(".spt_tile_top");
-                var search_key = tile_top.getAttribute("spt_search_key");
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
 
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
                 var kwargs = {
@@ -1124,7 +1124,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         detail_div.add_style("float: right")
         detail_div.add_style("margin-top: -2px")
 
-        detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+        #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+        detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
         detail_div.add(detail)
 
 
@@ -1198,7 +1199,9 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_display(my):
 
-        width = "100%"
+        width = my.kwargs.get("width")
+        if not width:
+            width = "100%"
         height = my.kwargs.get("height")
 
         sobject = my.get_current_sobject()

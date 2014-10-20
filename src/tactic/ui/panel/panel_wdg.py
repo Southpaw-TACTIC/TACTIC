@@ -3045,9 +3045,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             # TEST
             simple_search_wdg.add_style("display: none")
             simple_search_wdg.add_style("position: absolute")
-            simple_search_wdg.add_style("z-index: 100")
-            simple_search_wdg.add_style("top: 50px")
-            simple_search_wdg.add_style("left: 0px")
+            simple_search_wdg.add_style("z-index: 200")
+            #simple_search_wdg.add_style("top: 50px")
+            simple_search_wdg.add_style("top: 10px")
+            simple_search_wdg.add_style("left: 10px")
             simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 

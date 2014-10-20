@@ -300,6 +300,7 @@ class DropElementWdg(SimpleTableElementWdg):
     def get_item_div(my, sobject):
         ''' get the item div the sobject'''
         top = DivWdg()
+        top.add_style("padding: 3px 2px")
         top.add_attr('title','Click to remove')
         # FIXME: put this here for now
         top.add_behavior( {

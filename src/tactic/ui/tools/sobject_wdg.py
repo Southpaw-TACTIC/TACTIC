@@ -123,8 +123,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         # left
         td = table.add_cell()
-        td.add_style("width: 250px")
-        td.add_style("min-width: 250px")
+        td.add_style("width: 300px")
+        td.add_style("min-width: 300px")
         td.add_style("vertical-align: top")
 
 
@@ -175,11 +175,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         td = thumb_table.add_cell(thumb)
         td.add_style("vertical-align: top")
-        td.add_style("width: 240px")
+        td.add_style("width: auto")
         td.add_style("padding: 15px")
 
         sobject_info_wdg = my.get_sobject_info_wdg()
-        sobject_info_wdg.add_style("width: 200px")
+        sobject_info_wdg.add_style("width: auto")
 
 
         td.add(sobject_info_wdg)
