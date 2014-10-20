@@ -717,7 +717,7 @@ class IconCreator(object):
                 # generate imagemagick command
                 convert_cmd = []
                 if os.name == 'nt' and os.path.exists('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe'):
-                    convert_cmd.append('"C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe"')
+                    convert_cmd.append('C:\\Program Files\\ImageMagick-6.8.9-Q16\\convert.exe')
                 else:
                     convert_cmd.append('convert')
                 # png's and psd's can have multiple layers which need to be flattened to make an accurate thumbnail
