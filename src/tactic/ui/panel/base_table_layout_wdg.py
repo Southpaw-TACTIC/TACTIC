@@ -1127,8 +1127,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #outer.add_style("overflow: hidden")
         outer.add_class("spt_resizable")
 
-        div.add_style("min-width: 800px")
+        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
+        div.add_style("margin: 0px -1px 0px -1px")
 
         
         

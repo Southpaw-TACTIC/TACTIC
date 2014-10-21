@@ -65,6 +65,11 @@ class FormatValue(object):
 
         if isinstance(value, datetime.datetime):
             value = str(value)
+
+        if value.startswith("{") and value.endswith("}"):
+            from pyasm.search import Search
+            value = Search.eval(value)
+
         # ------------------------------------------------
         # Integer
         if format == '-1234':
@@ -352,6 +357,7 @@ class FormatValue(object):
             if not value:
                 value = ''
             else:
+                print "value: ", value
                 value = parser.parse(value)
                 from pyasm.biz import ProdSetting
                 setting = ProdSetting.get_value_by_key('DATETIME')

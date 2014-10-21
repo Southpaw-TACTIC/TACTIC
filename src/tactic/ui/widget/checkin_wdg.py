@@ -520,6 +520,9 @@ class CheckinWdg(BaseRefreshWdg):
                 # create a process selector
                 process_select = SelectWdg("process")
                 process_div.add(process_select)
+                process_select.add_style("float: right")
+                process_select.add_style("width: 150px")
+                process_select.add_style("margin-top: -5px")
                 process_select.add_class("spt_checkin_process")
                 process_select.set_option("values", my.processes)
                 show_links = my.kwargs.get("show_links") not in [False, 'false']

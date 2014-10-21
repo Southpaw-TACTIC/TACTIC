@@ -42,9 +42,9 @@ class QuickBoxWdg(BaseRefreshWdg):
         title_wdg.add(title)
         title_wdg.add_style("height: 20px")
         title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add_style("margin-top: 0px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -10)
 
         section_wdg.add_color("background", "background")
         #section_wdg.add_gradient("background", "background", 0, -3)
@@ -137,7 +137,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
         close_wdg = DivWdg()
         content_wdg.add(close_wdg)
-        icon = IconWdg('Close Quick Links', IconWdg.POPUP_WIN_CLOSE)
+        icon = IconWdg('Close Quick Links', "BS_REMOVE")
         close_wdg.add(icon)
         #close_wdg.add_style("position: fixed")
         close_wdg.add_style("float: right")

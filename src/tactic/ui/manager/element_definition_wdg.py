@@ -2538,6 +2538,9 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg.set_option('values', values)
                 if value:
                     edit_wdg.set_value(value)
+                    #edit_wdg.add_style("background: #a3d991")
+                else:
+                    edit_wdg.add_style("opacity: 0.5")
 
                 labels = option.get('labels')
                 if labels:
@@ -2561,10 +2564,15 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg = IconSelectWdg(name)
 
             elif widget_type == 'TextWdg':
-                edit_wdg = TextWdg(name)
+                edit_wdg = DivWdg()
+                select = TextInputWdg(name=name)
+                edit_wdg.add(select)
+
                 if value:
-                    edit_wdg.set_value(value)
-                edit_wdg.add_style("width: 250px")
+                    select.set_value(value)
+                select.add_style("width: 350px")
+                select.add_style("float: right")
+                edit_wdg.add("<br clear='all'/>")
 
             elif widget_type == 'CalendarInputWdg':
                 cal_wdg = CalendarInputWdg(name)

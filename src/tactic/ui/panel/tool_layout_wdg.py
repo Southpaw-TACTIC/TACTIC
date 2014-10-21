@@ -180,7 +180,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             search_limit=info.get("search_limit"),
             current_offset=info.get("current_offset"),
         )
-        inner.add(limit_wdg)
+        #inner.add(limit_wdg)
 
 
 
@@ -274,10 +274,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         my.kwargs['show_shelf'] = False
         layout = FastTableLayoutWdg(**my.kwargs)
         layout_div.add(layout)
+        #from tactic.ui.panel import TileLayoutWdg
+        #layout = TileLayoutWdg(**my.kwargs)
+        #layout_div.add(layout)
 
 
         td = table.add_cell()
-        td.add_border()
+        td.add_border(color="#EEE")
         td.add_style("vertical-align: top")
 
         content = DivWdg()

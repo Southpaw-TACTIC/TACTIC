@@ -767,7 +767,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         # add the detail widget
         from tactic.ui.container import RoundedCornerDivWdg
         detail_wdg = DivWdg()
-        detail_wdg.add_style("width: 500px")
+        detail_wdg.add_style("width: 600px")
         if my.user_error:
             detail_wdg.add_behavior({'type':'load',
                 'cbjs_action': 'alert(bvr.user_error)',
@@ -1196,7 +1196,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         content = DivWdg()
-        content.add_style('width','500px')
+        content.add_style('width','600px')
 
         group_wdg = DivWdg()
         group_wdg.add_border()
