@@ -122,7 +122,7 @@ class CheckinTest(unittest.TestCase, Command):
         snap = checkin.get_snapshot()
         file_obj = snap.get_file_by_type('main')
         file_name = file_obj.get_file_name()
-        my.assertEquals(file_name, 'copy_test_v002.txt')
+        my.assertEquals(file_name, 'copy_test_publish_v002.txt')
 
     def _test_checkin(my):
 
@@ -278,8 +278,8 @@ class CheckinTest(unittest.TestCase, Command):
         my.assertEquals(True, path.endswith( expected ) )
 
         # preallocate with a file name and file type
-        path = snapshot.get_preallocated_path(file_type, file_name)
-
+        # since it's meant for FileAppendCheckin, the checkin_type should be 'strict'
+        path = snapshot.get_preallocated_path(file_type, file_name, checkin_type='strict')
         if server:
             my.assertEquals(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_\w+_v001.jpg$', path) )
         else:
@@ -308,7 +308,8 @@ class CheckinTest(unittest.TestCase, Command):
         file_type = 'sequence'
         file_range = FileRange(1, 5)
 
-        path = snapshot.get_preallocated_path(file_type=file_type, file_name=file_name)
+        # should specify strict checkin_type for Append checkin after
+        path = snapshot.get_preallocated_path(file_type=file_type, file_name=file_name, checkin_type='strict')
         # imitate a render by building files directly to the path
         for i in range(1,6):
             cur_path = path % i
@@ -318,8 +319,10 @@ class CheckinTest(unittest.TestCase, Command):
 
         # register these files
         snapshot_code = snapshot.get_code()
+
+        # should specify strict checkin_type for Append checkin
         checkin = FileGroupAppendCheckin(snapshot_code, [path], [file_type], file_range, \
-                keep_file_name=True, mode='preallocate')
+                keep_file_name=True, mode='preallocate', checkin_type='strict')
         checkin.execute()
 
         snapshot = checkin.get_snapshot()
@@ -336,7 +339,10 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_get_children(my):
         # test to make sure get_all_children is able to get all the snapshots
         snapshots = my.person.get_all_children("sthpw/snapshot")
-        num_snapshots = 5
+        #for snap in snapshots:
+        #    print snap.get_version() ,  snap.get_description()
+        # 2 versionless + 5 new snapshots = 7
+        num_snapshots = 7
         my.assertEquals(num_snapshots, len(snapshots))
 
 

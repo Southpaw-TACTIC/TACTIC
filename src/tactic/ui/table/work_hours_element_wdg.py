@@ -54,7 +54,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
     ARGS_KEYS['show_all_users'] = {
         'type': 'SelectWdg',
-        'description': 'Display a row to input overtime hours',
+        'description': 'show work hours of all users. text fields will become read-only',
         'values': 'true|false',
         'order': 2,
         'category': 'Display'
@@ -195,7 +195,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
         search = Search("sthpw/work_hour")
         
-        if my.kwargs.get('show_all_users')=='false':
+        if my.kwargs.get('show_all_users') != 'true':
             
             search.add_user_filter()
 
@@ -567,10 +567,9 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 else:
                     text.add_attr('input_field_type', 'st')
 
-                if my.kwargs.get('show_all_users')=='false':
-                    pass
-                else:
+                if my.kwargs.get('show_all_users')=='true':
                     text.set_option('read_only','true')
+
                 #TODO: while we may have multiple entries per task, we will only use the latest one here
                 # for now, making the UI cleaner
 

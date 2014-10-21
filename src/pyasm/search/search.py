@@ -1710,7 +1710,7 @@ class Search(Base):
             num_sobjects = 0
         num_sobjects = num_sobjects + len(results)
         if len(results) > 1000:
-            print "WARNING query: (%s) sobjects found: %s" % (len(results), statement)
+            print "WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore'))
         Container.put("NUM_SOBJECTS", num_sobjects)
 
 
@@ -4429,13 +4429,13 @@ class SObject(object):
         return dir
 
 
-    def get_client_lib_dir(my, snapshot=None, file_type=None, create=False, file_object=None):
+    def get_client_lib_dir(my, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
         '''The asset directory from the client point of view.  This is only
         valid if this directory is visible to the client'''
         # for now assume the same directory as the server
         from pyasm.biz import Project
         dir = Project.get_project_client_lib_dir(my,snapshot,file_type,\
-                create=create, file_object=file_object)
+                create=create, file_object=file_object, dir_naming=dir_naming)
         return dir
 
 

@@ -655,14 +655,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         dirname_div.add("<br/>")
 
 
-        expr = "{sobject.name}_v{version}.{ext}"
+        expr = "{sobject.name}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
 
 
-        expr = "{sobject.code}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code", mode="file") )
 
-        expr = "{sobject.code}_{process}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_{process}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code with Process", mode="file") )
 
 
