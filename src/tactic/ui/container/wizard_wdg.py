@@ -143,7 +143,7 @@ class WizardWdg(BaseRefreshWdg):
 
         dots_div = DivWdg()
         #dots_div.add_style("margin: -28px auto 0px auto")
-        dots_div.add_style("margin: -42px auto 0px auto")
+        dots_div.add_style("margin: -32px auto 0px auto")
         div.add(dots_div)
 
         titles = my.kwargs.get("titles")
