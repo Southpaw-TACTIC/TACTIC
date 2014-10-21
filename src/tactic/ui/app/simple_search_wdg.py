@@ -57,6 +57,11 @@ class SimpleSearchExampleWdg(BaseRefreshWdg):
 
 class SimpleSearchWdg(BaseRefreshWdg):
 
+    SEARCH_COL1 = 'keyword'
+    SEARCH_COL2 = 'name'
+    SEARCH_COL3 = 'description'
+    SEARCH_COL4 = 'code'
+
     def get_args_keys(my):
         return {
         'search_type': 'search type for this search widget',
@@ -78,6 +83,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         my.search_type = my.kwargs.get("search_type")
         # this is needed for get_config() to search properly
         my.base_search_type = Project.extract_base_search_type(my.search_type)
+        my.column_choice = None
         
 
     def handle_search(my):
@@ -88,6 +94,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
     def get_search(my):
         return my.search
 
+    
     def alter_search(my, search):
         '''
         from tactic.ui.filter import BaseFilterElementWdg
@@ -111,7 +118,10 @@ class SimpleSearchWdg(BaseRefreshWdg):
         config = my.get_config()
 
         data_list = filter_data.get_values_by_prefix(my.prefix)
-        #columns = search.get_columns()
+        search_type = search.get_search_type()
+      
+        my.column_choice = my.get_search_col(search_type)
+
 
         element_data_dict = {}
         for data in data_list:
@@ -132,7 +142,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             widget = config.get_display_widget(element_name)
             if not widget:
-                widget = KeywordFilterElementWdg(column='code|description')
+                
+                widget = KeywordFilterElementWdg(column=my.column_choice)
                 widget.set_name(element_name)
 
             data = element_data_dict.get(element_name)
@@ -449,7 +460,9 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
             if not widget:
                 # the default for KeywordFilterElementWdg is mode=keyword
-                widget = KeywordFilterElementWdg(column='code|description')
+                if not my.column_choice:
+                    my.column_choice = my.get_search_col(my.search_type)
+                widget = KeywordFilterElementWdg(column=my.column_choice)
                 widget.set_name(element_name)
                 
 
@@ -532,5 +545,13 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
+    def get_search_col(cls, search_type):
+        '''Get the appropriate keyword search col based on column existence in this sType'''
+        for col in [cls.SEARCH_COL1, cls.SEARCH_COL2, cls.SEARCH_COL3, cls.SEARCH_COL4]:
+            if SearchType.column_exists(search_type, col):
+                return col
 
+        return cls.SEARCH_COL4
+
+    get_search_col = classmethod(get_search_col)
 

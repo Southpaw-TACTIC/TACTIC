@@ -14,7 +14,7 @@
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
 from pyasm.common import Date, Common, Environment, FormatValue, SPTDate, TacticException
-from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
+from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement, Palette
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
@@ -135,8 +135,7 @@ class TextInputWdg(BaseInputWdg):
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
 
-            # DEPRECATED
-            """
+            # TODO: replace with bootstrap error classes
             my.text.add_behavior( {
                 'type': 'blur',
                 'bgcolor': bgcolor,
@@ -165,7 +164,6 @@ class TextInputWdg(BaseInputWdg):
                 spt.input.set_error(bvr.src_el);
                 '''
                 } )
-            """
  
        
         my.top = DivWdg()
@@ -407,6 +405,7 @@ class TextInputWdg(BaseInputWdg):
 
         div.add(my.text)
         my.text.add_class("form-control")
+        my.text.add_style('color', div.get_color('color')) 
 
         """
         <div class="form-group">
@@ -463,6 +462,13 @@ class TextInputWdg(BaseInputWdg):
         
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
+            color = my.text.get_color('color')
+            # lower the visibility of the hint text according to color of palette
+            if color > '#999':
+                color = Palette.modify_color(color, -30)
+            elif color < '#222':
+                color = Palette.modify_color(color, 40)
+
             if hint_text:
                 my.text.add_attr('title', hint_text)
                 # this prevents using this value for search
@@ -471,10 +477,10 @@ class TextInputWdg(BaseInputWdg):
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
                             offset: {x:5, y:5}}});
-                    over.text.setStyle('color','#999');
+                    over.text.setStyle('color','%s');
                     over.text.setStyle('font-size','1.1em');
                     over.text.setStyle('font-family','Arial, Serif');
-                    '''})
+                    '''%color})
 
 		
 
@@ -507,10 +513,10 @@ class TextInputWdg(BaseInputWdg):
 
 
         icon_wdg = DivWdg()
-        td.add(icon_wdg)
-        icon_wdg.add_style("top: 0px")
-        icon_wdg.add_style("right: 0px")
-        icon_wdg.add_style("position: absolute")
+        my.text.add(icon_wdg)
+        #icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("float: right")
+        icon_wdg.add_style("position: relative")
 
 
         
@@ -521,22 +527,22 @@ class TextInputWdg(BaseInputWdg):
             top_offset = '6'
             right_offset = '8'
 
-        icon_wdg.add_style("top: 0px")
-        icon_wdg.add_style("right: 0px")
-
+        #icon_wdg.add_style("top: 0px")
+        #icon_wdg.add_style("right: 0px")
 
         if not my.readonly:
+            pass
+            #TODO: put the Clear glyph icon in as an option
             """
-
-            icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE, inline=False)
+            icon = IconWdg("Clear", "BS_REMOVE", opacity=0.3)
             icon.add_class("spt_icon_inactive")
+            icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
-            icon.add_style("opacity: 0.3")
-
-
-            icon = IconWdg("Clear", IconWdg.CLOSE_ACTIVE, inline=False)
+            #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
+            icon = IconWdg("Clear", "BS_REMOVE")
             icon.add_class("spt_icon_active")
             icon.add_style("display: none")
+            icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
 
             icon_wdg.add_behavior( {
@@ -578,7 +584,6 @@ class TextInputWdg(BaseInputWdg):
                 '''%input_type
             } )
             """
-
         return top
 
 
@@ -633,6 +638,7 @@ class LookAheadTextInputWdg(TextInputWdg):
             my.search_type = 'sthpw/sobject_list'
         column = my.kwargs.get("column")
         relevant = my.kwargs.get("relevant")
+        
         if not column:
             column = 'keywords'
     
