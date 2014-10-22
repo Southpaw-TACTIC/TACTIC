@@ -1481,6 +1481,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button = ActionButtonWdg(title='Activate', tip='Activate Plugin in Current Project')
             shelf_div.add(button)
             button.add_style("margin: 10px auto")
+            button.add_style("margin: 20px 250px")
             button.add_behavior( {
             'type': 'click_up', 
             'plugin_dir': my.plugin_dir,
@@ -1523,7 +1524,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Remove', tip='Remove Plugin from current preject')
             shelf_div.add(button)
-            button.add_style("margin: 10px auto")
+            button.add_style("margin: 20px 250px")
             button.add_behavior( {
             'type': 'click_up', 
             'plugin_code': my.code,

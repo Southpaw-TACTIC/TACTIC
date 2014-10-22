@@ -850,8 +850,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
-            keyword_div.add_style("height: 32px")
-            keyword_div.add_style("margin-left: 0px")
+            keyword_div.add_style("height: 30px")
+            keyword_div.add_style("margin-left: -6px")
 
             keyword_div.add_behavior( {
                 'type': 'click_up',
@@ -912,26 +912,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # -- ITEM COUNT DISPLAY
         # add number found
-        num_div = DivWdg()
-        num_div.add_color("color", "color")
-        num_div.add_style("float: left")
-        num_div.add_style("margin-top: 0px")
-        num_div.add_style("font-size: 10px")
-        num_div.add_style("padding: 5px")
-        
-        # -- SEARCH LIMIT DISPLAY
-        # show items found even if hiding search limit tool
-        #if my.show_search_limit:
-        if my.items_found == 0 and my.search:
-            my.items_found = my.search.get_count()
+        if my.show_search_limit:
+            num_div = DivWdg()
+            num_div.add_color("color", "color")
+            num_div.add_style("float: left")
+            num_div.add_style("margin-top: 0px")
+            num_div.add_style("font-size: 10px")
+            num_div.add_style("padding: 5px")
+            
+            # -- SEARCH LIMIT DISPLAY
+            if my.items_found == 0 and my.search:
+                my.items_found = my.search.get_count()
 
-        if my.items_found == 1:
-            num_div.add( "%s %s" % (my.items_found, _("item found")))
+            if my.items_found == 1:
+                num_div.add( "%s %s" % (my.items_found, _("item found")))
+            else:
+                num_div.add( "%s %s" % (my.items_found, _("items found")))
+            num_div.add_style("margin-right: 0px")
+            num_div.add_border(style="none")
+            num_div.set_round_corners(6)
         else:
-            num_div.add( "%s %s" % (my.items_found, _("items found")))
-        num_div.add_style("margin-right: 0px")
-        num_div.add_border(style="none")
-        num_div.set_round_corners(6)
+            num_div = None
         
 
 
@@ -1035,10 +1036,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if my.show_search_limit:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
-            wdg_list.append( { 'wdg': num_div } )
+            if num_div:
+                wdg_list.append( { 'wdg': num_div } )
             wdg_list.append( { 'wdg': limit_span } )
         else:
-            wdg_list.append( { 'wdg': num_div } )
+            if num_div:
+                wdg_list.append( { 'wdg': num_div } )
 
         wdg_list.append( { 'wdg': spacing_divs[1] } )
 
@@ -1124,8 +1127,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #outer.add_style("overflow: hidden")
         outer.add_class("spt_resizable")
 
-        div.add_style("min-width: 800px")
+        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
+        div.add_style("margin: 0px -1px 0px -1px")
 
         
         
@@ -1857,8 +1861,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         # Order By (Descending) menu item ...
@@ -1882,8 +1886,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         menu_data.append( {
@@ -1918,8 +1922,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -1952,8 +1956,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...
@@ -1979,8 +1983,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_WEEKLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
         # Group By Week Optional menu item ...
@@ -2006,8 +2010,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_MONTHLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
         # Group Advanced menu item ...
@@ -2056,8 +2060,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     popup.panel = panel;
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
       
         menu_data.append( {
@@ -2166,8 +2170,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
             """
@@ -2210,8 +2214,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
             """
 
@@ -2242,9 +2246,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ]
-                      }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
         
        
@@ -2311,8 +2314,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
 

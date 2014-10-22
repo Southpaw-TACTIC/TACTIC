@@ -65,6 +65,13 @@ class FormatValue(object):
 
         if isinstance(value, datetime.datetime):
             value = str(value)
+        elif not isinstance(value, basestring):
+            value = str(value)
+
+        if value.startswith("{") and value.endswith("}"):
+            from pyasm.search import Search
+            value = Search.eval(value)
+
         # ------------------------------------------------
         # Integer
         if format == '-1234':

@@ -960,6 +960,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
             value_text.add_style("width", "250")
+            value_text.add_style("height", "30")
+            value_text.add_style("margin", "0px 5px")
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
             

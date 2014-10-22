@@ -700,6 +700,26 @@ class Site(object):
     set_site = classmethod(set_site)
 
 
+    def get_db_resource(cls, site, database):
+        if not site:
+            return None
+        site_obj = cls.get()
+        data = site_obj.get_connect_data(site)
+        if data:
+            host = data.get('host')
+            port = data.get('port')
+            vendor = data.get('vendor')
+            user = data.get('user')
+            password = data.get('password')
+        else:
+            return None
+
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        return db_resource
+
+    get_db_resource = classmethod(get_db_resource)
+
+
 
 class Ticket(SObject):
     '''When a user logins, a ticket is created.  This ticket is stored in the

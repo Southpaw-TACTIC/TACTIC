@@ -150,6 +150,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.alt_result = None
 
         my.cache_results = None
+
+
   
     def preprocess(my):
         order_by = my.get_option("order_by")
@@ -696,6 +698,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
  
 
     def get_bottom_wdg(my):
+
+        my.init_kwargs()
+
         sobjects = my.sobjects
         
         # ignore the first 2 (edit and insert) if it's on the old TableLayoutWdg

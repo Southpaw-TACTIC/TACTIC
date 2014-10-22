@@ -189,7 +189,7 @@ class CheckinWdg(BaseRefreshWdg):
         title_div = DivWdg()
         #title_div.add_class("maq_search_bar")
         title_div.add_color("background", "background", -10)
-        title_div.add_style("height: 20px")
+        title_div.add_style("height: 30px")
         title_div.add_style("padding: 5px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("overflow: hidden")
@@ -213,7 +213,7 @@ class CheckinWdg(BaseRefreshWdg):
         thumb_div = DivWdg()
         title_div.add(thumb_div)
         thumb_div.add_style("margin-left: -4")
-        thumb_div.add_style("margin-top: -4")
+        thumb_div.add_style("margin-top: -10")
         thumb_div.add_style("float: left")
         thumb_div.add_style("margin-right: 10px")
 
@@ -253,6 +253,8 @@ class CheckinWdg(BaseRefreshWdg):
         default_sandbox_dir = my._get_sandbox_dir(use_default=True)
 
         title_div = my.get_title_wdg()
+        if my.kwargs.get("show_header") in ['false', False]:
+            title_div.add_style("display: none")
 
         if is_refresh:
             top = Widget()
@@ -520,6 +522,9 @@ class CheckinWdg(BaseRefreshWdg):
                 # create a process selector
                 process_select = SelectWdg("process")
                 process_div.add(process_select)
+                process_select.add_style("float: right")
+                process_select.add_style("width: 150px")
+                process_select.add_style("margin-top: -5px")
                 process_select.add_class("spt_checkin_process")
                 process_select.set_option("values", my.processes)
                 show_links = my.kwargs.get("show_links") not in [False, 'false']
@@ -1933,6 +1938,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top.add_style("position: relative")
 
 
+        top.add("<br/>")
         top.add("Publish Description<br/>")
         text = TextAreaWdg("description")
         # this needs to be set or it will stick out to the right
@@ -1957,6 +1963,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             #delivery_div.add_style("opacity: 0.5")
 
             checkbox = CheckboxWdg("deliver")
+            checkbox.add_style("margin-right: 5px")
             delivery_div.add(checkbox)
             delivery_div.add_style("padding-top: 15px")
 
@@ -2068,6 +2075,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         note_div.add_style("padding-top: 15px")
         note_div.add_class("spt_add_note")
         checkbox = CheckboxWdg("add_note")
+        checkbox.add_style("margin-right: 5px")
         checkbox.add_class("spt_checkin_add_note")
         note_div.add(checkbox)
         note_div.add("Also add a note")
@@ -2775,28 +2783,28 @@ else {
         }
 
 
-        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in")
         top.add(button)
         button.add_class("spt_checkin_button")
         button.add_behavior(behavior)
-        button.add_style("margin-right: auto")
-        button.add_style("margin-left: auto")
+        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
 
 
 
 
-        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in")
         top.add(button)
         button.add_class("spt_checkin_html5_button")
         button.add_behavior(html5_behavior)
-        button.add_style("margin-right: auto")
-        button.add_style("margin-left: auto")
+        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
 
         button.add_style("display: none")
+
+        top.add("<br clear='all'/>")
 
         progress = DivWdg()
         top.add(progress)

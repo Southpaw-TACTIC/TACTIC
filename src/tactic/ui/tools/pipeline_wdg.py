@@ -302,13 +302,15 @@ class PipelineListWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_pipeline_list")
         my.set_as_panel(top)
+        top.add_style("position: relative")
 
         title_div = DivWdg()
 
 
         button = ActionButtonWdg(title="+", tip="Add a new pipeline", size='small')
-        button.add_style("float: right")
-        button.add_style("margin-top: -8px")
+        button.add_style("position: absolute")
+        button.add_style("top: 5px")
+        button.add_style("right: 5px")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -330,10 +332,10 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add(button)
 
         top.add(title_div)
-        title_div.add_style("height: 20px")
+        title_div.add_style("height: 30px")
         title_div.add_style("padding-left: 5px")
-        title_div.add_style("padding-top: 8px")
-        title_div.add_gradient("background", "background")
+        title_div.add_style("padding-top: 10px")
+        title_div.add_color("background", "background", -10)
         title_div.add("<b>Pipelines</b>")
 
 
@@ -929,7 +931,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top.add(my.get_shelf_wdg() )
 
 
-        top.add("<br clear='all'/>")
+        #top.add("<br clear='all'/>")
         my.width = my.kwargs.get("width")
         if not my.width:
             my.width = 1400
@@ -1010,6 +1012,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
  
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px")
+        shelf_wdg.add_style("margin-bottom: 5px")
 
         my.properties_dialog = DialogWdg(display=False)
         my.properties_dialog.add_title("Edit Properties")
@@ -1088,6 +1091,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
         shelf_wdg.add(help_button)
+        help_button.add_style("padding-top: 3px")
         help_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -1358,7 +1362,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row = DivWdg()
         #button_row.add_border()
         #button_row.set_round_corners(5)
-        button_row.add_style("padding: 6px 10px 9px 5px")
+        button_row.add_style("padding: 3px 10px 3px 5px")
+        button_row.add_style("padding: 6px 10px 0px 5px")
 
         button = SingleButtonWdg(title="Zoom In", icon=IconWdg.ZOOM_IN, show_out=False)
         button_row.add(button)
@@ -1396,7 +1401,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
         select = SelectWdg("zoom")
-        select.add_style("width: 55px")
+        select.add_style("width: 85px")
+        select.add_style("margin-top: -3px")
         select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit to Current Group", "Fit To Canvas"])
         select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_current", "fit_to_canvas"])
         select.add_empty_option("Zoom")
@@ -1470,15 +1476,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
     def get_pipeline_select_wdg(my):
         div = DivWdg()
-        div.add_border(modifier=10)
-        div.add_style("padding: 7px")
-        div.set_round_corners()
-        div.add("Current Pipeline: " )
+        #div.add_border(modifier=10)
+        div.add_style("padding: 3px")
+        #div.set_round_corners()
+        #div.add("Current Pipeline: " )
         pipeline_select = SelectWdg("current_pipeline")
         div.add(pipeline_select)
+        pipeline_select.add_style("display: table-cell")
         pipeline_select.add_class("spt_pipeline_editor_current")
         pipeline_select.set_option("values", "default")
-        pipeline_select.set_option("labels", "-- NEW --")
+        pipeline_select.set_option("labels", "-- New Pipeline --")
 
         pipeline_select.add_behavior( {
             'type': 'change',
@@ -1917,6 +1924,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         from tactic.ui.app import HelpButtonWdg
         help_button = HelpButtonWdg(alias='pipeline-process-options|project-workflow-introduction')
         div.add( help_button )
+        help_button.add_style("margin-top: 7px")
         help_button.add_style("float: right")
 
 

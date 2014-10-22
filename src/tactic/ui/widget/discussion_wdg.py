@@ -1107,10 +1107,11 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg.add_style("min-height: 18px")
             #no_notes_msg.add_style("text-align: center")
             no_notes_div.add(no_notes_msg)
-            add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
+            #add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
+            add_wdg = IconWdg("Add Note", "BS_PLUS")
             no_notes_msg.add(add_wdg)
             msg = "No notes. Click to add."
-            no_notes_msg.add("<i>-- %s --</i>" % _(msg))
+            no_notes_msg.add("<i> %s </i>" % _(msg))
             no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
 

@@ -131,6 +131,8 @@ class ThumbWdg(BaseTableElementWdg):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
 
+
+
     def init(my):
         my.top = DivWdg()
 

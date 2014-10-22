@@ -14,6 +14,7 @@ __all__ = ['SObjectDetailWdg', 'TaskDetailWdg', 'SObjectSingleProcessDetailWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.biz import Snapshot
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
@@ -72,35 +73,59 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         table.add_row()
 
-        # left
-        #td = table.add_cell(resize=False)
-        td = table.add_cell()
-        #td.add_style("padding: 10px")
-        td.add_style("width: 200px")
-        td.add_style("min-width: 200px")
-        td.add_style("vertical-align: top")
-        #td.add_border()
-        #td.add_style("border-style: solid")
-        #td.add_style("border-width: 1px 0 1px 1px")
-        #td.add_color("border-color", "border")
-        #td.add_color("background", "background", -10)
-
 
         if my.parent:
-            code = my.parent.get_code()
+            code = my.parent.get_value("code", no_exception=True)
+            name = my.parent.get_value("name", no_exception=True)
+            search_type_obj = my.parent.get_search_type_obj()
         else:
-            code = my.sobject.get_code()
+            code = my.sobject.get_value("code", no_exception=True)
+            name = my.sobject.get_value("name", no_exception=True)
+            search_type_obj = my.sobject.get_search_type_obj()
 
-        # add the tile
+        # add the title
+        td = table.add_cell()
+        td.add_attr("colspan", "3")
         title = DivWdg()
+
+
+       
+        search = Search("sthpw/snapshot")
+        search.add_filter("search_type", "sthpw/search_type")
+        search.add_filter("search_code", search_type_obj.get_value("code"))
+        if search.get_sobject():
+            thumb = ThumbWdg()
+            title.add(thumb)
+            thumb.set_icon_size(30)
+            thumb.set_sobject(search_type_obj)
+            thumb.add_style("float: left")
+
         td.add(title)
-        title.add_gradient("background", "background3", 0, -10)
+
+        title.add_color("background", "background3")
         title.add_style("height: 20px")
-        title.add_style("padding: 4px")
+        title.add_style("padding: 6px")
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
-        title.add("%s" % code)
+
+        if name:
+            title.add("%s" % name)
+            if code:
+                title.add(" (%s)" % code)
+        elif code:
+            title.add("%s" % code)
+        else:
+            title.add("(No name)")
         title.add_border()
+
+
+        table.add_row()
+
+        # left
+        td = table.add_cell()
+        td.add_style("width: 300px")
+        td.add_style("min-width: 300px")
+        td.add_style("vertical-align: top")
 
 
         div = DivWdg()
@@ -111,27 +136,50 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div.add(thumb_table)
         thumb_table.add_row()
 
-        thumb = ThumbWdg()
+        from tactic.ui.panel import ThumbWdg2
+        thumb = ThumbWdg2()
         # use a larger version for clearer display
-        thumb.set_icon_type('web')
-
-        # prefer to see the original image, then web
-        thumb.set_option('image_link_order', 'main|web|icon')
-        thumb.set_option("detail", "false")
-        thumb.set_option("icon_size", "100%")
-
-        td = thumb_table.add_cell(thumb)
-        td.add_style("vertical-align: top")
-        td.add_style("width: 240px")
-        td.add_style("padding: 15px")
+        #thumb.set_icon_type('web')
 
         if my.parent:
             thumb.set_sobject(my.parent)
+            search_key = my.parent.get_search_key()
         else:
             thumb.set_sobject(my.sobject)
+            search_key = my.sobject.get_search_key()
+
+        gallery_div = DivWdg()
+        div.add( gallery_div )
+        gallery_div.add_class("spt_tile_gallery")
+ 
+        thumb_table.add_behavior( {
+            'type': 'click_up',
+            'search_key': search_key,
+            'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_sobject_detail_top");
+                var gallery_el = top.getElement(".spt_tile_gallery");
+
+                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                var kwargs = {
+                    search_key: bvr.search_key,
+                    search_keys: [bvr.search_key],
+                };
+                spt.panel.load(gallery_el, class_name, kwargs);
+            ''' } )
+ 
+
+        # prefer to see the original image, then web
+        #thumb.set_option('image_link_order', 'main|web|icon')
+        #thumb.set_option("detail", "false")
+        #thumb.set_option("icon_size", "100%")
+
+        td = thumb_table.add_cell(thumb)
+        td.add_style("vertical-align: top")
+        td.add_style("width: auto")
+        td.add_style("padding: 15px")
 
         sobject_info_wdg = my.get_sobject_info_wdg()
-        sobject_info_wdg.add_style("width: 200px")
+        sobject_info_wdg.add_style("width: auto")
 
 
         td.add(sobject_info_wdg)
@@ -150,19 +198,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("text-align: left")
         td.add_style("vertical-align: top")
-        #td.add_color("background", "background", -10)
         td.add_class("spt_notes_wrapper")
-        #td.add_border()
-
-        # add the title
-        title = DivWdg()
-        td.add(title)
-        title.add_gradient("background", "background3", 0, -10)
-        title.add_style("height: 20px")
-        title.add_style("padding: 4px")
-        title.add_style("font-weight: bold")
-        title.add("Notes")
-        title.add_border()
 
         notes_div = DivWdg()
         td.add(notes_div)
@@ -278,54 +314,58 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_xml = '''
         <config>
         <tab>
-        <!--
-        <element name="notes">
-          <display class='tactic.ui.widget.discussion_wdg.DiscussionWdg'>
-            <search_key>%s</search_key>
-            <note_format>full</note_format>
-          </display>
-        </element>
-        -->
-        <element name="snapshots" title="Check-in History">
-          <display class='tactic.ui.panel.ViewPanelWdg'>
-            <search_type>sthpw/snapshot</search_type>
-            <view>table</view>
-            <parent_key>%s</parent_key>
-            <width>100%%</width>
-          </display>
-        </element>
         <element name="tasks">
           <display class='tactic.ui.panel.ViewPanelWdg'>
             <search_type>sthpw/task</search_type>
             <view>table</view>
-            <parent_key>%s</parent_key>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+          </display>
+        </element>
+        <element name="attachments" title="Attachments">
+          <display class='tactic.ui.panel.ViewPanelWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <layout>tile</layout>
+            <expression>@SOBJECT(sthpw/snapshot['process','attachment'])</expression>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+            <show_shelf>false</show_shelf>
+          </display>
+        </element>
+        <element name="snapshots" title="Check-in History">
+          <display class='tactic.ui.panel.ViewPanelWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <view>table</view>
+            <parent_key>%(search_key)s</parent_key>
             <width>100%%</width>
           </display>
         </element>
         <element name="checkin" title="Checkin">
           <display class='tactic.ui.widget.CheckinWdg'>
-            <search_key>%s</search_key>
+            <search_key>%(search_key)s</search_key>
+            <use_applet>false</use_applet>
+            <show_header>false</show_header>
           </display>
         </element>
 
         <element name="edit" title="Edit">
           <display class='tactic.ui.panel.EditWdg'>
-            <search_key>%s</search_key>
+            <search_key>%(search_key)s</search_key>
             <view>edit</view>
           </display>
         </element>
 
         <element name="pipeline" title="Pipeline">
           <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
-            <search_key>%s</search_key>
-            <pipeline>%s</pipeline>
+            <search_key>%(search_key)s</search_key>
+            <pipeline>%(pipeline_code)s</pipeline>
           </display>
         </element>
  
 
         </tab>
         </config>
-        ''' % (search_key, search_key, search_key, search_key, search_key, search_key, my.pipeline_code)
+        ''' % {'search_key': search_key, 'pipeline_code': my.pipeline_code}
         return config_xml
 
 
@@ -438,16 +478,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-        # add the tile
-        title = DivWdg()
-        edit_div.add(title)
-        title.add_gradient("background", "background3", 0, -10)
-        title.add_style("height: 20px")
-        title.add_style("padding: 4px")
-        title.add_style("font-weight: bold")
-        title.add("&nbsp")
-        title.add_border()
-
         from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
         edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
         edit_div.add(edit)
@@ -519,7 +549,6 @@ class TaskDetailWdg(SObjectDetailWdg):
         attr_table.add_color("color", "color")
         attr_table.add_color("background", "background", -5)
         attr_table.add_border()
-        attr_table.set_box_shadow("0px 0px 5px")
 
         sobject = my.get_sobject()
 
@@ -544,7 +573,8 @@ class TaskDetailWdg(SObjectDetailWdg):
             th.add_style("text-align: left")
             th.add_style("padding-right: 15px")
             th.add_style("padding-left: 5px")
-            th.add_style("padding-bottom: 2px")
+            th.add_style("padding-top: 10px")
+            th.add_style("padding-bottom: 10px")
             td = attr_table.add_cell(value)
     
 
@@ -656,7 +686,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         div = DivWdg()
 
         title = DivWdg()
-        title.add_gradient("background", "background3", 0)
+        title.add_color("background", "background3", -5)
         title.add_style("height: 20px")
         title.add_style("font-weight: bold")
         title.add_style("padding: 4px")
@@ -826,7 +856,7 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
         tasks_div.set_box_shadow()
 
         title = DivWdg()
-        title.add_gradient("background", "background3", 0, -10)
+        title.add_color("background", "background3", 0, -5)
         title.add_color("color", "color3", -10)
         title.add_border()
         title.add_style("height: 20px")
@@ -860,7 +890,7 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
         title = DivWdg()
         notes_div.add(title)
-        title.add_gradient("background", "background3", 0, -10)
+        title.add_color("background", "background3", 0, -5)
         title.add_color("color", "color3", -10)
         title.add_border()
         title.add_style("height: 20px")
@@ -890,7 +920,7 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         title = DivWdg()
-        title.add_gradient("background", "background3", 0, -10)
+        title.add_color("background", "background3", 0, -5)
         title.add_color("color", "color3", -10)
         title.add_border()
         title.add_style("height: 20px")

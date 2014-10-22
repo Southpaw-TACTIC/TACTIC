@@ -975,17 +975,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
-            # An empty div like this is not needed. 
-            """
-            if my.show_search_limit:
-                limit_span = DivWdg()
-                limit_span.add_border()
-                inner.add(limit_span)
-                limit_span.add_style("margin-top: 4px")
-                limit_span.add_class("spt_table_search")
-                limit_span.add_style("width: 250px")
-                limit_span.add_style("margin: 5 auto")
-            """
         
             info = my.search_limit.get_info()
             if info.get("count") == None:
@@ -1274,6 +1263,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
                 }
 
+                // FIXME: don't do the last one because it messes up some
+                // tables by making them huge ... not sure why?!
                 for (var i = 0; i < bvr.element_names.length-1; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
@@ -3580,6 +3571,20 @@ spt.table.add_new_item = function(kwargs) {
         else {
             table.appendChild(clone);
         }
+
+        /*
+        var clone_cells = clone.getElements(".spt_cell_edit");
+        var header = spt.table.get_header_row();
+        var headers = header.getElements(".spt_table_header");
+        for (var i = 0; i < headers.length; i++) {
+            var header = headers[i];
+            var clone_cell = clone_cells[i];
+            var size = header.getSize();
+            clone_cell.setStyle("width", size.x);
+        }
+        */
+
+
     }
     else {
         var clone_cells = clone.getElements("td");

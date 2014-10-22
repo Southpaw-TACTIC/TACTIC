@@ -121,7 +121,7 @@
 
 
 <planner>
-    <element name="snapshot">
+    <element name="preview">
         <display class="ThumbWdg">
             <icon_size>60</icon_size>
         </display>
@@ -132,7 +132,7 @@
 
 
 <planner_right>
-    <element name="images">
+    <element name="preview">
         <display class="ThumbWdg">
             <icon_size>60</icon_size>
         </display>

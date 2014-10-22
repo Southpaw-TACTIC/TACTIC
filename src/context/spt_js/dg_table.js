@@ -2699,15 +2699,15 @@ spt.dg_table.search_cbk = function(evt, bvr){
         el_name = panel.getAttribute('spt_title');
     if (el_name == null)
         el_name = '';
-    spt.app_busy.show( 'Search', 'Searching for matching items' );
+    //spt.app_busy.show( 'Search', 'Searching for matching items' );
 
     if (bvr.return_html) { 
-        spt.app_busy.hide();
+        //spt.app_busy.hide();
         return spt.dg_table._search_cbk(evt, bvr);
     } 
     setTimeout( function() {
             spt.dg_table._search_cbk(evt, bvr);
-            spt.app_busy.hide();
+            //spt.app_busy.hide();
             }, 10 );
 }
 
