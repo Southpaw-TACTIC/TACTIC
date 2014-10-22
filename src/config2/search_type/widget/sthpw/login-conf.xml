@@ -25,6 +25,7 @@
     <element name="project_code"/>
     <element name="license_type"/>
     <element name="password" type="password"/>
+    <element name="hourly_wage"/>
 </definition>
 
 
@@ -45,6 +46,7 @@
         <display class="PasswordWdg"/>
         <action class="NullAction"/>
     </element>
+    <element name="hourly_wage"/>
 
 </edit_definition>
 
@@ -57,6 +59,7 @@
     <element name="display_name"/>
     <element name="email"/>
     <element name="license_type"/>
+    <element name="hourly_wage"/>
 </table>
 
 
