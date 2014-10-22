@@ -314,54 +314,58 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_xml = '''
         <config>
         <tab>
-        <!--
-        <element name="notes">
-          <display class='tactic.ui.widget.discussion_wdg.DiscussionWdg'>
-            <search_key>%s</search_key>
-            <note_format>full</note_format>
-          </display>
-        </element>
-        -->
-        <element name="snapshots" title="Check-in History">
-          <display class='tactic.ui.panel.ViewPanelWdg'>
-            <search_type>sthpw/snapshot</search_type>
-            <view>table</view>
-            <parent_key>%s</parent_key>
-            <width>100%%</width>
-          </display>
-        </element>
         <element name="tasks">
           <display class='tactic.ui.panel.ViewPanelWdg'>
             <search_type>sthpw/task</search_type>
             <view>table</view>
-            <parent_key>%s</parent_key>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+          </display>
+        </element>
+        <element name="attachments" title="Attachments">
+          <display class='tactic.ui.panel.ViewPanelWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <layout>tile</layout>
+            <expression>@SOBJECT(sthpw/snapshot['process','attachment'])</expression>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+            <show_shelf>false</show_shelf>
+          </display>
+        </element>
+        <element name="snapshots" title="Check-in History">
+          <display class='tactic.ui.panel.ViewPanelWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <view>table</view>
+            <parent_key>%(search_key)s</parent_key>
             <width>100%%</width>
           </display>
         </element>
         <element name="checkin" title="Checkin">
           <display class='tactic.ui.widget.CheckinWdg'>
-            <search_key>%s</search_key>
+            <search_key>%(search_key)s</search_key>
+            <use_applet>false</use_applet>
+            <show_header>false</show_header>
           </display>
         </element>
 
         <element name="edit" title="Edit">
           <display class='tactic.ui.panel.EditWdg'>
-            <search_key>%s</search_key>
+            <search_key>%(search_key)s</search_key>
             <view>edit</view>
           </display>
         </element>
 
         <element name="pipeline" title="Pipeline">
           <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
-            <search_key>%s</search_key>
-            <pipeline>%s</pipeline>
+            <search_key>%(search_key)s</search_key>
+            <pipeline>%(pipeline_code)s</pipeline>
           </display>
         </element>
  
 
         </tab>
         </config>
-        ''' % (search_key, search_key, search_key, search_key, search_key, search_key, my.pipeline_code)
+        ''' % {'search_key': search_key, 'pipeline_code': my.pipeline_code}
         return config_xml
 
 

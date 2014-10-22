@@ -521,12 +521,12 @@ class BaseAppServer(Base):
             widget = my.get_content(page_type)
         except Error, e:
             print "ERROR: ", e
-            from pyasm.widget import weblicensewdg, bottomwdg, error403wdg
-            widget = widget()
+            from pyasm.widget import BottomWdg, Error403Wdg
+            widget = Widget()
             top = my.get_top_wdg()
             widget.add( top )
-            widget.add( error403wdg() )
-            widget.add( bottomwdg() )
+            widget.add( Error403Wdg() )
+            widget.add( BottomWdg() )
             widget.get_display()
 
         # put an annoying alert if there is a problem with the licensed

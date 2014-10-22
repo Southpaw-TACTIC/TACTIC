@@ -331,7 +331,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                     % (layout_wdg.get_color("border"), layout_wdg.get_color("background")),
 
             'cbjs_setup': '''
-            console.log("drag");
             if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}
             ''',
 
@@ -376,8 +375,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not mode:
             mode = "gallery"
 
-        # FIXME
-        #mode = ""
         
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:

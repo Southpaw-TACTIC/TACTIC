@@ -174,13 +174,15 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             info["count"] = len(my.sobjects)
 
 
+        """
         from tactic.ui.app import SearchLimitSimpleWdg
         limit_wdg = SearchLimitSimpleWdg(
             count=info.get("count"),
             search_limit=info.get("search_limit"),
             current_offset=info.get("current_offset"),
         )
-        #inner.add(limit_wdg)
+        inner.add(limit_wdg)
+        """
 
 
 
