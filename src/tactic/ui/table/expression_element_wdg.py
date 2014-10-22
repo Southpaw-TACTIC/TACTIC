@@ -170,7 +170,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 my.set_option("order_by", template)
 
 
-
+        my.init_kwargs()
 
     def get_required_columns(my):
         '''method to get the require columns for this'''
@@ -455,7 +455,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         '''for csv export'''
         my.sobject = my.get_current_sobject()
 
-        my.init_kwargs()
+        #my.init_kwargs()
         if not my.expression and not my.alt_expression: 
             return super(ExpressionElementWdg, my).get_display()
 
@@ -481,7 +481,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
     def get_display(my):
 
-        my.init_kwargs()
+        #my.init_kwargs()
 
         my.sobject = my.get_current_sobject()
         if not my.sobject or my.sobject.is_insert():
@@ -702,7 +702,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.init_kwargs()
 
         sobjects = my.sobjects
-        
         # ignore the first 2 (edit and insert) if it's on the old TableLayoutWdg
         if my.get_layout_wdg().get_layout_version() == '1':
             sobjects = sobjects[2:]
@@ -734,12 +733,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
         div.add_style("text-align: right")
         div.add_class( "spt_%s_expr_bottom" % (my.get_name()) )
 
-
         # add a listener
         for sobject in sobjects:
             if sobject.is_insert():
                 continue
-
             if my.enable_eval_listener:
                 my.add_js_expression(div, sobject, expression)
 

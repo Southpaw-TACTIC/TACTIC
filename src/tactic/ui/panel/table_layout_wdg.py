@@ -1184,7 +1184,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         sobject_sorted_list = []
         reverse=False
         # TODO: check this dict my.group_dict
-        if my.group_by_time:
+
+        if True in my.group_by_time.values():
             reverse = True
         elif my.order_element and my.order_element.endswith(' desc'):
             reverse = True
@@ -1788,7 +1789,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             sortable = my.attributes[i].get("sortable") != "false"
             if sortable:
 
-                if my.order_element == name:
+                if my.order_element == name or my.order_element == "%s asc" % name:
                     th.add_styles("background-image: url(/context/icons/common/order_array_down_1.png);")
                 elif my.order_element == "%s desc" % name:
                     th.add_styles("background-image: url(/context/icons/common/order_array_up_1.png);")
