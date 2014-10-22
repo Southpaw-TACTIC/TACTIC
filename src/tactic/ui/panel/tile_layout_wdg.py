@@ -1236,7 +1236,7 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        if height:
+        if height or my.show_name_hover in ["True","true",True]:
             div.add_style("height: 100%")
 
         if my.show_name_hover in ["True","true",True]:
