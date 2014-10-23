@@ -822,22 +822,18 @@ spt.tab.close = function(src_el) {
     }
 
 
-    var content = src_el.getElement(".spt_tab_content");
-    var header;
+    var content = src_el.getParent(".spt_tab_content");
     var element_name;
     // check if it's a header child
-    if (content) {
+    var header = src_el.getParent(".spt_tab_header");
+    if (header) {
+        element_name = header.getAttribute("spt_element_name");
+        content = spt.tab.get_content(element_name);
+    } else if (content) {
         element_name = content.getAttribute("spt_element_name");
         header = spt.tab.get_selected_header(element_name);
-    } else {
+    } 
 
-        header = src_el.getParent(".spt_tab_header");
-        if (header) {
-            element_name = header.getAttribute("spt_element_name");
-            content = spt.tab.get_content(element_name);
-        }
-
-    }
     if (!header || !content) {
         spt.error('Tab close cannot find the header or content. Abort');
         return;
