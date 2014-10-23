@@ -822,7 +822,7 @@ spt.tab.close = function(src_el) {
     }
 
 
-    var content = src_el.getParent(".spt_tab_content");
+    var content = src_el.getElement(".spt_tab_content");
     var header;
     var element_name;
     // check if it's a header child
