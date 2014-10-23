@@ -1103,6 +1103,7 @@ class XmlWdg(BaseTableElementWdg):
 
         value = Xml.to_html(value)
         pre = HtmlElement.pre(value)
+        pre.add_style("font-size", "1.0em")
         #pre.add_attr("wrap", "true")
         #pre.add_style("white-space", "pre-line")
         widget.add(pre)

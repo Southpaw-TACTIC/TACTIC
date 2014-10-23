@@ -3953,6 +3953,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         else
             input.setStyle( "width", '250px');
         input.setStyle('font-family', 'courier new');
+        input.setStyle('font-size', '1.0em');
+        input.setStyle('padding', '5px');
 
         input.value = value;
     }
@@ -4262,7 +4264,7 @@ spt.table.set_display = function( el, value, input_type ) {
         return;
     }
 
-    if (input_type == 'xml' || value.substr(0,6) == '<?xml ') {
+    if (input_type == 'xml' || value.substr(0,1) == '<') {
 
         var label = value;
         //var is_xml = label.substr(0,6) == '<?xml ';
@@ -5225,7 +5227,7 @@ spt.table.set_column_width = function(element_name, width) {
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
         if (header.getAttribute("spt_element_name") == element_name) {
-            var new_width = width;
+            var new_width = width + "";
             new_width = parseInt( new_width.replace("px", "") );
             total_width += new_width;
         }
@@ -5233,7 +5235,6 @@ spt.table.set_column_width = function(element_name, width) {
             var size = header.getSize();
             total_width += size.x;
         }
-        
 
     }
 
