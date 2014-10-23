@@ -2212,6 +2212,7 @@ spt.app_busy.hide();
         html5_behavior = {
             'type': 'click_up',
             'validate_script_path': my.validate_script_path,
+            'script_path': script_path,
             'cbjs_action': '''
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
@@ -2231,15 +2232,26 @@ spt.checkin.html5_checkin = function(files) {
     var checkin_type = 'file';
     var mode = 'uploaded';
 
+    server.start({title: 'HTML5 Check-in', description: checkin_type + ' ' + search_key});
+    var transaction_ticket = server.transaction_ticket;
+
     var upload_complete = function() {
 
         try {
+            var has_error = false;
+
             if (bvr.validate_script_path){
                 var script = spt.CustomProject.get_script_by_path(bvr.validate_script_path);
                 bvr['script'] = script;
                 spt.app_busy.show("Running Validation", bvr.validate_script_path);
                 spt.CustomProject.exec_custom_script(evt, bvr);
-            } 
+            }
+            // Run a custom checkin script
+            if (bvr.script_path != null) {
+                script = spt.CustomProject.get_script_by_path(bvr.script_path);
+                bvr['script'] = script;
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            }
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2249,14 +2261,21 @@ spt.checkin.html5_checkin = function(files) {
             progress.setStyle("display", "");
         }
         catch(e) {
+            server.abort();
             progress.setStyle("background", "#F00");
             progress.setStyle("display", "none");
-            alert(e);
-            throw(e);
-            
+            spt.alert("Check-in failed: " + spt.exception.handler(e));
+            throw("Check-in failed: " + e);
+            has_error = true;
         }
 
-        spt.app_busy.hide();
+        if (! has_error) {
+            server.finish();
+            spt.panel.refresh(top);
+            spt.info("Check-in succeeded.");
+        }
+
+        //spt.app_busy.hide();
     }
 
     var upload_progress = function(evt) {
@@ -2269,7 +2288,8 @@ spt.checkin.html5_checkin = function(files) {
     var upload_kwargs = {
         upload_complete: upload_complete,
         upload_progress: upload_progress,
-        files: el.files
+        files: el.files,
+        ticket: transaction_ticket
     }
     spt.html5upload.upload_file(upload_kwargs);
 
@@ -2281,7 +2301,6 @@ var top = bvr.src_el.getParent(".spt_checkin_top");
 var el = top.getElement(".spt_checkin_content");
 var files = el.files;
 spt.checkin.html5_checkin(files);
-
             '''
         }
 
