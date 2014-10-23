@@ -145,7 +145,7 @@ class FormatMessageWdg(BaseRefreshWdg):
 
         subscription = my.kwargs.get('subscription')
         show_preview = my.kwargs.get('show_preview')
-        if not show_preview:
+        if show_preview in ['',None]:
             show_preview = True
         show_preview_category_list = ['sobject','chat']
 
@@ -862,7 +862,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             
             show_preview = my.kwargs.get('show_preview')
-            if not show_preview:
+            if show_preview in ['',None]:
                 show_preview = True
 
             msg_element = FormatMessageWdg(subscription=subscription, short_format='true',show_preview=show_preview)
@@ -913,7 +913,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             
             show_timestamp = my.kwargs.get('show_timestamp')
-            if not show_timestamp:
+            if show_timestamp in ['',None]:
                 show_timestamp = True
 
             if show_timestamp in ["True","true",True]:
@@ -925,7 +925,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             td = table.add_cell()
             
             show_message_history = my.kwargs.get('show_message_history')
-            if not show_message_history:
+            if show_message_history in ['',None]:
                 show_message_history = True
             if show_message_history in ["True","true",True]:
                 td.add(history_icon)
@@ -950,7 +950,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             } )
             
             show_unsubscribe = my.kwargs.get('show_unsubscribe')
-            if not show_unsubscribe: 
+            if show_unsubscribe in ['',None]: 
                 show_unsubscribe = False
             if show_unsubscribe in ["True","true",True]:
                 td.add(icon)
