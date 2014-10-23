@@ -2232,7 +2232,7 @@ spt.checkin.html5_checkin = function(files) {
     var checkin_type = 'file';
     var mode = 'uploaded';
 
-    server.start({title: 'HTML5 Check-in', description: bvr.type + ' ' + search_key});
+    server.start({title: 'HTML5 Check-in', description: checkin_type + ' ' + search_key});
     var transaction_ticket = server.transaction_ticket;
 
     var upload_complete = function() {
