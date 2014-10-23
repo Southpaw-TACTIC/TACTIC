@@ -145,11 +145,12 @@ class FormatMessageWdg(BaseRefreshWdg):
 
         subscription = my.kwargs.get('subscription')
         show_preview = my.kwargs.get('show_preview')
+        if not show_preview:
+            show_preview = True
         show_preview_category_list = ['sobject','chat']
 
-        if category in show_preview_category_list or show_preview=="True" or show_preview=="true" or show_preview is True:
-            if not show_preview=="false" or not show_preview=="False" or show_preview is not True:  
-                td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
+        if (category in show_preview_category_list and show_preview not in ['False','false',False]) or show_preview in ["True" ,"true",True]:  
+            td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
     
         message_value = message.get_value("message")
         message_login = message.get_value("login")
@@ -859,9 +860,9 @@ class SubscriptionWdg(BaseRefreshWdg):
 
             size = 60
 
-            try:
-                show_preview = my.kwargs.get('show_preview')
-            except:
+            
+            show_preview = my.kwargs.get('show_preview')
+            if not show_preview:
                 show_preview = True
 
             msg_element = FormatMessageWdg(subscription=subscription, short_format='true',show_preview=show_preview)
@@ -910,24 +911,25 @@ class SubscriptionWdg(BaseRefreshWdg):
             else:
                 timestamp_str = ""
 
-            try:
-                show_timestamp = my.kwargs.get('show_timestamp')
-            except:
+            
+            show_timestamp = my.kwargs.get('show_timestamp')
+            if not show_timestamp:
                 show_timestamp = True
 
-            if show_timestamp == "True" or show_timestamp=="true" or show_timestamp is True:
+            if show_timestamp in ["True","true",True]:
                 td.add(timestamp_str)
 
             #td = table.add_cell()
             #td.add(subscription.get_value("last_cleared"))
 
             td = table.add_cell()
-            try:
-                show_message_history = my.kwargs.get('show_message_history')
-            except:
+            
+            show_message_history = my.kwargs.get('show_message_history')
+            if not show_message_history:
                 show_message_history = True
-            if show_message_history =="True" or  show_message_history =="true" or show_message_history is True:
+            if show_message_history in ["True","true",True]:
                 td.add(history_icon)
+
             td.add(HtmlElement.br(2))
             td.add_style('width: 30px')
             icon = IconButtonWdg(title="Unsubscribe", icon=IconWdg.DELETE)
@@ -946,11 +948,11 @@ class SubscriptionWdg(BaseRefreshWdg):
                     spt.panel.refresh(top);
                 '''
             } )
-            try:
-                show_unsubscribe = my.kwargs.get('show_unsubscribe')
-            except: 
+            
+            show_unsubscribe = my.kwargs.get('show_unsubscribe')
+            if not show_unsubscribe: 
                 show_unsubscribe = False
-            if show_unsubscribe =="True" or show_unsubscribe =="true" or show_unsubscribe is True:
+            if show_unsubscribe in ["True","true",True]:
                 td.add(icon)
 
             
