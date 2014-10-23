@@ -570,7 +570,7 @@ class IconCreator(object):
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print "WARNING: ", e.__str__()
-                Environmnet.add_warning("Unknown file type", e.__str__())
+                Environment.add_warning("Unknown file type", e.__str__())
         else:
             # assume it is an image
             try:
@@ -579,7 +579,7 @@ class IconCreator(object):
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print "WARNING: ", e.__str__()
-                Environmnet.add_warning("Unknown file type", e.__str__())
+                Environment.add_warning("Unknown file type", e.__str__())
 
 
 
@@ -797,7 +797,7 @@ class IconCreator(object):
 
                 subprocess.call(convert_cmd)
 
-            # if we don't have ImageMagick, use PIL
+            # if we don't have ImageMagick, use PIL, if installed (in non-mac os systems)
             elif HAS_PIL:
                 # use PIL
                 # create the thumbnail
@@ -835,29 +835,20 @@ class IconCreator(object):
                     offset = (thumb_size[0]/2) - (im.size[0]/2)
                     im2.paste(im, (offset,0) )
                     im2.save(small_path, to_ext)
-            else:
-                # both IM and PIL are not installed
-                raise TacticException('No image manipulation tool installed')
 
-            # after these operations, confirm that the icon has been generated
-            if not os.path.exists(small_path):
-                raise TacticException('Icon generation failed')
+            # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
+            elif sys.platform == 'darwin':
+                convert_cmd = ['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path]
+                subprocess.call(convert_cmd)
+            else:
+                raise TacticException('No image manipulation tool installed')
+            
         except Exception, e:
             print "Error: ", e
-            # if this is a darwin (mac) system, IM will not be installed
-            # since PIL has failed or was not installed, try sips
-            if sys.platform == 'darwin':
-                print "Attempting to use sips for icon creation"
-                convert_cmd = ['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path]
-                try:
-                    subprocess.call(convert_cmd)
-                    if not os.path.exists(small_path):
-                        raise TacticException('Icon generation failed')
-                except:
-                    pass
-            else:
-                # IM or PIL exists but has failed to generate an icon
-                pass
+
+        # after these operations, confirm that the icon has been generated
+        if not os.path.exists(small_path):
+            raise TacticException('Icon generation failed')
 
 
     def _resize_texture(my, large_path, small_path, scale):
