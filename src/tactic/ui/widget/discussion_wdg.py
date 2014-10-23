@@ -1105,9 +1105,7 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
-            #no_notes_msg.add_style("text-align: center")
             no_notes_div.add(no_notes_msg)
-            #add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
             add_wdg = IconWdg("Add Note", "BS_PLUS")
             no_notes_msg.add(add_wdg)
             msg = "No notes. Click to add."
@@ -1149,7 +1147,7 @@ class DiscussionWdg(BaseRefreshWdg):
             note_dialog.add_title("Add Note")
             note_dialog.add_style("overflow-y: auto")
             no_notes_div.add(note_dialog)
-            note_dialog.set_as_activator(no_notes_msg, offset={'x':-5,'y':5})
+            note_dialog.set_as_activator(no_notes_msg, offset={'x':-5,'y':0})
 
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
@@ -1293,10 +1291,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
                
                 note_dialog = DialogWdg(display=False)
-                note_dialog.add_title(context)
+                note_dialog.add_title("Notes for: %s" % context)
                 note_dialog.add_style("overflow-y: auto")
                 context_top.add(note_dialog)
-                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':5})
+                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
 
 
                 show_add = my.kwargs.get("show_add")
@@ -1304,13 +1302,13 @@ class DiscussionWdg(BaseRefreshWdg):
 
                     shelf_wdg = DivWdg()
                     note_dialog.add(shelf_wdg)
-                    shelf_wdg.add_style("height: 30px")
+                    shelf_wdg.add_style("height: 36px")
                     shelf_wdg.add_color("background", "background3")
 
                     add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
                     shelf_wdg.add(add_wdg)
                     add_wdg.add_style("float: right")
-                    add_wdg.add_style("margin-right: -3px")
+                    shelf_wdg.add_style("padding-top: 3px")
 
                     add_wdg.add_attr("spt_process", process)
                     add_wdg.add_attr("spt_context", context)
@@ -1477,8 +1475,8 @@ class DiscussionWdg(BaseRefreshWdg):
         icon_div = SpanWdg()
         div.add(icon_div)
         icon_div.add_border()
-        icon_div.add_style("width: 14px")
-        icon_div.add_style("height: 14px")
+        icon_div.add_style("width: 16px")
+        icon_div.add_style("height: 16px")
         icon_div.add_style("overflow: hidden")
         icon_div.add_style("margin-right: 5px")
         icon_div.add_style("float: left")
@@ -1489,7 +1487,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         div.add_color("color", "color")
-        div.add_style("padding", "4px")
+        div.add_style("padding", "5px")
         div.add_color("background", "background", -5, -5)
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")
@@ -1558,18 +1556,16 @@ class DiscussionWdg(BaseRefreshWdg):
         td = content.add_cell()
 
 
-        icon = IconWdg("Note", IconWdg.NOTE)
+        icon = IconWdg("Note", "BS_PENCIL")
         td.add(icon)
         icon.add_style("float: left")
-        icon.add_style("margin-top: 2px")
+        icon.add_style("margin: 5px")
 
 
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("padding: 1px")
+        title.add_style("margin: 5px 0px")
         title.add_style("font-weight: bold")
-
-        title.add("&nbsp;"*3)
 
         tbody = content.add_tbody()
 
@@ -1589,8 +1585,6 @@ class DiscussionWdg(BaseRefreshWdg):
         date_obj = SPTDate.convert_to_local(date_obj)
         display_date_full = date_obj.strftime("%b %d, %Y %H:%M")
         display_date = date_obj.strftime("%b %d - %H:%M")
-        title.add(display_date)
-        title.add_attr("title", display_date_full)
 
         if my.note_expandable in ['true', True]:
             if len(note_value) > 50:
@@ -1603,8 +1597,15 @@ class DiscussionWdg(BaseRefreshWdg):
             #short_note = WikiUtil().convert(note_value)
             short_note = ''
             
-            
-        title.add(" - [%s] - %s" % (login, short_note) )
+           
+        if short_note:
+            title.add("%s - %s" % (login, short_note) )
+        else:
+            title.add("<b style='font-size: 1.1em'>%s</b>" % (login) )
+
+
+        title.add("<div style='float: right'>%s</div>" % display_date)
+        title.add_attr("title", display_date_full)
 
         if my.show_note_status:
             status = note.get_value('status')
@@ -1657,7 +1658,6 @@ class DiscussionWdg(BaseRefreshWdg):
             left.add_style("width: 150px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
-            left.add_style("border: solid 1px %s" % title.get_color("border"))
 
             if not login:
                 login = "-- No User --"
@@ -1688,17 +1688,9 @@ class DiscussionWdg(BaseRefreshWdg):
 
         right = content.add_cell()
         right.add_style("vertical-align: top")
-        right.add_style("padding: 10px")
-        #right.add_border()
+        right.add_style("padding: 10px 30px")
 
         context = note.get_value("context")
-
-        #context_div = DivWdg()
-        #context_div.add(context)
-        #context_div.add_style("padding: 5px")
-        #context_div.add_style("font-size: 1.1em")
-        #context_div.add_style("font-weight: bold")
-        #right.add(context_div)
 
         right.add( WikiUtil().convert(note_value) )
 
@@ -1884,6 +1876,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
         text.add_style("width: 100%")
+        text.add_style("height: 100px")
         content_div.add(text)
 
         content_div.add("<br/>"*2)
@@ -2020,6 +2013,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         text = TextWdg("mail_cc")
         text.add_style("width: 250px")
         table.add_cell(text)
+
+        table.add_row_cell()
 
         # BCC 
         table.add_row()
