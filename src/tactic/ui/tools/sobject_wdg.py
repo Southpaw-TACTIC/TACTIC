@@ -311,9 +311,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
             search_key = my.kwargs.get("search_key")
         search_key = search_key.replace("&", "&amp;")
 
-        config_xml = '''
+
+        values = {
+                'search_key': search_key,
+                'pipeline_code': my.pipeline_code,
+                'search_type': my.search_type
+        }
+
+        config_xml = []
+
+        config_xml.append('''
         <config>
-        <tab>
+        <tab>''')
+
+        config_xml.append('''
         <element name="tasks">
           <display class='tactic.ui.panel.ViewPanelWdg'>
             <search_type>sthpw/task</search_type>
@@ -322,16 +333,20 @@ class SObjectDetailWdg(BaseRefreshWdg):
             <width>100%%</width>
           </display>
         </element>
+        ''' % values)
+        config_xml.append('''
         <element name="attachments" title="Attachments">
-          <display class='tactic.ui.panel.ViewPanelWdg'>
+          <display class='tactic.ui.panel.TileLayoutWdg'>
             <search_type>sthpw/snapshot</search_type>
-            <layout>tile</layout>
-            <expression>@SOBJECT(sthpw/snapshot['process','attachment'])</expression>
             <parent_key>%(search_key)s</parent_key>
+            <process>attachment</process>
+            <layout>tile</layout>
             <width>100%%</width>
             <show_shelf>false</show_shelf>
           </display>
         </element>
+        ''' % values)
+        config_xml.append('''
         <element name="snapshots" title="Check-in History">
           <display class='tactic.ui.panel.ViewPanelWdg'>
             <search_type>sthpw/snapshot</search_type>
@@ -340,6 +355,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
             <width>100%%</width>
           </display>
         </element>
+        ''' % values)
+        config_xml.append('''
         <element name="checkin" title="Checkin">
           <display class='tactic.ui.widget.CheckinWdg'>
             <search_key>%(search_key)s</search_key>
@@ -347,25 +364,32 @@ class SObjectDetailWdg(BaseRefreshWdg):
             <show_header>false</show_header>
           </display>
         </element>
-
+        ''' % values)
+        config_xml.append('''
         <element name="edit" title="Edit">
           <display class='tactic.ui.panel.EditWdg'>
             <search_key>%(search_key)s</search_key>
             <view>edit</view>
           </display>
         </element>
-
+        ''' % values)
+        config_xml.append('''
         <element name="pipeline" title="Pipeline">
           <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
             <search_key>%(search_key)s</search_key>
             <pipeline>%(pipeline_code)s</pipeline>
           </display>
         </element>
+        ''' % values)
  
-
+        config_xml.append('''
         </tab>
         </config>
-        ''' % {'search_key': search_key, 'pipeline_code': my.pipeline_code}
+        ''')
+
+        config_xml = "".join(config_xml)
+
+
         return config_xml
 
 

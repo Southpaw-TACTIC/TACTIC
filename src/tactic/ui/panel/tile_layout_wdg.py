@@ -429,7 +429,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_keys = [];
                 for (var i = 0; i < tile_tops.length; i++) {
                     var tile_top = tile_tops[i];
-                    var search_key = tile_top.getAttribute("spt_search_key");
+                    var search_key = tile_top.getAttribute("spt_search_key_v2");
                     search_keys.push(search_key);
                 }
 
@@ -503,26 +503,21 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not process:
             process = "publish"
         if my.parent_key:
-            parent = Search.get_by_search_key(my.parent_key)
-            search_type = parent.get_search_type()
+            search_type = None
         else:
             search_type = my.search_type
-
-        #search_type = "game/asset"
-        #process = "attachment"
 
 
         layout_wdg.add_behavior( {
             'type': 'load',
             'search_type': search_type,
+            'search_key': my.parent_key,
             'process': process,
             'cbjs_action': '''
 
             spt.thumb = {};
 
             spt.thumb.background_drop = function(evt, el) {
-
-                var search_type = bvr.search_type;
 
                 evt.stopPropagation();
                 evt.preventDefault();
@@ -536,17 +531,25 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
                     var file = files[i];
 
                     var filename = file.name;
 
+                    var search_key;
                     var data = {
                         name: filename
                     }
-                    var item = server.insert(search_type, data);
-                    var search_key = item.__search_key__;
+                    if (bvr.search_key) {
+                       search_key = bvr.search_key
+                    }
+                    else {
+                        var search_type = bvr.search_type;
+                        var item = server.insert(search_type, data);
+                        search_key = item.__search_key__;
+                    }
 
                     var context = bvr.process + "/" + filename;
 
@@ -1144,15 +1147,16 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         div.add_style("height: 20px")
 
 
-        detail_div = DivWdg()
-        div.add(detail_div)
-        detail_div.add_class("spt_tile_detail")
-        detail_div.add_style("float: right")
-        detail_div.add_style("margin-top: -2px")
+        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+            detail_div = DivWdg()
+            div.add(detail_div)
+            detail_div.add_class("spt_tile_detail")
+            detail_div.add_style("float: right")
+            detail_div.add_style("margin-top: -2px")
 
-        #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
-        detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
-        detail_div.add(detail)
+            #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+            detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+            detail_div.add(detail)
 
 
         header_div = DivWdg()

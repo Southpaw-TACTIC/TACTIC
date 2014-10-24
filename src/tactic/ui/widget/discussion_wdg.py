@@ -1934,7 +1934,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
 
-        browse_button = UploadButtonWdg(title="Attach File(s)", tip='Browse for files to attach to this note', on_complete=on_complete,\
+        browse_button = UploadButtonWdg(title="Attach File", tip='Browse for files to attach to this note', on_complete=on_complete,\
                 upload_init=upload_init, multiple='true', upload_id=table_upload_id) 
         attachment_div.add(browse_button)
         #browse_button.add_style("float: left")
