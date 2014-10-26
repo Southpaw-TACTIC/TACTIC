@@ -816,6 +816,7 @@ class EditWdg(BaseRefreshWdg):
             th.add_style("border-style: solid")
         th.set_attr("colspan", "2")
         th.add_style("height: 30px")
+        th.add_style("padding: 3px 10px")
 
 
     def add_hidden_inputs(my, div):

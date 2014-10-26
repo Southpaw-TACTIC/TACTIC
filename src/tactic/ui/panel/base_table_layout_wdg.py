@@ -946,7 +946,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
             #limit_span.add(dialog)
-            dialog.set_as_activator(num_div, offset={'x':0,'y': -2})
+            dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
             num_div.add_class("hand")
             color = num_div.get_color("background3", -5)
