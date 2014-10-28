@@ -37,7 +37,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         'parent_key': 'Parent search key to relate create sobject to',
         'ingest_data_view': 'Specify a ingest data view, defaults to edit',
         'extra_data': 'Extra data (JSON) to be added to created sobjects',
-        'on_complete': 'Script to be run on a finished ingest'
+        'oncomplete_script_path': 'Script to be run on a finished ingest'
     }
 
 
@@ -548,26 +548,26 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         '''
         
-        on_complete_script_path = my.kwargs.get("on_complete")
-        on_complete_script = ''
-        if on_complete_script_path:
-            script_folder, script_title = on_complete_script_path.split("/")
-            on_complete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
+        oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
+        oncomplete_script = ''
+        if oncomplete_script_path:
+            script_folder, script_title = oncomplete_script_path.split("/")
+            oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
             server = TacticServerStub.get()
-            on_complete_script_ret = server.eval(on_complete_script_expr, single=True)
-            if on_complete_script_ret:
-                on_complete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
+            oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
+            if oncomplete_script_ret:
+                oncomplete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
                 var file_els = top.getElements(".spt_upload_file");
                 for ( var i = 0; i < file_els.length; i++) {
                 spt.behavior.destroy( file_els[i] );
-                };''' + on_complete_script_ret
-                script_found = "True"
+                };''' + oncomplete_script_ret
+                script_found = True
             else:
-                script_found = "False"
-                on_complete_script = "alert('Error: on_complete script not found');"
+                script_found = False
+                oncomplete_script = "alert('Error: oncomplete script not found');"
 
-        if not on_complete_script:
-            on_complete_script = '''
+        if not oncomplete_script:
+            oncomplete_script = '''
             var click_action = function() {
                 var fade = true;
                 var pop = spt.popup.get_popup(top)
@@ -593,7 +593,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 spt.table.run_search();
             }
             '''
-            script_found = "True"
+            script_found = True
         
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
@@ -653,7 +653,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
         on_complete = function() {
 
-        ''' + on_complete_script + '''
+        ''' + oncomplete_script + '''
 
         };
 
@@ -701,7 +701,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             },
             'cbjs_action': '''
 
-            if (bvr.kwargs.script_found != "True")
+            if (bvr.kwargs.script_found != true)
             {
                 spt.alert("Error: provided on_complete script not found");
                 return;
