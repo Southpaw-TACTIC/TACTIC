@@ -118,6 +118,17 @@ class PipelineToolWdg(BaseRefreshWdg):
         right.add(pipeline_wdg)
 
 
+
+        # TODO: later
+        """
+        info = table.add_cell()
+        info.add_border()
+        info.add_style("width: 200px")
+        info_wdg = ProcessInfoWdg()
+        info.add(info_wdg)
+        """
+
+
         
        
         #tr, td = table.add_row_cell()
@@ -929,6 +940,54 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
         return menu
+
+
+
+
+class ProcessInfoWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+
+        search = Search("config/pipeline")
+        process = search.get_sobject()
+
+
+        # Don't touch
+        # ---
+        # pipeline_code
+        # process?
+        # sort_order
+
+        # Display
+        # ---
+        # color
+        # description
+
+
+
+        # Check-in options
+        # ---
+        # checkin_mode
+        # checkin_options_view
+        # checkin_validate_script_path
+        # context_options
+        # subcontext_options
+        # repo_type (tactic / perforce)
+        # sandbox_create_script_path
+        # transfer_mode
+
+        code = "8GAME"
+        from tactic.ui.panel import EditWdg
+        edit_wdg = EditWdg(
+                search_type="config/process",
+                code=code
+                )
+        top.add(edit_wdg)
+
+        return top
+
 
 
 

@@ -2023,7 +2023,7 @@ class MessageWdg(DivWdg):
         super(MessageWdg,my).__init__(span, css)
         
 class HintWdg(SpanWdg):
-    def __init__(my, message, css='small', icon=IconWdg.HELP, title=''):
+    def __init__(my, message, css='small', icon="BS_QUESTION_SIGN", title=''):
         assert message
         message = message.replace('\n','<br/>')
         icon_wdg = IconWdg("", icon)

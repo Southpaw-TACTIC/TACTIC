@@ -769,7 +769,7 @@ class RadioWdg(BaseInputWdg):
             my.set_attr(name,option)
 
         span = SpanWdg()
-        span.add(my.label)
+        span.add(" %s" % my.label)
         my.add(span)
         span.add_style("top: 3px")
         span.add_style("position: relative")

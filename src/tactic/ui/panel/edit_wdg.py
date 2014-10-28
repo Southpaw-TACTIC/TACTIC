@@ -586,6 +586,22 @@ class EditWdg(BaseRefreshWdg):
             widget.add_class("form-control")
             widget.add_style("width: 100%")
 
+
+            class EditTitleWdg(BaseRefreshWdg):
+                pass
+
+            #if isinstance(widget, EditTitleWdg):
+            """
+            has_title = True
+            if has_title and i % 3 == 0:
+                tr, td = table.add_row_cell()
+                tr.add_color("background", "background", -5)
+                td.add("TITLE")
+                td.add_style("height", "30px")
+                td.add_style("padding", "0px 10px")
+            """
+
+
            
             if isinstance(widget, HiddenWdg):
                 content_div.add(widget)
@@ -605,7 +621,6 @@ class EditWdg(BaseRefreshWdg):
                   
 
 
-
             new_row = i % num_columns == 0
             if new_row:
                 tr = table.add_row()
@@ -615,7 +630,7 @@ class EditWdg(BaseRefreshWdg):
                     if i % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -2)
+                        tr.add_color("background", "background", -2 )
 
 
 
@@ -638,11 +653,12 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
+ 
                 title_width = my.kwargs.get("title_width")
                 if title_width:
                     td.add_style("width: %s" % title_width)
                 else:
-                    td.add_style("width: 100px")
+                    td.add_style("width: 150px")
 
                 security = Environment.get_security()
                 if security.check_access("builtin", "view_site_admin", "allow"):
@@ -654,7 +670,14 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("border-style: solid" )
 
                 td.add_style("text-align: right" )
- 
+
+                hint = widget.get_option("hint")
+                if hint:
+                    #hint_wdg = HintWdg(hint)
+                    #hint_wdg.add_style("float: right")
+                    #td.add( hint_wdg )
+                    td.add_attr("title", hint)
+
 
             if not show_title:
                 th, td = table.add_row_cell( widget )
@@ -671,9 +694,6 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )
 
-                hint = widget.get_option("hint")
-                if hint:
-                    table.add_data( HintWdg(hint) ) 
 
 
         if not my.is_disabled and not my.mode == 'view':

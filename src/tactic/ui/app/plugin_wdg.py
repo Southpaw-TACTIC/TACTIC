@@ -679,6 +679,7 @@ class PluginEditWdg(BaseRefreshWdg):
         table.add_smart_style("spt_table_header", "text-align", "right")
         table.add_smart_style("spt_table_header", "padding-right", "20px")
         table.add_smart_style("spt_table_header", "margin-bottom", "10px")
+        table.add_smart_style("spt_table_header", "vertical-align", "top")
         table.add_smart_style("spt_table_element", "vertical-align", "top")
 
 
@@ -693,7 +694,6 @@ class PluginEditWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_header")
         td.add("Title: ")
-        td.add_style("vertical-align: top")
         text = TextInputWdg(name="title", read_only=read_only)
         td = table.add_cell()
         td.add_class("spt_table_element")
@@ -718,7 +718,6 @@ class PluginEditWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_header")
         td.add("Code: ")
-        td.add_style("vertical-align: top")
         text = TextInputWdg(name="code", read_only=read_only)
         text.add_class("spt_plugin_code")
         td = table.add_cell()
@@ -731,7 +730,6 @@ class PluginEditWdg(BaseRefreshWdg):
         if my.mode == 'insert':
             tr.add_style("display: none")
         td = table.add_cell()
-        td.add_class("spt_table_header")
         td.add("Version: ")
 
         td.add_style("vertical-align: top")
@@ -752,7 +750,6 @@ class PluginEditWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_header")
         td.add("Description: ")
-        td.add_style("vertical-align: top")
         text = TextAreaWdg("description")
         text.set_option("read_only", read_only)
         text.add_style("height", "150px")
@@ -767,13 +764,14 @@ class PluginEditWdg(BaseRefreshWdg):
             table.add_row()
             td = table.add_cell()
             td.add_class("spt_table_header")
+            td.add("<br/>")
             td.add("Plugin Type: ")
-            td.add_style("vertical-align: top")
             select = SelectWdg("plugin_template")
             select.set_option("labels", "Project|Theme|Widget|Column")
             select.set_option("values", "project|theme|widget|column")
             select.add_empty_option("--  --")
             td = table.add_cell()
+            td.add("<br/>")
             td.add_class("spt_table_element")
             td.add(select)
             td.add("<br/>"*2)
@@ -1035,6 +1033,7 @@ class PluginEditWdg(BaseRefreshWdg):
         shelf_wdg = DivWdg()
         manifest_div.add(shelf_wdg)
         shelf_wdg.add_style("height: 35px")
+        shelf_wdg.add_style("padding: 5px 10px")
         shelf_wdg.add_color("background", "background3")
 
 
