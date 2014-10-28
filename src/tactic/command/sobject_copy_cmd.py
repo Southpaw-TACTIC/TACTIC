@@ -52,7 +52,7 @@ class SObjectCopyCmd(Command):
             my.copy_sobject(sobject, dst_search_type, context)
 
 
-    def copy_sobject(my, sobject, dst_search_type, context=None):
+    def copy_sobject(my, sobject, dst_search_type, context=None, checkin_mode='inplace'):
 
         new_sobject = SearchType.create(dst_search_type)
         search_type = SearchType.get(dst_search_type)
@@ -94,7 +94,7 @@ class SObjectCopyCmd(Command):
             # make sure the paths match the file_types
             file_paths = [file_paths_dict.get(x)[0] for x in file_types]
 
-            mode = 'inplace'
+            mode = checkin_mode # WARNING I CHANGED THIS FROM INPLACE TO checkin_mode, and arg I added
 
             # checkin the files (inplace)
             try:

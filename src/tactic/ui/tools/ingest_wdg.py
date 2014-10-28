@@ -588,7 +588,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             var info_el = top.getElement(".spt_upload_info");
             info_el.innerHTML = ''; 
 
-            spt.table.run_search();
+            if (spt.table)
+            {
+                spt.table.run_search();
+            }
             '''
             script_found = "True"
         
