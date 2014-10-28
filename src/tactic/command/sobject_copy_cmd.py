@@ -94,7 +94,7 @@ class SObjectCopyCmd(Command):
             # make sure the paths match the file_types
             file_paths = [file_paths_dict.get(x)[0] for x in file_types]
 
-            mode = checkin_mode # WARNING I CHANGED THIS FROM INPLACE TO checkin_mode, and arg I added
+            mode = checkin_mode
 
             # checkin the files (inplace)
             try:
