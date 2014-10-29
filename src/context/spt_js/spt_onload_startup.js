@@ -183,7 +183,9 @@ spt.hash.onpopstate = function(evt) {
         spt.panel.load(panel, class_name, kwargs);
     }
     else {
-        document.location.reload();
+        if (!spt.browser.is_Safari() ) {
+            document.location.reload();
+        }
     }
 
 }
