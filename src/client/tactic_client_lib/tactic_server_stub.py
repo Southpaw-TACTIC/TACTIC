@@ -2748,7 +2748,7 @@ class TacticServerStub(object):
         @return:
         list of output tasks
         '''
-        return my.server.get_input_tasks(my.ticket, search_key)
+        return my.server.get_output_tasks(my.ticket, search_key)
 
 
 
