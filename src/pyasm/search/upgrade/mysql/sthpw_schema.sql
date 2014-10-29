@@ -70,7 +70,7 @@ CREATE TABLE queue (
     login character varying(30) NOT NULL,
     "timestamp" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     command character varying(200) NOT NULL,
-    serialized character varying(256) NOT NULL,
+    serialized character varying(256),
     s_status character varying(30),
     project_code character varying(100),
     search_id integer,
