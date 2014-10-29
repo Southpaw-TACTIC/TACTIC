@@ -14,7 +14,7 @@ __all__ = ["EmailHandler", 'TaskAssignEmailHandler', 'NoteEmailHandler', 'Genera
 
 from pyasm.common import Environment, Xml, Date
 from pyasm.security import Login, LoginGroup, Sudo
-from pyasm.search import Search, SObject
+from pyasm.search import Search, SObject, SearchType
 from pyasm.biz import GroupNotification, Pipeline, Task, Snapshot, File, Note
 from pyasm.biz import ExpressionParser
 
@@ -44,7 +44,7 @@ class EmailHandler(object):
             sudo = Sudo()
             # Introduce an environment that can be reflected
             env = {
-                'sobject': my.sobject,
+                'sobject': my.sobject
             }
 
             #if expr.startswith("@"):
@@ -130,10 +130,40 @@ class EmailHandler(object):
             parser = ExpressionParser()
             snapshot = my.input.get('snapshot')
             env_sobjects = {}
+
+            # turn prev_data and update_data from input into sobjects
+            prev_data = SearchType.create("sthpw/virtual")
+            id_col = prev_data.get_id_col()
+
+            if id_col:
+                del prev_data.data[id_col]
+
+            for name, value in my.input.get("prev_data").items():
+                if value != None:
+                    prev_data.set_value(name, value)
+
+
+            update_data = SearchType.create("sthpw/virtual")
+            id_col = update_data.get_id_col()
+
+            if id_col:
+                del update_data.data[id_col]
+
+            for name, value in my.input.get("update_data").items():
+                if value != None:
+                    update_data.set_value(name, value)
+
+
+
             if snapshot:
+
                 env_sobjects = {
                 'snapshot': snapshot
             }
+
+
+            env_sobjects['prev_data'] = prev_data
+            env_sobjects['update_data'] = update_data
 
             notification_message  = parser.eval(notification_message, my.sobject, env_sobjects=env_sobjects, mode='string')
             del sudo

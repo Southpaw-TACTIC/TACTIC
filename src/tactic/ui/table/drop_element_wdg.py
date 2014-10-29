@@ -22,6 +22,7 @@ from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project
 from pyasm.prod.biz import ShotInstance
 from pyasm.widget import HiddenWdg, IconWdg
+from pyasm.biz import ExpressionParser
 
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -59,6 +60,10 @@ class DropElementWdg(SimpleTableElementWdg):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
     """
+
+
+    def get_width(my):
+        return "150px"
 
     
     def _get_sorted_instances(my):
@@ -295,6 +300,7 @@ class DropElementWdg(SimpleTableElementWdg):
     def get_item_div(my, sobject):
         ''' get the item div the sobject'''
         top = DivWdg()
+        top.add_style("padding: 3px 2px")
         top.add_attr('title','Click to remove')
         # FIXME: put this here for now
         top.add_behavior( {
@@ -320,6 +326,7 @@ class DropElementWdg(SimpleTableElementWdg):
         item_div.add_class("spt_drop_display_value")
 
         add_icon = True
+        ExpressionParser.clear_cache()
         if sobject:
             if add_icon:
                 my._add_icon(sobject, item_div)
@@ -557,7 +564,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
     for (var i = 0; i < src_rows.length; i++) {
         var row = src_rows[i];
 
-        var search_key = row.getAttribute("spt_search_key");
+        var search_key = row.getAttribute("spt_search_key_v2");
         src_search_keys.push(search_key);
 
         var display_value = row.getAttribute("spt_display_value");
@@ -610,6 +617,13 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
     for (var i=0; i<src_search_keys.length; i++) {
         var src_search_key = src_search_keys[i];
         var src_display_value = src_display_values[i];
+
+        if (value.indexOf(src_search_key) != -1) {
+            alert("Item ["+src_display_value+"] already present");
+            continue;
+        }
+
+
 
         var clone = spt.behavior.clone(template);
         var item = clone.getElement(".spt_drop_display_value");

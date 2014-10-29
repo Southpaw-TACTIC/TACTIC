@@ -1079,11 +1079,11 @@ class ActionButtonWdg(DivWdg):
         my.td.add_behavior(behavior)
 
 
-    def add_style(my, name, value=None):
+    def add_style(my, name, value=None, override=True):
         if my.redirect:
-            return my.redirect.add_style(name, value)
+            return my.redirect.add_style(name, value, override=override)
 
-        super(ActionButtonWdg,my).add_style(name, value)
+        super(ActionButtonWdg,my).add_style(name, value, override=override)
 
     def add_class(my, value):
         if my.redirect:
@@ -1109,7 +1109,7 @@ class ActionButtonWdg(DivWdg):
         # no need to define top
         #my.add(top)
 
-        my.add_style("margin: 0px 3px")
+        my.add_style("margin: 0px 3px", override=False)
 
         opacity = my.kwargs.get("opacity")
         if not opacity:

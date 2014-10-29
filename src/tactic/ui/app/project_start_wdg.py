@@ -417,7 +417,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         var class_name = 'tactic.ui.panel.ViewPanelWdg';
         var kwargs = {
 	    'view': 'table',
-            'search_type': 'prod/prod_setting',
+            'search_type': 'config/prod_setting',
             help_alias: 'main'            
 	};
         spt.tab.add_new("project_settings", "Project Settings", class_name, kwargs);

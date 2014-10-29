@@ -46,7 +46,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'order': 1
     },
     'use_parent': {
-        'description': 'Determines whether or not to enter notes for parent sObject',
+        'description': 'Determine whether or not to enter notes for parent sObject',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -54,14 +54,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
     }
     ,
     'show_fullscreen_button': {
-        'description': 'Determines whether or not to show the expand notes icon button',
+        'description': 'Determine whether or not to show the expand notes icon button',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 3
     },
     'note_format': {
-        'description': 'Determines if the notes are shown in compact or full mode. Full- shows thumbnail, login-info, email and notes. Compact- shows just the notes.',
+        'description': 'Determine if the notes are shown in compact or full mode. Full- shows thumbnail, login-info, email and notes. Compact- shows just the notes.',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'compact|full',
@@ -69,7 +69,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
 
     'show_note_status': {
-        'description': 'Determines whether or not to show the note status in abbreviated form.',
+        'description': 'Determine whether or not to show the note status in abbreviated form.',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -77,7 +77,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
     # FIXME: need a better name for this
     'show_context_notes': {
-        'description': 'Determines if the notes in the context are hidden',
+        'description': 'Determine if the notes in the context are hidden',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
@@ -85,18 +85,26 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
     
     'note_expandable': {
-        'description': 'Determines whether or not a note is expandable. True- shows a short version of the note that can be expanded. False- shows the full note',
+        'description': 'Determine whether or not a note is expandable. True- shows a short version of the note that can be expanded. False- shows the full note',
         'category' : 'Options',
         'type' : 'SelectWdg',
         'values' : 'true|false',
         'order' : 7        
     },
 
-     'append_process': {
+    'append_process': {
         'description': 'Append a list of comma separated processes in addition of the ones defined in the pipeline',
         'category' : 'Options',
         'type' : 'TextWdg',
         'order' : 8        
+    },
+
+    'allow_email': {
+        'description': 'Allow email to be sent out directly in this widget',
+        'category' : 'Options',
+        'type' : 'SelectWdg',
+        'values' : 'true|false',
+        'order': 9
     }
 
     }
@@ -145,13 +153,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
       
 
-        DiscussionWdg.add_layout_behaviors(layout, my.hidden)
+        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
         
 
 
     def init(my):
        
         my.hidden = False
+        my.allow_email = my.kwargs.get('allow_email') != 'false'
         my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
         
 
@@ -202,6 +211,47 @@ class DiscussionElementWdg(BaseTableElementWdg):
         #return div
         return None
 
+
+    def get_text_value(my):
+        '''for csv export'''
+
+        from dateutil import parser
+        comment_area = []
+        
+        idx = my.get_current_index()
+        my.discussion.set_current_index(idx)
+
+        my.discussion.preprocess_notes()
+
+        notes = my.discussion.get_notes()
+        
+        if not notes:
+            return ''
+
+        last_context = None
+        for i, note in enumerate(notes):
+            context = note.get_value('context')
+            # explicit compare to None
+            if last_context == None or context != last_context:
+                comment_area.append( "[ %s ] " % context )
+            last_context = context
+            
+            child_notes = note.get_child_notes()
+            # draw note item
+            date = note.get_value('timestamp')
+            value = parser.parse(date)
+            setting = "%Y-%m-%d %H:%M"
+            date_value = value.strftime(setting)
+            comment_area.append(note.get_value("login"))
+            comment_area.append(date_value)
+            comment_area.append(note.get_value("note"))
+            comment_area.append('\n')
+            if child_notes:
+                for child_note in child_notes:
+                    child_note_value = child_note.get_value('note')
+                    comment_area.append( "Reply: %s" %child_note_value)
+                    comment_area.append( '\n' )
+        return ' '.join(comment_area)
 
 
 class DiscussionEditWdg(BaseRefreshWdg):
@@ -404,7 +454,7 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parents = []
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
-
+        my.allow_email = my.kwargs.get('allow_email')
         
 
 
@@ -432,7 +482,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def add_layout_behaviors(cls, layout, hidden=False):
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
         '''hidden means it's a hidden row table'''
         
 
@@ -458,7 +508,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'type': 'mouseup',
             'bvr_match_class': match_class,
             'hidden': hidden,
-
+            'allow_email': allow_email,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -478,6 +528,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
                 kwargs.hidden = bvr.hidden;
+                kwargs.allow_email = bvr.allow_email;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -894,6 +945,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         my.hidden = my.kwargs.get('hidden') == True 
         
+
         my.show_border = my.kwargs.get("show_border")
         if my.show_border in ['false', False]:
             my.show_border = False
@@ -974,7 +1026,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.load_js(top)
             
                 if my.kwargs.get("add_behaviors") != False:
-                    my.add_layout_behaviors(top)
+                    my.add_layout_behaviors(top, allow_email=my.allow_email)
 
 
             # add a refresh listener
@@ -1053,12 +1105,11 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
-            #no_notes_msg.add_style("text-align: center")
             no_notes_div.add(no_notes_msg)
-            add_wdg = IconWdg("Add Note", IconWdg.ADD_GRAY)
+            add_wdg = IconWdg("Add Note", "BS_PLUS")
             no_notes_msg.add(add_wdg)
             msg = "No notes. Click to add."
-            no_notes_msg.add("<i>-- %s --</i>" % _(msg))
+            no_notes_msg.add("<i> %s </i>" % _(msg))
             no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
 
@@ -1096,7 +1147,7 @@ class DiscussionWdg(BaseRefreshWdg):
             note_dialog.add_title("Add Note")
             note_dialog.add_style("overflow-y: auto")
             no_notes_div.add(note_dialog)
-            note_dialog.set_as_activator(no_notes_msg, offset={'x':-5,'y':5})
+            note_dialog.set_as_activator(no_notes_msg, offset={'x':-5,'y':0})
 
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
@@ -1240,10 +1291,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
                
                 note_dialog = DialogWdg(display=False)
-                note_dialog.add_title(context)
+                note_dialog.add_title("Notes for: %s" % context)
                 note_dialog.add_style("overflow-y: auto")
                 context_top.add(note_dialog)
-                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':5})
+                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
 
 
                 show_add = my.kwargs.get("show_add")
@@ -1251,13 +1302,13 @@ class DiscussionWdg(BaseRefreshWdg):
 
                     shelf_wdg = DivWdg()
                     note_dialog.add(shelf_wdg)
-                    shelf_wdg.add_style("height: 30px")
+                    shelf_wdg.add_style("height: 36px")
                     shelf_wdg.add_color("background", "background3")
 
                     add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
                     shelf_wdg.add(add_wdg)
                     add_wdg.add_style("float: right")
-                    add_wdg.add_style("margin-right: -3px")
+                    shelf_wdg.add_style("padding-top: 3px")
 
                     add_wdg.add_attr("spt_process", process)
                     add_wdg.add_attr("spt_context", context)
@@ -1424,8 +1475,8 @@ class DiscussionWdg(BaseRefreshWdg):
         icon_div = SpanWdg()
         div.add(icon_div)
         icon_div.add_border()
-        icon_div.add_style("width: 14px")
-        icon_div.add_style("height: 14px")
+        icon_div.add_style("width: 16px")
+        icon_div.add_style("height: 16px")
         icon_div.add_style("overflow: hidden")
         icon_div.add_style("margin-right: 5px")
         icon_div.add_style("float: left")
@@ -1436,7 +1487,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         div.add_color("color", "color")
-        div.add_style("padding", "4px")
+        div.add_style("padding", "5px")
         div.add_color("background", "background", -5, -5)
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")
@@ -1505,18 +1556,16 @@ class DiscussionWdg(BaseRefreshWdg):
         td = content.add_cell()
 
 
-        icon = IconWdg("Note", IconWdg.NOTE)
+        icon = IconWdg("Note", "BS_PENCIL")
         td.add(icon)
         icon.add_style("float: left")
-        icon.add_style("margin-top: 2px")
+        icon.add_style("margin: 5px")
 
 
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("padding: 1px")
+        title.add_style("margin: 5px 0px")
         title.add_style("font-weight: bold")
-
-        title.add("&nbsp;"*3)
 
         tbody = content.add_tbody()
 
@@ -1536,8 +1585,6 @@ class DiscussionWdg(BaseRefreshWdg):
         date_obj = SPTDate.convert_to_local(date_obj)
         display_date_full = date_obj.strftime("%b %d, %Y %H:%M")
         display_date = date_obj.strftime("%b %d - %H:%M")
-        title.add(display_date)
-        title.add_attr("title", display_date_full)
 
         if my.note_expandable in ['true', True]:
             if len(note_value) > 50:
@@ -1550,8 +1597,15 @@ class DiscussionWdg(BaseRefreshWdg):
             #short_note = WikiUtil().convert(note_value)
             short_note = ''
             
-            
-        title.add(" - [%s] - %s" % (login, short_note) )
+           
+        if short_note:
+            title.add("%s - %s" % (login, short_note) )
+        else:
+            title.add("<b style='font-size: 1.1em'>%s</b>" % (login) )
+
+
+        title.add("<div style='float: right'>%s</div>" % display_date)
+        title.add_attr("title", display_date_full)
 
         if my.show_note_status:
             status = note.get_value('status')
@@ -1604,7 +1658,6 @@ class DiscussionWdg(BaseRefreshWdg):
             left.add_style("width: 150px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
-            left.add_style("border: solid 1px %s" % title.get_color("border"))
 
             if not login:
                 login = "-- No User --"
@@ -1635,17 +1688,9 @@ class DiscussionWdg(BaseRefreshWdg):
 
         right = content.add_cell()
         right.add_style("vertical-align: top")
-        right.add_style("padding: 10px")
-        #right.add_border()
+        right.add_style("padding: 10px 30px")
 
         context = note.get_value("context")
-
-        #context_div = DivWdg()
-        #context_div.add(context)
-        #context_div.add_style("padding: 5px")
-        #context_div.add_style("font-size: 1.1em")
-        #context_div.add_style("font-weight: bold")
-        #right.add(context_div)
 
         right.add( WikiUtil().convert(note_value) )
 
@@ -1691,6 +1736,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             my.append_processes = [x.strip() for x in my.append_processes if x]
 
         my.upload_id = my.kwargs.get("upload_id")
+        
+        my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
+        
 
     def get_display(my):
 
@@ -1828,6 +1876,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add("<br/>Note:<br/>")
         text = TextAreaWdg("note")
         text.add_style("width: 100%")
+        text.add_style("height: 100px")
         content_div.add(text)
 
         content_div.add("<br/>"*2)
@@ -1885,7 +1934,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
 
-        browse_button = UploadButtonWdg(title="Attach File(s)", tip='Browse for files to attach to this note', on_complete=on_complete,\
+        browse_button = UploadButtonWdg(title="Attach File", tip='Browse for files to attach to this note', on_complete=on_complete,\
                 upload_init=upload_init, multiple='true', upload_id=table_upload_id) 
         attachment_div.add(browse_button)
         #browse_button.add_style("float: left")
@@ -1899,6 +1948,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
         attachment_div.add(HtmlElement.br())
+
+        if not my.allow_email:
+            return content_div
 
         swap = SwapDisplayWdg()
         content_div.add(swap)
@@ -1947,7 +1999,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         mail_div.add(HtmlElement.br())
         # mail cc and bcc
-        mail_div.add("Extra list of emails to send mail to (separated by commas):")
+        mail_div.add("Extra list of email addresses - comma separated:")
 
 
 
@@ -1961,6 +2013,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         text = TextWdg("mail_cc")
         text.add_style("width: 250px")
         table.add_cell(text)
+
+        table.add_row_cell()
 
         # BCC 
         table.add_row()

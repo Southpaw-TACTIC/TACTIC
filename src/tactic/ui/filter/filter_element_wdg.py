@@ -621,8 +621,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         # keywords in a list is treated with AND in full-text search
         # which is usually preferred in global search, it may be reassigned as a string in keyword mode
-        keywords = value.split(" ")
-        
+        tmp_keywords = value.split(" ")
+        keywords = []
+        for keyword in tmp_keywords:
+            if not keyword or len(keyword) == 1:
+                continue
+            keywords.append(keyword)
 
         if search_type == 'sthpw/sobject_list':
             column = "keywords"
@@ -703,11 +707,12 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     
                     #print "column: ", column
                     search = Search(overall_search.get_search_type())
+                    local_table = True
                     if column.find(".") != -1:
                         parts = column.split(".")
                         search_types = parts[:-1]
                         column = parts[-1]
-
+                        local_table = False
                         if my.cross_db:
                             search_types.reverse()
                             top_search_type = search_types[0]
@@ -727,7 +732,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                                 search.add_join(next_stype, prev_stype, path=path)
                                 prev_stype = next_stype
                             table = SearchType.get(next_stype).get_table()
-
                     
                     if partial:
                         if my.cross_db:
@@ -758,19 +762,25 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             else:
                                 sub_search = search2
                         else:
-                            
-                            search.add_text_search_filter(column, keywords, table=table)
-                            overall_search.add_relationship_search_filter(search, op="in")
+                            if local_table:
+                                
+                                overall_search.add_text_search_filter(column, keywords, table=table)
+                            else:    
+                                
+                                search.add_text_search_filter(column, keywords, table=table)
+                                overall_search.add_relationship_search_filter(search, op="in")
                 else:
                     #value = value.replace(",", " ")
                     search_type_obj = overall_search.get_search_type_obj() 
                     table = search_type_obj.get_table()
                     column_type = None
                     search = Search(overall_search.get_search_type())
+                    local_table = True
                     if column.find(".") != -1:
                         parts = column.split(".")
                         search_types = parts[:-1]
                         column = parts[-1]
+                        local_table = False
 
                         if my.cross_db:
                             search_types.reverse()
@@ -804,8 +814,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         else:
                             sub_search = search2
                     else:
-                        search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
-                        overall_search.add_relationship_search_filter(search, op="in")
+                        if local_table:
+                            overall_search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                        else:
+                            search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
+                            overall_search.add_relationship_search_filter(search, op="in")
                 if my.cross_db:
                     sub_search_list.append(sub_search)
 
@@ -948,6 +961,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         
         # search_type is a list matching the column for potential join
+        width = my.kwargs.get("width")
+        if not width:
+            width = "230"
+
         text = LookAheadTextInputWdg(
                 name="value",
                 do_search=my.do_search,
@@ -957,11 +974,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 search_type=search_type,
                 column=my.look_ahead_columns,
                 relevant = my.relevant,
-                width ='230',
+                width = width,
                 hint_text=hint_text,
                 case_sensitive = my.case_sensitive,
                 icon=my.kwargs.get("icon"),
-                height="42px"
         )
         value = my.values.get("value")
         if value:
@@ -981,41 +997,44 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         div.add(text)
 
 
-        from pyasm.widget import IconWdg
-        icon_div = DivWdg()
-        icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
-        icon_div.add(icon)
-        icon_div.add_class("hand")
-        icon_div.add_style("position: absolute")
-        icon_div.add_style("top: 5")
-        icon_div.add_style("right: 0")
+        show_partial = my.get_option("show_partial")
+        if show_partial not in ['false', False]:
 
-        from tactic.ui.container import DialogWdg
-        dialog = DialogWdg(show_title=False, show_pointer=True)
-        dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
-        div.add(dialog)
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
+            icon_div.add(icon)
+            icon_div.add_class("hand")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 5")
+            icon_div.add_style("right: 0")
 
-        match_div = DivWdg()
-        match_div.add_style("width: 175")
-        dialog.add(match_div)
-        checkbox = CheckboxWdg("partial")
-        match_div.add(checkbox)
-        checkbox.add_attr("title", "Use partial word match (slower)")
-        match_div.add_style("padding: 10px")
-        match_div.add_color("color", "color")
-        match_div.add_color("background", "background")
-        match_div.add(" Use partial word match")
+            from tactic.ui.container import DialogWdg
+            dialog = DialogWdg(show_title=False, show_pointer=True)
+            dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
+            div.add(dialog)
+
+            match_div = DivWdg()
+            match_div.add_style("width: 175")
+            dialog.add(match_div)
+            checkbox = CheckboxWdg("partial")
+            match_div.add(checkbox)
+            checkbox.add_attr("title", "Use partial word match (slower)")
+            match_div.add_style("padding: 10px")
+            match_div.add_color("color", "color")
+            match_div.add_color("background", "background")
+            match_div.add(" Use partial word match")
 
 
-        if my.mode == 'keyword' and my.has_index:
-            div.add(icon_div)
-        elif my.mode =='global' and my.has_index:
-            div.add(icon_div)
-        else:
-            # partial is implied otherwise
-            hidden = HiddenWdg("partial")
-            div.add(hidden)
-            hidden.set_value("on")
+            if my.mode == 'keyword' and my.has_index:
+                div.add(icon_div)
+            elif my.mode =='global' and my.has_index:
+                div.add(icon_div)
+            else:
+                # partial is implied otherwise
+                hidden = HiddenWdg("partial")
+                div.add(hidden)
+                hidden.set_value("on")
 
 
 

@@ -517,7 +517,17 @@ class BaseAppServer(Base):
         # install the language
         Translation.install()
 
-        widget = my.get_content(page_type)
+        try:
+            widget = my.get_content(page_type)
+        except Error, e:
+            print "ERROR: ", e
+            from pyasm.widget import BottomWdg, Error403Wdg
+            widget = Widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( Error403Wdg() )
+            widget.add( BottomWdg() )
+            widget.get_display()
 
         # put an annoying alert if there is a problem with the licensed
         if not is_licensed:
@@ -582,7 +592,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-
+                
         elif ticket_key:
             # get from the login
             site_obj = Site.get()
@@ -607,13 +617,15 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+        # clear the password
+        web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
 
-
+            
         # set up default securities
         my.set_default_security(security)
 

@@ -353,7 +353,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             title: title,
             class_name: class_name,
             kwargs: kwargs,
-            hash: hash
+            hash: hash,
+            mode: 'tab',
         }
         spt.hash.set_hash(state, title, hash);
     }

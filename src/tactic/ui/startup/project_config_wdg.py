@@ -214,7 +214,7 @@ class UserConfigWdg(ProjectConfigWdg):
         user_panel.add_style("overflow-y: auto")
         user_panel.add( UserPanelWdg(show_security=show_security) )
         user_panel.add_style("min-height: 100px")
-        user_panel.add_style("height: 400px")
+        user_panel.add_style("height: 300px")
         user_panel.add_class("spt_resizable")
 
         panel = {
@@ -849,6 +849,7 @@ class UserPanelWdg(BaseRefreshWdg):
             var kwargs = {
                 search_type: "sthpw/login",
                 view: "edit",
+                show_header: false,
             }
             var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
             var top = bvr.src_el.getParent(".spt_panel_user_top");

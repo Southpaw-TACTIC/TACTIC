@@ -650,9 +650,9 @@ class Site(object):
     get_by_ticket = classmethod(get_by_ticket)
 
 
-    def get_site_data(cls, site):
+    def get_connect_data(cls, site):
         return {}
-    get_site_data = classmethod(get_site_data)
+    get_connect_data = classmethod(get_connect_data)
  
     def get_asset_dir(cls, file_object=None, alias=None):
         return
@@ -700,6 +700,26 @@ class Site(object):
     set_site = classmethod(set_site)
 
 
+    def get_db_resource(cls, site, database):
+        if not site:
+            return None
+        site_obj = cls.get()
+        data = site_obj.get_connect_data(site)
+        if data:
+            host = data.get('host')
+            port = data.get('port')
+            vendor = data.get('vendor')
+            user = data.get('user')
+            password = data.get('password')
+        else:
+            return None
+
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        return db_resource
+
+    get_db_resource = classmethod(get_db_resource)
+
+
 
 class Ticket(SObject):
     '''When a user logins, a ticket is created.  This ticket is stored in the
@@ -733,9 +753,6 @@ class Ticket(SObject):
         ticket = search.get_sobject()
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
-
-       
-
       
 
 
@@ -794,6 +811,28 @@ class Ticket(SObject):
         return ticket
     create = staticmethod(create)
         
+    def update_session_expiry():
+        security = Environment.get_security()
+        login_ticket = security.get_ticket()    
+        impl = Sql.get_default_database_impl()
+        timeout = Config.get_value("security","inactive_ticket_expiry")
+        if not timeout:
+            return
+        offset,type = timeout.split(" ")
+        expiry = impl.get_timestamp_now(offset=offset, type=type)
+        Ticket.update_expiry(login_ticket,expiry)
+        
+    update_session_expiry = staticmethod(update_session_expiry)
+
+
+
+    def update_expiry(ticket,expiry):
+        
+        
+        ticket.set_value("expiry", expiry, quoted=0)
+        ticket.commit(triggers="none")
+
+    update_expiry = staticmethod(update_expiry)
 
 
 

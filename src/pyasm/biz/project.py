@@ -717,8 +717,8 @@ class Project(SObject):
         return Project._get_dir("env", sobject,snapshot,file_type)
     get_project_env_dir = staticmethod(get_project_env_dir)
 
-    def get_project_client_lib_dir(sobject,snapshot,file_type=None, create=False, file_object=None):
-        return Project._get_dir("client_lib", sobject,snapshot,file_type, create, file_object)
+    def get_project_client_lib_dir(sobject,snapshot,file_type=None, create=False, file_object=None, dir_naming=None):
+        return Project._get_dir("client_lib", sobject,snapshot,file_type, create, file_object, dir_naming=dir_naming)
     get_project_client_lib_dir = staticmethod(get_project_client_lib_dir)
 
 
@@ -774,6 +774,7 @@ class Project(SObject):
         dir_naming.set_create(create)
         dir_naming.set_protocol(protocol)
         dirname = dir_naming.get_dir()
+        
         return dirname
     _get_dir = staticmethod(_get_dir)
 

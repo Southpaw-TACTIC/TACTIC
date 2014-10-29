@@ -423,6 +423,7 @@ class CalendarWdg(BaseRefreshWdg):
         header = Table()
         header.add_style("width: 100%")
         header.add_color("color", "color")
+        header.add_style("margin: 5px 3px")
 
 
         # add the month navigators
@@ -472,7 +473,7 @@ class CalendarWdg(BaseRefreshWdg):
         month_nav.add_cell( prev_month_wdg )
         td = month_nav.add_cell(month_wdg)
         td.add_style("text-align: center")
-        td.add_style("width: 105px")
+        td.add_style("width: 100px")
         month_nav.add_cell( next_month_wdg)
 
         prev_month_wdg.add_style("float: left")
@@ -483,7 +484,7 @@ class CalendarWdg(BaseRefreshWdg):
         # add the close icon
         close_icon = my.get_close_icon()
         td = header.add_cell( close_icon )
-        td.add_style("text-align: right")
+        td.add_style("padding-right: 3px")
 
         return header
 
@@ -537,7 +538,7 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_today_icon(my):
 
-        today_icon = IconWdg("Today", IconWdg.TODAY)
+        today_icon = IconWdg("Today", icon="BS_CALENDAR")
         today_icon.add_class('hand')
 
         # button to set calendar input to today's date ...
@@ -838,7 +839,6 @@ class CalendarInputWdg(BaseInputWdg):
             icon_div = DivWdg(icon)
             icon_div.add_class("spt_cal_input_show_cal_btn")  # tag this button so we can find it to hide/show
             icon_div.add_class("APP_CLICK_OFF_TOP_EL")
-            icon_div.add_style("margin-top: 4px")
             my.top.add(icon_div)
             icon_div.add_style("float: left")
 
@@ -903,7 +903,7 @@ class CalendarInputWdg(BaseInputWdg):
         time_input_default = my.get_option('time_input_default')
         if show_time:
             if not width:
-                input.add_style("width: 120px")
+                input.add_style("width: 130px")
             my.top.add_attr("show_time", "true")
             show_time = True
         else:

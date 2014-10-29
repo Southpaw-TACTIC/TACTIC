@@ -703,24 +703,31 @@ class IndexWdg(Widget):
         my.hash = hash
         super(IndexWdg, my).__init__()
 
-    def init(my):
+    def get_display(my):
 
         top = DivWdg()
         top.set_id('top_of_application')
 
-        msg_div = DivWdg()
-        msg_div.add_style('text-align: center')
-        msg_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-        msg_div.add("&nbsp; &nbsp;")
-        project = Project.get()
-        title = project.get_value("title")
-        if not title:
-            title = "TACTIC"
 
-        msg_div.add('''Loading "%s" ....'''% title)
-        msg_div.add_style("font-size: 1.5em")
+        from tactic.ui.panel import HashPanelWdg 
+        splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
+        if not splash_div:
 
-        msg_div.add_behavior( {
+            splash_div = DivWdg()
+            splash_div.add_style('text-align: center')
+            splash_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+            splash_div.add("&nbsp; &nbsp;")
+            project = Project.get()
+            title = project.get_value("title")
+            if not title:
+                title = "TACTIC"
+
+            splash_div.add('''Loading "%s" ....'''% title)
+            splash_div.add_style("font-size: 1.5em")
+            splash_div.add_style("margin: 200 0 500 0")
+
+
+        splash_div.add_behavior( {
             'type': 'load',
             'hash': my.hash,
             'cbjs_action': '''
@@ -734,11 +741,10 @@ class IndexWdg(Widget):
             '''
         } )
 
-        msg_div.add_style("margin: 200 0 500 0")
-        top.add(msg_div)
 
-        my.add(top)
-        return
+        top.add(splash_div)
+
+        return top
 
 
 
@@ -763,8 +769,6 @@ class SitePage(AppServer):
 
         #if not project_code:
         #    project_code = my.project_code
-        print "project_code: ", project_code
-        print "project_code2: ", my.project_code
 
         try:
             SearchType.set_global_template("project", project_code)

@@ -486,12 +486,15 @@ class Search(Base):
             if not filter:
                 continue
             if type(filter) in types.StringTypes or len(filter) == 1:
-                # straight where clause (TODO: should this be allowed?)
+                # straight where clause not allowed
                 if isinstance(filter, basestring):
                     where = filter
                 else:
                     where = filter[0]
-                my.add_where(where)
+                if where in ['begin','and','or']:
+                    my.add_where(where)
+                else:
+                    raise SearchException('Single argument filter is no longer supported. Try to use 2 or 3 arguments.')
 
             elif len(filter) == 2:
                 name, value = filter
@@ -624,7 +627,8 @@ class Search(Base):
             return
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+
+        schema = Schema.get(project_code=my.project_code)
 
         if not relationship:
             relationship = schema.get_relationship(parent_search_type, search_type)
@@ -670,14 +674,20 @@ class Search(Base):
         #related_type = sobject.get_base_search_type()
         search_type = my.get_search_type()
         related_type = sobject.get_search_type()
-
+        
         if search_type == related_type:
             print "WARNING: related type and search type are the same for [%s]" % search_type
             my.add_id_filter(sobject.get_id())
             return
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+
+        if my.project_code == 'sthpw':
+            related_project_code = sobject.get_project_code()
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=my.project_code)
+        
         attrs = schema.get_relationship_attrs(search_type, related_type, path)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -757,7 +767,9 @@ class Search(Base):
 
         search_type = my.get_base_search_type()
         related_type = sobjects[0].get_base_search_type()
-
+        
+        project_code = my.project_code
+        # should go by this search_type's project_code
 
         # handle case where both search types are the same
         if search_type == related_type:
@@ -770,7 +782,12 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        if project_code == 'sthpw':
+            related_project_code = sobjects[0].get_project_code()
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=project_code)
+
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -928,7 +945,11 @@ class Search(Base):
             return True
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        if my.project_code == 'sthpw':
+            related_project_code = search.project_code
+            schema = Schema.get(project_code=related_project_code)
+        else:
+            schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(search_type, related_type)
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
@@ -1339,7 +1360,7 @@ class Search(Base):
 
 
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=my.project_code)
         attrs = schema.get_relationship_attrs(from_search_type, to_search_type, path=path)
         if not attrs:
             return
@@ -1994,6 +2015,7 @@ class Search(Base):
              return {}
 
         search_type = sobject.get_base_search_type()
+        project_code = sobject.get_project_code()
         if related_type == search_type:
             print "WARNING: source type is the same as related type [%s]" % search_type
             return {}
@@ -2017,7 +2039,7 @@ class Search(Base):
         related_type = SearchKey.extract_base_search_type(related_type)
         
         from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=project_code)
         attrs = schema.get_relationship_attrs(related_type, search_type, path=path )
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
@@ -2590,11 +2612,12 @@ class SObject(object):
         if my.has_value("name"):
             name = my.get_value("name")
         if long:
-            id = my.get_id()
+            code = my.get_code()
             if name:
-                name = '%s (%s)' %(name, id)
+                name = '%s (%s)' %(name, code)
             else:
                 code = my.get_code()
+                id = my.get_id()
                 if code != id:
                     name = '%s (%s)' %(code, id)
                 else:
@@ -3008,6 +3031,7 @@ class SObject(object):
 
         security = Environment.get_security()
 
+        # unspecified default makes the access level edit
         if not security.check_access("sobject_column", key , "edit"):
             raise SecurityException("Column [%s] not editable for search type [%s]" % (name,my.get_search_type()) )
 
@@ -3040,7 +3064,7 @@ class SObject(object):
         elif column_info.get('data_type') in ['varchar','text']:
             if isinstance(value, str):
                 # this may be needed for those \x60 formatted string from a text file
-                #value = value.decode('string_escape')
+                #value = value.decode('string_escape'))
                 try:
                     value = value.decode('utf-8', 'ignore')
                 except UnicodeDecodeError, e:
@@ -3241,6 +3265,7 @@ class SObject(object):
     def set_sobject_value(my, sobject, type=None):
         # makes a relation to this input sobject
         from pyasm.biz import Schema
+
         schema = Schema.get()
         attrs = schema.get_relationship_attrs(
             my.get_base_search_type(),
@@ -3275,6 +3300,9 @@ class SObject(object):
                     my.set_value("search_code", sobject.get_id() )
                 else:
                     my.set_value("search_code", sobject.get_value("code") )
+
+        elif relationship in ['general']:
+            print 'WARNING: relationship [%s] not supported' % relationship
 
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
@@ -3905,7 +3933,6 @@ class SObject(object):
         search = Search("sthpw/message")
         search.add_filter("code", message_code)
         message = search.get_sobject()
-
         if not message:
             message = SearchType.create("sthpw/message")
             message.set_value("code", message_code)
@@ -3936,7 +3963,6 @@ class SObject(object):
         message.set_user()
         message.set_value("status", "complete")
         message.commit(triggers=False)
-
 
 
 
@@ -4114,7 +4140,7 @@ class SObject(object):
         whenver there is a commit'''
         defaults = {}
         from pyasm.biz import ProdSetting
-        if ProdSetting.get_by_key('autofill_pipeline_code') != 'false':
+        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
             base_search_type = my.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
@@ -4177,7 +4203,7 @@ class SObject(object):
         # remember the data
         data = my.data.copy()
 
-        # call a delete event
+        # call a retire event
         from pyasm.command import Trigger
         output = {}
         output["is_retire"] = True
@@ -4207,7 +4233,7 @@ class SObject(object):
 
 
     def delete(my, log=True, triggers=True):
-        '''deletes the sobject (only the database)
+        '''delete the sobject (only the database)
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
@@ -4215,10 +4241,38 @@ class SObject(object):
         if id == -1:
             return
 
+        security = Environment.get_security()
+        base_search_type = my.get_base_search_type()
+
+        current_project_code = my.get_project_code()
+        
+        # special conditions of task, note and work_hour
+        if base_search_type in ['sthpw/task', 'sthpw/note','sthpw/snapshot','sthpw/file','sthpw/work_hour']:
+            sobject_project_code = my.get_value('project_code')
+            key = { "code": base_search_type }
+            key2 = { "code": base_search_type, "project": sobject_project_code }
+            key3 = { "code": "*" }
+            key4 = { "code": "*", "project": sobject_project_code }
+            keys = [key, key2, key3, key4]
+            default = "allow"
+
+            if not security.check_access("search_type", keys, "delete", default=default):
+                raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
+        elif not base_search_type.startswith("sthpw/") and not base_search_type.startswith("config/"):
+            # default to deny delete of any non sthpw or config sobjects
+            key = { "code": base_search_type }
+            key2 = { "code": base_search_type, "project": current_project_code }
+            key3 = { "code": "*" }
+            key4 = { "code": "*", "project": current_project_code }
+            keys = [key, key2, key3, key4]
+            default = "deny"
+            if not security.check_access("search_type", keys, "delete", default=default):
+                print "WARNING: User [%s] security failed for search type [%s]" % (Environment.get_user_name(), base_search_type)
+                raise SObjectException('[%s] is not allowed to delete item in [%s]. You may need to adjust the access rules for the group.' % (Environment.get_user_name(), base_search_type))
+
         # remember the data
         data = my.data.copy()
 
-        base_search_type = my.get_base_search_type()
         database_impl = my.get_database_impl()
         database_type = database_impl.get_database_type()
 
@@ -4285,7 +4339,7 @@ class SObject(object):
             if sobject:
                 sobject.delete(log=log)
 
-      
+       
 
 
 
@@ -4377,13 +4431,13 @@ class SObject(object):
         return dir
 
 
-    def get_client_lib_dir(my, snapshot=None, file_type=None, create=False, file_object=None):
+    def get_client_lib_dir(my, snapshot=None, file_type=None, create=False, file_object=None, dir_naming=None):
         '''The asset directory from the client point of view.  This is only
         valid if this directory is visible to the client'''
         # for now assume the same directory as the server
         from pyasm.biz import Project
         dir = Project.get_project_client_lib_dir(my,snapshot,file_type,\
-                create=create, file_object=file_object)
+                create=create, file_object=file_object, dir_naming=dir_naming)
         return dir
 
 
@@ -4514,7 +4568,8 @@ class SObject(object):
         search_type = my.get_base_search_type()
 
         from pyasm.biz import Schema
-        attrs = Schema.get().get_relationship_attrs(search_type, related_type)
+        schema = Schema.get(project_code=my.get_project_code())
+        attrs = schema.get_relationship_attrs(search_type, related_type)
         relationship = attrs.get('relationship')
         if relationship == 'many_to_many':
             return []
@@ -4780,7 +4835,7 @@ class SObject(object):
             else:
                 prefix = ""
 
-            search_type = my.get_value("%ssearch_type" % prefix)
+            search_type = my.get_value("%ssearch_type" % prefix, no_exception=True)
             # it could be an insert mode sobject
             if not search_type:
                 return None
@@ -5968,9 +6023,10 @@ class SearchType(SObject):
 
     def get_related_types(cls, search_type, direction="children"):
         '''find all the downstream related types for delete purpose in delete_sobject() or DeleteToolWdg'''
+        from pyasm.biz import Schema, Project
+        project_code = Project.extract_project_code(search_type)
         
-        from pyasm.biz import Schema
-        schema = Schema.get()
+        schema = Schema.get(project_code=project_code)
         related_types = schema.get_related_search_types(search_type, direction=direction)
         parent_type = schema.get_parent_type(search_type)
 

@@ -150,6 +150,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.alt_result = None
 
         my.cache_results = None
+
+
   
     def preprocess(my):
         order_by = my.get_option("order_by")
@@ -696,6 +698,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
  
 
     def get_bottom_wdg(my):
+
+        my.init_kwargs()
+
         sobjects = my.sobjects
         
         # ignore the first 2 (edit and insert) if it's on the old TableLayoutWdg
@@ -753,15 +758,15 @@ class ExpressionElementWdg(TypeTableElementWdg):
         my.vars = my.get_vars()
  
         parser = ExpressionParser()
-        result = parser.eval(expression, sobjects=sobjects, vars=my.vars)
+        raw_result = parser.eval(expression, sobjects=sobjects, vars=my.vars)
 
         format_str = my.kwargs.get("display_format")
         if format_str:
             from tactic.ui.widget import FormatValueWdg
-            format_wdg = FormatValueWdg(format=format_str, value=result)
+            format_wdg = FormatValueWdg(format=format_str, value=raw_result)
             result = format_wdg
         else:
-            result = str(result)
+            result = str(raw_result)
 
 
 
@@ -779,7 +784,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #    if my.enable_eval_listener:
         #        my.add_js_expression(div, sobject, expression)
 
-        return div
+        return div, raw_result
 
 
 

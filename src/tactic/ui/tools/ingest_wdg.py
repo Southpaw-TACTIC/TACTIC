@@ -93,7 +93,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         # create the help button
         help_button_wdg = DivWdg()
         div.add(help_button_wdg)
-        help_button_wdg.add_style("margin-top: -3px")
         help_button_wdg.add_style("float: right")
         help_button = ActionButtonWdg(title="?", tip="Ingestion Widget Help", size='s')
         help_button_wdg.add(help_button)
@@ -176,6 +175,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         div.add("<br clear='all'/>")
+        div.add("<br clear='all'/>")
 
 
         files_div = DivWdg()
@@ -213,7 +213,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background = DivWdg()
         background.add_class("spt_files_background")
         files_div.add(background)
-        background.add_style("font-size: 4.0em")
+        background.add_style("font-size: 3.0em")
         background.add_style("font-weight: bold")
         background.add_style("opacity: 0.1")
         background.add_style("position: absolute")
@@ -222,6 +222,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background.add_border()
         inner_background = DivWdg("Drag Files Here")
         background.add(inner_background)
+        inner_background.add_style("text-align: center")
         inner_background.set_style("position: absolute")
         inner_background.set_style("margin-left: -50%")
 

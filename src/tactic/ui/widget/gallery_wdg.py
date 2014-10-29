@@ -497,8 +497,18 @@ class GalleryWdg(BaseRefreshWdg):
 
             # return_dict=True defaults to return the first of each snapshot list 
             # and so works well with is_latest=True
-            sobj_snapshot_dict = Snapshot.get_by_sobjects(sobjects, is_latest=True, return_dict=True)
-            snapshots = sobj_snapshot_dict.values()
+            if sobjects and sobjects[0].get_base_search_type() == "sthpw/snapshot":
+                sobj_snapshot_dict = {}
+                for sobject in sobjects:
+                    search_key = sobject.get_search_key()
+                    sobj_snapshot_dict[search_key] = sobject
+                snapshots = sobjects
+
+            else:
+                sobj_snapshot_dict = Snapshot.get_by_sobjects(sobjects, is_latest=True, return_dict=True)
+
+                snapshots = sobj_snapshot_dict.values()
+
             file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type=file_type)
 
             for sobject in sobjects:

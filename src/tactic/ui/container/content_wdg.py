@@ -31,6 +31,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_content_box")
         top.add_class("spt_content_box_inline")
+        top.add_style("min-width: 200px")
 
         #top.add_style("opacity: 0.1")
 
@@ -144,9 +145,8 @@ class ContentBoxWdg(BaseRefreshWdg):
         content_div.add_style("width: auto")
 
         content_height = my.kwargs.get("content_height")
-        if not content_height:
-            content_height = "300px"
-        #content_div.add_style("max-height: %s" % content_height)
+        if content_height:
+            content_div.add_style("height: %s" % content_height)
         content_div.add_style("overflow-x: auto")
 
         content_view = my.kwargs.get("content_view")
@@ -166,6 +166,11 @@ class ContentBoxWdg(BaseRefreshWdg):
             content_div.add(layout)
 
 
+        content_wdg = my.get_widget("content")
+        if not content_wdg and my.widgets:
+            content_wdg = my.widgets[0]
+        if content_wdg:
+            content_div.add(content_wdg)
 
 
         # handle the footer
@@ -187,7 +192,14 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         title = my.kwargs.get("title")
         if not title:
+            widget = my.get_widget("title")
+            if not widget and my.widgets:
+                widget = my.widgets[0]
+                title = widget.get_name().title()
+        if not title:
             title = "No Title"
+
+
         icon = my.kwargs.get("icon")
         if not icon:
             icon = "G_FOLDER"
@@ -208,12 +220,13 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
         # icon on the right
-
-        icon_div = DivWdg()
-        title_div.add(icon_div)
-        icon = IconWdg(icon="G_SETTINGS", width=16)
-        icon_div.add(icon)
-        icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px 0px 5px;''')
+        show_gear = my.kwargs.get("show_gear")
+        if show_gear in [True, 'true']:
+            icon_div = DivWdg()
+            title_div.add(icon_div)
+            icon = IconWdg(icon="G_SETTINGS", width=16)
+            icon_div.add(icon)
+            icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px 0px 5px;''')
 
 
 

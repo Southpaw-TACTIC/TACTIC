@@ -118,6 +118,17 @@ class PipelineToolWdg(BaseRefreshWdg):
         right.add(pipeline_wdg)
 
 
+
+        # TODO: later
+        """
+        info = table.add_cell()
+        info.add_border()
+        info.add_style("width: 200px")
+        info_wdg = ProcessInfoWdg()
+        info.add(info_wdg)
+        """
+
+
         
        
         #tr, td = table.add_row_cell()
@@ -302,13 +313,15 @@ class PipelineListWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_pipeline_list")
         my.set_as_panel(top)
+        top.add_style("position: relative")
 
         title_div = DivWdg()
 
 
         button = ActionButtonWdg(title="+", tip="Add a new pipeline", size='small')
-        button.add_style("float: right")
-        button.add_style("margin-top: -8px")
+        button.add_style("position: absolute")
+        button.add_style("top: 5px")
+        button.add_style("right: 5px")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -330,10 +343,10 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add(button)
 
         top.add(title_div)
-        title_div.add_style("height: 20px")
+        title_div.add_style("height: 30px")
         title_div.add_style("padding-left: 5px")
-        title_div.add_style("padding-top: 8px")
-        title_div.add_gradient("background", "background")
+        title_div.add_style("padding-top: 10px")
+        title_div.add_color("background", "background", -10)
         title_div.add("<b>Pipelines</b>")
 
 
@@ -375,8 +388,9 @@ class PipelineListWdg(BaseRefreshWdg):
         inner.add(swap)
         swap.add_style("float: left")
 
-        title = DivWdg("<b>Project Pipelines</b>")
+        title = DivWdg("<b>Current Project</b>")
         title.add_style("padding-bottom: 2px")
+        title.add_style("padding-top: 3px")
         inner.add(title)
         #inner.add(HtmlElement.br())
         content_div = DivWdg()
@@ -424,10 +438,11 @@ class PipelineListWdg(BaseRefreshWdg):
 
         title = DivWdg("<b>Task Status Pipelines</b>")
         title.add_style("padding-bottom: 2px")
+        title.add_style("padding-top: 3px")
         inner.add(title)
         content_div = DivWdg()
         content_div.add_styles('padding-left: 8px; padding-top: 6px') 
-        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
+        SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
         inner.add(content_div)
 
         search = Search("sthpw/pipeline")
@@ -561,12 +576,11 @@ class PipelineListWdg(BaseRefreshWdg):
             if (top) return top;
         }
         );
-        if (!top)
+        if (!top) {
             top = spt.get_element(document, '.spt_pipeline_tool_top');
+        }
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
-
-        //bvr.src_el.setStyle("border", "dashed 1px #AAA");
 
         // check if the group already exists
         var group_name = bvr.pipeline_code;
@@ -578,15 +592,9 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.pipeline.fit_to_canvas(group_name);
             return;
 
-            /*
-            var flag = confirm("Pipeline ["+bvr.pipeline_code+"] is already loaded.  Do you wish to reload? (Changes will be lost)");
-            if (!flag) {
-                return;
-            } else {
-                spt.pipeline.remove_group(bvr.pipeline_code);
-            }
-            */
         }
+
+        spt.pipeline.clear_canvas();
 
         spt.pipeline.import_pipeline(bvr.pipeline_code);
 
@@ -776,6 +784,27 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         } )
 
 
+        menu_item = MenuItem(type='action', label='Edit Process Properties')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var node = spt.smenu.get_activator(bvr);
+            var process = node.getAttribute("spt_element_name");
+            var pipeline_code = node.spt_group;
+
+            var class_name = 'tactic.ui.panel.EditWdg';
+
+            var kwargs = {
+                search_key: 'config/process?project=game&code=9GAME',
+                view: 'edit',
+                show_header: false,
+            }
+            spt.panel.load_popup("Edit Process " + process, class_name, kwargs);
+            '''
+        } )
+
+
+
 
         menu_item = MenuItem(type='action', label='Show Triggers/Notifications')
         menu.add(menu_item)
@@ -794,7 +823,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             var kwargs = {
                 search_type: search_type,
                 pipeline_code: pipeline_code,
-                process: process
+                process: process,
             }
 
             element_name = 'trigger_'+process;
@@ -914,6 +943,54 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
 
+
+class ProcessInfoWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+
+        search = Search("config/pipeline")
+        process = search.get_sobject()
+
+
+        # Don't touch
+        # ---
+        # pipeline_code
+        # process?
+        # sort_order
+
+        # Display
+        # ---
+        # color
+        # description
+
+
+
+        # Check-in options
+        # ---
+        # checkin_mode
+        # checkin_options_view
+        # checkin_validate_script_path
+        # context_options
+        # subcontext_options
+        # repo_type (tactic / perforce)
+        # sandbox_create_script_path
+        # transfer_mode
+
+        code = "8GAME"
+        from tactic.ui.panel import EditWdg
+        edit_wdg = EditWdg(
+                search_type="config/process",
+                code=code
+                )
+        top.add(edit_wdg)
+
+        return top
+
+
+
+
 class PipelineEditorWdg(BaseRefreshWdg):
     '''This is the pipeline on its own, with various buttons and interface
     to help in building the pipelines.  It contains the PipelineCanvasWdg'''
@@ -929,7 +1006,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top.add(my.get_shelf_wdg() )
 
 
-        top.add("<br clear='all'/>")
+        #top.add("<br clear='all'/>")
         my.width = my.kwargs.get("width")
         if not my.width:
             my.width = 1400
@@ -1010,6 +1087,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
  
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px")
+        shelf_wdg.add_style("margin-bottom: 5px")
 
         my.properties_dialog = DialogWdg(display=False)
         my.properties_dialog.add_title("Edit Properties")
@@ -1088,6 +1166,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
         shelf_wdg.add(help_button)
+        help_button.add_style("padding-top: 3px")
         help_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -1358,7 +1437,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row = DivWdg()
         #button_row.add_border()
         #button_row.set_round_corners(5)
-        button_row.add_style("padding: 6px 10px 9px 5px")
+        button_row.add_style("padding: 3px 10px 3px 5px")
+        button_row.add_style("padding: 6px 10px 0px 5px")
 
         button = SingleButtonWdg(title="Zoom In", icon=IconWdg.ZOOM_IN, show_out=False)
         button_row.add(button)
@@ -1396,7 +1476,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
         select = SelectWdg("zoom")
-        select.add_style("width: 55px")
+        select.add_style("width: 85px")
+        select.add_style("margin-top: -3px")
         select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit to Current Group", "Fit To Canvas"])
         select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_current", "fit_to_canvas"])
         select.add_empty_option("Zoom")
@@ -1470,15 +1551,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
     def get_pipeline_select_wdg(my):
         div = DivWdg()
-        div.add_border(modifier=10)
-        div.add_style("padding: 7px")
-        div.set_round_corners()
-        div.add("Current Pipeline: " )
+        #div.add_border(modifier=10)
+        div.add_style("padding: 3px")
+        #div.set_round_corners()
+        #div.add("Current Pipeline: " )
         pipeline_select = SelectWdg("current_pipeline")
         div.add(pipeline_select)
+        pipeline_select.add_style("display: table-cell")
         pipeline_select.add_class("spt_pipeline_editor_current")
         pipeline_select.set_option("values", "default")
-        pipeline_select.set_option("labels", "-- NEW --")
+        pipeline_select.set_option("labels", "-- New Pipeline --")
 
         pipeline_select.add_behavior( {
             'type': 'change',
@@ -1521,6 +1603,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         td.add("Pipeline code: ")
         text = TextWdg("new_pipeline")
         td = table.add_cell()
+        td.add_style("height: 40px")
         td.add(text)
         text.add_class("spt_new_pipeline")
 
@@ -1917,6 +2000,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         from tactic.ui.app import HelpButtonWdg
         help_button = HelpButtonWdg(alias='pipeline-process-options|project-workflow-introduction')
         div.add( help_button )
+        help_button.add_style("margin-top: 7px")
         help_button.add_style("float: right")
 
 
@@ -1939,7 +2023,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         title_div = DivWdg()
         div.add(title_div)
         title_div.add_style("height: 20px")
-        title_div.add_gradient("background", "background", -20)
+        title_div.add_color("background", "background", -13)
         title_div.add_class("spt_property_title")
         if not process:
             title_div.add("Process: <i>--None--</i>")
@@ -1967,7 +2051,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         # show other properties
         table = Table()
         table.add_class("spt_pipeline_properties_content")
-        table.add_style("margin: 10px")
+        table.add_style("margin: 20px")
         table.add_color('color', 'color')
         table.add_row()
         #table.add_header("Property")
@@ -2001,6 +2085,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(text)
+        th.add_style("height: 30px")
         
         # completion (visibility depends on sType)
         table.add_row(css='spt_property_status_completion')
@@ -2013,6 +2098,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(text)
+        th.add_style("height: 30px")
         
         # These searchs are needed for the task_pipeline select widget
         task_pipeline_search = Search('sthpw/pipeline')
@@ -2046,6 +2132,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(select)
+        th.add_style("height: 40px")
         
         # The search needed for the login_group select widgets
         login_group_search = Search('sthpw/login_group')
@@ -2063,6 +2150,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(select)
+        th.add_style("height: 40px")
         
         # supervisor_login_group
         table.add_row()
@@ -2076,6 +2164,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         select.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(select)
+        th.add_style("height: 40px")
         
         # duration
         table.add_row()
@@ -2084,11 +2173,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         text_name = "spt_property_duration"
         text = TextWdg(text_name)
-        text.add_style("width: 30px")
+        text.add_style("width: 40px")
         text.add_class(text_name)
         text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(text)
+        th.add_style("height: 40px")
         th.add(" days")
 
         # bid duration in hours
@@ -2098,11 +2188,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         text_name = "spt_property_bid_duration"
         text = TextWdg(text_name)
-        text.add_style("width: 30px")
+        text.add_style("width: 40px")
         text.add_class(text_name)
         text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
         th = table.add_cell(text)
+        th.add_style("height: 40px")
         th.add(" hours")
         
         # color
@@ -2118,7 +2209,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_class(text_name)
         text.add_event("onBlur", "spt.pipeline_properties.set_properties()")
 
-        table.add_cell(color)
+        td = table.add_cell(color)
+        th.add_style("height: 40px")
 
         # label
         table.add_row()
@@ -2129,7 +2221,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_class(text_name)
         text.add_event("onChange", "spt.pipeline_properties.set_properties()")
 
-        table.add_cell(text)
+        td = table.add_cell(text)
+        td.add_style("height: 40px")
 
         tr, td = table.add_row_cell()
 
@@ -2138,6 +2231,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td.add(button)
         button.add_style("float: right")
         button.add_style("margin-right: 20px")
+        td.add("<br clear='all'/>")
         td.add("<br clear='all'/>")
         button.add_behavior( {
         'type': 'click_up',
@@ -2274,7 +2368,7 @@ class ConnectorPropertyWdg(PipelinePropertyWdg):
         title_div = DivWdg()
         div.add(title_div)
         title_div.add_style("height: 20px")
-        title_div.add_gradient("background", "background", -20)
+        title_div.add_color("background", "background", -15)
         title_div.add_class("spt_property_title")
       
         title_div.add_style("font-weight: bold")
@@ -2319,6 +2413,7 @@ class ConnectorPropertyWdg(PipelinePropertyWdg):
         button = ActionButtonWdg(title="OK", tip="Confirm connector properties change. Remember to save pipeline at the end.")
         td.add("<hr/>")
         td.add(button)
+        td.add("<br clear='all'/>")
         button.add_style("float: right")
         button.add_style("margin-right: 20px")
         td.add("<br clear='all'/>")
@@ -2331,6 +2426,7 @@ class ConnectorPropertyWdg(PipelinePropertyWdg):
         } )
 
         div.add(table)
+
 
         return div
 

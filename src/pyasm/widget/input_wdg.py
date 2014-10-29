@@ -769,7 +769,7 @@ class RadioWdg(BaseInputWdg):
             my.set_attr(name,option)
 
         span = SpanWdg()
-        span.add(my.label)
+        span.add(" %s" % my.label)
         my.add(span)
         span.add_style("top: 3px")
         span.add_style("position: relative")
@@ -1297,6 +1297,12 @@ class SelectWdg(BaseInputWdg):
             my.set_dom_options()
         return my.labels, my.values
 
+
+    def init(my):
+        my.add_color("background", "background", 10)
+        my.add_color("color", "color")
+
+
     def get_display(my):
         class_name = my.kwargs.get('class')
         if class_name:
@@ -1314,9 +1320,8 @@ class SelectWdg(BaseInputWdg):
         if width:
             my.add_style("width: %s" % width)
 
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
         my.add_border()
+        my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'
