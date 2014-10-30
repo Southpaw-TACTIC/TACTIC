@@ -317,14 +317,16 @@ class BaseMetadataParser(object):
 
         # parse and clean the metadata
         keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
+        description_values = my.get_description_metadata_from_xmp(ret_val)
 
         # add keywords metadata to the dictionary to be returned: "ret"
         ret["IPTC: Keywords"] = keyword_values
+        ret["IPTC: Description"] = description_values
 
         return ret
 
 
-    '''Function by Christia: Given XMP data as a string, parse it for Keywords of IPTC metadata, and
+    '''Given XMP data as a string, parse it for Keywords of IPTC metadata, and
        return it as a string, with values separated by spaces.'''
     def get_keywords_metadata_from_xmp(my, xmp_data):
 
@@ -346,10 +348,36 @@ class BaseMetadataParser(object):
             keywords_list[i] = keywords_list[i][1:-1]
  
         # take the list, and turn it into a string, separated by spaces
-        keywords_string = " ".join(keywords_list)
+        keywords_string = ", ".join(keywords_list)
 
         return keywords_string
 
+
+    '''Given XMP data as a string, retrieve the description.'''
+    def get_description_metadata_from_xmp(my, xmp_data):
+
+        description_list = []
+        
+        # find the chunk of data in xmp_data where the keywords resides
+        starting_index = xmp_data.find("<dc:description>")
+        end_index = xmp_data.find("</dc:description>")
+
+        # section of xmp data containing description metadata
+        dc_subject_str = xmp_data[starting_index:end_index]
+
+        # find all words between tags.
+        # aka, search for words btween <tag>words</tag>
+        description_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
+
+
+        # get rid of the > and < around words in keywords_list
+        for i in range(len(description_list)):
+            description_list[i] = description_list[i][1:-1]
+ 
+        # take the list, and turn it into a string, separated by spaces
+        description_string = " ".join(description_list)
+
+        return description_string
 
 
 
@@ -455,8 +483,6 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
         import subprocess, re
 
-        # Christina's stuff
-
         iptc_data = {} # dictionary to hold iptc data
 
         # make it an option to extract IPTC data from a file
@@ -469,8 +495,6 @@ class ImageMagickMetadataParser(BaseMetadataParser):
             else:
                 iptc_data = my.get_iptc_keywords(path)
             return iptc_data
-
-        # end Christina's stuff
 
         ret = {}
 
