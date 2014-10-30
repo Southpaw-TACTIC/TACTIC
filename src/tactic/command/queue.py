@@ -13,9 +13,9 @@ __all__ = ['JobTask', 'Queue']
 import tacticenv
 
 from pyasm.security import Batch
-from pyasm.common import Common, Config, Environment, jsonloads, jsondumps, TacticException
+from pyasm.common import Common, Config, Container, Environment, jsonloads, jsondumps, TacticException
 from pyasm.biz import Project
-from pyasm.search import Search, SearchType, DbContainer
+from pyasm.search import Search, SearchType, DbContainer, Transaction
 from pyasm.command import Command
 from tactic.command import Scheduler, SchedulerTask
 
@@ -131,7 +131,6 @@ class JobTask(SchedulerTask):
         my.max_jobs = 2
 
         my.queue_type = kwargs.get("queue")
-
         super(JobTask, my).__init__()
 
 
@@ -256,6 +255,7 @@ class JobTask(SchedulerTask):
         if not my.job:
             return
 
+		
         # set the process key
         process_key = my.get_process_key()
         my.job.set_value("host", process_key)
@@ -312,6 +312,7 @@ class JobTask(SchedulerTask):
             from pyasm.common import Environment
             Environment.get_env_object()
         except:
+            # it usually is run at the very first transaction
             Batch()
         Project.set_project(project_code)
 
@@ -327,6 +328,8 @@ class JobTask(SchedulerTask):
 
             cmd = Common.create_from_class_path(command, kwargs=kwargs)
             try:
+                Container.put(Command.TOP_CMD_KEY, None)
+                Container.put(Transaction.KEY, None)
                 Command.execute_cmd(cmd)
 
                 # set job to complete
@@ -342,13 +345,19 @@ class JobTask(SchedulerTask):
 
 
         elif queue_type == 'repeat':
-
-            cmd = Common.create_from_class_path(command, kwargs=kwargs)
+            
+            
             attempts = 0
             max_attempts = 3
             retry_interval = 5
+            Container.put(Transaction.KEY, None)
             while 1:
+			    
                 try:
+                    cmd = Common.create_from_class_path(command, kwargs=kwargs)
+                    
+                    Container.put(Command.TOP_CMD_KEY, None)
+                    
                     Command.execute_cmd(cmd)
                     #cmd.execute()
 
@@ -453,7 +462,7 @@ class JobTask(SchedulerTask):
 
 
     def start(**kwargs):
-
+         
         scheduler = Scheduler.get()
         scheduler.start_thread()
         task = JobTask(**kwargs)

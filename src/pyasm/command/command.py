@@ -263,7 +263,7 @@ class Command(Base):
             # if this is not the top command keep going up
             if cmd != top_cmd_seq[0]:
                 raise
-
+       
             # fail with controlled error
             message = e.message
            
@@ -320,12 +320,13 @@ class Command(Base):
             if cmd == top_cmd_seq[-1]:
                 # make sure that everything is committed
                 try:
-                    transaction.commit()
+                    
 
                     # get the description of what the command just did
                     description = cmd.get_description()
                     if description:
                         transaction.add_description(description)
+                    transaction.commit()
 
 
                 except Exception, e:
