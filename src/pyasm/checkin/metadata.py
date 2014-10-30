@@ -348,6 +348,7 @@ class BaseMetadataParser(object):
             keywords_list[i] = keywords_list[i][1:-1]
  
         # take the list, and turn it into a string, separated by spaces
+        keywords_list = filter(None, keywords_list)
         keywords_string = ", ".join(keywords_list)
 
         return keywords_string
@@ -375,6 +376,7 @@ class BaseMetadataParser(object):
             description_list[i] = description_list[i][1:-1]
  
         # take the list, and turn it into a string, separated by spaces
+        description_list = filter(None, description_list)
         description_string = " ".join(description_list)
 
         return description_string
