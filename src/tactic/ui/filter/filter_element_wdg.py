@@ -996,7 +996,19 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         div.add(text)
 
-
+        show_toggle = my.get_option("show_toggle")
+        if show_toggle in ['true', True]:
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("toggle", "BS_CHEVRON_DOWN")
+            icon_div.add(icon)
+            icon_div.add_class("hand spt_search_toggle")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 5")
+            icon_div.add_style("right: 8")
+            div.add(icon_div)
+        
+        
         show_partial = my.get_option("show_partial")
         if show_partial not in ['false', False]:
 

@@ -5550,7 +5550,8 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         search.add_order_by("timestamp desc")
         snapshots = search.do_search()
-
+        
+        div.add(HtmlElement.br()) 
         div.add(my.get_table(sobject,snapshots) )
 
         return div
