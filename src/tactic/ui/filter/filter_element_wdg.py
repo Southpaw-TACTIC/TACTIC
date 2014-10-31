@@ -996,7 +996,19 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         div.add(text)
 
-
+        show_toggle = my.get_option("show_toggle")
+        if show_toggle in ['true', True]:
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("toggle", "BS_CHEVRON_DOWN")
+            icon_div.add(icon)
+            icon_div.add_class("hand spt_search_toggle")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 6px")
+            icon_div.add_style("right: 4px")
+            div.add(icon_div)
+        
+        
         show_partial = my.get_option("show_partial")
         if show_partial not in ['false', False]:
 
@@ -1006,7 +1018,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             icon_div.add(icon)
             icon_div.add_class("hand")
             icon_div.add_style("position: absolute")
-            icon_div.add_style("top: 5")
+            icon_div.add_style("top: 5px")
             icon_div.add_style("right: 0")
 
             from tactic.ui.container import DialogWdg
@@ -1015,7 +1027,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             div.add(dialog)
 
             match_div = DivWdg()
-            match_div.add_style("width: 175")
+            match_div.add_style("width: 175px")
             dialog.add(match_div)
             checkbox = CheckboxWdg("partial")
             match_div.add(checkbox)

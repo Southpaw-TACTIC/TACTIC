@@ -862,7 +862,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="", width="75", show_partial=False)
+                icon="", width="75", show_partial=False, show_toggle=True)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -871,6 +871,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             keyword_div.add_behavior( {
                 'type': 'click_up',
+                'cbjs_action': '''
+                 var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "230px");
+                bvr.src_el.setStyle("width", "230px");
+                el.focus();
+                el.select();
+                '''})
+
+            keyword_div.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_search_toggle',
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_view_panel_top");
                 if (top) {
@@ -881,11 +892,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
                 }
 
-                var el = bvr.src_el.getElement(".spt_text_input");
-                el.setStyle("width", "230px");
-                bvr.src_el.setStyle("width", "230px");
-                el.focus();
-                el.select();
+               
 
                 '''
             } )
