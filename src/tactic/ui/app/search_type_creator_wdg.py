@@ -543,10 +543,11 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             if value == "table":
                 radio.set_checked()
             radio.add_style("margin-top: -5px")
-            option_div.add("%s" % title)
+            option_div.add(" &nbsp;%s" % title)
             radio.add_attr("value", value)
-            option_div.add_style("margin-top: 5px")
-            option_div.add_style("margin-bottom: 5px")
+            option_div.add_style("margin-top: 10px")
+            option_div.add_style("margin-bottom: 10px")
+            option_div.add_style("margin-left: 15px")
             radio.add_attr("spt_image", image)
             radio.add_behavior( {
             'type': 'change',

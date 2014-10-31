@@ -606,41 +606,6 @@ class BaseApiXMLRPC(XmlrpcServer):
         # if a session container has been cached, use that
         key = ticket
         container = None
-
-        
-     
-        # TODO:
-        # We set this to false for now because these values, particularly
-        # access rules are cached.  Because of the caching, these are very
-        # difficult to reset when updated
-        """
-        reuse_container = False
-        if reuse_container:
-            container = my.session_containers.get(key)
-            container = None
-            if container:
-
-                # don't completely use the same container, but copy essentials
-                new_container = Container.create()
-                vars = [
-                    'Environment:security',
-                    'Environment:object',
-                    'WebContainer::web',
-                ]
-                for var in vars:
-                    new_container.put(var, container.info[var] )
-
-                # make sure the security object is there
-                security = Environment.get_security()
-                assert(security)
-                if security:
-                    if project_code:
-                        Project.set_project(project_code)
-                        Project.get()
-                else:
-                    container = None
-        """
-
         if not container:
 
             # start a new session and store the container

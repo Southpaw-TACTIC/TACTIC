@@ -768,11 +768,12 @@ class RadioWdg(BaseInputWdg):
         for name, option in my.options.items():
             my.set_attr(name,option)
 
-        span = SpanWdg()
-        span.add(" %s" % my.label)
-        my.add(span)
-        span.add_style("top: 3px")
-        span.add_style("position: relative")
+        if my.label:
+            span = SpanWdg()
+            span.add(" %s" % my.label)
+            my.add(span)
+            span.add_style("top: 3px")
+            span.add_style("position: relative")
 
         return super(RadioWdg,my).get_display()
 

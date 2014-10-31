@@ -822,6 +822,12 @@ class CalendarInputWdg(BaseInputWdg):
                 show_activator = False
 
 
+        if show_activator:
+            activator = "BS_CALENDAR"
+        else:
+            activator = None
+
+
 
         show_calendar = my.get_option('show_calendar')
         if show_calendar in [True, 'true']:
@@ -830,7 +836,7 @@ class CalendarInputWdg(BaseInputWdg):
             show_calendar = False
 
 
-
+        """
         if show_activator:
             #icon = IconWdg("Calendar", IconWdg.DATE)
             icon = IconWdg("Calendar", "BS_CALENDAR")
@@ -856,7 +862,6 @@ class CalendarInputWdg(BaseInputWdg):
                 '''
             } )
 
-            """
             clear_icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE)
             clear_icon.add_class('hand')
             clear_icon.add_style("position: absolute")
@@ -871,7 +876,7 @@ class CalendarInputWdg(BaseInputWdg):
                 '''
             } )
             clear_icon = FloatDivWdg(clear_icon)
-            """
+        """
             
         name = my.get_input_name()
         read_only = my.get_option('read_only')
@@ -879,6 +884,8 @@ class CalendarInputWdg(BaseInputWdg):
 
 
         width = my.get_option('width')
+        if not width:
+            width = 100
 
         title = my.get_display_title()
         
@@ -890,7 +897,7 @@ class CalendarInputWdg(BaseInputWdg):
             input = TextWdg(name=name)
             text = input
         else:
-            input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
+            input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width, hint_text=title)
             text = input.get_text()
 
 
@@ -1057,7 +1064,6 @@ class CalendarInputWdg(BaseInputWdg):
 
         if show_activator:
             
-
             day_cbk='''
             var top = spt.get_parent(bvr.src_el, '.spt_calendar_top');
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');

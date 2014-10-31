@@ -173,6 +173,12 @@ class TextInputWdg(BaseInputWdg):
 
         super(TextInputWdg, my).__init__()
 
+
+        my.icon = my.kwargs.get("icon")
+        if my.icon:
+            my.icon_div = DivWdg()
+
+
         my.width = my.kwargs.get("width")
         if not my.width:
             my.width = 230
@@ -181,11 +187,7 @@ class TextInputWdg(BaseInputWdg):
             if not my.width.endswith("%"):
                 my.width = int(my.width)
 
-
-        my.icon = my.kwargs.get("icon")
-        if my.icon:
-            my.icon_div = DivWdg()
-
+        my.text.add_style("width: %s" % my.width)
 
 
     def add_style(my, name, value=None):
@@ -194,6 +196,7 @@ class TextInputWdg(BaseInputWdg):
 
         if name == 'width':
             my.width = value
+            my.text.add_style(name, value)
         elif name == 'float':
             my.top.add_style(name, value)
         else:
@@ -294,9 +297,7 @@ class TextInputWdg(BaseInputWdg):
         top = my.top
         top.add_style("position: relative")
         top.add_class("spt_text_top")
-        top.add_style("width: %s" % my.width)
         top.add_class("spt_input_text_top")
-
 
 
         if my.kwargs.get("required") in [True, 'true']:
@@ -392,9 +393,9 @@ class TextInputWdg(BaseInputWdg):
         # BOOTSTRAP
         div = DivWdg()
         top.add(div)
-        div.add_class("form-group")
         label = None
         if label:
+            div.add_class("form-group")
             label_wdg = HtmlElement.label()
             div.add(label)
             label_wdg.add_class("control-label")
@@ -406,7 +407,26 @@ class TextInputWdg(BaseInputWdg):
         #text.add_attr("name", my.name)
         #text.add_class("form-control")
 
-        div.add(my.text)
+        input_group = DivWdg()
+        div.add(input_group)
+        input_group.add_class("input-group")
+
+        if my.icon:
+            addon = SpanWdg()
+            if isinstance(my.icon, basestring):
+                if len(my.icon) > 1:
+                    icon = IconWdg(title="", icon=my.icon, width=16)
+                else:
+                    icon = my.icon
+            else:
+                icon = my.icon
+            input_group.add(addon)
+            addon.add_class("input-group-addon")
+            addon.add(icon)
+
+
+
+        input_group.add(my.text)
         my.text.add_class("form-control")
 
         # Bootstrap example hierarchy
@@ -446,7 +466,7 @@ class TextInputWdg(BaseInputWdg):
             td.add_style("width: 20")
             td.add_style("border: solid 1px %s" % my.border_color)
 
-            icon = IconWdg("", eval("IconWdg.%s" % my.icon), width=16)
+            icon = IconWdg("", my.icon, width=16)
             my.icon_div.add(icon)
             my.icon_div.add_style("padding: 4px 8px")
             my.icon_div.add_style("height: %spx" % (height -16))

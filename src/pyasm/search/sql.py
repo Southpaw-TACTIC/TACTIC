@@ -1693,7 +1693,10 @@ class Select(object):
         else:
             statement = my.get_count()
             results = sql.do_query(statement)
-            results = len(results)
+            if results:
+                results = int(results[0][0])
+            else:
+                results = 0
 
         return results
 

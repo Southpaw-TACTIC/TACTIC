@@ -565,12 +565,6 @@ class BaseAppServer(Base):
         password = web.get_form_value("password")
         site = web.get_form_value("site")
 
-        print "ticket_key: ", ticket_key
-        print "login: ", login
-        print "password: ", password
-        print "site: ", site
-
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
