@@ -503,6 +503,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def handle_search(my):
         '''method where the table handles it's own search on refresh'''
+
+
+        from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+
+
         if my.is_sobjects_explicitly_set():
             return
 
@@ -561,9 +567,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         filter_data = FilterData.get_from_cgi()
 
         keyword_values = filter_data.get_values_by_prefix("keyword")
-
-        from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
 
         if keyword_values:
 
@@ -859,7 +862,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="ZOOM", width="100", show_partial=False)
+                icon="", width="75", show_partial=False)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
