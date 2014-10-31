@@ -1753,7 +1753,6 @@ class License(object):
             value = int(value)
         except ValueError:
             value = 10
-        print "max: ", value
         return value
 
 
