@@ -407,9 +407,9 @@ class TextInputWdg(BaseInputWdg):
 
         input_group = DivWdg()
         div.add(input_group)
-        input_group.add_class("input-group")
 
         if my.icon:
+            input_group.add_class("input-group")
             addon = SpanWdg()
             if isinstance(my.icon, basestring):
                 if len(my.icon) > 1:
