@@ -657,7 +657,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         info_page.add("<b>Project Title:</b> &nbsp;&nbsp;")
     
-        text = TextWdg("project_title")
+        text = TextInputWdg(name="project_title")
         text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -696,7 +696,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
         info_page.add("<b>Project Code: &nbsp;&nbsp;</b>")
-        text = TextWdg("project_code")
+        text = TextInputWdg(name="project_code")
         #text = TextInputWdg(title="project_code")
         text.add_behavior( {
             'type': 'blur',
@@ -898,7 +898,6 @@ class ProjectCreateWdg(BaseRefreshWdg):
                 spt.panel.load_popup("Templates", class_name)
             '''
         } )
-        template.add_style("margin-top: -5px")
 
 
 

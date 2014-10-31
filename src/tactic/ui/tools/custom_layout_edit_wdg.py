@@ -772,7 +772,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         right_div.add(shelf_wdg, "shelf_wdg")
 
        
-        if not view:
+        if not view or (not is_new and not cur_config):
             shelf_wdg = my.get_shelf_wdg()
             right_div.add(shelf_wdg, "shelf_wdg")
 

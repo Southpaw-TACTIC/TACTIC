@@ -11,7 +11,7 @@
 #
 __all__ = ["ProjectConfigWdg", "UserConfigWdg", "UserPanelWdg"]
 
-from pyasm.common import Common
+from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.biz import Project
 from pyasm.web import DivWdg, Table, WebContainer, SpanWdg
@@ -54,12 +54,12 @@ class ProjectConfigWdg(BaseRefreshWdg):
         div.add(title_wdg)
         title_wdg.add_style("padding: 5px")
         #title_wdg.add_style("margin: -12px -12px 10px -12px")
-        title_wdg.add_style("margin: -7px -7px 5px -7px")
+        title_wdg.add_style("margin: -6px -7px 5px -7px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("font-size: 14px")
 
         if title:
-            title_wdg.add_gradient("background", "background", -10)
+            title_wdg.add_color("background", "background", -5)
             title_wdg.add_color("color", "color", -10)
             title_wdg.add_border()
             title_wdg.add(title)
@@ -158,7 +158,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title.add_style("padding: 10px")
         #title.add_style("margin: -10px -10px 10px -10px")
 
-        title.add_gradient("background", "background3", 5, -10)
+        title.add_color("background", "background3")
 
         #table = Table()
         from tactic.ui.container import ResizableTableWdg
@@ -214,7 +214,7 @@ class UserConfigWdg(ProjectConfigWdg):
         user_panel.add_style("overflow-y: auto")
         user_panel.add( UserPanelWdg(show_security=show_security) )
         user_panel.add_style("min-height: 100px")
-        user_panel.add_style("height: 400px")
+        user_panel.add_style("height: 300px")
         user_panel.add_class("spt_resizable")
 
         panel = {
@@ -230,18 +230,24 @@ class UserConfigWdg(ProjectConfigWdg):
         config_xml.append('''
         <config>
         <tab>
+        ''')
+
+        """
         <element name="Help">
             <display class='tactic.ui.app.HelpContentWideWdg'>
               <alias>main</alias>
               <width>1000px</width>
             </display>
         </element>''')
-
+        """
 
         config_xml.append('''
         <element name="Users in Project">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
+        ''')
+
+        config_xml.append('''
         </tab>
         </config>
         ''')
@@ -813,6 +819,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
         search = Search("sthpw/login")
+        search.add_filter("login", "admin", op="!=")
         logins = search.get_sobjects()
 
         top = my.top
@@ -836,12 +843,9 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-        #button = SingleButtonWdg(title="Add", tip="Add New User", icon=IconWdg.ADD)
         button = ActionButtonWdg(title="Add", tip="Add New User")
         top.add(button)
         button.add_style("float: left")
-        #button.add_style("margin-top: -8px")
-        top.add("<br clear='all'/>")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -849,6 +853,7 @@ class UserPanelWdg(BaseRefreshWdg):
             var kwargs = {
                 search_type: "sthpw/login",
                 view: "edit",
+                show_header: false,
             }
             var popup = spt.panel.load_popup("Create New User", class_name, kwargs);
             var top = bvr.src_el.getParent(".spt_panel_user_top");
@@ -860,10 +865,37 @@ class UserPanelWdg(BaseRefreshWdg):
         } )
 
 
+        security = Environment.get_security()
+        license = security.get_license()
+        num_left = license.get_num_licenses_left()
+        current_users = license.get_current_users()
+        max_users = license.get_max_users()
+
+        top.add('''
+        <span style="margin-left: 20px; margin-top: 10px">
+        Users &nbsp;
+        <span class="badge">%s</span>
+        </span>
+        ''' % current_users)
+
+
+
+        if num_left < 1000:
+            top.add('''
+            <span style="margin-left: 20px; margin-top: 10px">
+            Users Left &nbsp;
+            <span class="badge">%s</span>
+            </span>
+            ''' % num_left)
+
+
+        top.add("<br clear='all'/>")
+
 
 
         #logins = []
         if not logins:
+            """
             arrow_div = DivWdg()
             top.add(arrow_div)
             arrow_div.add("<b><<< Click to Add</b>")
@@ -874,13 +906,15 @@ class UserPanelWdg(BaseRefreshWdg):
             arrow_div.add_style("padding: 5px")
             arrow_div.set_box_shadow("1px 1px 2px 2px")
             arrow_div.set_round_corners(10, corners=['TL','BL'])
+            """
 
             div = DivWdg()
             top.add(div)
+            div.add_style("text-align: center")
             div.add_border()
-            div.add_style("min-height: 180px")
+            div.add_style("min-height: 150px")
             div.add_style("margin: 15px 30px 30px 30px")
-            div.add_style("padding: 20px")
+            div.add_style("padding: 30px 20px 0px 20px")
             div.add_color("background", "background3")
             icon = IconWdg( "WARNING", IconWdg.WARNING )
             div.add(icon)
@@ -927,24 +961,33 @@ class UserPanelWdg(BaseRefreshWdg):
 
         tr = table.add_row()
         tr.add_color("color", "color")
-        tr.add_gradient("background", "background", -10)
+        tr.add_color("background", "background", -10)
         th = table.add_header("&nbsp;")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Login")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("First Name")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Last Name")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Display Name")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Activity")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Groups")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Security")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
         th = table.add_header("Edit")
+        th.add_style("padding: 8px 3px")
         th.add_style("text-align: left")
 
 
@@ -956,13 +999,13 @@ class UserPanelWdg(BaseRefreshWdg):
             tr.add_class("spt_row")
 
             if not i or not i%2:
-                tr.add_color("background", "background3")
+                tr.add_color("background", "background")
             else:
                 tr.add_color("background", "background", -2 )
 
             thumb = ThumbWdg()
             thumb.set_sobject(login)
-            thumb.set_icon_size(30)
+            thumb.set_icon_size(45)
             td = table.add_cell(thumb)
 
             td = table.add_cell(login.get_value("login"))

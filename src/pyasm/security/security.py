@@ -631,7 +631,8 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
-
+    def get_max_users(my):
+        return
 
     #
     # Virtual methods
@@ -876,7 +877,7 @@ class NoDatabaseSecurity(Base):
 class Security(Base):
     '''main class dealing with user identification'''
 
-    def __init__(my):
+    def __init__(my, verify_license=False):
         my._login_var = None
         my._is_logged_in = 0
         my._groups = []
@@ -888,8 +889,7 @@ class Security(Base):
         # define an access manager object
         my._access_manager = AccessManager()
 
-        my.license = License.get(verify=False)
-
+        my.license = License.get(verify=verify_license)
 
         my.login_cache = None
 
@@ -1745,7 +1745,10 @@ class License(object):
 
 
     def get_max_users(my):
-        value = my.xml.get_value("license/data/max_users")
+        site_obj = Site.get()
+        value = site_obj.get_max_users()
+        if not value:
+            value = my.xml.get_value("license/data/max_users")
         try:
             value = int(value)
         except ValueError:
@@ -1782,6 +1785,7 @@ class License(object):
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
+        #select.set_database(db_resource)
         select.add_table("login")
 
         columns = sql.get_column_info("login").keys()
@@ -1974,11 +1978,6 @@ class License(object):
             cls.LICENSE = License()
         else:
             if verify:
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
                 cls.LICENSE.verify()
 
         cls.LAST_CHECK = now

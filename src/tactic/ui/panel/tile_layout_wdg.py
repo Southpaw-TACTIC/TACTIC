@@ -129,6 +129,14 @@ class TileLayoutWdg(ToolLayoutWdg):
         }
 
 
+    def alter_search(my, search):
+        process = my.kwargs.get("process")
+        if process:
+            search.add_filter("process", process)
+        return super(ToolLayoutWdg, my).alter_search(search)
+
+
+
    
 
     def get_content_wdg(my):
@@ -348,7 +356,11 @@ class TileLayoutWdg(ToolLayoutWdg):
                     }
                 }
             ''',
-            "cbjs_action": "spt.drop.sobject_drop_action(evt, bvr)"
+            "cbjs_action": '''
+            if (spt.drop) {
+                spt.drop.sobject_drop_action(evt, bvr);
+            }
+            '''
         } )
 
         layout_wdg.add_relay_behavior( {
@@ -417,7 +429,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_keys = [];
                 for (var i = 0; i < tile_tops.length; i++) {
                     var tile_top = tile_tops[i];
-                    var search_key = tile_top.getAttribute("spt_search_key");
+                    var search_key = tile_top.getAttribute("spt_search_key_v2");
                     search_keys.push(search_key);
                 }
 
@@ -486,19 +498,26 @@ class TileLayoutWdg(ToolLayoutWdg):
             ''' % bg1
         } )
 
-        
+
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
+        if my.parent_key:
+            search_type = None
+        else:
+            search_type = my.search_type
 
 
         layout_wdg.add_behavior( {
             'type': 'load',
-            'search_type': my.search_type,
+            'search_type': search_type,
+            'search_key': my.parent_key,
+            'process': process,
             'cbjs_action': '''
 
             spt.thumb = {};
 
             spt.thumb.background_drop = function(evt, el) {
-
-                var search_type = bvr.search_type;
 
                 evt.stopPropagation();
                 evt.preventDefault();
@@ -512,19 +531,27 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
                     var file = files[i];
 
                     var filename = file.name;
 
+                    var search_key;
                     var data = {
                         name: filename
                     }
-                    var item = server.insert(search_type, data);
-                    var search_key = item.__search_key__;
+                    if (bvr.search_key) {
+                       search_key = bvr.search_key
+                    }
+                    else {
+                        var search_type = bvr.search_type;
+                        var item = server.insert(search_type, data);
+                        search_key = item.__search_key__;
+                    }
 
-                    var context = "publish" + "/" + filename;
+                    var context = bvr.process + "/" + filename;
 
                     var upload_file_kwargs =  {
                         files: [files[i]],
@@ -966,9 +993,14 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
-    //spt.behavior.destroy_element(bvr.drag_el);
-    //bvr.drag_el = null;
-    spt.drop.sobject_drop_action(evt, bvr);
+    if (spt.drop) {
+        spt.drop.sobject_drop_action(evt, bvr);
+    }
+    else {
+        if( bvr._drag_copy_el ) {
+            spt.behavior.destroy_element(bvr._drag_copy_el);
+        }
+    }
 }
 
         ''' } )
@@ -1044,7 +1076,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         """
         if my.scale:
             value_wdg.set_value(my.scale)
-        value_wdg.add_style("width: 24px")
+        value_wdg.add_style("width: 28px")
         value_wdg.add_style("text-align: center")
         value_wdg.add_behavior( {
         'type': 'change',
@@ -1115,15 +1147,16 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         div.add_style("height: 20px")
 
 
-        detail_div = DivWdg()
-        div.add(detail_div)
-        detail_div.add_class("spt_tile_detail")
-        detail_div.add_style("float: right")
-        detail_div.add_style("margin-top: -2px")
+        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+            detail_div = DivWdg()
+            div.add(detail_div)
+            detail_div.add_class("spt_tile_detail")
+            detail_div.add_style("float: right")
+            detail_div.add_style("margin-top: -2px")
 
-        #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
-        detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
-        detail_div.add(detail)
+            #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+            detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+            detail_div.add(detail)
 
 
         header_div = DivWdg()
@@ -1140,9 +1173,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
 
-        title = sobject.get_name()
-        if not title:
-            title = sobject.get_code()
+        if sobject.get_base_search_type() == "sthpw/snapshot":
+            title = sobject.get_value("context")
+        else:
+            title = sobject.get_value("name", no_exception=True)
+            if not title:
+                title = sobject.get_value("code", no_exception=True)
       
         table = Table()
         header_div.add(table)
@@ -1261,17 +1297,19 @@ class ThumbWdg2(BaseRefreshWdg):
 
         base_search_type = sobject.get_base_search_type()
         if base_search_type == "sthpw/snapshot":
-            sobject = sobject.get_parent()
+            #sobject = sobject.get_parent()
+            snapshot = sobject
 
-        search_type = sobject.get_search_type()
-        search_code = sobject.get_value("code", no_exception=True)
-        if not search_code:
-            search_code = sobject.get_id()
+        else:
+            search_type = sobject.get_search_type()
+            search_code = sobject.get_value("code", no_exception=True)
+            if not search_code:
+                search_code = sobject.get_id()
 
 
-        # FIXME: make this faster
+            # FIXME: make this faster
 
-        snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
 
         if snapshot:
             file_type = "web"

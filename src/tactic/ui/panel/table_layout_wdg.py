@@ -1266,7 +1266,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                 // FIXME: don't do the last one because it messes up some
                 // tables by making them huge ... not sure why?!
-                for (var i = 0; i < bvr.element_names.length-1; i++) {
+                for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
                     spt.table.set_column_width(name, width);
@@ -3958,6 +3958,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         else
             input.setStyle( "width", '250px');
         input.setStyle('font-family', 'courier new');
+        input.setStyle('font-size', '1.0em');
+        input.setStyle('padding', '5px');
 
         input.value = value;
     }
@@ -4267,7 +4269,7 @@ spt.table.set_display = function( el, value, input_type ) {
         return;
     }
 
-    if (input_type == 'xml' || value.substr(0,6) == '<?xml ') {
+    if (input_type == 'xml' || value.substr(0,1) == '<') {
 
         var label = value;
         //var is_xml = label.substr(0,6) == '<?xml ';
@@ -5211,6 +5213,7 @@ spt.table.set_column_width = function(element_name, width) {
         return;
     }
 
+
     var row = table.getElement(".spt_table_hidden_group_row");
     if (row) {
         var els = row.getElements(".spt_table_hidden_group_td");
@@ -5229,13 +5232,14 @@ spt.table.set_column_width = function(element_name, width) {
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
         if (header.getAttribute("spt_element_name") == element_name) {
-            total_width += width;
+            var new_width = width + "";
+            new_width = parseInt( new_width.replace("px", "") );
+            total_width += new_width;
         }
         else {
             var size = header.getSize();
             total_width += size.x;
         }
-        
 
     }
 

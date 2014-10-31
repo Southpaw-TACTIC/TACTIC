@@ -122,7 +122,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("<br/>"*2)
 
         button_div = DivWdg()
-        button_div.add_styles('width: 300px; height: 50px')
+        button_div.add_styles('width: 300px; height: 75px')
         button = ActionButtonWdg(title="Delete")
         button_div.add(button)
         content.add(button_div)
