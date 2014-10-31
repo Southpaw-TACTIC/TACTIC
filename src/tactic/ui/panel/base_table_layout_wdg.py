@@ -874,7 +874,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 bvr.src_el.setStyle("width", "230px");
                 el.focus();
                 el.select();
-            '''})
+                '''})
 
             keyword_div.add_relay_behavior( {
                 'type': 'click',
