@@ -156,10 +156,11 @@ class FormatMessageWdg(BaseRefreshWdg):
             #message_value = message_value.replace(r"\\", "\\");
             message_value = jsonloads(message_value)
             # that doesn't support delete
-            update_data = message_value.get("update_data")
-            sobject_data = message_value.get("sobject")
-            sobject_code = sobject_data.get('code')
+            
             if category == "sobject":
+                update_data = message_value.get("update_data")
+                sobject_data = message_value.get("sobject")
+                sobject_code = sobject_data.get('code')
                 search_type = message_value.get("search_type")
                 if search_type == "sthpw/note":
                     description = "<b>Note added:</b><br/>%s" % update_data.get("note")
@@ -777,7 +778,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
-
+        
         return subscriptions
 
 
@@ -929,6 +930,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             # show the thumb
             if not message:
                 if mode == "all":
+
                     td = table.add_cell(FormatMessageWdg.get_preview_wdg(subscription))
 
                     td = table.add_cell()
@@ -1055,6 +1057,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
     WIDTH = 500
 
     def get_display(my):
+
         top = my.top
         top.add_class("spt_subscription_bar_top")
         my.set_as_panel(top)
@@ -1165,7 +1168,14 @@ class SubscriptionBarWdg(SubscriptionWdg):
             msg = num
         else:
             msg = ''
-        icon = IconWdg(msg, IconWdg.STAR)
+        try:
+            icon_display = my.kwargs.get('icon')
+        except:
+            icon_display = "STAR"
+        if icon_display is None:
+            icon_display = "STAR"
+
+        icon = IconWdg(msg, icon_display)
         icon.add_style('float: left')
         inner.add(icon)
         msg_div = DivWdg(msg)

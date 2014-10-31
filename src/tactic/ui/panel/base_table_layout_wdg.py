@@ -21,7 +21,6 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-
 from layout_wdg import SwitchLayoutMenu
 
 import random, types, re
@@ -387,19 +386,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def alter_search(my, search):
         '''give the table a chance to alter the search'''
+       
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
-
-        keyword_values = filter_data.get_values_by_prefix("keyword")
-        if keyword_values:
-            column = "keywords"
-            keyword_value = keyword_values[0].get('value')
-            if keyword_value and search.column_exists(column):
-                from tactic.ui.filter import KeywordFilterElementWdg
-                keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
-                keyword_filter.set_values(keyword_values[0])
-                keyword_filter.alter_search(search)
-
 
 
         # solution for state filter grouping or what not
@@ -564,7 +553,29 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # custom_filter_view and custom_search_view are less used, so excluded here
             my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
+        
         search = my.search_wdg.get_search()
+
+
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get_from_cgi()
+
+        keyword_values = filter_data.get_values_by_prefix("keyword")
+
+        from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+
+        if keyword_values:
+
+           
+            keyword_value = keyword_values[0].get('value')
+            if keyword_value:
+                from tactic.ui.filter import KeywordFilterElementWdg
+                keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
+                keyword_filter.set_values(keyword_values[0])
+                keyword_filter.alter_search(search)
+
+
         if my.no_results:
             search.set_null_filter()
 
@@ -829,9 +840,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # TEST
         show_keyword_search = True
-        column = "code"
 
-        if show_keyword_search and SearchType.column_exists(my.search_type,column):
+        
+       
+        if show_keyword_search:
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
@@ -846,7 +858,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM", width="100", show_partial=False)
+            keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
+                icon="ZOOM", width="100", show_partial=False)
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
