@@ -520,7 +520,7 @@ class TextInputWdg(BaseInputWdg):
         td.add_style("border-style: solid")
         #my.text.add_style("border: none")
 
-        my.text.add_style("width: 100%")
+        #my.text.add_style("width: 100%")
 
         my.text.add_style("padding: 5px")
         my.text.add_style("height: %s" % (height-10))

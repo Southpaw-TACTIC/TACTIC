@@ -642,6 +642,25 @@ class Site(object):
     def get_max_users(my):
         return
 
+
+    # HACK: Some functions to spoof an sobject
+    def get_project_code(my):
+        return "admin"
+
+    def get_base_search_type(my):
+        return "sthpw/virtual"
+
+    def get_search_type(my):
+        return "sthpw/virtual"
+
+    def get(my, name, no_exception=True):
+        return my.get_value(name)
+
+    def get_value(my, name, no_exception=True):
+        if name == "code":
+            site = Site.get_site()
+            return site
+
     #
     # Virtual methods
     #
