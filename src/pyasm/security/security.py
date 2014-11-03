@@ -314,10 +314,18 @@ class Login(SObject):
                     login.set_value("id", 0)
                     login.set_id(0)
 
+                columns = SearchType.get_columns("sthpw/login")
+
                 login.set_value("login", "admin")
+                login.set_value("code", "code")
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
+
+                data = login.get_data()
+                for column in columns:
+                    if data.get(column) == None:
+                        login.set_value(column, "")
 
                 password = Config.get_value("security", "password")
                 if not password:

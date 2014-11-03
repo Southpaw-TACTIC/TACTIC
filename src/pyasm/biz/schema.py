@@ -347,7 +347,6 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
 SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
 <schema parent="__NONE__">
-   <search_type name='config/plugin'/>
    <search_type name='config/naming'/>
    <search_type name='config/widget_config'/>
    <search_type name='config/custom_script'/>
