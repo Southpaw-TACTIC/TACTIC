@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8. Scalability</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC End-User Documentation" /><link rel="up" href="index.html" title="TACTIC End-User Documentation" /><link rel="prev" href="ar01s07.html" title="7. Fileserver" /><link rel="next" href="ar01s09.html" title="9. Troubleshooting" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_scalability"></a>8. Scalability</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_scalable_configuration_examples"></a>8.1. TACTIC Scalable Configuration Examples</h3></div></div></div><p>TACTIC and its co-services can be distributed over multiple machines.
+This can be specific combinations of TACTIC and co-services.</p><p>For purposes of instruction and brevity, the configuration examples are
+not targeted towards particular multiple machine solutions; rather, the
+configuration examples can be altered to suit the individual
+environment.</p><p>Here are some examples:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+HTTP server, DB, and TACTIC server
+</li><li class="listitem">
+HTTP server, HTTP server, DB server, and TACTIC server
+</li><li class="listitem">
+HTTP server, TACTIC server 1, TACTIC server 2, and DB server,
+</li></ul></div><p>and so on.</p><p><span class="strong"><strong>Example Configuration: One Server</strong></span></p><p>Single machine for small scale environment, limited usage</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+all services on one machine
+</li></ul></div><p><span class="strong"><strong>Example Configuration: Two Servers</strong></span></p><p>Two machines to spread workload.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+HTTP and TACTIC server
+</li><li class="listitem">
+DB server
+</li></ul></div><p><span class="strong"><strong>Example Configuration: Three Servers</strong></span></p><p>For larger environments where automated usage and heavy reporting usage
+by users through the GUI.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+HTTP &amp; DB server
+</li><li class="listitem">
+TACTIC server 1
+</li><li class="listitem">
+TACTIC server 2
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_load_balancing_tactic"></a>8.2. Load-Balancing TACTIC</h3></div></div></div><p>TACTIC runs on a multi-threaded application server ("Cherrypy"), but
+this application server uses Python threads and not system threads. This
+means that all of the threads in a single python process run on the same
+processor.</p><p>To overcome this limitation, you should run a number of full TACTIC
+processes across a number of different ports and allow the webserver to
+load-balance requests across these ports. By default in the the tactic
+installation config file, `
+            /home/apache/projects/config/tactic_linux-conf.xml`, the
+process count is set to 3. Add this entry if it does not exist.</p><pre class="screen">&lt;services&gt;
+    ...
+    ...
+    &lt;process_count&gt;3&lt;/process_count&gt;
+&lt;/services&gt;</pre><p>There are many ways to load-balance TACTIC. Two different ways will be
+described in the following:</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><p>\1) the Proxy Balancer method (recommended)</p><p><span class="strong"><strong>or</strong></span></p><p>\2) the RewriteRule method (not recommended).</p><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><p>\1. The first way (recommended way) is to make use of Apache’s
+<code class="literal">proxy_balancer_module</code> . Ensure it is already enabled in the main
+Apache config file in /etc/httpd/conf/httpd.conf. In the <code class="literal">tactic.conf</code>
+file (provided with the TACTIC installation usually placed near the
+Apache 2 installation config area like /etc/httpd/conf.d/.. or
+/etc/apache2/..), make sure these lines below are present. This set-up
+corresponds to a process_count of 3 in the <code class="literal">tactic.conf</code> file. If there
+are more, you just have to add more*BalancerMember* line accordingly.</p><pre class="screen">ProxyPreserveHost on
+
+# Using the ProxyPass directives
+&lt;Proxy balancer://tactic&gt;
+  BalancerMember http://localhost:8081/tactic
+  BalancerMember http://localhost:8082/tactic
+  BalancerMember http://localhost:8083/tactic
+&lt;/Proxy&gt;
+ProxyPass /tactic balancer://tactic
+ProxyPass /projects balancer://tactic</pre><p>This method is more desirable as it doesn’t need the load_balance.txt
+required for the second method. In addition, it is mandatory if the
+process_time_alive directive is used under services in the TACTIC config
+file in /home/apache/projects/config/tactic_linux-conf.xml.</p><p>\2. The second way (old way) is to make use of Apache’s
+<code class="literal">rewrite_module</code>. In the <code class="literal">tactic.conf</code> file (provided with the TACTIC
+installation usually placed near the Apache 2 installation config area
+like /etc/httpd/conf.d/.. or /etc/apache2/..), comment out the lines
+under "for cherrypy":</p><pre class="screen"># for cherrypy
+#RewriteRule ^/tactic/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+#RewriteRule ^/tactic http://localhost:8081/tactic/ [P,L]
+#RewriteRule ^/projects/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+#RewriteRule ^/projects http://localhost:8081/tactic/ [P,L]</pre><p>Then in the same file uncomment the lines for the random load balancing
+scheme:</p><pre class="screen"># This is for using a random load_balancing scheme
+RewriteMap lb rnd:/home/apache/sites/load_balance.txt
+RewriteRule ^/tactic/(.+)$ http://${lb:dynamic}/tactic/$1 [P,L]
+RewriteRule ^/projects/(.+)$ http://${lb:dynamic}/tactic/$1 [P,L]
+RewriteRule ^/tactic http://${lb:dynamic}/tactic/ [P,L]
+RewriteRule ^/projects http://${lb:dynamic}/tactic/ [P,L]</pre><p>These lines will look at the file
+"<code class="literal">/home/apache/sites/load_balance.txt</code>" to find out how to replace the
+variable ${lb:dynamic} with a randomly chosen value from a list.</p><p>Note: The path for load_balance.txt cannot have spaces in it or Apache
+service will not start.</p><p>A sample <code class="literal">load_balance.txt</code> file looks like the following:</p><pre class="screen">##
+## load_balance.txt -- rewriting map
+##
+dynamic localhost:8081|localhost:8082|localhost:8083</pre><p>The process_count being set to 3 corresponds to the three processes
+running at port 8081, 8082, 8083 respectively. You can see the three
+startup.py processes by running:</p><pre class="screen">ps -wef | grep python</pre><p>The higher the process_count is set, the more memory is needed in the
+system. If you set it to 10 for heavier usage, the load_balance.txt
+should look like this:</p><pre class="screen">## this is in one line in the file
+dynamic localhost:8081|localhost:8082|localhost:8083|localhost:8084|localhost:8085|localhost:8086
+        |localhost:8087|localhost:8088|localhost:8089|localhost:8090</pre><p><span class="strong"><strong>Restart the apache service and tactic service after changing their
+config files.</strong></span></p><p>To verify if you have set up load-balancing correctly, please follow
+this tutorial in our support site:</p><pre class="screen">http://support.southpawtech.com/tutorial/simple-load-balance-test</pre><p>For more information on load balancing using mod_rewrite, refer to the
+mod_rewrite documentation located at:</p><p><span class="strong"><strong>http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html</strong></span></p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

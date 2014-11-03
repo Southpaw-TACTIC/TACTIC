@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>6. Server Configuration</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC End-User Documentation" /><link rel="up" href="index.html" title="TACTIC End-User Documentation" /><link rel="prev" href="ar01s05.html" title="5. Install Database" /><link rel="next" href="ar01s07.html" title="7. Fileserver" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_server_configuration"></a>6. Server Configuration</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_configure_the_tactic_service"></a>6.1. Configure the TACTIC Service</h3></div></div></div><p>For development, test, or evaluation purposes, there is no need to run
+TACTIC as a service. The <code class="literal">startup_dev.py</code> script should suit these
+purposes adequately. However, for production, it is highly recommended
+to run TACTIC as a service.</p><p>In the <code class="literal">&lt;TACTIC_INSTALL_DIR&gt;/src/install</code> directory, there is a
+directory called <code class="literal">service</code>, with two files:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /></colgroup><tbody><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="" align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_configuring_ssl"></a>6.2. TACTIC Configuring SSL</h3></div></div></div><p>This document discusses security layers that can be implemented on top
+of the TACTIC service.</p><p><span class="strong"><strong>Services covered</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Apache HTTP server
+</li><li class="listitem">
+IIS HTTP server
+</li><li class="listitem">
+PPTP server
+</li><li class="listitem">
+IPsec
+</li></ul></div><p>Southpaw Technology does not provide any support, either direct or
+implied, for remote access.</p><p>Any application that is put on a public network can potentially be
+compromised, even with rigorous security testing. TACTIC, in its current
+version, has not been production tested for security scenarios outside
+of completely trusted networks like intranets. This document does not
+make any claims that TACTIC has any level of security beyond what its
+current architecture design allows.</p><p>TACTIC is a bandwidth-intensive application, and client-server
+performance will be affected by any number of network issues between the
+client and the server.</p><p>There are numerous elements of functionality that go beyond utilizing
+HTTP port access in enterprise applications of TACTIC. Many 3rd party
+applications that communicate with TACTIC will produce unexpected
+behavior when utilized in a fashion that was not intended for the
+product, such as use in remote applications.</p><p><span class="strong"><strong>TACTIC on public networks</strong></span></p><p>HTTP transport co-services can be configured to provide authentication
+services to TACTIC.</p><p><span class="strong"><strong>HTTP zone access</strong></span></p><p>The simplest form of HTTP security authentication zone access. To enable
+different security scenarios, the HTTP service must be configured for
+use of these scenarios. Configuration files (usually called .htaccess
+files) contain a number of settings that can be used for integrating the
+application with the capabilities of the Web server.</p><p>When enabling password zone access, the password is transmitted to the
+server in cleartext, unless TLS is enabled.</p><p><span class="strong"><strong>Apache</strong></span></p><p>Apache uses either directives for directory access in the httpd.conf
+file, or can be enabled on a per-directory basis, with the use of a
+.htaccess file. Either way can be used. Apache provides modules for
+LDAP, MySQL, flat-file, ADS, and many other authentication mechanisms.</p><p><span class="strong"><strong>IIS</strong></span></p><p>IIS can be configured at the top level through the IIS snap-in, or by
+individual configuration file. IIS 7 uses a file called Web.config to
+hold settings for integration with applications. The Web.config file
+contains information that control module loading, security
+configuration, session state configuration, and application language and
+compilation settings.</p><p><span class="strong"><strong>Overview</strong></span></p><p>TACTIC can be configured to use the SSL transport layer. This layer is
+independent of the TACTIC service, and can be tailored to the needs of
+the deployment without major changes to the TACTIC service.</p><p>Both major HTTP servers can be configured for SSL support. There are
+many materials online available for configuration of the various flavors
+of these two major HTTP service projects.</p><p>Since there are many different versions of these servers, a simple
+search of “Windows 2003 IIS SSL�? as an example will yield many HOWTOs
+and configuration references. Please consult the documentation for these
+services.</p><p>The configuration examples that have been set out below are by no means
+complete. Depending on the HTTP service used, and the platform used,
+these examples may not be enough set directives or steps to properly
+complete the SSL process. They are given as guides.</p><p><span class="strong"><strong>Steps</strong></span></p><p>The major steps to utilizing SSL in with TACTIC are</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Enabling TACTIC to converse with SSL
+</li><li class="listitem">
+Enabling the SSL service
+</li><li class="listitem">
+Creating a Virtual Server, or extending the existing server to accept
+SSL
+</li><li class="listitem">
+Providing CA certificates
+</li></ul></div><p><span class="strong"><strong>Configuration</strong></span></p><p><span class="strong"><strong>TACTIC configuration</strong></span></p><p>The SSL HTTP layer is kept separate from TACTIC via a proxy, so the only
+configuration change required of TACTIC is in the tactic_(OS).conf file.
+The &lt;security&gt;&lt;protocol&gt; directive must tell TACTIC to expect an SSL
+delivery.</p><pre class="screen">&lt;security&gt;
+    &lt;protocol&gt;https&lt;/protocol&gt;
+&lt;/security&gt;</pre><p>The setting can be set to either “http�? or “https�?.</p><p><span class="strong"><strong>Apache</strong></span></p><p>The apache project uses mod_ssl as a modular way of inserting SSL
+capabilities into the HTTP service.</p><p>The example OS is Fedora 11. “Yum�? is used to add SSL to apache.</p><pre class="screen">[root@lindsay conf.d]# yum install mod_ssl
+Loaded plugins: refresh-packagekit
+…
+Complete!
+[root@lindsay conf.d]#</pre><p>Once mod_ssl is added, the Apache configuration should contain at least
+these directives. The example directives are contained in
+conf.d/ssl.conf in the Fedora 11 example. File locations will vary
+according to OS.</p><pre class="screen">LoadModule ssl_module modules/mod_ssl.so
+Listen 443
+
+SSLPassPhraseDialog  builtin
+SSLSessionCache         shmcb:/var/cache/mod_ssl/scache(512000)
+SSLSessionCacheTimeout  300
+SSLMutex default
+SSLRandomSeed startup file:/dev/urandom  256
+SSLRandomSeed connect builtin
+SSLCryptoDevice builtin
+&lt;VirtualHost _default_:443&gt;
+SSLEngine on
+SSLProtocol all -SSLv2
+SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+SLCertificateFile /etc/pki/tls/certs/localhost.crt
+SSLCertificateFile /etc/pki/tls/certs/localhost.crt
+SSLCertificateKeyFile /etc/pki/tls/private/localhost.key</pre><p>As soon as its added and the server is restarted, the SSL service
+becomes available on the network interface that apache is running on.</p><p><span class="strong"><strong>IIS</strong></span></p><p>IIS can be configured at the top level through the IIS snap-in, or by
+individual configuration file.</p><p>To configure SSL on a Web server or a Web site</p><p>\1. In IIS Manager, double-click the local computer, and then
+double-click the Web Sites folder. 2. Right-click the Web site or file
+that you want to protect with SSL, and then click Properties. 3. Under
+Web site identification click Advanced. 4. In the Advanced Web site
+identification box, under Multiple identities for this Web site, verify
+that the Web site IP address is assigned to port 443, the default port
+for secure communications, and then click OK. Optionally, to configure
+more SSL ports for this Web site, click Add under Multiple identities of
+this Web site, and then click OK. 5. On the Directory Security or File
+Security tab, under Secure communications, click Edit. 6. In the Secure
+Communications box, select the Require secure channel (SSL) check box.
+7. To enable SSL client certificate authentication and mapping features,
+select the Enable client certificate mapping check box, click Edit, add
+the 1-to-1 or many-to-1 mappings you need, and then click OK three
+times.</p><p><span class="strong"><strong>Secure transaction processing</strong></span></p><p>Processing transactions securely on the web means that there is a need
+to be able to transmit information between the web site and the customer
+in a manner that makes it difficult for other people to intercept and
+read. SSL, or Secure Sockets Layer, takes care of this. It works through
+a combination of programs and encryption/decryption routines that exist
+on the web services host, and in browser programs (like Firefox and
+Internet Explorer)</p><p><span class="strong"><strong>Performance</strong></span></p><p>TLS has encryption/decryption routines as part of its security. These
+routines can be bandwidth/CPU intensive. Any usage of TLS can compromise
+TACTIC, if the routines are incorporated into the same host as the
+TACTIC service. See guides on load-balancing for details on offsetting
+this.</p><p><span class="strong"><strong>Overview</strong></span></p><p>A VPN will provide the most trouble-free access to TACTIC remotely. In
+this scenario, the authentication/encryption routines are completely
+removed from the realm of TACTIC configuration. This not only helps to
+isolate TACTIC from complex configuration issues, but also allows for
+isolated troubleshooting of remote access issues.</p><p><span class="strong"><strong>PPTP</strong></span></p><p>PPTP is Microsoft supplied product. If an enterprise deployment of
+TACTIC includes ADS authentication, then PPTP can be used as the VPN
+transport layer. Usually, deployment is quite easily done. In PPTP,
+usernames and passwords are used to complete the VPN link. PPTP can be
+considered the “road-warrior�? VPN, meaning that it is easily deployed
+to users.</p><p><span class="strong"><strong>IPsec</strong></span></p><p>Ipsec is a suite of protocols used to secure data between hosts. A VPN
+can be transported on top of this protocol. Typically, two remote hosts
+are configured to communicate with each other, such as routers. This
+type of VPN is typically used to connect two offices together.</p><p><span class="strong"><strong>Hardware VPNs</strong></span></p><p>Hardware VPNs such as offerings provided by companies like Cisco, can be
+easily implemented. These Systems are designed for minimal ramp-up, and
+can be implemented quickly.</p><p><span class="strong"><strong>Security Terms</strong></span></p><p>“is a form of active eavesdropping in which the attacker makes
+independent connections with the victims and relays messages between
+them, making them believe that they are talking directly to each other
+over a private connection, when in fact the entire conversation is
+controlled by the attacker. The attacker must be able to intercept all
+messages going between the two victims and inject new ones, which is
+straightforward in many circumstances (for example, an attacker within
+reception range of an unencrypted Wi-Fi wireless access point, can
+insert himself as a man-in-the-middle).�?</p><p><span class="strong"><strong>SSL (Wikipedia)</strong></span></p><p>“Transport Layer Security (TLS) and its predecessor, Secure Sockets
+Layer (SSL), are cryptographic protocols that provide security for
+communications over networks such as the Internet. TLS and SSL encrypt
+the segments of network connections at the Transport Layer end-to-end.�?</p><p><span class="strong"><strong>Cleartext (Wikipedia)</strong></span></p><p>Cleartext is transmitted, unencrypted text.</p><p>“In a cryptosystem, weaknesses can be introduced through insecure
+handling of plaintext, allowing an attacker to bypass the cryptography
+altogether. Plaintext is vulnerable in use and in storage, whether in
+electronic or paper format. “</p><p><span class="strong"><strong>PPTP (wikipedia)</strong></span></p><p>The Point-to-Point Tunneling Protocol (PPTP) is a method for
+implementing virtual private networks. PPTP uses a control channel over
+TCP and a GRE tunnel operating to encapsulate PPP packets.</p><p>The PPTP specification does not describe encryption or authentication
+features and relies on the PPP protocol being tunneled to implement
+security functionality. However the most common PPTP implementation,
+shipping with the Microsoft Windows product families, implements various
+levels of authentication and encryption natively as standard features of
+the Windows PPTP stack. The intended use of this protocol is to provide
+similar levels of security and remote access as typical VPN products.</p><p><span class="strong"><strong>IPSEC (Wikipedia)</strong></span></p><p>Internet Protocol Security (IPsec) is a protocol suite for securing
+Internet Protocol (IP) communications by authenticating and encrypting
+each IP packet of a data stream. IPsec also includes protocols for
+establishing mutual authentication between agents at the beginning of
+the session and negotiation of cryptographic keys to be used during the
+session. IPsec can be used to protect data flows between a pair of hosts
+(e.g. computer users or servers), between a pair of security gateways
+(e.g. routers or firewalls), or between a security gateway and a
+host.[1]</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_active_directory_integration"></a>6.3. Active Directory Integration</h3></div></div></div><p>TACTIC provides the ability to easily connect to any active directory
+installation for both authentication and for synchronization of user
+data. With a set of directives in the TACTIC configuration file, it is
+possible to connect to Active Directory for authentication and user
+information.</p><p>This synchronization takes place at login time. At this point, TACTIC
+takes the desired information for a particular user and caches it into
+the "sthpw/login" search type. Subsequent requests would normally use an
+issued ticket given at login time. On these requests, no further
+querying of active directory is needed until the ticket expires or the
+user signs out the application.</p><p>The active directory modules make use of win32 libraries for python.
+These must be installed in order for the connection to active directory
+to function properly</p><p>There are a number of directives in the TACTIC config file that can be
+used to configure the active directory settings. These allow you to
+adjust TACTIC behavior to suit the needs of the facility.</p><p>In order to turn on active directory authentication, you must change the
+authenticate class to the following:</p><p>authenticate_class: tactic.active_directory.ADAuthenticate</p><p>The following directives can be set under the active directory category:</p><p><span class="strong"><strong>domains:</strong></span> This is a "|" delimited list of the domains that exist in the
+network. If specified, a selection box for domains will be added to the
+login page.</p><p>*allow:*can be "all", which allows everyone to log in if authentication
+is approved or it can point to the name of a specific Active Directory
+attribute that must be set to True. If a person is denied access, the
+will receive the error: "Permission denied due to insufficient Active
+Directory clearance".</p><p>*default_groups:*defines the default groups that a user will belong to
+if none is specified. Multiple groups are delimited by "|".</p><p>*default_license_type:*determines the default license type for a user if
+none is specified in the Active Directory attribute "tacticLicenceType".</p><p>Below is an example of a typical entry in the TACTIC config file:</p><p>&lt;active_directory&gt;</p><p>&lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt;</p><p>&lt;allow&gt;tacticEnabled&lt;/allow&gt;</p><p>&lt;default_groups&gt;client&lt;/default_groups&gt;</p><p>&lt;default_license_type&gt;user&lt;/default_license_type&gt;</p><p>&lt;/active_directory&gt;</p><p>Allow anyone to login:</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Allow anyone to login and will be put in the "client" group if user has
+no groups specified.</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;/allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Only allow thos with the attibute tacticEnabled in Active Directory set
+to "true"</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;tacticEnabled&lt;/allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Enable users to select a domain (xxx, yyy or zzz) in the login screen</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;/allow&gt;</p><p>&lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt;</p><p>&lt;/active_directory&gt;</p><p>Active Directory attributes use camel case notation (aaaBbbCcc), while
+TACTIC users lowercase with underscore separators for columns(
+aaa_bbb_ccc). In order to maintain consistency within the TACTIC
+application, a mapping of columns from active directory to TACTIC is
+provided. The following mappings are made by default:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>mail</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>email</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>telephoneNumber</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>phone_number</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>department</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>department</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>displayName</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>first_name, last_name (broken up)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>tacticLicenceType</p></td><td style="" align="left" valign="top"><p>license_type</p></td></tr></tbody></table></div><p>The Active Directory variable "tacticLicenseType" is a custom variable
+that indicates which type of license a particular user can occupy in
+TACTIC. If this attribute is missing from a users active directory
+profile, then they will be denied a login. This attribute can be used to
+determine if a particular user in active directory is allowed to login
+to TACTIC.</p><p>The only supported license for this attribute are "user" and "default".
+Other license types have not yet been implemented yet.</p><p>On log in, TACTIC will look at all of the groups that a user belongs to
+in Active Directory and match those group names to the "ad_login_group"
+column in the "sthpw/login_group" search type. This grouping list will
+synchronized at this time, removing the users from groups not specified
+in Active Directory and add those that are specified. This means that
+Active Directory is in full control of the groups that a user is part of
+and therefore must be managed entirely in Active Directory.</p><p>For the name of the group, TACTIC only looks at the root of the path to
+map the group name. For example, an active directory group with the
+following distinguished name:</p><p>memberOf: CN=supervisor,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com</p><p>TACTIC will need only "supervisor" to be entered in the "ad_login_group"
+column.</p><p>If on logging in, the number of users exceeds the number of users in the
+license, then that user will be denied access and an entry in the
+"sthpw/login" search type will not be made. However, all other users
+currently registered can continue to work normally.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

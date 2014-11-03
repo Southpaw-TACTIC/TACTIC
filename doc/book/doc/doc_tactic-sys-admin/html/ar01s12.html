@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12. Client Setup</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC End-User Documentation" /><link rel="up" href="index.html" title="TACTIC End-User Documentation" /><link rel="prev" href="ar01s11.html" title="11. TACTIC Server VM" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s11.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_client_setup"></a>12. Client Setup</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_client_computer_setup_requirements"></a>12.1. Client Computer Setup Requirements</h3></div></div></div><p>The following are requirements for a client using TACTIC.</p><p><span class="strong"><strong>TACTIC Temp Directory Creation</strong></span></p><p>TACTIC needs to be able to create the TACTIC temporary directory. TACTIC
+uses this directory as scratch pad space to store temporary files.</p><p>The location of this directory depends on the client operating system:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Linux: <code class="literal">/tmp/sthpw</code>
+</li><li class="listitem">
+Windows: <code class="literal">C:/sthpw</code>
+</li><li class="listitem">
+Mac OS X: <code class="literal">/tmp/sthpw</code>
+</li></ul></div><p><span class="strong"><strong>Set environment variables</strong></span></p><p><code class="literal">$TACTIC_ASSET_DIR</code></p><p>This environment variable is used to point to the root of
+<code class="literal">asset_base_dir</code> (the directory where assets are stored). This value
+defaults to "/home/apache/assets" in the TACTIC server. On Windows
+machines, this path is usually mapped as a letter drive (for example,
+Z:\) or as a UNC path (for example, \\server\volume\directory\). This
+environment variable is set by the server on the client machine during
+loading if it does not already exist.</p><p>On a per-project basis, you can set the project setting with the keys
+"win32_client_repo_dir" and "linux_client_repo_dir" so one project can
+have its asset directory mapped to Drive Z: and another mapped to Drive
+T:.</p><p><span class="strong"><strong>Browser Plugins</strong></span></p><p>TACTIC uses the Java plugin in many cases to communicate with the client
+computer’s operating system. This plugin is mostly used in application
+integration to pass files through the client web browser to and from the
+TACTIC server.</p><p>To download the latest version of the Java plugin, go to
+<a class="ulink" href="http://www.java.com" target="_top"><span class="strong"><strong>http://www.java.com</strong></span></a></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_installing_tactic_on_centos_5_7"></a>12.2. Installing Tactic on CentOS 5.7</h3></div></div></div><p>CentOS 5.5 has now been deprecated in favour of CentOS 5.7 or CentOS
+6.0. Since CentOS 5.5 will no longer receive updates and we urge you to
+consider using a more up to date version of the operating system such as
+CentOS 5.7. Step by step instructions for Tactic 3.6.0.v01 are provided
+below.</p><p><span class="strong"><strong>Requirements</strong></span></p><p>Tactic requires the following software to be installed:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Apache HTTP server 2.2
+</li><li class="listitem">
+Postgres Database Server 8.4 or higher
+</li><li class="listitem"><p class="simpara">
+Python 2.7 and the following Python modules:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Python Imaging Library 1.1.7
+</li><li class="listitem">
+Python LXML 2.28
+</li><li class="listitem">
+Pycrypto 2.3
+</li><li class="listitem">
+Psycopg2 2.3.2
+</li></ul></div></li></ul></div><p>It should be noted that while there may be newer versions of these
+Python modules, Tactic 3.6.0.v01 is built with these particular versions
+and may not work as intended should you use later versions.</p><p><span class="strong"><strong>Disabling Security for Testing</strong></span></p><p>For the sake of being able to get Tactic up quickly and without a large
+amount of fuss it is prudent to disable firewalling and SELinux. This is
+by no means an endorsement to run your server without these services.
+Once you have Tactic up and running we encourage you to read the section
+&lt;TACTIC SECURITY&gt;.</p><p>CentOS 5.7 uses the iptables service as a firewall. To disable this
+temporarily you can issue the following commands as root.</p><pre class="screen">/etc/init.d/iptables save
+/etc/init.d/iptables stop</pre><p>This will disable the firewall for the currently running CentOS session.
+Should you wish these settings to persist across reboots. You can issue
+the following command as root.</p><pre class="screen">/sbin/chkconfig iptables off</pre><p>To disable SELinux, edit the file /etc/selinux/config as root with your
+favourite editor and set the SELINUX variable to <span class="emphasis"><em>disabled</em></span>.</p><pre class="screen">SELINUX=disabled</pre><p>Getting this setting to take effect requires a reboot.</p><p><span class="strong"><strong>Installing Apache HTTP server</strong></span></p><p>To install Apache 2.2 on CentOS 5.7 issue the following command as root:</p><pre class="screen">yum install httpd</pre><p>This package has several dependencies and they should be installed as
+well.</p><p>It would be good to familarize yourself with some of the more pertinent
+paths in the Apache installation on CentOS5.7. We’ve listed them below
+for your convenience.</p><div class="table"><a id="idm256627328976"></a><p class="title"><strong>Table 6. Common Paths in Apache 2.2</strong></p><div class="table-contents"><table summary="Common Paths in Apache 2.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf/httpd.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Apache configuration file.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf.d/</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache dynamic configuration directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path the the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/www/html</p></td><td style="" align="left" valign="top"><p>Path to the Document Root folder of the base Apache
+install.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>It’s best to test your Apache install at this point. The included main
+Apache configuration file is enough to get the server started. You will
+need create a small html file to do this. Using your favourite editor
+create a file called index.html, including the following contents:</p><pre class="screen">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Apache Base Install&lt;/title&gt;
+  &lt;/head&gt;
+&lt;body&gt;
+   &lt;p&gt;Apache Install Successful&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre><p>Save the file in /var/www/html and issue the following command as root
+to ensure proper permissions are set.</p><pre class="screen">chmod 755 /var/www/html/index.html</pre><p>Now we can start the Apache server itself. As root issue the following
+command.</p><pre class="screen">/etc/init.d/httpd start</pre><p>The service should start successfully. If it does not consult the Apache
+error log listed above to discover any problems that may have occured.</p><p>At last we should now be able to point a web browser to the IP address
+associated with the server. If you see the text "Apache Install
+Successful", then your server is up and running and server pages
+properly.</p><p>Finally we will want the Apache service to persist through reboots. As
+root issue the following command:</p><pre class="screen">/sbin/chkconfig httpd on</pre><p>Then reboot the server and make sure that httpd comes up on reboot and
+that you can view the test page properly. Later in the install we will
+configure the Apache server to interact with Tactic properly.</p><p><span class="strong"><strong>Installing Postgres Database Server</strong></span></p><p>CentOS 5.7 repositories use Postgres version 8.1.23-1. However Tactic
+requires version 8.4 or higher. First we must make sure that we didn’t
+include the default version Postgres in our base install. As root please
+issue the following command:</p><pre class="screen">rpm -qva | grep -i postgres</pre><p>This command will search your installed packages and filter the output
+for any packages containing the work postgres. If you receive any output
+from this command please uninstall the packages by issuing the following
+command:</p><pre class="screen">rpm -e &lt;package_name&gt;</pre><p>Where &lt;package_name&gt; is the name of the package you wish to uninstall.
+Consult the RPM or Yum manpages for further instructions on installing
+and uninstalling packages.</p><p>Lastly before installing any new Postgres repository, we want to make
+sure to exclude the default version of Postgres from showing up in the
+base and update Yum repositories included with the operating system
+itself. Using your favourite editor, edit the file
+/etc/yum.repos.d/CentOS-Base.repo to include the line:</p><pre class="screen">exclude=postgresql*</pre><p>Under both the [base] section and the [updates] section of the file.
+Save the file. For more information on the Yum installer and repository
+system please see the manpages for yum or the yum website
+<a class="ulink" href="http://yum.baseurl.com" target="_top">http://yum.baseurl.com</a></p><p>Once we have uninstalled any previous versions of Postgres, we can then
+proceed installing a new Yum repository that contains the version of
+Postgres we want to install. As root issue the following commands:</p><pre class="screen">cd /tmp
+wget http://yum.pgrpms.org/9.1/redhat/rhel-5-i386/pgdg-centos-91-9.1-4.noarch.rpm
+rpm -Uvh pgdg-centos-91-9.1-4.noarch.rpm</pre><p>At the time of writing the current version of Postgres was 9.1-4, for
+more current installation versions please visit
+<a class="ulink" href="http://yum.pgrpms.org/repopackages.php" target="_top">http://yum.pgrpms.org/repopackages.php</a> and view the available repository
+RPMs for your operating system and architecture.</p><p>Lastly we will install the proper Postgres version 9.1 RPMs. As root
+issue the following command:</p><pre class="screen">yum install postgresql91 postgresql91-server postgresql91-devel</pre><p>Now that Postgres is installed we will do some basic configuration and
+testing to make sure our installation is ready for use with Tactic.</p><p>Again we should first familiarize ourselves with the pertinent Postgres
+file paths that will be used throughout the install:</p><div class="table"><a id="idm256627295440"></a><p class="title"><strong>Table 7. Common Paths in Postgres 9.1 on CentOS 5.7</strong></p><div class="table-contents"><table summary="Common Paths in Postgres 9.1 on CentOS 5.7" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.1</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Postgres directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/data/pg_hba.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the host based authentication
+file for Postgres.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.1/pgstartup.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Postgres startup log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.1/data/pg_log</p></td><td style="" align="left" valign="top"><p>Path to Postgres database logs.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>If you have used the base postgresql-server install before you will
+notice that the above paths are slightly different than the usual paths
+used on CentOS. This install also varies from the base install in that
+the user must manually initialize the databases used by Postgres. To do
+this issue the following command as root:</p><pre class="screen">/etc/init.d/postgresql-91 initdb</pre><p>Once that command successfully completes we can then start the service.
+As root issue the following command:</p><pre class="screen">/etc/init.d/postgresql-91 start</pre><p>If the service starts successfully we can move forward. If not please
+view any startup errors in the Postgres startup log. Further
+troubleshooting help can be found at <a class="ulink" href="http://postgresql.org" target="_top">http://postgresql.org</a>,</p><p>Lastly we will want to make sure the Postgres service persists through
+reboots. As root issue the following command:</p><pre class="screen">/sbin/chkconfig postgresql-91 on</pre><p>Reboot your server to ensure the service comes up appropriately.</p><p><span class="strong"><strong>Installing Python 2.7</strong></span></p><p>As noted above Tactic requires version 2.7 of Python. CentOS comes with,
+and depends on an earlier version of Python. This means we simply can’t
+remove Python from the system as we did with Postgres. We have to create
+a custom Python 2.7 install and keep it seperate from the base install.</p><p>First we need to install some development libraries and a compiler. As
+root issue the following command:</p><pre class="screen">yum install gcc zlib-devel libxslt-devel libxml2-devel</pre><p>Once those are installed we can get Python 2.7, as root issue the
+following command:</p><pre class="screen">cd /tmp
+wget http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz
+tar -zxvf Python-2.7.1.tgz
+cd Python-2.7.1
+./configure --prefix=/opt/python2.7
+make &amp;&amp; make install</pre><p>This will install Python 2.7 in the custom path /opt/python2.7. You can
+choose a different custom install directory should you choose.</p><p><span class="strong"><strong>Installing Python 2.7 Modules</strong></span></p><p>Next we will install the necessary Python 2.7 modules. These provide
+extended functionality to the Python environment. Before we begin
+however we will have to set an environment variable such that the Python
+2.7 modules we are installing can find their link dependencies. In the
+BASH shell environment as root issue the following command:</p><pre class="screen">export LD_LIBRARY_PATH=/opt/python2.7/lib</pre><p>This will prefix your link dependency library path with our custom
+python libaries ensuring they get precedence in the installation of the
+modules. This environment variable only exists for the current shell
+environment. Any new shells you open will need to have this variable set
+as well. We will institute a permanent solution to this problem later.</p><p><span class="strong"><strong>Installing LXML 2.28</strong></span></p><p>Tactic requires LXML version 2.28. At the time of writing Tactic
+encountered errors running with LXML 2.3 installed. Please make sure you
+install LXML 2.2x. Installation and setup for each module is almost the
+same. As root issue the following commands</p><pre class="screen">cd /tmp
+wget http://codespeak.net/lxml/lxml-2.2.8.tgz
+tar -zxvf lxml-2.2.8.tgz
+cd lxml-2.2.8
+/opt/python/bin/python2.7 setup.py install</pre><p>We have used the location of our custom installed python binary in the
+last line, if you have chosen a different install location use it
+instead.</p><p>Verify the installation by running your custom python binary and trying
+to import the module. As root issue the following command:</p><pre class="screen">/opt/python2.7/bin/python2.7</pre><p>You should receive a python environment and prompt similar to this:</p><pre class="screen">Python 2.7.1 (r271:86832, Apr 12 2011, 16:16:18)
+[GCC 4.1.2 20080704 (Red Hat 4.1.2-51)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt;</pre><p>At the prompt please type the following:</p><pre class="screen">import lxml</pre><p>If you receive another prompt and no error occurs, the import was
+successful and LXML is installed. We will use the same procedure to
+check the veracity of our other modules installations as well.</p><p><span class="strong"><strong>Installing Python Imaging Library 1.1.7</strong></span></p><p>We follow the same procedure to install the Python Imaging Library. As
+root issue the following commands:</p><pre class="screen">cd /tmp
+wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+tar -zxvf Imaging-1.1.7.tar.gz
+cd Imaging-1.1.7
+/opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the
+following command at the python prompt.</p><pre class="screen">import PIL</pre><p><span class="strong"><strong>Installing Pycrypto 2.3</strong></span></p><p>The installation of Pycrypto also follows this template. As root issue
+the following commands:</p><pre class="screen">cd /tmp
+wget http://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.3.tar.gz
+tar -zxvf pycrypto-2.3.tar.gz
+cd pycrypto-2.3
+/opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the
+following command at the python prompt.</p><pre class="screen">import Crypto</pre><p><span class="strong"><strong>Installing Psycopg2 2.3.2</strong></span></p><p>Psycopg2 is a Postgres database adapter for Python. The install is akin
+to the previous 3 except that since we’ve customized our Postgres
+install, we have to let Psycopg2 know that as well. First lets get the
+package and uncompress it. As root issue the following:</p><pre class="screen">cd /tmp
+wget http://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.3.2.tar.gz
+tar -zxvf psycopg2-2.3.2.tar.gz
+cd psycopg2-2.3.2</pre><p>Now we have to modify the pg_config variable in the file setup.cfg.
+Using your favourite editor open /tmp/psycopg2-2.3.2/setup.cfg and edit
+the pg_config entry to match the following:</p><pre class="screen">pg_config=/usr/pgsql-9.1/bin/pg_config</pre><p>Now we should be able to install Psycopg2 properly. As root issue the
+following command:</p><pre class="screen">/opt/python2.7/bin/python2.7 setup.py install</pre><p>Check the installation of the module by loading python and issuing the
+following command at the python prompt.</p><pre class="screen">import psycopg2</pre><p>Now that all the Tactic components are installed, we can begin
+installing Tactic itself.</p><p><span class="strong"><strong>Installing Tactic 3.6.0.v01</strong></span></p><p>First we have to download the Tactic source from the Southpaw Tech
+Support website. Using a web browser navigate to
+<a class="ulink" href="http://support.southpawtech.com" target="_top">http://support.southpawtech.com</a> and login using the support account you
+were assigned. After you have logged in, please click on "Downloads" in
+the upper right hand corner of the website. Once you are on the
+downloads page, you should see the download link for the Tactic
+3.6.0.v01 source code. Save the Tactic source code zip file in /tmp on
+the server.</p><p>Once we have the Tactic source we need to unpack it. As root issue the
+following commands:</p><pre class="screen">cd /tmp
+unzip tactic-3.6.0.v01.zip</pre><p>Once the Tactic source is unpacked, you should familarize yourself with
+the Tactic directory structure. The prefix of the paths will change
+during install, however the directory structure will remain the same.</p><div class="table"><a id="idm256627241056"></a><p class="title"><strong>Table 8. Common Paths in Tactic 3.6.0.v01</strong></p><div class="table-contents"><table summary="Common Paths in Tactic 3.6.0.v01" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.6.0.v01/doc</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic documentation.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.6.0.v01/src</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic source files.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.6.0.v01/src/install</p></td><td style="" align="left" valign="top"><p>Path to the Tactic install script
+and configuration files for Tactic dependencies.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Before we run the Tactic installer, we must further configure Postgres
+to ensure proper installation of Tactic.</p><p><span class="strong"><strong>Configuring Postgres</strong></span></p><p>Tactic supplies a custom host based authentication file for Postgres.
+After stopping the Postgres service we will install the file in
+question, restart the service and verify that the configuration has been
+properly put in place. As root issue the following commands:</p><pre class="screen">/etc/init.d/postgresql-9.1 stop
+mv /var/lib/pgsql/9.1/data/pg_hba.conf /var/lib/pgsql/9.1/data/pg_hba.conf.INSTALL
+cp /tmp/tactic-3.6.0.v01/src/install/postgresql/pg_hba.conf /var/lib/pgsql/9.1/data/pg_hba.conf
+chown postgres:postgres /var/lib/pgsql/9.1/data/pg_hba.conf
+/etc/init.d/postgresql-9.1 start</pre><p>If the service starts successfully we can then move onto testing. If not
+please consult the Postgres startup log for error information. Postgres
+must be running as a service during the Tactic install. Next we will
+test the install, as root issue the following commands:</p><pre class="screen">psql -U postgres template1</pre><p>This command should return you to a prompt like this one:</p><pre class="screen">template1=#</pre><p>If you are not prompted for a password and, see this prompt, then the
+configuration changes have been successful. Type \q to exit.</p><p><span class="strong"><strong>Installing Tactic</strong></span></p><p>We are now ready to run the Tactic installer. The installer doesn’t know
+about our custom Python installation location though, so we have edit
+the install.py file. Using your favorite editor, edit the file
+/tmp/tactic-3.6.0.v01/src/install/install.py.</p><p>Find the following line in the file:</p><pre class="screen">python_site_packages_dir = "/usr/local/lib/python%s.%s/site-packages"</pre><p>Replace it with the following line:</p><pre class="screen">python_site_packages_dir = "/opt/python2.7/lib/python%s.%s/site-packages"</pre><p>Save the file. We will test this by running the installer. Make sure you
+are using a shell with the LD_LIBRARY_PATH set as mentioned in the
+"Installing Python 2.7 Modules" section. As root issue the following
+command:</p><pre class="screen">/opt/python2.7/bin/python2.7 /tmp/tactic-3.6.0.v01/src/install/install.py</pre><p>The installer will ask you a number of questions. You should be prompted
+by the following:</p><pre class="screen">Please enter the base path of the TACTIC installation:
+
+(/home/apache) -&gt; /opt/tactic</pre><p>Choose your custom Tactic path, this will be the base directory for your
+Tactic installation. We have chosen /opt/tactic. Next you will be asked
+to identify the user used to run the Apache service.</p><pre class="screen">Please enter the user Apache Web Server is run under:
+
+(apache) -&gt;</pre><p>In many cases the default user "apache" is correct. However you can
+verify this easily in another shell by issueing the following command as
+root:</p><pre class="screen">ps -ef | grep httpd</pre><p>The first column of output is the username Apache is running under.
+Should you receive no output, make sure your httpd service is running.
+Under CentOS 5.7 the apache user is "apache" so we will accept the
+default the installer gives us.</p><p>The installer will then install the Tactic databases, configure Tactic
+and copy the source code into the Tactic base directory.</p><p><span class="strong"><strong>Configuring Apache</strong></span></p><p>Lastly Tactic requires us to install the custom Apache configuration
+file it has created during the installation process. As root issue the
+following commands:</p><pre class="screen">cp /opt/tactic/projects/config/tactic.conf /etc/httpd/conf.d</pre><p>To test this we should first verify that /etc/httpd/conf.d is an
+included module path in the main Apache configuration file. As root
+issue the following command:</p><pre class="screen">cat /etc/httpd/conf/httpd.conf | grep conf.d</pre><p>If you receive the following as output we have installed the Tactic
+Apache configuration file correctly.</p><pre class="screen">Include conf.d/*.conf</pre><p>If you do not receive this output, using your favourite editor as root
+edit the file /etc/httpd/conf/httpd.conf and at the bottom of the file
+insert the statement listed above. Save the file.</p><p>Lastly we will create a redirect for Tactic using the index.html file at
+the document root of the Apache server. Using your favourite editor as
+root, edit the file /var/www/html/index.html to contain only the
+following line:</p><pre class="screen">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</pre><p>Restart the Apache service to make sure the configuration hasn’t caused
+any problems. As root issue the following command:</p><pre class="screen">/etc/init.d/httpd restart</pre><p>Lastly we need to ensure that the Apache server has loaded the modules
+needed for proxying and load balancing the Tactic service. As root issue
+the following command:</p><pre class="screen">/usr/sbin/httpd -t -D DUMP_MODULES</pre><p>In the resulting output look for the following modules:</p><pre class="screen">rewrite_module (shared)
+proxy_module (shared)
+proxy_http_module (shared)
+proxy_balancer_module (shared)
+deflate_module (shared)</pre><p>The CentOS 5.7 install of Apache includes a large array of modules
+enabled by default, including the ones required by Tactic.</p><p><span class="strong"><strong>Starting Tactic in Development Mode</strong></span></p><p>We are now prepared to start the Tactic service for the first time.
+Tactic must be run as the Apache user. Usually we would su to the apache
+user, however since its a system account without a login this will not
+work without optionally telling su to give the Apache user a shell
+environment. In a shell with the LD_LIBRARY_PATH set as laid out in the
+section "Installing Python 2.7 Modules", as root issue the following
+command:</p><pre class="screen">su apache -s /bin/bash -c "/opt/python2.7/bin/python2.7 /opt/tactic/tactic/src/bin/startup_dev.py"</pre><p>You should see the following output:</p><pre class="screen">Registering site ... admin
+Registering site ... sthpw
+Registering site ... default
+
+Starting TACTIC ...
+
+Starting Scheduler ....
+[08/Nov/2011:23;13:20] ENGINE Bus STARTING
+[08/Nov/2011:23;13:20] ENGINE Started monitor thread '_TimeoutMonitor'.
+[08/Nov/2011:23;13:20] ENGINE Started monitor thread 'Autoreloader'
+[08/Nov/2011:23;13:21] ENGINE Serving on 127.0.0.1:8081
+[08/Nov/2011:23;13:21] ENGINE Bus STARTED</pre><p>You should now be able to navigate a web browser to
+<a class="ulink" href="http://localhost/tactic/admin" target="_top">http://localhost/tactic/admin</a>. Alternatively use the non-local IP
+address or fully qualified domain name you have assigned to your Tactic
+server in place of localhost. You should see the Tactic login screen.</p><p>Tactic defines an administrative user by default. The login information
+is:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Username: admin; Password: tactic
+</span></dt><dd>
+Using these credentials you should now be able to log into the Tactic
+server. Use the key combination CTRL+c in the shell running the Tactic
+Developer mode service to break out of it when you are ready.
+</dd></dl></div><p><span class="strong"><strong>Installing Tactic as a Service</strong></span></p><p>The Tactic service file is simple to install, however due to the custom
+Python pathing we have used we have edit the Tactic service file to
+reflect those changes. As root, using your favourite editor open the
+file /opt/tactic/tactic/src/install/service/tactic and make the
+following changes.</p><p>The Python environment variable PYTHON should be set to the path of our
+custom Python binary.</p><pre class="screen">PYTHON=/opt/python2.7/bin/python2.7</pre><p>Additionally we want to setup the LD_LIBRARY_PATH variable to include
+our custom Python libraries. Under the following line:</p><pre class="screen">export PYTHON</pre><p>Add the following lines to the file:</p><pre class="screen">LD_LIBRARY_PATH=/opt/python2.7/lib
+export LD_LIBRARY_PATH</pre><p>Lastly, Tactic startup uses the same mechanism as Developer mode,
+however this is not yet reflected in the Tactic service file. Change the
+following line:</p><pre class="screen"> su - $TACTIC_USER -m -c "$LAUNCH" &gt;&gt; $LOG 2&gt;&amp;1 &amp;</pre><p>To this:</p><pre class="screen">su $TACTIC_USER -s /bin/bash -m -c "$LAUNCH" &gt;&gt; $LOG 2&gt;&amp;1 &amp;</pre><p>Save the file.</p><p>One last Python path must be corrected before we install the Tactic
+service. During installation Tactic created a file that you will become
+more familiar with throughout your use of Tactic. That file is
+/opt/tactic/projects/conf/tactic_linux-conf.xml. Using your favourite
+editor as root edit this file. Find the following line:</p><pre class="screen">&lt;python&gt;python&lt;/python&gt;</pre><p>And replace it with:</p><pre class="screen">&lt;python&gt;/opt/python2.7/bin/python2.7&lt;/python&gt;</pre><p>Save the file.</p><p>Now we will install the Tactic service. As root type the following:</p><pre class="screen">cp /opt/tactic/tactic/src/install/service/tactic /etc/init.d/tactic
+chmod 755 /etc/init.d/tactic
+/sbin/chkconfig tactic on
+/etc/init.d/tactic start</pre><p>Tactic should now start properly as a service. Test this by launching a
+web browser and navigating to the Tactic login page as you did
+previously. If you are having trouble the following error logs will help
+you diagnose your problems:</p><div class="table"><a id="idm256627179648"></a><p class="title"><strong>Table 9. Common Error Logs</strong></p><div class="table-contents"><table summary="Common Error Logs" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/tactic</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error_log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/access_log</p></td><td style="" align="left" valign="top"><p>Path to the Apache access log.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Finally we want to test that the Tactic service will persist across
+reboots. Reboot the server and test whether the Tactic service continues
+to perform.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_authentication"></a>12.3. TACTIC Authentication</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_configuring_tactic_and_co_services"></a>12.4. Configuring TACTIC and Co-Services</h3></div></div></div><p><span class="strong"><strong>TACTIC Service Configuration</strong></span></p><p><span class="strong"><strong>Overview</strong></span></p><p>Multiple TACTIC servers can be leveraged in environments where there is
+heavy report analysis, and where custom TACTIC environments are making
+heavy use of API and GUI calls. To spread out the load of the requests
+made, custom API scripts can be run on one TACTIC server, while another
+TACTIC server can be used to serve GUI requests. The only consideration
+then with multiple TACTIC machines will be where the database and the
+asset directories.</p><p><span class="strong"><strong>Database</strong></span></p><p>TACTIC needs to know where to find assets and asset metadata. To do
+this, each installation of TACTIC must be able to have direct file
+system access to assets storage, and network access to the database
+co-service.</p><p>tactic_(os).conf</p><p>needs to contain this information.</p><pre class="screen">&lt;database&gt;
+&lt;server&gt;[DB server IP]&lt;/server&gt;
+&lt;/database&gt;</pre><p>All other settings, covered previously, can be set according to
+individual requirements of the host machine and environment.</p><p><span class="strong"><strong>Assets Storage</strong></span></p><p>TACTIC needs to know where to find assets. To do this, each installation
+of TACTIC must be able to have direct file system access to assets
+storage. The details of file system management are beyond the scope of
+this document, but typically are within the realm of the system
+administrator.</p><p><span class="strong"><strong>Processes</strong></span></p><p>If the TACTIC server has no other services attached, there is probably
+room to increase the number of processes running on each machine.</p><pre class="screen">&lt;services&gt;
+&lt;process_count&gt;6&lt;/process_count&gt;
+&lt;/services&gt;</pre><p>Refer to Reference: TACTIC Default Configuration for the complete sample
+configuration file.</p><p>Refer to Reference: TACTIC Service Configuration Directives for
+configuration directives.</p><p><span class="strong"><strong>HTTP Co-service Configuration</strong></span></p><p><span class="strong"><strong>Apache</strong></span></p><p>Apache is used for the following sample HTTP configuration for TACTIC.
+Some configuration knowledge of apache is required.</p><p><span class="strong"><strong>Permissions – Allowing TACTIC to store and manipulate assets</strong></span></p><p>This section defines the location and availability of the assets
+directory, which is the primary source of data for the apache server.
+There is also the declaration of an alias to the TACTIC source
+directory, which contains various objects that TACTIC uses, such as
+widget elements.</p><pre class="screen">Alias /context         /home/apache/tactic/src/context
+Alias /assets       /home/apache/assets
+Alias /doc/           /home/apache/tactic/doc/</pre><p>The section with &lt;Directory&gt; directives defines the access rules for the
+assets directory and the "/tactic" directory, which is just a
+conveniently named alias.</p><pre class="screen">&lt;Directory "/home/apache/tactic" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;
+&lt;Directory "/home/apache/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre><p><span class="strong"><strong>Proxying/Rewriting a single process – Redirecting requests to TACTIC</strong></span></p><p>Apache needs to know where to find the proxied TACTIC service in the
+httpd.conf file. The below configuration takes advantage of only one
+process being served from port 8081 on the local machine.</p><p>The second section, with RewriteRule directives, defines the re-write
+rules for the TACTIC service, to segregate requests handled by the
+TACTIC server, from static asset delivery through the HTTP service.
+These rules channel any requests that are prefixed with the "/tactic"
+path to the TACTIC server on port 8081.</p><pre class="screen">RewriteRule   ^/tactic/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/tactic http://localhost:8081/tactic/ [P,L]
+RewriteRule   ^/projects/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/projects http://localhost:8081/tactic/ [P,L]</pre><p><span class="strong"><strong>Proxying/Rewriting multiple processes – Redirecting requests to TACTIC</strong></span></p><p>The proxy configuration can be enhanced with a load balancing scheme for
+one or more machines. Apache has the ability to randomly select from a
+list of locations via a rewrite map.</p><pre class="screen">RewriteMap    lb    rnd:/home/apache/sites/load_balance.txt</pre><p>This map can feed the rewrite rules with a dynamically assigned host
+name.</p><pre class="screen">RewriteRule   ^/tactic/(.+)$ http://${lb:dynamic}/tactic/$1    [P,L]
+RewriteRule   ^/projects/(.+)$ http://${lb:dynamic}/tactic/$1  [P,L]
+RewriteRule   ^/tactic http://${lb:dynamic}/tactic/            [P,L]
+RewriteRule   ^/projects http://${lb:dynamic}/tactic/          [P,L]</pre><p>The file load_balance.txt is an arbitrarily named and located file that
+contains the names of servers that will be referred to by the "rnd"
+function in the Rewrite rules. The "lb:dynamic" reference will be
+replaced by the name of the server file</p><p>The load_balance.txt contains a pipe separated list of hosts named
+"dynamic"</p><pre class="screen">dynamic localhost:8081|localhost:8082|localhost:8083</pre><p>This list is dependent on the number of ports that TACTIC is running on,
+specified by tactic_(OS).conf. Note that apache can proxy from IP
+addresses or hostnames external to the host that the service is parked
+on.</p><p>On this single line list, add all machines and ports that are running
+TACTIC. Since the scheme algorithm is random, it does not matter what
+order the machines/ports are listed in, just that they are actually on
+the list. In this case, there are multiple TACTIC machines, named
+"tacticserver01" and "tacticserver02". The example assumes the machine
+has either DNS entries for these machines or entries in the "hosts"
+file. IP addresses can also be used.</p><pre class="screen">dynamic tacticserver01:8081|tacticserver02:8081|tacticserver01:8082
+# and so on, until all machines/ports are covered</pre><p>Refer to Reference: Apache Configuration for TACTIC for the complete
+sample configuration file.</p><p><span class="strong"><strong>Database Co-service Configuration</strong></span></p><p><span class="strong"><strong>PostgreSQL</strong></span></p><p>PostgreSQL is used as the database co-service in the following sample
+configuration. PostgreSQL has only two configuration files that are
+required to be examined in order to function with TACTIC; pg_hba.conf
+and postgresql.conf</p><p><span class="strong"><strong>Network trust - pg_hba.conf</strong></span></p><p>The pg_hba.conf configuration file contains a list of users and hosts
+with clearance levels. In the default pg_hba.conf file that comes with
+TACTIC, the network trust level is set for the most open access by the
+localhost;</p><pre class="screen"># TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+local      all  all  trust
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          trust
+# IPv6 local connections:
+host    all         all         ::1/128               trust</pre><p>In this example, all local connections to PostgreSQL are trusted. This
+configuration matches the correct configuration required by a single
+machine.</p><pre class="screen">host   all     all  &lt;TACTIC_HOST_IP_ADDR&gt;     trust</pre><p><span class="strong"><strong>Network interface - postgresql.conf.</strong></span></p><p>The postgresql.conf configuration file has a setting that will allow the
+PostgreSQL service to bind to the particular interface required.</p><p>Of concern is the "listen_addresses" attribute.</p><pre class="screen">listen_addresses = 'localhost'</pre><p>By default, the PostgreSQL service is only bound to the localhost. This
+is fine for single machine operation of the TACTIC service.</p><pre class="screen">listen_addresses = '*'</pre><p>This setting or specific IP addresses can be used if the DB service is
+not on the same machine as the TACTIC service</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_scalable_tactic_deployment_planning"></a>12.5. Scalable TACTIC Deployment Planning</h3></div></div></div><p>The stages of a TACTIC deployment are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+\1. Determining usage requirements
+</li><li class="listitem">
+\2. Determining hardware requirements
+</li><li class="listitem">
+\3. Determining TACTIC Service and Co-Service Locations
+</li><li class="listitem">
+\4. Post Deployment TACTIC upscaling
+</li></ul></div><p><span class="strong"><strong>Planning NOTES</strong></span></p><p><span class="strong"><strong>Determining TACTIC Usage Requirements</strong></span></p><p>One of the first questions asked in a TACTIC deployment is "what kind of
+deployment is required?" This is a hard question to answer unless it is
+known beforehand exactly how TACTIC will be used. Since every TACTIC
+deployment is customized by the licensee, there is really no way to
+calculate accurately the type of load that will eventually be placed on
+the TACTIC server. Fortunately, due to TACTIC’s scalable architecture, a
+TACTIC deployment can be scaled up easily when there are unforeseen
+increases in usage.</p><p><span class="strong"><strong>Service Requirements</strong></span></p><p>In a TACTIC deployment, running the TACTIC service is the primary
+function of the TACTIC host machine. The co-services can be deployed to
+the location most appropriate for the environment. However, to ensure
+scalability and high availability, the co-services should not be
+deployed on the TACTIC host for any but the smallest of deployments.</p><p>TACTIC uses four major services and co-services in its operation:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+TACTIC service: provides the API and GUI widget system.
+</li><li class="listitem">
+Database co-service: provides indexing and storage for asset meta
+data.
+</li><li class="listitem">
+HTTP co-service: provides delivery (and return) of raw asset data.
+</li><li class="listitem">
+Assets storage co-service: provides storage and back-up capabilities
+of raw asset data.
+</li></ul></div><p><span class="strong"><strong>Limitations</strong></span></p><p>With TACTIC, you can simply add hardware and load-balance it to handle
+more and more requests. You can expand scalability in this way until the
+database server itself becomes the bottleneck. Fortunately, with the
+introduction of multi-CPU and multi-core machines, database limits are
+extremely high.</p><p><span class="emphasis"><em>User Interfaces:</em></span> For applications with end-user interfaces (especially
+those using widgets, where complex interface elements need to be
+constructed), the load required to process TACTIC requests will remain
+much greater than the load required to process SQL calls, no matter how
+much hardware is added to handle such requests.</p><p><span class="emphasis"><em>Client APIs:</em></span> Client APIs provide a much thinner layer to the database
+and so are optimized to handle lower level requests very rapidly.
+However, because API calls are typically used for automated processes,
+they can generate a large number of requests quickly, creating a heavy
+load on the TACTIC server.</p><p><span class="emphasis"><em>Load balancing:</em></span> this is especially important for render farms, which
+can be massive in scale with thousands to tens of thousands of cores. It
+ensures that the high volume of requests is evenly distributed to all of
+the available TACTIC processes. The exact number of processes required
+to handle the high volume is highly dependent on the number of requests
+made and to the complexity of the requests. However, because load
+balancing will provide near-linear scalability, the number of processes
+can be increased to a level that is sufficient for the number of
+requests being demanded of the client API.</p><p><span class="emphasis"><em>Report generation:</em></span> TACTIC’s reporting system is powerful and
+comprehensive, and the load on host CPUs can increase significantly when
+complex reports are being run. Administrators should focus on report
+generation when investigating load utilization.</p><p><span class="emphasis"><em>Checkins:</em></span> There are two kinds of complexity when considering
+scalability for checkins:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Large Checkins: TACTIC offers a wide variety of checkin configurations
+that will accommodate large bandwidth, large files, and complex
+dependency between files.
+</li><li class="listitem">
+Many Checkins: There are few concerns with a large number of checkins.
+The number of checkins that occur even in the largest of productions is
+small compared to the limits of a database.
+</li></ul></div><p><span class="strong"><strong>Determining TACTIC Hardware Requirements</strong></span></p><p><span class="strong"><strong>Hardware Overview</strong></span></p><p>TACTIC works well with most types of hardware, but industry-standard
+server level components are highly recommended. The exact configuration
+will depend on the specific needs of your facility.</p><p>For most deployments, TACTIC can be installed on the typical commodity
+hardware used by most small and large enterprises. TACTIC is a
+purpose-built relational database at its core, and your hardware choices
+can reflect that fact.</p><p>TACTIC service requirements: Assuming TACTIC is the only service on the
+host, the minimal requirements for a production-level deployment of a
+TACTIC host are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+CPU: dual core
+</li><li class="listitem">
+Memory: 4G
+</li><li class="listitem"><p class="simpara">
+Disk space needed for TACTIC to run on: 10G
+</p><p class="simpara">(assets should be stored elsewhere, on an enterprise quality server)</p></li></ul></div><p>These requirements represent the recommended absolute minimal hardware
+required to run a basic TACTIC service in a production environment. For
+development and testing, TACTIC will run on most hardware including
+laptops.</p><p><span class="emphasis"><em>Asset storage:</em></span> It is highly recommended that assets be stored on an
+enterprise-quality, high-availability server, and not on the TACTIC
+host.</p><p><span class="emphasis"><em>RAID Options:</em></span> You can use various RAID configurations to maximize
+reliability and performance. For example, you could locate the Operating
+System on one physical drive, and the database files on another. Or you
+could locate the database on a RAID array.</p><p><span class="emphasis"><em>Asset meta data:</em></span> The amount of asset meta data stored on disk by
+TACTIC is insignificant to today’s hardware specifications and need not
+be a consideration when choosing a server: reliability and performance
+should be higher concerns.</p><p><span class="strong"><strong>Determining TACTIC Service Locations</strong></span></p><p><span class="strong"><strong>Segregating Services</strong></span></p><p>TACTIC offers a number of different services for different purposes. For
+example, the TACTIC server can serve out complex widgets, serve out
+large numbers of client API requests and perform large, complex
+check-ins.</p><p>Each type of service has distinct needs, so it is often beneficial to
+segregate the services to be independent of each other. This allows each
+service to operate within a pool of assigned resources without affecting
+(or being affected by) the other services.</p><p>For example, if a render farm used a client API script that heavily
+loaded the TACTIC server and its requests were shared with user
+interface requests, users would experience inconsistent (and
+occasionally unacceptably slow) response times. This experience would
+cause frustration amongst users, so it would be necessary to segregate
+their user interface service from the render farm’s client API service.</p><p>Each type of service has very different demands and needs, so
+segregating services also allows you to tune the hardware and software
+to the specifications required for the service they are handling.
+Ultimately, you can maximize the use of your available resources.</p><p><span class="strong"><strong>How Load Balancing Works</strong></span></p><p>Load balancing distributes requests to various TACTIC processes using an
+algorithm that determines which request is delegated to which process.
+The default algorithm is a very simple randomizer.</p><p>For most applications, the default algorithm works perfectly fine. It is
+left to chance whether a particular request will be assigned to a
+heavily loaded process or one that is sitting idle, so there may be
+inconsistent performance depending on load and availability of TACTIC
+processes not already loaded.</p><p>IIS delegation algorithms (on MSWeb Server) are also supported. For
+Apache, an example algorithm is provided you can customize to your
+needs.</p><p>Each process, by default, is assigned two simultaneous requests at most.
+This limit has proven in production to be the most effective because it
+prevents the Python process itself from being overloaded waiting for
+required I/O operations. If there are excess requests waiting to be
+processed, they are kept in a queue and assigned sequentially to
+processes as they become available.</p><p>Python’s GIL (global interpreter lock) prevents any Python process from
+using more than one CPU or core, so the number of threads available for
+any given process is limited. True scalability is achieved by
+load-balancing requests over multiple processes. This method scales
+seamlessly and linearly over multiple cores, multiple CPUs and
+ultimately over multiple physical servers with only simple configuration
+changes.</p><p><span class="strong"><strong>Post Deployment TACTIC Upscaling</strong></span></p><p><span class="strong"><strong>Scenarios</strong></span></p><p>TACTIC is easily upscaled in most post deployment scenarios. Upscaling
+does not require any significant downtime of TACTIC services.</p><p>Some scenario examples follow, with bullet points outlining why these
+possible solutions would be followed;</p><p><span class="strong"><strong>Increasing number of TACTIC processes on a single machine</strong></span></p><p><span class="strong"><strong>Splitting TACTIC into multiple servers from one server</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Easy way to upscale/troubleshoot
+</li><li class="listitem">
+Heavy reporting
+</li><li class="listitem">
+Many users/API calls from automated processes
+</li></ul></div><p><span class="strong"><strong>Splitting the HTTP co-service into multiple servers from one server</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Many Checkins
+</li><li class="listitem">
+Large Checkins
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_general_tactic_install_2"></a>12.6. General TACTIC Install</h3></div></div></div><p>This document guides you through the general installation of TACTIC in
+Fedora Linux with some brief background information. For installation on
+Windows or CentOS, please refer to the corresponding sections in this
+book. To completely install TACTIC, there are three main components that
+have to be set up in the following order:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+A Database
+</li><li class="listitem">
+The TACTIC Installer
+</li><li class="listitem">
+A Web Server
+</li></ol></div><p>TACTIC stores all metadata in a database called PostgreSQL. This is an
+industrial strength, hugely scalable database that has proven itself in
+thousands of industries around the world. We currently recommend 8.4 and
+upwards for ease of installation. Go to the
+<a class="ulink" href="www.postgresql.org" target="_top">PostgreSQL website</a> for more information.</p><p>rpm -Uvh <a class="ulink" href="http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm" target="_top">http://yum.pgrpms.org/reporpms/8.4/pgdg-fedora-8.4-2.noarch.rpm</a></p><p>yum install postgresql postgresql-server postgresql-contrib
+postgresql-devel</p><p>It is located in /var/lib/pgsql/data This file determines all of the
+user permissions for PostgreSQL. To begin with, turn on all of the
+permissions contained in this file. This is a temporary measure that
+will greatly simplify the installation process. You may lock down these
+permissions at a later date. Please consult the PostgreSQL documentation
+on how to do this. TACTIC ships with a sample "pg_hba.conf" file
+(located in &lt;TACTIC_unzipped_
+package&gt;/src/install/postgresql/pg_hba.conf). This file has an open
+security setting for ease of installation. It’s best to back up your
+current pg_hba.conf file before copying over with the file provided by
+TACTIC.</p><p>Restart the PostgreSQL Service</p><p><span class="strong"><strong>Verification</strong></span></p><p>Verify that psql works in the command prompt:</p><pre class="screen">&gt; psql -U postgres template1</pre><p>It should give you a prompt:</p><pre class="screen">template1=#</pre><p>If you see this prompt without the need to enter a password, you have
+successfully installed the PostgreSQL database. Type \q to exit.</p><p><span class="strong"><strong>Install Python and supporting modules</strong></span></p><p>The TACTIC source code is written in Python. As such, the complete
+codebase is open.</p><p>To install Python, you can find an msi at
+<a class="ulink" href="www.python.org" target="_top"><span class="strong"><strong>http://www.python.org</strong></span></a>. TACTIC requires Python 2.6
+or higher.</p><p>TACTIC also requires a number of Python modules to function correctly.
+These modules are generally not installed by default with the standard
+Python distributions. For Windows, they are already packaged in a file
+python_modules.zip available for download in the release section of the
+downloads page at
+<a class="ulink" href="support.southpawtech.com/downloads" target="_top">http://support.southpawtech.com/downloads</a></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+PIL 1.1.7
+</p><p class="simpara">(Python Image Library)
+* ImageMagick 6.7.8</p><p class="simpara">(A command line program which complements PIL) -</p><p class="simpara"><a class="ulink" href="http://www.imagemagick.org" target="_top">http://www.imagemagick.org</a>
+* <span class="strong"><strong>FFmpeg</strong></span> <span class="strong"><strong>version 0.6</strong></span>(Solution to record, convert and stream audio
+and video and metadata parsing) -
+<a class="ulink" href="www.imagemagick.org" target="_top">http://www.ffmpeg.org</a>
+* psycopg2 2.3.1</p><p class="simpara">(Database connectivity)
+* PyCrypto version 2.0.1/2.1</p><p class="simpara">(For de-encrypting the license file) -</p><p class="simpara"><a class="ulink" href="http://www.amk.ca/python/code/crypto" target="_top">http://www.amk.ca/python/code/crypto</a>
+* simplejson 2.1.1 (not needed since Python 2.6)</p><p class="simpara">simplejson.egg can be installed with the EasyInstaller. It is need for
+JSON string encoding and parsing
+* lxml 2.1 or 2.2</p><p class="simpara">(XML and XPath processing)</p></li></ul></div><p>Unzip the file in a temporary location.</p><pre class="screen"># cd /tmp
+# unzip tactic_#.#.#.#.zip</pre><p>Go to
+/tmp/tactic_#../src/install/</p><pre class="screen"># cd /tmp/tactic_#.#.#.#/src/install</pre><p>Execute:
+install.py</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>You must invoke the installation with root user privileges because it
+attempts to write to the &lt;python_install&gt;/site-packages directory.</p></blockquote></div><pre class="screen"># su
+# python install.py</pre><p>The installer will ask a number of questions. First it ask for the
+&lt;TACTIC_BASE_DIR&gt;:</p><pre class="screen">Please enter the base path of the TACTIC installation:
+
+(/home/apache) -&gt;</pre><p>Enter the user the Apache Web Server is run under.</p><pre class="screen">Please enter the user Apache Web Server is run under:
+
+(apache) -&gt;</pre><p>It would copy the source code to the base path and create a symbolic
+link to it. An Apache Web Server file will be generated at the end which
+you would need to copy to the Apache config area upon installation of
+the web server. If there are existing files in the destination directory
+the installer will ask for your confirmation to remove it. At the end,
+you will see this:</p><pre class="screen">*** Installation of TACTIC completed at [/home/apache] ***
+
+
+Next, please install the Apache Web Server and then copy the Apache config extension
+[/home/apache/tactic_data/config/tactic.conf] to the Apache web server config area. e.g.
+/etc/httpd/conf.d/</pre><p><span class="strong"><strong>Verification</strong></span></p><p>When the installation is completed, an asset directory will be created
+at <span class="emphasis"><em>&lt;TACTIC_DATA_DIR&gt;/assets</em></span>.</p><p>The file tactic_paths.py will be created in the following directories:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Linux</p></td><td style="" align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr></tbody></table></div><p><span class="strong"><strong>Network machine access</strong></span></p><p>If you are on the server, you can access it by using the URL
+<a class="ulink" href="http://localhost/tactic" target="_top">http://localhost/tactic</a>. For other people to access it on the network,
+you need to find out its IP address. In a linux server, you can use the
+command "ifconfig" to locate it. It’s the one listed as the inet addr.</p><p>Next, you need to run TACTIC behind Apache.</p><p>TACTIC should be run behind an Apache web server. You can download
+Apache software at <a class="ulink" href="http://www.apache.org/" target="_top">http://www.apache.org/</a></p><p>The TACTIC application server is able to serve up static content such as
+images, PDF files, Quicktime files, and so on, but it is not the most
+efficient at this because it is written in Python. This is what Apache
+is designed for. By running TACTIC behind Apache, it relieves TACTIC
+from serving the static content so that it can focus on the dynamic
+content.</p><p>For production use, it is highly recommended that TACTIC is run behind
+the Apache server. This has many scalability advantages. When running
+behind Apache, Apache uses a reverse proxy and proxy balancer module to
+forward requests to communicate with TACTIC.</p><p><span class="strong"><strong>Linux</strong></span></p><p>After the installation, some changes may need to be made in the
+"httpd.conf" file for Apache.</p><pre class="screen">Fedora Core: /etc/httpd/conf/httpd.conf</pre><p>Make sure the following lines are uncommented:</p><pre class="screen">LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+LoadModule deflate_module modules/mod_deflate.so</pre><p>These lines may already be uncommented, depending on your distribution
+and version of Apache. You need Apache version 2.0.31 or later.</p><p>The TACTIC installer generates an Apache extension conf file on
+completion. Copy that file to a directory that is recognized by Apache.</p><p>For Fedora Core: copy the TACTIC generate Apache conf extension file to
+the following directory:</p><pre class="screen">/etc/httpd/conf.d/</pre><p>If there is no such configuration extension folder, you must add the
+following line to the "httpd.conf" file so that it will read the
+extension configuration file provided by the installer:</p><pre class="screen">Include conf/tactic_win32.conf</pre><p><span class="strong"><strong>Web Server configuration</strong></span></p><p>In our provided file:</p><pre class="screen">tactic.conf</pre><p>Make sure the following lines exist:</p><pre class="screen"># Using the ProxyPass directives
+ProxyPreserveHost on
+
+&lt;Proxy balancer://tactic&gt;
+BalancerMember http://localhost:8081/tactic
+BalancerMember http://localhost:8082/tactic
+BalancerMember http://localhost:8083/tactic
+&lt;/Proxy&gt;
+ProxyPass /tactic balancer://tactic
+ProxyPass /tactic_data balancer://tactic</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Warning: For load balancing, only use either:</p><p>\1) the Proxy Balancer method (recommended)</p><p><span class="strong"><strong>or</strong></span></p><p>\2) the RewriteRule method (not recommended).</p><p>Do <span class="strong"><strong>not</strong></span> use both methods at the same time.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For configuring load-balancing set-up in a real production, please refer
+to the Load Balancing section in the Sys-admin docs.</p></blockquote></div><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>When trying to set up Apache on a Windows Server, to specify a share
+folder for Apache to use, you may need to include the name of the share
+folder in the path.</p><p>For example, use the following if you have named the share folder
+"my_share":</p><pre class="screen">Alias /assets "//10.0.0.17/my_share/assets"</pre></blockquote></div><p>Finally, after verifying the configuration is correct, restart the
+Apache service:</p><pre class="screen">service httpd restart</pre><p>Go to the "&lt;TACTIC_INSTALL_DIR&gt;/src/bin" folder</p><p>`cd /home/apache/tactic/src/bin `</p><p>Then su as the user apache is run as:</p><p>su apache</p><p><code class="literal">python startup_dev.py</code></p><p>This "startup_dev.py" script is the development script which will dump
+output to the screen. The other startup script "startup.py" is the
+production start-up script and will dump output to a log file. The
+development start-up script is also much slower as it monitors the file
+system to see if any files have changed.</p><p>The output would look like the following:</p><pre class="screen">Registering site ... admin
+Registering site ... default
+Registering site ... test
+Registering site ... my_project
+
+Starting TACTIC ...
+
+05/Jul/2007:11:16:29 CONFIG INFO Server parameters:
+05/Jul/2007:11:16:29 CONFIG INFO server.environment: development
+05/Jul/2007:11:16:29 CONFIG INFO server.log_to_screen: True
+05/Jul/2007:11:16:29 CONFIG INFO server.log_file: D:/tactic_temp/log/tactic_log
+05/Jul/2007:11:16:29 CONFIG INFO server.log_tracebacks: True
+05/Jul/2007:11:16:29 CONFIG INFO server.log_request_headers: True
+05/Jul/2007:11:16:29 CONFIG INFO server.protocol_version: HTTP/1.0
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_host:
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_port: 8081
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_file:
+05/Jul/2007:11:16:29 CONFIG INFO server.reverse_dns: False
+05/Jul/2007:11:16:29 CONFIG INFO server.socket_queue_size: 10
+05/Jul/2007:11:16:29 CONFIG INFO server.thread_pool: 5
+05/Jul/2007:11:16:30 HTTP INFO Serving HTTP on http://localhost:8081/</pre><p><code class="literal">http://&lt;TACTIC_server_address&gt;/tactic/admin/</code></p><p>You should see the TACTIC login appear.</p><p><span class="inlinemediaobject"><img src="media/sys-admin-install-tactic-general-loginScreen.png" alt="image" /></span></p><p>There is a default user created on installation. This is the "admin"
+user and this user has the ability to see and change all aspects of the
+system. Log in as the admin user:</p><p><strong>Note: You may be asked to change your password automatically at startup. </strong>without entering these default credentials.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>user:</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">admin</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>password:</strong></span></p></td><td style="" align="left" valign="top"><p><code class="literal">tactic</code></p></td></tr></tbody></table></div><p>Note: If you have not set up the TACTIC service, refer to the page
+"Configure the TACTIC Service".</p><p>First, stop TACTIC running in dev mode if applicable by pressing Ctrl
+C in that shell</p><p>In Linux:</p><p><code class="literal">service tactic start</code></p><p>At this point you will need to install a TACTIC license file and then
+begin to set up a project.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+For more information on installing the license file, please refer to
+the <span class="strong"><strong><a class="ulink" href="#" target="_top">License Installation Documentation</a></strong></span>.
+</li><li class="listitem">
+For more information on getting started with projects, please refer to
+the <span class="strong"><strong><a class="ulink" href="#" target="_top">Sys Admin Project Guides</a></strong></span>.
+</li></ul></div><p><span class="strong"><strong>Note on supplementary directories used in TACTIC:</strong></span></p><p>In the config file &lt;TACTIC_DATA_DIR&gt;/config/tactic-conf.xml, you will
+find different references to directory under the path /home/apache like
+/home/apache/tactic_temp , assets, and handoff. They are there because
+/home/apache is the base directory chosen for installation. It could be
+different in your case. In the future, you can change their locations by
+editing the config file. If the assets directory is changed, ensure it’s
+also updated in the Apache Web server config extension tactic.conf.</p><p>To view different information about the system and set-up, you can go to
+the Site Admin -→ System Info page. For example, you can verify if
+load-balancing is set up and certain key directories are writable by
+TACTIC.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+If you see missing images on logging in or errors in the output log
+saying certain js files are not found, it means the Apache extension
+file tactic.conf is not being referenced or you have not updated the
+paths in it to reflect current &lt;TACTIC_INSTALL_DIR&gt;. For example, if
+your &lt;TACTIC_INSTALL_DIR&gt; is /home/apache/tactic, you should see the
+line in the Apache config extension file tactic.conf:
+</p><pre class="screen">Alias /context /home/apache/tactic/src/context</pre><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Be aware of the slight differences in the naming of the configuration
+files:</p><p><span class="strong"><strong>tactic-conf.xml</strong></span>: TACTIC configuration file</p><p><span class="strong"><strong>tactic.conf</strong></span>: Apache configuration file extension</p></blockquote></div></li><li class="listitem"><p class="simpara">
+If you try to check in a Preview Image and can’t see the icon
+generated, your assets alias in the Apache extension file may not be in
+sync with the asset_base_dir in the TACTIC config file tactic-conf.xml
+</p><pre class="screen">Alias /assets           /home/apache/assets</pre><p class="simpara">should point to the asset_base_dir as found in tactic-conf.xml</p><pre class="screen">&lt;asset_base_dir&gt;/home/apache/assets&lt;/asset_base_dir&gt;</pre></li><li class="listitem"><p class="simpara">
+If you want to re-run install.py, the installation will ask if you to
+confirm backing up the sthpw database before dropping it. If you choose
+to do it yourself, here is the command:
+</p><pre class="screen">pg_dump -c -U postgres sthpw &gt; sthpw_backup.sql
+dropdb -U postgres sthpw</pre></li><li class="listitem"><p class="simpara">
+If you try to connect to the <a class="ulink" href="http://&lt;server" target="_top">http://&lt;server</a> IP&gt;/tactic and it just
+times out, your server firewall could be blocking access. Ensure SELinux
+is not enabled as well.
+</p><pre class="screen"># to turn off firewall
+/etc/init.d/iptables save
+/etc/init.d/iptables stop</pre></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_a_scalable_solution_2"></a>12.7. TACTIC, a Scalable Solution</h3></div></div></div><p>A data management system to grow along with your expanding data needs
+TACTIC software meets the complex content demands of today’s large-scale
+production environment:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Based on existing web technologies, it is easy to maintain and scale
+</li><li class="listitem">
+Easy to load-balance and scale across cores and across multiple
+machines
+</li></ul></div><p><span class="strong"><strong>What Makes TACTIC Scalable?</strong></span></p><p>The TACTIC platform uses web technologies in its underlying
+architecture. As proven by many popular web sites today, web
+technologies are able to scale to a large number of users—to levels far
+beyond the size of any large installation today requiring TACTIC.</p><p>The TACTIC user interface and its API (Application Programmer Interface)
+are both built on web technologies. A web server controls as the user
+front end., and accesses a back-end database. Web servers can handle
+high volumes, so scalability is not an issue—especially for the
+relatively manageable volume seen in even the largest of digital
+productions.</p><p><span class="strong"><strong>Web server technology</strong></span></p><p>TACTIC uses a web server to deliver static content to users, who are
+able to access TACTIC over the web. Web servers are capable of
+delivering enormous numbers of requests, and will remain stable during
+heavy loads. Web servers by definition are the most efficient vehicles
+for web delivery, and TACTIC technology is optimized to take advantage
+of this technology for fast execution and scalability.</p><p><span class="strong"><strong>Leading database technology</strong></span></p><p>TACTIC stores all persistent data in either Oracle or PostgreSQL
+databases, products that both have proven track records in the most
+demanding of production environments.</p><p>Today’s databases coupled with today’s hardware are sufficiently
+powerful to handle any of today’s production needs. The largest of
+digital productions cannot come close to exceeding the data limits of a
+typical database.</p><p><span class="strong"><strong>Optimized requests</strong></span></p><p>With digital productions, the amount of data required is seldom the
+issue. Rather, bottlenecks are typically caused by complex requests
+slowing down database response time. Digital productions tend to use
+deeply nested and enormously complex relationships between various
+pieces of data. It is this complexity that tends to slow down
+applications that try to parse this data in a meaningful human way,
+creating complex requests that slow down database response.</p><p>TACTIC is designed from the ground up to master the complexities of
+digital productions. For every request, it builds a unique
+object-relational mapper specifically designed for the needs of high
+volume, large scale digital production asset management solutions.</p><p>TACTIC is flexible enough to handle the complex relationships between
+any part of the production pipeline, and has proven itself in
+large-scale projects using extremely complex data.</p><p><span class="strong"><strong>Easy code maintenance</strong></span></p><p>The Python programming language is used for TACTIC application
+development. Python has many strengths that contribute to ease of
+maintenance (courtesy of www.python.org):</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+clear, readable syntax
+</li><li class="listitem">
+strong introspection capabilities
+</li><li class="listitem">
+intuitive object orientation
+</li><li class="listitem">
+natural expression of procedural code
+</li><li class="listitem">
+full modularity supporting hierarchical packages
+</li><li class="listitem">
+exception-based error handling
+</li><li class="listitem">
+very high-level dynamic data types
+</li><li class="listitem">
+extensive standard libraries and third party modules for virtually
+every task
+</li><li class="listitem">
+extensions and modules easily written in C, C++ (or Java for Jython,
+or .NET languages for IronPython)
+</li><li class="listitem">
+embeddable within applications as a scripting interface
+</li></ul></div><p><span class="strong"><strong>Load balancing</strong></span></p><p>Load balancing—the distribution of requests across TACTIC processes—is
+possible across cores and across multiple machines, and enables TACTIC
+to scale to large enterprise environments.</p><p>(For details and examples, see <span class="strong"><strong>TACTIC Scalable Configuration
+Examples</strong></span>.)</p><p><span class="strong"><strong>Segregating services</strong></span></p><p>The various TACTIC services can be segregated to run independently of
+each other. This allows important services, such as user interface
+requests, to access their own resources and not be slowed down by other
+more resource-intensive services such as render farms.</p><p>(For details and examples, see <span class="strong"><strong>Scalable TACTIC Deployments</strong></span>.)</p><p><span class="strong"><strong>Types of Scalability</strong></span></p><p>There are several types of scalability that are considerations with the
+use of Python as the TACTIC programming language:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Code scalability: TACTIC contains thousands of classes and many
+hundreds of thousands of lines of code which are facilitated by use of
+the Python language. There has been no reason to believe that the code
+base cannot continue to scale to meet software needs for the foreseeable
+future.
+</li><li class="listitem">
+Memory scalability: Python is known for large memory requirements when
+compared to other languages, but the required memory for TACTIC code is
+much smaller than that found on typical servers, and has seldom been an
+issue.
+</li><li class="listitem">
+Performance scalability: Python’s GIL (Global Interpreter Lock) limits
+Python’s scalability across multiple threads. This limitation has been
+long discussed in newsgroups, with the general consensus that
+scalability is achieved much more easily by load-balancing across
+processes rather than across threads. TACTIC enables easy load balancing
+across processes to achieve full linear scalability.
+</li><li class="listitem">
+Maintenance scalability: Clean and clear syntax makes it easy to
+refactor and maintain code over the long term. Experience has shown that
+our code base is very accessible to new developers, providing confidence
+that code base knowledge can be maintained over the years.
+</li></ul></div><p>Overall, very few limitations with the Python language itself have been
+encountered and have easily circumvented its lack of scalability across
+multiple threads by optimizing proper load balancing across processes.</p><p><span class="strong"><strong>Additional Scalability Considerations</strong></span></p><p><span class="strong"><strong>Availability</strong></span></p><p>TACTIC has been designed to be highly stable even under extremely heavy
+stress. It has been tested and tuned on several projects in environments
+of high stress and high load and has been proven to run under duress
+without going down.</p><p>As with any piece of software, there is always a point a failure—there
+are a number of legitimate reasons for a TACTIC server becoming
+unresponsive or even going down:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+network cutoff
+</li><li class="listitem">
+power failure
+</li><li class="listitem">
+physical memory failure
+</li><li class="listitem">
+overloaded requests for the available resources
+</li></ul></div><p>For projects that require high availability even in the event of
+catastrophic failure, there are a number of hardware solutions to
+provide failover should the primary resource fail. These hardware
+solutions will instantly redirect requests to a redundant resource,
+thereby providing continuous service to the users.</p><p><span class="strong"><strong>Memory requirements</strong></span></p><p>Each available process will use a certain amount of memory, so a balance
+must be struck between the number of processes and the size of the
+complete in-memory TACTIC footprint on the server. In other words,
+adding more processes may or may not increase the availability of TACTIC
+if memory is an issue. If processes start running into swap space,
+performance will be severely affected.</p><p>As memory usage becomes an issue, the choice will be to load balance
+over multiple machines (see <span class="strong"><strong>Scalable TACTIC Deployments</strong></span>).</p><p><span class="strong"><strong>Database Replication</strong></span></p><p>Both Oracle and Postgres have replication capability: the ability to
+distribute the processing load of the database server over a number of
+machines. Database replication is complex and should not be taken
+lightly. With the advent of multiprocessor and multi-cores systems, the
+need for database replication has been reduced significantly. It is
+often much cheaper and less time consuming to increase the
+processors/cores of a server than it is to configure a database for
+replication.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_setup_email"></a>12.8. Setup Email</h3></div></div></div><p>This document describes how to setup the mail server settings in TACTIC
+in order for notifications to be sent out as emails.</p><p>To setup the SMTP mail server, open the TACTIC config file.</p><p>The TACTIC config file is located here:</p><p>On Linux:</p><pre class="screen">&lt;TACTIC_INSTALL_DIR&gt;/projects/config/tactic_linux-conf.xml</pre><p>On Windows:</p><pre class="screen">&lt;TACTIC_INSTALL_DIR&gt;/projects/config/tactic_win32-conf.xml</pre><p>Go to the <span class="strong"><strong>&lt;services&gt;</strong></span> section of the config file.</p><p>Add the following settings with the prefix <span class="strong"><strong>&lt;mail…&gt;</strong></span>.</p><p>Below is an example of a completed mail config section in <span class="strong"><strong>bold</strong></span>:</p><pre class="screen">    &lt;python&gt;python&lt;/python&gt;
+    &lt;python_path&gt;&lt;/python_path&gt;
+    &lt;render_submit_class&gt;&lt;/render_submit_class&gt;
+    &lt;render_dispatcher&gt;&lt;/render_dispatcher&gt;
+    &lt;system_class&gt;&lt;/system_class&gt;
+    &lt;pool_max_connections&gt;3&lt;/pool_max_connections&gt;
+    &lt;process_count&gt;3&lt;/process_count&gt;</pre><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mailserver</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The URL of the SMTP mail server</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_password</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The password for accessing the SMTP mail server that
+requires authentication</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_user</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The user name for accessing the SMTP mail server that
+requires authentication</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_port</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The port for the SMTP mail server (if different that 25)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_sender_disabled</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>disable using the sender name in sending of
+email in case the email server does not allow sender’s email not owned
+by the sender</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_tls_enabled</code></p></td><td style="" align="left" valign="top"><p>enable TLS (Transport Layer Security) for the
+connection to email server</p></td></tr></tbody></table></div><p>Go to the Notifications view under:</p><p><span class="strong"><strong>Admin Views → Site Admin → Notifications</strong></span></p><p>Click on the green plus button on the tool shelf to insert new a
+notification.</p><p>Fill in the following the minimum fields to create a test notification:</p><p><span class="inlinemediaobject"><img src="media/2_setup_email_email_test.png" alt="image" /></span></p><p>Click on the <span class="strong"><strong>Email Test</strong></span> button to send out a test email to the
+recipient.</p><p>For further details on setting up advanced notifications, please refer
+to the doc titled: <span class="strong"><strong>Advanced Notification Setup</strong></span>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_http_co_service_installation_configuration"></a>12.9. HTTP Co-Service Installation/Configuration</h3></div></div></div><p>The aim of this document is to be able to configure Apache to proxy
+TACTIC on a UNIX machine. For Apache on Windows machines, there may be
+some slight differences in behavior or steps.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+User must have sufficient technical knowledge to navigate the OS
+directories, edit text files, and start/stop services. Knowledge of the
+target web server is required.
+</li><li class="listitem">
+TACTIC must be installed on the host machine. It should be runnable
+to the point where all diagnostics presume no error in the TACTIC
+configuration. In the below examples, TACTIC is installed with all
+default options.
+</li><li class="listitem">
+The web server must be installed on the host machine. Since
+different OS’s can have vastly different HTTP service default
+configurations, configuration files will need to be found by command or
+appropriate documentation consultation.
+</li></ol></div><p>The TACTIC host machine should have the following prerequisites</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+A working TACTIC installation
+</li><li class="listitem">
+An OS capable of running the target HTTP co-service
+</li></ul></div><p>The HTTP configuration assumes that the main server is being used to
+proxy TACTIC requests, without SSL or virtual servers. TACTIC requires
+that the appropriate modules or 3rd party modules are activated.</p><p>This document assumes that TACTIC has been configured correctly and is
+functioning as expected. It is assumed that TACTIC is installed with
+default ports 8081 through 8083. This is the typical default TACTIC
+configuration.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_remoteaccesstactic"></a>12.10. RemoteAccessTactic</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_ubuntu_12"></a>12.11. How to Install TACTIC on Ubuntu 12</h3></div></div></div><div class="informalexample"><p>How To Install TACTIC 3.8 (Open Source Release) On Ubuntu Server 12.04</p><p>Revision 2 - August 12th, 2012</p><p>Author(s): Mike Aquino</p></div><p>Install Ubuntu Server 12.04 as a VM … go ahead with the default
+creation of initial non-root user (for example when using Easy-install
+for a VMWare VM OS installation), just to expedite the install process
+for Ubuntu Login as the non-root user that was created, and then
+activate root user account using (provide non-root user’s password for
+sudo, then provide a password, and confirm it, for the root user):
+<code class="literal">$ sudo passwd root</code> Logout of non-root user account and then login with
+the newly activated root user account, using the password you just
+provided for the root user. Install necessary tools … A. install gcc,
+make, unzip … <code class="literal">$ apt-get install gcc make unzip</code> B. install Image
+Magick … <code class="literal">$ apt-get install imagemagick</code> C. if needed, install OpenSSH
+server … <code class="literal">$ apt-get install openssh-server</code> D. install other necessary
+modules … <code class="literal">$ apt-get install samba libxslt1-dev libxml2-dev</code> E.
+install postgres …
+<code class="literal">$ apt-get install postgresql-9.1 postgresql-server-dev-9.1</code> F. install
+Apache … <code class="literal">$ apt-get install apache2p</code> Install Python 2.7 dependencies
+(NOTE: Ubuntu Server 12.04 comes with Python 2.7.3 pre-installed as its
+default Python) … A. install PIL module … (a) install library
+dependencies …
+<code class="literal">$ apt-get install libjpeg-dev libpng-dev zlib1g-dev liblcms1-dev
+                        python-dev</code> (b) download and build the jpeg
+decoder … (i) download the <a class="ulink" href="http://www.ijg.org/files/jpegsrc.v8d.tar.gz" target="_top">http://www.ijg.org/files/jpegsrc.v8d.tar.gz</a>
+file into /root/temp (this file is provided in the "for_PIL" folder of
+this install guide package) (ii) unarchive the package file …
+<code class="literal">$ cd /root/temp ` `$ tar xvzf jpegsrc.v8d.tar.gz ` (iii) build the jpeg
+decoder and install into the system ... `$ cd /root/temp/jpeg-8c `
+`$ ./configure --enable-shared ` `$ make $ sudo make install ` (c)
+download PIL 1.1.7 source kit from
+http://effbot.org/downloads/Imaging-1.1.7.tar.gz (see more info at
+http://www.pythonware.com/products/pil/) and place in /root/temp (NOTE:
+this file is provided in the "for_PIL" folder of this install guide
+package) (d) set-up PIL ... `$ cd /root/temp `
+`$ tar xvzf Imaging-1.1.7.tar.gz ` `$ cd Imaging-1.1.7 $ vi setup.py</code>
+… look for declarations of JPEG_ROOT and ZLIB_ROOT and replace them as
+follows … JPEG_ROOT = "/usr/local/include" ZLIB_ROOT =
+"/usr/local/include" … the write the file and exit vi (e) install PIL
+… <code class="literal">$ python setup.py build_ext -i ` `$ python selftest.py `
+`$ sudo python setup.py install</code> B. install other needed Python modules
+… <code class="literal">$ apt-get python-pythonmagick python-psycopg2 python-crypto
+                        python-pycryptopp python-simplejson python-lxml `
+Create "apache" user and group ... A. Add the "apache" group (as root
+user) ... `$ groupadd --gid 48 apache ` B. Add entry for "apache" user
+in the /etc/passwd file ... $ vi /etc/passwd ... then add the following
+line to the file and write the file and exit ...
+apache:x:48:48:Apache:/home/apache:/bin/bash C. Set the "apache" user
+password ... `$ passwd apache ` D. Give apache user sudo privileges ...
+$ visudo ... and add this line in the appropriate place:
+`apache ALL=(ALL) ALL</code> … then ctrl+O to write file (overwrite
+/etc/sudoers directly) and then ctrl+X to exit E. Create apache home
+directory …
+<code class="literal">$ mkdir /home/apache $ chown apache:apache /home/apache $ chmod a+rx
+                        /home/apache</code> Set-up web-site index page for
+redirection … <code class="literal">$ vi /var/www/index.html</code> … replace its contents
+with: <code class="literal">&lt;META http-equiv="refresh" content="0;URL=/tactic"&gt;</code> … write
+the file to save and exit vi, then put it into an "html" sub-folder in
+/var/www … <code class="literal">$ mkdir /var/www/html `
+`$ cp /var/www/index.html /var/www/html/</code> Logout the root user then
+login as the "apache" user Create a "install_packages" folder in
+/home/apache Download the latest open source "Enterprise" release of
+TACTIC … go to the downloads page of the Southpaw community site at:
+<code class="literal">"http://community.southpawtech.com/downloads"</code> … and click "Download"
+for the "Enterprise" release. Copy this release package (e.g.
+tactic-3.8.0.rc02) to the /home/apache/install_packages folder Unarchive
+the release package … <code class="literal">$ cd /home/apache/install_packages `
+`$ unzip tactic-3.8.0.rc02.zip</code> … you should now have the folder
+/home/apache/install_packages/tactic-3.8.0.rc02/ Set-up TACTIC to run as
+a service … A. Modify service script to run on Ubuntu Server …
+<code class="literal">$ cd /home/apache/install_packages/tactic-3.8.0.rc02/src/install
+                    ` `$ vi service/tactic ` ... modify the first line
+of that file to use the "bash" shell explicitly: `#!/bin/bash</code> … then
+write out the file and exit vi B. Copy the service script to the proper
+location … <code class="literal">$ sudo cp service/tactic /etc/init.d `
+`$ sudo chmod 775 /etc/init.d/tactic ` Configure Postgres for use with
+TACTIC ... `$ sudo cp /etc/postgresql/9.1/main/pg_hba.conf
+                        /etc/postgresql/9.1/main/pg_hba.conf--ORIG `
+`$ sudo cp
+                        /home/apache/install_packages/tactic-3.8/src/install/postgresql/pg_hba.conf
+                        /etc/postgresql/9.1/main/ `
+`$ sudo chown postgres:postgres /etc/postgresql/9.1/main/pg_hba.conf
+                    ` `$ sudo chown postgres:postgres
+                        /etc/postgresql/9.1/main/pg_hba.conf--ORIG `
+`$ sudo /etc/init.d/postgresql restart ` Configure Apache for use with
+TACTIC ... `$ sudo cp
+                        /home/apache/install_packages/tactic-3.8.0.rc02/src/install/apache/tactic.conf
+                        /etc/apache2/conf.d/ `
+`$ sudo a2enmod proxy_http ` `$ sudo a2enmod proxy_balancer `
+`$ sudo a2enmod rewrite ` `$ sudo service apache2 restart ` Setup
+bootstrap TACTIC module in Python install area (THIS STEP MUST BE DONE
+FOR TACTIC INSTALL TO WORK) ... A. Manually create "tacticenv" folder in
+"/usr/lib/python2.7/dist-packages/" ...
+`$ sudo mkdir /usr/lib/python2.7/dist-packages/tacticenv `
+`$ sudo chmod 755 /usr/lib/python2.7/dist-packages/tacticenv
+                    ` B. Revise the "tactic_paths.py" file to contain
+the proper paths ... `$ vi
+                        /home/apache/install_packages/tactic-3.8.0.rc02/src/install/data/tactic_paths.py</code>
+… add the following lines (no indentation!) to the bottom of the file
+(if not already present): <code class="literal">TACTIC_INSTALL_DIR='/home/apache/tactic'
+                    ` `TACTIC_SITE_DIR='' `
+`TACTIC_DATA_DIR='/home/apache/tactic_data'</code> … then write those
+changes to the file and exit vi C. Manually copy the "<span class="emphasis"><em>init</em></span>.py" and
+"tactic_paths.py" files into this new "tacticenv" module folder …
+<code class="literal">$ sudo cp
+                        /home/apache/install_packages/tactic-3.8.0.rc02/src/install/data/*.py
+                        /usr/lib/python2.7/dist-packages/tacticenv/ `
+`$ sudo chmod a+r /usr/lib/python2.7/dist-packages/tacticenv/*.py</code> Run
+TACTIC install script …
+<code class="literal">$ cd /home/apache/install_packages/tactic-3.8.0.rc02/src/install $ sudo
+                        python install.py</code> … NOTE: specify
+"/home/apache" for the TACTIC installation base path and specify
+"apache" for the user for the Apache Web Server.
+<code class="literal">$ sudo chown -R apache:apache /home/apache/tactic /home/apache/tactic_*
+                    ` `$ sudo chown -R apache:apache /home/apache/assets
+                        /home/apache/tactic_data ` Copy the provided
+TACTIC license file to the correct location ...
+`$ cp /home/apache/tactic/src/install/start/config/tactic-license.xml
+                        /home/apache/tactic_data/config/ ` Ensure
+databases are upgraded to the given version of TACTIC ...
+`$ python /home/apache/tactic/src/bin/upgrade_db.py</code> Test to make sure
+TACTIC server is able to run …
+<code class="literal">$ python /home/apache/tactic/src/bin/startup_dev.py</code> … and then, from
+a browser, go to the TACTIC web UI and confirm everything is functioning
+properly Finally set up TACTIC to automatically start up as a service
+when the server is rebooted … <code class="literal">$ sudo update-rc.d tactic defaults</code></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_monitor_server_performance"></a>12.12. Monitor Server Performance</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s11.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
