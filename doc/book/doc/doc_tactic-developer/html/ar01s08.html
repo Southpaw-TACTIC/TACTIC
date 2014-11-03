@@ -1,122 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8. Triggers</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Developer" /><link rel="up" href="index.html" title="TACTIC Developer" /><link rel="prev" href="ar01s07.html" title="7. Validation" /><link rel="next" href="ar01s09.html" title="9. Checkins" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_triggers"></a>8. Triggers</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_python_trigger_in_tactic_editor_guideline"></a>8.1. Python Trigger in Tactic Editor Guideline</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triggers_2"></a>8.2. Triggers</h3></div></div></div><p>Triggers are callbacks that are named based on certain events. TACTIC
-provides three types of triggers which allow you to add to existing
-functionality.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
-<span class="strong"><strong>Event-based triggers</strong></span>: triggers based on specific events that occur
-within TACTIC. During the execution of a command in TACTIC, various
-named events may be called. Any one of these events may trigger other
-actions, if a custom trigger is registered to that event.
-</li><li class="listitem">
-<span class="strong"><strong>Server-side pipeline triggers</strong></span>: triggers defined in a server-side
-pipeline. They are called as a result of events that occur in the
-pipeline itself
-</li><li class="listitem">
-<span class="strong"><strong>Client-side pipeline triggers</strong></span>: triggers defined in a client-side
-pipeline. They are defined in the client API.
-</li></ul></div><p>As TACTIC runs through its code, it will periodically call named events.
-These named events provide a mechanism for attaching custom trigger
-handlers.</p><p>There are two styles of named event triggers supported by TACTIC.</p><p>The first style of event-based trigger makes use of the client API. The
-functionality in the client API can be accessed by the server code and
-is often preferable for third parties to use because it uses a
-well-defined interface much easier to program in than the complex server
-code. To create your own custom trigger, create a new class derived from
-the Handler class and override the execute function:</p><pre class="screen">from tactic_client_lib import TacticServerStub
-from tactic_client_lib.interpreter import Handler
-
-class CustomTrigger(Handler):
-    def execute(my):
-        # get a handle to the server stub
-        server = TacticServerStub.get()
-        server.start("Starting server transaction")
-        try:
-            # at this point, you have full access to the server using the client API
-            ret_val = server.ping()
-
-            # get values from the inputs
-            search_key = my.get_input_value("search_key")
-            sobject = server.get_by_search_key(search_key)
-            if sobject.get('asset_library') != 'character':
-                return
-
-            # check to see that the status has changed
-            update_data = my.get_input_value("update_data")
-            if update_data.get('status'):
-                do_something_interesting(sobject)
-
-        except:
-            server.abort()
-        else:
-            server.finish()</pre><p>A reference to the TacticServerStub can be accessed through the static
-method get(). Once a reference to the server stub is obtained, it is
-possible to make use of the client API functionality. The main
-difference is that this code is being run inside the TACTIC server
-process, so the overhead of XMLRPC is not present. Thus triggers running
-on the server side will run much faster that those running using the
-XMLRPC protocol.</p><p>It is also possible in the trigger to access another TACTIC server by
-using the TacticServerStub and explicitly setting the three settings
-required to connect to another server. For example, here is some code to
-synchronize the asset list:</p><pre class="screen">    server = TacticServerStub()
-    server.set_server("tactic2.com")
-    server.set_ticket(ticket)
-    server.set_project(project)
-    server.start("Synchonizing data")
-    try:
-        search_key = my.get_input_value("search_key")
-        update_data = my.get_input_value("update_data")
-        server.update(search_key, update_data)
-    except:
-        server.abort()
-    else:
-        server.finish()</pre><p>Synchronization of data between two TACTIC servers is possible once
-authentication is set up. (Note that some priviledged knowledge about
-the remote server is required in order to authenticate.)</p><p>The second style of event-based trigger is driven from the class
-pyasm.command:</p><pre class="screen">from pyasm.command import Trigger
-class CustomTrigger(Trigger):
-    def execute(my):
-         print "executing custom trigger"</pre><p>This trigger style makes use of server-side code and is much more
-complex to use. It is most often used internally and should generally
-not be used unless required due to a limitation in the client API.</p><p>As TACTIC server code is executed, triggers will be called periodically.
-TACTIC will call named events, which will then trigger registered
-handles that are listening to those events.</p><p>To better understand the event system, please review the <span class="strong"><strong>TACTIC Setup→
-Project Automation → TACTIC Event System Introduction</strong></span> documentation</p><p>Each of the handlers for the events listed above get an "input package"
-delivered to them. This input package contains information that is
-useful to the handler as determined by the command that called the
-trigger.</p><div class="table"><a id="idm256628450304"></a><p class="title"><strong>Table 1. Insert / Edit Input Values</strong></p><div class="table-contents"><table summary="Insert / Edit Input Values" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">param </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">description </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">type</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>is_insert</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>specifies whether a particular trigger was an insert or an
-edit</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Boolean</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>search_key</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>the search_key of the SObject operated on by the
-insert/edit</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>String</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>prev_data</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a dictionary of previous values of attributes that were
-changed</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Dictionary</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>update_data</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>a dictionary of updated values of attributes that were
-changed</p></td><td style="" align="left" valign="top"><p>Dictionary</p></td></tr></tbody></table></div></div><br class="table-break" /><p>In order for a trigger to listen to an event, it must be registered in
-the trigger search type.</p><p>In the TACTIC admin site: <a class="ulink" href="http://&lt;server_name&gt;/admin" target="_top">http://&lt;server_name&gt;/admin</a>, click on the
-<span class="strong"><strong>triggers</strong></span> view. This view defines a list of triggers and the events
-they are registered to.</p><p>When you insert a new trigger, you specify the full class path of your
-new trigger, along with a description and the event that the trigger
-should listen for.</p><p>Time-based triggers allow you to execute custom code on the server at
-either specific intervals or at a specific time of the day. These are
-very useful triggers that allow you to handle any number of different
-actions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
-Backup (although this may be better done with a dedicated backup
-system)
-</li><li class="listitem">
-Cleanup
-</li><li class="listitem">
-Autobuilding of files
-</li><li class="listitem">
-Statistics gathering
-</li><li class="listitem">
-Data synchronization
-</li></ul></div><p>In this example, the function get_execute_interval(), used to determine
-the intervals during which this trigger will be run, is overridden to
-3600. This trigger will be run every hour (60*60) seconds. (The shortest
-hard coded interval is every 60 seconds. If you set a smaller number it
-will still execute once every 60 seconds.)</p><pre class="screen">class SampleTimedTrigger(TimedTrigger):
-    def get_execute_interval(my):
-        '''return number of seconds between execution'''
-        return 3600
-
-    def execute(my):
-        print "doing a bunch of stuff"
-        print "sleeping"
-        time.sleep(15)
-        print ".... done"</pre><p>In order for TACTIC to recognize this trigger, it has to be registered
-in the list of triggers in the Admin site. All timed triggers listen to
-the "timed" event.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8. Async Loading</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Developer" /><link rel="up" href="index.html" title="TACTIC Developer" /><link rel="prev" href="ar01s07.html" title="7. Validation" /><link rel="next" href="ar01s09.html" title="9. Messaging" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_async_loading"></a>8. Async Loading</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_asynchronous_loading"></a>8.1. Asynchronous Loading</h3></div></div></div><p><span class="inlinemediaobject"><img src="media/async_loading.png" alt="image" /></span></p><p><span class="strong"><strong>Default behaviour in TACTIC 4.1</strong></span></p><p>Asynchronous loading is a new feature that has been introduced in TACTIC
+4.1. Its introduction is the result of a shift in the philosophy of
+TACTIC user interface design. In this new direction, UIs are expected to
+be more fluid and responsive.</p><p>As of TACTIC 4.1, loading new tabs and links now looks like the picture
+above. The browser window is still useable during this animation -
+another link can be clicked in the meantime, for example.</p><p>As well, all TACTIC tables load asynchronously: the first 5 rows
+initially load and the rest of the table is loaded in groups of 10. This
+allows you to begin working on the table straight away.</p><p><span class="strong"><strong>Asynchronous Loading in the Custom Layout Editor</strong></span></p><p>As of TACTIC 4.1, the Custom Layout Editor supports asynchronous loading
+of views. Element tags now support a <span class="emphasis"><em>load</em></span> attribute, with three
+options.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Option </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Description</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>inline (default)</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Load the element with its parent custom layout.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>sequence</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Load the element after the parent layout is loaded, in
+sequence with other elements using this option.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>async</p></td><td style="" align="left" valign="top"><p>Behave similarly to <span class="emphasis"><em>sequence</em></span>, but all elements using this
+option send a request to begin loading as soon as the parent layout is
+loaded.</p></td></tr></tbody></table></div><p><span class="emphasis"><em>Sequence</em></span> and <span class="emphasis"><em>async</em></span> both cause the element to load after the custom
+layout that contains them loads, allowing a user to begin working before
+the particular element has loaded.</p><p>The difference between <span class="emphasis"><em>sequence</em></span> and <span class="emphasis"><em>async</em></span> is only apparent once
+multiple elements are using these attributes. For example, if a view
+named <span class="emphasis"><em>my_view</em></span> has two elements, <span class="emphasis"><em>view1</em></span> and <span class="emphasis"><em>view2</em></span>, which are loaded
+using the sequence option (as below), <span class="emphasis"><em>my_view</em></span> would first load, with
+loading placeholders for <span class="emphasis"><em>view1</em></span> and <span class="emphasis"><em>view2</em></span>. Once <span class="emphasis"><em>view1</em></span> loads,
+<span class="emphasis"><em>view2</em></span> would begin loading.</p><pre class="screen">&lt;element load='sequence' view='view1'/&gt;
+&lt;element load='sequence' view='view2'/&gt;</pre><p>If instead both elements were using <span class="emphasis"><em>async</em></span>, two requests would be sent
+once <span class="emphasis"><em>my_view</em></span> loads so both elements would begin loading at the same
+time.</p><p>The decision to use <span class="emphasis"><em>async</em></span> or <span class="emphasis"><em>sequence</em></span> depends on the scenario. Both
+allow the parent view to load faster, so their use is recommended. Using
+<span class="emphasis"><em>async</em></span> generally decreases the total load time on all elements in a
+view, but it also causes all the server requests to happen
+simultaneously.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s07.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

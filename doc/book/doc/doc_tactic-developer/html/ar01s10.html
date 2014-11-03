@@ -1,98 +1,122 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10. Conventions</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Developer" /><link rel="up" href="index.html" title="TACTIC Developer" /><link rel="prev" href="ar01s09.html" title="9. Checkins" /><link rel="next" href="ar01s11.html" title="11. TACTIC Python Client API Reference" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s09.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s11.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_conventions"></a>10. Conventions</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_naming_convention_classes"></a>10.1. Naming Convention Classes</h3></div></div></div><p><span class="strong"><strong>TACTIC Directory and File Naming</strong></span></p><p>TACTIC has a default file naming convention that has proven to work for
-a wide variety of productions. A production facility may simply choose
-to use this default naming convention, or could also override it to
-match the convention used by its current system. Customizing the
-directory and file naming conventions has proven to be the most time
-consuming part of integrating TACTIC into a system. The difficulty
-required to do this depends largely on being able to access the
-directories and file names procedurally.</p><p>TACTIC allows you to define different project types in the Site Admin →
-Projects Types View. Here you can define a different type of project and
-set up the various types of naming conventions for a particular project.
-When creating a project, you select a project type and it will make use
-of the information in the project type.</p><p>The various naming conventionn are as follows:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
-file_naming_cls: this class determines the file name of every file
-checked into TACTIC.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10. Triggers</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Developer" /><link rel="up" href="index.html" title="TACTIC Developer" /><link rel="prev" href="ar01s09.html" title="9. Messaging" /><link rel="next" href="ar01s11.html" title="11. Checkins" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s09.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s11.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_triggers"></a>10. Triggers</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_python_trigger_in_tactic_editor_guideline"></a>10.1. Python Trigger in Tactic Editor Guideline</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triggers_2"></a>10.2. Triggers</h3></div></div></div><p>Triggers are callbacks that are named based on certain events. TACTIC
+provides three types of triggers which allow you to add to existing
+functionality.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="strong"><strong>Event-based triggers</strong></span>: triggers based on specific events that occur
+within TACTIC. During the execution of a command in TACTIC, various
+named events may be called. Any one of these events may trigger other
+actions, if a custom trigger is registered to that event.
 </li><li class="listitem">
-dir_naming_cls: this class determines the directory of every file
-checked into TACTIC
+<span class="strong"><strong>Server-side pipeline triggers</strong></span>: triggers defined in a server-side
+pipeline. They are called as a result of events that occur in the
+pipeline itself
 </li><li class="listitem">
-app_naming_cls: this class determines the node names within an
-application such as Maya.
-</li></ol></div><p>The following code snippet is an example of overriding the directory for
-all files checked into a shot:</p><pre class="screen">from pyasm.prod.biz import ProdDirNaming
+<span class="strong"><strong>Client-side pipeline triggers</strong></span>: triggers defined in a client-side
+pipeline. They are defined in the client API.
+</li></ul></div><p>As TACTIC runs through its code, it will periodically call named events.
+These named events provide a mechanism for attaching custom trigger
+handlers.</p><p>There are two styles of named event triggers supported by TACTIC.</p><p>The first style of event-based trigger makes use of the client API. The
+functionality in the client API can be accessed by the server code and
+is often preferable for third parties to use because it uses a
+well-defined interface much easier to program in than the complex server
+code. To create your own custom trigger, create a new class derived from
+the Handler class and override the execute function:</p><pre class="screen">from tactic_client_lib import TacticServerStub
+from tactic_client_lib.interpreter import Handler
 
-class CustomDirNaming(ProdDirNaming):
-    def prod_shot(my, dirs):
+class CustomTrigger(Handler):
+    def execute(my):
+        # get a handle to the server stub
+        server = TacticServerStub.get()
+        server.start("Starting server transaction")
+        try:
+            # at this point, you have full access to the server using the client API
+            ret_val = server.ping()
 
-        shot = my.sobject
+            # get values from the inputs
+            search_key = my.get_input_value("search_key")
+            sobject = server.get_by_search_key(search_key)
+            if sobject.get('asset_library') != 'character':
+                return
 
-        dirs = my.get_base_dir()
+            # check to see that the status has changed
+            update_data = my.get_input_value("update_data")
+            if update_data.get('status'):
+                do_something_interesting(sobject)
 
-        # add the sequence code
-        sequence_code = shot.get_value("sequence_code")
-        dirs.append(sequence_code)
+        except:
+            server.abort()
+        else:
+            server.finish()</pre><p>A reference to the TacticServerStub can be accessed through the static
+method get(). Once a reference to the server stub is obtained, it is
+possible to make use of the client API functionality. The main
+difference is that this code is being run inside the TACTIC server
+process, so the overhead of XMLRPC is not present. Thus triggers running
+on the server side will run much faster that those running using the
+XMLRPC protocol.</p><p>It is also possible in the trigger to access another TACTIC server by
+using the TacticServerStub and explicitly setting the three settings
+required to connect to another server. For example, here is some code to
+synchronize the asset list:</p><pre class="screen">    server = TacticServerStub()
+    server.set_server("tactic2.com")
+    server.set_ticket(ticket)
+    server.set_project(project)
+    server.start("Synchonizing data")
+    try:
+        search_key = my.get_input_value("search_key")
+        update_data = my.get_input_value("update_data")
+        server.update(search_key, update_data)
+    except:
+        server.abort()
+    else:
+        server.finish()</pre><p>Synchronization of data between two TACTIC servers is possible once
+authentication is set up. (Note that some priviledged knowledge about
+the remote server is required in order to authenticate.)</p><p>The second style of event-based trigger is driven from the class
+pyasm.command:</p><pre class="screen">from pyasm.command import Trigger
+class CustomTrigger(Trigger):
+    def execute(my):
+         print "executing custom trigger"</pre><p>This trigger style makes use of server-side code and is much more
+complex to use. It is most often used internally and should generally
+not be used unless required due to a limitation in the client API.</p><p>As TACTIC server code is executed, triggers will be called periodically.
+TACTIC will call named events, which will then trigger registered
+handles that are listening to those events.</p><p>To better understand the event system, please review the <span class="strong"><strong>TACTIC Setup→
+Project Automation → TACTIC Event System Introduction</strong></span> documentation</p><p>Each of the handlers for the events listed above get an "input package"
+delivered to them. This input package contains information that is
+useful to the handler as determined by the command that called the
+trigger.</p><div class="table"><a id="idm256648066000"></a><p class="title"><strong>Table 1. Insert / Edit Input Values</strong></p><div class="table-contents"><table summary="Insert / Edit Input Values" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">param </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">description </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">type</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>is_insert</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>specifies whether a particular trigger was an insert or an
+edit</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Boolean</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>search_key</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>the search_key of the SObject operated on by the
+insert/edit</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>String</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>prev_data</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a dictionary of previous values of attributes that were
+changed</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Dictionary</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>update_data</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>a dictionary of updated values of attributes that were
+changed</p></td><td style="" align="left" valign="top"><p>Dictionary</p></td></tr></tbody></table></div></div><br class="table-break" /><p>In order for a trigger to listen to an event, it must be registered in
+the trigger search type.</p><p>In the TACTIC admin site: <a class="ulink" href="http://&lt;server_name&gt;/admin" target="_top">http://&lt;server_name&gt;/admin</a>, click on the
+<span class="strong"><strong>triggers</strong></span> view. This view defines a list of triggers and the events
+they are registered to.</p><p>When you insert a new trigger, you specify the full class path of your
+new trigger, along with a description and the event that the trigger
+should listen for.</p><p>Time-based triggers allow you to execute custom code on the server at
+either specific intervals or at a specific time of the day. These are
+very useful triggers that allow you to handle any number of different
+actions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Backup (although this may be better done with a dedicated backup
+system)
+</li><li class="listitem">
+Cleanup
+</li><li class="listitem">
+Autobuilding of files
+</li><li class="listitem">
+Statistics gathering
+</li><li class="listitem">
+Data synchronization
+</li></ul></div><p>In this example, the function get_execute_interval(), used to determine
+the intervals during which this trigger will be run, is overridden to
+3600. This trigger will be run every hour (60*60) seconds. (The shortest
+hard coded interval is every 60 seconds. If you set a smaller number it
+will still execute once every 60 seconds.)</p><pre class="screen">class SampleTimedTrigger(TimedTrigger):
+    def get_execute_interval(my):
+        '''return number of seconds between execution'''
+        return 3600
 
-        # add the shot code
-        shot_code = shot.get_code()
-        dirs.append(shot_code)
-
-        # put all files in the "scenes" directory
-        dirs.append("scenes")
-
-        return dirs</pre><p>This will create a directory name that looks something like</p><p><code class="literal">/&lt;base_dir&gt;/&lt;sequence_code&gt;/&lt;shot_code&gt;/scenes</code></p><p>or</p><p>/sample3d/shot/XG/XG002/scenes</p><p>Overriding naming conventions is a simple matter of defining your own
-implementation class and implementing specific functions in this class.
-Each SObject has its own SObject type. For example a shot in a
-production may have the type "prod/shot". This naming uniquely
-identifies this type of SObject.</p><p>To customize the naming convention for this class, you replace the
-slashes "/" in the Search Type with underscores "_" and use this as the
-name of the function. So in the example above, to customize a Shot
-(prod/shot), you define a function called prod_shot. Whenever TACTIC is
-asked to produce a directory for a particular SObject, an implementation
-function such as this is called. If no such function exists, then the
-default is used.</p><p>get_base_dir() simply gets the base directory of this SObject (default
-&lt;base&gt;/&lt;project&gt;/&lt;table&gt;)</p><p>Overriding the file naming is similar.</p><pre class="screen">from pyasm.prod.biz import ProdFileNaming
-
-class CustomFileNaming(ProdFileNaming):
-    def prod_shot(my):
-
-        parts = []
-
-        parts.append(my.sobject.get_code())
-
-        parts.append('custom')
-        parts.append(my.snapshot.get_context())
-        version = my.snapshot.get_value("version")
-
-        version = "v%0.3d" % int(version)
-        parts.append(version)
-        ext = my.get_ext()
-        name = '_'.join(parts)
-        name = '%s%s'%(name, ext)
-        return name</pre><p>This will create a file name that looks something like</p><p><code class="literal">&lt;shot_code&gt;_&lt;custom&gt;_&lt;context&gt;_&lt;version&gt;.&lt;ext&gt;</code></p><p>or</p><p>`XG002_bedroom_anim_v004.jpg `</p><p>Custom in this case is a custom attribute added to a shot. So with these
-two classes, we would have a full path for this file of:</p><p>`/assets/sample3d/shot/XG/XG002/scenes/XG002_bedroom_anim_v004.jpg `</p><p><span class="strong"><strong>Default Naming Conventions</strong></span></p><p>TACTIC comes with a default file and directory naming convention. You
-may choose to adopt this default naming convention as specified above,
-or you may create your own naming convention. The choice of which naming
-conventions should be used is often a hard one. Using TACTIC’s default
-naming convention makes it much simpler and quicker to start using
-TACTIC in production. This is the recommended route if there is no
-legacy within the facility. If, however, you have many scripts and
-processes that rely on a previous naming convention, then you may
-customize TACTIC to map to your current naming convention.</p><p>The rest of this section describes TACTIC’s default naming conventions.</p><p>To start, there is a base directory under which all asset files are
-stored. This base directory is specified in the Tactic conf file in
-&lt;sites_dir&gt;/config/tactic_linux.conf (tactic_win32.conf for windows).
-The next level is divided by project and then the type of the sobject.
-All projects of this same type are located under this directory:</p><p><code class="literal">&lt;base_asset_dir&gt;</code></p><p>The default for any search type checked into a specific context is
-represented with the following convention:</p><p>The next levels represent the subdirectory component and are all
-associated with metadata for the SObject types in some way. The details
-are up to the implementation function for each specific SObject type.</p><pre class="screen">&lt;base_asset_dir&gt;/&lt;project_code&gt;/&lt;search_type&gt;/&lt;sobject_code&gt;/&lt;sobject_code&gt;_&lt;snapshot_context&gt;_&lt;snapshot_version&gt;.&lt;original_file_ext&gt;</pre><p><span class="strong"><strong>Default</strong></span></p><p>If an SObject type does not have any overriding function, then there is
-a default implementation:</p><p>Subdir: empty File: &lt;filename&gt;_&lt;file_code&gt;.&lt;ext&gt;</p><pre class="screen">    Subdir: empty
-
-    File: &lt;filename&gt;_&lt;file_code&gt;.&lt;ext&gt;
-
-    example: /home/apache/assets/storyboard/castle01_00034355BAR.jpg</pre><p>The file code ensures that the file name is unique. This uniqueness
-prevents files from overwriting each other, even when files of the same
-name are checked in. In recent versions TACTIC has moved away from
-adding the file code to the file name in favor of the clearer v002_BAR
-ending. (However, the file name format can still exist for numerous
-asset types where the file name is of little consequence.)</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s09.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
+    def execute(my):
+        print "doing a bunch of stuff"
+        print "sleeping"
+        time.sleep(15)
+        print ".... done"</pre><p>In order for TACTIC to recognize this trigger, it has to be registered
+in the list of triggers in the Admin site. All timed triggers listen to
+the "timed" event.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s09.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
