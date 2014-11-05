@@ -657,6 +657,10 @@ class Site(object):
         return my.get_value(name)
 
     def get_value(my, name, no_exception=True):
+        # This is just to spoof the Site object into being an sobject for
+        # the purposes of using expressions to configure the "asset_dir"
+        # for sites.  Ideally, this class should be derived from sobject,
+        # but this is not yet implemented.
         if name == "code":
             site = Site.get_site()
             return site
