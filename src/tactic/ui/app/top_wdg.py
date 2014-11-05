@@ -16,7 +16,7 @@ import os
 
 import js_includes
 
-from pyasm.common import Common, Container, Environment, jsondumps, jsonloads
+from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
@@ -579,6 +579,18 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
             for include in js_includes.legacy_app:
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
+
+
+
+
+        # custom js files to include
+        includes = Config.get_value("install", "include_js")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                print "include: ", include
+                Container.append_seq("Page:js", include)
 
 
 

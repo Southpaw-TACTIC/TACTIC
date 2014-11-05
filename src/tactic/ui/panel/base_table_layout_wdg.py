@@ -860,6 +860,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 values = {}
 
+            from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
                 icon="", width="75", show_partial=False, show_toggle=True)

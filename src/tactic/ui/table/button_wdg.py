@@ -93,6 +93,9 @@ class ButtonElementWdg(BaseTableElementWdg):
     def is_sortable(my):
         return False
 
+    def get_width(my):
+        return 30
+
     def init(my):
         my.behavior = {}
 

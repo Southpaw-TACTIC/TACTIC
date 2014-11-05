@@ -53,6 +53,9 @@ class HiddenRowElementWdg(BaseTableElementWdg):
     def is_editable(my):
         return False
 
+    def get_width(my):
+        return 30
+
 
     def handle_layout_behaviors(my, layout):
 
