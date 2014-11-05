@@ -126,7 +126,6 @@ if __name__ == '__main__':
     projects = search.get_sobjects()
     project_dict = {}
     for project in projects:
-        print "project: ", project.get_code()
         last_version = project.get_value('last_version_update', no_exception=True)
         if last_version > version:
             project_dict[project.get_code()] = last_version
