@@ -14,7 +14,7 @@
 __all__ = ['TextInputWdg', 'PasswordInputWdg', 'LookAheadTextInputWdg', 'GlobalSearchWdg']
 
 from pyasm.common import Date, Common, Environment, FormatValue, SPTDate, TacticException
-from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
+from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement, Palette
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SObject, SearchKey
 from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
@@ -121,28 +121,30 @@ class TextInputWdg(BaseInputWdg):
             my.set_readonly(True)
 
 
+        my.border_color = my.text.get_color("border")
 
         my.text.add_class("spt_text_input")
-        border_color = my.text.get_color("border")
-        my.text.add_style("border: solid 1px %s" % border_color)
-        my.text.add_style("padding: 4px")
+        #my.text.add_style("padding: 4px")
 
         if my.readonly:
             bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
         else:
-            bgcolor = my.text.get_color("background", -3)
+            bgcolor = my.text.get_color("background")
             my.text.add_style("background", bgcolor)
 
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
+
+            # TODO: replace with bootstrap error classes
             my.text.add_behavior( {
                 'type': 'blur',
                 'bgcolor': bgcolor,
                 'bgcolor2': bgcolor2,
                 'cbjs_action': '''
                 
-                if (bvr.src_el.hasClass('spt_input_validation_failed'))
+                if (bvr.src_el.hasClass('spt_input_validation_failed')) {
                     return;
+                }
 
                 var value = bvr.src_el.value;
                 var last_value = bvr.src_el.getAttribute("spt_last_value");
@@ -156,24 +158,34 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
              
-               
-               
                 bvr.src_el.setAttribute("spt_last_value", value);
+
+                //spt.input.set_success(bvr.src_el);
+                spt.input.set_error(bvr.src_el);
                 '''
                 } )
  
        
-        my.top = SpanWdg()
+        my.top = DivWdg()
 
 
         super(TextInputWdg, my).__init__()
+
+
+        my.icon = my.kwargs.get("icon")
+        if my.icon:
+            my.icon_div = DivWdg()
+
 
         my.width = my.kwargs.get("width")
         if not my.width:
             my.width = 230
         else:
             my.width = str(my.width).replace("px", "")
-            my.width = int(my.width)
+            if not my.width.endswith("%"):
+                my.width = int(my.width)
+
+        my.text.add_style("width: %s" % my.width)
 
 
     def add_style(my, name, value=None):
@@ -181,7 +193,8 @@ class TextInputWdg(BaseInputWdg):
             name, value = name.split(": ")
 
         if name == 'width':
-            my.width = int(value.replace("px",""))
+            my.width = value
+            my.text.add_style(name, value)
         elif name == 'float':
             my.top.add_style(name, value)
         else:
@@ -190,6 +203,10 @@ class TextInputWdg(BaseInputWdg):
 
     def add_behavior(my, behavior):
         my.text.add_behavior(behavior)
+
+
+    def get_icon_wdg(my):
+        return my.icon_div
 
 
 
@@ -251,7 +268,7 @@ class TextInputWdg(BaseInputWdg):
                 if not column:
                     column = my.name
 
-                display = sobject.get_value(column)
+                display = sobject.get_value(column, no_exception=True)
                 if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
 
@@ -278,10 +295,7 @@ class TextInputWdg(BaseInputWdg):
         top = my.top
         top.add_style("position: relative")
         top.add_class("spt_text_top")
-        top.add_style("height: 20px")
-        top.add_style("width: %spx" % my.width)
         top.add_class("spt_input_text_top")
-
 
 
         if my.kwargs.get("required") in [True, 'true']:
@@ -335,7 +349,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %spx" % my.width)
+            edit_div.add_style("margin-left: %s" % my.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -363,9 +377,100 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add(icon)
 
 
-        text_div = SpanWdg()
-        top.add(text_div)
-        text_div.add(my.text)
+        height = my.kwargs.get("height")
+        if height:
+            height = height.replace("px", "")
+            height = int(height)
+        else:
+            height = 40
+
+
+        my.text.add_style("height: %s" % height)
+
+
+        # BOOTSTRAP
+        div = DivWdg()
+        top.add(div)
+        label = None
+        if label:
+            div.add_class("form-group")
+            label_wdg = HtmlElement.label()
+            div.add(label)
+            label_wdg.add_class("control-label")
+            label_wdg.add_attr("for", "inputSuccess1")
+            label_wdg.add(my.name)
+
+        #text = TextWdg(my.name)
+        #text = HtmlElement.text()
+        #text.add_attr("name", my.name)
+        #text.add_class("form-control")
+
+        input_group = DivWdg()
+        div.add(input_group)
+
+        if my.icon:
+            input_group.add_class("input-group")
+            addon = SpanWdg()
+            if isinstance(my.icon, basestring):
+                if len(my.icon) > 1:
+                    icon = IconWdg(title="", icon=my.icon, width=16)
+                else:
+                    icon = my.icon
+            else:
+                icon = my.icon
+            input_group.add(addon)
+            addon.add_class("input-group-addon")
+            addon.add(icon)
+
+
+
+        input_group.add(my.text)
+        my.text.add_class("form-control")
+        my.text.add_style('color', div.get_color('color')) 
+
+        # Bootstrap example hierarchy
+        """
+        <div class="form-group">
+          <label class="control-label" for="inputSuccess1">Test Input</label>
+          <input type="text" class="form-control" id="inputSuccess1"/>
+        </div>
+        """
+
+        my.text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var el = bvr.src_el.getParent(".form-group");
+            if (value == "foo") {
+                el.addClass("has-error");
+                el.removeClass("has-success");
+            }
+            else {
+                el.addClass("has-success");
+                el.removeClass("has-error");
+            }
+            '''
+        } )
+
+
+
+        table = Table()
+        #top.add(table)
+        tr = table.add_row()
+        table.add_style("width: %s" % my.width)
+
+        # add in an icon div
+        if my.icon:
+            td = table.add_cell(my.icon_div)
+            td.add_style("width: 20")
+            td.add_style("border: solid 1px %s" % my.border_color)
+
+            icon = IconWdg("", my.icon, width=16)
+            my.icon_div.add(icon)
+            my.icon_div.add_style("padding: 4px 8px")
+            my.icon_div.add_style("height: %spx" % (height -16))
+            my.icon_div.add_style("overflow-y: hidden")
+            my.icon_div.add_style("margin-right: -1px")
 
 
 
@@ -378,6 +483,13 @@ class TextInputWdg(BaseInputWdg):
         
         if not my.text.value:
             hint_text = my.kwargs.get("hint_text")
+            color = my.text.get_color('color')
+            # lower the visibility of the hint text according to color of palette
+            if color > '#999':
+                color = Palette.modify_color(color, -30)
+            elif color < '#222':
+                color = Palette.modify_color(color, 40)
+
             if hint_text:
                 my.text.add_attr('title', hint_text)
                 # this prevents using this value for search
@@ -386,48 +498,72 @@ class TextInputWdg(BaseInputWdg):
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
                             offset: {x:5, y:5}}});
-                    over.text.setStyle('color','#999');
-                    over.text.setStyle('font-size','11px');
+                    over.text.setStyle('color','%s');
+                    over.text.setStyle('font-size','1.1em');
                     over.text.setStyle('font-family','Arial, Serif');
-                    '''})
+                    '''%color})
 
 		
 
         #my.text.add_style("-moz-border-radius: 5px")
-        my.text.set_round_corners()
-        my.text.add_style("width: %spx" % my.width)
-        text_div.add_style("width: %spx" % my.width)
-        text_div.add_style("position: relative")
+        #my.text.set_round_corners()
+
+        td = table.add_cell()
+
+        td.add(my.text)
+        td.add_style("position: relative")
+
+
+
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 0px 1px 1px")
+        td.add_style("border-style: solid")
+        #my.text.add_style("border: none")
+
+        my.text.add_style("width: 100%")
+
+        my.text.add_style("padding: 5px")
+        my.text.add_style("height: %s" % (height-10))
+
+        #td = table.add_cell()
+        td.add_style("border-color: %s" % my.border_color)
+        td.add_style("border-width: 1px 1px 1px 1px")
+        td.add_style("border-style: solid")
+
+
+
 
         icon_wdg = DivWdg()
-        text_div.add(icon_wdg)
-        icon_wdg.add_style("position: absolute")
+        my.text.add(icon_wdg)
+        #icon_wdg.add_style("top: 0px")
+        icon_wdg.add_style("float: right")
+        icon_wdg.add_style("position: relative")
+
+
         
         if WebContainer.get_web().get_browser() in ['Webkit', 'Qt']:
             top_offset = '-2'
             right_offset = '6'
-        #elif WebContainer.get_web().get_browser() == 'Qt':
-        #    top_offset = '4'
-        #    right_offset = '6'
         else:
-            top_offset = '2'
+            top_offset = '6'
             right_offset = '8'
 
-        icon_wdg.add_style("top: %spx" %top_offset)
-        icon_wdg.add_style("right: %spx" % right_offset)
-
+        #icon_wdg.add_style("top: 0px")
+        #icon_wdg.add_style("right: 0px")
 
         if not my.readonly:
-
-            icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE, inline=False)
+            pass
+            #TODO: put the Clear glyph icon in as an option
+            """
+            icon = IconWdg("Clear", "BS_REMOVE", opacity=0.3)
             icon.add_class("spt_icon_inactive")
+            icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
-            icon.add_style("opacity: 0.3")
-
-
-            icon = IconWdg("Clear", IconWdg.CLOSE_ACTIVE, inline=False)
+            #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
+            icon = IconWdg("Clear", "BS_REMOVE")
             icon.add_class("spt_icon_active")
             icon.add_style("display: none")
+            icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
 
             icon_wdg.add_behavior( {
@@ -468,9 +604,7 @@ class TextInputWdg(BaseInputWdg):
                 spt.validation.onchange_cbk(evt, bvr2);
                 '''%input_type
             } )
-
-        top.add("&nbsp;")
-
+            """
         return top
 
 
@@ -525,6 +659,7 @@ class LookAheadTextInputWdg(TextInputWdg):
             my.search_type = 'sthpw/sobject_list'
         column = my.kwargs.get("column")
         relevant = my.kwargs.get("relevant")
+        
         if not column:
             column = 'keywords'
     
@@ -868,7 +1003,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 20px")
+        results_div.add_style("top: 25px")
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")

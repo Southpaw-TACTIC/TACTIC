@@ -12,6 +12,7 @@
 __all__ = ["TileLayoutWdg"]
 
 import re
+from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -83,6 +84,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     }
+    ARGS_KEYS['script_path'] = {
+            'description': 'Script to execute when clicked on',
+            'type': 'TextWdg',
+            'order' : '09',
+            'category': 'Display'
+
+    }
+
 
     
 
@@ -119,6 +128,16 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         }
 
+
+    def alter_search(my, search):
+        process = my.kwargs.get("process")
+        if process:
+            search.add_filter("process", process)
+        return super(ToolLayoutWdg, my).alter_search(search)
+
+
+
+   
 
     def get_content_wdg(my):
         div = DivWdg()
@@ -292,6 +311,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             my.aspect_ratio = (240, 160)
 
+        my.show_name_hover = my.kwargs.get('show_name_hover')
 
         my.top_styles = my.kwargs.get('styles')
         my.spacing = my.kwargs.get('spacing')
@@ -302,6 +322,46 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def add_layout_behaviors(my, layout_wdg):
+        border_color = layout_wdg.get_color('border', modifier=20)
+        layout_wdg.add_behavior( {
+            'type': 'smart_drag',
+            'bvr_match_class': 'spt_tile_checkbox',
+            'drag_el': 'drag_ghost_copy',
+            'use_copy': 'true',
+            'use_delta': 'true',
+            'border_color': border_color,
+            'dx': 10, 'dy': 10,
+            'drop_code': 'DROP_ROW',
+            
+             # don't use cbjs_pre_motion_setup as it assumes the drag el
+                                
+            'copy_styles': 'z-index: 1000; opacity: 0.7; border: solid 1px %s; text-align: left; padding: 10px; width: 0px; background: %s' \
+                    % (layout_wdg.get_color("border"), layout_wdg.get_color("background")),
+
+            'cbjs_setup': '''
+            if(spt.drop) {spt.drop.sobject_drop_setup( evt, bvr );}
+            ''',
+
+            "cbjs_motion": '''
+                spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+                var target_el = spt.get_event_target(evt);
+                target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+                if (target_el) {
+                    var orig_border_color = target_el.getStyle('border-color');
+                    var orig_border_style = target_el.getStyle('border-style');
+                    target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+                    if (!target_el.getAttribute('orig_border_color')) {
+                        target_el.setAttribute('orig_border_color', orig_border_color);
+                        target_el.setAttribute('orig_border_style', orig_border_style);
+                    }
+                }
+            ''',
+            "cbjs_action": '''
+            if (spt.drop) {
+                spt.drop.sobject_drop_action(evt, bvr);
+            }
+            '''
+        } )
 
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
@@ -313,7 +373,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             var name = top.getAttribute("spt_name");
             var search_code = top.getAttribute("spt_search_code");
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
-            //var class_name = 'tactic.ui.tools.RepoBrowserContentWdg';
             var kwargs = {
                 search_key: search_key
             };
@@ -321,10 +380,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
+
+
+
         mode = my.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
 
+        
         gallery_width = my.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
@@ -355,7 +418,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
             gallery_div.add_class("spt_tile_gallery")
-
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'width': gallery_width,
@@ -367,12 +429,12 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var search_keys = [];
                 for (var i = 0; i < tile_tops.length; i++) {
                     var tile_top = tile_tops[i];
-                    var search_key = tile_top.getAttribute("spt_search_key");
+                    var search_key = tile_top.getAttribute("spt_search_key_v2");
                     search_keys.push(search_key);
                 }
 
                 var tile_top = bvr.src_el.getParent(".spt_tile_top");
-                var search_key = tile_top.getAttribute("spt_search_key");
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
 
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
                 var kwargs = {
@@ -389,8 +451,28 @@ class TileLayoutWdg(ToolLayoutWdg):
                 '''
             } )
  
+        elif mode == "custom":
+            
+            script_path = my.kwargs.get("script_path")
+            script = None
+            if script_path:
+                script_obj = CustomScript.get_by_path(script_path)
+                script = script_obj.get_value("script")
 
+            if not script:
+                script = my.kwargs.get("script")
 
+            if not script:
+                script = '''
+                alert("Script path [%s] not implemented");
+                ''' % script_path
+
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'cbjs_action': script
+            } )
+ 
 
         bg1 = layout_wdg.get_color("background3")
         bg2 = layout_wdg.get_color("background3", 5)
@@ -417,30 +499,93 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+        process = my.kwargs.get("process")
+        if not process:
+            process = "publish"
+        if my.parent_key:
+            search_type = None
+        else:
+            search_type = my.search_type
+
 
         layout_wdg.add_behavior( {
             'type': 'load',
+            'search_type': search_type,
+            'search_key': my.parent_key,
+            'process': process,
             'cbjs_action': '''
 
             spt.thumb = {};
 
             spt.thumb.background_drop = function(evt, el) {
+
                 evt.stopPropagation();
                 evt.preventDefault();
 
                 var top = $(el);
-                top.setStyle("background", "#0F0");
+
+                var server = TacticServerStub.get();
+
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
+
+
+                for (var i = 0; i < files.length; i++) {
+                    var size = files[i].size;
+                    var file = files[i];
+
+                    var filename = file.name;
+
+                    var search_key;
+                    var data = {
+                        name: filename
+                    }
+                    if (bvr.search_key) {
+                       search_key = bvr.search_key
+                    }
+                    else {
+                        var search_type = bvr.search_type;
+                        var item = server.insert(search_type, data);
+                        search_key = item.__search_key__;
+                    }
+
+                    var context = bvr.process + "/" + filename;
+
+                    var upload_file_kwargs =  {
+                        files: [files[i]],
+                        upload_complete: function() {
+                            var server = TacticServerStub.get();
+                            var kwargs = {mode: 'uploaded'};
+                            server.simple_checkin( search_key, context, filename, kwargs);
+
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+
+                            spt.table.run_search();
+
+                        }
+                    };
+                    spt.html5upload.upload_file(upload_file_kwargs);
+
+                    // just support one file at the moment
+                    break;
+         
+                }
+
             }
  
 
             spt.thumb.noop = function(evt, el) {
-                evt.stopPropagation();
-                evt.preventDefault();
                 evt.dataTransfer.dropEffect = 'copy';
                 var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
 
                 var top = $(el);
                 var thumb_el = top.getElement(".spt_thumb_top");
+
 
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
@@ -462,8 +607,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var filename = file.name;
                     var context = "publish" + "/" + filename;
 
-
-
                     var upload_file_kwargs =  {
                         files: files,
                         upload_complete: function() {
@@ -484,7 +627,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         
         border = layout_wdg.get_color("border")
-
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'border': border,
@@ -531,25 +673,21 @@ class TileLayoutWdg(ToolLayoutWdg):
                     var row = rows[i];
                     var checkbox = row.getElement(".spt_tile_checkbox");
 
-                    if (!select) {
-                        checkbox.checked = false;
+                    if (select) {
+                        checkbox.checked = true;
                         row.removeClass("spt_table_selected");
 
-                        row.setStyle("border", "solid 1px " + bvr.border);
-                        var size = row.getSize();
-                        row.setStyle("width", size.x+6);
-                        row.setStyle("height", size.y+6);
+                        spt.table.select_row(row);
+                        row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
 
                     }
                     else {
-                        checkbox.checked = true;
-                        //row.addClass("spt_table_selected");
-                        var size = row.getSize();
-                        row.setStyle("width", size.x-10);
-                        row.setStyle("height", size.y-10);
-                        row.setStyle("border", "solid 5px yellow");
-                        spt.table.select_row(row);
+                        checkbox.checked = false;
+                        row.addClass("spt_table_selected");
+                        spt.table.unselect_row(row);
+
+                        row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
 
                     }
                 }
@@ -563,30 +701,35 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
                     row.removeClass("spt_table_selected");
-
-                    row.setStyle("border", "solid 1px " + bvr.border);
-
-                    var size = row.getSize();
-                    row.setStyle("width", size.x+6);
-                    row.setStyle("height", size.y+6);
+                    spt.table.unselect_row(row);
+                    row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
 
                 }
                 else {
                     checkbox.checked = true;
-                    //row.addClass("spt_table_selected");
-
-                    var size = row.getSize();
-                    row.setStyle("width", size.x-10);
-                    row.setStyle("height", size.y-10);
-                    row.setStyle("border", "solid 5px yellow");
+                    row.addClass("spt_table_selected");
                     spt.table.select_row(row);
-
-
+                    row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
                 }
 
             }
 
+            '''
+        } )
+
+
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_checkbox',
+            'cbjs_action': '''
+            if (bvr.src_el.checked) {
+                bvr.src_el.checked = false;
+            }
+            else {
+                bvr.src_el.checked = true;
+            }
+            evt.stopPropagation();
             '''
         } )
 
@@ -597,7 +740,10 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_tile_wdg(my, sobject):
 
         div = DivWdg()
+
+        
         div.add_class("spt_tile_top")
+        div.add_class("unselectable")
         div.add_style('margin', my.spacing)
         div.add_style('background-color','transparent')
 
@@ -612,9 +758,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 title_wdg = my.get_title(sobject)
                 div.add( title_wdg )
 
-        div.add_attr("spt_search_key", sobject.get_search_key())
+        div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+        div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
+
+        display_value = sobject.get_display_value(long=True)
+        div.add_attr("spt_display_value", display_value)
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
@@ -627,11 +777,26 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div.add_style("float: left")
 
+        border_color = div.get_color('border', modifier=20)
+
+        thumb_drag_div = DivWdg()
+        div.add(thumb_drag_div)
+        thumb_drag_div.add_class("spt_tile_drag")
+        thumb_drag_div.add_style("width: auto")
+        thumb_drag_div.add_style("height: auto")
+        thumb_drag_div.add_behavior( {
+            "type": "drag",
+            #'drag_el': 'drag_ghost_copy',
+            #//'use_copy': 'true',
+            "drag_el": '@',
+            'drop_code': 'DROP_ROW',
+            'border_color': border_color,
+            "cb_set_prefix": 'spt.tile_layout.image_drag'
+        } )
+
         thumb_div = DivWdg()
-        #thumb_div.add_styles('margin-left: auto; margin-right: auto')
+        thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
-        #thumb_div.add_class("spt_tile_detail")
-        div.add(thumb_div)
 
 
         
@@ -640,7 +805,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_style("height: %s" % my.aspect_ratio[1])
         #thumb_div.add_style("overflow: hidden")
 
-        thumb = ThumbWdg2()
+        kwargs = {'show_name_hover': my.show_name_hover}
+
+        thumb = ThumbWdg2(**kwargs)
         thumb.set_sobject(sobject)
         thumb_div.add(thumb)
         thumb_div.add_border()
@@ -651,12 +818,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
-
+        
 
         div.add_attr("ondragenter", "return false")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
-
 
         return div
 
@@ -797,6 +963,46 @@ spt.tile_layout.setup_control = function() {
 }
 
 
+
+spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
+    bvr.use_copy = true;
+    bvr.use_delta = true;
+    //bvr.border_color = border_color;
+    bvr.dx = 10;
+    bvr.dy = 10;
+    bvr.drop_code = 'DROP_ROW';
+
+
+}
+
+spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
+
+    spt.mouse._smart_default_drag_motion(evt, bvr, mouse_411);
+    var target_el = spt.get_event_target(evt);
+    target_el = spt.mouse.check_parent(target_el, bvr.drop_code);
+    if (target_el) {
+        var orig_border_color = target_el.getStyle('border-color');
+        var orig_border_style = target_el.getStyle('border-style');
+        target_el.setStyle('border','dashed 2px ' + bvr.border_color);
+        if (!target_el.getAttribute('orig_border_color')) {
+            target_el.setAttribute('orig_border_color', orig_border_color);
+            target_el.setAttribute('orig_border_style', orig_border_style);
+        }
+    }
+
+}
+
+spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
+    if (spt.drop) {
+        spt.drop.sobject_drop_action(evt, bvr);
+    }
+    else {
+        if( bvr._drag_copy_el ) {
+            spt.behavior.destroy_element(bvr._drag_copy_el);
+        }
+    }
+}
+
         ''' } )
 
 
@@ -809,7 +1015,6 @@ spt.tile_layout.setup_control = function() {
       
         '''
         } )
-
 
         table = Table()
         div.add(table)
@@ -838,7 +1043,7 @@ spt.tile_layout.setup_control = function() {
         med_color = div.get_color('color2')
         
         slider_div = DivWdg(css='spt_slider')
-        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 200px;'% light_color)
+        slider_div.add_styles('valign: bottom; background: %s; height: 6px; width: 100px;'% light_color)
         knob_div = DivWdg(css='knob')
         knob_div.add_behavior({'type':'click',
                 'cbjs_action': 'spt.tile_layout.set_layout(bvr.src_el)'
@@ -871,7 +1076,7 @@ spt.tile_layout.setup_control = function() {
         """
         if my.scale:
             value_wdg.set_value(my.scale)
-        value_wdg.add_style("width: 24px")
+        value_wdg.add_style("width: 28px")
         value_wdg.add_style("text-align: center")
         value_wdg.add_behavior( {
         'type': 'change',
@@ -939,33 +1144,41 @@ spt.tile_layout.setup_control = function() {
 
         div.add_color("background", "background3")
         div.add_style("padding: 5px")
-        div.add_style("height: 16px")
+        div.add_style("height: 20px")
 
 
-        detail_div = DivWdg()
-        div.add(detail_div)
-        detail_div.add_class("spt_tile_detail")
-        detail_div.add_style("float: right")
-        detail_div.add_style("margin-top: -2px")
+        if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
+            detail_div = DivWdg()
+            div.add(detail_div)
+            detail_div.add_class("spt_tile_detail")
+            detail_div.add_style("float: right")
+            detail_div.add_style("margin-top: -2px")
 
-        detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
-        detail_div.add(detail)
+            #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
+            detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+            detail_div.add(detail)
 
 
         header_div = DivWdg()
         header_div.add_class("spt_tile_select")
-        header_div.add_class("hand")
+        #header_div.add_attr("title",'[ draggable ]')
         div.add(header_div)
         header_div.add_class("SPT_DTS")
         header_div.add_style("overflow-x: hidden")
+        header_div.add_style("overflow-y: hidden")
 
         from pyasm.widget import CheckboxWdg
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
+        # to prevent clicking on the checkbox directly and not turning on the yellow border
+        #checkbox.add_attr("disabled","disabled")
 
-        title = sobject.get_name()
-        if not title:
-            title = sobject.get_code()
+        if sobject.get_base_search_type() == "sthpw/snapshot":
+            title = sobject.get_value("context")
+        else:
+            title = sobject.get_value("name", no_exception=True)
+            if not title:
+                title = sobject.get_value("code", no_exception=True)
       
         table = Table()
         header_div.add(table)
@@ -984,6 +1197,7 @@ spt.tile_layout.setup_control = function() {
         #title_div.add_style("white-space", "nowrap")
         #td.add_style("overflow: hidden")
         title_div.add("<br clear='all'/>")
+        title_div.add_class("hand")
 
 
         description = sobject.get_value("description", no_exception=True)
@@ -1002,6 +1216,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def init(my):
         my.path = None
+        my.show_name_hover = my.kwargs.get("show_name_hover")
 
     def set_sobject(my, sobject):
         super(ThumbWdg2, my).set_sobject(sobject)
@@ -1017,8 +1232,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_display(my):
 
-        width = "100%"
-        height = "100%"
+        width = my.kwargs.get("width")
+        if not width:
+            width = "100%"
+        height = my.kwargs.get("height")
 
         sobject = my.get_current_sobject()
 
@@ -1045,7 +1262,8 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("width: 70%")
         elif path:
             img.add_style("width: %s" % width)
-            img.add_style("height: %s" % height)
+            if height:
+                img.add_style("height: %s" % height)
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 
@@ -1054,8 +1272,20 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        div.add_style("height: 100%")
+        if height or my.show_name_hover in ["True","true",True]:
+            div.add_style("height: 100%")
 
+        if my.show_name_hover in ["True","true",True]:
+            name_hover = DivWdg()
+            name_hover.add_class("spt_name_hover")
+            name_hover.add(sobject.get('name'))
+            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
+            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+            name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \
+                                transition: opacity 0s ease-out; -webkit-transition: opacity 0s ease-out; \
+                                height: 100%; width: 100%; position: absolute; padding-top: 20px; \
+                                text-align: center; background-color: rgba(0, 0, 0, 0.6);')
+            div.add(name_hover)
 
         return div
 
@@ -1065,15 +1295,21 @@ class ThumbWdg2(BaseRefreshWdg):
         icon_path = None
         path = None
 
-        search_type = sobject.get_search_type()
-        search_code = sobject.get_value("code", no_exception=True)
-        if not search_code:
-            search_code = sobject.get_id()
+        base_search_type = sobject.get_base_search_type()
+        if base_search_type == "sthpw/snapshot":
+            #sobject = sobject.get_parent()
+            snapshot = sobject
+
+        else:
+            search_type = sobject.get_search_type()
+            search_code = sobject.get_value("code", no_exception=True)
+            if not search_code:
+                search_code = sobject.get_id()
 
 
-        # FIXME: make this faster
+            # FIXME: make this faster
 
-        snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
 
         if snapshot:
             file_type = "web"

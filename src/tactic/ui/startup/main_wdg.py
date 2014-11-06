@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['MainWdg']
+__all__ = ['MainWdg', 'SectionWdg']
 
 from pyasm.common import Environment, Common
 from pyasm.search import Search
@@ -23,29 +23,30 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 from tactic.ui.app import SearchWdg
 
-class MainWdg(BaseRefreshWdg):
-    '''This is the welcome widget widget will appear on creation of a new
-    project
-    '''
 
-    def get_args_keys(my):
-        return {
-        }
 
-    def init(my):
-        # clear the widget settings of last_search:sthpw/sobject_list
-        SearchWdg.clear_search_data('sthpw/sobject_list')
+class SectionWdg(BaseRefreshWdg):
 
-    def get_main_section_wdg(my, title, description, image, behavior):
+    def get_display(my):
+
+        title = my.kwargs.get("title")
+        description = my.kwargs.get("description")
+        image = my.kwargs.get("image")
+        behavior = my.kwargs.get("behavior")
+
+        return my.get_main_section_wdg(title, description, image, behavior)
+
+    def get_main_section_wdg(my, title, description, image, behavior, img_height="64px"):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
+        #section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
-        section_wdg.add_style("height: 180px")
+        section_wdg.add_style("height: 225px")
         section_wdg.add_style("overflow: hidden")
-        section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow()
+        section_wdg.add_style("margin: -5px 5px 10px 5px")
+        #section_wdg.add_style("margin: 10px")
+        #section_wdg.set_box_shadow()
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -73,33 +74,40 @@ class MainWdg(BaseRefreshWdg):
         bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
         '''
         } )
+
         section_wdg.add_behavior( {
-        'type': 'mouseout',
+        'type': 'mouseenter',
         'shadow': shadow,
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 15px " + bvr.shadow);
+        bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
         ''',
         } )
 
 
 
-
+        section_wdg.add_behavior( {
+        'type': 'mouseleave',
+        'shadow': shadow,
+        'cbjs_action': '''
+        bvr.src_el.setStyle("box-shadow", "0px 0px 0px " + bvr.shadow);
+        ''',
+        } )
 
         desc_div = DivWdg()
         desc_div.add(description)
         desc_div.add_style("padding: 5px 10px 10px 10px")
         #desc_div.add_style("font-size: 1.5em")
-	#desc_div.add_style("font-weight: bold")	
+        #desc_div.add_style("font-weight: bold")	
 
         div = DivWdg()
         section_wdg.add(div)
         div.add_style("padding: 3px")
         div.add_style("margin: 10px")
         div.add_style("width: 209px")
-        div.add_style("height: 64px")
-	div.add_style("text-align: center")
+        div.add_style("height: %s" % img_height)
+        div.add_style("text-align: center")
         div.add(image)
-	#div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
 
@@ -159,6 +167,31 @@ class MainWdg(BaseRefreshWdg):
 
         return section_wdg
 
+
+
+
+class MainWdg(BaseRefreshWdg):
+    '''This is the welcome widget widget will appear on creation of a new
+    project
+    '''
+
+    def get_args_keys(my):
+        return {
+        }
+
+    def init(my):
+        # clear the widget settings of last_search:sthpw/sobject_list
+        SearchWdg.clear_search_data('sthpw/sobject_list')
+
+
+
+    def get_main_section_wdg(my, title, description, image, behavior):
+        section_wdg = SectionWdg()
+        return section_wdg.get_main_section_wdg(title, description, image, behavior)
+
+    def get_small_section_wdg(my, title, description, image, behavior):
+        section_wdg = SectionWdg()
+        return section_wdg.get_small_section_wdg(title, description, image, behavior)
 
 
     def get_display(my):
@@ -225,14 +258,18 @@ class MainWdg(BaseRefreshWdg):
             shelf.add("&nbsp;")
 
 
-        search_wdg = DivWdg()
-        search_wdg.add_class("spt_main_top")
+        search_wdg = Table()
         top.add(search_wdg)
+        search_wdg.add_row()
+
+        search_wdg.add_class("spt_main_top")
         search_wdg.add_style("padding: 10px")
-        search_wdg.add_style("margin: 10px auto")
+        search_wdg.add_style("margin: 20px auto")
         search_wdg.add_style("width: 430px")
-        search_wdg.add("Search: ")
-        search_wdg.add("&nbsp;"*3)
+
+        td = search_wdg.add_cell("Search: ")
+        td.add_style("vertical-align: top")
+        td.add_style("padding-top: 8px")
 
 
         custom_cbk = {}
@@ -258,25 +295,22 @@ class MainWdg(BaseRefreshWdg):
 
         from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
         #text = TextInputWdg(name="search")
-        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk, width='280')
+        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk, width='280', height='42px')
         #text = TextWdg("search")
         text.add_class("spt_main_search")
         text.add_style("width: 290px")
-        search_wdg.add(text)
+
+        search_wdg.add_cell(text)
         search_wdg.add_style("font-weight: bold")
         search_wdg.add_style("font-size: 16px")
 
 
-        button = ActionButtonWdg(title="Search")
-        #search_wdg.add(button)
-        button.add_style("float: right")
-        #button.add_style("margin-top: -28px")
-
         icon_div = DivWdg()
-        search_wdg.add(icon_div)
+        td = search_wdg.add_cell(icon_div)
+        td.add_style("vertical-align: top")
         icon_div.add_style("width: 38px")
         icon_div.add_style("height: 27px")
-        icon_div.add_style("padding-top: 3px")
+        icon_div.add_style("padding-top: 7px")
         icon_div.add_style("padding-left: 4px")
         icon_div.add_style("text-align: center")
         #icon_div.add_gradient("background", "background3", 15, -10)
@@ -287,8 +321,6 @@ class MainWdg(BaseRefreshWdg):
         icon_div.set_box_shadow("1px 1px 1px 1px")
         icon = IconWdg("Search", IconWdg.SEARCH_32, width=24)
         icon_div.add(icon)
-        icon_div.add_style("float: right")
-        icon_div.add_style("margin-top: -5px")
         button = icon_div
         icon_div.add_class("hand")
         icon_div.add_behavior( {

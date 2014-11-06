@@ -47,6 +47,11 @@ class TaskCompletionWdg(BaseTableElementWdg):
         my.row_completion = 0
         my.expression = None
 
+
+    def get_width(my):
+        return 200
+
+
     def is_editable(cls):
         '''Determines whether this element is editable'''
         return False
@@ -517,7 +522,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             mode = "due"
 
         if mode == "critical":
-            div.add_style("background: #F00")
+            div.add_style("background: #e84a4d")
             div.add_style("color: #FFF")
             msg = "%s Days" % (-diff)
             div.add_attr("title", msg)
@@ -526,7 +531,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             else:
                 div.add(msg)
         elif mode == "today":
-            div.add_style("background: #00F")
+            div.add_style("background: #a3d991")
             div.add_style("color: #FFF")
             div.add_attr("title", "Due today")
             div.add("Today")

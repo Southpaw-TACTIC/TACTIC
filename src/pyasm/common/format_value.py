@@ -65,6 +65,13 @@ class FormatValue(object):
 
         if isinstance(value, datetime.datetime):
             value = str(value)
+        elif not isinstance(value, basestring):
+            value = str(value)
+
+        if value.startswith("{") and value.endswith("}"):
+            from pyasm.search import Search
+            value = Search.eval(value)
+
         # ------------------------------------------------
         # Integer
         if format == '-1234':
@@ -132,6 +139,16 @@ class FormatValue(object):
             if not value:
                 value = 0
             value = my.currency_format(value, grouping=True, monetary=True)
+
+
+        elif format == '($1,234.00)':
+            # break the value up by 3s
+            if not value:
+                value = "-"
+            else:
+                value = my.currency_format(value, grouping=True)
+                if value.startswith("-"):
+                    value = "(%s)" % value.replace("-", "")
 
         # ------------------------------------------------
         # Date

@@ -15,8 +15,9 @@ __all__ = ["FileException", "File", "FileAccess", "IconCreator", "FileGroup", "F
 from pyasm.common import Common, Xml, TacticException, Environment, System, Config
 from pyasm.search import *
 from project import Project
+from subprocess import Popen, PIPE
 
-import sys, os, string, re, stat
+import sys, os, string, re, stat, glob
 
 
 try:
@@ -35,10 +36,42 @@ except:
     except:
         HAS_PIL = False
 
-if Common.which("convert"):
-    HAS_IMAGE_MAGICK = True
+
+# check if imagemagick is installed, and find exe if possible
+convert_exe = ''
+HAS_IMAGE_MAGICK = False
+if os.name == "nt":
+    # prefer direct exe to not confuse with other convert.exe present on nt systems
+    convert_exe_list = glob.glob('C:\\Program Files\\ImageMagick*')
+    for exe in convert_exe_list:
+        try:
+            convert_process = Popen(['%s\\convert.exe'%exe,'-version'], stdout=PIPE, stderr=PIPE)
+            convert_return,convert_err = convert_process.communicate()
+            if 'ImageMagick' in convert_return:
+                convert_exe = '%s\\convert.exe'%exe
+                HAS_IMAGE_MAGICK = True
+        except:
+            print "Running %s failed" %exe
+    if not convert_exe_list:
+        # IM might not be in Program Files but may still be in PATH
+        try:
+            convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
+            convert_return,convert_err = convert_process.communicate()
+            if 'ImageMagick' in convert_return:
+                convert_exe = 'convert'
+                HAS_IMAGE_MAGICK = True
+        except:
+            pass
 else:
-    HAS_IMAGE_MAGICK = False
+    # in other systems (e.g. unix) 'convert' is expected to be in PATH
+    try:    
+        convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
+        convert_return,convert_err = convert_process.communicate()        
+        if 'ImageMagick' in convert_return:
+            convert_exe = 'convert'
+            HAS_IMAGE_MAGICK = True
+    except:
+        pass
 
 if Common.which("ffprobe"):
     HAS_FFMPEG = True
@@ -60,8 +93,8 @@ class File(SObject):
             'ini', 'db', 'py', 'pyd', 'spt'
     ]
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
-                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v']
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
+                'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
 
     IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds']
                 
@@ -537,7 +570,7 @@ class IconCreator(object):
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print "WARNING: ", e.__str__()
-                Environmnet.add_warning("Unknown file type", e.__str__())
+                Environment.add_warning("Unknown file type", e.__str__())
         else:
             # assume it is an image
             try:
@@ -546,7 +579,7 @@ class IconCreator(object):
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print "WARNING: ", e.__str__()
-                Environmnet.add_warning("Unknown file type", e.__str__())
+                Environment.add_warning("Unknown file type", e.__str__())
 
 
 
@@ -614,28 +647,37 @@ class IconCreator(object):
         tmp_icon_path = "%s/%s" % (my.tmp_dir, icon_file_name)
         tmp_web_path = "%s/%s" % (my.tmp_dir, web_file_name)
 
-        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 00:00:01 -s %sx%s -f image2 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
+        #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, my.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
         #os.system(cmd)
+
         import subprocess
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
-                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]), "-f","image2", tmp_web_path])
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+                    "-s","%sx%s"%(thumb_web_size[0], thumb_web_size[1]),"-vframes","1","-f","image2", tmp_web_path])
+            
+            if os.path.exists(tmp_web_path):
+                my.web_path = tmp_web_path
+            else:
+                my.web_path = None
 
-            my.web_path = tmp_web_path
-        except:
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
+                    "%s - %s" % (my.file_path, e.__str__()))
             pass
            
         try:
-            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","00:00:01",\
-                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]), "-f","image2", tmp_icon_path])
-            my.icon_path = tmp_icon_path
+            subprocess.call([ffmpeg, '-i', my.file_path, "-y", "-ss", "00:00:01","-t","1",\
+                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
+            
+            if os.path.exists(tmp_icon_path):
+                my.icon_path = tmp_icon_path
+            else:
+                my.icon_path = None
 
-        except:
-            pass    
-
-
-
-
+        except Exception, e:
+            Environment.add_warning("Could not process file", \
+                    "%s - %s" % (my.file_path, e.__str__()))
+            pass
 
     def _process_image(my, file_name):
 
@@ -730,76 +772,83 @@ class IconCreator(object):
 
     def _resize_image(my, large_path, small_path, thumb_size):
         try:
-            if not HAS_PIL:
-                raise Exception("No PIL installed")
+            large_path = large_path.encode('utf-8')
+            small_path = small_path.encode('utf-8')
+            
+            if HAS_IMAGE_MAGICK:
+                # generate imagemagick command
+                convert_cmd = []
+                convert_cmd.append(convert_exe)
+                # png's and psd's can have multiple layers which need to be flattened to make an accurate thumbnail
+                if large_path.lower().endswith('png') or large_path.lower().endswith('psd'):
+                    convert_cmd.append('-flatten')
+                convert_cmd.extend(['-resize','%sx%s'%(thumb_size[0], thumb_size[1])])
+                if HAS_PIL:
+                    im = Image.open(large_path)
+                    x,y = im.size
+                    if x < y:
+                        # icons become awkward if height is bigger than width
+                        # add white background for more reasonable icons
+                        convert_cmd.extend(['-background','white'])
+                        convert_cmd.extend(['-gravity','center'])
+                        convert_cmd.extend(['-extent','%sx%s'%(thumb_size[0], thumb_size[1])])
+                convert_cmd.append('%s'%(large_path))
+                convert_cmd.append('%s'%(small_path))
 
+                subprocess.call(convert_cmd)
 
-            # create the thumbnail
-            im = Image.open(large_path)
+            # if we don't have ImageMagick, use PIL, if installed (in non-mac os systems)
+            elif HAS_PIL:
+                # use PIL
+                # create the thumbnail
+                im = Image.open(large_path)
 
-            try:
-                im.seek(1)
-            except EOFError:
-                is_animated = False
-            else:
-                is_animated = True
-                im.seek(0)
-                im = im.convert('RGB')
+                try:
+                    im.seek(1)
+                except EOFError:
+                    is_animated = False
+                else:
+                    is_animated = True
+                    im.seek(0)
+                    im = im.convert('RGB')
 
-            x,y = im.size
-            to_ext = "PNG"
-            if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
-                to_ext = "JPEG"
-            if x >= y:
-                im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
-                im.save(small_path, to_ext)
-            else:
-                
-                #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
                 x,y = im.size
+                to_ext = "PNG"
+                if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
+                    to_ext = "JPEG"
+                if x >= y:
+                    im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
+                    im.save(small_path, to_ext)
+                else:
+                    
+                    #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
+                    x,y = im.size
 
-                # first resize to match this thumb_size
-                base_height = thumb_size[1]
-                h_percent = (base_height/float(y))
-                base_width = int((float(x) * float(h_percent)))
-                im = im.resize((base_width, base_height), Image.ANTIALIAS )
+                    # first resize to match this thumb_size
+                    base_height = thumb_size[1]
+                    h_percent = (base_height/float(y))
+                    base_width = int((float(x) * float(h_percent)))
+                    im = im.resize((base_width, base_height), Image.ANTIALIAS )
 
-                # then paste to white image
-                im2 = Image.new( "RGB", thumb_size, (255,255,255) )
-                offset = (thumb_size[0]/2) - (im.size[0]/2)
-                im2.paste(im, (offset,0) )
-                im2.save(small_path, to_ext)
-                
+                    # then paste to white image
+                    im2 = Image.new( "RGB", thumb_size, (255,255,255) )
+                    offset = (thumb_size[0]/2) - (im.size[0]/2)
+                    im2.paste(im, (offset,0) )
+                    im2.save(small_path, to_ext)
+
+            # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
+            elif sys.platform == 'darwin':
+                convert_cmd = ['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path]
+                subprocess.call(convert_cmd)
+            else:
+                raise TacticException('No image manipulation tool installed')
+            
         except Exception, e:
             print "Error: ", e
-            # there could be any kind of Exception by PIL, not just IOError
-            # maximum geometry mode aspect ratio preserved
-            if sys.platform == 'darwin':
-                cmd = '''sips --resampleWidth %s --out "%s" "%s"''' \
-                    % (thumb_size[0], small_path, large_path)
-                print "cmd: ", cmd
-            else:
-                cmd = '''convert -resize %sx%s "%s" "%s"''' \
-                    % (thumb_size[0], thumb_size[1], large_path, small_path)
-                print "cmd: ", cmd
-   
-            large_path = large_path.encode('utf-8')
-            #os.system(cmd)
-            # use subprocess to call instead
-            import subprocess
-            try:
-                if sys.platform == 'darwin':
-                    subprocess.call(['sips', '--resampleWidth', '%s'%thumb_size[0], '--out', small_path, large_path])
-                else:
-                    subprocess.call(['convert', '-resize','%sx%s'%(thumb_size[0], thumb_size[1]),\
-                    "%s"%large_path,  "%s"%small_path ]) 
-            except:
-                pass
-            # raise to alert the caller to set this icon_path to None
-            if not os.path.exists(small_path):
-                raise TacticException('Icon generation failed')
 
-
+        # after these operations, confirm that the icon has been generated
+        if not os.path.exists(small_path):
+            raise TacticException('Icon generation failed')
 
 
     def _resize_texture(my, large_path, small_path, scale):

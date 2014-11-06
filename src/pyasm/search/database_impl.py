@@ -910,6 +910,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts.append(host_str)
         parts.append("-U %s" % user)
         parts.append("-P %s" % password)
+        parts.append("-p %s" % port)
 
         
         return " ".join(parts)
@@ -1331,6 +1332,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
+
+    def get_float(my, not_null=False):
+        parts = []
+        parts.append("float")
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
     def get_text(my, not_null=False):
         parts = []
         parts.append("text")
@@ -1537,7 +1547,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if my.database_exists(database):
             return
 
-        create = 'createdb %s -E UNICODE "%s"' % (my._get_db_info(database), database)
+        from pyasm.search import DbResource
+        db_resource = DbResource.get_default(database)
+
+        create = 'createdb %s -E UNICODE "%s"' % (my._get_db_info(db_resource), database)
         cmd = os.popen(create)
         result = cmd.readlines()
         # Psql 8.3 doesn't have outputs on creation
@@ -2498,7 +2511,7 @@ class SqliteImpl(PostgresImpl):
             if not type:
                 type = "days"
             elif type.lower() in ['week','weeks']:
-                # doesn't understand week
+                # doesn't understand week, but month, year are fine
                 type = "days"
                 offset = offset * 7
             elif not type.endswith('s'):
@@ -3029,6 +3042,17 @@ class MySQLImpl(PostgresImpl):
         return " ".join(parts)
 
 
+
+    def get_timestamp_now(my, offset=None, type=None, op='+'):
+        '''MySQL get current / offset timestamp from now'''
+        parts = []
+        parts.append("NOW()")
+        if offset:
+            if not type:
+                type = "DAY"
+            parts.append(" INTERVAL %s %s" % (offset, type) )
+        op = ' %s ' % op
+        return op.join(parts)
 
     #
     # Sequence methods

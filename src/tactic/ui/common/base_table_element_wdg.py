@@ -114,6 +114,7 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         div = DivWdg()
         div.add_attr("title", title)
+        div.add_style("margin-top", "6px")
         div.add(title)
 
         return div
@@ -323,7 +324,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         return my.vars
 
 
-
+   
     def get_group_bottom_wdg(my, sobjects):
 
         summary = my.get_option("total_summary")
@@ -338,14 +339,14 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             result = Search.eval(expression, sobjects=sobjects, vars=my.vars)
         except Exception, e:
             print "WARNING: ", e.message
-            result = "Calculation Error"
+            result = 0
             title = ''
 
         div = DivWdg()
         div.add(str(result))
         div.add_style("text-align: right")
 
-        return div
+        return div, result
 
 
 
@@ -496,6 +497,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                     return value_wdg
 
         return value
+
+
     def is_sortable(my):
         return True
 

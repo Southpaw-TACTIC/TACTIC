@@ -18,9 +18,10 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.search import Search, SearchType
 from pyasm.command import Command
 from pyasm.web import Table
-from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
+from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextAreaWdg
 from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.common import BaseTableElementWdg
 
 __all__ = ['ChatWdg', 'ChatSessionWdg', 'ChatCmd', 'SubscriptionWdg', 'SubscriptionBarWdg', 'MessageWdg', 'FormatMessageWdg', 'MessageTableElementWdg']
@@ -155,10 +156,11 @@ class FormatMessageWdg(BaseRefreshWdg):
             #message_value = message_value.replace(r"\\", "\\");
             message_value = jsonloads(message_value)
             # that doesn't support delete
-            update_data = message_value.get("update_data")
-            sobject_data = message_value.get("sobject")
-            sobject_code = sobject_data.get('code')
+            
             if category == "sobject":
+                update_data = message_value.get("update_data")
+                sobject_data = message_value.get("sobject")
+                sobject_code = sobject_data.get('code')
                 search_type = message_value.get("search_type")
                 if search_type == "sthpw/note":
                     description = "<b>Note added:</b><br/>%s" % update_data.get("note")
@@ -238,23 +240,26 @@ class ChatWdg(BaseRefreshWdg):
         chats = search.get_sobjects()
         keys = [x.get_value("message_code") for x in chats]
 
+
+        """
         chat_list_div = DivWdg()
-        chat_list_div.add("<b>Chat Sessions</b><br/>")
         inner.add(chat_list_div)
-        for chat in chats:
+        for i, chat in enumerate(chats):
             chat_div = DivWdg()
             chat_list_div.add(chat_div)
+            chat_div.add_style("padding: 5px")
+            chat_div.add_class("hand")
 
             # find all the users with the same chat
             key = chat.get_value("message_code")
-            chat_div.add(key)
+            #chat_div.add(key)
+            chat_div.add("#%s: " % i)
 
             search = Search("sthpw/subscription")
             search.add_filter("message_code", key)
             subscriptions = search.get_sobjects()
             users = [x.get_value("login") for x in subscriptions]
-            chat_div.add(" : ")
-            chat_div.add(users)
+            chat_div.add(", ".join(users))
 
             chat_div.add_behavior( {
                 'type': 'click_up',
@@ -269,6 +274,22 @@ class ChatWdg(BaseRefreshWdg):
                 '''
             } )
 
+            chat_div.add_behavior( {
+                'type': 'mouseover',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("color", "#214e75");
+                '''
+            } )
+
+
+            chat_div.add_behavior( {
+                'type': 'mouseout',
+                'cbjs_action': '''
+                bvr.src_el.setStyle("color", "");
+                '''
+            } )
+        """
+
 
 
         #keys = my.kwargs.get("keys")
@@ -277,12 +298,29 @@ class ChatWdg(BaseRefreshWdg):
 
         inner.add( my.get_add_chat_wdg() )
 
+
+        inner.add("<br/>")
+        
+
+        from tactic.ui.container import TabWdg
+        tab = TabWdg(
+                show_add=False,
+                show_remove=False
+        )
+        inner.add(tab)
+
         for key in keys:
+            search = Search("sthpw/subscription")
+            search.add_filter("message_code", key)
+            subscriptions = search.get_sobjects()
+            users = [x.get_value("login") for x in subscriptions]
+            users = ", ".join(users)
+
             session_div = DivWdg()
-            session_div.add_style("width: 400px")
-            inner.add(session_div)
-            session_div.add_style("float: left")
-            session_div.add_style("margin: 15px")
+            session_div.set_name(users)
+            session_div.add_style("width: 100%")
+            #inner.add(session_div)
+            tab.add(session_div)
 
             session = ChatSessionWdg(key=key)
             session_div.add(session)
@@ -302,13 +340,18 @@ class ChatWdg(BaseRefreshWdg):
         div.add_style("padding: 20px")
         div.add_class("spt_add_chat_top")
 
-        div.add("User: ")
-        text = TextWdg("user")
-        div.add(text)
+        table = Table()
+        table.add_style("width: auto")
+        div.add(table)
+        table.add_row()
+
+        text = TextInputWdg(title="user", icon="USER_ADD")
+        table.add_cell(text)
         text.add_class("spt_add_chat_user")
 
+
         add_button = ActionButtonWdg(title="Start Chat")
-        div.add(add_button)
+        table.add_cell(add_button)
         add_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -486,23 +529,62 @@ class ChatSessionWdg(BaseRefreshWdg):
             #timestamp = timestamp.strftime("%b %d, %Y - %H:%M")
             timestamp_str = timestamp.strftime("%H:%M")
             date_str = timestamp.strftime("%b %d, %Y")
-        
-            msg = "";
-            msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td colspan='2'>";
 
-            if date_str != last_date:
-                msg += "<br/><b style='font-size: 1.0em'>"+date_str+"</b><hr/></td></tr>";
-                msg += "<tr><td>";
-                last_login = None
+        
 
             if login != last_login:
-                msg += "<b>"+login+"</b><br/>";
-            msg += message.replace("\n",'<br/>');
-            msg += "</td><td style='text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top'>";
+
+                table = Table()
+                history_div.add(table)
+                table.add_row()
+                table.add_style("width: 100%")
+                table.add_style("margin-top: 15px")
+
+                login_sobj = Search.get_by_code("sthpw/login", login)
+                thumb_div = DivWdg()
+                td = table.add_cell()
+                td.add_style("vertical-align: top")
+                td.add_style("width: 75px")
+
+                thumb_div = DivWdg()
+                td.add(thumb_div)
+                thumb_div.add_style("overflow: hidden")
+
+                thumb = ThumbWdg()
+                thumb_div.add(thumb)
+                thumb.set_sobject(login_sobj)
+                thumb.set_icon_size(60)
+
+
+                display_name = login_sobj.get("display_name")
+
+                td = table.add_cell()
+                td.add_style("padding-top: 3px")
+                
+                name_div = DivWdg()
+                td.add(name_div)
+                name_div.add_style("color", "#214e75")
+                name_div.add_style("font-size", "1.3em")
+                name_div.add(display_name)
+
+
+            msg = "";
+            msg += "<table style='margin-top: 5px; font-size: 1.0em; width: 100%'>";
+
+
+            if date_str != last_date:
+                msg += "<tr><td colspan='2' style='text-align: right'><br/><b style='font-size: 1.0em'>"+date_str+"</b></td></tr>";
+                last_login = None
+
+            msg += "<tr><td>"
+            msg += message.replace("\n",'<br/>')
+            msg += "</td><td style='vertical-align: top; text-align: right; margin-bottom: 5px; width: 75px; vertical-align: top; opacity: 0.7;'>";
             msg += timestamp_str;
             msg += "</td></tr></table>";
 
-            history_div.add(msg)
+            td.add(msg)
+
+            
 
             last_login = login
             last_date = date_str
@@ -559,7 +641,7 @@ class ChatSessionWdg(BaseRefreshWdg):
                 bvr.src_el.setAttribute("spt_last_login", login);
 
                 var msg = "";
-                msg += "<table style='margin-top: 5px; font-size: 0.9em; width: 100%'><tr><td>";
+                msg += "<table style='margin-top: 5px; font-size: 1.0em; width: 100%'><tr><td>";
                 if (login != last_login) {
                     msg += "<b>"+login+"</b><br/>";
                 }
@@ -588,7 +670,8 @@ class ChatSessionWdg(BaseRefreshWdg):
         text.add_class("spt_chat_text")
         text.add_style("width: 100%")
         text.add_style("padding: 5px")
-        text.add_style("margin-top: -1px")
+        #text.add_style("margin-top: -1px")
+        text.add_style("margin-top: 5px")
         
         text.add_behavior( {
         'type': 'load',
@@ -622,6 +705,8 @@ class ChatSessionWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title="Send")
         div.add(button)
+        button.add_style("float: right")
+        button.add_style("margin: 5px")
         button.add_behavior( {
         'type': 'click_up',
         'key': key,
@@ -646,6 +731,8 @@ class ChatSessionWdg(BaseRefreshWdg):
 
             '''
         } )
+
+        div.add("<br clear='all'/>")
 
 
         return div
@@ -691,7 +778,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
-
+        
         return subscriptions
 
 
@@ -843,6 +930,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             # show the thumb
             if not message:
                 if mode == "all":
+
                     td = table.add_cell(FormatMessageWdg.get_preview_wdg(subscription))
 
                     td = table.add_cell()
@@ -969,6 +1057,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
     WIDTH = 500
 
     def get_display(my):
+
         top = my.top
         top.add_class("spt_subscription_bar_top")
         my.set_as_panel(top)
@@ -1079,7 +1168,14 @@ class SubscriptionBarWdg(SubscriptionWdg):
             msg = num
         else:
             msg = ''
-        icon = IconWdg(msg, IconWdg.STAR)
+        try:
+            icon_display = my.kwargs.get('icon')
+        except:
+            icon_display = "STAR"
+        if icon_display is None:
+            icon_display = "STAR"
+
+        icon = IconWdg(msg, icon_display)
         icon.add_style('float: left')
         inner.add(icon)
         msg_div = DivWdg(msg)

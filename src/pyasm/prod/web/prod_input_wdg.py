@@ -400,7 +400,7 @@ class FrameInputWdg(BaseInputWdg):
         frame_notes = sobject.get_value("frame_note")
         frame_notes_text = TextAreaWdg("frame_note")
         frame_notes_text.set_value(frame_notes)
-        frame_notes_text.set_option("rows", "1")
+        frame_notes_text.set_option("rows", "2")
 
 
         # handle the in and out handles
@@ -425,38 +425,35 @@ class FrameInputWdg(BaseInputWdg):
         td = table.add_cell("Range:")
         td.add_style("width: 100px")
         td = table.add_cell()
+        td.add_style("text-align: right")
+        td.add_style("padding: 5px")
         td.add("start: ")
         td.add(frame_start_text)
-        td.add(" - end: ")
+        td = table.add_cell()
+        td.add_style("text-align: right")
+        td.add_style("padding: 5px")
+        td.add("end: ")
         td.add(frame_end_text)
 
         table.add_row()
         table.add_cell("Handles:")
         td = table.add_cell()
-        td.add("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in: ")
+        td.add_style("text-align: right")
+        td.add_style("padding: 5px")
+        td.add("in: ")
         td.add(frame_in_text)
-        td.add(" - out: ")
+        td = table.add_cell()
+        td.add_style("text-align: right")
+        td.add_style("padding: 5px")
+        td.add("out: ")
         td.add(frame_out_text)
         td.add("<br/>")
 
         table.add_row()
         table.add_cell("Notes:")
         td = table.add_cell(frame_notes_text)
-
-        """
-        div.add("Range - start: ")
-        div.add(frame_start_text)
-        div.add(" - end: ")
-        div.add(frame_end_text)
-        div.add("<br/>")
-        div.add("Handles - in: ")
-        div.add(frame_in_text)
-        div.add(" - out: ")
-        div.add(frame_out_text)
-        div.add("<br/>")
-        div.add("Notes:")
-        div.add(frame_notes_text)
-        """
+        td.add_style("padding: 5px")
+        td.add_attr("colspan", "2")
 
         return div
 

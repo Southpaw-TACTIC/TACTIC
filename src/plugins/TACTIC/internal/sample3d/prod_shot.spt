@@ -20,6 +20,7 @@ table.add('login',                    'varchar', length='256' )
 table.add('name',                     'varchar', length='256' )
 table.add('pipeline_code',            'varchar', length='256' )
 table.add('s_status',                 'varchar', length='256' )
+table.add('sequence_code',            'varchar', length='256' )
 table.add('timestamp',                'timestamp' )
 #-- End Entry --#
 

@@ -40,6 +40,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     def set_widget(my, widget):
         my.widget = widget
 
+    def get_width(my):
+        return 50
+
     def get_display(my):
 
         sobject = my.get_current_sobject()

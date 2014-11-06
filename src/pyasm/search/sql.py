@@ -857,7 +857,6 @@ class Sql(Base):
     def close(my):
         if my.conn == None:
             return
-        #print "CONNECT: close: ", my
 
         my.conn.close()
         my.conn = None
@@ -1133,24 +1132,73 @@ class DbResource(Base):
 
 
 
-    def get_default(database, use_cache=True):
-        # FIXME: this should be moved DatabaseImpl
+    def clear_cache(cls):
+        key = "Project:db_resource_cache"
+        Container.put(key, None)
+    clear_cache = classmethod(clear_cache)
+
+
+    def get_default(cls, database, use_cache=True, use_config=False):
+        key = "Project:db_resource_cache"
+
+        # NOTE: this should be moved DatabaseImpl
         if use_cache:
-            key = "Project:db_resource:%s"%database
-            db_resource = Container.get(key)
+            #key = "Project:db_resource:%s"%database
+            #db_resource = Container.get(key)
+            #if db_resource != None:
+            #    return db_resource
+
+            db_resource_dict = Container.get(key)
+            if not db_resource_dict:
+                db_resource_dict = {}
+                Container.put(key, db_resource_dict)
+
+            db_resource = db_resource_dict.get(database)
             if db_resource != None:
                 return db_resource
-        host = Config.get_value("database", "host")
-        port = Config.get_value("database", "port")
-        vendor = Config.get_value("database", "vendor")
-        user = Config.get_value("database", "user")
-        #password = Config.get_value("database", "password")
-        password = DbPasswordUtil.get_password()
+
+
+        # evaluate ticket
+        ticket = Environment.get_ticket()
+
+        from pyasm.security import Site
+        site_obj = Site.get()
+        site = None
+        if ticket:
+            site = site_obj.get_by_ticket(ticket)
+        if not site:
+            site = site_obj.get_site()
+
+        data = None
+        if not use_config and site:
+            data = site_obj.get_connect_data(site)
+            if data:
+                host = data.get('host')
+                port = data.get('port')
+                vendor = data.get('vendor')
+                user = data.get('user')
+                password = data.get('password')
+
+        # get the defaults
+        if not data:
+            host = Config.get_value("database", "host")
+            port = Config.get_value("database", "port")
+            vendor = Config.get_value("database", "vendor")
+            user = Config.get_value("database", "user")
+
+            #password = Config.get_value("database", "password")
+            password = DbPasswordUtil.get_password()
+
+
         db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
         if use_cache:
-            Container.put(key, db_resource)
+            db_resource_dict[database] = db_resource
+
+
         return db_resource
-    get_default = staticmethod(get_default)
+    get_default = classmethod(get_default)
+
+
 
     def is_instance(inst):
         '''return True if it is an instance of DbResource'''
@@ -1190,14 +1238,6 @@ class DbContainer(Base):
         @return:
         object - Sql object
         '''
-        # DEPRECATED
-        #
-        # Sessions connections are maintained across transactions and are 
-        # used by the client api to maintain a connected database
-        # throught multiple calls. 
-        #if Container.get("API:xmlrpc_transaction") == True:
-        #    sql = DbContainer.get_session_sql(db_resource)
-
 
         # STRICT ENFORCEMENT to ensure that only DbResources come through
         from sql import DbResource
@@ -1209,8 +1249,11 @@ class DbContainer(Base):
             db_resource = DbResource.get_default("sthpw")
 
         sql = cls.get_connection_pool_sql(db_resource)
+
         if sql and sql.get_connection():
             DbContainer.register_connection(sql) 
+
+        assert sql.get_connection()
         return sql
 
     get = classmethod(get)
@@ -1304,12 +1347,22 @@ class DbContainer(Base):
         sql = None
         try:
             if not global_pool:
+
+                # before making a connection, make sure the user is even
+                # allowed to do so based on site locking
+                """
+                ticket = Environment.get_ticket()
+                site = "foo"
+                host = "localhost"
+                port = "5432"
+                if db_resource.get_port() != port:
+                    raise SQLException("Denied access to [%s]" % db_resource)
+                if db_resource.get_host() != host:
+                    raise SQLException("Denied access to [%s]" % db_resource)
+                """
+
                 sql = Sql(db_resource)
                 sql.connect()
-                #import thread as xx
-                #import traceback
-                #print "CONNECT: create: ", database_key, sql, xx.get_ident()
-                #traceback.print_stack()
 
             else:
 
@@ -1324,6 +1377,7 @@ class DbContainer(Base):
         finally:
             lock.release()
 
+        assert sql.get_connection()
         return sql
         
     get_connection_pool_sql = classmethod(get_connection_pool_sql)
@@ -1424,107 +1478,6 @@ class DbContainer(Base):
             lock.release()
 
     release_thread_sql = classmethod(release_thread_sql)
-
-
-
-    # DEPRECATED: This is not being used
-
-    # FIXME: this still uses database name as the key
-    # It should use database_key from DbResource
-    """
-    def get_session_sql(cls, database_name):
-        '''get an sql handle from the session based on ticket'''
-        # prune the old sessions
-        cls.prune_session_sql()
-
-
-        # security checks will have not ticket
-        security = Environment.get_security()
-        if not security:
-            #print "WARNING: security not defined"
-            return None
-        if not security.is_logged_in():
-            return None
-
-
-        # if this ticket has an sql connection reserved, then use it.
-        ticket = security.get_ticket_key()
-        sql_dict = cls.session_sql_dict.get(ticket)
-        if sql_dict:
-            sql = sql_dict.get(database_name)
-            if sql:
-                #print "reusing: ", database_name, sql
-                return sql
-        else:
-            # create a new session
-            sql_dict = {}
-            cls.session_sql_dict[ticket] = sql_dict
-            import time
-            cls.session_time_dict[ticket] = time.time()
-
-
-        # create a new database
-        sql = Sql(database_name)
-        cls.session_seq.append(sql)
-        sql.connect()
-        sql_dict[database_name] = sql
-
-        return sql
-
-    get_session_sql = classmethod(get_session_sql)
-
-    session_seq = []
-
-
-    def close_session_sql(cls):
-        '''closes all of the session database connections for this ticket'''
-        security = Environment.get_security()
-        if not security:
-            print "WARNING: security not defined"
-            return None
-        if not security.is_logged_in():
-            return None
-
-        ticket = security.get_ticket_key()
-
-        sql_dict = cls.session_sql_dict.get(ticket)
-        if not sql_dict:
-            return
-
-        for sql in sql_dict.values():
-            sql.close()
-
-        del(cls.session_time_dict[ticket])
-        del(cls.session_sql_dict[ticket])
-
-    close_session_sql = classmethod(close_session_sql)
-
-
-    def prune_session_sql(cls):
-        '''closes all of the session database connections for this ticket'''
-
-        import time
-        for ticket, start_time in cls.session_time_dict.items():
-            time_elapsed = int(time.time() - start_time)
-            if time_elapsed < cls.session_max_lifespan:
-                continue
-            
-            print("WARNING: closing session for ticket [%s]" % ticket)
-            sql_dict = cls.session_sql_dict.get(ticket)
-            if sql_dict:
-                # close all of the connections
-                for sql in sql_dict.values():
-                    print "pruning: ", sql.database_name
-                    sql.close()
-
-            del(cls.session_time_dict[ticket])
-            del(cls.session_sql_dict[ticket])
-
-    prune_session_sql = classmethod(prune_session_sql)
-    """
-
-
-
 
 
 
@@ -1740,7 +1693,10 @@ class Select(object):
         else:
             statement = my.get_count()
             results = sql.do_query(statement)
-            results = len(results)
+            if results:
+                results = int(results[0][0])
+            else:
+                results = 0
 
         return results
 
@@ -2611,11 +2567,12 @@ class Select(object):
         from pyasm.biz import Project
         impl = Project.get_database_impl()
         database_type = impl.get_database_type()
+        time_interval = time_interval.lower()
 
         # FIXME: put this somehow in implmentation classes
         # Use of Search.get_database_impl().get_timestamp_now() is preferred
         if database_type == "Oracle":
-            if time_interval.lower() == 'today':
+            if time_interval == 'today':
                 return "\"%s\" >= TO_TIMESTAMP(SYSDATE)" % name
             else:
                 offset, unit = time_interval.split(" ")
@@ -2623,9 +2580,15 @@ class Select(object):
                     unit = "day"
                     offset = int(offset) * 7
                 return "\"%s\" >= SYSTIMESTAMP - INTERVAL '%s' %s" % (name, offset, unit)
-        elif impl == "SQLServer":
-            if time_interval.lower() == 'today':
-                return "%s >= CAST(FLOOR(CAST ( GETDATE() as FLOAT )) as DATETIME)" % name
+        elif database_type == "SQLServer":
+            if time_interval == 'today':
+                return "%s >= CONVERT(date, GETDATE())" % name
+                #return "%s >= CAST(FLOOR(CAST ( GETDATE() as FLOAT )) as DATETIME)" % name
+            else:
+                offset_time, unit = time_interval.split()
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >=  %s" %(name, offset)
+            """
             elif time_interval.lower() == '1 hour':
                 return  '%s >= DATEADD(hour,-1, GETDATE())' %(name)
             elif time_interval.lower() == '1 day':
@@ -2634,14 +2597,32 @@ class Select(object):
                 return  '%s >= DATEADD(week,-1, GETDATE())' %(name)
             elif time_interval.lower() == '1 month':
                 return  '%s >= DATEADD(month,-1, GETDATE())' %(name)
+            """
+        elif database_type == 'MySQL':
+            if time_interval == 'today':
+                return "%s >= CURDATE()" %name
+            else:
+                offset_time, unit = time_interval.split()
+                offset_time = int(offset_time)
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >= %s" %(name, offset)
+        elif database_type == 'Sqlite':
+            if time_interval == 'today':
+                return "%s >= date('now')" %name
+            else:
+                offset_time, unit = time_interval.split()
+                offset_time = int(offset_time)
+                offset = impl.get_timestamp_now(offset=offset_time, type=unit, op='-')
+                return "%s >= %s" %(name, offset)
 
         else:
-            if time_interval.lower() == 'today':
+            if time_interval == 'today':
                 return "%s >= 'today'::timestamp" % name
             else:
                 return "%s >= now() - '%s'::interval" % (name, time_interval)
 
     get_interval_where = staticmethod(get_interval_where)
+
 
 
 
@@ -3327,6 +3308,9 @@ class CreateTable(Base):
             suffix = 'idx'
             if mode.upper() =='UNIQUE':
                 suffix = 'unique'
+            # could be a dangling constraint
+            if not columns:
+                continue
             name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
             expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
             expressions.append(expr)
@@ -3481,6 +3465,8 @@ class AlterTable(CreateTable):
             expr = my.impl.get_varchar(length=length, not_null=False)
         elif type == "int":
             expr = my.impl.get_int(not_null=False)
+        elif type == "float":
+            expr = my.impl.get_float(not_null=False)
         elif type == "timestamp":
             if my.impl.get_database_type() == 'SQLServer':
                 expr = my.impl.get_timestamp(not_null=False, default=None)

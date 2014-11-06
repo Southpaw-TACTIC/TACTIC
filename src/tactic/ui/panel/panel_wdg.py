@@ -922,6 +922,11 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
     //}
 
     var ghost_el = $(bvr.drag_el);
+    if (!ghost_el) {
+        var ghost_el = spt.mouse._create_drag_copy( bvr.src_el );
+        bvr.drag_el = ghost_el;
+    }
+
     if( ghost_el )
     {
         // Make a clone of the source div that we clicked on to drag ...
@@ -2769,6 +2774,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'empty': 'true',
             'values': 'simple|insert',
             'order': 11
+        },
+        "group_elements" : {
+            'description': 'a preset one or more columns for grouping e.g. sort_order,category',
+            'type': 'TextWdg',
+            'order': 12
         }
 
     }
@@ -2870,9 +2880,11 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = my.top
+        top.add_class("spt_view_panel_top");
+
         inner = DivWdg()
         top.add(inner)
-        top.add_class("spt_view_panel_top");
+        inner.add_style("position: relative")
 
 
         if not Container.get_dict("JSLibraries", "spt_view_panel"):
@@ -2880,6 +2892,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 'type': 'load',
                 'cbjs_action': my.get_onload_js()
             });
+
 
 
         # add refresh information
@@ -3029,7 +3042,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 
-
+            # TEST
+            simple_search_wdg.add_style("display: none")
+            simple_search_wdg.add_style("position: absolute")
+            simple_search_wdg.add_style("z-index: 200")
+            simple_search_wdg.add_style("top: 40px")
+            #simple_search_wdg.add_style("top: 10px")
+            simple_search_wdg.add_style("left: 10px")
+            simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 
 
@@ -3063,7 +3083,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
-
+        group_elements = my.kwargs.get("group_elements")
+        expand_mode = my.kwargs.get("expand_mode")
+        show_name_hover = my.kwargs.get("show_name_hover")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3123,9 +3145,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
+            "group_elements" : group_elements,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
+            "expand_mode": expand_mode,
+            "show_name_hover": show_name_hover
             #"search_wdg": search_wdg
             
         }

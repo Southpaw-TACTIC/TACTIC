@@ -34,6 +34,8 @@ from web_tools import *
 # the web application widget
 from web_app import *
 
+from web_login_cmd import *
+
 from app_server import *
 from simple_app_server import *
 from widget_app_server import *

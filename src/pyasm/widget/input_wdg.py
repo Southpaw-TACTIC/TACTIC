@@ -124,6 +124,15 @@ class BaseInputWdg(HtmlElement):
     def set_title(my, title):
         my.title = title
         
+    def get_display_title(my):
+        '''Function that that gives a title represenation of this widget'''
+        if my.title:
+            return my.title
+
+        name = my.get_name()
+        name = name.replace("_", " ")
+        return name.title()
+ 
 
 
     def get_title(my):
@@ -560,12 +569,12 @@ class TextWdg(BaseTextWdg):
     def __init__(my,name=None, label=None):
         super(TextWdg,my).__init__(name,"input", label=label)
         my.css = "inputfield"
-        my.add_class(my.css)
+        #my.add_class(my.css)
         my.add_class("spt_input")
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        #my.add_style("width: 200px")
-        my.add_border()
+        #my.add_class("form-control")
+        #my.add_color("background", "background", 10)
+        #my.add_color("color", "color")
+        #my.add_border()
     
    
 
@@ -759,11 +768,12 @@ class RadioWdg(BaseInputWdg):
         for name, option in my.options.items():
             my.set_attr(name,option)
 
-        span = SpanWdg()
-        span.add(my.label)
-        my.add(span)
-        span.add_style("top: 3px")
-        span.add_style("position: relative")
+        if my.label:
+            span = SpanWdg()
+            span.add(" %s" % my.label)
+            my.add(span)
+            span.add_style("top: 3px")
+            span.add_style("position: relative")
 
         return super(RadioWdg,my).get_display()
 
@@ -987,6 +997,11 @@ class SelectWdg(BaseInputWdg):
         # add the standard style class
         my.add_class("inputfield")
         my.add_class("spt_input")
+
+        # BOOTSTRAP
+        my.add_class("form-control")
+        my.add_class("input-sm")
+
 
 
     def get_related_type(my):
@@ -1283,6 +1298,12 @@ class SelectWdg(BaseInputWdg):
             my.set_dom_options()
         return my.labels, my.values
 
+
+    def init(my):
+        my.add_color("background", "background", 10)
+        my.add_color("color", "color")
+
+
     def get_display(my):
         class_name = my.kwargs.get('class')
         if class_name:
@@ -1300,10 +1321,8 @@ class SelectWdg(BaseInputWdg):
         if width:
             my.add_style("width: %s" % width)
 
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
         my.add_border()
-
+        my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'

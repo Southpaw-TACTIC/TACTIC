@@ -21,5 +21,6 @@ from resizable_table_wdg import *
 from wizard_wdg import *
 from popup_wdg import *
 from arrow_wdg import *
+from content_wdg import *
 
 #from pop_window_wdg import *

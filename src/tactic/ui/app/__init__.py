@@ -14,7 +14,6 @@ from tactic_branding_wdg import *
 
 from search_type_element_wdg import *
 from custom_property_wdg import *
-from search_type_creator_wdg import *
 from search_limit_wdg import *
 
 from top_wdg import *
@@ -35,6 +34,7 @@ from page_nav_container_wdg import *
 from note_wdg import *
 from app_sobject_checkin_wdg import *
 from task_wdg import *
+from search_type_creator_wdg import *
 
 from custom_print_view_wdg import *
 

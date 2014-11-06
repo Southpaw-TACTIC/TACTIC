@@ -21,14 +21,18 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.2.0.a01
     #
+    def upgrade_v4_2_0_a01_016(my):
+        my.run_sql('''
+        ALTER TABLE login ADD  "login_attempt" INT;
+        ''')
 
-    def upgrade_v4_2_0_a01_014(my):
+    def upgrade_v4_2_0_a01_015(my):
         my.run_sql('''
         INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
         ''')
             
 
-    def upgrade_v4_2_0_a01_013(my):
+    def upgrade_v4_2_0_a01_014(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''
             ALTER table queue MODIFY serialized varchar(256) NULL;
@@ -43,8 +47,14 @@ class SthpwUpgrade(BaseUpgrade):
             ''')
 
 
-    def upgrade_v4_2_0_a01_012(my):
+    def upgrade_v4_2_0_a01_013(my):
         my.run_sql('''ALTER TABLE sync_server ADD COLUMN file_mode varchar(256);''')
+
+    def upgrade_v4_2_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE "watch_folder" ADD "script_path" varchar(1024);
+        ''')
+
 
     def upgrade_v4_2_0_a01_011(my):
         my.run_sql('''

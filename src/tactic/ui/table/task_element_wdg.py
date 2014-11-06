@@ -17,7 +17,7 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps
+from pyasm.common import jsonloads, jsondumps, Common
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
@@ -308,6 +308,21 @@ class TaskElementWdg(BaseTableElementWdg):
         my.tasks_dict = {}
         my.permission = {}
 
+        my.filler_cache = None
+
+
+    def get_width(my):
+        if my.sobjects:
+            sobject = my.sobjects[0]
+            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+            pipeline = Pipeline.get_by_code(pipeline_code)
+            if not pipeline:
+                pipeline = Pipeline.get_by_code("task")
+            processes = pipeline.get_process_names()
+            return 120 * len(processes) + 10
+        else:
+            return 400
+
 
     def is_editable(cls):
         '''to avoid all those CellEditWdg'''
@@ -423,7 +438,7 @@ class TaskElementWdg(BaseTableElementWdg):
         my.assigned_label_attr = my.kwargs.get('assigned_label_attr')
         my.assigned_values_expr = my.kwargs.get('assigned_values_expr')
         if not my.assigned_values_expr:
-            my.assigned_values_expr = "@SOBJECT(sthpw/login)"
+            my.assigned_values_expr = "@SOBJECT(sthpw/login['@ORDER_BY','display_name'])"
 
         if assigned == 'true':
             if my.assigned_label_attr:
@@ -443,7 +458,8 @@ class TaskElementWdg(BaseTableElementWdg):
             else:
                 users = Search.eval(my.assigned_values_expr)
                 user_names = SObject.get_values(users, 'login')
-                my.assignee_labels = user_names
+                display_names = SObject.get_values(users, 'display_name')
+                my.assignee_labels = display_names
 
             my.assignee = user_names
         else:
@@ -713,26 +729,30 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_title(my):
-        show_processes_in_title = False
+        show_processes_in_title = True
         if show_processes_in_title:
             table = Table()
+            table.add_style("margin-top: 4px")
 
             sobject = my.get_current_sobject()
             if not sobject:
                 return "Tasks"
 
 
-            pipeline_code = sobject.get_value("pipeline_code")
+            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
             if pipeline_code:
                 pipeline = Pipeline.get_by_code(pipeline_code)
                 if not pipeline:
                     pipeline = Pipeline.get_by_code("task")
 
                 processes = pipeline.get_process_names()
+            else:
+                processes = ['publish']
 
             table.add_row()
             for process in processes:
-                td = table.add_cell(process)
+                title = Common.get_display_title(process)
+                td = table.add_cell(title)
                 td.add_style("width: 117px")
                 td.add_style("text-align: center")
                 td.add_style("font-weight: bold")
@@ -935,11 +955,33 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         # fill in any missing tasks
         show_filler_tasks = my.kwargs.get("show_filler_tasks")
+
+
         if show_filler_tasks in ["true", True]:
+
             pipeline = Pipeline.get_by_code(pipeline_code)
             if not pipeline:
-                pipeline = Pipeline.get_by_code("task")
-            processes = pipeline.get_process_names()
+                #pipeline = Pipeline.get_by_code("task")
+                processes = []
+            else:
+                processes = pipeline.get_process_names()
+
+
+            if my.filler_cache == None:
+                my.filler_cache = {}
+                for process in processes:
+                    process_sobj = pipeline.get_process(process)
+                    task_pipeline = process_sobj.get_task_pipeline()
+
+                    task = SearchType.create("sthpw/task")
+                    task.set_value("process", process)
+                    task.set_value("context", process)
+                    if task_pipeline:
+                        task.set_value("pipeline_code", task_pipeline)
+     
+                    my.filler_cache[process] = task
+
+
 
             missing = []
             task_processes = [x.get_value("process") for x in tasks]
@@ -947,16 +989,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if process not in task_processes:
                     missing.append(process)
 
+            search_type = sobject.get_search_type()
+            search_code = sobject.get_value("code")
             for process in missing:
-                task = SearchType.create("sthpw/task")
-                task.set_value("process", process)
-                task.set_value("context", process)
-                task.set_parent(sobject)
+                task = my.filler_cache.get(process)
+                task.set_value("search_type", search_type)
+                task.set_value("search_code", search_code)
                 tasks.append(task)
          
             tasks = sorted(tasks,get_compare(processes))
 
-	
         return tasks
 
     def _get_display_options(my):
@@ -1182,6 +1224,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             last = len(items) - 1
             for idx, tasks in enumerate(items):
+
                 if my.layout in ['vertical']:
                     table.add_row()
                 td = table.add_cell()
@@ -1456,7 +1499,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 end_date = parser.parse(end_date)
                 end_date = end_date.strftime("%m/%d")
 
-            if not end_date:
+            if not start_date and not end_date:
+                date_div.add("-")
+            elif not end_date:
                 date_div.add(start_date)
             else:
                 date_div.add("%s - %s" % (start_date, end_date) )
@@ -1473,11 +1518,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     td.add_style("width: 75px")
                 else:
                     # don't need to set width here so it covers the whole status
-                    #status_div.add_style("width", my.width)
                     div.add(status_div)
 
-                #status_div.add_class("hand")
-                #status_div.add_style("float: left")
                 status_div.add_style("font-size: %spx" % (my.font_size))
                 status_div.add_style("font-weight: bold")
                 status_div.add_style("background-color: %s" %bgColor)
@@ -2686,6 +2728,9 @@ class WorkElementWdg(ButtonElementWdg):
                     pass    
                 else:
                     raise
+            except Exception, e:
+                parent = None
+
             # find current snapshot for this:
             search_type = sobject.get_value("search_type")
             search_id = sobject.get_value("search_id")

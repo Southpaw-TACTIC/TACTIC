@@ -516,14 +516,14 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
 
-
+        """
         # get the global drag_ghost_div
         drag_ghost_div = my.get_drag_ghost_div()
         drag_ghost_div.set_id( "drag_ghost_copy" )
         drag_ghost_div.add_class( "SPT_PUW" )  # make it a Page Utility Widget (now processed client side)
 
         drag_ghost_div.set_z_start( 400 )
-
+        """
        
 
         from page_header_wdg import PageHeaderWdg
@@ -541,7 +541,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
         container_div.add( core_table )
-        container_div.add( drag_ghost_div )
+        #container_div.add( drag_ghost_div )
 
 
         is_admin = False
@@ -580,18 +580,19 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
 
-
+    """
     def get_drag_ghost_div(my):
         drag_ghost_div = HtmlElement.div()
         drag_ghost_div.set_attr( "id", "drag_ghost_copy" )
         drag_ghost_div.set_attr( "element_copied", "_NONE_" )
         drag_ghost_div.add_class( "REG_ID" )
-        drag_ghost_div.set_style("border: solid 1px #000000; background: #004400; filter: alpha(opacity=60); " +
+        drag_ghost_div.set_style("background: #393950; color: #c2c2c2; border: solid 1px black;' \
+                                 'text-align: left; padding: 10px;', filter: alpha(opacity=60); " +
                                  "opacity: 0.6; position: absolute; display: none; left: 0px; top: 0px;" +
                                  " z-index: 110;" )
         drag_ghost_div.add("Ghost Div")
         return drag_ghost_div
-
+    """
 
 
     def get_drag_div(my):

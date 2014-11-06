@@ -22,11 +22,11 @@ from pyasm.search import SearchType, Search, WidgetDbConfig, CreateTable, DbCont
 from pyasm.common import Xml, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 from tactic.ui.container import PopupWdg, DynamicListWdg
 from tactic.ui.widget import SearchTypeSelectWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 from tactic.ui.input import UploadButtonWdg 
+from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 
 class SearchTypeToolWdg(BaseRefreshWdg):
 
@@ -237,8 +237,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         wizard.add(create_div, "Information")
         my.set_as_panel(create_div)
 
-        
-        name_input = TextWdg("search_type_name")
+        #name_input = TextWdg("search_type_name")
+        name_input = TextInputWdg(name="search_type_name")
         name_input.add_class("spt_name_input")
         # as long as we allow this to be displayed in Manage Search Types, it should be editable
         name_input.add_class("spt_input")
@@ -258,7 +258,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                 search, "search_type", "table_name")
         #template_select.set_option("labels", "---|People")
 
-        title_text = TextWdg("asset_title")
+        title_text = TextInputWdg(name="asset_title")
         title_text.add_class("spt_input")
         title_value = my.kwargs.get("title")
         if not title_value and my.search_type:
@@ -302,9 +302,10 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         } )
 
 
-
-        description = TextAreaWdg("asset_description")
-        description.add_class("spt_input")
+        from tactic.ui.input import TextAreaInputWdg
+        description = TextAreaInputWdg(name="asset_description")
+        #description = TextAreaWdg("asset_description")
+        #description.add_class("spt_input")
 
 
 
@@ -372,14 +373,17 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         table.add_row()
-        table.add_header("Title: ").set_attr('align','left')
-        table.add_cell(title_text)
+        th = table.add_header("Title: ")
+        th.set_attr('align','left')
+        th.add_style("vertical-align: top")
+        td = table.add_cell(title_text)
 
         table.add_row_cell("&nbsp;")
 
         table.add_row()
         th = table.add_header("Searchable Type: ")
         th.add_style("min-width: 150px")
+        th.add_style("vertical-align: top")
         th.set_attr('align','left')
         td = table.add_cell(name_input)
 
@@ -539,10 +543,11 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             if value == "table":
                 radio.set_checked()
             radio.add_style("margin-top: -5px")
-            option_div.add("%s" % title)
+            option_div.add(" &nbsp;%s" % title)
             radio.add_attr("value", value)
-            option_div.add_style("margin-top: 5px")
-            option_div.add_style("margin-bottom: 5px")
+            option_div.add_style("margin-top: 10px")
+            option_div.add_style("margin-bottom: 10px")
+            option_div.add_style("margin-left: 15px")
             radio.add_attr("spt_image", image)
             radio.add_behavior( {
             'type': 'change',
@@ -655,14 +660,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         dirname_div.add("<br/>")
 
 
-        expr = "{sobject.name}_v{version}.{ext}"
+        expr = "{sobject.name}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
 
 
-        expr = "{sobject.code}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code", mode="file") )
 
-        expr = "{sobject.code}_{process}_v{version}.{ext}"
+        expr = "{sobject.code}_{basefile}_{process}_v{version}.{ext}"
         dirname_div.add( my.get_naming_item_wdg(expr, "Code with Process", mode="file") )
 
 
@@ -787,16 +792,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         # add an icon for this project
         image_div = DivWdg()
-        #wizard.add(image_div, 'Preview Image')
-        #create_div.add(image_div, 'Preview Image')
         image_div.add_class("spt_image_top")
         image_div.add_color("background", "background")
         image_div.add_color("color", "color")
-        image_div.add_style("padding: 20px 0px 10px 0px")
+        image_div.add_style("padding: 0px 0px 10px 0px")
 
 
-        image_div.add("<b>Preview Image: </b>")
-        image_div.add("<br/>"*3)
+        image_div.add("<br/><b>Preview Image: </b>")
 
         on_complete = '''var server = TacticServerStub.get();
         var file = spt.html5upload.get_file(); 

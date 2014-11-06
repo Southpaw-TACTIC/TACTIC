@@ -55,6 +55,7 @@ class BaseCheckin(Command):
 
         my.dir_naming = None
         my.file_naming = None
+        my.naming = None
 
         # check project of sobject
         my.orig_project_code = None
@@ -272,6 +273,7 @@ class BaseCheckin(Command):
         file_naming.set_sobject(my.sobject)
         file_naming.set_snapshot(my.snapshot)
         file_naming.set_naming(my.file_naming)
+        file_naming.set_checkin_type(my.checkin_type)
 
         # handle the file_naming conventions for each file
         count = 0
@@ -416,7 +418,7 @@ class BaseCheckin(Command):
         #    if version == 1:
         #        return
 
-        return my.snapshot.update_versionless(snapshot_mode, sobject=my.sobject, checkin_type=my.checkin_type)
+        return my.snapshot.update_versionless(snapshot_mode, sobject=my.sobject, checkin_type=my.checkin_type, naming=my.naming)
 
 
 

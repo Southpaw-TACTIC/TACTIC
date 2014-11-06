@@ -58,7 +58,7 @@ class CheckinWdg(BaseRefreshWdg):
         'command': 'when mode == command, this is the command that is called',
         'width': 'width of the widget',
         'show_links': 'true|false: determines whether show the button rows at the top',
-        'use_applet': 'true|false: deterines whether or not to use an appet or pure html5'
+        'use_applet': 'true|false: deterines whether to use an applet or pure html5'
 
         #'show_sub_context': 'true|false: determines whether to show subcontext or not',
     }
@@ -110,11 +110,11 @@ class CheckinWdg(BaseRefreshWdg):
 
         my.mode = my.kwargs.get('mode')
         my.use_applet = my.kwargs.get('use_applet')
-        if my.use_applet in ['false', False]:
+        if my.use_applet in ['false', 'False', False]:
             my.use_applet = False
         else:
             my.use_applet = Config.get_value("checkin", "use_applet")
-            if my.use_applet in ['false', False]:
+            if my.use_applet in ['false', 'False', False]:
                 my.use_applet = False
             else:
                 my.use_applet = True
@@ -189,7 +189,7 @@ class CheckinWdg(BaseRefreshWdg):
         title_div = DivWdg()
         #title_div.add_class("maq_search_bar")
         title_div.add_color("background", "background", -10)
-        title_div.add_style("height: 20px")
+        title_div.add_style("height: 30px")
         title_div.add_style("padding: 5px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("overflow: hidden")
@@ -213,7 +213,7 @@ class CheckinWdg(BaseRefreshWdg):
         thumb_div = DivWdg()
         title_div.add(thumb_div)
         thumb_div.add_style("margin-left: -4")
-        thumb_div.add_style("margin-top: -4")
+        thumb_div.add_style("margin-top: -10")
         thumb_div.add_style("float: left")
         thumb_div.add_style("margin-right: 10px")
 
@@ -253,6 +253,8 @@ class CheckinWdg(BaseRefreshWdg):
         default_sandbox_dir = my._get_sandbox_dir(use_default=True)
 
         title_div = my.get_title_wdg()
+        if my.kwargs.get("show_header") in ['false', False]:
+            title_div.add_style("display: none")
 
         if is_refresh:
             top = Widget()
@@ -520,6 +522,9 @@ class CheckinWdg(BaseRefreshWdg):
                 # create a process selector
                 process_select = SelectWdg("process")
                 process_div.add(process_select)
+                process_select.add_style("float: right")
+                process_select.add_style("width: 150px")
+                process_select.add_style("margin-top: -5px")
                 process_select.add_class("spt_checkin_process")
                 process_select.set_option("values", my.processes)
                 show_links = my.kwargs.get("show_links") not in [False, 'false']
@@ -1162,7 +1167,8 @@ spt.checkin.drop_files = function(evt, el) {
         location: 'client',
         paths: file_names,
         sizes: sizes,
-        md5s: md5s
+        md5s: md5s,
+        use_applet: 'false'
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
@@ -1932,6 +1938,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top.add_style("position: relative")
 
 
+        top.add("<br/>")
         top.add("Publish Description<br/>")
         text = TextAreaWdg("description")
         # this needs to be set or it will stick out to the right
@@ -1956,6 +1963,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             #delivery_div.add_style("opacity: 0.5")
 
             checkbox = CheckboxWdg("deliver")
+            checkbox.add_style("margin-right: 5px")
             delivery_div.add(checkbox)
             delivery_div.add_style("padding-top: 15px")
 
@@ -2067,6 +2075,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         note_div.add_style("padding-top: 15px")
         note_div.add_class("spt_add_note")
         checkbox = CheckboxWdg("add_note")
+        checkbox.add_style("margin-right: 5px")
         checkbox.add_class("spt_checkin_add_note")
         note_div.add(checkbox)
         note_div.add("Also add a note")
@@ -2211,6 +2220,7 @@ spt.app_busy.hide();
         html5_behavior = {
             'type': 'click_up',
             'validate_script_path': my.validate_script_path,
+            'script_path': script_path,
             'cbjs_action': '''
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
@@ -2230,15 +2240,26 @@ spt.checkin.html5_checkin = function(files) {
     var checkin_type = 'file';
     var mode = 'uploaded';
 
+    server.start({title: 'HTML5 Check-in', description: checkin_type + ' ' + search_key});
+    var transaction_ticket = server.transaction_ticket;
+
     var upload_complete = function() {
 
         try {
+            var has_error = false;
+
             if (bvr.validate_script_path){
                 var script = spt.CustomProject.get_script_by_path(bvr.validate_script_path);
                 bvr['script'] = script;
                 spt.app_busy.show("Running Validation", bvr.validate_script_path);
                 spt.CustomProject.exec_custom_script(evt, bvr);
-            } 
+            }
+            // Run a custom checkin script
+            if (bvr.script_path != null) {
+                script = spt.CustomProject.get_script_by_path(bvr.script_path);
+                bvr['script'] = script;
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            }
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
@@ -2248,14 +2269,21 @@ spt.checkin.html5_checkin = function(files) {
             progress.setStyle("display", "");
         }
         catch(e) {
+            server.abort();
             progress.setStyle("background", "#F00");
             progress.setStyle("display", "none");
-            alert(e);
-            throw(e);
-            
+            spt.alert("Check-in failed: " + spt.exception.handler(e));
+            throw("Check-in failed: " + e);
+            has_error = true;
         }
 
-        spt.app_busy.hide();
+        if (! has_error) {
+            server.finish();
+            spt.panel.refresh(top);
+            spt.info("Check-in succeeded.");
+        }
+
+        //spt.app_busy.hide();
     }
 
     var upload_progress = function(evt) {
@@ -2268,7 +2296,8 @@ spt.checkin.html5_checkin = function(files) {
     var upload_kwargs = {
         upload_complete: upload_complete,
         upload_progress: upload_progress,
-        files: el.files
+        files: el.files,
+        ticket: transaction_ticket
     }
     spt.html5upload.upload_file(upload_kwargs);
 
@@ -2280,7 +2309,6 @@ var top = bvr.src_el.getParent(".spt_checkin_top");
 var el = top.getElement(".spt_checkin_content");
 var files = el.files;
 spt.checkin.html5_checkin(files);
-
             '''
         }
 
@@ -2774,28 +2802,28 @@ else {
         }
 
 
-        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in")
         top.add(button)
         button.add_class("spt_checkin_button")
         button.add_behavior(behavior)
-        button.add_style("margin-right: auto")
-        button.add_style("margin-left: auto")
+        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
 
 
 
 
-        button = ActionButtonWdg(title="Check-in", icon=IconWdg.PUBLISH, size='medium')
+        button = ActionButtonWdg(title="Check-in")
         top.add(button)
         button.add_class("spt_checkin_html5_button")
         button.add_behavior(html5_behavior)
-        button.add_style("margin-right: auto")
-        button.add_style("margin-left: auto")
+        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
 
         button.add_style("display: none")
+
+        top.add("<br clear='all'/>")
 
         progress = DivWdg()
         top.add(progress)
@@ -5522,7 +5550,8 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         search.add_order_by("timestamp desc")
         snapshots = search.do_search()
-
+        
+        div.add(HtmlElement.br()) 
         div.add(my.get_table(sobject,snapshots) )
 
         return div
@@ -5534,18 +5563,12 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         color = filter_wdg.get_color("table_border", default="border")
         filter_wdg.add_style("height: 25px")
 
-        #filter_wdg.add_style("border-width: 1px 1px 0 1px")
-        #filter_wdg.add_style("border-style: solid")
-        #filter_wdg.add_style("border-color: %s" % color)
-
         filter_wdg.add_style("padding: 8px")
         filter_wdg.add_color("color", "color")
-        #filter_wdg.add_gradient("background", "background", -10)
-        #filter_wdg.add_style("margin-top: -2px")
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(tip="Refresh", icon=IconWdg.REFRESH, long=False)
+        button = SingleButtonWdg(tip="Refresh", icon="BS_REFRESH", long=False)
         filter_wdg.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5558,13 +5581,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             '''
         } )
 
-        filter_wdg.add("&nbsp;"*5)
-
-
-
 
         # add a context selector
         select = SelectWdg("history_context")
+        select.add_style("display: inline")
+        select.add_style("width: 125px")
         select.add_class('spt_history_context')
         select.add_behavior( {
             'type': 'change',
@@ -5598,7 +5619,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         select.add_empty_option("-- Select --")
         #select.set_persist_on_submit()
-        span = SpanWdg()
+        span = DivWdg()
+        span.add_style("float: left")
+        span.add("&nbsp;"*5)
         span.add("Context: ")
         span.add(select)
         span.add("&nbsp;"*5)
@@ -5606,6 +5629,8 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # add a versions selector
         my.select = SelectWdg("versions")
+        my.select.add_style("width: 125px")
+        my.select.add_style("display: inline")
         my.select.add_empty_option("-- Select --")
         my.select.add_behavior( {
             'type': 'change',
@@ -5622,8 +5647,9 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         my.select.set_option("values", "latest|current|today|last 10|all")
         my.select.set_persist_on_submit()
-        span = SpanWdg()
+        span = DivWdg()
         span.add("Versions: ")
+        span.add_style("float: left")
         span.add(my.select)
         span.add("&nbsp;"*5)
         filter_wdg.add(span)

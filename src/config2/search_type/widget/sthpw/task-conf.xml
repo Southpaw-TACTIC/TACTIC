@@ -133,6 +133,8 @@
         </display>
     </element>
 
+    <element name="actual_duration"/>
+    <element name="actual_quantity"/>
 
       
 </definition>
@@ -236,6 +238,8 @@
      <element name="work_hours_list">
       <action class="tactic.ui.table.WorkHoursElementAction"/>
     </element> 
+    <element name="actual_duration"/>
+    <element name="actual_quantity"/>
 
 </edit_definition>
 
@@ -251,6 +255,8 @@
     <element name="priority"/>
     <element name="days_due"/>
     <element name="schedule"/>
+    <element name="actual_duration"/>
+    <element name="actual_quantity"/>
 </table>
 
 

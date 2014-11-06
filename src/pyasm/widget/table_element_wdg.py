@@ -118,6 +118,9 @@ class BaseTableElementWdg(HtmlElement):
     can_async_load = classmethod(can_async_load)
 
 
+    def get_width(my):
+        return my.width
+
 
     # This should be a widget that is very high up in the hierarchy
     # where global behaviors can be put in
@@ -1070,6 +1073,9 @@ class XmlWdg(BaseTableElementWdg):
     def is_editable(my):
         return True
 
+    def get_width(my):
+        return "600px"
+
     def get_display(my):
         sobject = my.get_current_sobject()
         value = sobject.get_value( my.get_name() )
@@ -1080,7 +1086,8 @@ class XmlWdg(BaseTableElementWdg):
             value = zlib.decompress( binascii.unhexlify(value[5:]) )
 
         widget = DivWdg()
-        widget.add_style("max-width: 600px")
+        widget.add_style("min-width: 300px")
+        widget.add_style("width: auto")
         widget.add_style("overflow-x: hidden")
 
         # parse the xml to see if it is valid
@@ -1097,6 +1104,7 @@ class XmlWdg(BaseTableElementWdg):
 
         value = Xml.to_html(value)
         pre = HtmlElement.pre(value)
+        pre.add_style("font-size", "1.0em")
         #pre.add_attr("wrap", "true")
         #pre.add_style("white-space", "pre-line")
         widget.add(pre)

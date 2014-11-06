@@ -64,10 +64,10 @@ class ProdSetting(SObject):
 
 
     def get_by_key(cls, key, search_type=None):
-       
+        project = Project.get_project_code() 
         dict_key = '%s:%s' %(key, search_type)
        
-        search = Search(cls.SEARCH_TYPE)
+        search = Search(cls.SEARCH_TYPE, project_code=project)
         search.add_filter("key", key)
         if search_type:
             search.add_filter("search_type", search_type)

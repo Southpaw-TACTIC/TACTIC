@@ -606,41 +606,6 @@ class BaseApiXMLRPC(XmlrpcServer):
         # if a session container has been cached, use that
         key = ticket
         container = None
-
-        
-     
-        # TODO:
-        # We set this to false for now because these values, particularly
-        # access rules are cached.  Because of the caching, these are very
-        # difficult to reset when updated
-        """
-        reuse_container = False
-        if reuse_container:
-            container = my.session_containers.get(key)
-            container = None
-            if container:
-
-                # don't completely use the same container, but copy essentials
-                new_container = Container.create()
-                vars = [
-                    'Environment:security',
-                    'Environment:object',
-                    'WebContainer::web',
-                ]
-                for var in vars:
-                    new_container.put(var, container.info[var] )
-
-                # make sure the security object is there
-                security = Environment.get_security()
-                assert(security)
-                if security:
-                    if project_code:
-                        Project.set_project(project_code)
-                        Project.get()
-                else:
-                    container = None
-        """
-
         if not container:
 
             # start a new session and store the container
@@ -799,6 +764,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 continue
 
             result['__search_key__'] = SearchKey.build_by_sobject(sobject, use_id=use_id)
+            result['__search_type__'] = sobject.get_search_type()
 
             search_type = sobject.get_search_type()
             column_info = info.get(search_type)
@@ -3016,7 +2982,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext=''):
+    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext='', checkin_type='strict'):
         '''Gets the preallocated path for this snapshot.  It not assumed that
         this checkin actually exists in the repository and will create virtual
         entities to simulate a checkin.  This method can be used to determine
@@ -3024,19 +2990,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params
         ticket - authentication ticket
-        snapshot_code: the code of a preallocated snapshot.  This can be
+        snapshot_code - the code of a preallocated snapshot.  This can be
             create by get_snapshot()
-        file_type: the type of file that will be checked in.  Some naming
+        file_type - the type of file that will be checked in.  Some naming
             conventions make use of this information to separate directories
             for different file types
-        file_name: the desired file name of the preallocation.  This information
+        file_name - the desired file name of the preallocation.  This information
             may be ignored by the naming convention or it may use this as a
             base for the final file name
-        mkdir: an option which determines whether the directory of the
+        mkdir - an option which determines whether the directory of the
             preallocation should be created
-        protocol: It's either client_repo or None. It determines whether the
+        protocol - It's either client_repo or None. It determines whether the
             path is from a client or server perspective
-        ext: force the extension of the file name returned
+        ext - force the extension of the file name returned
+        checkin_type - strict, auto , or '' can be used.. A naming entry in the naming, if found,  will be used to determine the checkin type
 
         @return
         the path where () expects the file to be checked into
@@ -3050,7 +3017,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext)
+        parent = None
+        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext, parent, checkin_type)
         return path
 
                     
@@ -3058,7 +3026,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_virtual_snapshot_path(my, ticket, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext=''):
+    def get_virtual_snapshot_path(my, ticket, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type=''):
         '''creates a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions''
         
@@ -3088,6 +3056,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         protocol: It's either client_repo, sandbox, or None. It determines whether the
             path is from a client or server perspective
         ext: force the extension of the file name returned
+        checkin_type - strict, auto, '' can be used to predetermine the checkin_type for get_preallocated_path()
 
 
         @return
@@ -3111,7 +3080,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # create a virtual snapshot
         snapshot = Snapshot.create(sobject, snapshot_type=snapshot_type, context=context, description=description, level_type=level_type, level_id=level_id, commit=False)
 
-        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext=ext)
+        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext=ext, checkin_type=checkin_type)
         return path
 
 
@@ -3752,8 +3721,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_object.set_value("file_name", filename)
             file_object.set_value("range", file_range)
 
-            lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
-            upload_path = "%s/%s" % (lib_dir, filename) 
+            #lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
+            #upload_path = "%s/%s" % (lib_dir, filename) 
+            upload_path = file_path
         elif mode == 'inplace':
             upload_path = os.path.dirname(file_path) + '/' + filename
             keep_file_name = True
@@ -4756,6 +4726,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp = hpy()
         hp.setrelheap()
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
 
         try:
             try:
@@ -4909,6 +4883,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return ret_val
 
+   
+
         
     @xmlrpc_decorator
     def execute_cmd(my, ticket, class_name, args={}, values={}, use_transaction=True):
@@ -4924,6 +4900,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
+        
         ret_val = {}
 
         try:
@@ -5778,6 +5759,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             ticket = my.init(ticket, reuse_container=False)
+
+            from pyasm.security import Site
+            transaction_ticket = Site.get().build_ticket(transaction_ticket)
 
             # set the server in transaction?
             my.set_transaction_state(True)

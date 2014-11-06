@@ -978,6 +978,8 @@ class PluginInstaller(PluginBase):
                 # jobs doesn't matter for sobject node
                 jobs = my.import_data(path, unique=unique)
 
+                # reset it in case it needs to execute a PYTHON tag right after
+                Schema.get(reset_cache=True)
                 # compare sequence 
                 st_obj = SearchType.get(search_type)
                 SearchType.sequence_nextval(search_type)
@@ -1174,6 +1176,7 @@ class PluginInstaller(PluginBase):
                                 old_schema = search.get_sobject()
                                 if old_schema:
                                     old_schema.delete()
+
 
                             sobject.set_value("code", project_code)
 

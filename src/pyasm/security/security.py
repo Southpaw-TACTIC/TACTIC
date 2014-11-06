@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Login", "LoginInGroup", "LoginGroup", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
+__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
 
@@ -626,8 +626,99 @@ class LoginInGroup(SObject):
 
 
 
+class Site(object):
+    '''This is used to manage various "sites" (databases) within a single
+    TACTIC installation.  Tickets are scoped by site which determines
+    the location of database.'''
+
+    def get_max_users(my):
+        return
+
+    #
+    # Virtual methods
+    #
+    def get_by_login(cls, login):
+        return ""
+    get_by_login = classmethod(get_by_login)
 
 
+    def build_ticket(cls, ticket):
+        return ticket
+    build_ticket = classmethod(build_ticket)
+
+    def get_by_ticket(cls, ticket):
+        return ""
+    get_by_ticket = classmethod(get_by_ticket)
+
+
+    def get_connect_data(cls, site):
+        return {}
+    get_connect_data = classmethod(get_connect_data)
+ 
+    def get_asset_dir(cls, file_object=None, alias=None):
+        return
+    get_asset_dir = classmethod(get_asset_dir)
+ 
+ 
+    def get_web_dir(cls, file_object=None, alias=None):
+        return
+    get_web_dir = classmethod(get_web_dir)
+
+
+    def get_default_project(cls):
+        return
+ 
+
+
+    #######################
+
+    def get(cls):
+        class_name = Config.get_value("security", "site_class")
+        if not class_name:
+            class_name = "pyasm.security.Site"
+        #class_name = "spt.modules.portal.PortalSite"
+        try:
+            site = Common.create_from_class_path(class_name)
+        except Exception, e:
+            site = Site()
+        return site
+    get = classmethod(get)
+
+
+    def get_site(cls):
+        '''Set the global site for this "session"'''
+        site = Container.get("site")
+        if not site:
+            return ""
+        return site
+    get_site = classmethod(get_site)
+
+    def set_site(cls, site):
+        '''Set the global site for this "session"'''
+        if not site:
+            return
+        Container.put("site", site)
+    set_site = classmethod(set_site)
+
+
+    def get_db_resource(cls, site, database):
+        if not site:
+            return None
+        site_obj = cls.get()
+        data = site_obj.get_connect_data(site)
+        if data:
+            host = data.get('host')
+            port = data.get('port')
+            vendor = data.get('vendor')
+            user = data.get('user')
+            password = data.get('password')
+        else:
+            return None
+
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        return db_resource
+
+    get_db_resource = classmethod(get_db_resource)
 
 
 
@@ -663,9 +754,6 @@ class Ticket(SObject):
         ticket = search.get_sobject()
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
-
-       
-
       
 
 
@@ -724,6 +812,28 @@ class Ticket(SObject):
         return ticket
     create = staticmethod(create)
         
+    def update_session_expiry():
+        security = Environment.get_security()
+        login_ticket = security.get_ticket()    
+        impl = Sql.get_default_database_impl()
+        timeout = Config.get_value("security","inactive_ticket_expiry")
+        if not timeout:
+            return
+        offset,type = timeout.split(" ")
+        expiry = impl.get_timestamp_now(offset=offset, type=type)
+        Ticket.update_expiry(login_ticket,expiry)
+        
+    update_session_expiry = staticmethod(update_session_expiry)
+
+
+
+    def update_expiry(ticket,expiry):
+        
+        
+        ticket.set_value("expiry", expiry, quoted=0)
+        ticket.commit(triggers="none")
+
+    update_expiry = staticmethod(update_expiry)
 
 
 
@@ -767,7 +877,7 @@ class NoDatabaseSecurity(Base):
 class Security(Base):
     '''main class dealing with user identification'''
 
-    def __init__(my):
+    def __init__(my, verify_license=False):
         my._login_var = None
         my._is_logged_in = 0
         my._groups = []
@@ -779,8 +889,7 @@ class Security(Base):
         # define an access manager object
         my._access_manager = AccessManager()
 
-        my.license = License.get()
-
+        my.license = License.get(verify=verify_license)
 
         my.login_cache = None
 
@@ -846,6 +955,9 @@ class Security(Base):
             return my._ticket.get_key()
         else:
             return ""
+
+    def clear_ticket(my):
+        my_ticket = ""
 
 
     def get_access_manager(my):
@@ -990,6 +1102,10 @@ class Security(Base):
         if key == "":
             return None
 
+        # set the site if the key has one
+        site = Site.get().get_by_ticket(key)
+        Site.get().set_site(site)
+
         my.add_access_rules_flag = add_access_rules
 
         #from pyasm.biz import CacheContainer
@@ -997,7 +1113,6 @@ class Security(Base):
         #cache.build_cache_by_column("ticket")
         #ticket = cache.get_sobject_by_key("ticket", key)
         ticket = Ticket.get_by_valid_key(key)
-
         if ticket is None:
             # if ticket does not exist, make sure we are signed out and leave
             return None
@@ -1047,15 +1162,13 @@ class Security(Base):
         # TEST: this is a test authentication with Drupal
         my.add_access_rules_flag = add_access_rules
 
-        print "sid: ", sid
-
         from pyasm.security import Sudo
         sudo = Sudo()
 
         # authenticate use some external method
         if sid:
             expr = '''@SOBJECT(table/sessions?project=drupal['sid','%s'])''' % sid
-            print "expr: ", expr
+            #print "expr: ", expr
             session = server.eval(expr, single=True)
         else:
             session = {}
@@ -1077,7 +1190,7 @@ class Security(Base):
         # at this point, the user is authenticated
 
         user_name = drupal_user.get("name")
-        print "login: ", user_name
+        #print "login: ", user_name
 
         # if the user doesn't exist, then autocreate one
         
@@ -1345,9 +1458,7 @@ class Security(Base):
         # create a new ticket for the user
         ticket_key = Common.generate_random_key()
 
-        # Guest does not get a ticket
-        #if login_name == "guest":
-        #    return None
+        ticket_key = Site.get().build_ticket(ticket_key)
 
         ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
         return ticket
@@ -1634,7 +1745,10 @@ class License(object):
 
 
     def get_max_users(my):
-        value = my.xml.get_value("license/data/max_users")
+        site_obj = Site.get()
+        value = site_obj.get_max_users()
+        if not value:
+            value = my.xml.get_value("license/data/max_users")
         try:
             value = int(value)
         except ValueError:
@@ -1668,10 +1782,10 @@ class License(object):
         return value
 
     def get_current_users(my):
-        # FIXME: hard coded database
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
+        #select.set_database(db_resource)
         select.add_table("login")
 
         columns = sql.get_column_info("login").keys()
@@ -1841,7 +1955,7 @@ class License(object):
     LAST_CHECK = None
     LAST_MTIME = None
 
-    def get(cls):
+    def get(cls, verify=True):
         # reparse every hour
         now = Date()
         now = now.get_db_time()
@@ -1863,7 +1977,8 @@ class License(object):
                 or mtime > cls.LAST_MTIME:
             cls.LICENSE = License()
         else:
-            cls.LICENSE.verify()
+            if verify:
+                cls.LICENSE.verify()
 
         cls.LAST_CHECK = now
         cls.LAST_MTIME = mtime

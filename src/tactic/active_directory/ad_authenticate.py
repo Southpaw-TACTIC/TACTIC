@@ -98,17 +98,12 @@ class ADAuthenticate(Authenticate):
             lookup_domain = info[1]
         except:
             lookup_domain = ''
-
         # lookup domain takes prescedence
         if lookup_domain:
             domain = lookup_domain
             #ad_connect.set_domain(lookup_domain)
-<<<<<<< HEAD
-        elif domain:
-=======
         elif domain:
             pass
->>>>>>> c00d895... BRANCH:4.2-105
             
             #ad_connect.set_domain(domain)
         domain = "%s%s"%(domain,domain_component)

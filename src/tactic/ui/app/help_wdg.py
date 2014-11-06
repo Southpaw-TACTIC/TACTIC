@@ -20,7 +20,7 @@ from pyasm.search import Search, SearchType
 from pyasm.command import Command
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg
+from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
 
 import types, os
 
@@ -466,6 +466,7 @@ class HelpWdg(BaseRefreshWdg):
 
     def init(my):
         Container.put("HelpWdg::exists", True)
+        my.show_add_new = my.kwargs.get('show_add_new') not in  ['false', False]
 
     def exists():
         return Container.get("Help::exists") == True
@@ -493,7 +494,7 @@ class HelpWdg(BaseRefreshWdg):
             help_div.add(title_wdg)
             title_wdg.add_style("font-size: 12px")
             title_wdg.add_style("font-weight: bold")
-            title_wdg.add_gradient("background", "background", 0, -20)
+            title_wdg.add_color("background", "background", -10)
             title_wdg.add_style("padding: 3px")
             #title_wdg.add_style("margin-top: 8px")
             title_wdg.add_style("margin-bottom: 5px")
@@ -511,21 +512,23 @@ class HelpWdg(BaseRefreshWdg):
         help_div.set_round_corners()
         help_div.add_color("color", "color2")
         help_div.add_color("background", "background")
+        help_div.add_style("overflow: hidden")
         help_div.add_border()
 
 
 
         shelf_div = DivWdg()
         help_div.add(shelf_div)
-        shelf_div.add_style("padding: 5px")
-        shelf_div.add_gradient("background", "background")
+        shelf_div.add_style("padding: 10px")
+        shelf_div.add_color("background", "background", -10)
         shelf_div.add_style("height: 25px")
 
-        from tactic.ui.widget import SingleButtonWdg
 
-        button = SingleButtonWdg(title="Documentation Main Page", icon=IconWdg.HOME)
+        #button = SingleButtonWdg(title="Documentation Main Page", icon=IconWdg.HOME)
+        button = IconButtonWdg(title="Documentation Main Page", icon="BS_HOME")
         shelf_div.add(button)
         button.add_style("float: left")
+        button.add_style("margin: 0px 10px")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -537,33 +540,38 @@ class HelpWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Edit Help", icon=IconWdg.EDIT)
+        #button = SingleButtonWdg(title="Edit Help", icon=IconWdg.EDIT)
+        if my.show_add_new:
+            button = IconButtonWdg(title="Add New Help", icon="BS_EDIT")
+            shelf_div.add(button)
+            button.add_style("float: left")
+            button.add_style("margin: 0px 10px")
+            button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+            var class_name = 'tactic.ui.app.HelpEditWdg';
+
+            var element_name = spt.help.get_view();
+            if (!element_name) {
+              element_name = "default";
+            }
+            var kwargs = {
+              view: element_name
+            }
+
+            spt.tab.add_new("help_edit", "Help Edit", class_name, kwargs);
+                
+            '''
+            } )
+
+
+
+        #button = SingleButtonWdg(title="Go Back One Page", icon=IconWdg.ARROW_LEFT)
+        button = IconButtonWdg(title="Go Back One Page", icon="BS_CIRCLE_ARROW_LEFT")
         shelf_div.add(button)
         button.add_style("float: left")
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.tab.set_main_body_tab();
-        var class_name = 'tactic.ui.app.HelpEditWdg';
-
-        var element_name = spt.help.get_view();
-        if (!element_name) {
-          element_name = "default";
-        }
-        var kwargs = {
-          view: element_name
-        }
-
-        spt.tab.add_new("help_edit", "Help Edit", class_name, kwargs);
-            
-        '''
-        } )
-
-
-
-        button = SingleButtonWdg(title="Go Back One Page", icon=IconWdg.ARROW_LEFT)
-        shelf_div.add(button)
-        button.add_style("float: left")
+        button.add_style("margin: 0px 10px")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -572,9 +580,11 @@ class HelpWdg(BaseRefreshWdg):
         '''
         } )
 
-        button = SingleButtonWdg(title="Go Forward One Page", icon=IconWdg.ARROW_RIGHT)
+        #button = SingleButtonWdg(title="Go Forward One Page", icon=IconWdg.ARROW_RIGHT)
+        button = IconButtonWdg(title="Go Forward One Page", icon="BS_CIRCLE_ARROW_RIGHT")
         shelf_div.add(button)
         button.add_style("float: left")
+        button.add_style("margin: 0px 10px")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -585,7 +595,8 @@ class HelpWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Documentation Downloads", icon=IconWdg.DOWNLOAD)
+        #button = SingleButtonWdg(title="Documentation Downloads", icon=IconWdg.DOWNLOAD)
+        button = IconButtonWdg(title="Documentation Downloads", icon="BS_DOWNLOAD")
         shelf_div.add(button)
         button.add_style("float: right")
         button.add_behavior( {
@@ -875,8 +886,10 @@ spt.help.load_alias = function(alias, history) {
     // resize
     var size = $(window).getSize();
     var dialog = bvr.src_el.getParent(".spt_dialog_content");
-    dialog.setStyle("height", size.y - 100);
-    dialog.setStyle("width", 650);
+    if (dialog) {
+        dialog.setStyle("height", size.y - 100);
+        dialog.setStyle("width", 650);
+    }
 
     if (!spt.help.is_visible() ) {
         spt.help.show();

@@ -424,7 +424,7 @@ class Pipeline(SObject):
             if process.get_name() == name:
                 return process
 
-        # FIXME: then recurse.  This may be slow
+        # Then iterate.  This may be slow
         processes = my.get_processes(recurse=True)
 
         for process in processes:
