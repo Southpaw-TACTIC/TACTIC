@@ -31,6 +31,15 @@ from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
 class SObjectDetailWdg(BaseRefreshWdg):
     '''Single SObject Widget'''
 
+    ARGS_KEYS = {
+    'tab_element_names': {
+        "description": "List of element names that will be in the tab",
+    }
+    }
+
+
+
+
     def get_display(my):
 
         my.sobject = my.get_sobject()
@@ -100,6 +109,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             thumb.set_sobject(search_type_obj)
             thumb.add_style("float: left")
 
+
         td.add(title)
 
         title.add_color("background", "background3")
@@ -108,10 +118,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
         title.add_style("font-weight: bold")
         title.add_style("font-size: 1.4em")
 
+        stype_title = search_type_obj.get_value("title")
+        if stype_title:
+            title.add("%s: " % stype_title)
+
         if name:
             title.add("%s" % name)
             if code:
-                title.add(" (%s)" % code)
+                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
@@ -229,11 +243,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         # create a state for tab.  The tab only passes a search key
         # parent key
         search_key = SearchKey.get_by_sobject(my.sobject)
-        parent = my.sobject.get_parent()
-        if parent:
-            parent_key = parent.get_search_key()
-        else:
-            parent_key = ""
+        parent_key = ""
+        if search_key.startswith("sthpw/"):
+            parent = my.sobject.get_parent()
+            if parent:
+                parent_key = parent.get_search_key()
 
         state = {
             'search_key': search_key,
@@ -324,63 +338,102 @@ class SObjectDetailWdg(BaseRefreshWdg):
         <config>
         <tab>''')
 
-        config_xml.append('''
-        <element name="tasks">
-          <display class='tactic.ui.panel.ViewPanelWdg'>
-            <search_type>sthpw/task</search_type>
-            <view>table</view>
-            <parent_key>%(search_key)s</parent_key>
-            <width>100%%</width>
-          </display>
-        </element>
-        ''' % values)
-        config_xml.append('''
-        <element name="attachments" title="Attachments">
-          <display class='tactic.ui.panel.TileLayoutWdg'>
-            <search_type>sthpw/snapshot</search_type>
-            <parent_key>%(search_key)s</parent_key>
-            <process>attachment</process>
-            <layout>tile</layout>
-            <width>100%%</width>
-            <show_shelf>false</show_shelf>
-          </display>
-        </element>
-        ''' % values)
-        config_xml.append('''
-        <element name="snapshots" title="Check-in History">
-          <display class='tactic.ui.panel.ViewPanelWdg'>
-            <search_type>sthpw/snapshot</search_type>
-            <view>table</view>
-            <parent_key>%(search_key)s</parent_key>
-            <width>100%%</width>
-          </display>
-        </element>
-        ''' % values)
-        config_xml.append('''
-        <element name="checkin" title="Checkin">
-          <display class='tactic.ui.widget.CheckinWdg'>
-            <search_key>%(search_key)s</search_key>
-            <use_applet>false</use_applet>
-            <show_header>false</show_header>
-          </display>
-        </element>
-        ''' % values)
-        config_xml.append('''
-        <element name="edit" title="Edit">
-          <display class='tactic.ui.panel.EditWdg'>
-            <search_key>%(search_key)s</search_key>
-            <view>edit</view>
-          </display>
-        </element>
-        ''' % values)
-        config_xml.append('''
-        <element name="pipeline" title="Pipeline">
-          <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
-            <search_key>%(search_key)s</search_key>
-            <pipeline>%(pipeline_code)s</pipeline>
-          </display>
-        </element>
-        ''' % values)
+
+        tabs = my.kwargs.get("tab_element_names")
+        if tabs:
+            tabs = tabs.split(",")
+
+
+        if not tabs or "tasks" in tabs:
+            config_xml.append('''
+            <element name="tasks">
+              <display class='tactic.ui.panel.ViewPanelWdg'>
+                <search_type>sthpw/task</search_type>
+                <view>table</view>
+                <parent_key>%(search_key)s</parent_key>
+                <width>100%%</width>
+                <show_shelf>false</show_shelf>
+              </display>
+            </element>
+            ''' % values)
+
+        if not tabs or "attachments" in tabs:
+            config_xml.append('''
+            <element name="attachments" title="Attachments">
+              <display class='tactic.ui.panel.TileLayoutWdg'>
+                <search_type>sthpw/snapshot</search_type>
+                <parent_key>%(search_key)s</parent_key>
+                <process>attachment</process>
+                <layout>tile</layout>
+                <width>100%%</width>
+                <show_shelf>false</show_shelf>
+              </display>
+            </element>
+            ''' % values)
+
+        if not tabs or "snapshots" in tabs:
+            config_xml.append('''
+            <element name="snapshots" title="Check-in History">
+              <display class='tactic.ui.panel.ViewPanelWdg'>
+                <search_type>sthpw/snapshot</search_type>
+                <view>table</view>
+                <parent_key>%(search_key)s</parent_key>
+                <width>100%%</width>
+              </display>
+            </element>
+            ''' % values)
+
+        if not tabs or "checkin" in tabs:
+            config_xml.append('''
+            <element name="checkin" title="Checkin">
+              <display class='tactic.ui.widget.CheckinWdg'>
+                <search_key>%(search_key)s</search_key>
+                <use_applet>false</use_applet>
+                <show_header>false</show_header>
+              </display>
+            </element>
+            ''' % values)
+
+        if not tabs or "edit" in tabs:
+            config_xml.append('''
+            <element name="edit" title="Edit">
+              <display class='tactic.ui.panel.EditWdg'>
+                <search_key>%(search_key)s</search_key>
+                <view>edit</view>
+              </display>
+            </element>
+            ''' % values)
+
+        if not tabs or "pipeline" in tabs:
+            config_xml.append('''
+            <element name="pipeline" title="Pipeline">
+              <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
+                <search_key>%(search_key)s</search_key>
+                <pipeline>%(pipeline_code)s</pipeline>
+              </display>
+            </element>
+            ''' % values)
+
+        for tab in tabs:
+            if tab.find("/") != -1:
+                tab_values = values.copy()
+                tab_values['search_type'] = tab
+                search_type_obj = SearchType.get(tab)
+                title = search_type_obj.get_value("title")
+                tab_values['title'] = title
+                print tab_values
+                config_xml.append('''
+                <element name="%(search_type)s" title="%(title)s">
+                  <display class='tactic.ui.panel.ViewPanelWdg'>
+                    <search_type>%(search_type)s</search_type>
+                    <view>table</view>
+                    <parent_key>%(search_key)s</parent_key>
+                    <width>100%%</width>
+                    <show_shelf>false</show_shelf>
+                  </display>
+                </element>
+                ''' % tab_values)
+     
  
         config_xml.append('''
         </tab>

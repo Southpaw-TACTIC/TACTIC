@@ -2268,6 +2268,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             return
      
 
+        table.add_attr("ondragenter", "return false")
+        table.add_attr("ondragover", "return false")
+        table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
+
+
 
         table.add_style('width', '100%')
 
@@ -2299,6 +2304,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")
+
 
         if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
@@ -5215,6 +5221,7 @@ spt.table.set_column_width = function(element_name, width) {
     }
 
 
+    // handle group
     var row = table.getElement(".spt_table_hidden_group_row");
     if (row) {
         var els = row.getElements(".spt_table_hidden_group_td");
@@ -5229,6 +5236,9 @@ spt.table.set_column_width = function(element_name, width) {
 
 
     var headers = spt.table.get_headers();
+    var cells = [];
+    if (row)
+        cells = row.getElements(".spt_cell_edit");
     var total_width = 0;
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
@@ -5240,7 +5250,11 @@ spt.table.set_column_width = function(element_name, width) {
         else {
             var size = header.getSize();
             total_width += size.x;
+            new_width = size.x;
         }
+        header.setStyle("width", new_width);
+        if (row)
+            cells[i].setStyle("width", new_width);
 
     }
 

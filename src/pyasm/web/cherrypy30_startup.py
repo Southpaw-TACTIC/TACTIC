@@ -99,12 +99,21 @@ class CherryPyStartup(CherryPyStartup20):
         else:
             has_project = True
 
-
         # make sure the appropriate site is set (based on the ticket)
         from pyasm.security import Site
-        cookie = cherrypy.request.cookie["login_ticket"].value
-        site = Site.get().get_by_ticket(cookie)
+        cookie = cherrypy.request.cookie
+        if cookie.has_key("login_ticket"):
+            cookie = cookie["login_ticket"].value
+            site = Site.get().get_by_ticket(cookie)
+        else:
+            html_response = '''<html>
+            <head><meta http-equiv="Refresh" content="0; url=/"></head>
+            </html>'''
+            response.body = ''
+            return html_response
+
         Site.set_site(site)
+
 
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it

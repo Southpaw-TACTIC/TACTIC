@@ -669,7 +669,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         #text = TextInputWdg(title="project_title")
         info_page.add(text)
-        text.add_style("width: 250px")
+        text.add_style("width: 100%")
         info_page.add(HtmlElement.br(3))
         span = DivWdg()
         info_page.add(span)
@@ -728,7 +728,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
         info_page.add(text)
-        text.add_style("width: 250px")
+        text.add_style("width: 100%")
         text.add_class("spt_project_code")
         info_page.add(HtmlElement.br(4))
 
@@ -843,8 +843,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
             spt.app_busy.hide();
         '''
         button = UploadButtonWdg(title="Browse", on_complete=on_complete) 
-        button.add_style("margin-left: auto")
-        button.add_style("margin-right: auto")
+        button.add_style("margin-left: 280px")
         image_div.add(button)
 
 
