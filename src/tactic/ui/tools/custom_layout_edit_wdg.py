@@ -1283,7 +1283,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon="BS_FLOPPY_SAVE")
+        button = ButtonNewWdg(title="Save", icon="BS_SAVE")
         button_row.add(button)
 
         button.add_behavior( {

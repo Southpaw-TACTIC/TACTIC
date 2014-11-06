@@ -363,9 +363,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
+
+        detail_element_names = my.kwargs.get("detail_element_names")
+
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_tile_detail',
+            'detail_element_names': detail_element_names,
             'cbjs_action': '''
             spt.tab.set_main_body_tab();
             var top = bvr.src_el.getParent(".spt_tile_top");
@@ -374,7 +378,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_code = top.getAttribute("spt_search_code");
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
             var kwargs = {
-                search_key: search_key
+                search_key: search_key,
+                tab_element_names: bvr.detail_element_names
             };
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
@@ -531,6 +536,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+                spt.app_busy.show("Attaching file");
+
 
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
@@ -574,6 +581,7 @@ class TileLayoutWdg(ToolLayoutWdg):
          
                 }
 
+                spt.app_busy.hide();
             }
  
 

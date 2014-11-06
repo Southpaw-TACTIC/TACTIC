@@ -113,9 +113,9 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
             no_tasks.add("&nbsp;")
             top.add(no_tasks)
 
-            color = top.get_color("background", [-2, -10, -10])
-            top.add_style("background: %s" % color)
-            top.add_style("opacity: 0.5")
+            #color = top.get_color("background", [-2, -10, -10])
+            #top.add_style("background: %s" % color)
+            #top.add_style("opacity: 0.5")
 
         else:
             for index, sobject in enumerate(my.sobjects_index):
@@ -197,7 +197,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         if expression:
             value = Search.eval(expression, sobject, single=True)
         else:
-            context = sobject.get_value('context')
+            context = sobject.get_value('context', no_exception=True)
             if not context:
                 context = ""
 
@@ -208,8 +208,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                     name = parent.get_name()
                     parts.append(name)
 
-            description = sobject.get_value('description')
-            completion = sobject.get_value('completion')
+            description = sobject.get_value('description', no_exception=True)
+            completion = sobject.get_value('completion', no_exception=True)
             if completion:
                 completion = "%s%%" % completion
                 parts.append(completion)
@@ -545,6 +545,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         search.add_order_by(my.start_column)
+        print "search: ", search.get_statement()
 
         my.sobjects = search.get_sobjects()
 
