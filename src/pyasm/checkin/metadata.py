@@ -581,7 +581,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         # add keywords metadata to the dictionary to be returned: "ret"
         ret["Keywords"] = keyword_values
-        ret["IPTC: Description"] = description_values
+        ret["Description"] = description_values
 
         return ret
 
@@ -601,19 +601,17 @@ class IPTCMetadataParser(BaseMetadataParser):
         dc_subject_str = xmp_data[starting_index:end_index]
 
         # find all words between tags in the xmp data using regular expression.
-        # aka, search for words between <tag>words</tag>
+        # ie, search for words between <tag>words</tag>
         # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
         keywords_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
-        for i in range(len(keywords_list)):
-            keywords_list[i] = keywords_list[i][1:-1]
+        keywords_list = [ x[1:-1] for x in keywords_list]
  
-        # take the list, and turn it into a string, separated by spaces
+        # remove empty keywords from list
         keywords_list = filter(None, keywords_list)
-        keywords_string = ", ".join(keywords_list)
 
-        return keywords_string
+        return keywords_list
 
 
     def get_description_metadata_from_xmp(my, xmp_data):
@@ -628,20 +626,18 @@ class IPTCMetadataParser(BaseMetadataParser):
         # section of xmp data containing description metadata
         dc_subject_str = xmp_data[starting_index:end_index]
 
-        # find all words between tags.
-        # aka, search for words btween <tag>words</tag>
+        # find all words between tags in the xmp data using regular expression.
+        # ie, search for words between <tag>words</tag>
+        # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
         description_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
 
-
-        # get rid of the > and < around words in keywords_list
-        for i in range(len(description_list)):
-            description_list[i] = description_list[i][1:-1]
+        # get rid of the > and < around words in description_list
+        description_list = [ x[1:-1] for x in description_list]
  
         # take the list, and turn it into a string, separated by spaces
         description_list = filter(None, description_list)
-        description_string = " ".join(description_list)
 
-        return description_string
+        return description_list
 
 
     def get_metadata(my):
