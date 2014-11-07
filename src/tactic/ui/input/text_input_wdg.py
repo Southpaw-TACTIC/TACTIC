@@ -141,7 +141,6 @@ class TextInputWdg(BaseInputWdg):
                 'bgcolor': bgcolor,
                 'bgcolor2': bgcolor2,
                 'cbjs_action': '''
-                
                 if (bvr.src_el.hasClass('spt_input_validation_failed')) {
                     return;
                 }
@@ -157,11 +156,12 @@ class TextInputWdg(BaseInputWdg):
                 else {
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
-             
+
                 bvr.src_el.setAttribute("spt_last_value", value);
 
                 //spt.input.set_success(bvr.src_el);
-                spt.input.set_error(bvr.src_el);
+                if (spt.input.set_error)
+                    spt.input.set_error(bvr.src_el);
                 '''
                 } )
  
