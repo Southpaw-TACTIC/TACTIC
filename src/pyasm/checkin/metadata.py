@@ -593,7 +593,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         keywords_list = []
         
-        # find the chunk of data in xmp_data where the keywords resides
+        # find the chunk of data in xmp_data where the keywords reside
         starting_index = xmp_data.find("<dc:subject>")
         end_index = xmp_data.find("</dc:subject>")
 
@@ -619,7 +619,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         description_list = []
         
-        # find the chunk of data in xmp_data where the keywords resides
+        # find the chunk of data in xmp_data where the description resides
         starting_index = xmp_data.find("<dc:description>")
         end_index = xmp_data.find("</dc:description>")
 
