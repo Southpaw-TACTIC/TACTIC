@@ -197,7 +197,7 @@ class Palette(object):
         else:
             # look at the project
             from pyasm.biz import Project
-            project = Project.get()
+            project = Project.get(no_exception=True)
             if project:
                 value = project.get_value("palette")
                 my.set_palette(value)

@@ -302,6 +302,7 @@ class BaseAppServer(Base):
             site_obj = Site.get()
             return my.handle_not_logged_in()
 
+ 
 
         # guest mode
         #
@@ -523,9 +524,24 @@ class BaseAppServer(Base):
         # install the language
         Translation.install()
 
+
+        # handle the case where the project does not exist
+        project = Project.get(no_exception=True)
+        if not project:
+            from pyasm.widget import BottomWdg, Error404Wdg
+            Project.set_project("admin")
+            widget = Widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( Error404Wdg() )
+            widget.add( BottomWdg() )
+            widget.get_display()
+            return widget
+
+
         try:
             widget = my.get_content(page_type)
-        except Error, e:
+        except Exception, e:
             print "ERROR: ", e
             from pyasm.widget import BottomWdg, Error403Wdg
             widget = Widget()

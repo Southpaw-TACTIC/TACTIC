@@ -63,7 +63,7 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
     def get_width(my):
-        return "150px"
+        return 150
 
     
     def _get_sorted_instances(my):

@@ -1212,12 +1212,16 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             """
 
 
+            group_title = group_name.title()
+            group_title = group_title.replace("_", " ")
+
+
             config_xml.append('''
             <element name='_%s' title='%s' edit='false'>
               <display class='tactic.ui.startup.SecurityCheckboxElementWdg'>
               </display>
             </element>
-            ''' % (group_name, group_name) )
+            ''' % (group_name, group_title) )
 
 
 
@@ -1270,7 +1274,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        save_button = ButtonNewWdg(tip="Refresh", icon=IconWdg.REFRESH)
+        save_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
@@ -1284,7 +1288,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
         
-        save_button = ButtonNewWdg(tip="Save Changes", icon=IconWdg.SAVE)
+        save_button = ButtonNewWdg(tip="Save Changes", icon="BS_SAVE")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
