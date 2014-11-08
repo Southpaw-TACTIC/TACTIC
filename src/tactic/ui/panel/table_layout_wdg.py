@@ -5252,11 +5252,11 @@ spt.table.set_column_width = function(element_name, width) {
             new_width = size.x;
         }
         header.setStyle("width", new_width);
-        if (row)
+        if (row && cells.length != 0) {
             cells[i].setStyle("width", new_width);
+        }
 
     }
-
 
 
 
@@ -5268,6 +5268,7 @@ spt.table.set_column_width = function(element_name, width) {
 
     curr_header.setStyle("width", width);
     cell.setStyle("width", width);
+
 
     //size = curr_header.getSize();
     //size = cell.getSize();
