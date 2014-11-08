@@ -1209,12 +1209,15 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
 
-        if sobject.get_base_search_type() == "sthpw/snapshot":
+        title_expr = my.kwargs.get("title_expr")
+        if title_expr:
+            title = Search.eval(title_expr, sobject, single=True)
+        elif sobject.get_base_search_type() == "sthpw/snapshot":
             title = sobject.get_value("context")
         else:
             title = sobject.get_value("name", no_exception=True)
-            if not title:
-                title = sobject.get_value("code", no_exception=True)
+        if not title:
+            title = sobject.get_value("code", no_exception=True)
       
         table = Table()
         header_div.add(table)

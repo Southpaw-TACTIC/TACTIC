@@ -1264,8 +1264,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
                 }
 
-                // FIXME: don't do the last one because it messes up some
-                // tables by making them huge ... not sure why?!
+
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];

@@ -1533,6 +1533,23 @@ class MethodMode(ExpressionParser):
                 results.append(result)
 
 
+        elif method == 'REPLACE':
+            if len(args) != 3:
+                raise SyntaxError("Method @%s must have 3 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            values = my.dive(mode, expression=expression)
+
+            # FIXME: empty string is handled weirdly elsewhere and resturns "''"
+            if args[2] == "''":
+                args[2] = ''
+
+            results = []
+            for value in values:
+                result = value.replace( args[1], args[2] )
+                results.append(result)
+
 
         elif method == 'UPDATE':
             # the first argument is sobjects
