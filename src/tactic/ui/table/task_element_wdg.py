@@ -216,7 +216,7 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
 
-     'assigned_label_attr': {
+    'assigned_label_attr': {
         'description': 'A list of | separated attributes displayed as the label of the assigned, e.g. "first_name|last_name"',
         'type': 'TextWdg',
         'order': '11',
@@ -271,6 +271,14 @@ class TaskElementWdg(BaseTableElementWdg):
         'order': '20'
     },
 
+    'show_processes_in_title': {
+        'description': 'Display the processes in title. You are advised to turn on show_filler_tasks as well. Defaults to false',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'category': 'Display',
+        'order': '21'
+    },
+
 
 
 
@@ -299,6 +307,7 @@ class TaskElementWdg(BaseTableElementWdg):
     }
     }
 
+    LAYOUT_WIDTH = 130
 
     def init(my):
         my.label_dict = {}
@@ -729,35 +738,40 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
     def get_title(my):
-        show_processes_in_title = True
-        if show_processes_in_title:
+        
+        if my.show_processes_in_title == 'true':
             table = Table()
             table.add_style("margin-top: 4px")
 
             sobject = my.get_current_sobject()
             if not sobject:
                 return "Tasks"
+            
+            if my.layout in ['horizontal','panel']:
 
+                pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+                if pipeline_code:
+                    pipeline = Pipeline.get_by_code(pipeline_code)
+                    if not pipeline:
+                        pipeline = Pipeline.get_by_code("task")
 
-            pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
-            if pipeline_code:
-                pipeline = Pipeline.get_by_code(pipeline_code)
-                if not pipeline:
-                    pipeline = Pipeline.get_by_code("task")
+                    processes = pipeline.get_process_names()
+                else:
+                    processes = ['publish']
 
-                processes = pipeline.get_process_names()
+                
+                table.add_row()
+                
+                for process in processes:
+                    title = Common.get_display_title(process)
+                    td = table.add_cell(title)
+                    td.add_style("width: 117px")
+                    td.add_style("text-align: center")
+                    td.add_style("font-weight: bold")
+
+                return table
             else:
-                processes = ['publish']
-
-            table.add_row()
-            for process in processes:
-                title = Common.get_display_title(process)
-                td = table.add_cell(title)
-                td.add_style("width: 117px")
-                td.add_style("text-align: center")
-                td.add_style("font-weight: bold")
-
-            return table
+                return "Tasks"
         else:
             return "Tasks"
 
@@ -993,9 +1007,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             search_code = sobject.get_value("code")
             for process in missing:
                 task = my.filler_cache.get(process)
-                task.set_value("search_type", search_type)
-                task.set_value("search_code", search_code)
-                tasks.append(task)
+                # FIXME: task could be None
+                if task:
+                    task.set_value("search_type", search_type)
+                    task.set_value("search_code", search_code)
+                    tasks.append(task)
          
             tasks = sorted(tasks,get_compare(processes))
 
@@ -1012,6 +1028,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         my.show_context = my.kwargs.get("show_context")
         my.show_task_edit = my.kwargs.get("show_task_edit")
         my.task_edit_view = my.kwargs.get("task_edit_view")
+
+        my.show_processes_in_title = my.kwargs.get("show_processes_in_title")
+        if not my.show_processes_in_title:
+            my.show_processes_in_title = 'false'
 
         if not my.show_process:
             my.show_process = 'true'
@@ -1077,11 +1097,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             my.layout = 'panel'
         if my.layout in ['horizontal','vertical']:
             if my.show_process =='true':
-                my.total_width += 75 
+                if my.layout == 'vertical':
+                    my.total_width += my.LAYOUT_WIDTH
+                else:
+                    my.total_width += 75
+
             if my.show_context =='true':
                 my.total_width += 75 
             if my.show_dates =='true':
-                if my.font_size < 10:
+                if my.layout == 'vertical':
+                    my.total_width += my.LAYOUT_WIDTH
+                elif my.font_size < 10:
                     my.total_width += 50
                 else:
                     my.total_width += 75 
@@ -1435,7 +1461,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_div.add_style("overflow: hidden")
                 process_div.add_style("margin-right: 5px")
                 td = table.add_cell(process_div)
-                td.add_style("width: 75px")
+                if my.layout == 'vertical':
+                    td.add_style("width: %spx"%my.LAYOUT_WIDTH)
+                else:
+                    td.add_style("width: 75px")
             else:
                 div.add(process_div)
 
@@ -1481,7 +1510,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if my.layout in ['horizontal', 'vertical']:
                 #date_div.add_style("float: left")
                 td = table.add_cell(date_div)
-                td.add_style("width: 75px")
+                
+                if my.layout == 'vertical':
+                    td.add_style("width: %spx"%my.LAYOUT_WIDTH)
+                else:
+                    td.add_style("width: 75px")
             else:
                 div.add(date_div)
 
@@ -1589,10 +1622,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 if my.layout in ['horizontal', 'vertical']:
                     #select.add_style("float: left")
-                    select.add_style("width: 75px")
+                    select.add_style("width: %spx" %my.LAYOUT_WIDTH)
                     select.add_style("margin: 2px 0px 2px 0px")
                     td = table.add_cell(select)
-                    td.add_style("width: 75px")
+                    if my.layout == 'vertical':
+                        select.add_style("width: %spx" %my.LAYOUT_WIDTH)
+                    else:
+                        select.add_style("width: 75px")
+
+                    #td.add_style("width: 75px")
 
                 else:
                     select.add_style("width", my.width)
@@ -1638,7 +1676,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.set_value(assigned)
                     select.add_class("spt_task_element_assigned")
                     select.add_style("margin: 1px 0px 1px 0px")
-                    select.add_style("width", my.width)
+                    if my.layout == 'vertical':
+                        select.add_style("width", '%spx'%my.LAYOUT_WIDTH)
+                    else:
+                        select.add_style("width", my.width)
 
                 else:
                     

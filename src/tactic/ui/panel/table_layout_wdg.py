@@ -3599,7 +3599,8 @@ spt.table.add_new_item = function(kwargs) {
             var cell = cells[i];
             var clone_cell = clone_cells[i];
             var size = cell.getSize();
-            clone_cell.setStyle("width", size.x);
+            if (clone_cell)
+                clone_cell.setStyle("width", size.x);
         }
 
         clone.inject(row, position);

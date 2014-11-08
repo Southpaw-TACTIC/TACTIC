@@ -466,6 +466,7 @@ class HelpWdg(BaseRefreshWdg):
 
     def init(my):
         Container.put("HelpWdg::exists", True)
+        my.show_add_new = my.kwargs.get('show_add_new') not in  ['false', False]
 
     def exists():
         return Container.get("Help::exists") == True
@@ -540,28 +541,29 @@ class HelpWdg(BaseRefreshWdg):
 
 
         #button = SingleButtonWdg(title="Edit Help", icon=IconWdg.EDIT)
-        button = IconButtonWdg(title="Edit Help", icon="BS_EDIT")
-        shelf_div.add(button)
-        button.add_style("float: left")
-        button.add_style("margin: 0px 10px")
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.tab.set_main_body_tab();
-        var class_name = 'tactic.ui.app.HelpEditWdg';
+        if my.show_add_new:
+            button = IconButtonWdg(title="Add New Help", icon="BS_EDIT")
+            shelf_div.add(button)
+            button.add_style("float: left")
+            button.add_style("margin: 0px 10px")
+            button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+            var class_name = 'tactic.ui.app.HelpEditWdg';
 
-        var element_name = spt.help.get_view();
-        if (!element_name) {
-          element_name = "default";
-        }
-        var kwargs = {
-          view: element_name
-        }
+            var element_name = spt.help.get_view();
+            if (!element_name) {
+              element_name = "default";
+            }
+            var kwargs = {
+              view: element_name
+            }
 
-        spt.tab.add_new("help_edit", "Help Edit", class_name, kwargs);
-            
-        '''
-        } )
+            spt.tab.add_new("help_edit", "Help Edit", class_name, kwargs);
+                
+            '''
+            } )
 
 
 
