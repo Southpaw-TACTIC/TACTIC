@@ -205,13 +205,17 @@ class DeleteToolWdg(BaseRefreshWdg):
 
     def get_item_div(my, sobjects, related_type):
         item_div = DivWdg()
+        item_div.add_style("margin: 15px 10px")
 
         sobject = sobjects[0]
 
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
         checkbox.set_attr("value", related_type)
+        if related_type == "sthpw/snapshot":
+            checkbox.set_checked()
 
+        item_div.add(" ")
         item_div.add(related_type)
         item_div.add(": ")
 
