@@ -2561,6 +2561,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_base_dirs(my, ticket):
         '''get all of the base directories defined on the server'''
         data = Config.get_section_values("checkin")
+        for key, value in data.items():
+            if value.strip().startswith('{'):
+                
+                try:
+                    sub_value = eval(value.strip())
+                    value = sub_value
+                    data[key] = value
+                except:
+                    pass
+
+       
         return data
 
 
@@ -3779,7 +3790,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_key = SearchKey.get_by_sobject(sobject)
-
         # get the level object
         if level_key:
             level = SearchKey.get_by_search_key(level_key)
@@ -3801,6 +3811,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException("Snapshot for [%s] with context [%s] is locked" % (search_key, context))
 
         paths = {}
+
         if file_type == "*":
             client_lib_paths = snapshot.get_all_client_lib_paths()
             paths['client_lib_paths'] = client_lib_paths
