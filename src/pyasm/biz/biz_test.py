@@ -214,7 +214,6 @@ class BizTest(unittest.TestCase):
             file = open(my.file_path, 'w')
             file.write("whatever")
             file.close()
-
             # check in 2 current revisions
             checkin = FileCheckin(my.person, my.file_path, "main", context=my.context, is_revision=True, is_current=True)
             checkin.execute()
@@ -470,7 +469,6 @@ class BizTest(unittest.TestCase):
 
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
-        #print "CHILD TYPES ", child_types
         expected = ['unittest/person_in_car', 'unittest/house']
         my.assertEquals(True, expected[0] in child_types)
         my.assertEquals(True, expected[1] in child_types)

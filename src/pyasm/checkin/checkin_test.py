@@ -17,7 +17,7 @@ import os,unittest, shutil, sys
 
 from pyasm.unittest import *
 
-from pyasm.common import Environment, Config, Common, Container
+from pyasm.common import Environment, Config, Common, Container, Xml
 from pyasm.command import Command, UndoCmd
 from pyasm.search import Transaction, SearchType, Search
 from pyasm.security import Batch
@@ -48,17 +48,20 @@ class CheckinTest(unittest.TestCase, Command):
 
         test_env = UnittestEnvironment()
         test_env.create()
+        my.transaction = Transaction.get(create=True)
 
         Project.set_project("unittest")
-
+       
         try:
-            Command.execute_cmd(my)
+            #Command.execute_cmd(my)
 
             # undo the command
-            undo = UndoCmd()
-            undo.execute()
+            #undo = UndoCmd()
+            #undo.execute()
+            my.execute()
 
         finally:
+            my.transaction.rollback()
             test_env.delete()
 
 
@@ -88,6 +91,12 @@ class CheckinTest(unittest.TestCase, Command):
    
         my._test_base_dir_alias()
 
+        # clear the xml and config cache introduced by test_base_dir_alias
+        data = {}
+        Container.put(Config.CONFIG_KEY, data)
+
+        Xml.XML_FILE_CACHE = {}
+        Xml.XML_FILE_MTIME = {}
 
 
     def clear_naming(my):
@@ -793,6 +802,11 @@ class CheckinTest(unittest.TestCase, Command):
             path = "%s/text.txt" % (lib_dir)
             exists = os.path.exists(path)
             my.assertEquals(True, exists)
+
+        # manually remove this from this pseudo asset_base_dir as we
+        # clean up using the default asset_base_dir at the end
+        os.unlink('/tmp/tactic/alias/alias/text.txt')
+        os.unlink('/tmp/tactic/alias2/alias2/text.txt')
 
 
 
