@@ -161,7 +161,8 @@ class TextInputWdg(BaseInputWdg):
                 bvr.src_el.setAttribute("spt_last_value", value);
 
                 //spt.input.set_success(bvr.src_el);
-                spt.input.set_error(bvr.src_el);
+                if (spt.input.set_error)
+                    spt.input.set_error(bvr.src_el);
                 '''
                 } )
  
