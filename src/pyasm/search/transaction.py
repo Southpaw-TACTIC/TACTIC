@@ -46,6 +46,7 @@ class Transaction(Base):
         my.xml.create_doc("transaction")
         my.transaction_log = None
         my.change_timestamps = {}
+        my.description = ""
 
     def set_record(my, record_flag):
         my.record_flag = record_flag

@@ -432,8 +432,14 @@ class BaseAppServer(Base):
                 if not current_project or current_project == "default":
                     default_project = Project.get_default_project()
                 if current_project and current_project != "default":
-                    Project.set_project(current_project)
-
+                    try:
+                        Project.set_project(current_project)
+                    except SecurityException, e:
+                        print e
+                        if 'is not permitted to view project' in e.__str__():
+                            pass
+                        else:
+                            raise
                     web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
                     if web_wdg:
                         web_wdg = web_wdg.get_buffer_display()
