@@ -1173,6 +1173,11 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
+        from pyasm.common import SPTDate
+        start_date = SPTDate.add_local_timezone(start_date)
+        start_date = SPTDate.convert(start_date)
+        end_date = SPTDate.add_local_timezone(end_date)
+        end_date = SPTDate.convert(end_date)
 
         operator = my.get_option("op")
         if operator != 'not in':
