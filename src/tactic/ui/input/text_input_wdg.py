@@ -442,6 +442,7 @@ class TextInputWdg(BaseInputWdg):
             var value = bvr.src_el.value;
             var el = bvr.src_el.getParent(".form-group");
             if (!el) return;
+
             if (value == "foo") {
                 el.addClass("has-error");
                 el.removeClass("has-success");

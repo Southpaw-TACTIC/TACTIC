@@ -609,7 +609,7 @@ class IPTCMetadataParser(BaseMetadataParser):
         keywords_list = [ x[1:-1] for x in keywords_list]
  
         # remove empty keywords from list
-        keywords_list = filter(None, keywords_list)
+        keywords_list = [x for x in keywords_list if x and x != ' ']
 
         return keywords_list
 
@@ -635,7 +635,7 @@ class IPTCMetadataParser(BaseMetadataParser):
         description_list = [ x[1:-1] for x in description_list]
  
         # take the list, and turn it into a string, separated by spaces
-        description_list = filter(None, description_list)
+        description_list = [x for x in description_list if x and x != ' ']
 
         return description_list
 

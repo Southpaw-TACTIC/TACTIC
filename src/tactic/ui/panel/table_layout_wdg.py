@@ -5255,7 +5255,6 @@ spt.table.set_column_width = function(element_name, width) {
         if (row && cells.length != 0) {
             cells[i].setStyle("width", new_width);
         }
-
     }
 
 

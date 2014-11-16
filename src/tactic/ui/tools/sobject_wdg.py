@@ -430,11 +430,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 ''' % values)
 
             elif tab.find("/") != -1:
-                tab_values = values.copy()
-                tab_values['search_type'] = tab
-                search_type_obj = SearchType.get(tab)
-                title = search_type_obj.get_value("title")
-                tab_values['title'] = title
+
                 config_xml.append('''
                 <element name="%(search_type)s" title="%(title)s">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
@@ -470,8 +466,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-     
- 
         config_xml.append('''
         </tab>
         </config>
