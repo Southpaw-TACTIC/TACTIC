@@ -3563,7 +3563,7 @@ class SObject(object):
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
-                    value = value.strftime('%Y-%m-%d %H:%M:%S')
+                    value = value.strftime('%Y-%m-%d %H:%M:%S %Z')
                 changed = True
 
             if changed:
