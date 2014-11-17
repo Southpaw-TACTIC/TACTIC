@@ -780,8 +780,10 @@ class IconCreator(object):
                 convert_cmd = []
                 convert_cmd.append(convert_exe)
                 # png's and psd's can have multiple layers which need to be flattened to make an accurate thumbnail
-                if large_path.lower().endswith('png') or large_path.lower().endswith('psd'):
+                if large_path.lower().endswith('png'):
                     convert_cmd.append('-flatten')
+                if large_path.lower().endswith('psd'):
+                    large_path += "[0]"
                 convert_cmd.extend(['-resize','%sx%s'%(thumb_size[0], thumb_size[1])])
                 if HAS_PIL:
                     im = Image.open(large_path)
