@@ -221,6 +221,10 @@ spt.html5upload.upload_file = function(kwargs) {
         server = TacticServerStub.get();
         transaction_ticket = server.get_transaction_ticket();
     }
+    var upload_dir = kwargs.upload_dir;
+    if(!upload_dir){
+     upload_dir = "";
+    }
    
    
    
@@ -233,6 +237,7 @@ spt.html5upload.upload_file = function(kwargs) {
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);
+    fd.append('upload_dir',upload_dir)
    
 
     /* event listeners */

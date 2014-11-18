@@ -104,6 +104,9 @@ class UploadServerWdg(Widget):
             file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
         else:
             file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
+        custom_upload_dir = web.get_form_value("upload_dir")
+        if custom_upload_dir:
+            file_dir = custom_upload_dir
 
 
         # set a default for now
