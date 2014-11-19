@@ -548,15 +548,15 @@ class IPTCMetadataParser(BaseMetadataParser):
         image_type = path[type_start:]
 
         # check if exiftool exists first:
-        from distutils.spawn import find_executable
-        if os.name == "nt":
-            exiftool_exists = find_executable("exiftool", path=parser_path)
-        else:
-            exiftool_exists = find_executable("exiftool")
-        
-        if not exiftool_exists:
-            print "WARNING: exiftool does not exist at path %s" %(parser_path)
-            return "WARNING: exiftool does not exist at path %s" %(parser_path)
+        #from distutils.spawn import find_executable
+        #if os.name == "nt":
+        #    exiftool_exists = find_executable("exiftool", path=parser_path)
+        #else:
+        #    exiftool_exists = find_executable("exiftool")
+        #
+        #if not exiftool_exists:
+        #    print "WARNING: exiftool does not exist at path %s" %(parser_path)
+        #    return "WARNING: exiftool does not exist at path %s" %(parser_path)
 
         # get IPTC data from exiftool
 
