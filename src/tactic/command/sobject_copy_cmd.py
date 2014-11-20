@@ -109,6 +109,7 @@ class SObjectCopyCmd(Command):
         if msgs:
             my.info['error'] = msgs
 
+        return new_sobject
 
 
 

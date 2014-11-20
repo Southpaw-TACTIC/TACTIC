@@ -161,7 +161,8 @@ class TextInputWdg(BaseInputWdg):
                 bvr.src_el.setAttribute("spt_last_value", value);
 
                 //spt.input.set_success(bvr.src_el);
-                spt.input.set_error(bvr.src_el);
+                if (spt.input.set_error)
+                    spt.input.set_error(bvr.src_el);
                 '''
                 } )
  
@@ -441,6 +442,8 @@ class TextInputWdg(BaseInputWdg):
             'cbjs_action': '''
             var value = bvr.src_el.value;
             var el = bvr.src_el.getParent(".form-group");
+            if (!el) return;
+
             if (value == "foo") {
                 el.addClass("has-error");
                 el.removeClass("has-success");
@@ -520,7 +523,7 @@ class TextInputWdg(BaseInputWdg):
         td.add_style("border-style: solid")
         #my.text.add_style("border: none")
 
-        my.text.add_style("width: 100%")
+        #my.text.add_style("width: 100%")
 
         my.text.add_style("padding: 5px")
         my.text.add_style("height: %s" % (height-10))

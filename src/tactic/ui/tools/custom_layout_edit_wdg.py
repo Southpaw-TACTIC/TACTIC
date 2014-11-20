@@ -915,7 +915,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             shelf_wdg.add(view_wdg)
 
             view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
-            text = TextInputWdg(name="view", height="32px")
+            text = TextInputWdg(name="view")
             view_wdg.add(text)
             text.add_style("width: 350px")
             view_wdg.add_style("margin-top: 4px")
@@ -930,7 +930,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             type_wdg = DivWdg()
             shelf_wdg.add(type_wdg)
             type_wdg.add_style("float: left")
-            type_wdg.add_style("margin: -2px 5px 5px 20px")
+            type_wdg.add_style("margin: 0px 5px 5px 20px")
 
             select = SelectWdg(name="widget_type")
             if widget_type:
@@ -1283,7 +1283,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon="BS_FLOPPY_SAVE")
+        button = ButtonNewWdg(title="Save", icon="BS_SAVE")
         button_row.add(button)
 
         button.add_behavior( {

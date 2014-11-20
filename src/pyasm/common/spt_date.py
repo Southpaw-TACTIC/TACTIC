@@ -110,7 +110,7 @@ class SPTDate(object):
 
 
 
-    # convert to UTC, no timezone.  If no timezone is give, use local
+    # convert to UTC, no timezone.  If no timezone is given in the date, use local
     def convert(cls, date, is_gmt=False):
         if date == "CURRENT_TIMESTAMP":
             date = datetime.utcnow()
@@ -154,6 +154,33 @@ class SPTDate(object):
         return date
     add_gmt_timezone = classmethod(add_gmt_timezone)
 
+
+    def add_local_timezone(cls, date):
+        if isinstance(date, basestring):
+            try:
+                # do not use cls.parse ... it does a convert.
+                date = parser.parse(date)
+            except:
+                # This could be "now()", for example
+                return date
+
+        date = date.replace(tzinfo=TZLOCAL)
+        return date
+    add_local_timezone = classmethod(add_local_timezone)
+
+
+    def has_timezone(cls, date):
+        if isinstance(date, basestring):
+            try:
+                # do not use cls.parse ... it does a convert.
+                date = parser.parse(date)
+            except:
+                # This could be "now()", for example
+                pass
+
+        return date.tzinfo != None
+    has_timezone = classmethod(has_timezone)
+ 
 
 
     def get_display_date(cls, date):

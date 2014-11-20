@@ -533,7 +533,7 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
 
 class IPTCMetadataParser(BaseMetadataParser):
-    '''Grab IPTC data from files. This requires use of exiftool.
+    '''Grab IPTC data from files. This requires use of exif metadata extractor.
     Basically read xmp metadata of a file and consider IPTC data points'''
 
     
@@ -577,9 +577,11 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         # parse and clean the metadata
         keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
+        description_values = my.get_description_metadata_from_xmp(ret_val)
 
         # add keywords metadata to the dictionary to be returned: "ret"
         ret["Keywords"] = keyword_values
+        ret["Description"] = description_values
 
         return ret
 
@@ -591,7 +593,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         keywords_list = []
         
-        # find the chunk of data in xmp_data where the keywords resides
+        # find the chunk of data in xmp_data where the keywords reside
         starting_index = xmp_data.find("<dc:subject>")
         end_index = xmp_data.find("</dc:subject>")
 
@@ -599,18 +601,43 @@ class IPTCMetadataParser(BaseMetadataParser):
         dc_subject_str = xmp_data[starting_index:end_index]
 
         # find all words between tags in the xmp data using regular expression.
-        # aka, search for words between <tag>words</tag>
+        # ie, search for words between <tag>words</tag>
         # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
         keywords_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
 
         # get rid of the > and < around words in keywords_list
-        for i in range(len(keywords_list)):
-            keywords_list[i] = keywords_list[i][1:-1]
+        keywords_list = [ x[1:-1] for x in keywords_list]
+ 
+        # remove empty keywords from list
+        keywords_list = [x for x in keywords_list if x and x != ' ']
+
+        return keywords_list
+
+
+    def get_description_metadata_from_xmp(my, xmp_data):
+        '''Given XMP data as a string, retrieve the description.'''
+
+        description_list = []
+        
+        # find the chunk of data in xmp_data where the description resides
+        starting_index = xmp_data.find("<dc:description>")
+        end_index = xmp_data.find("</dc:description>")
+
+        # section of xmp data containing description metadata
+        dc_subject_str = xmp_data[starting_index:end_index]
+
+        # find all words between tags in the xmp data using regular expression.
+        # ie, search for words between <tag>words</tag>
+        # Allows newline (\n\r), vertical tab (\f) and form feed (\v) between tags
+        description_list = re.findall('>[^<\n\r\f\v]*<', dc_subject_str)
+
+        # get rid of the > and < around words in description_list
+        description_list = [ x[1:-1] for x in description_list]
  
         # take the list, and turn it into a string, separated by spaces
-        keywords_string = " ".join(keywords_list)
+        description_list = [x for x in description_list if x and x != ' ']
 
-        return keywords_string
+        return description_list
 
 
     def get_metadata(my):

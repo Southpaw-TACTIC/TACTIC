@@ -1160,6 +1160,7 @@ class DbResource(Base):
 
         # evaluate ticket
         ticket = Environment.get_ticket()
+        ticket = ""
 
         from pyasm.security import Site
         site_obj = Site.get()

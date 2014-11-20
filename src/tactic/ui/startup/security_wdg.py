@@ -1212,12 +1212,16 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             """
 
 
+            group_title = group_name.title()
+            group_title = group_title.replace("_", " ")
+
+
             config_xml.append('''
             <element name='_%s' title='%s' edit='false'>
               <display class='tactic.ui.startup.SecurityCheckboxElementWdg'>
               </display>
             </element>
-            ''' % (group_name, group_name) )
+            ''' % (group_name, group_title) )
 
 
 
@@ -1253,24 +1257,25 @@ class ProjectSecurityWdg(BaseRefreshWdg):
              
             '''
 
-            text = LookAheadTextInputWdg(name='keyword', search_type=search_type, column=column, mode='keyword', custom_cbk=custom_cbk)
+            text = LookAheadTextInputWdg(icon="BS_SEARCH", name='keyword', search_type=search_type, column=column, mode='keyword', custom_cbk=custom_cbk)
             search_div = DivWdg()
             top.add(search_div)
-            search_div.add_style("margin-top: 10px")
-            search_div.add_style("padding-left: 25px")
-            search_div.add_style("float: left")
-            search_div.add("Search: ")
+            search_div.add_style("padding-top: 5px")
 
             value = my.get_value("keyword")
             if value:
                 text.set_value(value)
+
             search_div.add(text)
+            search_div.add_style("margin-left: 100px")
+            search_div.add_style("width: 300px")
+
 
         top.add("<br clear='all'/>")
 
 
  
-        save_button = ButtonNewWdg(tip="Refresh", icon=IconWdg.REFRESH)
+        save_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
@@ -1284,7 +1289,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
         
-        save_button = ButtonNewWdg(tip="Save Changes", icon=IconWdg.SAVE)
+        save_button = ButtonNewWdg(tip="Save Changes", icon="BS_SAVE")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',

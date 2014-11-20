@@ -190,7 +190,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
         my.content.add_style("margin: -2 -1 -2 -2")
 
 
-        show_search = True
+        show_search = my.kwargs.get("show_search")
+        if show_search in [False, 'false']:
+            show_search = False
+        else:
+            show_search = True
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
@@ -217,7 +221,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
     def get_config(my):
-        # TEST
         config_xml = '''
         <config>
         <custom_filter>
@@ -508,7 +511,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 
 
 
-            icon = IconWdg("Filter Set", IconWdg.GREEN_LIGHT)
+            icon = IconWdg("Filter Set", "BS_ASTERISK")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_attr("spt_element_name", element_name)
