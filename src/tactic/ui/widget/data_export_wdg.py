@@ -732,23 +732,32 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add(lower_title_checkbox)
         option_div.add( HtmlElement.br(2) )
 
-        option_div.add(SpanWdg("Sample Data Row: ", css='med'))
+        span = SpanWdg("Sample Data Row: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         data_row_text = SelectWdg("data_row")
+        data_row_text.add_style('float','left')
+        data_row_text.add_style('width','80%')
         data_row_text.set_option('values', '1|2|3|4|5')
         data_row_text.set_value('1')
         data_row_text.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
         option_div.add(data_row_text)
-        option_div.add( HintWdg("Set this as a sample data row for display here") )
+        hint = HintWdg("Set this as a sample data row for display here") 
+        hint.add_styles('padding-top: 8px; display: block')
+        option_div.add( hint )
 
         option_div.add( HtmlElement.br(2) )
       
         # encoder
-        option_div.add(SpanWdg("Encoder: ", css='med'))
+        span = SpanWdg("Encoder: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('encoder')
         select_wdg.set_option('values', ['','utf-8', 'iso_8859-1']) 
         select_wdg.set_option('labels', ['ASCII (default)','UTF-8','Excel ISO 8859-1']) 
+        select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
@@ -756,9 +765,13 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add( HtmlElement.br(2) )
 
 
-        option_div.add(SpanWdg("Identifying Column: ", css='med'))
+        span = SpanWdg("Identifying Column: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('id_col')
         select_wdg.set_option('empty','true')
+        select_wdg.add_style('float','left')
+        select_wdg.add_style('width','80%')
         #columns = my.search_type_obj.get_columns()
         columns = SearchType.get_columns(my.search_type)
         
@@ -772,15 +785,21 @@ class CsvImportWdg(BaseRefreshWdg):
 
         select_wdg.set_option('values', columns) 
         option_div.add(select_wdg)
-        option_div.add( HintWdg("Set which column to use for identifying an item to update during CSV Import") )
+        hint = HintWdg("Set which column to use for identifying an item to update during CSV Import") 
+        hint.add_styles('padding-top: 8px; display: block')
+        option_div.add( hint )
         option_div.add( HtmlElement.br(2) )
 
         
         # triggers mode
-        option_div.add(SpanWdg("Triggers: ", css='med'))
+        span = SpanWdg("Triggers: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('triggers_mode')
         select_wdg.set_option('values', ['','False', 'True', 'none']) 
         select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers']) 
+        select_wdg.add_style('float','left')
+        select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
@@ -1211,34 +1230,46 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             var server = TacticServerStub.get();
             var class_name = 'pyasm.command.CsvImportCmd';
-            var rtn = '';
-            var response_div = bvr.src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
 
+            var response_div = bvr.src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
+            var on_complete = function(response_div) {
+                
+                response_div.innerHTML = 'CSV Import Completed';
+                 
+                setTimeout( function() { 
+                    
+                    var popup = bvr.src_el.getParent(".spt_popup");
+                    if (popup) {
+                        spt.popup.hide_background();
+                        popup.destroy();
+                    }
+                    
+                    spt.table.run_search() } , 2000);
+
+            }
             spt.app_busy.show("Importing Data");
            
             var has_error = false;
-            try {
-                rtn = server.execute_cmd(class_name, {}, values);
-                rtn.description = rtn.description.replace(/\\n/g,'<br/>');
-                response_div.innerHTML = rtn.description;
-                var src_el = bvr.src_el;
-                setTimeout(function() {spt.hide(bvr.src_el.getParent('.spt_panel').getElement('.spt_csv_sample'));}, 500);
-            } catch (e)
-            {
+            var src_el = bvr.src_el;
+
+            var on_error = function(e) {
                 var err_message = spt.exception.handler(e);
                 spt.error(err_message);
+                
+                var response_div = document.getElement('.spt_cmd_response');
+
                 err_message = err_message.replace(/\\n/g,'<br/>');
                 response_div.innerHTML = 'Error: ' + err_message;
                 response_div.setStyle("display", "");
-                has_error = true;
-            }
+                setTimeout(function() {spt.show(csv_control)}, 500);
+           }
+            var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
+            
+            server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
 
-            if (!has_error) {
-                var popup = bvr.src_el.getParent(".spt_popup");
-                if (popup) {
-                    popup.destroy();
-                }
-            }
+            setTimeout(function() {spt.hide(csv_control)}, 500);
+           
+            
             spt.app_busy.hide();
             '''
         })
