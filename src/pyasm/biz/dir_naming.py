@@ -142,7 +142,7 @@ class DirNaming(object):
         my._init_file_object()
 
 
-
+        
         # get the alias from the naming, if it exists
         if not alias and my.protocol in ["file", "http"]:
             if my._file_object:
@@ -374,17 +374,14 @@ class DirNaming(object):
 
 
         elif protocol == "remote":
-            # NOTE: currently needs web to do this
+            # NOTE: currently needs web to get the full http base url
             base_dir = Environment.get_env_object().get_base_url().to_string()
 
-            repo_handler = my.sobject.get_repo_handler(my.snapshot)
-            if repo_handler.is_tactic_repo():
-                sub_dir = Config.get_value("checkin", "web_base_dir")
-            else:
-                sub_dir = Config.get_value("perforce", "web_base_dir")
+       
+            sub_dir = my.get_base_dir(protocol='http', alias=alias)
+            base_dir = "%s%s" % (base_dir, sub_dir[0])
 
-            base_dir = "%s%s" % (base_dir, sub_dir)
-
+            
         elif protocol == "file":
             base_dir = Environment.get_asset_dir(alias=alias)
 

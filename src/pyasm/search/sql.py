@@ -1253,7 +1253,8 @@ class DbContainer(Base):
         if sql and sql.get_connection():
             DbContainer.register_connection(sql) 
 
-        assert sql.get_connection()
+        # delete of Unittest environment requires this to be commented out
+        #assert sql.get_connection()
         return sql
 
     get = classmethod(get)
