@@ -243,7 +243,10 @@ class DatabaseAction(Command):
             from pyasm.common import SPTDate
             if not SPTDate.has_timezone(value):
                 value = SPTDate.add_local_timezone(value)
+<<<<<<< HEAD
+=======
 
+>>>>>>> 4.3
         return value
 
 
