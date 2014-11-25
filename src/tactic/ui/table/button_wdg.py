@@ -41,7 +41,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         'order': 1,
     },
  
-    'icon': {
+   'icon': {
         'description': 'The icon to display for the button',
         'type': 'IconSelectWdg',
         'category': "Options",
@@ -53,6 +53,12 @@ class ButtonElementWdg(BaseTableElementWdg):
         'category': "Options",
         'order': 3
     },
+    'expression': {
+        'description': 'Text do display beside the icon',
+        'category': "Options",
+        'order': 4
+    },
+
 
 
 
@@ -92,6 +98,9 @@ class ButtonElementWdg(BaseTableElementWdg):
 
     def is_sortable(my):
         return False
+
+    def get_width(my):
+        return 30
 
     def init(my):
         my.behavior = {}
@@ -376,10 +385,25 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
         display.add_style("height: 18px")
-        display.add_style("width: 21px")
+        display.add_style("min-width: 21px")
         display.add_style("overflow: hidden")
+        display.add_style("margin-top: 2px")
 
 
+        expression = my.kwargs.get('expression')
+        if expression:
+            value = Search.eval(expression, sobject, single=True)
+        else:
+            value = ""
+
+        if value:
+            from pyasm.web import Table
+            top = Table()
+            top.add_row()
+            top.add_cell(display)
+            top.add_cell("<div class='badge' style='margin: 4px 3px 3px 6px; opacity: 0.5;'>%s</div>" % value)
+
+            return top
 
 
         return display

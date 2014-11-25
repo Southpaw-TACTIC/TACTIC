@@ -243,6 +243,10 @@ class DatabaseAction(Command):
             from pyasm.common import SPTDate
             if not SPTDate.has_timezone(value):
                 value = SPTDate.add_local_timezone(value)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4.3
         return value
 
 
@@ -536,12 +540,15 @@ class UploadAction(DatabaseAction):
             ticket = security.get_ticket_key()
 
             handoff_path = os.path.basename(handoff_path)
-            handoff_path = File.get_filesystem_name(handoff_path)
+            handoff_path = Common.get_filesystem_name(handoff_path)
 
             handoff_path = "%s/upload/%s/%s" % (Environment.get_tmp_dir(), ticket, handoff_path)
 
 
             print "Uploaded path: ", handoff_path
+            if not os.path.exists(handoff_path):
+                raise Exception("Uploaded Path [%s] does not exist" % handoff_path)
+
             my.files = [handoff_path]
             file_types = ['main']
 

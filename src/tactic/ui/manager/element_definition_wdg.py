@@ -23,7 +23,8 @@ from pyasm.web import DivWdg, SpanWdg, Table, WebContainer, HtmlElement, Widget
 from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, TextAreaWdg, TextWdg, ProdIconButtonWdg, CheckboxWdg, IconWdg, SwapDisplayWdg
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.filter import FilterData
-from tactic.ui.container import RoundedCornerDivWdg, TabWdg
+from tactic.ui.container import TabWdg
+from tactic.ui.input import TextInputWdg
 from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWdg, ActionButtonWdg
 
 from dateutil import parser
@@ -491,8 +492,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         # add in the mode selected
         mode_wdg = DivWdg()
-        mode_wdg.add("Mode: ")
+        mode_wdg.add("<div style='float: left; margin-right: 10px'>Mode: </div>")
         mode_select = SelectWdg("mode")
+        mode_select.add_style("width: 100px")
         mode_select.add_class('spt_element_def_mode')
         mode_select.set_option("labels", "Form|XML")
         mode_select.set_option("values", "form|xml")
@@ -518,7 +520,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             '''
         })
         mode_wdg.add(mode_select)
-        mode_wdg.add_styles("float: right; margin: 0px 8px 0 0")
+        mode_wdg.add_style("float: right")
+        mode_wdg.add_style("margin: 0px 8px 0 0")
+        mode_wdg.add_style("width: 160px")
         mode = mode_select.get_value()
 
 
@@ -534,12 +538,12 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         } )
         title_div = DivWdg()
         top.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin: 0 -1 10 -1")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
         #title_div.add_style("width: 520px")
-        title_div.add_style("height: 18px")
+        title_div.add_style("height: 30px")
         title_div.add_border()
         if my.is_insert:
             title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -728,10 +732,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
         tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
         td.add_style("padding-top: 20px")
-
 
        
         is_edit_layout = my.kwargs.get('is_edit_layout') == 'true'
@@ -748,6 +749,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             title_wdg = DivWdg()
             title_wdg.add("Display")
             title_wdg.add_style("margin-top: -25px")
+            title_wdg.add_style("font-size: 1.2em")
             attr_wdg.add(title_wdg)
             td.add(attr_wdg)
 
@@ -1062,6 +1064,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             color_input.set_input(text)
 
             select = SelectWdg("color|column")
+            select.add_style("width: 150px")
             select.set_option("values", existing_values)
             first_row.add("&nbsp;"*2)
             first_row.add(select)
@@ -1251,11 +1254,11 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
        
         title_div = DivWdg()
         widget.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10 )
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 4px")
-        title_div.add_style("width: 520px")
+        #title_div.add_style("width: 520px")
         title_div.add_style("height: 18px")
         title_div.add_border()
         title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -1311,19 +1314,9 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         widget.add(table)
 
         tr, td = table.add_row_cell()
-        td.add(SpanWdg("Widget Definition", css='small'))
-        td.add("<hr>")
+        td.add("<hr/>")
         td.add_style("padding-top: 20px")
 
-
-       
-    
-
-
-        
-
-
-       
 
         tr, td = table.add_row_cell()
         td.add(HtmlElement.br())
@@ -1368,7 +1361,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
     def get_display(my):
         top = DivWdg()
         top.add_class("spt_element_definition")
-        top.add_style("width: 530px")
+        #top.add_style("width: 530px")
         top.add_style("margin-bottom: 10px")
 
         my.is_insert = my.kwargs.get("is_insert")
@@ -1457,6 +1450,11 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         mode_wdg = DivWdg()
         mode_wdg.add("Mode: ")
         mode_select = SelectWdg("mode")
+        mode_wdg.add(mode_select)
+        mode_select.add_style("width: 100px")
+        mode_select.add_style("float: right")
+        mode_select.add_style("margin-top: -5px")
+        mode_wdg.add_style("float: right")
         
         mode_select.add_class('spt_element_def_mode')
         mode_select.set_option("labels", "Form|XML")
@@ -1482,8 +1480,6 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
             '''
         })
-        mode_wdg.add(mode_select)
-        mode_wdg.add_styles("float: right; margin: 0 5px 4px 0")
         mode = mode_select.get_value()
 
 
@@ -1505,12 +1501,12 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
         title_div = DivWdg()
         top.add(title_div)
-        title_div.add_gradient("background", "background", -5 )
+        title_div.add_color("background", "background", -10)
         title_div.add_style("margin-bottom: 10px")
         title_div.add_style("font-weight: bold")
-        title_div.add_style("padding: 4px")
-        title_div.add_style("width: 520px")
-        title_div.add_style("height: 18px")
+        title_div.add_style("padding: 8px")
+        title_div.add_style("width: auto")
+        title_div.add_style("height: 20px")
         title_div.add_border()
         if my.is_insert:
             title_div.add(IconWdg("New Element", IconWdg.NEW))
@@ -1556,9 +1552,10 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         # add the name
         from pyasm.web import Table
         table = Table()
+        table.set_max_width()
         table.add_color("color", "color")
         table.add_class("spt_form_top")
-        table.add_style("width: 530px")
+        #table.add_style("width: 530px")
         if mode == 'xml':
             table.add_style("display: none")
         top.add(table)
@@ -1720,8 +1717,9 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
     def get_xml_wdg(my, xml_str):
 
         xml_wdg = DivWdg()
-        #xml_wdg.add_style('width: 550px')
-        xml_wdg.add_style("margin-top: 10px")
+        xml_wdg.add_style('width: auto')
+
+        xml_wdg.add_style("margin-top: 50px")
         xml_wdg.add_style("padding: 10px")
         xml_wdg.add_border()
         title_wdg = DivWdg()
@@ -1734,7 +1732,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         my.main_xml_text.add_style('overflow: auto')
         my.main_xml_text.add_style("margin: 10px")
         my.main_xml_text.set_option("rows", "20")
-        my.main_xml_text.set_option("cols", "75")
+        my.main_xml_text.add_style("width: auto")
 
         if xml_str:
             my.main_xml_text.set_value(xml_str)
@@ -1801,6 +1799,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # put xxx_ in front to separate from other options
         widget_select = SelectWdg("xxx_%s|widget_key" % prefix)
         widget_select.add_class("spt_widget_key")
+        widget_select.add_style("width: 250px")
         #if not default_class:
         #    widget_select.add_empty_option()
         widget_select.set_option("labels", class_labels)
@@ -2538,11 +2537,15 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
             elif widget_type == 'SelectWdg':
                 edit_wdg = SelectWdg(name)
+                edit_wdg.add_style("width: 350px")
                 edit_wdg.add_empty_option('-- Select --')
                 values = option.get('values')
                 edit_wdg.set_option('values', values)
                 if value:
                     edit_wdg.set_value(value)
+                    #edit_wdg.add_style("background: #a3d991")
+                else:
+                    edit_wdg.add_style("opacity: 0.5")
 
                 labels = option.get('labels')
                 if labels:
@@ -2566,10 +2569,15 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 edit_wdg = IconSelectWdg(name)
 
             elif widget_type == 'TextWdg':
-                edit_wdg = TextWdg(name)
+                edit_wdg = DivWdg()
+                select = TextInputWdg(name=name)
+                edit_wdg.add(select)
+
                 if value:
-                    edit_wdg.set_value(value)
-                edit_wdg.add_style("width: 250px")
+                    select.set_value(value)
+                select.add_style("width: 350px")
+                select.add_style("float: right")
+                edit_wdg.add("<br clear='all'/>")
 
             elif widget_type == 'CalendarInputWdg':
                 cal_wdg = CalendarInputWdg(name)

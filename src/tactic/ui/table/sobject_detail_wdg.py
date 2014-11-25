@@ -25,6 +25,10 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     '''The element widget that displays according to type'''
 
     ARGS_KEYS = {
+    'tab_element_names': {
+        "description": "List of element names that will be in the tab",
+        'category': 'Options'
+    },
     'use_parent': {
         'description': 'Display the parent of this sobject for the detail',
         'type': 'SelectWdg',
@@ -39,6 +43,9 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
     def set_widget(my, widget):
         my.widget = widget
+
+    def get_width(my):
+        return 50
 
     def get_display(my):
 
@@ -68,19 +75,28 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
 
 
         code = sobject.get_code()
+        name = sobject.get_value("name", no_exception=True)
+        if not name:
+            name = code
 
+
+        tab_element_names = my.kwargs.get("tab_element_names") or ""
 
         widget.add_behavior( {
         'type': 'click_up',
         'search_key': my.search_key,
         'use_parent': use_parent,
+        'tab_element_names': tab_element_names,
         'code': code,
+        'name': name,
         'cbjs_action': '''
         spt.tab.set_main_body_tab();
         var class_name = 'tactic.ui.tools.SObjectDetailWdg';
         var kwargs = {
             search_key: bvr.search_key,
-            use_parent: bvr.use_parent
+            use_parent: bvr.use_parent,
+            tab_element_names: bvr.tab_element_names,
+
         };
 
 
@@ -99,7 +115,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         }
         else {
             var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.code+"]";
+            var title = "Detail ["+bvr.name+"]";
             spt.tab.add_new(element_name, title, class_name, kwargs);
         }
         '''

@@ -396,6 +396,12 @@ class GanttElementWdg(BaseTableElementWdg):
         my.offset_width = -300 
         my.visible_width = 500
 
+        if my.kwargs.get("test"):
+            test_width = my.kwargs.get("test")
+            my.total_width = test_width
+            my.offset_width = 0
+            my.visible_width = test_width
+
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
             # new way where the web_data is a list of different data for different widgets
@@ -427,7 +433,8 @@ class GanttElementWdg(BaseTableElementWdg):
                 my.start_date = parser.parse( start_date_option )
                 my.end_date = parser.parse( end_date_option )
 
-                buffer = 45
+                #buffer = 45
+                buffer = 0
 
                 # buffer start date and end date
                 my.start_date = my.start_date - datetime.timedelta(days=buffer)
@@ -669,7 +676,7 @@ class GanttElementWdg(BaseTableElementWdg):
         day_wdg.add_class("spt_gantt_day");
         day_wdg.add_class("spt_gantt_scalable")
 
-        if pixel_per_day < 10:
+        if pixel_per_day < 12:
             #wday_wdg.add_style("display", "none")
             day_wdg.add_style("display", "none")
             #pass
@@ -1848,7 +1855,10 @@ class GanttCbk(DatabaseAction):
             gantt_data = jsonloads(gantt_data)
         else:
             gantt_data = gantt_data.get('gantt_data')
-            gantt_data = jsonloads(gantt_data)
+            if gantt_data:
+                gantt_data = jsonloads(gantt_data)
+            else:
+                gantt_data = {}
         
         for key, data in gantt_data.items():
             if key == '__data__' or key.startswith("_"):

@@ -2699,15 +2699,15 @@ spt.dg_table.search_cbk = function(evt, bvr){
         el_name = panel.getAttribute('spt_title');
     if (el_name == null)
         el_name = '';
-    spt.app_busy.show( 'Search', 'Searching for matching items' );
+    //spt.app_busy.show( 'Search', 'Searching for matching items' );
 
     if (bvr.return_html) { 
-        spt.app_busy.hide();
+        //spt.app_busy.hide();
         return spt.dg_table._search_cbk(evt, bvr);
     } 
     setTimeout( function() {
             spt.dg_table._search_cbk(evt, bvr);
-            spt.app_busy.hide();
+            //spt.app_busy.hide();
             }, 10 );
 }
 
@@ -2745,6 +2745,13 @@ spt.dg_table._search_cbk = function(evt, bvr)
         var version = layout.getAttribute("spt_version");
         if (version == "2") {
             spt.table.set_layout(layout);
+        }
+    }
+
+
+    if (spt.table.has_changes()) {
+        if (!confirm("Changes made. Continue without saving?")) {
+            return;
         }
     }
     
@@ -2999,6 +3006,17 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'mode': mode,
         'is_refresh': 'true',
         'search_keys': search_keys,
+    }
+
+    var pat = /TileLayoutWdg/;
+    if (pat.test(class_name)) {
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow']
+        for (var k=0; k < attr_list.length; k++) {
+            var attr_val = target.getAttribute('spt_'+ attr_list[k]);
+            if (attr_val)
+                args[attr_list[k]] = attr_val;
+        }
+      
     }
 
     if (bvr.extra_args) {

@@ -22,6 +22,7 @@ import datetime
 
 from pyasm.common import TacticException, Environment, Container, FormatValue, Config
 from pyasm.search import Search, SObject, SearchKey, SearchType
+from pyasm.security import Site
 
 from project import Project
 
@@ -1946,7 +1947,6 @@ class MethodMode(ExpressionParser):
                     search_type = sobject.get_search_type_obj()
                     related_sobjects.append(search_type)
                     return related_sobjects
-
  
             elif related_type == 'project':
                 related_sobjects = []
@@ -1954,7 +1954,11 @@ class MethodMode(ExpressionParser):
                 related_sobjects.append(project)
                 return related_sobjects
 
-
+            elif related_type == 'site':
+                related_sobjects = []
+                site = Site.get()
+                related_sobjects.append(site)
+                return related_sobjects
 
 
         # if no sobjects have been specified to start with, then use
@@ -1974,6 +1978,9 @@ class MethodMode(ExpressionParser):
             elif related_type == 'project':
                 project = Project.get()
                 related_sobjects = [project]
+            elif related_type == 'site':
+                site = Site.get()
+                related_sobjects = [site]
 
             elif related_type.find("/") == -1:
                 sobject = my.get_env_sobject(related_type)
@@ -2265,7 +2272,10 @@ class MethodMode(ExpressionParser):
             if not value:
                 continue
             if type(value) in types.StringTypes:
-                value = float(value)
+                try:
+                    value = float(value)
+                except:
+                    value = 0
             total += value
 
         return total

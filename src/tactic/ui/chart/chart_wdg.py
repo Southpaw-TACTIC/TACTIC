@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['ChartWdg']
+__all__ = []
 
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.biz import Project
@@ -22,8 +22,10 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
+# DEPRECATED
 
-class ChartWdg(BaseRefreshWdg):
+
+class ChartWdgOld(BaseRefreshWdg):
 
     ARGS_KEYS = {
         'chart': 'chart object to display',

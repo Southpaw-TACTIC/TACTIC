@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3. Search</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Quickstart Documentation" /><link rel="up" href="index.html" title="TACTIC Quickstart Documentation" /><link rel="prev" href="ar01s02.html" title="2. Views" /><link rel="next" href="ar01s04.html" title="4. Tasks" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_search"></a>3. Search</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_what_is_searching"></a>3.1. What is Searching?</h3></div></div></div><p>With the basis of TACTIC being data (information) storage, a large
+aspect of working with TACTIC is searching. When looking for items in
+the project, specific properties are used when conducting a search.
+Below are some example of typical searches in TACTIC:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Tasks with status in review
+</li><li class="listitem">
+Find items by category
+</li><li class="listitem">
+Search by Keywords
+</li><li class="listitem">
+Tasks Due this week
+</li><li class="listitem">
+Tasks Past Due
+</li><li class="listitem">
+Work entered in the current week
+</li><li class="listitem">
+….and more
+</li></ul></div><p>Often times, these searches are used daily so having to fill out the
+search criteria could be redundant. In TACTIC, views can be saved as
+links in the sidebar which include the search criteria. This in turn
+causes the view to become a live report which is always up to date.</p><p>Searches in TACTIC are carried through 2 primary interfaces:</p><p><span class="strong"><strong>Simple Search</strong></span></p><p>The simple search allows for a simple set of search options for a view.</p><p><span class="inlinemediaobject"><img src="media/1_what_is_searching_simple_search.png" alt="image" /></span></p><p>For the Keywords Search, after inputting the search criteria, either hit
+the enter key on the keyboard or the Search button to run the search.</p><p><span class="strong"><strong>Partial Word Match Check Box</strong></span></p><p>The check box next to the Keywords Search provides an option to find
+matches on words that contain the input criteria.</p><p>For example, if the search criteria is "truck" with the partial word
+match checked on, example results would include "truck", "dumptruck" and
+"loadertruck".</p><p>Otherwise, if partial word march is not checked on, the results would
+only include words that match the whole word: "truck".</p><p><span class="strong"><strong>Operators: Is / Is Not / Contains</strong></span></p><p>In the above example, for the Asset Category, the first drop down
+provides an operator so that searches can be performed using: <span class="strong"><strong>is, is
+not, contains</strong></span></p><p>The last drop down menu provides a selection of possible values for the
+Asset Category to search against.</p><p><span class="strong"><strong>Search Box(Advanced Search)</strong></span></p><p>The Search Box can be used to execute simple to very complex searches.</p><p><span class="inlinemediaobject"><img src="media/what-is-searching_search-box.png" alt="image" /></span></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_search_quick_start"></a>3.2. Search Quick start</h3></div></div></div><p>TACTIC provides two main search tools; the Simple Search and the Search
+Box.</p><p><span class="strong"><strong>Simple Search</strong></span></p><p>The Simple Search provides a view specific filters. To use the simple
+search:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Load a view of items in your project. In this example a Keywords
+field is provided and an Asset Category drop-down narrows down the
+search even further.
+</li><li class="listitem"><p class="simpara">
+Fill in the desired search and click the search button.
+</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_simple-search.png" alt="image" /></span>
+3.  The results view will automatically refresh once the search is
+complete.</p></li></ol></div><p><span class="strong"><strong>Search Box</strong></span></p><p>The Search Box can be used to conduct more complex searching in TACTIC.
+To test a few examples, load a view of items in a project which have
+Tasks. In this example the view is an Asset view.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p class="simpara">
+To Search for all assets with an asset category of <span class="emphasis"><em>video</em></span> , in the
+following criteria;
+</p><p class="simpara">Filter → "Asset Category" "is" "video"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_asset-category-is-video.png" alt="image" /></span></p></li><li class="listitem"><p class="simpara">
+To Search for all assets with an asset category of; <span class="emphasis"><em>video</em></span>, <span class="emphasis"><em>3d</em></span>,
+and <span class="emphasis"><em>document</em></span>, enter the following;
+</p><p class="simpara">Filter → "Asset Category", "in", "video|3d|document"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_asset-category-in.png" alt="image" /></span></p></li><li class="listitem"><p class="simpara">
+To search all assets described in example 2 and also include tasks
+that are approved, enter the following;
+</p><p class="simpara">Filter → "Asset Category", "in", "video|3d|document"</p><p class="simpara">Children → "Task", "Status", "is", "Approved"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_asset-category-and-task-status.png" alt="image" /></span></p></li><li class="listitem"><p class="simpara">
+To find all tasks assigned to the user currently logged in, a simple
+expression can be used;
+</p><p class="simpara">Children → "Task", "Assigned", "is", "{$LOGIN}"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_task-assigned-login.png" alt="image" /></span></p></li><li class="listitem"><p class="simpara">
+To find all assets with a category of <span class="emphasis"><em>video</em></span> and keyword of <span class="emphasis"><em>car</em></span>
+or a code that contains <span class="emphasis"><em>car</em></span>;
+</p><p class="simpara">Set the top option in the drop-down box to "Compound Search";</p><p class="simpara">Filter → "Asset Category", "is", "video"</p><p class="simpara"><span class="strong"><strong>and</strong></span> (click between the filters to activate the and/or)</p><p class="simpara">Filter → "Keywords", "contains", "car"</p><p class="simpara"><span class="strong"><strong>or</strong></span> (shift-click between the filters to group the filters)</p><p class="simpara">Filter - &gt; "Code", "contains", "car"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_compound-search.png" alt="image" /></span></p></li><li class="listitem"><p class="simpara">
+To execute complex searches using an expression to find all assets
+which have check-ins with versions higher than 1;
+</p><p class="simpara">Filter → "**Expression", "have", "@SOBJECT(sthpw/snapshot[<span class="emphasis"><em>version</em></span>,
+<span class="emphasis"><em>&gt;</em></span>, 1])"</p><p class="simpara"><span class="inlinemediaobject"><img src="media/search-quickstart_expression-snapshots.png" alt="image" /></span></p></li></ol></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

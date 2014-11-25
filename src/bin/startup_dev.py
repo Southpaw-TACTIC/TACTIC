@@ -125,6 +125,7 @@ def startup(port, server=""):
 if __name__ == '__main__':
     from optparse import OptionParser
 
+
     parser = OptionParser()
     parser.add_option("-p", "--port", dest="port", help="Port to run TACTIC server on", default=8081)
     parser.add_option("-s", "--server", dest="server", help="Host name TACTIC server will run under")
@@ -140,7 +141,6 @@ if __name__ == '__main__':
         for path in paths:
             sys.path.insert(0, path)
 
-    
     if len(args) == 1:
         port = int(args[0])
     else:

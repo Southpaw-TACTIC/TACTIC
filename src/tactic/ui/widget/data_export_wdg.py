@@ -25,6 +25,7 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
+
 from misc_input_wdg import SearchTypeSelectWdg
 from upload_wdg import SimpleUploadWdg
 from button_new_wdg import ActionButtonWdg
@@ -308,6 +309,7 @@ class CsvImportWdg(BaseRefreshWdg):
             my.search_type = web.get_form_value('search_type_filter')
         my.close_cbfn = my.kwargs.get('close_cbfn')
 
+        my.data = web.get_form_value("data")
         my.web_url = web.get_form_value("web_url")
         my.file_path = None
         if my.web_url:
@@ -323,16 +325,22 @@ class CsvImportWdg(BaseRefreshWdg):
             my.file_path =  web.get_form_value('file_path')
 
         if not my.file_path:
-            file_name =  web.get_form_value('file_name')
-            ticket =  web.get_form_value('html5_ticket')
+            ticket = web.get_form_value('html5_ticket')
             if not ticket:
                 ticket =  web.get_form_value('csv_import|ticket')
-                
-            if file_name:
-                # this is treated the same in FileUplaod class
-                #file_name = File.get_filesystem_name(str(file_name))
-                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
 
+            file_name =  web.get_form_value('file_name')
+            if my.data:
+                if not file_name:
+                    file_name = "%s.csv" % ticket
+
+                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                f = open(my.file_path, "wb")
+                f.write(my.data)
+                f.close()
+            elif file_name:
+                my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
+                
 
 
 
@@ -365,25 +373,25 @@ class CsvImportWdg(BaseRefreshWdg):
 
     def get_upload_wdg(my):
         '''get search type select and upload wdg'''
+
+        key = 'csv_import'
+
+
         widget = DivWdg(css='spt_import_csv')
         widget.add_color('color','color')
         widget.add_color('background','background')
         widget.add_style('width: 600px')
 
         # get the search type
-        title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
-        widget.add( title )
-        title.add_style("float: left")
+        stype_div = DivWdg()
+        widget.add(stype_div)
 
+
+        # DEPRECATED
         # handle new search_types
+        """
         new_search_type = CheckboxWdg("new_search_type_checkbox")
         new_search_type.add_event("onclick", "toggle_display('new_search_type_div')")
-        #span = SpanWdg(css="med")
-        #span.add(new_search_type)
-        #span.add("Create new type")
-        #span.add(" ... or ... ")
-        #widget.add(span)
-
         new_search_type_div = DivWdg()
         new_search_type_div.set_id("new_search_type_div")
 
@@ -391,9 +399,6 @@ class CsvImportWdg(BaseRefreshWdg):
         title = TextWdg("asset_title")
         description = TextAreaWdg("asset_description")
 
-        
- 
-        key='csv_import'
         table = Table()
         table.set_id('csv_main_body')
         table.add_style("margin: 10px 10px")
@@ -412,24 +417,35 @@ class CsvImportWdg(BaseRefreshWdg):
         new_search_type_div.add(table)
         new_search_type_div.add_style("display: none")
         #widget.add(new_search_type_div)
+        """
 
-        div = DivWdg()
 
-       
-        search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
-        search_type_select.add_empty_option("-- Select --")
-        if not search_type_select.get_value():
-            search_type_select.set_value(my.search_type)
-        search_type_select.set_persist_on_submit()
-       
+        show_stype_select = my.kwargs.get("show_stype_select")
+        if show_stype_select in ['true',True] or not my.search_type:
 
-        div.add(search_type_select)
+            title = DivWdg("<b>Select sType to import data into:</b>&nbsp;&nbsp;")
+            stype_div.add( title )
+            title.add_style("float: left")
 
-        widget.add(div)
+            search_type_select = SearchTypeSelectWdg("search_type_filter", mode=SearchTypeSelectWdg.ALL)
+            search_type_select.add_empty_option("-- Select --")
+            if not search_type_select.get_value():
+                search_type_select.set_value(my.search_type)
+            search_type_select.set_persist_on_submit()
 
-        search_type_select.add_behavior( {'type': 'change', \
-                                  'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                                    'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+            stype_div.add(search_type_select)
+
+
+
+            search_type_select.add_behavior( {'type': 'change', \
+                  'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
+                  'search_type_filter': bvr.src_el.value});" %(Common.get_full_class_name(my)) } )
+
+        else:
+            hidden = HiddenWdg("search_type_filter")
+            stype_div.add(hidden)
+            hidden.set_value(my.search_type)
+
 
         if my.search_type:
             sobj = None
@@ -460,8 +476,13 @@ class CsvImportWdg(BaseRefreshWdg):
                 
                 if my.web_url:
                     file_span = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %my.web_url, css='med')
+
                 else:
-                    file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    if not my.data:
+                        file_span = FloatDivWdg('File uploaded: <i>%s</i>&nbsp;&nbsp;&nbsp;' %os.path.basename(my.file_path), css='med')
+                    else:
+                        lines = len(my.data.split("\n"))
+                        file_span = FloatDivWdg("Uploaded [%s] lines of entries: &nbsp; " % lines)
                 file_span.add_color('color','color')
                 file_span.add_style('margin: 8px 0 0 10px')
                 file_span.add_style('font-size: 14px')
@@ -477,18 +498,18 @@ class CsvImportWdg(BaseRefreshWdg):
                 widget.add(HtmlElement.br())
                 return widget
 
-            widget.add("<br/>")
             widget.add_style("overflow-y: auto")
 
             msg = DivWdg()
             widget.add(msg)
-            msg.add( "<div style='float: left; padding-left: 100px; padding-top: 6px'><b>Upload a csv file: </b></div>")
             msg.add_border()
-            msg.add_style("width: 400px")
+            msg.add_style("width: 500px")
             msg.add_color("background", "background3")
-            msg.add_style("padding: 20px")
-            msg.add_style("margin: 30 auto")
-            msg.add_style("text-align: center")
+            msg.add_style("padding: 30px")
+            msg.add_style("margin: 10 auto")
+            #msg.add_style("text-align: center")
+
+            msg.add( "<div style='float: left; padding-top: 6px; margin-right: 105px'><b>Upload a csv file: </b></div>")
 
             ticket = Environment.get_security().get_ticket_key()
 
@@ -525,30 +546,33 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add(browse)
 
 
-
-
             
             # this is now only used in the copy and paste Upload button for backward-compatibility
             upload_wdg = SimpleUploadWdg(key=key, show_upload=False)
             upload_wdg.add_style('display: none')
             msg.add(upload_wdg)
-          
-            #widget.add(span)
-            msg.add("<br/><br/>-- OR --</br/><br/>")
 
-            msg.add("<b>Published URL: </b>") 
-            text = TextWdg("web_url")
+            msg.add("<br/>")
+          
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
+
+            msg.add("<b>Published URL: </b><br/>") 
+            from tactic.ui.input import TextInputWdg
+            text = TextInputWdg(name="web_url")
+            text.add_style("width: 100%")
             msg.add(text)
  
 
 
-            msg.add("<br/><br/>-- OR --</br/><br/>")
+            msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
-            msg.add("<b>Copy and Paste from a Spreadsheet: </b>") 
+            msg.add("<b>Copy and Paste from a Spreadsheet: </b><br/>") 
             text = TextAreaWdg("data")
-            text.add_style('width: 33em')
+            text.add_style('width: 100%')
+            text.add_style('height: 100px')
             text.add_class("spt_import_cut_paste")
             msg.add(text)
+            msg.add("<br/>"*3)
             button = ActionButtonWdg(title="Parse")
             button.add_style("margin: 5px auto")
             msg.add(button)
@@ -557,7 +581,6 @@ class CsvImportWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_import_top");
                 var el = top.getElement(".spt_import_cut_paste");
-                var applet = spt.Applet.get();
 
                 var value = el.value;
                 var csv = [];
@@ -583,7 +606,9 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 csv = csv.join("\\n")
 
+                /*
                 // FIXME: need to get a local temp directory
+                var applet = spt.Applet.get();
                 var path = spt.browser.os_is_Windows() ? "C:/sthpw/copy_n_paste.csv" : "/tmp/sthpw/copy_n_paste.csv";
                 applet.create_file(path, csv);
 
@@ -597,10 +622,13 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 var file_name = spt.path.get_basename(hidden.value);
                 file_name = spt.path.get_filesystem_name(file_name); 
+                */
+
                 var class_name = 'tactic.ui.widget.CsvImportWdg';
                 var values = spt.api.Utility.get_input_values('csv_import_main');
                 values['is_refresh'] = true;
-                values['file_name'] = file_name;
+                //values['file_name'] = file_name;
+                values['data'] = csv;
                 var info = spt.panel.load('csv_import_main', class_name, {}, values);
                 '''
             } )
@@ -662,7 +690,7 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div_top.add_color('background','background', -5)
         option_div_top.add_style("padding: 10px")
         option_div_top.add_border()
-        option_div_top.add_style("width: 300px")
+        option_div_top.add_style("width: auto")
 
         swap = SwapDisplayWdg(title="Parsing Options")
         option_div_top.add(swap)
@@ -681,7 +709,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         # first row and second row
         #option_div.add( HtmlElement.br() )
-        option_div.add(SpanWdg("Use Title Row: ", css='small'))
+        option_div.add(SpanWdg("Use Title Row: ", css='med'))
         title_row_checkbox = CheckboxWdg("has_title")
         title_row_checkbox.set_default_checked()
 
@@ -694,7 +722,7 @@ class CsvImportWdg(BaseRefreshWdg):
         
 
         option_div.add( HtmlElement.br(2) )
-        option_div.add(SpanWdg("Use Lowercase Title: ", css='small'))
+        option_div.add(SpanWdg("Use Lowercase Title: ", css='med'))
         lower_title_checkbox = CheckboxWdg("lowercase_title")
 
         lower_title_checkbox.add_behavior({'type' : 'click_up',
@@ -704,23 +732,32 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add(lower_title_checkbox)
         option_div.add( HtmlElement.br(2) )
 
-        option_div.add(SpanWdg("Sample Data Row: ", css='small'))
+        span = SpanWdg("Sample Data Row: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         data_row_text = SelectWdg("data_row")
+        data_row_text.add_style('float','left')
+        data_row_text.add_style('width','80%')
         data_row_text.set_option('values', '1|2|3|4|5')
         data_row_text.set_value('1')
         data_row_text.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
         option_div.add(data_row_text)
-        option_div.add( HintWdg("Set this as a sample data row for display here") )
+        hint = HintWdg("Set this as a sample data row for display here") 
+        hint.add_styles('padding-top: 8px; display: block')
+        option_div.add( hint )
 
         option_div.add( HtmlElement.br(2) )
       
         # encoder
-        option_div.add(SpanWdg("Encoder: ", css='small'))
+        span = SpanWdg("Encoder: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('encoder')
         select_wdg.set_option('values', ['','utf-8', 'iso_8859-1']) 
         select_wdg.set_option('labels', ['ASCII (default)','UTF-8','Excel ISO 8859-1']) 
+        select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
@@ -728,9 +765,13 @@ class CsvImportWdg(BaseRefreshWdg):
         option_div.add( HtmlElement.br(2) )
 
 
-        option_div.add(SpanWdg("Identifying Column: ", css='small'))
+        span = SpanWdg("Identifying Column: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('id_col')
         select_wdg.set_option('empty','true')
+        select_wdg.add_style('float','left')
+        select_wdg.add_style('width','80%')
         #columns = my.search_type_obj.get_columns()
         columns = SearchType.get_columns(my.search_type)
         
@@ -744,15 +785,21 @@ class CsvImportWdg(BaseRefreshWdg):
 
         select_wdg.set_option('values', columns) 
         option_div.add(select_wdg)
-        option_div.add( HintWdg("Set which column to use for identifying an item to update during CSV Import") )
+        hint = HintWdg("Set which column to use for identifying an item to update during CSV Import") 
+        hint.add_styles('padding-top: 8px; display: block')
+        option_div.add( hint )
         option_div.add( HtmlElement.br(2) )
 
         
         # triggers mode
-        option_div.add(SpanWdg("Triggers: ", css='small'))
+        span = SpanWdg("Triggers: ", css='med')
+        option_div.add(span)
+        option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('triggers_mode')
         select_wdg.set_option('values', ['','False', 'True', 'none']) 
         select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers']) 
+        select_wdg.add_style('float','left')
+        select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
@@ -846,12 +893,14 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         div.add( IconWdg("Important", IconWdg.CREATE) )
         div.add("Use the sample row to match which columns the data will be imported into TACTIC<br/><br/>")
-        table = Table(css='spt_csv_table')
+        #table = Table(css='spt_csv_table')
+        table = Table()
         table.add_color('background','background')
         table.add_color('color','color')
+        table.add_style("width: 100%")
 
         table.set_attr("cellpadding", "7")
-        table.set_attr("border", "1")
+        table.add_border()
 
 
         table.add_row()
@@ -945,6 +994,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             table.add_cell(cb) 
             td = table.add_cell(cell)
+            td.add_style("padding: 3px")
             
             # this is an optimal max width
             td.add_style('max-width: 600px')
@@ -1142,9 +1192,10 @@ class PreviewDataWdg(BaseRefreshWdg):
         div = DivWdg(css='spt_csv_sample')
         widget.add(div)
         h3 = DivWdg("Preview Data") 
-        h3.add_border()
+        #h3.add_border()
         h3.add_color('color','color')
-        h3.add_gradient('background','background', -5)
+        #h3.add_gradient('background','background', -5)
+        h3.add("<hr style='dashed'/>")
         h3.add_style("padding: 5px")
         h3.add_style("font-weight: bold")
         h3.add_style("margin-left: -20px")
@@ -1179,34 +1230,46 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             var server = TacticServerStub.get();
             var class_name = 'pyasm.command.CsvImportCmd';
-            var rtn = '';
-            var response_div = bvr.src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
 
+            var response_div = bvr.src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
+            var on_complete = function(response_div) {
+                
+                response_div.innerHTML = 'CSV Import Completed';
+                 
+                setTimeout( function() { 
+                    
+                    var popup = bvr.src_el.getParent(".spt_popup");
+                    if (popup) {
+                        spt.popup.hide_background();
+                        popup.destroy();
+                    }
+                    
+                    spt.table.run_search() } , 2000);
+
+            }
             spt.app_busy.show("Importing Data");
            
             var has_error = false;
-            try {
-                rtn = server.execute_cmd(class_name, {}, values);
-                rtn.description = rtn.description.replace(/\\n/g,'<br/>');
-                response_div.innerHTML = rtn.description;
-                var src_el = bvr.src_el;
-                setTimeout(function() {spt.hide(bvr.src_el.getParent('.spt_panel').getElement('.spt_csv_sample'));}, 500);
-            } catch (e)
-            {
+            var src_el = bvr.src_el;
+
+            var on_error = function(e) {
                 var err_message = spt.exception.handler(e);
                 spt.error(err_message);
+                
+                var response_div = document.getElement('.spt_cmd_response');
+
                 err_message = err_message.replace(/\\n/g,'<br/>');
                 response_div.innerHTML = 'Error: ' + err_message;
                 response_div.setStyle("display", "");
-                has_error = true;
-            }
+                setTimeout(function() {spt.show(csv_control)}, 500);
+           }
+            var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
+            
+            server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
 
-            if (!has_error) {
-                var popup = bvr.src_el.getParent(".spt_popup");
-                if (popup) {
-                    popup.destroy();
-                }
-            }
+            setTimeout(function() {spt.hide(csv_control)}, 500);
+           
+            
             spt.app_busy.hide();
             '''
         })
@@ -1225,7 +1288,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         table_div = DivWdg()
         widget.add(table_div)
-        table_div.add_style("max-width: 650px")
+        table_div.add_style("max-width: 800px")
         table_div.add_style("overflow-x: auto")
 
 

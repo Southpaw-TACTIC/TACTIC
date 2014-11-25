@@ -102,7 +102,7 @@
 <simple_search>
     <element name="hide_other_projects">
         <display class="tactic.ui.filter.ExpressionFilterElementWdg">
-            <expression>@SEARCH(sthpw/login_group['begin']['project_code','$PROJECT']['project_code is NULL']['or'])</expression>
+            <expression>@SEARCH(sthpw/login_group['begin']['project_code','$PROJECT']['project_code','is','NULL']['or'])</expression>
         </display>
     </element>
 </simple_search>
@@ -121,7 +121,7 @@
 
 
 <planner>
-    <element name="snapshot">
+    <element name="preview">
         <display class="ThumbWdg">
             <icon_size>60</icon_size>
         </display>
@@ -132,7 +132,7 @@
 
 
 <planner_right>
-    <element name="images">
+    <element name="preview">
         <display class="ThumbWdg">
             <icon_size>60</icon_size>
         </display>

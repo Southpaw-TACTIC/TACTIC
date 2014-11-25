@@ -748,6 +748,8 @@ spt.tab.save_state = function() {
 
 spt.tab.header_pos = null;
 spt.tab.mouse_pos = null;
+spt.tab.dragging = false;
+
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
     spt.tab.header_pos = bvr.src_el.getPosition();
@@ -763,9 +765,10 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
     var dx = mouse_411.curr_x - spt.tab.mouse_pos.x;
     var dy = mouse_411.curr_y - spt.tab.mouse_pos.y;
     if (Math.abs(dx) < 20) {
+        spt.tab.dragging = false;
         return;
     }
-
+    spt.tab.dragging = true;
     header.setStyle("position", "absolute");
     header.setStyle("z-index", "100");
     header.setStyle("opacity", "1.0");
@@ -777,20 +780,23 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
 spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
     var header = bvr.src_el;
     var drag_pos = header.getPosition();
-
-
+    if (spt.tab.dragging == false)
+        return;
+    
     var headers = spt.tab.get_headers();
     for ( var i = headers.length-1; i >= 0; i-- ) {
         if (headers[i] == header) {
             continue;
         }
         var pos = headers[i].getPosition();
+
         var size = headers[i].getSize();
-        if (drag_pos.x > pos.x + size.x/2) {
+        // the y ensures 2nd row tabs don't jump to first row on click
+        if (drag_pos.x > pos.x + size.x/2 && drag_pos.y >= pos.y) {
             header.inject(headers[i], "after");
             break;
         }
-        if (drag_pos.x > pos.x) {
+        if (drag_pos.x > pos.x && drag_pos.y >= pos.y ) {
             header.inject(headers[i], "before");
             break;
         }
@@ -985,6 +991,7 @@ spt.tab.close = function(src_el) {
         #outer_header.add(header_div)
         header_div.add_style("height: 30px")
         header_div.add_class("spt_tab_header_top")
+        header_div.add_style("overflow-y: hidden")
         #header_div.add_style("width: 5000")
         header_div.add_style("float: left")
 
@@ -1120,11 +1127,46 @@ spt.tab.close = function(src_el) {
             palette = content_top.get_palette()
             border = palette.color("border")
             content_top.add_style("border: 1px solid %s" % border)
-            content_top.add_style("margin-top: -5px")
 
         inner.add(content_top)
         content_top.add_class("spt_tab_content_top")
         content_top.add_style("min-height: 500px")
+
+        height = my.kwargs.get("height")
+        #height = 600
+        #height = None
+        if height:
+            content_top.add_style("height: %s" % height)
+            content_top.add_style("overflow-y: auto")
+            #content_top.add_style("overflow-x: hidden")
+        """
+        else:
+            content_top.add_style("overflow-y: auto")
+            content_top.add_style("border: solid 1px red")
+            content_top.add_behavior( {
+                'type': 'load',
+                'unique_id': my.unique_id,
+                'cbjs_action': '''
+                var el = $(bvr.unique_id);
+                if (!el) {
+                    return;
+                }
+                //el.setStyle("border", "solid 1px blue");
+                var size = el.getSize();
+                bvr.src_el.setStyle("height", size.y);
+                bvr.src_el.setStyle("max-height", size.y);
+                bvr.src_el.setStyle("border", "solid 1px blue");
+
+                window.onresize = function() {
+                    var size = el.getSize();
+                    console.log(size);
+                    bvr.src_el.setStyle("height", size.y);
+                    bvr.src_el.setStyle("max-height", size.y);
+                }
+
+                '''
+            } )
+        """
 
         width = my.kwargs.get("width")
         if not width:
@@ -1133,8 +1175,13 @@ spt.tab.close = function(src_el) {
             content_top.add_style("min-width: %s" % width)
 
         content_top.add_class("tab_content_top")
-        content_top.add_color("color", "color")
-        content_top.add_color("background", "background")
+
+        color_mode = my.kwargs.get("color_mode")
+        if color_mode == "transparent":
+            pass
+        else:
+            content_top.add_color("color", "color")
+            content_top.add_color("background", "background")
 
 
         """
@@ -1261,16 +1308,16 @@ spt.tab.close = function(src_el) {
 
         icon_div = DivWdg()
         icon_div.add_style("padding: 0 2px 0 2px")
-        icon_div.set_round_corners(3, corners=['TR','TL'])
+        icon_div.set_round_corners(12, corners=['TR'])
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.PLUS)
         icon = IconWdg("New Tab", IconWdg.PLUS)
         #icon.add_style("top: -1px")
         #icon.add_style("left: 0px")
         #icon.add_style("position: absolute")
-        icon.add_style("margin-top: -1px")
         icon.add_style("margin-left: 3px")
         icon_div.add_class("hand")
+        icon_div.add_style("opacity: 0.5")
 
         icon_div.add(icon)
         icon.add_behavior( {
@@ -1280,15 +1327,17 @@ spt.tab.close = function(src_el) {
         spt.tab.add_new();
         '''
         } )
-        icon_div.add_style("padding-top: 4px")
 
         icon_div.add_style("float: left")
-        icon_div.add_style("height: 20px")
-        icon_div.add_style("width: 18px")
-        icon_div.add_style("margin-left: 2px")
-        icon_div.add_gradient("background", "background")
-        #icon_div.add_gradient("background", "tab_background", default="background")
-        icon_div.add_border()
+        icon_div.add_style("margin-top: 2px")
+        icon_div.add_style("padding-top: 4px")
+        icon_div.add_style("height: 21px")
+        icon_div.add_style("width: 22px")
+        icon_div.add_style("margin-left: 4px")
+        icon_div.add_gradient("background", "background", -5, 5)
+        icon_div.add_style("border-style: solid")
+        icon_div.add_style("border-width: 1px 1px 0px 1px")
+        icon_div.add_color("border-color", "border")
         icon_div.add_style("text-align: center")
         div.add(icon_div);
 
@@ -1311,7 +1360,7 @@ spt.tab.close = function(src_el) {
             icon_div.add_style("height: 20px")
             icon_div.add_style("width: 10px")
             icon_div.add_style("margin-left: -1px")
-            icon_div.add_gradient("background", "background")
+            icon_div.add_gradient("background", "background", -5, 5)
             icon_div.add_border()
             icon_div.add_style("text-align: center")
             div.add(icon_div);
@@ -1351,7 +1400,7 @@ spt.tab.close = function(src_el) {
         icon_div.add_style("height: 20px")
         icon_div.add_style("width: 18px")
         icon_div.add_style("margin-left: 2px")
-        icon_div.add_gradient("background", "background")
+        icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
         div.add(icon_div);
@@ -1655,22 +1704,15 @@ spt.tab.close = function(src_el) {
         header.add_style("border-style: solid")
         header.add_style("border-color: %s" % border)
         header.add_style("border-width: 1px 1px 0px 1px")
+        header.add_style("overflow: hidden")
 
         header.add_style("float: left")
-        header.add_style("padding: 5px")
+        header.add_style("padding: 7px 5px")
         header.add_style("margin-right: 1px")
         #header.add_style("margin-left: 1px")
         if is_IE:
             header.add_style("width: 150px")
         header.add_class("hand")
-
-        #line = DivWdg()
-        #header.add(line)
-        #line.add_style("height: 1px")
-        #line.add_style("width: 100%")
-        #line.add_style("background: red")
-        #line.add("&nbsp;")
-        #line.add_style("margin-top: -5px")
 
         if is_selected:
             header.add_color("color", "color")
@@ -1755,13 +1797,17 @@ spt.tab.close = function(src_el) {
         #header.add(remove_wdg)
 
 
+
+
         remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
         from pyasm.widget import IconButtonWdg
-        icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
+        #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
+        icon = IconWdg("Remove Tab", "BS_REMOVE", opacity=0.3)
         icon.add_class("spt_icon_inactive")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
-        icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
+        #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
+        icon = IconWdg("Remove Tab", "BS_REMOVE")
         icon.add_class("spt_icon_active")
         icon.add_style("display: none")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
@@ -1792,7 +1838,7 @@ spt.tab.close = function(src_el) {
         } )
 
 
-
+        
 
         # add a drag behavior
         allow_drag = my.kwargs.get("allow_drag")
@@ -1800,7 +1846,7 @@ spt.tab.close = function(src_el) {
             header.add_style("position", "relative");
             header.add_behavior( {
             'type': 'drag',
-            "mouse_btn": 'LMB',
+            #"mouse_btn": 'LMB',
             "drag_el": '@',
             "cb_set_prefix": 'spt.tab.header_drag'
             } )

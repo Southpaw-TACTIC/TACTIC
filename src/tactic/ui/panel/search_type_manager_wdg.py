@@ -532,7 +532,6 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
     def get_display(my):
 
         # add the detail widget
-        from tactic.ui.container import RoundedCornerDivWdg
         detail_wdg = DivWdg(css='spt_detail_panel')
         if not my.name_string and not my.config_string:
             detail_wdg.add("<br/>"*3)

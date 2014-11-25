@@ -63,6 +63,7 @@ class WizardWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         if not width:
             width = "550px"
+        my.width = width
 
         inner = DivWdg()
         top.add(inner)
@@ -71,11 +72,13 @@ class WizardWdg(BaseRefreshWdg):
         title = my.kwargs.get("title")
         if not title:
             title = "No Title"
-        title_wdg = DivWdg()
-        inner.add(title_wdg)
-        title_wdg.add(title)
-        title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("font-weight: bold")
+        
+        if title != "none":
+            title_wdg = DivWdg()
+            inner.add(title_wdg)
+            title_wdg.add(title)
+            title_wdg.add_style("font-size: 16px")
+            title_wdg.add_style("font-weight: bold")
 
         inner.add("<br/>")
 
@@ -94,6 +97,7 @@ class WizardWdg(BaseRefreshWdg):
 
         header_wdg = my.get_header_wdg()
         inner.add(header_wdg)
+        #header_wdg.add_color("background", "background", -5)
 
         inner.add("<br/>")
 
@@ -101,6 +105,9 @@ class WizardWdg(BaseRefreshWdg):
 
         for i, widget in enumerate(my.widgets):
             page_div = DivWdg()
+            page_div.add_class("spt_wizard_page")
+            inner.add(page_div)
+
             page_div.add_style("padding: 10px")
 
             page_div.add_style("min-height: 300px")
@@ -114,8 +121,6 @@ class WizardWdg(BaseRefreshWdg):
             else:
                 page_div.add_class("spt_wizard_selected")
 
-            page_div.add_class("spt_wizard_page")
-            inner.add(page_div)
             page_div.add(widget)
 
 
@@ -131,26 +136,60 @@ class WizardWdg(BaseRefreshWdg):
 
     def get_header_wdg(my):
         div = DivWdg()
+        div.add_style("text-align: center")
+        div.add_style("width: %s" % my.width)
 
         div.add("<hr/>")
 
         dots_div = DivWdg()
-        dots_div.add_style("margin-top: -12px")
+        #dots_div.add_style("margin: -28px auto 0px auto")
+        dots_div.add_style("margin: -28px auto 0px auto")
         div.add(dots_div)
 
+        titles = my.kwargs.get("titles")
+        if not titles:
+            titles = []
+
         left = 50
-        width = 60
+        width = 50
+
+        dots_div.add_style("width", (left+width)*len(my.widgets)+left)
+
         for i, widget in enumerate(my.widgets):
-            on_dot = IconWdg("", IconWdg.DOT_GREEN)
+            on_dot = DivWdg()
+            on_dot.add_style("width: 20px")
+            on_dot.add_style("height: 20px")
+            on_dot.add_style("border-radius: 20px")
+            on_dot.add_style("background: rgba(188,215,207,1.0)")
+            on_dot.add_style("margin: 6 auto")
+            on_dot.add("&nbsp;")
+            on_dot.add_border()
+            #on_dot = IconWdg("", IconWdg.DOT_GREEN)
             on_dot.add_class("spt_wizard_on_dot")
-            off_dot = IconWdg("", IconWdg.DOT_GREY)
+
+            off_dot = DivWdg()
+            off_dot.add_style("width: 10px")
+            off_dot.add_style("height: 10px")
+            off_dot.add_style("border-radius: 10px")
+            off_dot.add_style("background: rgba(215,188,207,1.0)")
+            off_dot.add_style("margin: 11 auto 12 auto")
+            off_dot.add("&nbsp;")
+            off_dot.add_border()
+            #off_dot = IconWdg("", IconWdg.DOT_GREY)
             off_dot.add_class("spt_wizard_off_dot")
+
             if i == 0:
                 off_dot.add_style("display: none")
             else:
                 on_dot.add_style("display: none")
 
+            dots_div.add_style("position: relative")
+
             dot_div = DivWdg()
+            dot_div.add_style("text-align: center")
+            dot_div.add_attr("spt_selected_index", i)
+            dot_div.add_class("spt_wizard_link")
+            dot_div.add_class("hand")
             dots_div.add(dot_div)
             dot_div.add(on_dot)
             dot_div.add(off_dot)
@@ -159,31 +198,98 @@ class WizardWdg(BaseRefreshWdg):
             dot_div.add_style("margin-left: %spx" % left)
             dot_div.add_style("text-align: center")
 
+            name_div = DivWdg()
+            dot_div.add(name_div)
+
+            if i < len(titles):
+                title = titles[i]
+            else:
+                title = widget.get_name()
+                title = title.replace(".", " ")
+                title = Common.get_display_title(title)
+
+            name_div.add(title)
+            name_div.add_style("font-weight: bold")
+
+
+            """
             if (i+1) < len(my.widgets):
                 arrow_div = DivWdg()
                 dots_div.add(arrow_div)
                 arrow_div.add_style("float: left")
                 arrow_div.add_style("position: absolute")
                 arrow_div.add_style("margin-left: %spx" % ((width+left)*(i+1.2)))
-                arrow_div.add_style("margin-top: -3px")
+                arrow_div.add_style("top: -4px")
                 arrow_div.add_style("text-align: center")
                 icon = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
                 arrow_div.add(icon)
+            """
 
 
+        #dots_div.add("<br clear='all'/>")
 
-        dots_div.add("<br clear='all'/>")
+
+        div.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_wizard_link',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_wizard_top");
+            var top = bvr.src_el.getParent(".spt_wizard_top");
+            var pages = top.getElements(".spt_wizard_page");
+            var on_dots = top.getElements(".spt_wizard_on_dot");
+            var off_dots = top.getElements(".spt_wizard_off_dot");
+
+            var selected_index = parseInt( bvr.src_el.getAttribute("spt_selected_index"));
+
+            for (var i = 0; i < pages.length; i++) {
+                var page = pages[i];
+                var on_dot = on_dots[i];
+                var off_dot = off_dots[i];
+                if (page.hasClass("spt_wizard_selected")) {
+                    page.removeClass("spt_wizard_selected");
+                }
+                page.setStyle("display", "none");
+                on_dot.setStyle("display", "none");
+                off_dot.setStyle("display", "");
+            }
+
+            var back = top.getElement(".spt_wizard_back");
+            var next = top.getElement(".spt_wizard_next");
+            next.setStyle("display", "");
+            back.setStyle("display", "");
+            if (selected_index == 0) {
+                back.setStyle("display", "none");
+            }
+            else if (selected_index == pages.length-1) {
+                next.setStyle("display", "none");
+            }
+
+            var page = pages[selected_index];
+            page.setStyle("display", "");
+            page.addClass("spt_wizard_selected");
+            var on_dot = on_dots[selected_index];
+            var off_dot = off_dots[selected_index];
+            on_dot.setStyle("display", "");
+            off_dot.setStyle("display", "none");
+
+            '''
+        } )
 
 
-        for widget in my.widgets:
+        """
+        for i, widget in enumerate(my.widgets):
             name_div = DivWdg()
             div.add(name_div)
+            name_div.add_class("spt_wizard_link")
+            name_div.add_attr("spt_selected_index", i)
+            name_div.add_class("hand")
             name_div.add_style("float: left")
             name_div.add_style("margin-left: %spx" % left)
             name = widget.get_name()
             name_div.add(name)
             name_div.add_style("width: %spx" % width)
             name_div.add_style("text-align: center")
+        """
 
         div.add("<br clear='all'/>")
         return div

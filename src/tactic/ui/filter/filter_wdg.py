@@ -489,7 +489,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             spacing.add_style("float: left")
             spacing.add_style("width: %spx" % (incr-level*incr))
             spacing.add_style("height: 3px")
-            #spacing.add_style("border: solid 1px blue")
             spacing.add("&nbsp;")
             filter_container.add(spacing)
 
@@ -646,7 +645,6 @@ class GeneralFilterWdg(BaseFilterWdg):
         spacing.add_style("float: left")
         spacing.add_style("width: %spx" % (incr+5))
         spacing.add("&nbsp;")
-        #spacing.add_style("border: 1px solid blue")
         filter_container.add(spacing)
 
         filter_name = "filter_%s" % i
@@ -672,6 +670,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         div.set_id(filter_id)
         div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
+        #div.add_style("width: 600px")
 
         # add the enable/disable checkbox
         checkbox = CheckboxWdg('%s_enabled' % my.prefix)
@@ -787,9 +786,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_type_wdg = my.get_filter_type_wdg(column_type, filter_index, column=column)
 
 
-        spacing = DivWdg('&nbsp;&nbsp;')
-        spacing.add_style("float: left")
-        div.add(spacing)
+        #spacing = DivWdg('&nbsp;&nbsp;')
+        #spacing.add_style("float: left")
+        #div.add(spacing)
 
  
         div.add( filter_type_wdg )
@@ -807,15 +806,15 @@ class GeneralFilterWdg(BaseFilterWdg):
         from tactic.ui.widget import ActionButtonWdg
         add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
         add_button.add_style("float: left")
-        add_button.add_style("margin-top: -2px")
+        #add_button.add_style("margin-top: -2px")
         add_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': 'spt.dg_table.add_filter(bvr.src_el)'
         } )
 
         sub_button = ActionButtonWdg(title='-', tip='Remove Filter', size='small')
-        sub_button.add_style("float: left")
-        sub_button.add_style("margin-top: -2px")
+        #sub_button.add_style("float: left")
+        #sub_button.add_style("margin-top: -2px")
         sub_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': 'spt.dg_table.remove_filter(bvr.src_el)'
@@ -827,7 +826,11 @@ class GeneralFilterWdg(BaseFilterWdg):
         else:
             top_div.add_class("spt_filter_template")
 
+        top_div.add(div)
+        top_div.add(add_button)
+        top_div.add(sub_button)
 
+        """
         horiz_layout = HorizLayoutWdg( 
             widget_map_list=[
                 {'wdg': div,'style': ""},
@@ -836,6 +839,7 @@ class GeneralFilterWdg(BaseFilterWdg):
            spacing=0, float=""
         )
         top_div.add( horiz_layout )
+        """
         return top_div
 
 
@@ -924,7 +928,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             print("WARNING: FilterWdg: type [%s] not supported, using 'string'" % type)
             type = 'string'
         
-        filter_span = SpanWdg()
+        filter_span = DivWdg()
+        filter_span.add_style("float: left")
         filter_span.add_class("spt_filter_type_wdg")
         filter_span.add_color("color", "color")
         
@@ -939,6 +944,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.add_style("width: 80px")
+            relation_select.add_style("float: left")
             relation_select.remove_empty_option()
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
@@ -950,10 +956,12 @@ class GeneralFilterWdg(BaseFilterWdg):
             #from tactic.ui.input import LookAheadTextInputWdg
             #value_text = LookAheadTextInputWdg(name="%s_value"%my.prefix,search_type=my.search_type, column="id")
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
-            value_text.add_style("margin-top: -2px")
-            value_text.set_option("size", "32")
+            value_text.add_style("width", "250")
+            value_text.add_style("height", "30")
+            value_text.add_style("margin", "0px 5px")
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
             
@@ -990,6 +998,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_span.add(relation_select)
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
 
             #behavior = {
@@ -1065,6 +1074,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_span.add(" or ")
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
@@ -1109,6 +1119,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)

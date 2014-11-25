@@ -43,11 +43,11 @@ from filter_data import FilterData
 class BaseFilterElementWdg(BaseRefreshWdg):
     '''represents the base filter'''
     def __init__(my, **kwargs):
+        super(BaseFilterElementWdg, my).__init__(**kwargs)
         my.values = {}
         my.show_title = False
         my.set_flag = False
         my.title = None
-        super(BaseFilterElementWdg, my).__init__(**kwargs)
 
     def is_visible(my):
         return True
@@ -64,7 +64,7 @@ class BaseFilterElementWdg(BaseRefreshWdg):
         if not title:
             title = name
         title = Common.get_display_title(title)
-        title_div.add("%s:" % title )
+        title_div.add("%s " % title )
         title_div.add_style("font-weight: bold")
 
         return title_div
@@ -121,6 +121,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
     
     def init(my):
         expression = my.kwargs.get("column")
+        my.multi_search_types = False
         if not expression:
             return
         parts = expression.split(".")
@@ -362,6 +363,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
             op_select = SelectWdg("op")
+            op_select.add_style("width: 75px")
             # only support in or not in for multi stypes column
             if my.multi_search_types:
                 op_select.set_option("labels", "is|is not")
@@ -960,6 +962,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         
         # search_type is a list matching the column for potential join
+        width = my.kwargs.get("width")
+        if not width:
+            width = "230"
+
         text = LookAheadTextInputWdg(
                 name="value",
                 do_search=my.do_search,
@@ -969,9 +975,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 search_type=search_type,
                 column=my.look_ahead_columns,
                 relevant = my.relevant,
-                width ='230',
+                width = width,
                 hint_text=hint_text,
-                case_sensitive = my.case_sensitive
+                case_sensitive = my.case_sensitive,
+                icon=my.kwargs.get("icon"),
         )
         value = my.values.get("value")
         if value:
@@ -990,42 +997,57 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         div.add(text)
 
-
-        from pyasm.widget import IconWdg
-        icon_div = DivWdg()
-        icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
-        icon_div.add(icon)
-        icon_div.add_class("hand")
-        icon_div.add_style("position: absolute")
-        icon_div.add_style("top: 5")
-        icon_div.add_style("right: 0")
-
-        from tactic.ui.container import DialogWdg
-        dialog = DialogWdg(show_title=False, show_pointer=False)
-        dialog.set_as_activator(icon_div, {'x': -150, 'y': 0})
-        div.add(dialog)
-
-        match_div = DivWdg()
-        match_div.add_style("width: 150")
-        dialog.add(match_div)
-        checkbox = CheckboxWdg("partial")
-        match_div.add(checkbox)
-        checkbox.add_attr("title", "Use partial word match (slower)")
-        match_div.add_style("padding: 10px")
-        match_div.add_color("color", "color")
-        match_div.add_color("background", "background")
-        match_div.add(" Use partial word match")
-
-
-        if my.mode == 'keyword' and my.has_index:
+        show_toggle = my.get_option("show_toggle")
+        if show_toggle in ['true', True]:
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("toggle", "BS_CHEVRON_DOWN")
+            icon_div.add(icon)
+            icon_div.add_class("hand spt_search_toggle")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 6px")
+            icon_div.add_style("right: 4px")
             div.add(icon_div)
-        elif my.mode =='global' and my.has_index:
-            div.add(icon_div)
-        else:
-            # partial is implied otherwise
-            hidden = HiddenWdg("partial")
-            div.add(hidden)
-            hidden.set_value("on")
+        
+        
+        show_partial = my.get_option("show_partial")
+        if show_partial not in ['false', False]:
+
+            from pyasm.widget import IconWdg
+            icon_div = DivWdg()
+            icon = IconWdg("Match", IconWdg.ARROWHEAD_DARK_DOWN)
+            icon_div.add(icon)
+            icon_div.add_class("hand")
+            icon_div.add_style("position: absolute")
+            icon_div.add_style("top: 5px")
+            icon_div.add_style("right: 0")
+
+            from tactic.ui.container import DialogWdg
+            dialog = DialogWdg(show_title=False, show_pointer=True)
+            dialog.set_as_activator(icon_div, {'x': -150, 'y': 10})
+            div.add(dialog)
+
+            match_div = DivWdg()
+            match_div.add_style("width: 175px")
+            dialog.add(match_div)
+            checkbox = CheckboxWdg("partial")
+            match_div.add(checkbox)
+            checkbox.add_attr("title", "Use partial word match (slower)")
+            match_div.add_style("padding: 10px")
+            match_div.add_color("color", "color")
+            match_div.add_color("background", "background")
+            match_div.add(" Use partial word match")
+
+
+            if my.mode == 'keyword' and my.has_index:
+                div.add(icon_div)
+            elif my.mode =='global' and my.has_index:
+                div.add(icon_div)
+            else:
+                # partial is implied otherwise
+                hidden = HiddenWdg("partial")
+                div.add(hidden)
+                hidden.set_value("on")
 
 
 
@@ -1040,7 +1062,7 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
         expression = my.kwargs.get("column")
         if not expression:
-            return
+            expression = my.get_name()
         
         search_types = []
 
@@ -1060,7 +1082,11 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
-
+        from pyasm.common import SPTDate
+        start_date = SPTDate.add_local_timezone(start_date)
+        start_date = SPTDate.convert(start_date)
+        end_date = SPTDate.add_local_timezone(end_date)
+        end_date = SPTDate.convert(end_date)
 
         
         from pyasm.search import Search
@@ -1074,7 +1100,6 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
         search2.add_date_range_filter(date_col, start_date, end_date)
 
-        
         search.add_relationship_search_filter(search2)
 
 
@@ -1109,7 +1134,8 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         op = DivWdg("is")
         td.add(op)
         td = table.add_cell()
-        op = DivWdg("between&nbsp;&nbsp;&nbsp;")
+        op = DivWdg(" between&nbsp;&nbsp;&nbsp;")
+        op.add_style("margin-left: 5px")
         td.add(op)
 
         from tactic.ui.widget import CalendarInputWdg

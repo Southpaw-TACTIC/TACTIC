@@ -2484,7 +2484,6 @@ class SObject(object):
         return project_code
 
 
-
     def get_columns(my):
         columns = SearchType.get_columns(my.get_search_type())
         return columns
@@ -2613,11 +2612,12 @@ class SObject(object):
         if my.has_value("name"):
             name = my.get_value("name")
         if long:
-            id = my.get_id()
+            code = my.get_code()
             if name:
-                name = '%s (%s)' %(name, id)
+                name = '%s (%s)' %(name, code)
             else:
                 code = my.get_code()
+                id = my.get_id()
                 if code != id:
                     name = '%s (%s)' %(code, id)
                 else:
@@ -3301,6 +3301,9 @@ class SObject(object):
                 else:
                     my.set_value("search_code", sobject.get_value("code") )
 
+        elif relationship in ['general']:
+            print 'WARNING: relationship [%s] not supported' % relationship
+
         else:
             raise SearchException("Relationship [%s] is not supported" % relationship)
 
@@ -3865,7 +3868,6 @@ class SObject(object):
                 # add message only if triggers is true
                 if triggers:
                     my._add_message(sobject, output, mode)
-
 
 
             # cache this sobject, by code and id
@@ -4833,7 +4835,7 @@ class SObject(object):
             else:
                 prefix = ""
 
-            search_type = my.get_value("%ssearch_type" % prefix)
+            search_type = my.get_value("%ssearch_type" % prefix, no_exception=True)
             # it could be an insert mode sobject
             if not search_type:
                 return None

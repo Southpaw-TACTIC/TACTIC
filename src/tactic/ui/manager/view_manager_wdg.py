@@ -25,7 +25,7 @@ from pyasm.widget import TextAreaWdg, TextWdg, ButtonWdg, ProdIconButtonWdg, Hin
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.activator import ButtonForDropdownMenuWdg
 from tactic.ui.widget import SearchTypeSelectWdg, TextBtnWdg, TextBtnSetWdg, IconChooserWdg
-from tactic.ui.container import HorizLayoutWdg, PopupWdg, RoundedCornerDivWdg
+from tactic.ui.container import HorizLayoutWdg, PopupWdg
 from tactic.ui.widget import ActionButtonWdg
 
 

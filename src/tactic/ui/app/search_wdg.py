@@ -588,6 +588,8 @@ class SearchWdg(BaseRefreshWdg):
         
 
         select = SelectWdg("filter_mode")
+        select.add_style("width: 110px")
+
         select.add_class("spt_search_filter_mode")
         select.set_persist_on_submit(prefix)
         select.remove_empty_option() 
@@ -596,7 +598,7 @@ class SearchWdg(BaseRefreshWdg):
             select.set_option("labels", "Match all|Match any")
             select.set_option("values", "and|or")
         else:
-            select.set_option("labels", "Match all|Match any|Compound search")
+            select.set_option("labels", "Match all|Match any|Compound")
             select.set_option("values", "and|or|custom")
         #select.set_option("labels", "all|any")
         #select.set_option("values", "and|or")
@@ -630,13 +632,12 @@ class SearchWdg(BaseRefreshWdg):
 
         match_div.add(select)
         match_div.add_color("color", "color2")
-        match_div.add(" on the following")
-        hint = HintWdg( "An 'AND' operation is always applied to each category below. " \
-                        "This controls only the filters within each category." )
-        match_div.add(hint)
-        match_div.add('<br/>')
-
-        match_div.add_style("padding-top: 5px")
+        #match_div.add(" on the following")
+        #hint = HintWdg( "An 'AND' operation is always applied to each category below. " \
+        #                "This controls only the filters within each category." )
+        #match_div.add(hint)
+        #match_div.add('<br/>')
+        #match_div.add_style("padding-top: 5px")
 
         filter_div.add( search_wdg)
         search_wdg.add_style("float: left")

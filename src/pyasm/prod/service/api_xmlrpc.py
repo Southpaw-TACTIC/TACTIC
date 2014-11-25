@@ -606,41 +606,6 @@ class BaseApiXMLRPC(XmlrpcServer):
         # if a session container has been cached, use that
         key = ticket
         container = None
-
-        
-     
-        # TODO:
-        # We set this to false for now because these values, particularly
-        # access rules are cached.  Because of the caching, these are very
-        # difficult to reset when updated
-        """
-        reuse_container = False
-        if reuse_container:
-            container = my.session_containers.get(key)
-            container = None
-            if container:
-
-                # don't completely use the same container, but copy essentials
-                new_container = Container.create()
-                vars = [
-                    'Environment:security',
-                    'Environment:object',
-                    'WebContainer::web',
-                ]
-                for var in vars:
-                    new_container.put(var, container.info[var] )
-
-                # make sure the security object is there
-                security = Environment.get_security()
-                assert(security)
-                if security:
-                    if project_code:
-                        Project.set_project(project_code)
-                        Project.get()
-                else:
-                    container = None
-        """
-
         if not container:
 
             # start a new session and store the container
@@ -799,6 +764,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                 continue
 
             result['__search_key__'] = SearchKey.build_by_sobject(sobject, use_id=use_id)
+            result['__search_type__'] = sobject.get_search_type()
 
             search_type = sobject.get_search_type()
             column_info = info.get(search_type)
@@ -5793,6 +5759,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             ticket = my.init(ticket, reuse_container=False)
+
+            from pyasm.security import Site
+            transaction_ticket = Site.get().build_ticket(transaction_ticket)
 
             # set the server in transaction?
             my.set_transaction_state(True)

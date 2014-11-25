@@ -16,9 +16,9 @@ import os
 
 import js_includes
 
-from pyasm.common import Common, Container, Environment, jsondumps, jsonloads
+from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project
-from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette
+from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
 from pyasm.search import Search
 
@@ -290,7 +290,7 @@ class TopWdg(Widget):
             icon_div.add_style("float: right")
             icon_div.add_style("margin-right: 10px")
             icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.POPUP_WIN_CLOSE)
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.G_CLOSE)
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -501,7 +501,7 @@ class TopWdg(Widget):
 
         # add the copyright information
         widget.add( "<!--   -->\n")
-        widget.add( "<!-- Copyright (c) 2005-2013, Southpaw Technology - All Rights Reserved -->\n")
+        widget.add( "<!-- Copyright (c) 2005-2014, Southpaw Technology - All Rights Reserved -->\n")
         widget.add( "<!--   -->\n")
 
         return widget
@@ -516,6 +516,13 @@ class TopWdg(Widget):
 
         skin = web.get_skin()
 
+
+        # Bootstrap
+        use_bootstrap = True
+        if use_bootstrap:
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
+
+
         # first load context css
         Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
@@ -524,6 +531,8 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
+
+
 
         # TEST
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
@@ -553,12 +562,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
-        # FIXME: this logic should not be located here.
-        # no reason to have the edit_area_full.js
-        #if not security.check_access("builtin", "view_script_editor", "allow") and security.check_access("builtin", "view_site_admin", "allow"):
-        #    if "edit_area/edit_area_full.js" in third_party:
-        #        third_party.remove("edit_area/edit_area_full.js")
-
 
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
@@ -578,8 +581,17 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-        #Container.append_seq("Page:js", "http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject.js")
-        #Container.append_seq("Page:js", "/context/spt_js/UnityObject.js")
+
+
+        # custom js files to include
+        includes = Config.get_value("install", "include_js")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                print "include: ", include
+                Container.append_seq("Page:js", include)
+
 
 
         widget = Widget()
@@ -703,24 +715,31 @@ class IndexWdg(Widget):
         my.hash = hash
         super(IndexWdg, my).__init__()
 
-    def init(my):
+    def get_display(my):
 
         top = DivWdg()
         top.set_id('top_of_application')
 
-        msg_div = DivWdg()
-        msg_div.add_style('text-align: center')
-        msg_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-        msg_div.add("&nbsp; &nbsp;")
-        project = Project.get()
-        title = project.get_value("title")
-        if not title:
-            title = "TACTIC"
 
-        msg_div.add('''Loading "%s" ....'''% title)
-        msg_div.add_style("font-size: 1.5em")
+        from tactic.ui.panel import HashPanelWdg 
+        splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
+        if not splash_div:
 
-        msg_div.add_behavior( {
+            splash_div = DivWdg()
+            splash_div.add_style('text-align: center')
+            splash_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+            splash_div.add("&nbsp; &nbsp;")
+            project = Project.get()
+            title = project.get_value("title")
+            if not title:
+                title = "TACTIC"
+
+            splash_div.add('''Loading "%s" ....'''% title)
+            splash_div.add_style("font-size: 1.5em")
+            splash_div.add_style("margin: 200 0 500 0")
+
+
+        splash_div.add_behavior( {
             'type': 'load',
             'hash': my.hash,
             'cbjs_action': '''
@@ -734,30 +753,37 @@ class IndexWdg(Widget):
             '''
         } )
 
-        msg_div.add_style("margin: 200 0 500 0")
-        top.add(msg_div)
 
-        my.add(top)
-        return
+        top.add(splash_div)
+
+        return top
+
+
+
 
 
 class SitePage(AppServer):
     def __init__(my, context=None):
         super(SitePage,my).__init__()
-        my.context = context
+        my.project_code = context
         my.custom_url = None
 
 
     def set_templates(my):
-        if my.context:
-            context = my.context
-        else:
-            context = WebContainer.get_web().get_full_context_name()
+
+        #if my.project_code:
+        #    project_code = my.project_code
+        #else:
+        #    project_code = WebContainer.get_web().get_full_context_name()
+        project_code = WebContainer.get_web().get_full_context_name()
+        if project_code == "default":
+            project_code = Project.get_default_project()
+
+        #if not project_code:
+        #    project_code = my.project_code
 
         try:
-
-            SearchType.set_global_template("project", context)
-
+            SearchType.set_global_template("project", project_code)
         except SecurityException, e:
             print "WARNING: ", e
 
@@ -804,23 +830,38 @@ class SitePage(AppServer):
             hash = "/".join(hash)
         else:
             hash = None
+
+        # default index widget
         index = IndexWdg(hash=hash)
+
         return index
 
 
     def get_top_wdg(my):
 
 
+        #if not my.hash and not my.custom_url:
+        #    search = Search("config/url")
+        #    search.add_filter("url", "/index")
+        #    my.custom_url = search.get_sobject()
+
+
+
         # NOTE: this is not the right place for this, but it allows the
         # top widget to completely be customized
+
 
         # if there is a custom url, then handle it separately
         if my.custom_url:
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
+            elif bootstrap == 'true':
+                widget = BootstrapIndexWdg()
+                return widget
             else:
                 web = WebContainer.get_web()
                 hash = "/".join(my.hash)
@@ -831,6 +872,21 @@ class SitePage(AppServer):
         # This is the default TACTIC html implementation for html
         my.top = TopWdg(hash=my.hash)
         return my.top
+
+
+
+class BootstrapIndexWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = Widget()
+        from tactic.ui.panel import CustomLayoutWdg
+        #widget = CustomLayoutWdg(view="bootstrap.basic.test_mootools", is_top=True)
+        widget = CustomLayoutWdg(view="bootstrap.themes.jumbotron.main2", is_top=True)
+        #widget = CustomLayoutWdg(view="bootstrap.basic.test2", is_top=True)
+        top.add(widget)
+        return top
+
 
 
 

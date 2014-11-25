@@ -243,6 +243,9 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                     pass
                 elif e.__str__().find('does not exist for database') != -1:
                     pass    
+                elif e.__str__().find('Cannot find project') != -1:
+                    pass
                 else:
                     raise
+
 

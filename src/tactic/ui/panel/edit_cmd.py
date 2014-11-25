@@ -140,11 +140,11 @@ class EditCmd(Command):
         # discover any default handlers
         default_elements = []
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
-        xxconfig = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+        tmp_config = WidgetConfigView.get_by_search_type(my.search_type, my.view)
 
-        xxelement_names = xxconfig.get_element_names()
-        for element_name in xxelement_names:
-            action_handler = xxconfig.get_action_handler(element_name)
+        tmp_element_names = tmp_config.get_element_names()
+        for element_name in tmp_element_names:
+            action_handler = tmp_config.get_action_handler(element_name)
             if action_handler == 'DefaultValueDatabaseAction':
                 default_elements.append(element_name)
 
@@ -167,6 +167,11 @@ class EditCmd(Command):
             config = WidgetConfigView.get_by_element_names(my.search_type, my.element_names, base_view=base_view)
 
 
+        # as a back up look up the definition in the view
+        display_view = "table"
+        display_config = WidgetConfigView.get_by_search_type(search_type_obj, display_view)
+
+
         # add the default elements
         for element_name in default_elements:
             if element_name not in my.element_names:
@@ -183,6 +188,18 @@ class EditCmd(Command):
 
             action_handler_class = \
                     config.get_action_handler(element_name)
+
+            # Try to get it from the display view
+            if not action_handler_class:
+                display_class = \
+                        display_config.get_display_handler(element_name)
+                try:
+                    stmt = Common.get_import_from_class_path(display_class)
+                    exec(stmt)
+                    action_handler_class = eval("%s.get_default_action()" % display_class)
+                except Exception, e:
+                    print "WARNING: ", e
+                    action_handler_class = ""
 
             if action_handler_class == "":
                 action_handler_class = my.get_default_action_handler()

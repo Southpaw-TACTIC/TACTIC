@@ -1132,9 +1132,17 @@ TacticServerStub = function() {
 
 
     this.execute_cmd = function(class_name, args, values, kwargs) {
-        if (kwargs) callback = kwargs.on_complete;
-        else callback = null;
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback);
+        if (kwargs) {
+            callback = kwargs.on_complete;
+            on_error = kwargs.on_error;
+        }
+        else { 
+            callback = null;
+            on_error = null;
+        }
+        delete kwargs.on_error;
+        delete kwargs.on_complete;
+        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback, on_error);
         if (callback) {
             return;
         }
@@ -1293,8 +1301,9 @@ TacticServerStub = function() {
     //   ret_type: the type of value returned by the function.  Functions that
     //      return lots of data will often return strings back
     //   callback: a function that is run after the data has been returned.
+    //   on_error: A function that is run when a request throws an error.
     //      This is used be get_async_widget() and others
-    this._delegate = function(func_name, passed_args, kwargs, ret_type, callback) {
+    this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
 
         var client = new AjaxService( this.url, '' );
 
@@ -1363,7 +1372,7 @@ TacticServerStub = function() {
         if (typeof(callback) != 'undefined' && callback != null) {
             var self = this;
             client.set_callback( function(request) {
-                self.async_callback(client, request);
+                self.async_callback(client, request, on_error);
             } );
             client.invoke( func_name, args );
 
@@ -1405,7 +1414,7 @@ TacticServerStub = function() {
         };
         spt.info('You session has expired.', {'click': ok});
     }
-    this.async_callback = function(client, request) {
+    this.async_callback = function(client, request, on_error) {
         if (request.readyState == 4) {
             if (request.status == 200) {
                 try {
@@ -1416,6 +1425,8 @@ TacticServerStub = function() {
                     if (/Cannot login with key/.test(e_msg)) {
                         this._redirect_login();
                     }
+                    else if (on_error)
+                        on_error(e);
                     else
                         spt.alert(e_msg);
                 }

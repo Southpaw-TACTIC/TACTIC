@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["OldTableLayoutWdg", "AddPredefinedColumnWdg"]
+__all__ = ["AddPredefinedColumnWdg"]
 
 import types
 import random
@@ -47,6 +47,7 @@ import random, sys, traceback
 
 
 # DEPRECATED and renamed now with prefix Old
+"""
 class OldTableLayoutWdg(BaseConfigWdg):
     INSERT_ROW = 0
     EDIT_ROW = 1
@@ -563,21 +564,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
         if order:
             search.add_order_by(order)
         if values:
-            # Outdated: This is to maintain grouping .... filter_xml must be completely
-            # redone
-            """
-            filter_xml = my.kwargs.get("filter_xml")
-            group_values = {}
-            if filter_xml:
-                try:
-                    filter_xml = eval(filter_xml)
-                    filter_data = FilterData(data=filter_xml)
-                    group_values = filter_data.get_values_by_index("group")
-                    assert type(group_values) == types.DictType
-                except:
-                    group_values = None
-            if not group_values or not group_values.has_key('group'):
-            """
             group_values = values[0]
 
             # the group element is always ordered first
@@ -589,16 +575,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
             elif my.group_element:
                 # used in Fast Table
                 my.group_interval = group_values.get("interval")
-                # order by is no longer coupled with group by
-                # it can be turned on together in the context menu Group and Order by
-                """
-                element_type = SearchType.get_tactic_type(my.search_type, my.group_element)
-                is_expr = re.search("^(@|\$|{@|{\$)", my.group_element)
-                if element_type in ['time', 'date', 'datetime'] or is_expr or my.is_expression_element(my.group_element):
-                    pass
-                else:
-                    search.add_order_by(my.group_element)
-                """
             else:
                 my.group_element = False
 
@@ -1372,24 +1348,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': my.get_onload_js()
             } )
  
-        """
-        my.custom_header_view = my.kwargs.get('custom_header_view')
-        my.custom_header_view = "wow"
-        if my.custom_header_view:
-            custom_div = DivWdg()
-            top_wdg.add(custom_div)
-            custom_div.add_gradient("background", "background")
-            custom_div.add_style("padding: 3px")
-            custom_div.add_border()
-
-            custom_div.add_style("padding: 10px")
-            custom_div.add("Milestone: ")
-            custom_div.add(TextWdg("wow") )
-            from tactic.ui.widget import ActionButtonWdg
-            button = ActionButtonWdg(title="Add New")
-            custom_div.add(button)
-        """
-
 
         if mode != "simple":
             #if mode == 'insert':
@@ -2270,11 +2228,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
                             existing_state = {}
                         existing_state['search_key'] = search_key
                         existing_state['parent_key'] = my.parent_key
-                        """
-                        state = {
-                            'search_key': search_key
-                        }
-                        """
                         widget.set_state(existing_state)
 
                         # ensure that the errors is trapped in the cell
@@ -3219,50 +3172,10 @@ class OldTableLayoutWdg(BaseConfigWdg):
                                   'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
-            """
-            menu_data.append( {
-                "type": "action",
-                "label": "Show Help",
-                "bvr_cb": {
-                    'cbjs_action':
-                        '''
-                        var activator = spt.smenu.get_activator(bvr);
-                        spt.help.set_top()
-                        spt.help.load_alias("calendar-wdg");
-                        '''
-                } 
-            } )
-            """
-
 
             menu_data.append( {
                 "type": "separator"
              } )
-            """
-            menu_data.append( {
-                "type": "action",
-                "label": "Edit Column Definition",
-                "bvr_cb": {
-                    'args' : {'search_type': search_type_obj.get_base_key()},
-                    'options': {
-                        'class_name': 'tactic.ui.panel.EditColumnDefinitionWdg',
-                        
-                        'popup_id': 'edit_column_defn_wdg',
-                        'title': 'Edit Column Definition'
-                    },
-                    'cbjs_action':
-                        '''
-                        var activator = spt.smenu.get_activator(bvr);
-                        bvr.args.element_name = activator.getProperty("spt_element_name");
-                        bvr.args.view = spt.smenu.get_activator(bvr).getParent('.spt_table').getAttribute('spt_view');
-                        var popup = spt.popup.get_widget(evt,bvr);
-                        popup.activator = activator;
-                        '''
-                },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-            } )
-            """
 
         
         # Remove Column menu item ...
@@ -4236,16 +4149,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
             div.add(button)
 
 
-            # TEST ADDING SAVED SEARCHES
-            """
-            button_row_wdg = ButtonRowWdg(show_title=True)
-            div.add(button_row_wdg)
-            button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
-            button_row_wdg.add(button)
-            layout = ButtonNewWdg(title='Change Layout', icon=IconWdg.VIEW, show_arrow=True)
-            button_row_wdg.add(layout)
-            """
-
             button.add_behavior( {
                 'type': 'click_up',
                 'dialog_id': search_dialog_id,
@@ -4271,24 +4174,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
 
                 '''
             } )
-
-            """
-            button.set_show_arrow_menu(True)
-            menu = Menu(width=180)
-            menu_item = MenuItem(type='title', label='Saved Searches')
-            menu.add(menu_item)
-            menu_item = MenuItem(type='action', label='Fast Ugly Search')
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                spt.dg_table.search_cbk( {}, {src_el: activator, expression: "@SOBJECT(project/asset['@LIMIT','2'])"} );
-                '''
-            } )
-            menus = [menu.get_data()]
-            SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
-            SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
-            """
 
 
             my.filter_num_div = DivWdg()
@@ -4467,9 +4352,6 @@ class OldTableLayoutWdg(BaseConfigWdg):
         aux_div.add_color("background", "background" )
         aux_div.add_color("color", "color" )
 
-        from tactic.ui.container import RoundedCornerDivWdg
-        #aux_rounded = RoundedCornerDivWdg(hex_color_code="2F2F2F",corner_size="10")
-        #aux_rounded.set_dimensions( width_str='100%', content_height_str=None )
         aux_rounded = DivWdg()
 
         aux_div.add(aux_rounded)
@@ -4520,8 +4402,7 @@ class OldTableLayoutWdg(BaseConfigWdg):
             } );
         } );
         '''
-
-
+"""
 
 
 
@@ -5117,32 +4998,7 @@ class RowSelectWdg(BaseTableElementWdg):
         is_touch_device = web.is_touch_device()
 
         if is_touch_device:
-            #
-            # TOUCH DEVICE SUPPORT -- tap_multi mechanism, which operates on a single tap ('click' or 'click_up'
-            # behavior), where a default action will always be called (if specified) as well as a pop up menu
-            # displaying for other possible options for action on that single tap
-            #
-            # Here we address selection in a table ...
-            #
-            # DISABLING, but keeping around for reference.  Note that
-            # touch_ui.js has is no longer loaded by default, so just
-            # uncommenting this block will not work.  The js must be
-            # included as well
-            """
-            td.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action':  'spt.touch_ui.tap_multi.cbk( evt, bvr );',
-                'cbjs_multi_pre_select': 'spt.dg_table.select_row( bvr.src_el, "on" );',
-                'multi_options': [
-                    { 'title': 'Deselect', 'callback_key': 'cbjs_deselect' },
-                    { 'title': 'Block Select', 'callback_key': 'cbjs_block_select' }
-                ],
-                'cbjs_deselect': 'spt.dg_table.select_row( bvr.src_el, "off" );',
-                'cbjs_block_select': 'spt.dg_table.select_rows_cbk( evt, bvr );',
-                'menu_width': '120px'
-            } )
-            """
-
+            pass
         else:
             # click with no modifiers does select single (i.e. deselects all others) if not already selected,
             # or do nothing if already selected (this is behavior found in Mac OS X Finder) ...
@@ -5212,7 +5068,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         content_wdg = DivWdg()
         content_wdg.add_class("spt_columns")
         content_wdg.add_style("margin-bottom: 5px")
-        content_wdg.add_style("font-size: 0.85em")
+        content_wdg.add_style("font-size: 1.0em")
 
         web = WebContainer.get_web()
         browser = web.get_browser()
@@ -5220,7 +5076,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         title_wdg = DivWdg()
         content_wdg.add(title_wdg)
-        title_wdg.add_style("padding: 3px")
+        title_wdg.add_style("padding: 10px 3px")
         title_wdg.add_color("background", "background3")
         title_wdg.add_color("color", "color")
         title_wdg.add_style("margin: 0px -10px 5px -10px")
@@ -5289,14 +5145,21 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         for element_name in element_names:
             menu_item = DivWdg(css='hand')
             menu_item.add_class("spt_column")
+            menu_item.add_style("height: 28px")
 
             checkbox = CheckboxWdg("whatever")
             if browser == 'Qt':
                 checkbox.add_style("margin: -3px 5px 8px 0px")
+            else:
+                checkbox.add_style("margin-top: 1px")
             # undo the click.. let the div bvr take care of the toggling
             checkbox.add_behavior({'type':'click', 'cbjs_action': 'bvr.src_el.checked=!bvr.src_el.checked;'})
             if element_name in my.current_elements:
                 checkbox.set_checked()
+
+            checkbox.add_style("height: 16px")
+            checkbox = DivWdg(checkbox)
+            checkbox.add_style("float: left")
 
             attrs = my.config.get_element_attributes(element_name)
 
@@ -5347,9 +5210,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             
 
 
-            menu_item.add("&nbsp;&nbsp;&nbsp;")
             #menu_item.add_attr("title", full_title)
             menu_item.add(checkbox)
+            menu_item.add("&nbsp;&nbsp;")
             menu_item.add(display_title)
             menu_item.add_behavior({
             'type': "click_up", 
@@ -5450,8 +5313,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.widget import SingleButtonWdg
-        add_button = SingleButtonWdg(title="Add New Custom Columns", icon=IconWdg.ADD)
+        from tactic.ui.widget import ActionButtonWdg
+        add_button = ActionButtonWdg(title="Add")
         shelf_wdg.add(add_button)
         shelf_wdg.add("<br clear='all'/>")
 
@@ -5597,67 +5460,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             columns.sort()
             context_menu.add( my.get_columns_wdg("Database Columns", columns) )
 
-            """
-            context_menu.add(HtmlElement.br())
-            context_menu.add("<b style='font-size: 12px'>Raw Database Columns</b>")
-            context_menu.add(HtmlElement.br())
-            columns_div = DivWdg()
-            context_menu.add(columns_div)
-            for column in columns:
-                #if column in defined_element_names:
-                #    continue
-
-                info = column_info.get(column)
-
-                checkbox = CheckboxWdg("whatever")
-                # undo the click.. let the div bvr take care of the toggling
-                checkbox.add_behavior({'type':'click', 'cbjs_action': 'bvr.src_el.checked=!bvr.src_el.checked;'})
-                if column in my.current_elements:
-                    checkbox.set_checked()
-
-                menu_item = DivWdg(css='hand')
-                menu_item.add(checkbox)
-                menu_item.add(" %s" % column)
-
-                if not info.get("null_ok"):
-                    required_span = SpanWdg()
-                    required_span.add(" *")
-                    required_span.add_style("color", "#900")
-                    menu_item.add(required_span)
-
-
-
-                menu_item.add_behavior({'type': "click_up", 
-                'cbjs_action': '''
-                var panel = $('%s');
-                if (!panel) {
-                    spt.alert('Please re-open the Column Manager');
-                    return;
-                }
-                var table = panel.getElement(".spt_table");
-                spt.dg_table.toggle_column_cbk(table,'%s','%s');
-                cb = bvr.src_el.getElement('input[type=checkbox]');
-                cb.checked=!cb.checked;
-                ''' % (my.target_id, column, widget_idx ) })
-
-
-                color = menu_item.get_color("background", -15)
-                menu_item.add_behavior( {
-                'type': 'hover',
-                'color': color,
-                'cbjs_action_over': '''
-                    bvr.src_el.setStyle("background", bvr.color);
-                ''',
-                'cbjs_action_out': '''
-                    bvr.src_el.setStyle("background", "");
-                '''
-                } )
-
-                columns_div.add(menu_item)
-                columns_div.add_style("padding-left: 10px")
-
-                """
-
  
         #popup_wdg.add(context_menu, "content")
         #return popup_wdg
@@ -5727,18 +5529,6 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
     def init(my):
         my.error = None
         refresh = my.kwargs.get("refresh")
-        # this is now called thru execute_cmd() in js
-        """
-        if refresh:
-            from pyasm.common import XmlException
-            from pyasm.widget import ExceptionWdg
-            try:
-                cbk = EditColumnDefinitionCbk(**my.kwargs)
-                Command.execute_cmd(cbk)
-            except XmlException, e:
-                my.error = ExceptionWdg(e)
-        """     
-                
 
 
 

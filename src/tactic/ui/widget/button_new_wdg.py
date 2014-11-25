@@ -40,6 +40,7 @@ class ButtonRowWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
+        top.add_class("SPT_DTS")
         # make it focusable
         top.set_attr('tabIndex','-1')
         buttons = []
@@ -438,7 +439,7 @@ class ButtonNewWdg(BaseRefreshWdg):
         button.add(icon_div)
         #icon_div.add_class("spt_button_click")
         icon_str = my.kwargs.get("icon")
-        icon = IconWdg(tip, icon_str, right_margin=0)
+        icon = IconWdg(tip, icon_str, right_margin=0, width=16)
         icon.add_class("spt_button_icon")
         icon_div.add(icon)
         icon_div.add_style("position: absolute")
@@ -1078,11 +1079,11 @@ class ActionButtonWdg(DivWdg):
         my.td.add_behavior(behavior)
 
 
-    def add_style(my, name, value=None):
+    def add_style(my, name, value=None, override=True):
         if my.redirect:
-            return my.redirect.add_style(name, value)
+            return my.redirect.add_style(name, value, override=override)
 
-        super(ActionButtonWdg,my).add_style(name, value)
+        super(ActionButtonWdg,my).add_style(name, value, override=override)
 
     def add_class(my, value):
         if my.redirect:
@@ -1107,6 +1108,8 @@ class ActionButtonWdg(DivWdg):
         my.add_class("spt_button_top")
         # no need to define top
         #my.add(top)
+
+        my.add_style("margin: 0px 3px", override=False)
 
         opacity = my.kwargs.get("opacity")
         if not opacity:
@@ -1206,7 +1209,7 @@ class ActionButtonWdg(DivWdg):
         icon = my.kwargs.get("icon")
         if icon:
             icon_div = DivWdg() 
-            icon = IconWdg(title, icon )
+            icon = IconWdg(title, icon, width=16 )
             icon_div.add(icon)
             button.add(icon_div)
             my.table.add_style("position: relative")
@@ -1224,10 +1227,23 @@ class ActionButtonWdg(DivWdg):
 
 
 
-	if my.browser == 'Qt' and os.name != 'nt':
+        if my.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
         else:
-	    button.add_style("top: 6px")
+            button.add_style("top: 6px")
+
+        # BOOTSTRAP
+        color = my.kwargs.get("color")
+        button.add_class('btn')
+        if color:
+            if color.startswith("#"):
+                button.add_style("background", color)
+            else:
+                button.add_class('btn-%s' % color)
+        else:
+            button.add_class('btn-default')
+        button.add_class('btn-sm')
+        button.add_style("top: 0px")
 
 
         button.add_attr('spt_text_label', title)
@@ -1402,8 +1418,12 @@ class IconButtonWdg(DivWdg):
         icon_div.add_style("left: 5px")
         display.add(icon_div)
         icon_div.add_style("position: absolute")
+        if my.get_width() < 30:
+            width = 16
+        else:
+            width = None
 
-        icon = IconWdg(title, icon_str)
+        icon = IconWdg(title, icon_str, width=width)
         icon_div.add(icon)
         if tip:
             display.add_attr("title", tip)

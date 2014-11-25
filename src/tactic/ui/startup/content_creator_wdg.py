@@ -141,34 +141,6 @@ class ToolsWdg(BaseRefreshWdg):
         button_div.add_style("float: left")
         button_div.add_style("margin-top: -3px")
 
-        """
-        security = Environment.get_security()
-        view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
-        if view_side_bar:
-            button = IconButtonWdg(title="Side Bar", icon=IconWdg.ARROW_LEFT)
-            button_div.add(button)
-            shelf.add("Toggle Side Bar")
-            button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                spt.named_events.fire_event("side_bar|toggle");
-                '''
-            } )
-            shelf.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                spt.named_events.fire_event("side_bar|toggle");
-                '''
-            } )
-            shelf.add_class("hand")
-        else:
-            shelf.add("&nbsp;")
-
-        """
-
-
-
-
 
 
         search_wdg = DivWdg()
@@ -177,12 +149,7 @@ class ToolsWdg(BaseRefreshWdg):
         search_wdg.add_style("padding: 10px")
         search_wdg.add_style("margin: 10px auto")
         search_wdg.add_style("width: 430px")
-        search_wdg.add("Search: ")
-        search_wdg.add("&nbsp;"*3)
-
-
-
-
+        search_wdg.add("<div style='float: left; margin: 8px 10px;'>Search: </div>")
 
         custom_cbk = {}
         custom_cbk['enter'] = '''
@@ -207,18 +174,17 @@ class ToolsWdg(BaseRefreshWdg):
 
         from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
         #text = TextInputWdg(name="search")
-        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk)
+        text = LookAheadTextInputWdg(name="search", custom_cbk=custom_cbk, height="42px")
         #text = TextWdg("search")
         text.add_class("spt_main_search")
         text.add_style("width: 290px")
         search_wdg.add(text)
         search_wdg.add_style("font-weight: bold")
         search_wdg.add_style("font-size: 16px")
+        text.add_style("float: left")
 
 
-        button = ActionButtonWdg(title="Search")
         #search_wdg.add(button)
-        button.add_style("float: right")
         #button.add_style("margin-top: -28px")
 
         icon_div = DivWdg()
@@ -237,7 +203,7 @@ class ToolsWdg(BaseRefreshWdg):
         icon = IconWdg("Search", IconWdg.SEARCH_32, width=24)
         icon_div.add(icon)
         icon_div.add_style("float: right")
-        icon_div.add_style("margin-top: -5px")
+        icon_div.add_style("margin-top: 4px")
         button = icon_div
         icon_div.add_class("hand")
         icon_div.add_behavior( {

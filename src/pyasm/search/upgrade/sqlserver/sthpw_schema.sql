@@ -70,7 +70,7 @@ CREATE TABLE queue (
     login nvarchar(30) NOT NULL,
     "timestamp" datetime2(6) DEFAULT (getdate()) NOT NULL,
     command nvarchar(200) NOT NULL,
-    serialized nvarchar(256) NOT NULL,
+    serialized nvarchar(256),
     s_status nvarchar(30),
     project_code nvarchar(100),
     search_id integer,

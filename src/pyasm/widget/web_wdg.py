@@ -1293,7 +1293,8 @@ class WebLoginWdg(Widget):
 
         
 
-        table.add_header( "<b> %s: </b>"%name_label)
+        th = table.add_header( "<b> %s: </b>"%name_label)
+        th.add_style("padding: 10px 5px")
         text_wdg = TextWdg("login")
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
@@ -1321,7 +1322,8 @@ class WebLoginWdg(Widget):
         password_wdg.add_style("background: #EEE")
         password_wdg.add_style("padding: 2px")
         password_wdg.add_style("width: 130px")
-        table.add_header( "<b> %s: </b>"%password_label )
+        th = table.add_header( "<b> %s: </b>"%password_label )
+        th.add_style("padding: 5px")
         table.add_cell( password_wdg )
 
 
@@ -1360,7 +1362,8 @@ class WebLoginWdg(Widget):
         span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
         span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
         span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
-        table2.add_header(span)
+        th = table2.add_header(span)
+        th.add_style("text-align: center")
 
         table2.add_row()
         
@@ -1433,8 +1436,8 @@ class WebLoginWdg(Widget):
 
 
 
-
-
+# DEPRECATED: moved lower to pyasm/web
+"""
 class WebLoginCmd(Command):
 
     def check(my):
@@ -1561,7 +1564,7 @@ class WebLoginCmd(Command):
             login = security.get_login()
             if login.get_value("login") == "admin" and verify_password:
                 login.set_password(verify_password)
-
+"""
 
 
 
@@ -2020,7 +2023,7 @@ class MessageWdg(DivWdg):
         super(MessageWdg,my).__init__(span, css)
         
 class HintWdg(SpanWdg):
-    def __init__(my, message, css='small', icon=IconWdg.HELP, title=''):
+    def __init__(my, message, css='small', icon="BS_QUESTION_SIGN", title=''):
         assert message
         message = message.replace('\n','<br/>')
         icon_wdg = IconWdg("", icon)
@@ -2767,9 +2770,13 @@ class ExceptionMinimalWdg(Widget):
 
 
         # ignore
+        button_div = DivWdg()
+        widget.add(button_div)
+        button_div.add_style("width: 75px")
+        button_div.add_style("margin: 0 auto")
+
         button = ActionButtonWdg(title="Go to Admin")
-        widget.add(button)
-        button.add_style("margin: 0 auto")
+        button_div.add(button)
 
         # click the top layout and jump to default page
         button.add_event('onclick', '''window.location='%s' '''%url )

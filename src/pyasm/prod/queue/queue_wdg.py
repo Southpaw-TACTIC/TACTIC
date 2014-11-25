@@ -16,7 +16,6 @@ _all__ = ['QueueWdg']
 from pyasm.search import Search
 from pyasm.web import Widget, DivWdg, SpanWdg
 from pyasm.widget import SelectWdg, TableWdg, SearchLimitWdg, TextWdg
-from pyasm.prod.web import SearchFilterWdg
 
 from queue import Queue
 
@@ -35,6 +34,8 @@ class QueueWdg(Widget):
         div = DivWdg(css="filter_box")
 
         span = SpanWdg(css="med")
+
+        from pyasm.prod.web import SearchFilterWdg
         search_filter = SearchFilterWdg(columns=Queue.get_search_columns())
         search_filter.alter_search(search)
         span.add(search_filter)
