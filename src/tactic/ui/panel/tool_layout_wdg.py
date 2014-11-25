@@ -177,9 +177,8 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             current_offset=info.get("current_offset"),
         )
         inner.add(limit_wdg)
-
-
         my.add_layout_behaviors(inner)
+
 
         if my.kwargs.get("is_refresh") == 'true':
             return inner

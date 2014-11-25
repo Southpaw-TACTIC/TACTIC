@@ -35,7 +35,7 @@ class SearchLimitWdg(Widget):
         my.refresh_script = 'spt.dg_table.search_cbk(evt, bvr)'
         if my.refresh:
             my.prev_hidden_name = 'Prev'
-            my.next_hidden_name='Next'
+            my.next_hidden_name = 'Next'
         else:
             my.prev_hidden_name = '%s_Prev' %my.label
             my.next_hidden_name = '%s_Next' %my.label
@@ -302,7 +302,7 @@ class SearchLimitWdg(Widget):
             limit = 50
             my.search_limit = limit
 
-    
+      
         if my.refresh: 
             prev = SpanWdg( IconButtonWdg("Prev", IconWdg.LEFT, False ) )
             prev.add_style("margin-left: 8px")
@@ -319,6 +319,7 @@ class SearchLimitWdg(Widget):
                 'type': 'click_up',
                 'cbjs_action': my.refresh_script
             } )
+            
         else: # the old code pre 2.5
             prev = IconButtonWdg("Prev", IconWdg.LEFT, False )
             hidden_name = my.prev_hidden_name
@@ -330,8 +331,10 @@ class SearchLimitWdg(Widget):
             hidden_name = my.next_hidden_name
             hidden = HiddenWdg(hidden_name,"")
             next.add(hidden)
+
             next.add_event('onclick',"spt.api.Utility.get_input(document,'%s').value ='Next';%s" \
                     %(hidden_name, my.refresh_script))
+
 
 
         showing_wdg = DivWdg()
@@ -532,9 +535,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         if num_pages == 1:
             return top
 
-        #print "current: ", current_offset
-        #print "search_limit: ", search_limit
-        #print "current_page: ", current_page
+        
 
 
         top.add_color("background", "background3")
@@ -543,6 +544,54 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         top.add_border()
 
         table = Table()
+
+
+        pagination = DivWdg()
+        pagination.add_style("position: absolute;")
+        pagination.add_style("top: 185px;")
+        pagination.add_style("right: 0;")
+        pagination.add_style("display: table-row;")
+        pagination.add_class("pagination")
+        next_div = DivWdg()
+        prev_div = DivWdg()
+        next_div.add("<img/>")
+        next_div.add_style("display: table-cell;")
+        next_div.add_style("width: 15px;")
+        next_div.add_style("background: rgba(0,0,0,0) !important;")
+        next_div.add_style("float: right;")
+        next_div.add_style("padding: 0 0 0 5px;")
+
+
+        prev_div.add("<img/>")
+        prev_div.add_style("display: table-cell;")
+        prev_div.add_style("width: 15px;")
+        prev_div.add_style("background: rgba(0,0,0,0) !important;")
+        prev_div.add_style("float: left;")
+        prev_div.add_style("padding: 0 0 0 5px;")
+
+        next_div.add_class("next")
+        prev_div.add_class("prev")
+        
+        pagination.add(prev_div)
+        pagination.add(next_div)
+
+
+        top.add(pagination)
+
+        if current_page > 1:
+            prev_div.add_class("spt_link")
+        else:
+            prev_div.add_class("spt_no_link")
+
+        prev_div.add_attr("spt_page", "prev")
+
+        if current_page < num_pages:
+            next_div.add_class("spt_link")
+        else:
+            next_div.add_class("spt_no_link")
+        next_div.add_attr("spt_page", "next")
+
+
         table.add_style("margin-left: 30px")
         top.add(table)
         table.add_row()
