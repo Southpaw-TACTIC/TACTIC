@@ -655,14 +655,17 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # handle column widths
         column_widths = my.kwargs.get("column_widths")
         if not column_widths:
+            column_widths = []
+            # THIS IS WRONG: the Row Select is not part of the my.widgets
             # The first one is the selection widget
-            column_widths = [60]
-            my.kwargs["column_widths"] = column_widths
+            #column_widths = [60]
+            #my.kwargs["column_widths"] = column_widths
 
+        
         my.element_names = my.config.get_element_names()  
-        #my.element_widths = my.config.get_element_widths()
+       
         for i, widget in enumerate(my.widgets):
-
+            
             default_width = my.kwargs.get("default_width")
             if not default_width:
                 default_width = widget.get_width()
@@ -671,18 +674,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             if not default_width:
                 default_width = 100
+            
+            width = my.attributes[i].get("width")
 
+           
             if i >= len(column_widths):
                 # default width
-                column_widths.append(default_width)
+                if width:
+                    column_widths.append(width)
+                else:
+                    column_widths.append(default_width)
 
             elif not column_widths[i]:
                 column_widths[i] = default_width 
 
-            else: # get width from definition 
-                width = my.attributes[i].get("width")
-                if width:
-                    column_widths[i] = width
 
 
 
@@ -856,8 +861,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         init_load_num -= 1
 
 
-
-
         chunk_size = 20
         
         for i, col in enumerate(my.group_columns):
@@ -930,7 +933,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     return;
                 }
 
-               
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
             }
             func();
@@ -1248,22 +1250,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 'element_names': my.element_names,
                 'column_widths': column_widths,
                 'cbjs_action': '''
-
                 var layout = bvr.src_el.getParent(".spt_layout");
                 spt.table.set_layout(layout);
 
                 // determine the widths of the screen
                 var size = layout.getSize();
-
                 var total_size = 30 + 32;
                 for (var i = 0; i < bvr.column_widths.length; i++) {
                     total_size += bvr.column_widths[i];
                 }
 
+                // Commented out: stretch out the last one
+                /*
                 if (size.x > total_size) {
                     bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
                 }
-
+                */
 
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
@@ -2577,7 +2579,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         color_config = WidgetConfigView.get_by_search_type(my.search_type, "color")
         color_xml = color_config.configs[0].xml
         my.color_maps = {}
-        #print color_xml.to_string()
         for widget in my.widgets:
             name = widget.get_name()
             xpath = "config/color/element[@name='%s']/colors" % name
@@ -3453,6 +3454,16 @@ spt.table.get_insert_rows = function() {
     return rows;
 }
 
+spt.table.get_insert_row_cell = function(element_name) {
+    var insert_row = spt.table.get_insert_row();
+    var cells = insert_row.getElements('.spt_cell_edit');
+    for (var i = 0; i < cells.length; i++) {
+        if (cells[i].getAttribute("spt_element_name") == element_name) {
+            return cells[i];
+        }
+    }
+    return null;
+}
 
 
 spt.table.set_parent_key = function(parent_key) {
@@ -3593,8 +3604,9 @@ spt.table.add_new_item = function(kwargs) {
 
     }
     else {
-        var clone_cells = clone.getElements("td");
-        var cells = row.getElements("td");
+        // should specify a class under td to avoid selecting td within td
+        var clone_cells = clone.getElements("td.spt_cell_edit");
+        var cells = row.getElements("td.spt_cell_edit");
         for (var i = 0; i < cells.length; i++) {
             var cell = cells[i];
             var clone_cell = clone_cells[i];
@@ -5239,6 +5251,10 @@ spt.table.set_column_width = function(element_name, width) {
     if (row)
         cells = row.getElements(".spt_cell_edit");
     var total_width = 0;
+    
+    // add up total_width
+    // Commented out: not necessary for basic table structure
+    /*
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
         if (header.getAttribute("spt_element_name") == element_name) {
@@ -5252,6 +5268,11 @@ spt.table.set_column_width = function(element_name, width) {
             new_width = size.x;
         }
 
+
+        //header.setStyle("width", new_width);
+        //if (row)
+        //    cells[i].setStyle("width", new_width);
+
         if (new_width) {
             header.setStyle("width", new_width);
             if (row && cells.length != 0) {
@@ -5259,22 +5280,21 @@ spt.table.set_column_width = function(element_name, width) {
             }
         }
     }
-
-
+    */
 
     var curr_header = spt.table.get_header_by_cell(cell);
-
-    table.setStyle("width", total_width);
-    header_table.setStyle("width", total_width);
-
+    if (total_width) {
+        table.setStyle("width", total_width);
+        header_table.setStyle("width", total_width);
+    }
 
     curr_header.setStyle("width", width);
     cell.setStyle("width", width);
 
 
-    //size = curr_header.getSize();
-    //size = cell.getSize();
-
+    var insert_cell = spt.table.get_insert_row_cell(element_name); 
+    insert_cell.setStyle("width", width);
+  
 }
 
 

@@ -587,10 +587,11 @@ class NamingTest(unittest.TestCase):
         sand_paths = virtual_snapshot.get_all_lib_paths(mode='sandbox')
         client_paths = virtual_snapshot.get_all_lib_paths(mode='client_repo')
        
-        base_dir = Config.get_value("checkin", "asset_base_dir")
+        base_dir = Config.get_value("checkin", "asset_base_dir", sub_key='default')
         sand_base_dir = dir_naming.get_base_dir(protocol='sandbox')
         client_base_dir = dir_naming.get_base_dir(protocol='client_repo')
-        
+       
+
         my.assertEquals(lib_paths[0].startswith('%s%s'%(base_dir, expected_dir_name2)), True)
         my.assertEquals(sand_paths[0].startswith('%s%s'%(sand_base_dir[0], expected_dir_name2)), True)
         my.assertEquals(client_paths[0].startswith('%s%s'%(client_base_dir[0], expected_dir_name2)), True)

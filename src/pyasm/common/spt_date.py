@@ -170,18 +170,22 @@ class SPTDate(object):
 
 
     def has_timezone(cls, date):
+        err = False
+        
         if isinstance(date, basestring):
             try:
                 # do not use cls.parse ... it does a convert.
                 date = parser.parse(date)
             except:
                 # This could be "now()", for example
+                err = True
                 pass
-
-        return date.tzinfo != None
+        if err:
+            return False
+        else:
+            return date.tzinfo != None
     has_timezone = classmethod(has_timezone)
  
-
 
     def get_display_date(cls, date):
         '''convert to local timezone'''

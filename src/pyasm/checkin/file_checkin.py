@@ -88,6 +88,7 @@ class FileCheckin(BaseCheckin):
             my.file_paths = [file_paths]
         else:
             my.file_paths = file_paths
+
         for i, file_path in enumerate(my.file_paths):
             if not os.path.isdir(file_path):
                 my.file_paths[i] = file_path.rstrip("/")
@@ -160,7 +161,7 @@ class FileCheckin(BaseCheckin):
 
         # this must be after the above declaration, set the returned data
         return_data =  my.process_checkin_type(my.checkin_type, sobject, my.process, my.context,\
-                my.file_paths[0], my.snapshot_type)
+                my.file_paths[0], my.snapshot_type, is_revision=my.is_revision)
         if return_data.get('dir_naming'):
             my.dir_naming = return_data.get('dir_naming')
         
@@ -235,7 +236,8 @@ class FileCheckin(BaseCheckin):
        
 
 
-    def process_checkin_type(cls, checkin_type, sobject, process, context, filepath, snapshot_type, file_naming_expr=None, dir_naming_expr=None):
+    def process_checkin_type(cls, checkin_type, sobject, process, context, filepath, snapshot_type,
+            file_naming_expr=None, dir_naming_expr=None, is_revision=False):
         '''determine the checkin_type if it is specified to be empty'''
 
         dir_naming = None
@@ -271,7 +273,10 @@ class FileCheckin(BaseCheckin):
 
             else:
                 checkin_type = 'auto'
-                
+                if is_revision:
+                    revision_part = '_r{revision}'
+                else:
+                    revision_part = ''
                 # If it comes in as auto or empty, this will be set as default. 
                 # it will be determined in postprocess_snapshot() whether to clear it
                 if checkin_type =='auto':
@@ -281,11 +286,10 @@ class FileCheckin(BaseCheckin):
                         if server:
                             # TODO: maybe need to add config to the naming expression
                             # language
-                            file_naming = "{basefile}_{snapshot.process}_%s_v{version}.{ext}" % server
+                            file_naming = "{basefile}_{snapshot.process}_%s_v{version}%s.{ext}" % (server, revision_part)
                             
                         else:
-                            file_naming = "{basefile}_{snapshot.process}_v{version}.{ext}"
-
+                            file_naming = "{basefile}_{snapshot.process}_v{version}%s.{ext}" %revision_part
 
                     if not dir_naming_expr:
                         has_code = sobject.get_value("code", no_exception=True)
@@ -634,6 +638,8 @@ class FileCheckin(BaseCheckin):
         process = snapshot.get_process()
         if not process:
             process = context
+
+        # assume is_revision = False
         return_data = cls.process_checkin_type(checkin_type, parent, process,\
                 context , file_name, snapshot.get_value('snapshot_type'))
         dir_naming = return_data.get('dir_naming')

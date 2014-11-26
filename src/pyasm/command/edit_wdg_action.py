@@ -246,7 +246,6 @@ class DatabaseAction(Command):
         elif col_type in ["float", "integer"]:
             if isinstance(value, basestring):
                 value = value.replace(",", "")
-
         return value
 
 

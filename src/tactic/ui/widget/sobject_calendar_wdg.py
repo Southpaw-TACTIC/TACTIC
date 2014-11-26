@@ -253,7 +253,13 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
         default_color = colors[index%3]
 
-        pipeline_code = sobject.get_value("pipeline_code")
+        try:
+            color = sobject.get("color")
+            return color
+        except:
+            pass
+
+        pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         if not pipeline_code:
             pipeline_code = "task"
 

@@ -1018,6 +1018,68 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not show_layout_wdg =='false':
             layout_wdg = my.get_layout_wdg()
 
+        show_expand = my.kwargs.get("show_expand")
+        if show_expand in ['false', False]:
+            show_expand = False
+        else:
+            show_expand = True
+        #if show_expand in ['true', True]:
+        #    show_expand = True
+        #else:
+        #    show_expand = False
+        if not my.can_expand():
+            show_expand = False
+ 
+        expand_wdg = None
+        if show_expand:
+            from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+
+            button = ButtonNewWdg(title='Expand Table', icon='BS_FULLSCREEN', show_menu=False, is_disabled=False)
+            
+            expand_behavior = my.get_expand_behavior()
+            if expand_behavior:
+                button.add_behavior( expand_behavior )
+            else:
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+
+                var version = layout.getAttribute("spt_version");
+                var headers;
+                var table = null;
+                var header_table = null;
+                if (version == '2') {
+                    spt.table.set_layout(layout);
+                    table = spt.table.get_table();
+                    headers = spt.table.get_headers();
+                    header_table = spt.table.get_header_table();
+
+                }
+                else {
+                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+                    header_table = table;
+                    headers = layout.getElements(".spt_table_th");
+                }
+                var width = table.getStyle("width");
+               
+                // don't set the width of each column, this is simpler
+                if (width == '100%') {
+                    table.setStyle("width", "");
+                    if (header_table)
+                        header_table.setStyle("width", "");
+                }
+                else {
+                    table.setStyle("width", "100%");
+                    if (header_table)
+                        header_table.setStyle("width", "100%");
+                }
+               
+                '''
+                } )
+            expand_wdg = button
+
+
         help_alias = my.get_alias_for_search_type(my.search_type)
         from tactic.ui.app import HelpButtonWdg
         if HelpButtonWdg.exists():
@@ -1073,6 +1135,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget import ButtonRowWdg
         button_row_wdg = ButtonRowWdg(show_title=True)
+        extra_row_wdg = ButtonRowWdg(show_title=True)
+
         if search_button_row:
             button_row_wdg.add(search_button_row)
             if my.filter_num_div:
@@ -1085,9 +1149,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if layout_wdg:
             button_row_wdg.add(layout_wdg)
 
-
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
+        
+        if expand_wdg:
+            wdg_list.append( { 'wdg': spacing_divs[0] } )
+            wdg_list.append( { 'wdg': extra_row_wdg } )
+            extra_row_wdg.add(expand_wdg)
+
 
 
         show_quick_add = my.kwargs.get("show_quick_add")
@@ -1486,76 +1555,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button_row_wdg.add(save_button)
 
 
-        show_expand = my.kwargs.get("show_expand")
-        #if show_expand in ['false', False]:
-        #    show_expand = False
-        #else:
-        #    show_expand = True
-        if show_expand in ['true', True]:
-            show_expand = True
-        else:
-            show_expand = False
-        if not my.can_expand():
-            show_expand = False
-
-        if show_expand:
-
-            button = ButtonNewWdg(title='Expand Table', icon=IconWdg.ARROW_OUT_GRAY, show_menu=False, is_disabled=False)
-            button_row_wdg.add(button)
-            expand_behavior = my.get_expand_behavior()
-            if expand_behavior:
-                button.add_behavior( expand_behavior )
-            else:
-                button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var layout = bvr.src_el.getParent(".spt_layout");
-
-                var version = layout.getAttribute("spt_version");
-                var headers;
-                var table = null;
-                var header_table = null;
-
-                if (version == '2') {
-
-                    spt.table.set_layout(layout);
-                    table = spt.table.get_table();
-                    header_table = spt.table.get_header_table();
-                    var table_id = table.getAttribute('id');
-                    headers = header_table.getElements(".spt_table_header_" + table_id);
-                }
-                else {
-                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
-                    header_table = table;
-                    headers = layout.getElements(".spt_table_th");
-                }
-
-                var width = table.getStyle("width");
-                if (width == '100%') {
-                    table.setStyle("width", "");
-                }
-                else {
-                    table.setStyle("width", "100%");
-                }
-
-
-                for ( var i = 1; i < headers.length; i++) {
-                    var element_name = headers[i].getAttribute("spt_element_name");
-                    if (element_name == 'preview') {
-                        continue;
-                    }
-
-                    if (width == '100%') {
-                        headers[i].setStyle("width", "1px");
-                    }
-                    else {
-                        headers[i].setStyle("width", "");
-                    }
-
-                }
-                '''
-                } )
-
+        
+        
 
 
 
@@ -1566,8 +1567,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-     
-
+       
         return button_row_wdg
 
 
