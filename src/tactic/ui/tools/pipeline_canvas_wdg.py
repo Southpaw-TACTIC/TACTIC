@@ -559,15 +559,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         left_nob = DivWdg()
         left_nob.add_class("spt_left_nob")
         left_nob.set_round_corners(3, corners=['TL','BL'])
-        left_nob.add_event("onmouseover", "$(this).setStyle('background','red')")
-        left_nob.add_event("onmouseout", "$(this).setStyle('background','')")
+        left_nob.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.5')")
+        left_nob.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
         left_nob.add_style("cursor: pointer")
         left_nob.add_style("position: absolute")
-        left_nob.add_style("border: solid 1px #FF0")
+        left_nob.add_style("border: solid 1px black")
+        left_nob.add_style("background: rgba(255,255,0,0.2)")
         left_nob.add_style("width: 10px")
         left_nob.add_style("height: 10px")
         left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: -12px")
+        left_nob.add_style("left: -11px")
         left_nob.add_style("z-index: 100")
         left_nob.add("")
         node.add(left_nob)
@@ -582,7 +583,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add_style("cursor: pointer")
         right_nob.add_style("position: absolute")
         right_nob.add_style("top: 0px")
-        right_nob.add_style("left: 102px")
+        right_nob.add_style("left: 101px")
         right_nob.add_style("z-index: 100")
         right_nob.add_style("width: 12px")
         right_nob.add_style("height: 40px")
@@ -591,12 +592,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add(right_nob_vis)
         right_nob_vis.add("")
         right_nob_vis.set_round_corners(3, corners=['TR','BR'])
-        right_nob_vis.add_style("border: solid 1px #FF0")
+        right_nob_vis.add_style("border: solid 1px black")
+        right_nob_vis.add_style("background: rgba(255,255,0,0.2)")
         right_nob_vis.add_style("width: 10px")
         right_nob_vis.add_style("height: 10px")
         right_nob_vis.add_style("margin-top: %spx" % (height/2-5))
-        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','red')")
-        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','')")
+        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.5')")
+        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
 
         if my.nob_mode == 'dynamic':
             left_nob.add_style("display: none")
@@ -1365,7 +1367,7 @@ spt.pipeline.select_node = function(node) {
     var active = node.getElement(".spt_active");
     active.setStyle("display", "");
     var content = node.getElement(".spt_content");
-    content.setStyle("border", "solid 1px red");
+    content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     content.setStyle("opacity", "0.8");
 
     
@@ -3225,7 +3227,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
         if (!xpos) {
-            xpos = offset_left + 50*i;
+            xpos = offset_left + 125*i;
         }
         if (!ypos) {
             ypos = offset_top + 50*i;

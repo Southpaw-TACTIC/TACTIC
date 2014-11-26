@@ -331,6 +331,7 @@ class PipelineListWdg(BaseRefreshWdg):
         var kwargs = {
             search_type: 'sthpw/pipeline',
             view: 'insert',
+            show_header: false,
             single: true,
             save_event: bvr.save_event
         }
@@ -356,7 +357,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div = DivWdg()
         top.add(pipelines_div)
         pipelines_div.add_class("spt_resizable")
-        pipelines_div.add_style("overflow: auto")
+        pipelines_div.add_style("overflow-x: hidden")
         pipelines_div.add_style("min-height: 290px")
         pipelines_div.add_style("min-width: 200px")
         pipelines_div.add_style("width: 200px")
@@ -388,7 +389,7 @@ class PipelineListWdg(BaseRefreshWdg):
         inner.add(swap)
         swap.add_style("float: left")
 
-        title = DivWdg("<b>Current Project</b>")
+        title = DivWdg("<b>Project Pipelines</b>")
         title.add_style("padding-bottom: 2px")
         title.add_style("padding-top: 3px")
         inner.add(title)
@@ -1003,10 +1004,13 @@ class PipelineEditorWdg(BaseRefreshWdg):
         my.save_new_event = my.kwargs.get("save_new_event")
 
 
-        top.add(my.get_shelf_wdg() )
+        inner = DivWdg()
+        top.add(inner)
 
 
-        #top.add("<br clear='all'/>")
+        inner.add(my.get_shelf_wdg() )
+
+
         my.width = my.kwargs.get("width")
         if not my.width:
             my.width = 1400
@@ -1016,11 +1020,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         
         #search_type_wdg = my.get_search_type_wdg()
-        #top.add(search_type_wdg)
+        #inner.add(search_type_wdg)
 
         from schema_wdg import SchemaToolCanvasWdg
         schema_top = DivWdg()
-        top.add(schema_top)
+        inner.add(schema_top)
         schema_top.add_class("spt_schema_wrapper")
         schema_top.add_style("display: none")
         schema_top.add_style("position: relative")
@@ -1039,7 +1043,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         canvas_top = DivWdg()
-        top.add(canvas_top)
+        inner.add(canvas_top)
         canvas_top.add_class("spt_pipeline_wrapper")
         canvas_top.add_style("position: relative")
         canvas = my.get_canvas()
@@ -1078,9 +1082,13 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
             '''
             } )
-            top.add(div)
+            inner.add(div)
 
-        return top
+
+        if my.kwargs.get("is_refresh") == 'true':
+            return inner
+        else:
+            return top
 
 
     def get_shelf_wdg(my):
@@ -1194,7 +1202,21 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         project_code = Project.get_project_code()
 
-        button = ButtonNewWdg(title="Save Current Pipeline", icon=IconWdg.SAVE)
+
+
+        button = ButtonNewWdg(title="REFRESH", icon="BS_REFRESH")
+        button_row.add(button)
+
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            spt.panel.refresh(top);
+        '''
+        } )
+
+
+        button = ButtonNewWdg(title="Save Current Pipeline", icon="BS_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1215,6 +1237,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var kwargs = {
                 search_type: 'sthpw/pipeline',
                 view: 'insert',
+                show_header: false,
                 single: true,
                 'default': {
                     pipeline: xml
@@ -1286,6 +1309,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var kwargs = {
                 search_type: 'sthpw/pipeline',
                 view: 'insert',
+                show_header: false,
                 single: true,
                 default: {
                     pipeline: xml
@@ -1358,7 +1382,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Node", icon=IconWdg.ADD)
+        button = ButtonNewWdg(title="Add Node", icon="BS_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1373,7 +1397,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-        button = ButtonNewWdg(title="Delete Selected", icon=IconWdg.DELETE)
+        button = ButtonNewWdg(title="Delete Selected", icon="BS_REMOVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1394,7 +1418,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Clear Canvas", icon=IconWdg.KILL)
+        button = ButtonNewWdg(title="Clear Canvas", icon="BS_TRASH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1421,7 +1445,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
  
 
 
-        button = ButtonNewWdg(title="Edit Properties", icon=IconWdg.INFO)
+        button = ButtonNewWdg(title="Edit Properties", icon="BS_PENCIL")
         button_row.add(button)
         button.add_dialog(my.properties_dialog)
 
@@ -1440,7 +1464,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row.add_style("padding: 3px 10px 3px 5px")
         button_row.add_style("padding: 6px 10px 0px 5px")
 
-        button = SingleButtonWdg(title="Zoom In", icon=IconWdg.ZOOM_IN, show_out=False)
+        button = SingleButtonWdg(title="Zoom In", icon="BS_ZOOM_IN", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -1458,7 +1482,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Zoom Out", icon=IconWdg.ZOOM_OUT, show_out=False)
+        button = SingleButtonWdg(title="Zoom Out", icon="BS_ZOOM_OUT", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
 
