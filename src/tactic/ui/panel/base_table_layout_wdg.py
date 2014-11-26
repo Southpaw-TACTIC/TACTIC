@@ -1073,6 +1073,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     table.setStyle("width", "100%");
                     if (header_table)
                         header_table.setStyle("width", "100%");
+                    layout.setStyle("width", "100%");
                 }
                
                 '''
