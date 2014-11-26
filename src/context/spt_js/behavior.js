@@ -800,8 +800,13 @@ spt.behavior._register_bvr_event = function( el, bvr )
     }
     else {
         // THE following behavior types must only have an event registered for it ONCE per element ...
-
-        if( bvr.type == 'click' ) {
+        if( bvr.type == 'click_up' ) {
+            if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
+                el.addEvent( "click", spt.mouse._CB_click_up_action );
+                spt.behavior._mark_bvr_event_registered( el, bvr.type );
+            }
+        }
+        else if( bvr.type == 'click' ) {
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
                 el.addEvent( "mousedown", spt.mouse._CB_click_action );
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
@@ -813,12 +818,15 @@ spt.behavior._register_bvr_event = function( el, bvr )
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
         }
-        else if( bvr.type == 'click_up' ) {
+        /*
+        else if( bvr.type == "mousedown") {
+            console.log("mousedown");
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
-                el.addEvent( "click", spt.mouse._CB_click_up_action );
+                el.addEvent( "mousedown", spt.mouse._CB_click_action );
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
         }
+        */
         else if( bvr.type == 'double_click' ) {
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
                 el.addEvent( "dblclick", spt.mouse._CB_double_click_action );
@@ -895,6 +903,9 @@ spt.behavior._register_bvr_event = function( el, bvr )
 
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
+        }
+        else if(bvr.type != "load" && bvr.type != "unload") {
+            console.log("Behavior event ["+bvr.type+"] not recognized");
         }
     }
 }
@@ -1086,7 +1097,6 @@ spt.behavior._construct_bvr = function( el, bvr_spec )
     if( type == 'unload' ) {
         el.addClass( "SPT_BVR_UNLOAD_PENDING" );
     }
-
 
 
 

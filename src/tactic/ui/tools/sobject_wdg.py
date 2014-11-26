@@ -326,11 +326,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
             search_key = my.kwargs.get("search_key")
         search_key = search_key.replace("&", "&amp;")
 
+        title = my.search_type.split("/")[-1].title()
 
         values = {
                 'search_key': search_key,
                 'pipeline_code': my.pipeline_code,
-                'search_type': my.search_type
+                'search_type': my.search_type,
         }
 
         config_xml = []
@@ -430,6 +431,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 ''' % values)
 
             elif tab.find("/") != -1:
+                parts = tab.split("/")
+                name = parts[-1]
+                title = parts[-1].title().replace("_", " ")
+                tab_values = {}
+                tab_values['title'] = title
+                tab_values['search_type'] = tab
+                tab_values['search_key'] = my.search_key
+
 
                 config_xml.append('''
                 <element name="%(search_type)s" title="%(title)s">
@@ -472,6 +481,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         ''')
 
         config_xml = "".join(config_xml)
+        config_xml = config_xml.replace("&", "&amp;")
 
 
         return config_xml
