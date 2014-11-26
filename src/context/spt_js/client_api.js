@@ -1135,13 +1135,13 @@ TacticServerStub = function() {
         if (kwargs) {
             callback = kwargs.on_complete;
             on_error = kwargs.on_error;
+            delete kwargs.on_error;
+            delete kwargs.on_complete;
         }
         else { 
             callback = null;
             on_error = null;
         }
-        delete kwargs.on_error;
-        delete kwargs.on_complete;
         var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback, on_error);
         if (callback) {
             return;
