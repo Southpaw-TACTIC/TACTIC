@@ -3027,6 +3027,10 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_mode = my.kwargs.get("mode")
+        if not simple_search_mode:
+            simple_search_mode = my.kwargs.get("simple_search_mode")
+
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
@@ -3048,9 +3052,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
 
-            simple_search_mode = my.kwargs.get("mode")
-            if not simple_search_mode:
-                simple_search_mode = my.kwargs.get("simple_search_mode")
 
 
             show_shelf = my.kwargs.get("show_shelf")
