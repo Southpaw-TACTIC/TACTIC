@@ -3566,7 +3566,7 @@ class SObject(object):
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
-                    value = value.strftime('%Y-%m-%d %H:%M:%S')
+                    value = value.strftime('%Y-%m-%d %H:%M:%S %Z')
                 changed = True
 
             if changed:
@@ -5642,13 +5642,14 @@ class SearchType(SObject):
         if key.find("?") != -1:
             base, project_str = key.split("?")
 
-            # if there is a project
-            from pyasm.biz import Project
-            project_code = Project.extract_project_code(key)
-            project = Project.get_by_code(project_code)
             resource = None
-            if project:
-                resource = project.get_value("resource", no_exception=True)
+            # if there is a project
+            if project_str.find('project') != -1:
+                from pyasm.biz import Project
+                project_code = Project.extract_project_code(key)
+                project = Project.get_by_code(project_code)
+                if project:
+                    resource = project.get_value("resource", no_exception=True)
                 
             if resource:
                 search_key = "sthpw/search_object?project=%s" % project_code

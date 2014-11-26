@@ -373,11 +373,11 @@ class CustomCmd(object):
             #server.update(task, {'status': 'New'})
 
 
-            server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='copy')
-            
+            server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
 
-            cmd = PythonCmd(script_path=watch_script_path,search_type=search_type,file_path=file_path,search_key=search_key)
-            cmd.execute()
+            if watch_script_path:
+                cmd = PythonCmd(script_path=watch_script_path,search_type=search_type,drop_path=file_path,search_key=search_key)
+                cmd.execute()
 
 
 
@@ -386,9 +386,19 @@ class CustomCmd(object):
         except Exception, e:
             print "Error occurred", e
             error_message=str(e)
+
+            import traceback
+            tb = sys.exc_info()[2]
+            stacktrace = traceback.format_tb(tb)
+            stacktrace_str = "".join(stacktrace)
+            print "-"*50
+            print stacktrace_str
+
+
             version_num='Error:'
             system_time=strftime("%Y/%m/%d %H:%M", gmtime())
-            pre_log=file_name+(50-len(file_name))*' '+system_time+(33-len(system_time))*' '+version_num+(15-len(version_num))*' ' +error_message+'\n'      
+            pre_log=file_name+(50-len(file_name))*' '+system_time+(33-len(system_time))*' '+version_num+(15-len(version_num))*' ' +error_message+'\n'\
+                    + stacktrace_str + '\n' + watch_script_path
             # Write data into TACTIC_log file under /tmp/drop
             f = open(log_path, 'a')
             f.write(pre_log)
@@ -422,8 +432,10 @@ class CustomCmd(object):
             f.close()
 
             # Delete the sourse file after check-in step.
-            print "File checked in. Source file [%s] deleted: " %file_name
-            os.unlink(file_path)
+            print "File checked in."
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+                print "Source file [%s] deleted: " %file_name
 
 
 

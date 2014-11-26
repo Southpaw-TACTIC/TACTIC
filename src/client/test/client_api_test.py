@@ -756,6 +756,8 @@ class ClientApiTest(unittest.TestCase):
         # do another checkin, but leaving a breadcrumb
         my.server.upload_file(file_path)
         result = my.server.simple_checkin(search_key, context, file_path, file_type="foo", is_current=False, breadcrumb=True)
+
+        
         breadcrumb_file = "%s.snapshot" % file_path
         my.assertEquals( True, os.path.exists(file_path) )
         # remove it
@@ -1034,6 +1036,9 @@ class ClientApiTest(unittest.TestCase):
         if not linux_client_repo_dir:
             linux_client_repo_dir = base_dirs.get('asset_base_dir')
 
+        if isinstance(linux_client_repo_dir, dict):
+            linux_client_repo_dir = linux_client_repo_dir.get('default')
+
         my.assertEquals(1, len(dep_snapshots))
         my.assertEquals(2, len(paths))
 
@@ -1044,6 +1049,8 @@ class ClientApiTest(unittest.TestCase):
 
         paths = dep_snapshots[0].get('__paths__')
         web_base_dir = base_dirs.get('web_base_dir')
+        if isinstance(web_base_dir, dict):
+            web_base_dir = web_base_dir.get('default')
         for path in paths:
             my.assertEquals(path.startswith('%s/unittest/person/'%web_base_dir), True)
     
@@ -1536,9 +1543,8 @@ class ClientApiTest(unittest.TestCase):
         columns = ['code']
         children = my.server.get_all_children(country_key, child_type, columns=columns)
         child = children[0]
-
-        # code and __search_key__
-        my.assertEquals(2, len(child.keys() ) )
+        # code, __search_type__,  and __search_key__
+        my.assertEquals(3, len(child.keys() ) )
 
         # test setting parent
         data = { 'code': 'calgary' }
