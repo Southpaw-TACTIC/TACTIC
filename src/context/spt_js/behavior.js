@@ -905,7 +905,7 @@ spt.behavior._register_bvr_event = function( el, bvr )
             }
         }
         else if(bvr.type != "load" && bvr.type != "unload") {
-            console.log("Behavior event ["+bvr.type+"] not recognized");
+            log.critical("Behavior event ["+bvr.type+"] not recognized");
         }
     }
 }
