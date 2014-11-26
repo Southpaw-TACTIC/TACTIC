@@ -570,7 +570,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_values:
 
-           
             keyword_value = keyword_values[0].get('value')
             if keyword_value:
                 from tactic.ui.filter import KeywordFilterElementWdg
@@ -841,7 +840,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else:
             show_keyword_search = False
 
-        # TEST
+        # TEST: on by default
         show_keyword_search = True
 
         
@@ -864,8 +863,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="", width="75", show_partial=False, show_toggle=True)
+            keyword_filter = KeywordFilterElementWdg(
+                    column=my.keyword_column,
+                    mode="keyword",
+                    filter_search_type=my.search_type,
+                    icon="",
+                    width="75",
+                    show_partial=False,
+                    show_toggle=True
+            )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -875,9 +881,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                 var el = bvr.src_el.getElement(".spt_text_input");
+                var el = bvr.src_el.getElement(".spt_text_input");
                 el.setStyle("width", "230px");
-                bvr.src_el.setStyle("width", "230px");
                 el.focus();
                 el.select();
                 '''})

@@ -2561,6 +2561,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'category': 'Search'
         },
+        'simple_search_mode': {
+            'description': 'Number of visible rows in the simple search bar',
+            'type': 'SelectWdg',
+            'category': 'Search',
+            'values': 'inline|hidden',
+        },
+
+
 
 
         "search_view": "search view to be displayed",
@@ -3041,8 +3049,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
 
             simple_search_mode = my.kwargs.get("mode")
+            if not simple_search_mode:
+                simple_search_mode = my.kwargs.get("simple_search_mode")
+
+
             show_shelf = my.kwargs.get("show_shelf")
-            if simple_search_mode == "inline" and show_shelf in [True, 'true']:
+            if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
                 show_search = False
             elif show_shelf in [False, 'false']:
                 show_search = True
@@ -3148,6 +3160,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
+            "simple_search_mode": simple_search_mode,
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
