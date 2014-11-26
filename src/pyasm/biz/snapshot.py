@@ -1063,13 +1063,13 @@ class Snapshot(SObject):
             last_current.set_value("is_current", False)
             last_current.commit()
 
-        # if there is a versionless, point it to this snapshot
-        if update_versionless:
-            my.update_versionless("current")
-
         my.set_value("is_current", True)
         if commit:
             my.commit()
+
+        # if there is a versionless, point it to this snapshot
+        if update_versionless:
+            my.update_versionless("current")
 
 
 
