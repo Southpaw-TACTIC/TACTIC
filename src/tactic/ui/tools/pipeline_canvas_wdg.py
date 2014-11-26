@@ -3205,11 +3205,12 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         }
     } 
 
+    // randomize somewhat so that user can see that a new pipeline was loaded
     if (!top) {
-        top = 100;
+        top = 90 + parseInt(Math.random()*20);
     }
     if (!left) {
-        left = 100;
+        left = 90 + parseInt(Math.random()*20);
     }
 
     // find out how many groups there are
@@ -3227,7 +3228,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
         if (!xpos) {
-            xpos = offset_left + 125*i;
+            xpos = offset_left + 150*i;
         }
         if (!ypos) {
             ypos = offset_top + 50*i;

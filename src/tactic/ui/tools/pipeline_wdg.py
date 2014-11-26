@@ -890,7 +890,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
 
-        menu_item = MenuItem(type='action', label='Customize Task Status')
+        menu_item = MenuItem(type='action', label='Edit Task Status Pipeline')
         menu.add(menu_item)
         menu_item.add_behavior( {
         'cbjs_action': '''
@@ -916,6 +916,11 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             project_code: project_code
         };
         var task_pipeline = server.get_unique_sobject(search_type, data);
+
+
+        spt.pipeline.clear_canvas();
+
+
         var xml = task_pipeline.pipeline;
         if (xml != '') {
             spt.pipeline.import_pipeline(code);
@@ -937,6 +942,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         xml += '</pipeline>\\n';
 
         server.update(task_pipeline, {pipeline: xml, color: color} );
+
+        spt.pipeline.import_pipeline(code);
+
         '''
         } )
 
