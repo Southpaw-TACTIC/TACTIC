@@ -119,6 +119,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
 
+
         # TODO: later
         """
         info = table.add_cell()
@@ -829,7 +830,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             element_name = 'trigger_'+process;
             title = 'Triggers ['+process+']';
-            spt.tab.add_new(element_name, title, class_name, kwargs);
+            //spt.tab.add_new(element_name, title, class_name, kwargs);
+            spt.panel.load_popup(title, class_name, kwargs);
 
             '''
         } )
@@ -1048,6 +1050,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         canvas_top.add_style("position: relative")
         canvas = my.get_canvas()
         canvas_top.add(canvas)
+
 
 
         canvas_title = DivWdg()

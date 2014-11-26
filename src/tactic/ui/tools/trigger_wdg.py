@@ -34,6 +34,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, Che
 from tactic.ui.container import ResizableTableWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 import os
 
@@ -95,14 +96,14 @@ class TriggerToolWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         left.add_style("border: solid 1px %s" % left.get_color("border") )
         left.add_color("color", "color3")
-        left.add_color("background", "background3")
+        left.add_color("background", "background")
 
         title_div = DivWdg()
         left.add(title_div)
-        title_div.add_style("height: 25px")
+        title_div.add_style("height: 30px")
         title_div.add_style("padding-left: 5px")
         title_div.add_style("padding-top: 8px")
-        title_div.add_gradient("background", "background")
+        title_div.add_color("background", "background3")
         title_div.add_style("min-width: 150px")
 
 
@@ -115,7 +116,6 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         add_button = ActionButtonWdg(title='+', size='small', tip='Add a new trigger')
         title_div.add(add_button)
-        add_button.add_style("margin-top: -8px")
         add_button.add_style("float: right")
         add_button.add_behavior( {
         'type': 'click_up',
@@ -471,6 +471,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         div.add("<br/>")
 
         table = Table()
+        table.add_style("width: 100%")
         table.add_color("color", "color")
         div.add(table)
 
@@ -478,9 +479,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("padding-bottom: 5px")
         td.add("Title: ")
-        title_text = TextWdg("title")
-        title_text.add_style("width: 200px")
+        title_text = TextInputWdg(name="title")
+        title_text.add_style("margin-bottom: 10px")
         title_text.set_value(title)
+        title_text.add_style("width: 100%")
         td = table.add_cell()
         td.add(title_text)
  
@@ -488,15 +490,18 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         tr = table.add_row()
         td = table.add_cell()
-        td.add_style("padding-bottom: 5px")
+        td.add_style("padding-bottom: 15px")
         td.add("Description: ")
         desc_text = TextAreaWdg("description")
-        desc_text.add_style("width: 200px")
-        desc_text.add_style("height: 40px")
+        desc_text.add_style("margin-bottom: 10px")
+        desc_text.add_class("form-control")
+        desc_text.add_style("width: 100%")
+        desc_text.add_style("height: 60px")
         desc_text.set_value(description)
         td = table.add_cell()
         td.add(desc_text)
-        
+       
+        """
         table.add_row()
         td = table.add_cell()
         td.add("Unique Code (optional): ")
@@ -507,6 +512,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         desc_text.add_style("width: 200px")
         desc_text.set_value(code)
         td.add(desc_text)
+        """
         td.add("<br/>")
  
 
@@ -514,6 +520,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add("<b>Event: </b>")
         td.add_style("padding-top", "20px")
+        td.add("<hr/>")
 
 
         # Higher level triggers
@@ -567,9 +574,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
-        td.add_color("background", "background", -5)
         td.add_style("padding: 10px")
-        td.add_border()
         td.add("When&nbsp;&nbsp;&nbsp;")
 
         #td = table.add_cell()
@@ -699,14 +704,13 @@ class TriggerDetailWdg(BaseRefreshWdg):
         title.add("Action:")
         title.add_style("font-weight: bold")
         title.add_style("padding: 20 0 0 0")
+        td.add("<hr/>")
 
         table.add_row()
         #td = table.add_cell()
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
-        td.add_color("background", "background", -5)
         td.add_style("padding: 10px")
-        td.add_border()
         if trigger_type != 'notification':
             
             td.add("Do the following: ")
@@ -1179,11 +1183,12 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
     def get_process_div(my, process):
         process_div = DivWdg()
-        process_div.add_style("padding: 3px")
+        process_div.add_style("padding: 8px 5px")
 
         checkbox = CheckboxWdg("dst_process")
         process_div.add(checkbox)
         checkbox.add_attr("spt_is_multiple", "true")
+        checkbox.add_style("margin: 5px 8px 8px -8px")
 
         is_checked = False
         dst_status = ''
@@ -1216,6 +1221,8 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             status_select.set_value(dst_status )
         process_div.add(status_select)
         status_select.set_option("values", statuses)
+        status_select.add_style("margin-top: 5px")
+        status_select.add_style("margin-left: 15px")
 
         return process_div
 
