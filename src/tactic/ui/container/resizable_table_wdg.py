@@ -22,6 +22,7 @@ class ResizableTableWdg(BaseRefreshWdg):
         my.table = Table()
         my.table.add_style("border-collapse: collapse")
         my.table.add_style("padding: 0px")
+        my.table.add_style("width: 100%")
         my.table.set_attr("cellpadding", "0px")
         my.table.set_attr("cellspacing", "0px")
         my.is_first_row = True
