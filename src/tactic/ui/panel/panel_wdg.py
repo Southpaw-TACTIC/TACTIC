@@ -3143,6 +3143,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['show_hover_name'] = my.kwargs.get("show_hover_name")
             kwargs['use_title'] = my.kwargs.get("use_title")
             kwargs['show_name'] = my.kwargs.get('show_name')
+            kwargs['show_top_pagination'] = my.kwargs.get('show_top_pagination')
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
