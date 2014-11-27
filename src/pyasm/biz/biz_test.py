@@ -77,6 +77,7 @@ class BizTest(unittest.TestCase):
             my._test_sobject_hierarchy()
 
             my._test_add_tasks()
+            my._test_time()
         finally:
             my.transaction.rollback()
             Project.set_project('unittest')
@@ -170,7 +171,36 @@ class BizTest(unittest.TestCase):
         my.assertEquals(context_list, ['design2:design2/002','design3:design3/003'])
 
 
+    def _test_time(my):
+        ''' test timezone related behavior'''
+        sobject = SearchType.create('sthpw/task')
+        sobject.set_value('project_code','unittest')
+        sobject.set_value('bid_start_date', '2014-11-11 05:00:00')
+        time = sobject.get_value('bid_start_date')
+        my.assertEquals(time, '2014-11-11 05:00:00')
 
+        sobject.commit()
+
+        time = sobject.get_value('bid_start_date')
+        my.assertEquals(time, '2014-11-11 05:00:00')
+        from pyasm.search import DbContainer
+        sql = DbContainer.get('sthpw')
+        db_value = sql.do_query('SELECT bid_start_date from task where id = %s'%sobject.get_id())
+        
+        # 2014-11-11 00:00:00 is actually written to the database
+        my.assertEquals(db_value[0][0].strftime('%Y-%m-%d %H:%M:%S %Z'), '2014-11-11 00:00:00 ')
+        
+        # an sType specified without a project but with an id could be a common human error
+        # but it should handle that fine
+        obj1 = Search.eval('@SOBJECT(unittest/person?project=unittest["id", "%s"])'%sobject.get_id(), single=True)
+        obj2= Search.eval('@SOBJECT(unittest/person?id=2["id", "%s"])'%sobject.get_id(), single=True)
+        obj3 = Search.eval('@SOBJECT(sthpw/task?id=2["id", "%s"])'%sobject.get_id(), single=True)
+        task = Search.eval('@SOBJECT(sthpw/task["id", "%s"])'%sobject.get_id(), single=True)
+
+        # EST and GMT diff is 5 hours
+        my.assertEquals(task.get_value('bid_start_date'), '2014-11-11 05:00:00')
+
+        #TODO: test with time zone aware columns
 
     def _test_snapshot(my):
 
@@ -214,6 +244,7 @@ class BizTest(unittest.TestCase):
             file = open(my.file_path, 'w')
             file.write("whatever")
             file.close()
+
             # check in 2 current revisions
             checkin = FileCheckin(my.person, my.file_path, "main", context=my.context, is_revision=True, is_current=True)
             checkin.execute()
@@ -469,6 +500,7 @@ class BizTest(unittest.TestCase):
 
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
+        
         expected = ['unittest/person_in_car', 'unittest/house']
         my.assertEquals(True, expected[0] in child_types)
         my.assertEquals(True, expected[1] in child_types)

@@ -1266,6 +1266,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
                 }
                 */
+
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
@@ -5266,13 +5267,20 @@ spt.table.set_column_width = function(element_name, width) {
             total_width += size.x;
             new_width = size.x;
         }
+
+
         //header.setStyle("width", new_width);
         //if (row)
         //    cells[i].setStyle("width", new_width);
 
+        if (new_width) {
+            header.setStyle("width", new_width);
+            if (row && cells.length != 0) {
+                cells[i].setStyle("width", new_width);
+            }
+        }
     }
     */
-
 
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
@@ -5282,6 +5290,8 @@ spt.table.set_column_width = function(element_name, width) {
 
     curr_header.setStyle("width", width);
     cell.setStyle("width", width);
+
+
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
     insert_cell.setStyle("width", width);
   

@@ -304,7 +304,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         #div.add_style("width: 350px")
 
         select = SelectWdg("value")
-        select.add_style("width: 150px")
+        select.add_style("width: 190")
 
         default_value = my.kwargs.get("default")
 
@@ -363,7 +363,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
             op_select = SelectWdg("op")
-            op_select.add_style("width: 75px")
+            op_select.add_style("width: 100px")
             # only support in or not in for multi stypes column
             if my.multi_search_types:
                 op_select.set_option("labels", "is|is not")
@@ -1417,7 +1417,6 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
             values = my.get_option("select_values")
             labels = my.get_option("select_labels")
             select = SelectWdg("field")
-            select.add_style("width: 120px")
 
             select.add_empty_option("-- Select --")
             select.set_option("values", values)

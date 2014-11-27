@@ -146,7 +146,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 xelement.setStyle("opacity", "0.4");
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
-                if (callback) callback();
+                if (callback) callback(panel);
             }
 
 

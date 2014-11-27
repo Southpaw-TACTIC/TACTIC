@@ -23,6 +23,7 @@ from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
 from tactic.ui.container.smart_menu_wdg import SmartMenu
 from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 
 class SideBarPanelWdg(BaseRefreshWdg):
@@ -3408,7 +3409,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
         }
         save_button.add_behavior(behavior)
-        save_button.add_style("float: left")
 
 
         cancel_button = ActionButtonWdg(title='Cancel')
@@ -3424,13 +3424,14 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div = DivWdg(id='save_view_wdg')
         div.add_class("spt_new_view_top")
         div.add_class("spt_save_top")
-        div.add_style("width: 300px")
+        div.add_style("width: 280px")
+        div.add_style("padding: 15px")
         div.add_color("color", "color")
 
         title_div = DivWdg("View Title: ")
         title_div.add_style('width: 100px')
         div.add(title_div)
-        text = TextWdg("save_view_title")
+        text = TextInputWdg(name="save_view_title")
         div.add(text)
         text.add_behavior( {
         'type': 'change',
@@ -3452,7 +3453,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div.add(title_div)
 
         div.add(HtmlElement.br())
-        text = TextWdg("save_view_name")
+        text = TextInputWdg(name="save_view_name")
         text.add_class("spt_new_view_name")
         #text.add_style('display: none')
         text.add_class('spt_save_view_name')
@@ -3521,14 +3522,17 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
 
 
-        div.add(HtmlElement.hr() )
-        button_div = DivWdg()
-        button_div.add_style("text-align: center")
-        button_div.add(save_button)
-        button_div.add(cancel_button)
-        div.add(button_div)
-
         div.add(HtmlElement.br() )
+
+        # need to use a table for now
+        button_table = Table()
+        button_table.add_style("margin: 0px auto")
+        button_table.add_style("text-align: center")
+        button_table.add_row()
+        button_table.add_cell(save_button)
+        button_table.add_cell(cancel_button)
+        div.add(button_table)
+
         
         return div
 

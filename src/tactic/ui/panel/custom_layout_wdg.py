@@ -390,11 +390,18 @@ class CustomLayoutWdg(BaseRefreshWdg):
         my.set_as_panel(top)
         top.add_class("spt_custom_top")
 
+        ignore_events = my.kwargs.get("ignore_events") in ['true', True]
+
+        if ignore_events:
+            top.add_style("pointer-events: none")
+
 
         # create the content div
         content = DivWdg()
         content.add_class("spt_custom_content")
         content.add_style("position: relative")
+        if ignore_events:
+            content.add_style("pointer-events: none")
         top.add(content)
         my.content = content
 

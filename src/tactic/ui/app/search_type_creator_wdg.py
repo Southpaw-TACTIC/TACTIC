@@ -229,7 +229,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         
         from tactic.ui.container import WizardWdg
-        wizard = WizardWdg(title="Register a new sType", height="400px", width="550px")
+        #wizard = WizardWdg(title="Register a new sType", height="400px", width="550px")
+        wizard = WizardWdg(title="none", height="400px", width="550px")
         top.add(wizard)
 
 
