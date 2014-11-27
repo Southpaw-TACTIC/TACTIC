@@ -20,6 +20,7 @@ from pyasm.widget import HiddenWdg, TextWdg, PasswordWdg, SelectWdg, FilterSelec
 
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.input import TextInputWdg
 
 from filter_data import FilterData
 
@@ -668,7 +669,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         filter_id = "%s_%s" % (my.prefix, filter_name)
         div.set_id(filter_id)
-        div.add_style("margin-left: 10px")
+        #div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
         #div.add_style("width: 600px")
 
@@ -730,7 +731,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 related_search_type = search_type
             div.add( search_type_wdg )
 
-            spacing = DivWdg('&nbsp; - &nbsp;')
+            spacing = DivWdg('&nbsp; &nbsp;')
             spacing.add_style("float: left")
             div.add(spacing)
 
@@ -1966,7 +1967,8 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         
         my.prefix = my.kwargs.get("prefix")
         # this name corresponds to alter_search()
-        my.text = TextWdg('%s_search_text' %my.prefix)
+        name = '%s_search_text' % my.prefix
+        my.text = TextInputWdg(name=name)
         my.text.set_attr("size","50")
         my.text.add_behavior( {
             'type': 'keyup',
@@ -2046,10 +2048,11 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         my.columns = columns
 
     def get_display(my):
-        widget = DivWdg()
+        widget = Table()
+        widget.add_row()
         widget.add_style("margin-left: 25px")
 
-        widget.add_style("padding: 5px")
+        widget.add_style("padding: 8px")
         # this is required
         widget.add_class("spt_search_filter")
 
@@ -2063,12 +2066,13 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         # this trick only works with when there is only one checkbox with this prefix
         checkbox.set_persist_on_submit(prefix=my.prefix)
-        widget.add(SpanWdg(checkbox, css='small'))
-        
-        widget.add(my.text)
+        td = widget.add_cell(checkbox)
+        td.add_style("padding-right: 10px")
+        widget.add_cell(my.text)
+        my.text.add_style("display", "inline")
 
         hint = HintWdg('[ %s ] columns are used in this search as well as any entries in the keywords column.' %', '.join(my.columns))
-        widget.add(hint)
+        widget.add_cell(hint)
 
         return widget
 

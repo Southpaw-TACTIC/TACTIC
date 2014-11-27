@@ -584,7 +584,10 @@ class EditWdg(BaseRefreshWdg):
 
             # Bootstrap
             widget.add_class("form-control")
-            widget.add_style("width: 100%")
+
+            from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
+            if not isinstance(widget, CheckboxWdg):
+                widget.add_style("width: 100%")
 
 
             class EditTitleWdg(BaseRefreshWdg):
