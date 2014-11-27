@@ -301,8 +301,8 @@ class PageNavContainerWdg(BaseRefreshWdg):
         from tactic.ui.container import ResizableTableWdg
         main_table = ResizableTableWdg()
         main_table.set_keep_table_size()
-        # should let resizable table adjust based on content
-        #main_table.add_style("width: 100%")
+
+        main_table.add_style("width: 100%")
 
         td.add(main_table)
 

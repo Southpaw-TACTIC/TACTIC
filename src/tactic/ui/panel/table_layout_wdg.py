@@ -712,7 +712,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         else:
             sticky_header = True
 
-        inner.add_style("width: 100%")
+        #inner.add_style("width: 100%")
 
         if sticky_header:
 
@@ -5254,7 +5254,6 @@ spt.table.set_column_width = function(element_name, width) {
     
     // add up total_width
     // Commented out: not necessary for basic table structure
-    /*
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
         if (header.getAttribute("spt_element_name") == element_name) {
@@ -5272,20 +5271,23 @@ spt.table.set_column_width = function(element_name, width) {
         //header.setStyle("width", new_width);
         //if (row)
         //    cells[i].setStyle("width", new_width);
-
+        /*
         if (new_width) {
             header.setStyle("width", new_width);
             if (row && cells.length != 0) {
                 cells[i].setStyle("width", new_width);
             }
         }
+        */
     }
-    */
 
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
         table.setStyle("width", total_width);
         header_table.setStyle("width", total_width);
+
+        var layout = spt.table.get_layout();
+        layout.setStyle("width", total_width+31);
     }
 
     curr_header.setStyle("width", width);
