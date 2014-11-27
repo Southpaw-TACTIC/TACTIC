@@ -4808,8 +4808,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // bottom so just change the bg color
             if (kw['refresh_bottom']) {
                 var bottom_row = spt.table.get_bottom_row(); 
-                if (bottom_row)
-                    bottom_row.setStyle('background', '#E6CB81');
+                if (bottom_row) {
+                    // This color doesn't really fit color palette
+                    //bottom_row.setStyle('background', '#E6CB81');
+                }
             }
 
 

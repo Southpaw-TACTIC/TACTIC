@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger','DisplayNameTrigger']
+__all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger','TaskApprovalTrigger', 'DisplayNameTrigger']
 
 from pyasm.common import Common, Config, Environment
 from pyasm.command import Trigger
@@ -97,6 +97,51 @@ class StatusLogTrigger(Trigger):
             # if this is successful, the store it in the status_log
             StatusLog.create(sobject, value, prev_value)
 
+
+
+
+class TaskApprovalTrigger(Trigger):
+    def execute(my):
+
+        task = my.get_caller()
+        process = task.get_value("process")
+
+        # for approval, the task must be completed
+        completion = task.get_completion()
+        if completion != 100:
+            return
+
+        from pyasm.biz import Task, Pipeline
+
+        tasks = task.get_output_tasks(type="approval")
+
+        if not tasks:
+            # autocreate ??
+
+            parent = task.get_parent()
+            pipeline = Pipeline.get_by_sobject(parent)
+            if not pipeline:
+                return
+            processes = pipeline.get_output_processes(process, type="approval")
+            if not processes:
+                return
+
+            if processes:
+                print "Missing task: ", processes
+
+
+        # set those approvals to "Pending"
+        for task in tasks:
+
+            task.set_value("status", "Pending")
+            task.commit()
+
+
+
+
+
+
+
 class DisplayNameTrigger(Trigger):
 
     def execute(my):
@@ -177,6 +222,18 @@ class WebInit(Common):
         trigger.set_value("class_name", "pyasm.web.web_init.StatusLogTrigger")
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=True)
+
+
+        event = "change|sthpw/task|status"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", "pyasm.web.web_init.TaskApprovalTrigger")
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=True)
+
+
+
+
 
         event = "insert|sthpw/login"
         trigger = SearchType.create("sthpw/trigger")

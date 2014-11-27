@@ -1191,7 +1191,12 @@ class WebLoginWdg(Widget):
         # if admin password is still the default, force the user to change it
         change_admin = False
         if allow_change_admin:
-            admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            finally:
+                sudo.exit()
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()
