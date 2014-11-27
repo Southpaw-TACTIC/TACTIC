@@ -504,7 +504,7 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
         filter_top.add_style("padding: 5px")
-        filter_top.add_style("min-width: 700px")
+        filter_top.add_style("min-width: 800px")
         filter_top.add_border()
         my.set_as_panel(filter_top)
 
@@ -671,11 +671,12 @@ class SearchWdg(BaseRefreshWdg):
                 'cbjs_action': cbjs_action
             } )
             div.add_color("color", "color", +5)
-            div.add_gradient("background", "background", -5, -5)
+            #div.add_gradient("background", "background", -5, -5)
             div.add_style("margin-top: -1px")
+            div.add_style("height: 18px")
 
             div.add_border()
-            div.add_style("padding: 3px")
+            div.add_style("padding: 8px 5px")
             div.add_style("whitespace: nowrap")
 
             
@@ -703,7 +704,7 @@ class SearchWdg(BaseRefreshWdg):
             #div.add_style("background-color: #333")
             div.add_color("background", "background")
             div.add_border()
-            div.add_style("padding: 5px 3px 5px 3px")
+            div.add_style("padding: 10px 8px")
             div.add_style("margin-top: -1px")
             #div.add_style("margin-left: 20px")
             #div.add_style("width: 660")
@@ -715,7 +716,9 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         buttons_div.add_style("margin-top: 7px")
         buttons_div.add_style("margin-bottom: 7px")
-        buttons_div.add(my.get_search_wdg() )
+        search_wdg = my.get_search_wdg()
+        search_wdg.add_style("margin: 15px auto")
+        buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
 

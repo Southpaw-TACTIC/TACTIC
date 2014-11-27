@@ -848,6 +848,9 @@ class CheckboxWdg(BaseInputWdg):
         # state of the element (on or off) or the "value" option
         values = my.get_values(for_display=True)
         # for multiple checkboxes using the same name
+
+        my.add_style("width", "16px", override=False)
+        my.add_style("height", "16px", override=False)
         
         if len(values) == 1:
             # skip boolean
