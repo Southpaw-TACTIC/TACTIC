@@ -135,11 +135,11 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
         # top pagination 
-        my.top_pagination = my.kwargs.get('top_pagination')
-        if my.top_pagination == None:
-            my.top_pagination = True
+        my.show_top_pagination = my.kwargs.get('show_top_pagination')
+        if my.show_top_pagination == None:
+            my.show_top_pagination = True
 
-        if my.top_pagination:
+        if my.show_top_pagination:
             from tactic.ui.app import SearchLimitSimpleWdg
             limit_wdg = SearchLimitSimpleWdg(
                 count=info.get("count"),
