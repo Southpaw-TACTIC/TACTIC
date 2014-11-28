@@ -102,18 +102,29 @@ class StatusLogTrigger(Trigger):
 
 class TaskApprovalTrigger(Trigger):
     def execute(my):
+        from pyasm.biz import Task, Pipeline
 
-        task = my.get_caller()
-        process = task.get_value("process")
+
+        src_task = my.get_caller()
+        process = src_task.get_value("process")
+        status = src_task.get_value("status")
+
+        pipeline_code = src_task.get_value("pipeline_code")
+        if pipeline_code == "approval":
+            tasks = src_task.get_output_tasks()
+
+            if status == "Revise":
+                pass
+
+        else:
+            tasks = src_task.get_output_tasks(type="approval")
+
 
         # for approval, the task must be completed
-        completion = task.get_completion()
+        completion = src_task.get_completion()
         if completion != 100:
             return
 
-        from pyasm.biz import Task, Pipeline
-
-        tasks = task.get_output_tasks(type="approval")
 
         if not tasks:
             # autocreate ??
@@ -132,7 +143,6 @@ class TaskApprovalTrigger(Trigger):
 
         # set those approvals to "Pending"
         for task in tasks:
-
             task.set_value("status", "Pending")
             task.commit()
 

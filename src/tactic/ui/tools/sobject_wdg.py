@@ -783,6 +783,7 @@ __all__.append("TaskDetailPipelineWrapperWdg")
 __all__.append("TaskDetailPipelineWdg")
 class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
+
     def get_display(my):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
@@ -817,6 +818,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             'height': 500,
             'pipeline': pipeline_code,
             'scale': 0.7,
+            'is_editable': False,
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
         div.add(pipeline)

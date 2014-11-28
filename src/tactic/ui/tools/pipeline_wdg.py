@@ -1216,7 +1216,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
     def get_canvas(my):
-        canvas = PipelineToolCanvasWdg(height=my.height, width=my.width)
+        is_editable = my.kwargs.get("is_editable")
+        canvas = PipelineToolCanvasWdg(height=my.height, width=my.width, is_editable=is_editable)
         return canvas
 
 

@@ -27,10 +27,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
     def init(my):
+        print my.kwargs
         my.top = DivWdg()
         my.set_as_panel(my.top)
         my.top.add_class("spt_pipeline_top")
         my.unique_id = my.top.set_unique_id();
+
+        my.is_editable = my.kwargs.get("is_editable")
+        if my.is_editable in ['false', False]:
+            my.is_editable = False
+        else:
+            my.is_editable = True
+        #my.is_editable = False
 
     def get_unique_id(my):
         return my.unique_id
@@ -619,30 +627,31 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } )
 
         
+        if my.is_editable:
 
-        # add the behavior that will draw the connector
-        left_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-        
-        
+            # add the behavior that will draw the connector
+            left_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            
+            
 
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "modkeys": 'SHIFT',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "modkeys": 'SHIFT',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
 
 
 
@@ -779,58 +788,60 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
             } )
 
-        
-
-        # add the behavior that will draw the connector
-        left_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-        
-        
-
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "modkeys": 'SHIFT',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-
-
-
         left_nob.add_style("display", "none")
         right_nob.add_style("display", "none")
+       
 
-        node.add_behavior( {
-        "type": 'mouseenter',
-        "cbjs_action": '''
-        var left_nob = bvr.src_el.getElement(".spt_left_nob");
-        left_nob.setStyle("display", "");
-        var right_nob = bvr.src_el.getElement(".spt_right_nob");
-        right_nob.setStyle("display", "");
-        '''
-        } )
+        if my.is_editable:
+
+            # add the behavior that will draw the connector
+            left_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            
+            
+
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "modkeys": 'SHIFT',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
 
 
-        node.add_behavior( {
-        "type": 'mouseleave',
-        "cbjs_action": '''
-        var left_nob = bvr.src_el.getElement(".spt_left_nob");
-        left_nob.setStyle("display", "none");
-        var right_nob = bvr.src_el.getElement(".spt_right_nob");
-        right_nob.setStyle("display", "none");
-        '''
-        } )
+
+
+            node.add_behavior( {
+            "type": 'mouseenter',
+            "cbjs_action": '''
+            var left_nob = bvr.src_el.getElement(".spt_left_nob");
+            left_nob.setStyle("display", "");
+            var right_nob = bvr.src_el.getElement(".spt_right_nob");
+            right_nob.setStyle("display", "");
+            '''
+            } )
+
+
+            node.add_behavior( {
+            "type": 'mouseleave',
+            "cbjs_action": '''
+            var left_nob = bvr.src_el.getElement(".spt_left_nob");
+            left_nob.setStyle("display", "none");
+            var right_nob = bvr.src_el.getElement(".spt_right_nob");
+            right_nob.setStyle("display", "none");
+            '''
+            } )
 
 
 
@@ -838,6 +849,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
     def add_default_node_behaviors(my, node, text):
+
+        if not my.is_editable:
+            return
 
 
         # CTRL click will allow you to change the node name
