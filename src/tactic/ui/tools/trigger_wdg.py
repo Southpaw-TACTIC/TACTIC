@@ -280,9 +280,7 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         title = trigger.get_value("title", no_exception=True)
         if not title:
-            title = trigger.get_code()
-
-
+            title = "<i style='opacity: 0.7'>%s</i>" % trigger.get_code()
 
         trigger_div.add_attr("title", description)
 
@@ -434,7 +432,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             else:
                 div.add("<b>Edit existing trigger</b><hr/><br/>")
 
-            div.add("Trigger: %s - %s<br/>" % (trigger.get_code(), trigger.get_value("description") ))
+            div.add("Trigger: &nbsp; &nbsp; %s - %s<br/>" % (trigger.get_code(), trigger.get_value("description") ))
 
 
 
@@ -478,7 +476,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr = table.add_row()
         td = table.add_cell()
         td.add_style("padding-bottom: 5px")
-        td.add("Title: ")
+        # This is labeled as name, but is really title in the database.
+        # The column in the database should have been called "name"
+        td.add("Name: ")
         title_text = TextInputWdg(name="title")
         title_text.add_style("margin-bottom: 10px")
         title_text.set_value(title)

@@ -1072,7 +1072,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("height: auto")
 
 
-        my.add_nobs(node, width, height)
+        #my.add_nobs(node, width, height)
 
         content = DivWdg()
         node.add(content)
@@ -1128,12 +1128,24 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
+
+            var node = bvr.src_el.spt_from_node;
+
+            var process = node.getAttribute("spt_element_name");
+            var pipeline_code = node.spt_group;
+            var search_type = spt.pipeline.get_search_type(pipeline_code);
+
             var class_name = 'tactic.ui.tools.trigger_wdg.TriggerToolWdg';
             var kwargs = {
-                pipeline_code: '',
-                process: '',
+                search_type: search_type,
+                pipeline_code: pipeline_code,
+                process: process,
             }
-            spt.panel.load_popup("Triggers / Notifications", class_name, kwargs);
+
+            element_name = 'trigger_'+process;
+            title = 'Triggers ['+process+']';
+            //spt.tab.add_new(element_name, title, class_name, kwargs);
+            spt.panel.load_popup(title, class_name, kwargs);
 
             '''
         } )
@@ -1786,6 +1798,55 @@ spt.pipeline.get_full_node_name = function(node, group_name) {
     return name;
 }
 
+
+
+
+spt.pipeline.get_input_nodes = function(node) {
+
+    var group = spt.pipeline.get_group_by_node(node);
+    var connectors = group.get_connectors();
+
+    var nodes = [];
+    for (var i = 0; i < connectors.length; i++) {
+        var connector = connectors[i];
+        var to_node = connector.get_to_node();
+        var from_node = connector.get_from_node();
+        if (to_node == node) {
+            nodes.push(from_node);
+        }
+    }
+
+    return nodes;
+
+}
+
+
+
+spt.pipeline.get_output_nodes = function(node) {
+
+    var group = spt.pipeline.get_group_by_node(node);
+    var connectors = group.get_connectors();
+
+    var nodes = [];
+    for (var i = 0; i < connectors.length; i++) {
+        var connector = connectors[i];
+        var to_node = connector.get_to_node();
+        var from_node = connector.get_from_node();
+        if (from_node == node) {
+            nodes.push(from_node);
+        }
+    }
+
+    return nodes;
+}
+
+
+
+
+
+// Group methods
+
+
 spt.pipeline.get_nodes_by_group = function(group_name) {
     var group = spt.pipeline.get_group(group_name);
     if (group == null) {
@@ -1981,7 +2042,10 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     // switch the color
     //var color = group_info.get_color();
     var color = '';
-    if (group_info.get_node_type() == 'process') 
+    if (node_type == "trigger") {
+        color = "#FFF";
+    }
+    else if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);
@@ -2985,6 +3049,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var hscale = size.x / hsize;
     var vsize = bottom - top + 40;
     var vscale = size.y / vsize;
+
     if (hscale < vscale) {
         scale = hscale;
     }
@@ -2992,17 +3057,22 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    if (scale > 1.0) {
-        scale = 1.0;
-    }
-    scale = scale * 0.95;
+    //scale = scale * 0.85;
+    scale = 1.0
 
     // zero position at the specified scale
-    var zero_pos_x = size.x/2 - size.x/2 * scale;
-    var zero_pos_y = size.y/2 - size.y/2 * scale;
+    //var zero_pos_x = size.x/2 - size.x/2 * scale;
+    //var zero_pos_y = size.y/2 - size.y/2 * scale;
 
-    var dx = - left - zero_pos_x; 
-    var dy = - top - zero_pos_y;
+
+    var zero_pos_x = 100;
+    var zero_pos_y = 100;
+
+    var zero_pos_x = size.x/2 - hsize/2 - 100;
+    var zero_pos_y = size.y/2 - vsize/2;
+
+    var dx = - left + zero_pos_x; 
+    var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
 
@@ -3146,16 +3216,18 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_pos = spt.pipeline.get_position(this.to_node);
 
         var from_size = spt.pipeline.get_size(this.from_node);
-        var to_size = spt.pipeline.get_size(this.from_node);
+        var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
         //var scale = 1;
-        var node_width = from_size.x;
-        var node_height = from_size.y;
+        var from_width = from_size.x;
+        var from_height = from_size.y;
+        var to_width = to_size.x;
+        var to_height = to_size.y;
 
         // offset by the midpoint
-        from_pos = {x: from_pos.x + node_width/2, y: from_pos.y + node_height/2 };
-        to_pos = {x: to_pos.x + node_width/2, y: to_pos.y + node_height/2 };
+        from_pos = {x: from_pos.x + from_width/2, y: from_pos.y + from_height/2 };
+        to_pos = {x: to_pos.x + to_width/2, y: to_pos.y + to_height/2 };
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -3642,35 +3714,97 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
 
 
 
-spt.pipeline.load_triggers = function(group_name) {
+spt.pipeline.load_triggers = function() {
+    var group_name = spt.pipeline.get_current_group();
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
-    console.log(nodes.length);
-    if (nodes.length > 10) {
-        console.log(node.length + " is big");
+
+    var server = TacticServerStub.get();
+    var pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+group_name+"'])", {single: true});
+    if (!pipeline) {
+        log.warning('Pipeline [' + pipeline_code + ']  does not exist');
         return;
     }
 
     var length = nodes.length;
+
+    // get all of the triggers with this pipeline_code
+    var node_names = [];
     for (var i = 0; i < length; i++) {
-        console.log(i);
         var node = nodes[i]; 
+        var node_name = node.getAttribute("spt_element_name");
+
+        var trigger = server.eval("@SOBJECT(config/trigger['process','"+node_name+"'])", {single: true});
+
+        if (trigger == null) {
+            continue;
+        }
+
         var size = node.getSize();
         var pos = spt.pipeline.get_position(node);
-        console.log(pos);
         var options = {
             'node_type': 'trigger'
         }
         var trigger = spt.pipeline.add_node(i+Math.random()*10000+"", pos.x+size.x+20, pos.y-50, options);
         var connector = spt.pipeline.add_connector();
+        connector.set_color("#BBB");
         connector.set_from_node(node);
         connector.set_to_node(trigger);
+        connector.draw();
 
-
-
+        trigger.spt_connector = connector;
+        trigger.spt_from_node = node;
 
     }
 
 }
+
+
+
+spt.pipeline.set_status_color = function(search_key) {
+
+    var server = TacticServerStub.get();
+    var sobject = server.get_by_search_key(search_key);
+
+    // get all of the tass for this sobject
+    var tasks = server.query("sthpw/task", {parent_key: search_key});
+    var tasks_dict = {};
+    for (var i = 0; i < tasks.length; i++) {
+        var process = tasks[i].process;
+        tasks_dict[process] = tasks[i];
+    }
+
+    var pipeline_code = sobject.pipeline_code;
+
+    var group_name = spt.pipeline.get_current_group();
+    if (group_name != pipeline_code) {
+        spt.pipeline.clear_canvas();
+        spt.pipeline.import_pipeline(pipeline_code);
+    }
+
+    var nodes = spt.pipeline.get_nodes_by_group(group_name);
+
+    var length = nodes.length;
+    // get all of the triggers with this pipeline_code
+    for (var i = 0; i < length; i++) {
+        var node = nodes[i]; 
+        var process = spt.pipeline.get_node_name(node);
+
+        var task = tasks_dict[process];
+        if (!task) {
+            node.setStyle("opacity", "0.5");
+            continue;
+        }
+        
+
+        var x = Math.random() * 255;
+        var y = Math.random() * 255;
+        var z = Math.random() * 255;
+        var color = "rgb("+x+", "+y+", "+z+")";
+        spt.pipeline.set_color(node, color);
+    }
+}
+
+
 
 
 

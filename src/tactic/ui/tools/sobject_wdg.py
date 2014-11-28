@@ -813,8 +813,8 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         div.add(title)
 
         kwargs = {
-            'width': 800,
-            'height': 300,
+            'width': 1280,
+            'height': 500,
             'pipeline': pipeline_code,
             'scale': 0.7,
         }
@@ -846,6 +846,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         'type': 'load',
         'process': process,
         'enabled_tasks': enabled_tasks,
+        'search_key': my.sobject.get_search_key(),
         'pipeline': pipeline_code,
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_pipeline_wrapper");
@@ -877,6 +878,11 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             spt.pipeline.select_node(node);
             //spt.pipeline.center_node(node);
         }
+
+
+        spt.pipeline.set_status_color(bvr.search_key);
+        spt.pipeline.load_triggers();
+
         spt.pipeline.fit_to_canvas(bvr.pipeline);
 
         '''

@@ -1290,9 +1290,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
-        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
-    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
+    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
+        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects, parent_key)
+    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
         '''
         General query for sobject information
 
@@ -1311,6 +1311,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         distinct - specify a distinct column
         return_sobjects - return sobjects instead of dictionary.  This
                 works only when using the API on the server.
+        parent_key - parent filter
 
         @return
         data - an array of dictionaries.  Each array item represents an sobject
@@ -1363,7 +1364,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if show_retired:
             search.set_show_retired(True)
-    
+
+        if parent_key:
+            search.add_parent_filter(parent_key)
 
         #import time
         #start = time.time()
@@ -4306,6 +4309,37 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         from pyasm.biz import Task
         tasks = Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, processes=processes, skip_duplicate=skip_duplicate, start_offset=offset)
+
+        ret_tasks = []
+        for task in tasks:
+            task_dict = my._get_sobject_dict(task)
+            ret_tasks.append(task_dict)
+
+        return ret_tasks
+
+
+
+    @xmlrpc_decorator
+    def get_tasks(my, ticket, search_key, process=None):
+        '''Get the tasks of an sobject
+
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of tasks
+        '''
+
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+        sobject = Search.get_by_search_key(search_key)
+
+        search = Search("sthpw/task")
+        search.set_parent(sobject)
+        if process:
+            search.add_filter("process", process)
+        tasks = search.get_sobjects()
 
         ret_tasks = []
         for task in tasks:

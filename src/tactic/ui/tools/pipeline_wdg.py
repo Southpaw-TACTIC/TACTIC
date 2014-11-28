@@ -1442,16 +1442,32 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Node", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add Node", icon="BS_ENVELOPE")
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node(null, null, null, {node_type: 'trigger'});
+
+        spt.pipeline.load_triggers();
+
+        top.addClass("spt_has_changes");
+        '''
+        } )
+
+
+
+        button = ButtonNewWdg(title="Add Node", icon="BS_STATS")
+        button_row.add(button)
+
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+
+        var search_key = "vfx/asset?project=vfx&id=2";
+        spt.pipeline.set_status_color(search_key);
 
         top.addClass("spt_has_changes");
         '''
