@@ -1458,23 +1458,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Node", icon="BS_STATS")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-
-        var search_key = "vfx/asset?project=vfx&id=2";
-        spt.pipeline.set_status_color(search_key);
-
-        top.addClass("spt_has_changes");
-        '''
-        } )
-
-
-
 
 
 

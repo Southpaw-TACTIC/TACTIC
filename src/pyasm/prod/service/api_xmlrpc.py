@@ -4349,6 +4349,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return ret_tasks
 
 
+    @xmlrpc_decorator
+    def get_task_status_colors(my, ticket):
+        '''Get all the colors for a task status
+
+        ticket - authentication ticket
+ 
+        @return:
+        dictionary of colors
+        '''
+        from pyasm.biz import Task
+        return Task.get_status_colors()
+
+
+
+
+
 
     @xmlrpc_decorator
     def get_input_tasks(my, ticket, search_key):

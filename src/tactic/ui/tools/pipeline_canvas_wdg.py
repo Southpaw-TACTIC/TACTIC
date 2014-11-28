@@ -3783,6 +3783,17 @@ spt.pipeline.set_status_color = function(search_key) {
 
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
+
+    //var colors = server.get_task_status_colors();
+    var colors = {
+        'In Progress': 'rgb(0,0,255)',
+        Pending: 'rgb(255,255,0)',
+        Complete: 'rgb(0,255,0)',
+    }
+
+    var colors = server.get_task_status_colors();
+    var default_color = 'rgb(128,128,128)';
+
     var length = nodes.length;
     // get all of the triggers with this pipeline_code
     for (var i = 0; i < length; i++) {
@@ -3792,14 +3803,21 @@ spt.pipeline.set_status_color = function(search_key) {
         var task = tasks_dict[process];
         if (!task) {
             node.setStyle("opacity", "0.5");
+            spt.pipeline.set_color(node, default_color);
             continue;
         }
-        
 
-        var x = Math.random() * 255;
-        var y = Math.random() * 255;
-        var z = Math.random() * 255;
-        var color = "rgb("+x+", "+y+", "+z+")";
+        var status = task.status;
+        var task_pipeline = task.pipeline_code;
+
+        var color = null;
+        var pipeline_colors = colors[task_pipeline];
+        if (pipeline_colors) {
+            color = pipeline_colors[status];
+        }
+        if (!color) {
+            color = default_color;
+        }
         spt.pipeline.set_color(node, color);
     }
 }

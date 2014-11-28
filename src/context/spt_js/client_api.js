@@ -909,6 +909,14 @@ TacticServerStub = function() {
         return this._delegate("create_task", arguments, kwargs);
     } 
 
+    this.get_tasks = function(search_key, kwargs) {
+        return this._delegate("get_tasks", arguments, kwargs);
+    }
+
+    this.get_task_status_colors = function() {
+        return this._delegate("get_task_status_colors", arguments);
+    }
+
 
     this.add_initial_tasks = function(search_key, kwargs) {
         return this._delegate("add_initial_tasks", arguments, kwargs);

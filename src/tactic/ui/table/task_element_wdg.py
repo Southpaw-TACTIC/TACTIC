@@ -576,6 +576,7 @@ class TaskElementWdg(BaseTableElementWdg):
                     #if color:
                     process_dict[process.get_name()] = color
 
+
         security = Environment.get_security()
         my.allowed_statuses = []
         for pipeline_code, color_dict in my.status_colors.items():

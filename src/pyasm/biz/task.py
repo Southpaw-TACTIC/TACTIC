@@ -145,6 +145,34 @@ class Task(SObject):
     get_default_color = staticmethod(get_default_color)
 
 
+
+    def get_status_colors():
+
+        status_colors = {}
+
+        task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
+        task_pipelines.append( Pipeline.get_by_code("task") )
+        task_pipelines.append( Pipeline.get_by_code("approval") )
+        if task_pipelines:
+            for task_pipeline in task_pipelines:
+                processes = task_pipeline.get_processes()
+                pipeline_code = task_pipeline.get_code()
+                status_colors[pipeline_code] = {}
+                for process in processes:
+                    process_dict = status_colors.get(pipeline_code)
+                    color = process.get_color()
+                    if not color:
+                        color = Task.get_default_color(process.get_name())
+
+                    process_dict[process.get_name()] = color
+
+        return status_colors
+
+    get_status_colors = staticmethod(get_status_colors)
+
+
+
+
     def get_default_processes():
         nodes = default_xml.get_nodes("pipeline/process")
         process_names = [ Xml.get_attribute(x, 'name') for x in nodes ]
