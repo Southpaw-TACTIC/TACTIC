@@ -1053,8 +1053,10 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
 
+        # this assumption that the current snapshot's is_current has not been set is wrong
+        # it could have been set thru a simple update on the snapshot sobject
 
-
+        """
         last_current = Snapshot.get_current(search_type, search_id, context, level_type=level_type, level_id=level_id)
         if last_current:
             if last_current.get_search_key() == my.get_search_key():
@@ -1062,15 +1064,15 @@ class Snapshot(SObject):
 
             last_current.set_value("is_current", False)
             last_current.commit()
-
         # if there is a versionless, point it to this snapshot
-        if update_versionless:
-            my.update_versionless("current")
+        """
 
         my.set_value("is_current", True)
         if commit:
             my.commit()
 
+        if update_versionless:
+            my.update_versionless("current")
 
 
     def get_full_snapshot_xml(my):
@@ -2099,7 +2101,7 @@ class Snapshot(SObject):
                 return
 
         
-
+        
         # if os is linux, it should be symbolic link as a default
         if os.name == 'posix':
             versionless_mode = 'symlink'
