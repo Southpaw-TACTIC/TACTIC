@@ -1056,16 +1056,7 @@ class Snapshot(SObject):
         # this assumption that the current snapshot's is_current has not been set is wrong
         # it could have been set thru a simple update on the snapshot sobject
 
-        """
-        last_current = Snapshot.get_current(search_type, search_id, context, level_type=level_type, level_id=level_id)
-        if last_current:
-            if last_current.get_search_key() == my.get_search_key():
-                return
 
-            last_current.set_value("is_current", False)
-            last_current.commit()
-        # if there is a versionless, point it to this snapshot
-        """
 
         my.set_value("is_current", True)
         if commit:
