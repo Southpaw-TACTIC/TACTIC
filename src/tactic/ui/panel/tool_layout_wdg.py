@@ -65,7 +65,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             my.show_context_menu = True
 
     def get_display(my):
-
+     
         my.view_editable = True
 
         if my.kwargs.get("do_search") != "false":
@@ -129,6 +129,24 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if my.kwargs.get("show_shelf") not in ['false', False]:
             action = my.get_action_wdg()
             inner.add(action)
+        info = my.search_limit.get_info()
+        if info.get("count") == None:
+            info["count"] = len(my.sobjects)
+
+
+        # top pagination 
+        my.show_top_pagination = my.kwargs.get('show_top_pagination')
+        if my.show_top_pagination == None:
+            my.show_top_pagination = True
+
+        if my.show_top_pagination:
+            from tactic.ui.app import SearchLimitSimpleWdg
+            limit_wdg = SearchLimitSimpleWdg(
+                count=info.get("count"),
+                search_limit=info.get("search_limit"),
+                current_offset=info.get("current_offset"),            
+            )
+            inner.add(limit_wdg)
 
         content = DivWdg()
         inner.add( content )
@@ -174,7 +192,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         limit_wdg = SearchLimitSimpleWdg(
             count=info.get("count"),
             search_limit=info.get("search_limit"),
-            current_offset=info.get("current_offset"),
+            current_offset=info.get("current_offset"),            
         )
         inner.add(limit_wdg)
         my.add_layout_behaviors(inner)
