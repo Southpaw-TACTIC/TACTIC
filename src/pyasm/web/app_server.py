@@ -293,6 +293,14 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
+        
+        # guest mode
+        #
+        allow_guest = Config.get_value("security", "allow_guest")
+        if allow_guest == 'true':
+            allow_guest = True
+        else:
+            allow_guest = False
 
         security = Security()
         try:
@@ -304,13 +312,6 @@ class BaseAppServer(Base):
 
  
 
-        # guest mode
-        #
-        allow_guest = Config.get_value("security", "allow_guest")
-        if allow_guest == 'true':
-            allow_guest = True
-        else:
-            allow_guest = False
 
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
@@ -567,7 +568,7 @@ class BaseAppServer(Base):
 
 
 
-    def handle_security(my, security):
+    def handle_security(my, security, allow_guest=False):
         # set the seucrity object
 
         WebContainer.set_security(security)
@@ -616,7 +617,8 @@ class BaseAppServer(Base):
             if site:
                 site_obj.set_site(site)
 
-            security.login_with_ticket(ticket_key, add_access_rules=False)
+            
+            security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
 
 
         if not security.is_logged_in():

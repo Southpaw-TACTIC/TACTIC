@@ -1191,6 +1191,9 @@ class WebLoginWdg(Widget):
         # if admin password is still the default, force the user to change it
         change_admin = False
         if allow_change_admin:
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            
             admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
@@ -1200,12 +1203,13 @@ class WebLoginWdg(Widget):
                 if admin_password == Login.get_default_encrypted_password():
                     change_admin = True
 
-            #login = Login.get_by_login("admin")
-            #password = login.get_value("password")
-            #if password == Login.get_default_encrypted_password() or not password:
-            #    change_admin = True
+         
+            if admin_login:
+                password = admin_login.get_value("password")
+                if password == Login.get_default_encrypted_password() or not password:
+                    change_admin = True
 
-
+            sudo.exit()
 
         div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
         div.add("<br/>"*2)
@@ -1302,6 +1306,13 @@ class WebLoginWdg(Widget):
         if my.hidden:
             login_name = Environment.get_user_name()
             text_wdg.set_value(login_name)
+        else:
+            # check if it's first time login
+            custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin'])")
+            if custom_projects == 0:
+                text_wdg.set_value('admin')
+                
+        
         #text_wdg.add_event("onLoad", "this.focus()")
         table.add_cell( text_wdg )
 
@@ -1310,8 +1321,9 @@ class WebLoginWdg(Widget):
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            table.add_row()
-            table.add_cell("Please change the \"admin\" password:")
+            tr = table.add_row()
+            td = table.add_cell("Please change the \"admin\" password")
+            td.add_styles('height: 24px; padding-left: 6px')
         else:
             text_wdg.add_style("background: #EEE")
 
@@ -1334,7 +1346,8 @@ class WebLoginWdg(Widget):
             password_wdg2.add_style("background: #EEE")
             password_wdg2.add_style("padding: 2px")
             password_wdg2.add_style("width: 130px")
-            table.add_header( "<b>Verify Password: </b>" )
+            th = table.add_header( "<b>Verify Password: </b>" )
+            th.add_style("padding: 5px")
             table.add_cell( password_wdg2 )
 
 
@@ -1401,7 +1414,7 @@ class WebLoginWdg(Widget):
                 td.add(link)
 
         else:
-            div.add_style("height: 210px")
+            div.add_style("height: 250px")
 
         div.add(HtmlElement.br())
         div.add(table)
