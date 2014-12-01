@@ -862,6 +862,9 @@ TacticServerStub = function() {
 
 
 
+    this.set_current_snapshot = function(snapshot_code) {
+        return this._delegate("set_current_snapshot", arguments, null);
+    }
 
     this.query_snapshots = function(kwargs) {
         return this._delegate("query_snapshots", arguments, kwargs);

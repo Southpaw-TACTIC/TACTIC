@@ -4208,7 +4208,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        snapshot.set_current()
+        # let SnapshotisLatestTrigger handle the rest
+        snapshot.set_value('is_current', True)
+        snapshot.commit()
+        #snapshot.set_current(update_versionless=False)
         return my._get_sobject_dict(snapshot)
 
 
