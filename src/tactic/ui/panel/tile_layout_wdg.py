@@ -1147,9 +1147,21 @@ class ThumbWdg2(BaseRefreshWdg):
             img = DivWdg()
         img.add_class("spt_image")
         div.add(img)
-        #if my.show_hover_name in ["true", True, "True"]:
-        try:
-            if sobject.get("title"):                
+        if my.show_hover_name in ["true", True, "True"]:
+            try:
+                if sobject.get("title"):                
+                    name_hover = DivWdg()
+                    name_hover.add_class("spt_name_hover")
+                    name_hover.add_style("word-break", "normal")
+                    #if my.use_title == "true":
+                    #    name_hover.add(sobject.get('title'))
+                    #else:
+                    name_hover.add(sobject.get('title'))
+                    name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
+                    name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+                    div.add(name_hover)
+            except:
+
                 name_hover = DivWdg()
                 name_hover.add_class("spt_name_hover")
                 name_hover.add_style("word-break", "normal")
@@ -1160,27 +1172,15 @@ class ThumbWdg2(BaseRefreshWdg):
                 name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
                 name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
                 div.add(name_hover)
-        except:
 
-            name_hover = DivWdg()
-            name_hover.add_class("spt_name_hover")
-            name_hover.add_style("word-break", "normal")
-            #if my.use_title == "true":
-            #    name_hover.add(sobject.get('title'))
-            #else:
-            name_hover.add(sobject.get('name'))
-            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
-            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
-            div.add(name_hover)
-
-        try:
-            test_var = sobject.get("title")
-        except:  
-            name_show = DivWdg()
-            name_show.add_class("spt_name_show")
-            name_show.add("<p class='show_name'>" + sobject.get('name') + "</p>")
-            name_show.add_style("opacity: 1")
-            div.add(name_show)
+            try:
+                test_var = sobject.get("title")
+            except:  
+                name_show = DivWdg()
+                name_show.add_class("spt_name_show")
+                name_show.add("<p class='show_name'>" + sobject.get('name') + "</p>")
+                name_show.add_style("opacity: 1")
+                div.add(name_show)
 
         
 
