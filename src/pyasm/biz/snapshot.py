@@ -1053,10 +1053,7 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
 
-        # this assumption that the current snapshot's is_current has not been set is wrong
-        # it could have been set thru a simple update on the snapshot sobject
-
-
+       
 
         my.set_value("is_current", True)
         if commit:
