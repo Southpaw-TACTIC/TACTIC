@@ -1046,7 +1046,6 @@ class Security(Base):
         # rules to the access manager
         if my.add_access_rules_flag:
             my.add_access_rules()
-
         # record that the login is logged in
         my._is_logged_in = 1
 
@@ -1126,7 +1125,7 @@ class Security(Base):
 
 
 
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
 
@@ -1165,6 +1164,9 @@ class Security(Base):
 
         # store the ticket
         my._ticket = ticket
+
+        if my._login.get("login") == "guest" and not allow_guest:
+            return None
 
         my._do_login()
 

@@ -79,7 +79,7 @@ class ResetPasswordWdg(BaseRefreshWdg):
 
         table2.add_row()
 
-        td = table2.add_header('After reset, the new password will be sent to your registered email address.')
+        td = table2.add_header('After reset, the new password will be sent to the email address for [ %s ].'%login_name)
         td.add_color('color','color', + 80)
         table2.add_row_cell('&nbsp;')
         # build the button manually
@@ -127,7 +127,7 @@ class ResetPasswordCmd(Command):
         web = WebContainer.get_web()
         my.login = web.get_form_value("login")
         if my.login =='admin':
-            error_msg = "You cannot reset admin password."
+            error_msg = "You are not allowed to reset admin password."
             web.set_form_value(ResetPasswordWdg.MSG, error_msg)
             raise TacticException(error_msg)
             return False
