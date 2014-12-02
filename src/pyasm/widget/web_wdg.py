@@ -1207,7 +1207,15 @@ class WebLoginWdg(Widget):
             if admin_login:
                 password = admin_login.get_value("password")
                 if password == Login.get_default_encrypted_password() or not password:
+
                     change_admin = True
+            else:
+                admin_login = SearchType.create('sthpw/login')
+                admin_login.set_value('login','admin')
+                admin_login.commit()
+                change_admin = True
+                # recreate the admin_login
+                
 
             sudo.exit()
 
@@ -1308,7 +1316,7 @@ class WebLoginWdg(Widget):
             text_wdg.set_value(login_name)
         else:
             # check if it's first time login
-            custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin'])")
+            custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin|unittest'])")
             if custom_projects == 0:
                 text_wdg.set_value('admin')
                 
