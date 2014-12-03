@@ -1065,14 +1065,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                
                 // don't set the width of each column, this is simpler
                 if (width == '100%') {
-                    table.setStyle("width", "");
-                    if (header_table)
-                        header_table.setStyle("width", "");
+                    if (header_table) {
+                        var orig_width = header_table.getAttribute('orig_width');
+                        if (orig_width) {
+                            header_table.setStyle("width", orig_width);
+                            table.setStyle("width", orig_width);
+                            layout.setStyle("width", orig_width);
+
+                        } else {
+                            header_table.setStyle("width", "");
+                            table.setStyle("width", "");
+                        }
+                    } else 
+                        table.setStyle("width", "");
+                        
                 }
                 else {
                     table.setStyle("width", "100%");
-                    if (header_table)
+                    if (header_table) {
+                        header_table.setAttribute("orig_width", header_table.getSize().x);
                         header_table.setStyle("width", "100%");
+                    }
                     layout.setStyle("width", "100%");
                 }
                
