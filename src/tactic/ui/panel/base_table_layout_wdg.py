@@ -1191,8 +1191,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
-
-        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
+        
+        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         xx = DivWdg()
         xx.add(horiz_wdg)
         div.add(xx)
@@ -1231,7 +1231,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
 
-        outer.add_style("min-width: 100px")
+        outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
         outer.add_class("spt_resizable")
