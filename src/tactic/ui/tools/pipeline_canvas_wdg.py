@@ -2030,6 +2030,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
 
     var new_node = spt.behavior.clone(template);
+    new_node.spt_node_type = node_type;
+
+
     canvas.appendChild(new_node);
 
     // make the label the last part
@@ -3936,12 +3939,14 @@ spt.pipeline.export_group = function(group_name) {
             name_dict[name] = true;
         }
 
-        var node_type = node.spt_type;
+        var tag_type = node.spt_type;
+        var node_type = node.spt_node_type;
 
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
-        xml += '  <'+node_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+
         var properties = node.properties;
         for (var key in properties) {
            
