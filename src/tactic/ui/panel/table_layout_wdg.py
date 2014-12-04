@@ -1113,7 +1113,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     if not group_value:
                         group_value = "__NONE__"
                     
-                    my._set_eval_value(sobject, group_value, i)
+                    my._set_eval_value(sobject, group_column, group_value, i)
                     
                 elif isinstance(group_col_type_dict.get(group_column), ExpressionElementWdg):
                     widget = group_col_type_dict[group_column]
