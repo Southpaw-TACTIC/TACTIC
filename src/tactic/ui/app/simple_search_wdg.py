@@ -57,10 +57,7 @@ class SimpleSearchExampleWdg(BaseRefreshWdg):
 
 class SimpleSearchWdg(BaseRefreshWdg):
 
-    SEARCH_COL1 = 'keyword'
-    SEARCH_COL2 = 'name'
-    SEARCH_COL3 = 'description'
-    SEARCH_COL4 = 'code'
+    SEARCH_COLS = ['keyword','keywords','key','name','description','code']
 
     def get_args_keys(my):
         return {
@@ -551,11 +548,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     def get_search_col(cls, search_type):
         '''Get the appropriate keyword search col based on column existence in this sType'''
-        for col in [cls.SEARCH_COL1, cls.SEARCH_COL2, cls.SEARCH_COL3, cls.SEARCH_COL4]:
+        for col in cls.SEARCH_COLS:
             if SearchType.column_exists(search_type, col):
                 return col
 
-        return cls.SEARCH_COL4
+        return cls.SEARCH_COLS[-1]
 
     get_search_col = classmethod(get_search_col)
 
