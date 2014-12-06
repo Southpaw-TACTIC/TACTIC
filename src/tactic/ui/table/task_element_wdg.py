@@ -549,7 +549,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
 
-
         pipeline_codes = SObject.get_values(my.sobjects, 'pipeline_code', unique=True, no_exception=True)
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
         if pipelines:
@@ -1693,6 +1692,38 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         assigned.add_style("opacity: 0.5")
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
+
+
+        """
+        if process == "design":
+            approval_div = DivWdg()
+            if my.layout in ['horizontal', 'vertical']:
+                table.add_cell(approval_div)
+            else:
+                div.add(approval_div)
+
+            approval_div.add_style("width: 98px")
+            approval_div.add_style("height: auto")
+            approval_div.add_style("padding: 6px 0px")
+            approval_div.add_style("margin: 0px 5px")
+            approval_div.add_style("border: solid 1px #BBB")
+            approval_div.add_style("border-radius: 3px")
+            approval_div.add_color("background","background")
+
+            for i in range(0, 2):
+                if i == 0:
+                    icon = IconWdg(name="Approved by XYZ", icon="BS_REMOVE", size=12)
+                    icon.add_style("border: solid 1px red")
+                else:
+                    icon = IconWdg(name="Approved by XYZ", icon="BS_OK", size=12)
+                    icon.add_style("border: solid 1px green")
+                approval_div.add(icon)
+                icon.add_style("padding: 0px 3px 6px 3px")
+                icon.add_style("margin: 3px")
+                icon.add_style("border-radius: 20px")
+
+
+        """
 
 
 

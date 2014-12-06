@@ -47,6 +47,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         table = ResizableTableWdg()
 
         #table.add_style("width: 100%")
+
         table.add_color("background", "background")
         table.add_color("color", "color")
         top.add(table)
@@ -119,7 +120,36 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
 
+        # TEST
+        # NOTE: the canavas in PipelineCanvasWdg requires a set size ... it does not respond
+        # well to sizes like 100% or auto.  Unless this is fixed, we cannot have a table
+        # responsively respond to a changing window size.
+        """
+        info = table.add_cell()
+        #info.add_style("display: none")
+        info.add_class("spt_pipeline_tool_info")
+        info.add_style("width: 250px")
+        info.add_border()
+        info_wdg = DivWdg()
+        info.add(info_wdg)
+        info_wdg.add("<h2>Node Info</h2></hr/>")
+        info_wdg.add_style("width: 100%")
+        info_wdg.add_style("min-width: 300px")
+
+        from tactic.ui.panel import EditWdg
+        search_key = "config/process?project=vfx&code=SPT_PROCESS00038"
+        kwargs = {
+                'search_key': search_key,
+                'show_header': False
+        }
+        edit_wdg = EditWdg(**kwargs)
+        info_wdg.add(edit_wdg)
+        """
+
+
+
         show_info_tab = my.kwargs.get("show_info_tab")
+        show_info_tab = True
         if show_info_tab in ['false', False]:
             show_info_tab = False
         else:
@@ -1030,7 +1060,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 1400
+            my.width = "1300"
         my.height = my.kwargs.get("height")
         if not my.height:
             my.height = 600
@@ -1114,6 +1144,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px")
         shelf_wdg.add_style("margin-bottom: 5px")
+        shelf_wdg.add_style("overflow-x: hidden")
 
         show_shelf = my.kwargs.get("show_shelf")
         show_shelf = True

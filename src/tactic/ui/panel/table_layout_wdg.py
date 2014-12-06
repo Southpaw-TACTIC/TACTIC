@@ -2565,6 +2565,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if my.is_insert:
                 td.add_attr("spt_element_name", element_name)
 
+        tr.add_attr("ondragenter", "return false")
+        tr.add_attr("ondragover", "return false")
+        #tr.add_attr("ondrop", "event.stopPropagation();event.preventDefault();alert('cow');")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this)")
+
 
         return tr
 
@@ -2878,6 +2883,58 @@ spt.table.run_search = function() {
     spt.dg_table.search_cbk( {}, {src_el: table} );
 }
 
+
+// Preview methods
+
+spt.table.drop_row = function(evt, el) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+
+    evt.dataTransfer.dropEffect = 'copy';
+    var files = evt.dataTransfer.files;
+
+    var top = $(el);
+    var thumb_el = top.getElement(".spt_thumb_top");
+
+    for (var i = 0; i < files.length; i++) {
+        var size = files[i].size;
+        var file = files[i];
+
+
+        var search_key = top.getAttribute("spt_search_key");
+        var filename = file.name;
+        var context = "publish" + "/" + filename;
+
+        var upload_file_kwargs =  {
+            files: files,
+            upload_complete: function() {
+                var server = TacticServerStub.get();
+                var kwargs = {mode: 'uploaded'};
+                server.simple_checkin( search_key, context, filename, kwargs);
+            }
+        };
+        spt.html5upload.upload_file(upload_file_kwargs);
+
+
+        // inline replace the image
+        if (thumb_el) {
+            setTimeout( function() {
+                var loadingImage = loadImage(
+                    file,
+                    function (img) {
+                        thumb_el.innerHTML = "";
+                        thumb_el.appendChild(img);
+                    },
+                    {maxWidth: 240, canvas: true, contain: true}
+                );
+            }, 0 );
+        }
+
+
+
+    }
+}
 
 
 // Discovery methods

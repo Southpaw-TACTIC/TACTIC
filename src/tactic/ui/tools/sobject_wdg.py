@@ -585,7 +585,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         ignore = ["preview", "notes"]
 
-        element_names = ['name','description','tasks']
+        element_names = ['code', 'name','description']
         config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
         config_element_names = config.get_element_names()
         for x in config_element_names:

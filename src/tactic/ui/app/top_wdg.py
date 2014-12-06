@@ -581,8 +581,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-
-
         # custom js files to include
         includes = Config.get_value("install", "include_js")
         includes = includes.split(",")
@@ -591,7 +589,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
             if include:
                 print "include: ", include
                 Container.append_seq("Page:js", include)
-
 
 
         widget = Widget()

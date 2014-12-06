@@ -1776,8 +1776,9 @@ class License(object):
 
 
     def get_max_users(my):
+        site = Site.get_site()
         site_obj = Site.get()
-        value = site_obj.get_max_users()
+        value = site_obj.get_max_users(site)
         if not value:
             value = my.xml.get_value("license/data/max_users")
         try:

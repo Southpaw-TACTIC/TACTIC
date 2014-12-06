@@ -128,8 +128,7 @@ class TaskApprovalTrigger(Trigger):
 
         if not tasks:
             # autocreate ??
-
-            parent = task.get_parent()
+            parent = src_task.get_parent()
             pipeline = Pipeline.get_by_sobject(parent)
             if not pipeline:
                 return

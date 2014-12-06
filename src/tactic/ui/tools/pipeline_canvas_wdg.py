@@ -50,10 +50,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 1300
+            my.width = "auto"
         my.height = my.kwargs.get("height")
         if not my.height:
             my.height = 600
+
 
         # create an inner and outer divs
         my.nob_mode = my.kwargs.get('nob_mode')
@@ -547,7 +548,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
-        node.add_style("position: relative")
+        node.add_style("position: absolute")
         node.add_style("width: %spx" % width)
         node.add_style("height: %spx" % height)
         node.add_style("text-align: center")
@@ -2062,6 +2063,10 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     if (node_type == "trigger") {
         color = "#FFF";
     }
+    else if (node_type == "approval") {
+        color = "#FFF";
+    }
+
     else if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
@@ -3466,7 +3471,16 @@ spt.pipeline.import_xml = function(xml, code, color) {
     spt.pipeline.set_current_group(code);
 
     // add the nodes
-    var xml_nodes = xml_doc.getElementsByTagName("node");
+    var xml_nodes = []
+    process_nodes = xml_doc.getElementsByTagName("process");
+    approval_nodes = xml_doc.getElementsByTagName("approval");
+    for (var i = 0; i < approval_nodes.length; i++) {
+        xml_nodes.push(approval_nodes[i]);
+    }
+    for (var i = 0; i < process_nodes.length; i++) {
+        xml_nodes.push(process_nodes[i]);
+    }
+
     spt.pipeline.import_nodes(code, xml_nodes);
     var xml_connects = xml_doc.getElementsByTagName("connect");
     spt.pipeline.load_connects(code, xml_connects);
@@ -3517,7 +3531,16 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
 
     // add the nodes
-    var xml_nodes = xml_doc.getElementsByTagName("process");
+    var xml_nodes = []
+    process_nodes = xml_doc.getElementsByTagName("process");
+    approval_nodes = xml_doc.getElementsByTagName("approval");
+    for (var i = 0; i < approval_nodes.length; i++) {
+        xml_nodes.push(approval_nodes[i]);
+    }
+    for (var i = 0; i < process_nodes.length; i++) {
+        xml_nodes.push(process_nodes[i]);
+    }
+
     if (xml_nodes.length == 0) {
         spt.pipeline.add_folder(pipeline_code, color);
     }
