@@ -714,7 +714,7 @@ class PipelineEventCaller(threading.Thread):
 
 class FileAppendCheckin(FileCheckin):
     '''Appends a bunch of files to an already existing snapshot'''
-    def __init__(my, snapshot_code, file_paths, file_types,  mode=None, keep_file_name=True,source_paths=[], dir_naming=None, file_naming=None, checkin_type='strict'):
+    def __init__(my, snapshot_code, file_paths, file_types,  mode=None, keep_file_name=True,source_paths=[], dir_naming=None, file_naming=None, checkin_type='strict', update_versionless=True):
         '''
         snapshot_code - the already existing snapshot to append to
         file_paths - array of all the files to checkin
@@ -735,6 +735,8 @@ class FileAppendCheckin(FileCheckin):
 
         my.is_latest = my.append_snapshot.get_value('is_latest')
         my.is_current = my.append_snapshot.get_value('is_current')
+
+        my.update_versionless = update_versionless
 
         
     def create_snapshot_xml(my, file_objects):
