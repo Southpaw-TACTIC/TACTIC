@@ -345,7 +345,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if tabs:
             tabs = tabs.split(",")
         else:
-            tabs = ["tasks","attachments","snapshots","checkin","edit","pipeline"]
+            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit","pipeline"]
 
         for tab in tabs:
 
@@ -361,6 +361,25 @@ class SObjectDetailWdg(BaseRefreshWdg):
                   </display>
                 </element>
                 ''' % values)
+
+
+
+            elif tab == "revisions":
+                config_xml.append('''
+                <element name="revisions" title="Revisions">
+                  <display class='tactic.ui.panel.TileLayoutWdg'>
+                    <search_type>sthpw/snapshot</search_type>
+                    <parent_key>%(search_key)s</parent_key>
+                    <process>review</process>
+                    <layout>tile</layout>
+                    <title_expr>@REPLACE(@GET(.context), 'review/', '')</title_expr>
+                    <width>100%%</width>
+                    <show_shelf>false</show_shelf>
+                  </display>
+                </element>
+                ''' % values)
+
+
 
             elif tab == "attachments":
                 config_xml.append('''
