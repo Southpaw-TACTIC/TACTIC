@@ -2570,10 +2570,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if my.is_insert:
                 td.add_attr("spt_element_name", element_name)
 
-        tr.add_attr("ondragenter", "return false")
-        tr.add_attr("ondragover", "return false")
+        #tr.add_attr("ondragenter", "return false")
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
         #tr.add_attr("ondrop", "event.stopPropagation();event.preventDefault();alert('cow');")
-        tr.add_attr("ondrop", "spt.table.drop_row(event, this)")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
         return tr
@@ -2891,16 +2892,35 @@ spt.table.run_search = function() {
 
 // Preview methods
 
+
+spt.table.dragover_row = function(evt, el) {
+    var top = $(el);
+    top.setStyle("border", "dashed 1px blue");
+    top.setStyle("background", "rgba(0,0,255,0.05)");
+    top.setStyle("opacity", "0.3")
+}
+
+
+spt.table.dragleave_row = function(evt, el) {
+    var top = $(el);
+    top.setStyle("border", "solid 1px #BBB");
+    top.setStyle("background", "");
+    top.setStyle("opacity", "1.0")
+}
+
+
+
 spt.table.drop_row = function(evt, el) {
     evt.stopPropagation();
     evt.preventDefault();
-
 
     evt.dataTransfer.dropEffect = 'copy';
     var files = evt.dataTransfer.files;
 
     var top = $(el);
     var thumb_el = top.getElement(".spt_thumb_top");
+    var size = thumb_el.getSize();
+    console.log(size);
 
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
@@ -2928,10 +2948,12 @@ spt.table.drop_row = function(evt, el) {
                 var loadingImage = loadImage(
                     file,
                     function (img) {
+                        img = $(img);
                         thumb_el.innerHTML = "";
                         thumb_el.appendChild(img);
+                        img.setSize(size);
                     },
-                    {maxWidth: 240, canvas: true, contain: true}
+                    {maxWidth: 240, canvas: true, contains: true}
                 );
             }, 0 );
         }

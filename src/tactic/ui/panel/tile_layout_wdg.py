@@ -848,8 +848,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             div.add(my.bottom.get_buffer_display())
         
 
-        div.add_attr("ondragenter", "return false")
-        div.add_attr("ondragover", "return false")
+        div.add_attr("ondragover", "$(this).setStyle('box-shadow','0px 0px 15px yellow'); $(this).setStyle('opacity', 0.3); return false")
+        #div.add_attr("ondragover", "return false")
+        div.add_attr("ondragleave", "$(this).setStyle('box-shadow','0px 0px 15px rgba(0,0,0,0.5)'); $(this).setStyle('opacity', 1.0); return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
 
         return div

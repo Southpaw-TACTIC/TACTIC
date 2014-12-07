@@ -261,6 +261,7 @@ spt.named_events._process_listener_bvr = function( bvr, unique )
 spt.named_events.add_listener = function( listener_el, event_name, bvr )
 {
     bvr.src_el = listener_el;
+    bvr.type = "listen";
     bvr.event_name = event_name;
 
     spt.named_events._process_listener_bvr( bvr );

@@ -23,7 +23,7 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import jsondumps, jsonloads, Common
+from pyasm.common import jsondumps, jsonloads, Common, Environment
 from pyasm.biz import Notification, CustomScript, Pipeline, Project
 from pyasm.web import DivWdg, WebContainer, Table, HtmlElement, SpanWdg
 from pyasm.command import Command
@@ -353,7 +353,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
     def get_add_trigger_wdg(my, trigger):
+
         div = DivWdg()
+
         
         button = ActionButtonWdg(title='Save')
         button.add_style("float: right")
@@ -647,7 +649,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
 
-
         # Handle the action
         if my.mode == 'pipeline':
             trigger_labels = [
@@ -655,17 +656,14 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'Update another task status',
                 'Create another task',
                 'Set actual task date',
-                'Run python code',
-                'Run python trigger',
             ]
             trigger_values = [
                 'notification',
                 'task_status',
                 'task_create',
                 'task_date',
-                'python_script',
-                'python_class',
             ]
+
         else:
             trigger_labels = [
                 'Send a notification',
@@ -673,8 +671,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 #'Add a note',
                 #'Set task complete',
                 #'Delete versions',
-                'Run python code',
-                'Run python trigger',
             ]
             #TODO: enable task_complete
             trigger_values = [
@@ -683,10 +679,22 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 #'note_insert',
                 #'task_complete',
                 #'version_delete',
-                'python_script',
-                'python_class',
             ]
 
+
+        security = Environment.get_security()
+        is_admin = security.is_admin()
+
+        if is_admin:
+            trigger_labels.extend( [
+                'Run Python code',
+                'Run Python trigger'
+            ] )
+            
+            trigger_values.extend( [
+                'python_script',
+                'python_class'
+            ] )
 
         #trigger_edit = TaskCompleteTestWdg()
         #trigger_values.append(trigger_edit.get_trigger_type())
@@ -1858,6 +1866,20 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        is_admin = Environment.get_security().is_admin()
+        if not is_admin:
+            div = DivWdg()
+            div.add_style("width: 300px")
+            div.add_style("padding: 30px")
+            div.add_style("text-align: center")
+            div.add_style("margin: 20px auto")
+            div.add_color("background", "background3")
+            div.add_border()
+            div.add("Only admin can create python scripts")
+            return div
+
+
+
         web = WebContainer.get_web()
         div = DivWdg()
         div.add_class("spt_python_script_trigger_top")
@@ -1958,6 +1980,8 @@ class PythonScriptTriggerEditCbk(Command):
 
     def execute(my):
 
+        # only admin can save triggers
+
         search_key = my.kwargs.get("search_key")
         if search_key:
             trigger = Search.get_by_search_key(search_key) 
@@ -2053,6 +2077,21 @@ class PythonScriptTriggerEditCbk(Command):
 class PythonClassTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
+
+        is_admin = Environment.get_security().is_admin()
+        if not is_admin:
+            div = DivWdg()
+            div.add_style("width: 300px")
+            div.add_style("padding: 30px")
+            div.add_style("text-align: center")
+            div.add_style("margin: 20px auto")
+            div.add_color("background", "background3")
+            div.add_border()
+            div.add("Only admin can create python scripts")
+            return div
+
+
+
         div = DivWdg()
         div.add_class("spt_python_class_top")
 

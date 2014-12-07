@@ -44,6 +44,15 @@ class TopWdg(Widget):
         my.top.add_class("spt_top")
         Container.put("TopWdg::top", my.top)
 
+
+        my.body.add_attr("ondragover", "return false;")
+        my.body.add_attr("ondragleave", "return false;")
+        my.body.add_attr("ondrop", "return false;")
+
+
+
+
+
         click_div = DivWdg()
         my.top.add(click_div)
         click_div.add_behavior( {
