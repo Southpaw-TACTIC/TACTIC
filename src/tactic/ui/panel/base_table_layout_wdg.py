@@ -280,6 +280,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
+        my.simple_search_view = my.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
@@ -506,7 +507,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
 
         if my.is_sobjects_explicitly_set():
@@ -835,6 +836,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         column = "keywords"
+        simple_search_mode = my.kwargs.get("simple_search_mode")
+        
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [True, 'true']:
             show_keyword_search = True
@@ -844,7 +847,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # TEST: on by default
         show_keyword_search = True
 
-        
+
        
         if show_keyword_search:
             keyword_div = DivWdg()
@@ -861,7 +864,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
@@ -888,32 +891,34 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 el.select();
                 '''})
 
-            keyword_div.add_relay_behavior( {
-                'type': 'click',
-                'bvr_match_class': 'spt_search_toggle',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_view_panel_top");
-                if (top) {
-                    var simple_search = top.getElement(".spt_simple_search");
-                    if (simple_search) {
-                        simple_search.setStyle("display", "");
-                        spt.body.add_focus_element(simple_search);
+            if simple_search_mode != 'inline':
+                keyword_div.add_relay_behavior( {
+                    'type': 'click',
+                    'bvr_match_class': 'spt_search_toggle',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_view_panel_top");
+                    if (top) {
+                        var simple_search = top.getElement(".spt_simple_search");
+                        if (simple_search) {
+                            simple_search.setStyle("display", "");
+                            spt.body.add_focus_element(simple_search);
+                        }
                     }
-                }
 
-               
+                   
 
-                '''
-            } )
+                    '''
+                } )
 
 
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
                 'cbjs_action': '''
-
-                var el = bvr.src_el.getElement(".spt_text_input");
-                el.setStyle("width", "50px");
+                
+                var el = bvr.src_el;
+                
+                el.setStyle("width", "75px");
 
                 '''
             } )
