@@ -399,11 +399,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             state_filter = my.state.get('filter')
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+
+        if my.kwargs.get('op_filters'):
+            search.add_op_filters(my.kwargs.get("op_filters"))
+
+
         # passed in filter overrides
-        """
-        if state_filter:
-            filter_data.set_data(state_filter)
-        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
         

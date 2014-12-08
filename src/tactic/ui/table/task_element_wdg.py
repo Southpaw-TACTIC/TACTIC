@@ -1581,6 +1581,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     name = 'status|EDIT|%s' % task.get_id()
 
                 select = SelectWdg(name)
+                select.add_color('color','color')
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
@@ -1637,6 +1638,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.add_style("width", my.width)
                     div.add(select)
 
+                if status not in filtered_statuses:
+                    filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
 

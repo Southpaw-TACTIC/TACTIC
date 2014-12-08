@@ -39,6 +39,59 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+    def get_title_wdg(my):
+
+        if my.parent:
+            code = my.parent.get_value("code", no_exception=True)
+            name = my.parent.get_value("name", no_exception=True)
+            search_type_obj = my.parent.get_search_type_obj()
+        else:
+            code = my.sobject.get_value("code", no_exception=True)
+            name = my.sobject.get_value("name", no_exception=True)
+            search_type_obj = my.sobject.get_search_type_obj()
+
+
+        title = DivWdg()
+        search = Search("sthpw/snapshot")
+        search.add_filter("search_type", "sthpw/search_type")
+        search.add_filter("search_code", search_type_obj.get_value("code"))
+        if search.get_sobject():
+            thumb = ThumbWdg()
+            title.add(thumb)
+            thumb.set_icon_size(30)
+            thumb.set_sobject(search_type_obj)
+            thumb.add_style("float: left")
+
+
+
+        title.add_color("background", "background3")
+        title.add_style("height: 20px")
+        title.add_style("padding: 6px")
+        title.add_style("font-weight: bold")
+        title.add_style("font-size: 1.4em")
+        title.add_border()
+
+
+        stype_title = search_type_obj.get_value("title")
+        if stype_title:
+            title.add("%s: " % stype_title)
+
+        if name:
+            title.add("%s" % name)
+            if code:
+                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
+        elif code:
+            title.add("%s" % code)
+        else:
+            title.add("(No name)")
+
+
+        return title
+
+
+
+
+
 
     def get_display(my):
 
@@ -80,58 +133,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
         top.add(table)
         table.set_max_width()
 
-        table.add_row()
-
-
-        if my.parent:
-            code = my.parent.get_value("code", no_exception=True)
-            name = my.parent.get_value("name", no_exception=True)
-            search_type_obj = my.parent.get_search_type_obj()
-        else:
-            code = my.sobject.get_value("code", no_exception=True)
-            name = my.sobject.get_value("name", no_exception=True)
-            search_type_obj = my.sobject.get_search_type_obj()
-
         # add the title
-        td = table.add_cell()
-        td.add_attr("colspan", "3")
-        title = DivWdg()
+        tr, td = table.add_row_cell()
 
-
-       
-        search = Search("sthpw/snapshot")
-        search.add_filter("search_type", "sthpw/search_type")
-        search.add_filter("search_code", search_type_obj.get_value("code"))
-        if search.get_sobject():
-            thumb = ThumbWdg()
-            title.add(thumb)
-            thumb.set_icon_size(30)
-            thumb.set_sobject(search_type_obj)
-            thumb.add_style("float: left")
-
-
-        td.add(title)
-
-        title.add_color("background", "background3")
-        title.add_style("height: 20px")
-        title.add_style("padding: 6px")
-        title.add_style("font-weight: bold")
-        title.add_style("font-size: 1.4em")
-
-        stype_title = search_type_obj.get_value("title")
-        if stype_title:
-            title.add("%s: " % stype_title)
-
-        if name:
-            title.add("%s" % name)
-            if code:
-                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
-        elif code:
-            title.add("%s" % code)
-        else:
-            title.add("(No name)")
-
-        title.add_border()
+        title_wdg = my.get_title_wdg()
+        td.add(title_wdg)
 
 
         table.add_row()
@@ -372,7 +378,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <parent_key>%(search_key)s</parent_key>
                     <process>review</process>
                     <layout>tile</layout>
-                    <title_expr>@GET(.description)</title_expr>
+                    <title_expr>@SUBSTITUTE('%%s - %%s', @GET(.login), @FORMAT(@GET(.timestamp), 'DATETIME'))</title_expr>
+                    <bottom_expr>@GET(.description)</bottom_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                   </display>
@@ -647,6 +654,29 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 class TaskDetailWdg(SObjectDetailWdg):
 
+
+    def get_title_wdg(my):
+
+        title = DivWdg()
+
+        title.add_color("background", "background3")
+        title.add_style("height: 20px")
+        title.add_style("padding: 6px")
+        title.add_style("font-weight: bold")
+        title.add_style("font-size: 1.4em")
+        title.add_border()
+
+        code = my.parent.get_value("code", no_exception=True)
+        name = my.parent.get_value("name", no_exception=True)
+
+        process = my.sobject.get("process")
+        task_code = my.sobject.get("code")
+
+        title.add("TASK %s <i style='font-size: 0.8em'>(%s)</i> for %s (%s)" % (process, task_code, name, code))
+        return title
+
+
+
     def get_sobject(my):
         search_key = my.kwargs.get("search_key")
         my.sobject = Search.get_by_search_key(search_key)
@@ -682,6 +712,10 @@ class TaskDetailWdg(SObjectDetailWdg):
 
 
     def get_sobject_info_wdg(my):
+
+        div = DivWdg()
+        return div
+
         attr_table = Table()
         attr_table.add_color("color", "color")
         attr_table.add_color("background", "background", -5)
@@ -738,6 +772,79 @@ class TaskDetailWdg(SObjectDetailWdg):
         <tab>''' )
 
 
+
+        config_xml.append( '''
+        <element name="detail" title="Detail">
+         <display class='tactic.ui.container.ContentBoxWdg'>
+              <title>Edit</title>
+              <content_height>auto</content_height>
+              <content_width>600px</content_width>
+              <config>
+                <element name="content">
+                  <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
+                    <search_type>sthpw/task</search_type>
+                    <search_key>%s</search_key>
+                    <width>600px</width>
+                    <mode>view</mode>
+                    <element_names>process,description,status,assigned,priority,days_due,bid_start_date,bid_end_date</element_names>
+                  </display>
+                </element>
+              </config>
+            </display>
+        </element>
+        ''' % (search_key) )
+
+
+        config_xml.append( '''
+        <element name="edit" title="Edit">
+          <display class='tactic.ui.panel.EditWdg'>
+            <search_key>%s</search_key>
+          </display>
+        </element>
+        ''' % (search_key) )
+
+
+
+
+        #from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
+        #edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
+
+        values = my.parent.get_data()
+        values['search_key'] = my.parent.get_search_key().replace("&", "&amp;")
+        values['process'] = process
+
+
+        config_xml.append('''
+        <element name="revisions" title="Revisions">
+          <display class='tactic.ui.panel.TileLayoutWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <parent_key>%(search_key)s</parent_key>
+            <context>review/%(process)s</context>
+            <layout>tile</layout>
+            <title_expr>@SUBSTITUTE('%%s - %%s', @GET(.login), @FORMAT(@GET(.timestamp), 'DATETIME'))</title_expr>
+            <bottom_expr>@GET(.description)</bottom_expr>
+            <width>100%%</width>
+            <show_shelf>false</show_shelf>
+          </display>
+        </element>
+        ''' % values)
+
+
+        config_xml.append('''
+        <element name="snapshots" title="Check-in History">
+          <display class='tactic.ui.panel.TableLayoutWdg'>
+            <search_type>sthpw/snapshot</search_type>
+            <view>table</view>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+            <show_shelf>false</show_shelf>
+            <op_filters>[["process","%(process)s"],["is_latest","true"]]</op_filters>
+          </display>
+        </element>
+        ''' % values)
+ 
+
+        """
         config_xml.append( '''
         <element name="%s" title="%s">
           <display class='tactic.ui.tools.SObjectSingleProcessDetailWdg'>
@@ -747,6 +854,10 @@ class TaskDetailWdg(SObjectDetailWdg):
           </display>
         </element>
         ''' % (process_name, process_title, parent_key, process, context) )
+        """
+
+
+
 
         display_options = my.kwargs
         options_list = []
@@ -754,18 +865,6 @@ class TaskDetailWdg(SObjectDetailWdg):
             if key in ['search_key','process', 'parent_key','checkin_ui_options','checkin_script_path','checkin_script','checkin_relative_dir']:
                 continue
             options_list.append('<%(key)s>%(value)s</%(key)s>'%({'key':key, 'value': value}))
-
-        """
-        config_xml.append( '''
-        <element name="checkout_%s" title="Checkout: %s ">
-          <display class='tactic.ui.table.TaskCheckoutManageWdg'>
-            <search_key>%s</search_key>
-            <parent_key>%s</parent_key>
-             %s
-          </display>
-        </element>
-        ''' % (process_name, process_title, search_key, search_key, '\n'.join(options_list)) )
-        """
 
         display_options = my.kwargs
         options_list = []
@@ -775,16 +874,17 @@ class TaskDetailWdg(SObjectDetailWdg):
             options_list.append('<%(key)s>%(value)s</%(key)s>'%({'key':key, 'value': value}))
 
         wdg_xml = '''
-        <element name="checkin_%s" title="Checkin: %s ">
+        <element name="checkin_%s" title="Checkin">
           <display class='tactic.ui.widget.CheckinWdg'>
             <search_key>%s</search_key>
             <process>%s</process>
+            <use_applet>false</use_applet>
             <context>%s</context>
             %s
           </display>
         </element>
         
-        ''' % (process_name, process_title, parent_key, process, context, '\n'.join(options_list))
+        ''' % (process_name, parent_key, process, context, '\n'.join(options_list))
 
         config_xml.append( wdg_xml)
 

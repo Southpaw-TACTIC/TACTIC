@@ -41,6 +41,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
         }
 
+
+    ARGS_KEYS['bottom_expr'] = {
+            'description': 'an optional expression for the bottom of the tile',
+            'order' : '03',
+            'category': 'Display'
+        }
+
+
     ARGS_KEYS['show_scale'] = {
             'description': 'If set to true, the scale slider bar is displayed',
             'type': 'SelectWdg',
@@ -133,6 +141,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         process = my.kwargs.get("process")
         if process:
             search.add_filter("process", process)
+        context = my.kwargs.get("context")
+        if context:
+            search.add_filter("context", context)
+
         return super(ToolLayoutWdg, my).alter_search(search)
 
 
@@ -287,6 +299,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             my.bottom = CustomLayoutWdg(**kwargs)
         else:
             my.bottom = None
+
+        my.bottom_expr = my.kwargs.get("bottom_expr")
+
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
@@ -846,6 +861,17 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
+        elif my.bottom_expr:
+            bottom_value = Search.eval(my.bottom_expr, sobject, single=True)
+            bottom_value = bottom_value.replace("\n", "<br/>")
+            bottom = DivWdg()
+            bottom.add(bottom_value)
+            bottom.add_class("spt_tile_bottom")
+            bottom.add_style("padding: 10px")
+            bottom.add_style("height: 50px")
+            bottom.add_style("overflow-y: auto")
+            div.add(bottom)
+            #bottom.add_style("width: %s" % (my.aspect_ratio[0]-20))
         
 
         div.add_attr("ondragover", "$(this).setStyle('box-shadow','0px 0px 15px yellow'); $(this).setStyle('opacity', 0.3); return false")
@@ -931,6 +957,12 @@ spt.tile_layout.set_scale = function(scale) {
         var el = els[i];
         el.setStyle( "width",  size_x);
         el.setStyle( "height", size_y);
+    }
+
+    var els = top.getElements(".spt_tile_bottom");
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        el.setStyle( "width",  size_x-20);
     }
 
     var container_id = "tile_layout::scale"+bvr.scale_prefix;
