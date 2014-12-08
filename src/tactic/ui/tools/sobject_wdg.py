@@ -372,7 +372,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <parent_key>%(search_key)s</parent_key>
                     <process>review</process>
                     <layout>tile</layout>
-                    <title_expr>@REPLACE(@GET(.context), 'review/', '')</title_expr>
+                    <title_expr>@GET(.description)</title_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
                   </display>

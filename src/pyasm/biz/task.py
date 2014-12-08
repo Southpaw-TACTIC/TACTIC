@@ -316,6 +316,8 @@ class Task(SObject):
         if not status:
             return 0
         process = pipeline.get_process(status)
+        if not process:
+            return 0
 
         completion = process.get_completion()
         if completion:

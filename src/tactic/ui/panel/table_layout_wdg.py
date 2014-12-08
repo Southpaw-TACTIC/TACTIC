@@ -167,6 +167,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '12'
         },
 
+        'expand_on_load': {
+            'description': 'expands the table on load, ignore column widths',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '13'
+        },
+
+
 
 
         "temp" : {
@@ -669,7 +677,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #column_widths = [60]
             #my.kwargs["column_widths"] = column_widths
 
-        
+
         my.element_names = my.config.get_element_names()  
        
         for i, widget in enumerate(my.widgets):
@@ -1252,10 +1260,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
+        expand_on_load = my.kwargs.get("expand_on_load")
+        if expand_on_load in [True, 'true']:
+            expand_on_load = True
+        else:
+            expand_on_load = False
+
+
         if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'load',
                 'element_names': my.element_names,
+                'expand_on_load': expand_on_load,
                 'column_widths': column_widths,
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -1268,17 +1284,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     total_size += bvr.column_widths[i];
                 }
 
-                // Commented out: stretch out the last one
-                /*
-                if (size.x > total_size) {
-                    bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
-                }
-                */
-
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
                     spt.table.set_column_width(name, width);
+                }
+
+                if (bvr.expand_on_load) {
+                    spt.table.expand_table();
                 }
                 '''
             } )
@@ -1902,10 +1915,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         has_extra_header = my.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             th = table.add_header()
-            th.add_style("width: 15px")
-            th.add_style("min-width: 15px")
-            th.add_style("max-width: 15px")
-            th.add("&nbsp")
+            th.add_style("width: 36px")
+            th.add_style("min-width: 36px")
+            th.add_style("max-width: 36px")
+            th.add("&nbsp;")
             th.add_style("border-style: solid")
             th.add_style("border-width: 1px")
             color = th.get_color("table_border", -10, default="border")
@@ -5374,10 +5387,10 @@ spt.table.set_column_width = function(element_name, width) {
 
         var layout = spt.table.get_layout();
         if (layout.getAttribute("has_extra_header") == "true") {
-            layout.setStyle("width", total_width+45);
+            layout_width = total_width+66;
         }
         else {
-            layout.setStyle("width", total_width+30);
+            layout_width = total_width+30;
         }
         if (layout_width < 750) layout_width = 700;
 
@@ -5410,6 +5423,46 @@ spt.table.get_column_widths = function() {
 
     return widths;
 }
+
+
+
+spt.table.expand_table = function() {
+    var layout = spt.table.get_layout();
+
+    var version = layout.getAttribute("spt_version");
+    var headers;
+    var table = null;
+    var header_table = null;
+    if (version == '2') {
+        spt.table.set_layout(layout);
+        table = spt.table.get_table();
+        headers = spt.table.get_headers();
+        header_table = spt.table.get_header_table();
+
+    }
+    else {
+        table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+        header_table = table;
+        headers = layout.getElements(".spt_table_th");
+    }
+    var width = table.getStyle("width");
+   
+    // don't set the width of each column, this is simpler
+    if (width == '100%') {
+        table.setStyle("width", "");
+        if (header_table)
+            header_table.setStyle("width", "");
+    }
+    else {
+        table.setStyle("width", "100%");
+        if (header_table)
+            header_table.setStyle("width", "100%");
+        layout.setStyle("width", "100%");
+    }
+ 
+}
+
+
 
 
 
