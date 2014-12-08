@@ -346,6 +346,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 my.group_by_time[group_column] = element_type in ['time', 'date', 'datetime']
 
 
+        # initialize group_values
+        for i, col in enumerate(my.group_columns):
+            group_value_dict = {}
+            my.group_values[i] = group_value_dict
+
 
 
 

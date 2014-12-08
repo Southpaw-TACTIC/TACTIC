@@ -141,11 +141,89 @@ class TileLayoutWdg(ToolLayoutWdg):
         process = my.kwargs.get("process")
         if process:
             search.add_filter("process", process)
+
         context = my.kwargs.get("context")
         if context:
             search.add_filter("context", context)
 
         return super(ToolLayoutWdg, my).alter_search(search)
+
+
+
+    def handle_group(my, inner, row, sobject):
+
+
+        last_group_column = None
+        
+        for i, group_column in enumerate(my.group_columns):
+            group_values = my.group_values[i]
+            
+            eval_group_column =  my._grouping_data.get(group_column)
+            if eval_group_column:
+                group_column = eval_group_column
+            
+            group_value = sobject.get_value(group_column, no_exception=True)
+            if my.group_by_time.get(group_column): #my.group_interval:
+                #group_value = sobject.get_value(group_column, no_exception=True)
+                group_value = my._get_simplified_time(group_value)
+            if not group_value:
+                group_value = "__NONE__"
+            
+            last_value = group_values.get(group_column)
+           
+            # if this is the first row or the group value has changed,
+            # then create a new group
+            if last_value == None or group_value != last_value:
+                if row != 0:
+                    inner.add("<br clear='all'/>")
+
+
+                if group_value == '__NONE__':
+                    label = '---'
+                else:
+                    group_label_expr = my.kwargs.get("group_label_expr")
+                    if group_label_expr:
+                        label = Search.eval(group_label_expr, sobject, single=True)
+                    else:
+                        label = Common.process_unicode_string(group_value)
+
+                title = label
+                if my.group_by_time.get(group_column):
+                    if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
+                        title = 'Week  %s' %label
+                    elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
+                        # order by number, but convert to alpha title
+                        labels = label.split(' ')
+                        if len(labels)== 2:
+                            timestamp = datetime(int(labels[0]),int(labels[1]),1)
+                            title = timestamp.strftime("%Y %b")
+
+
+                group_wdg = DivWdg()
+                inner.add(group_wdg)
+
+                group_wdg.add_style("width: auto")
+                group_wdg.add_border()
+                group_wdg.add(title)
+                group_wdg.add_style("height: 16px")
+                group_wdg.add_style("margin: 20px 0px")
+                group_wdg.add_style("padding: 10px 10px")
+                group_wdg.add_color("background", "background3")
+                group_wdg.add_style("font-size: 1.2em")
+                group_wdg.add_style("font-weight: bold")
+
+
+                group_values[group_column] = group_value
+            
+                last_group_column = group_column
+                # clear the next dict to facilate proper grouping in the next major group
+                next_dict = my.group_values.get(i+1)
+                if next_dict:
+                    next_dict = {}
+                    my.group_values[i+1] = next_dict
+
+
+
 
 
 
@@ -193,7 +271,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
 
+            my.process_groups()
+
             for row, sobject in enumerate(my.sobjects):
+
+                my.handle_group(inner, row, sobject)
+
 
                 if False and not temp and row > 4: 
                     tile_wdg = DivWdg()

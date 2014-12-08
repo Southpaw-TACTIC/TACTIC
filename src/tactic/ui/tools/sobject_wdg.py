@@ -382,6 +382,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <bottom_expr>@GET(.description)</bottom_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
+                    <group_elements>login</group_elements>
                   </display>
                 </element>
                 ''' % values)
