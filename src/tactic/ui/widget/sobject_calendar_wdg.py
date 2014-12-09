@@ -16,7 +16,7 @@ __all__ = ['SObjectCalendarWdg', 'BaseCalendarDayWdg', 'TaskCalendarWdg', 'TaskC
 
 from pyasm.common import Common, jsonloads, Container
 from pyasm.biz import Pipeline
-from pyasm.search import Search
+from pyasm.search import Search, SearchType
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -57,6 +57,46 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         div = DivWdg()
         return div
 
+    def get_color(my, sobject, index):
+
+        div = DivWdg()
+        colors = [
+            div.get_color("background3"),
+            div.get_color("background3", -10),
+            div.get_color("background3", -20),
+        ]
+
+        default_color = colors[index%3]
+
+        try:
+            color = sobject.get("color")
+            return color
+        except:
+            pass
+
+        pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+        if not pipeline_code:
+            pipeline_code = "task"
+
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            return default_color
+
+        status = sobject.get_value("status", no_exception=True)
+        process = pipeline.get_process(status)
+        if not process:
+            return default_color
+
+        color = process.get_color()
+        if not color:
+            return default_color
+        else:
+            color = Common.modify_color(color, 0)
+
+
+        return color
 
 class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
@@ -241,7 +281,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         return value
 
 
-
+    """
+    # use the one from BaseCalendarDayWdg
     def get_color(my, sobject, index):
 
         div = DivWdg()
@@ -264,35 +305,15 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
             pipeline_code = "task"
 
 
-        """
-        parent = sobject.get_parent()
-        if not parent:
-            #return default_color
-            pipeline_code = "task"
-        else:
-            pipeline_code = parent.get_value("pipeline_code", no_exception=True)
-            if not pipeline_code:
-                #return default_color
-                pipeline_code = "task"
-        """
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
         if not pipeline:
             return default_color
 
-        """
-        process_name = sobject.get_value("process")
-        if not process_name:
-            process_name = sobject.get_value("context")
+     
 
-        # get the process
-        process = pipeline.get_process(process_name)
-        if not process:
-            return default_color
-        """
-
-        status = sobject.get_value("status")
+        status = sobject.get_value("status", no_exception=True)
         process = pipeline.get_process(status)
         if not process:
             return default_color
@@ -305,7 +326,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 
         return color
-
+    """
 
 
     def get_week_left_wdg(my, week):
@@ -471,6 +492,7 @@ class SObjectCalendarWdg(CalendarWdg):
         'start_date_col': 'Start date column',
         'end_date_col': 'End date column',
         'handler': 'handler class to display each day',
+        'sobject_display_expr': 'display expression for each sobject',
         'search_type': 'search type to search for',
         'search_expr': 'Initial SObjects Expression'
     }
@@ -795,17 +817,17 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add_style("vertical-align: top")
 
         
-
+        st_title = SearchType.get(my.search_type).get_value('title')
         if sobjects:
             #ids = "".join( [ "['id','%s']" % x.get_id() for x in sobjects ])
             ids = [ str(x.get_id()) for x in sobjects ]
             ids_filter = "['id' ,'in', '%s']" %'|'.join(ids) 
-            expression = "@SOBJECT(sthpw/task%s)" % ids_filter
+            expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
             div.add_behavior( {
                 'type': "click_up",
                 'cbjs_action': '''
-                var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
-                var title = 'Tasks: %s';
+                var class_name = 'tactic.ui.panel.TableLayoutWdg';
+                var title = '%s: %s';
                 var kwargs = {
                     'search_type': '%s',
                     'view': 'table',
@@ -820,7 +842,7 @@ class SObjectCalendarWdg(CalendarWdg):
                     spt.app_busy.hide();
                 }, 200)
 
-                ''' % (str(day),my.search_type, expression ),
+                ''' % (st_title, str(day),my.search_type, expression ),
             } )
 
 
