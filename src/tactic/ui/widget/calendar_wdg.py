@@ -894,7 +894,7 @@ class CalendarInputWdg(BaseInputWdg):
 
         edit_mode = "inline"
         if edit_mode == "table":
-            input = TextWdg(name=name)
+            input = TextWdg(name=name, required=required)
             text = input
         else:
             input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width, hint_text=title)
