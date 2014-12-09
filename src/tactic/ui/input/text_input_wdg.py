@@ -119,6 +119,11 @@ class TextInputWdg(BaseInputWdg):
         my.readonly = kwargs.get("read_only")
         if my.readonly in [True, 'true']:
             my.set_readonly(True)
+            bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
+        else:
+            my.readonly = False
+            bgcolor = my.text.get_color("background")
+            my.text.add_style("background", bgcolor)
 
 
         my.border_color = my.text.get_color("border")
@@ -126,11 +131,6 @@ class TextInputWdg(BaseInputWdg):
         my.text.add_class("spt_text_input")
         #my.text.add_style("padding: 4px")
 
-        if my.readonly:
-            bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
-        else:
-            bgcolor = my.text.get_color("background")
-            my.text.add_style("background", bgcolor)
 
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
@@ -301,7 +301,7 @@ class TextInputWdg(BaseInputWdg):
         if my.kwargs.get("required") in [True, 'true']:
             required_div = DivWdg("*")
             required_div.add_style("position: absolute")
-            required_div.add_style("font-size: 18px")
+            required_div.add_style("font-size: 1.0em")
             top.add(required_div)
             required_div.add_color("color", "color", [50, 0, 0])
             required_div.add_style("margin-left: -10px")
