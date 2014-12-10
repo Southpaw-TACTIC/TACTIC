@@ -293,6 +293,14 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
+        
+        # guest mode
+        #
+        allow_guest = Config.get_value("security", "allow_guest")
+        if allow_guest == 'true':
+            allow_guest = True
+        else:
+            allow_guest = False
 
         security = Security()
         try:
@@ -302,14 +310,8 @@ class BaseAppServer(Base):
             site_obj = Site.get()
             return my.handle_not_logged_in()
 
+ 
 
-        # guest mode
-        #
-        allow_guest = Config.get_value("security", "allow_guest")
-        if allow_guest == 'true':
-            allow_guest = True
-        else:
-            allow_guest = False
 
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
@@ -523,9 +525,24 @@ class BaseAppServer(Base):
         # install the language
         Translation.install()
 
+
+        # handle the case where the project does not exist
+        project = Project.get(no_exception=True)
+        if not project:
+            from pyasm.widget import BottomWdg, Error404Wdg
+            Project.set_project("admin")
+            widget = Widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( Error404Wdg() )
+            widget.add( BottomWdg() )
+            widget.get_display()
+            return widget
+
+
         try:
             widget = my.get_content(page_type)
-        except Error, e:
+        except Exception, e:
             print "ERROR: ", e
             from pyasm.widget import BottomWdg, Error403Wdg
             widget = Widget()
@@ -551,7 +568,7 @@ class BaseAppServer(Base):
 
 
 
-    def handle_security(my, security):
+    def handle_security(my, security, allow_guest=False):
         # set the seucrity object
 
         WebContainer.set_security(security)
@@ -600,7 +617,8 @@ class BaseAppServer(Base):
             if site:
                 site_obj.set_site(site)
 
-            security.login_with_ticket(ticket_key, add_access_rules=False)
+            
+            security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
 
 
         if not security.is_logged_in():

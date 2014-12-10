@@ -748,6 +748,8 @@ spt.tab.save_state = function() {
 
 spt.tab.header_pos = null;
 spt.tab.mouse_pos = null;
+spt.tab.dragging = false;
+
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
     spt.tab.header_pos = bvr.src_el.getPosition();
@@ -763,9 +765,10 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
     var dx = mouse_411.curr_x - spt.tab.mouse_pos.x;
     var dy = mouse_411.curr_y - spt.tab.mouse_pos.y;
     if (Math.abs(dx) < 20) {
+        spt.tab.dragging = false;
         return;
     }
-
+    spt.tab.dragging = true;
     header.setStyle("position", "absolute");
     header.setStyle("z-index", "100");
     header.setStyle("opacity", "1.0");
@@ -777,20 +780,23 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
 spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
     var header = bvr.src_el;
     var drag_pos = header.getPosition();
-
-
+    if (spt.tab.dragging == false)
+        return;
+    
     var headers = spt.tab.get_headers();
     for ( var i = headers.length-1; i >= 0; i-- ) {
         if (headers[i] == header) {
             continue;
         }
         var pos = headers[i].getPosition();
+
         var size = headers[i].getSize();
-        if (drag_pos.x > pos.x + size.x/2) {
+        // the y ensures 2nd row tabs don't jump to first row on click
+        if (drag_pos.x > pos.x + size.x/2 && drag_pos.y >= pos.y) {
             header.inject(headers[i], "after");
             break;
         }
-        if (drag_pos.x > pos.x) {
+        if (drag_pos.x > pos.x && drag_pos.y >= pos.y ) {
             header.inject(headers[i], "before");
             break;
         }
@@ -1791,6 +1797,8 @@ spt.tab.close = function(src_el) {
         #header.add(remove_wdg)
 
 
+
+
         remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
         from pyasm.widget import IconButtonWdg
         #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
@@ -1830,7 +1838,7 @@ spt.tab.close = function(src_el) {
         } )
 
 
-
+        
 
         # add a drag behavior
         allow_drag = my.kwargs.get("allow_drag")
@@ -1838,7 +1846,7 @@ spt.tab.close = function(src_el) {
             header.add_style("position", "relative");
             header.add_behavior( {
             'type': 'drag',
-            "mouse_btn": 'LMB',
+            #"mouse_btn": 'LMB',
             "drag_el": '@',
             "cb_set_prefix": 'spt.tab.header_drag'
             } )

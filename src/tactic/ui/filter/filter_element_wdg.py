@@ -64,7 +64,7 @@ class BaseFilterElementWdg(BaseRefreshWdg):
         if not title:
             title = name
         title = Common.get_display_title(title)
-        title_div.add("%s:" % title )
+        title_div.add("%s " % title )
         title_div.add_style("font-weight: bold")
 
         return title_div
@@ -121,6 +121,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
     
     def init(my):
         expression = my.kwargs.get("column")
+        my.multi_search_types = False
         if not expression:
             return
         parts = expression.split(".")
@@ -303,7 +304,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         #div.add_style("width: 350px")
 
         select = SelectWdg("value")
-        select.add_style("width: 150px")
+        select.add_style("width: 190")
 
         default_value = my.kwargs.get("default")
 
@@ -362,7 +363,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
         else:
             op_select = SelectWdg("op")
-            op_select.add_style("width: 75px")
+            op_select.add_style("width: 100px")
             # only support in or not in for multi stypes column
             if my.multi_search_types:
                 op_select.set_option("labels", "is|is not")
@@ -1061,7 +1062,7 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
         expression = my.kwargs.get("column")
         if not expression:
-            return
+            expression = my.get_name()
         
         search_types = []
 
@@ -1081,7 +1082,11 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
-
+        from pyasm.common import SPTDate
+        start_date = SPTDate.add_local_timezone(start_date)
+        start_date = SPTDate.convert(start_date)
+        end_date = SPTDate.add_local_timezone(end_date)
+        end_date = SPTDate.convert(end_date)
 
         
         from pyasm.search import Search
@@ -1095,7 +1100,6 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
         search2.add_date_range_filter(date_col, start_date, end_date)
 
-        
         search.add_relationship_search_filter(search2)
 
 
@@ -1130,7 +1134,8 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         op = DivWdg("is")
         td.add(op)
         td = table.add_cell()
-        op = DivWdg("between&nbsp;&nbsp;&nbsp;")
+        op = DivWdg(" between&nbsp;&nbsp;&nbsp;")
+        op.add_style("margin-left: 5px")
         td.add(op)
 
         from tactic.ui.widget import CalendarInputWdg
@@ -1194,6 +1199,11 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
+        from pyasm.common import SPTDate
+        start_date = SPTDate.add_local_timezone(start_date)
+        start_date = SPTDate.convert(start_date)
+        end_date = SPTDate.add_local_timezone(end_date)
+        end_date = SPTDate.convert(end_date)
 
         operator = my.get_option("op")
         if operator != 'not in':
@@ -1407,7 +1417,6 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
             values = my.get_option("select_values")
             labels = my.get_option("select_labels")
             select = SelectWdg("field")
-            select.add_style("width: 120px")
 
             select.add_empty_option("-- Select --")
             select.set_option("values", values)

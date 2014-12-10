@@ -210,7 +210,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             search_type: 'sthpw/pipeline',
             view: 'site_wide',
             show_search: 'false',
-            expression: "@SOBJECT(sthpw/pipeline['project_code is NULL'])"
+            expression: "@SOBJECT(sthpw/pipeline['project_code','is','NULL'])"
         }
         var header = spt.smenu.get_activator(bvr);
         var top = header.getParent(".spt_tab_top");

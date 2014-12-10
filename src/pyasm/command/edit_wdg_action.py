@@ -239,7 +239,13 @@ class DatabaseAction(Command):
         if col_type == 'timecode':
             timecode = TimeCode(timecode=value)
             value = timecode.get_frames()
-
+        elif col_type in ["time", "timestamp"]:
+            from pyasm.common import SPTDate
+            if not SPTDate.has_timezone(value):
+                value = SPTDate.add_local_timezone(value)
+        elif col_type in ["float", "integer"]:
+            if isinstance(value, basestring):
+                value = value.replace(",", "")
         return value
 
 

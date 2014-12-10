@@ -164,7 +164,7 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
                 if j % 2 == 0:
-                    tr.add_color("background-color", "background", -5)
+                    tr.add_color("background-color", "background", -1)
                 else:
                     tr.add_color("background-color", "background")
 

@@ -176,7 +176,10 @@ class BaseConfigWdg(BaseRefreshWdg):
 
             # TODO: should convert this to ATTRS or someting like that.  Not
             # just width
-            element.width = my.element_widths[idx]
+            if idx >= len(my.element_widths):
+                element.width = 150
+            else:
+                element.width = my.element_widths[idx]
 
             if my.input_prefix:
                 element.set_input_prefix(my.input_prefix)

@@ -314,10 +314,18 @@ class Login(SObject):
                     login.set_value("id", 0)
                     login.set_id(0)
 
+                columns = SearchType.get_columns("sthpw/login")
+
                 login.set_value("login", "admin")
+                login.set_value("code", "admin")
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
+
+                data = login.get_data()
+                for column in columns:
+                    if data.get(column) == None:
+                        login.set_value(column, "")
 
                 password = Config.get_value("security", "password")
                 if not password:
@@ -633,6 +641,29 @@ class Site(object):
 
     def get_max_users(my):
         return
+
+
+    # HACK: Some functions to spoof an sobject
+    def get_project_code(my):
+        return "admin"
+
+    def get_base_search_type(my):
+        return "sthpw/virtual"
+
+    def get_search_type(my):
+        return "sthpw/virtual"
+
+    def get(my, name, no_exception=True):
+        return my.get_value(name)
+
+    def get_value(my, name, no_exception=True):
+        # This is just to spoof the Site object into being an sobject for
+        # the purposes of using expressions to configure the "asset_dir"
+        # for sites.  Ideally, this class should be derived from sobject,
+        # but this is not yet implemented.
+        if name == "code":
+            site = Site.get_site()
+            return site
 
     #
     # Virtual methods
@@ -1015,7 +1046,6 @@ class Security(Base):
         # rules to the access manager
         if my.add_access_rules_flag:
             my.add_access_rules()
-
         # record that the login is logged in
         my._is_logged_in = 1
 
@@ -1095,7 +1125,7 @@ class Security(Base):
 
 
 
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
 
@@ -1134,6 +1164,9 @@ class Security(Base):
 
         # store the ticket
         my._ticket = ticket
+
+        if my._login.get("login") == "guest" and not allow_guest:
+            return None
 
         my._do_login()
 

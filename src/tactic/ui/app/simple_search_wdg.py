@@ -57,10 +57,7 @@ class SimpleSearchExampleWdg(BaseRefreshWdg):
 
 class SimpleSearchWdg(BaseRefreshWdg):
 
-    SEARCH_COL1 = 'keyword'
-    SEARCH_COL2 = 'name'
-    SEARCH_COL3 = 'description'
-    SEARCH_COL4 = 'code'
+    SEARCH_COLS = ['keyword','keywords','key','name','description','code']
 
     def get_args_keys(my):
         return {
@@ -190,7 +187,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
         my.content.add_style("margin: -2 -1 -2 -2")
 
 
-        show_search = True
+        show_search = my.kwargs.get("show_search")
+        if show_search in [False, 'false']:
+            show_search = False
+        else:
+            show_search = True
         if show_search:
             search_wdg = my.get_search_wdg()
             table.add_row()
@@ -217,7 +218,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
     def get_config(my):
-        # TEST
         config_xml = '''
         <config>
         <custom_filter>
@@ -508,7 +508,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 
 
 
-            icon = IconWdg("Filter Set", IconWdg.GREEN_LIGHT)
+            icon = IconWdg("Filter Set", "BS_ASTERISK")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_attr("spt_element_name", element_name)
@@ -548,11 +548,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     def get_search_col(cls, search_type):
         '''Get the appropriate keyword search col based on column existence in this sType'''
-        for col in [cls.SEARCH_COL1, cls.SEARCH_COL2, cls.SEARCH_COL3, cls.SEARCH_COL4]:
+        for col in cls.SEARCH_COLS:
             if SearchType.column_exists(search_type, col):
                 return col
 
-        return cls.SEARCH_COL4
+        return cls.SEARCH_COLS[-1]
 
     get_search_col = classmethod(get_search_col)
 

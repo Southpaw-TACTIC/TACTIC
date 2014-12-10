@@ -301,6 +301,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
         from tactic.ui.container import ResizableTableWdg
         main_table = ResizableTableWdg()
         main_table.set_keep_table_size()
+
         main_table.add_style("width: 100%")
 
         td.add(main_table)
@@ -673,7 +674,7 @@ class MainBodyTabWdg(BaseRefreshWdg):
         config = WidgetConfig.get(view=my.view, xml=config_xml)
 
         top = DivWdg()
-        tab = TabWdg(config=config, view=my.view)
+        tab = TabWdg(config=config, view=my.view, width=1000)
         top.add(tab)
         for widget in my.widgets:
             tab.add(widget)

@@ -363,9 +363,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             '''
         } )
 
+
+        detail_element_names = my.kwargs.get("detail_element_names")
+
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_tile_detail',
+            'detail_element_names': detail_element_names,
             'cbjs_action': '''
             spt.tab.set_main_body_tab();
             var top = bvr.src_el.getParent(".spt_tile_top");
@@ -374,7 +378,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             var search_code = top.getAttribute("spt_search_code");
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
             var kwargs = {
-                search_key: search_key
+                search_key: search_key,
+                tab_element_names: bvr.detail_element_names
             };
             spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
@@ -414,6 +419,26 @@ class TileLayoutWdg(ToolLayoutWdg):
                 }
                 '''
             } )
+        elif mode == "detail":
+            tab_element_names = my.kwargs.get("tab_element_names")
+            layout_wdg.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_tile_content',
+                'tab_element_names': tab_element_names,
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_tile_top");
+                var search_key = top.getAttribute("spt_search_key");
+
+                spt.tab.set_main_body_tab();
+                var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+                var kwargs = {
+                    search_key: search_key,
+                    tab_element_names: bvr.tab_element_names,
+                };
+                spt.tab.add_new(search_key, "Detail []", class_name, kwargs);
+                '''
+            } )
+
         elif mode == "gallery":
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
@@ -531,6 +556,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+                spt.app_busy.show("Attaching file");
+
 
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
@@ -574,6 +601,7 @@ class TileLayoutWdg(ToolLayoutWdg):
          
                 }
 
+                spt.app_busy.hide();
             }
  
 
@@ -1006,12 +1034,20 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         ''' } )
 
 
+        scale = my.kwargs.get("scale")
+
+
         div.add_behavior( {
         'type': 'load',
+        'scale': scale,
         'cbjs_action': '''
         spt.tile_layout.set_layout(bvr.src_el);
 
         spt.tile_layout.setup_control();
+
+        if (bvr.scale) {
+            spt.tile_layout.set_scale(bvr.scale);
+        }
       
         '''
         } )
@@ -1173,12 +1209,15 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
 
-        if sobject.get_base_search_type() == "sthpw/snapshot":
+        title_expr = my.kwargs.get("title_expr")
+        if title_expr:
+            title = Search.eval(title_expr, sobject, single=True)
+        elif sobject.get_base_search_type() == "sthpw/snapshot":
             title = sobject.get_value("context")
         else:
             title = sobject.get_value("name", no_exception=True)
-            if not title:
-                title = sobject.get_value("code", no_exception=True)
+        if not title:
+            title = sobject.get_value("code", no_exception=True)
       
         table = Table()
         header_div.add(table)

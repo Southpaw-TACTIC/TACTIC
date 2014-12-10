@@ -254,7 +254,7 @@ class PluginBase(Command):
 
             # have some specific attributes for specific search types
             # can use wildcards like % and *
-            if search_type == 'config/widget_config':
+            if search_type.get_base_key() == 'config/widget_config':
                 view = Xml.get_attribute(node, "view")
                 if view:
                     ignore_columns = 'id,code'
@@ -280,6 +280,7 @@ class PluginBase(Command):
 
 
             search.add_order_by("id")
+            print "search: ", search.get_statement()
             sobjects = search.get_sobjects()
         else:
             sobjects = []

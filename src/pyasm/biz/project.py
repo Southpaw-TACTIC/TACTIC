@@ -62,7 +62,7 @@ class Project(SObject):
         return resource
 
 
-    def get_project_db_resource(my):
+    def get_project_db_resource(my, database=None):
         # get the db resource for attached to this particular project.
         # Not the db_resource for "sthpw/project" for which
         # project.get_db_resource() does
@@ -76,13 +76,10 @@ class Project(SObject):
             resource_dict = {}
             Container.put(key, resource_dict)
 
-        #key = "Project:db_resource:%s" % my.get_code()
-        #resource = Container.get(key)
-        #if resource != None:
-        #    return resource
 
         # the project defines the resource
-        database = my.get_database_name()
+        if not database:
+            database = my.get_database_name()
         assert database
 
         if database == 'sthpw':
@@ -214,7 +211,7 @@ class Project(SObject):
     #
     # static functions
     #
-    def get(cls):
+    def get(cls, no_exception=False):
         '''get current project'''
         project_name = cls.get_global_project_code()
         if project_name == "":
@@ -245,6 +242,8 @@ class Project(SObject):
                     Container.put("default_project", project)
                     project.set_value("code", project_name)
 
+            elif no_exception:
+                return None
             else:
                 # FIXME: why is a virtual project created?
                 raise TacticException("No project [%s] exists" % project_name)
@@ -422,8 +421,12 @@ class Project(SObject):
         return Project.get().get_code()
     get_project_name = staticmethod(get_project_name)
 
-    def get_project_code():
-        return Project.get().get_code()
+    def get_project_code(no_exception=False):
+        project = Project.get(no_exception=no_exception)
+        if project:
+            return project.get_code()
+        else:
+            return ""
     get_project_code = staticmethod(get_project_code)
 
     # DEPRECATED
@@ -533,7 +536,10 @@ class Project(SObject):
         base_search_type, data = SearchKey._get_data(search_type)
         project_code = data.get("project")
         if project_code == None:
+            if search_type.startswith('sthpw/'):
+                return 'sthpw'
             # this is specifically for project-specific sType
+            
             search_type_obj = SearchType.get(search_type)
             database = search_type_obj.get_value("database")
             if database != "{project}":
@@ -598,7 +604,6 @@ class Project(SObject):
             # get the local db_resource
             db_resource = DbResource.get_default('sthpw')
             return db_resource
-
 
         project_code = cls.get_database_by_search_type(search_type)
         project = Project.get_by_code(project_code)
