@@ -499,10 +499,6 @@ class BizTest(unittest.TestCase):
 
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
-<<<<<<< HEAD
-        
-=======
->>>>>>> master
         expected = ['unittest/person_in_car', 'unittest/house']
         my.assertEquals(True, expected[0] in child_types)
         my.assertEquals(True, expected[1] in child_types)
