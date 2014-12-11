@@ -151,7 +151,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
             if isinstance(widget, KeywordFilterElementWdg):
                 if not data.get("keywords") and my.kwargs.get("keywords"):
                     widget.set_value("value", my.kwargs.get("keywords"))
-
             widget.alter_search(search)
 
         return
@@ -184,7 +183,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         td.add(my.content)
-        my.content.add_style("margin: -2 -1 -2 -2")
+        my.content.add_style("margin: -2 -1 -2 -1")
 
 
         show_search = my.kwargs.get("show_search")
@@ -546,8 +545,18 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
 
-    def get_search_col(cls, search_type):
+    def get_search_col(cls, search_type, simple_search_view=''):
         '''Get the appropriate keyword search col based on column existence in this sType'''
+        if simple_search_view:
+            from pyasm.widget import WidgetConfigView
+            config = WidgetConfigView.get_by_search_type(search_type, simple_search_view)
+            # assume the keyword filter is named "keyword"
+            options = config.get_display_options('keyword')
+            column = options.get('column')
+           
+            if column:
+                return column
+
         for col in cls.SEARCH_COLS:
             if SearchType.column_exists(search_type, col):
                 return col

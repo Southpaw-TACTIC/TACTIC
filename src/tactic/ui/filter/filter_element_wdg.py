@@ -854,10 +854,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             my.filter_search_type = my.overall_search_type
         div = DivWdg()
         div.add_style("position: relative")
-        #div.add_style("width: 360px")
-        #div.add_style("height: 35px")
-        #div.add_style("padding-top: 15px")
-        #div.add_style("padding-left: 25px")
 
         if my.show_title:
             name = my.get_name()
@@ -867,16 +863,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 title = name
             title = Common.get_display_title(title)
 
-            #title_div = DivWdg()
-            #div.add(title_div)
-            #title_div.add("%s: " % title )
-            #title_div.add_style("float: left")
             if title:
                 div.add("<b>%s: &nbsp;</b>" % title )
 
 
-        #text = TextWdg("value")
-        #text = TextInputWdg(name="value")
 
         custom_cbk = {
             'enter': '''
@@ -966,6 +956,18 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         if not width:
             width = "230"
 
+
+        show_toggle = my.get_option("show_toggle")
+        if show_toggle in ['true', True]:
+            icon = "BS_CHEVRON_DOWN"
+            icon_pos = "right"
+        else:
+            icon = ""
+            icon_pos = ""
+
+
+
+
         text = LookAheadTextInputWdg(
                 name="value",
                 do_search=my.do_search,
@@ -978,7 +980,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 width = width,
                 hint_text=hint_text,
                 case_sensitive = my.case_sensitive,
-                icon=my.kwargs.get("icon"),
+                icon=icon,
+                icon_pos=icon_pos,
         )
         value = my.values.get("value")
         if value:
@@ -999,6 +1002,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         show_toggle = my.get_option("show_toggle")
         if show_toggle in ['true', True]:
+            icon_wdg = text.get_icon_wdg()
+            if icon_wdg:
+                icon_wdg.add_class("spt_search_toggle")
+                icon_wdg.add_class("hand")
+            """
             from pyasm.widget import IconWdg
             icon_div = DivWdg()
             icon = IconWdg("toggle", "BS_CHEVRON_DOWN")
@@ -1008,6 +1016,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             icon_div.add_style("top: 6px")
             icon_div.add_style("right: 4px")
             div.add(icon_div)
+            """
         
         
         show_partial = my.get_option("show_partial")
