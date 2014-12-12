@@ -280,6 +280,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
+        my.simple_search_view = my.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
@@ -506,7 +507,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
 
         if my.is_sobjects_explicitly_set():
@@ -570,7 +571,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_values:
 
-           
             keyword_value = keyword_values[0].get('value')
             if keyword_value:
                 from tactic.ui.filter import KeywordFilterElementWdg
@@ -835,16 +835,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         column = "keywords"
+        simple_search_mode = my.kwargs.get("simple_search_mode")
+        
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
 
-        # TEST
+        # TEST: on by default
         show_keyword_search = True
 
-        
+
        
         if show_keyword_search:
             keyword_div = DivWdg()
@@ -861,11 +863,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="", width="75", show_partial=False, show_toggle=True)
+            keyword_filter = KeywordFilterElementWdg(
+                    column=my.keyword_column,
+                    mode="keyword",
+                    filter_search_type=my.search_type,
+                    icon="",
+                    width="75",
+                    show_partial=False,
+                    show_toggle=True
+            )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -875,39 +884,40 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                 var el = bvr.src_el.getElement(".spt_text_input");
+                var el = bvr.src_el.getElement(".spt_text_input");
                 el.setStyle("width", "230px");
-                bvr.src_el.setStyle("width", "230px");
                 el.focus();
                 el.select();
                 '''})
 
-            keyword_div.add_relay_behavior( {
-                'type': 'click',
-                'bvr_match_class': 'spt_search_toggle',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_view_panel_top");
-                if (top) {
-                    var simple_search = top.getElement(".spt_simple_search");
-                    if (simple_search) {
-                        simple_search.setStyle("display", "");
-                        spt.body.add_focus_element(simple_search);
+            if simple_search_mode != 'inline':
+                keyword_div.add_relay_behavior( {
+                    'type': 'click',
+                    'bvr_match_class': 'spt_search_toggle',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_view_panel_top");
+                    if (top) {
+                        var simple_search = top.getElement(".spt_simple_search");
+                        if (simple_search) {
+                            simple_search.setStyle("display", "");
+                            spt.body.add_focus_element(simple_search);
+                        }
                     }
-                }
 
-               
+                   
 
-                '''
-            } )
+                    '''
+                } )
 
 
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
                 'cbjs_action': '''
-
-                var el = bvr.src_el.getElement(".spt_text_input");
-                el.setStyle("width", "50px");
+                
+                var el = bvr.src_el;
+                
+                el.setStyle("width", "75px");
 
                 '''
             } )
