@@ -490,9 +490,9 @@ class TextInputWdg(BaseInputWdg):
             color = my.text.get_color('color')
             # lower the visibility of the hint text according to color of palette
             if color > '#999':
-                color = Palette.modify_color(color, -30)
+                color = Palette.modify_color(color, -40)
             elif color < '#222':
-                color = Palette.modify_color(color, 40)
+                color = Palette.modify_color(color, 50)
 
             if hint_text:
                 my.text.add_attr('title', hint_text)
@@ -501,9 +501,10 @@ class TextInputWdg(BaseInputWdg):
                     'cbjs_action': '''
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
-                            offset: {x:5, y:5}}});
+                            offset: {x:5, y:10}}});
                     over.text.setStyle('color','%s');
-                    over.text.setStyle('font-size','1.1em');
+                    over.text.setStyle('font-size','0.8em');
+                    over.text.setStyle('z-index','100');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''%color})
 
