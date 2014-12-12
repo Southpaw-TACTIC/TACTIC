@@ -323,12 +323,19 @@ class SimpleSearchWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         elements_wdg.add(table)
         table.add_class("spt_simple_search_table")
+        
+        columns = my.kwargs.get("columns")
+        if not columns:
+            columns = 2
+        else:
+            columns = int(columns) 
        
-        num_rows = int(len(element_names)/2)+1
-        tot_rows = int(len(element_names)/2)+1
+        num_rows = int(len(element_names)/columns)+1
+        tot_rows = int(len(element_names)/columns)+1
         project_code = Project.get_project_code()
         # my.search_type could be the same as my.base_search_type
         full_search_type = SearchType.build_search_type(my.search_type, project_code)
+
 
         visible_rows = my.kwargs.get("visible_rows")
         if visible_rows:
@@ -341,7 +348,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         row_count = 0
         for i, element_name in enumerate(element_names):
             attrs = config.get_element_attributes(element_name)
-            if i % 2 == 0:
+            if i % columns == 0:
 
                 if visible_rows and row_count == visible_rows:
                     tr, td = table.add_row_cell("+ more ...")
@@ -412,7 +419,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             #element_wdg.add_style("border: solid 1px yellow")
 
 
-            if i == 0 and len(element_names) > 1:
+            if i >= 0  and i < columns -1 and len(element_names) > 1:
                 spacer = DivWdg()
                 spacer.add_class("spt_spacer")
                 spacer.add_style("border-style: solid")

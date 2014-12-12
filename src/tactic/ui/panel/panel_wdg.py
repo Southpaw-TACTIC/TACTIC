@@ -2570,9 +2570,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': 4,
             'values': 'inline|hidden',
         },
-
-
-
+        'simple_search_columns': {
+            'description': 'Number of columns in the simple search bar',
+            'type': 'SelectWdg',
+            'order': 7,
+            'values': '2|3|4',
+            'category': 'Search'
+        },
 
         "search_view": "search view to be displayed",
         "order_by": "order by a particular column",
@@ -3054,7 +3058,8 @@ class ViewPanelWdg(BaseRefreshWdg):
                 kwargs['keywords'] = my.kwargs.get("keywords")
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
-            
+            kwargs['columns'] = my.kwargs.get("simple_search_columns")
+ 
 
 
             show_shelf = my.kwargs.get("show_shelf")
