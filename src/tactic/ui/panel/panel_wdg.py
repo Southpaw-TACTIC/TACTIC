@@ -2554,17 +2554,20 @@ class ViewPanelWdg(BaseRefreshWdg):
         'simple_search_view': {
             'description': 'View for defining a simple search',
             'type': 'TextWdg',
+            'order': 5,
             'category': 'Search'
         },
         'simple_search_visible_rows': {
             'description': 'Number of visible rows in the simple search bar',
             'type': 'TextWdg',
+            'order': 6,
             'category': 'Search'
         },
         'simple_search_mode': {
-            'description': 'Number of visible rows in the simple search bar',
+            'description': 'Display mode of simple search bar',
             'type': 'SelectWdg',
             'category': 'Search',
+            'order': 4,
             'values': 'inline|hidden',
         },
 
@@ -3051,7 +3054,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 kwargs['keywords'] = my.kwargs.get("keywords")
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
-
+            
 
 
             show_shelf = my.kwargs.get("show_shelf")
