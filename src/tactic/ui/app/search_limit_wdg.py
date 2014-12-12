@@ -89,10 +89,16 @@ class SearchLimitWdg(Widget):
 
 
         my.values2 = filter_data.get_values_by_prefix("search_limit_simple")
+
         if not len(my.values2):
             my.values2 = {}
-        else:
-            my.values2 = my.values2[0]
+        elif len(my.values2):
+            if my.values2[0]['page']:
+                my.values2 = my.values2[0]
+            else:
+                my.values2 = my.values2[1]
+            
+  
 
 
         my.stated_search_limit = values.get("search_limit")
@@ -208,6 +214,7 @@ class SearchLimitWdg(Widget):
         if page:
             current_offset = my.search_limit * (int(page)-1)
 
+        
         elif values.get("Next"):
             current_offset = last_search_offset + my.search_limit
             if current_offset >= my.count:
@@ -237,6 +244,8 @@ class SearchLimitWdg(Widget):
         else:
             current_offset = 0 
 
+
+
         if my.fixed_offset == False:
             my.current_offset = current_offset
 
@@ -251,7 +260,6 @@ class SearchLimitWdg(Widget):
         if my.search_limit >= 0:
             my.search.set_limit(my.search_limit)
         my.search.set_offset(my.current_offset)
-
 
     def get_info(my):
 
@@ -528,7 +536,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         if not search_limit:
             search_limit = 100
         current_offset = my.kwargs.get("current_offset")
-
+     
         num_pages = int( float(count-1) / float(search_limit) ) + 1
         current_page = int (float(current_offset) / count * num_pages) + 1
 
@@ -546,50 +554,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         table = Table()
 
 
-        pagination = DivWdg()
-        pagination.add_style("position: absolute;")
-        pagination.add_style("top: 185px;")
-        pagination.add_style("right: 0;")
-        pagination.add_style("display: table-row;")
-        pagination.add_class("pagination")
-        next_div = DivWdg()
-        prev_div = DivWdg()
-        next_div.add("<img/>")
-        next_div.add_style("display: table-cell;")
-        next_div.add_style("width: 15px;")
-        next_div.add_style("background: rgba(0,0,0,0) !important;")
-        next_div.add_style("float: right;")
-        next_div.add_style("padding: 0 0 0 5px;")
-
-
-        prev_div.add("<img/>")
-        prev_div.add_style("display: table-cell;")
-        prev_div.add_style("width: 15px;")
-        prev_div.add_style("background: rgba(0,0,0,0) !important;")
-        prev_div.add_style("float: left;")
-        prev_div.add_style("padding: 0 0 0 5px;")
-
-        next_div.add_class("next")
-        prev_div.add_class("prev")
-        
-        pagination.add(prev_div)
-        pagination.add(next_div)
-
-
-        top.add(pagination)
-
-        if current_page > 1:
-            prev_div.add_class("spt_link")
-        else:
-            prev_div.add_class("spt_no_link")
-
-        prev_div.add_attr("spt_page", "prev")
-
-        if current_page < num_pages:
-            next_div.add_class("spt_link")
-        else:
-            next_div.add_class("spt_no_link")
-        next_div.add_attr("spt_page", "next")
+       
 
 
         table.add_style("margin-left: 30px")
@@ -630,7 +595,6 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
                 if ( value > bvr.num_pages ) value = bvr.num_pages;
             }
             page_el.value = value;
-
             bvr.src_el = bvr.src_el.getParent('.spt_table_top');
             //bvr.panel = bvr.src_el.getParent('.spt_view_panel');
             spt.dg_table.search_cbk(evt, bvr);
