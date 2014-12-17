@@ -498,6 +498,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # compatibility
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
+        inner.add_style("border-style", "solid")
+        inner.add_style("border-width: 0px 1px 0px 0px")
+        inner.add_style("border-color", inner.get_color("table_border", -10, default="border"))
+        has_extra_header = my.kwargs.get("has_extra_header")
+        if has_extra_header in [True, "true"]:
+            inner.add_attr("has_extra_header", "true")
+
+
         if my.config_xml:
             inner.add_attr("spt_config_xml", my.config_xml)
 
@@ -690,8 +698,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
-
+        # IS this needed?
         table_width = 30
         for i in range(0, len(column_widths)):
             width = column_widths[i]
@@ -866,6 +873,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         for i, col in enumerate(my.group_columns):
             group_value_dict = {}
             my.group_values[i] = group_value_dict
+
         for row, sobject in enumerate(my.sobjects):
 
             # put in a group row
@@ -1891,6 +1899,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #if not width_set:
         #    table.add_style('width', '100%')
 
+        has_extra_header = my.kwargs.get("has_extra_header")
+        if has_extra_header in [True, "true"]:
+            th = table.add_header()
+            th.add_style("width: 36px")
+            th.add_style("min-width: 36px")
+            th.add_style("max-width: 36px")
+            th.add("&nbsp;")
+            th.add_style("border-style: solid")
+            th.add_style("border-width: 1px")
+            color = th.get_color("table_border", -10, default="border")
+            th.add_style("border-color: %s" % color)
+
 
 
 
@@ -2436,21 +2456,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         for i, widget in enumerate(my.widgets):
             element_name = widget.get_name()
-
-            # TEST TEST TEST
-            """
-            if element_name == "gantt_test":
-                if row > 0:
-                    td = table.add_cell()
-                    td.add_class("spt_cell_edit")
-                    td.add_attr("spt_input_value", "gantt chart")
-                    if row == 2:
-                        td.add_class("spt_cell_changed")
-                        tr.add_class("spt_row_changed")
-                        td.add("test")
-
-                    continue
-            """
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
@@ -4809,8 +4814,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // bottom so just change the bg color
             if (kw['refresh_bottom']) {
                 var bottom_row = spt.table.get_bottom_row(); 
-                if (bottom_row)
-                    bottom_row.setStyle('background', '#E6CB81');
+                if (bottom_row) {
+                    // This color doesn't really fit color palette
+                    //bottom_row.setStyle('background', '#E6CB81');
+                }
             }
 
 
@@ -5288,7 +5295,15 @@ spt.table.set_column_width = function(element_name, width) {
         header_table.setStyle("width", total_width);
 
         var layout = spt.table.get_layout();
-        layout.setStyle("width", total_width+31);
+        if (layout.getAttribute("has_extra_header") == "true") {
+            layout_width = total_width+66;
+        }
+        else {
+            layout_width = total_width+30;
+        }
+        if (layout_width < 750) layout_width = 700;
+
+        layout.setStyle("width", layout_width);
     }
 
     curr_header.setStyle("width", width);
