@@ -145,18 +145,20 @@ class BaseInputWdg(HtmlElement):
         title = title.capitalize()
         span = SpanWdg(title)
 
-        required = my.get_option("required")
-        if required == "true":
-            my._add_required(span)
+       
         return span
 
 
-    def _add_required(my, span):
-        required_span = SpanWdg(" *")
-        required_span.add_style("color: #f44")
+    def _add_required(my, span, offset_x=10):
+        required_span = DivWdg("*")
+        required_span.add_style("position: absolute")
+        required_span.add_style("margin-left: -%dpx"% offset_x)
+
+        required_span.add_color("color", "color", [50, 0, 0])
         required_span.add_style("font-size: 1.0em")
-        span.add_tip("Required Field")
+        
         span.add(required_span)
+        span.add_class("spt_required")
 
     def set_parent_wdg(my, parent_wdg):
         '''method to set the parent widget.  This is typicaly the EditWdg'''
@@ -561,7 +563,16 @@ class TextWdg(BaseTextWdg):
         'values' : 'true|false',
         'order': 1,
         'category': 'Options'
+    },
+    'required': {
+            'description': 'designate this field to be filled in',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 2,
+            'category': 'Options'
     }
+
+
     
     }
  
@@ -601,8 +612,17 @@ class TextWdg(BaseTextWdg):
             my.set_attr("size", size)
 
         my.handle_mode()
+        required = my.get_option("required")
+        if required == "true":
+            text = BaseInputWdg.get_class_display(my)
+            wdg = SpanWdg()
 
-        return super(TextWdg,my).get_display()
+            my._add_required(wdg)
+            wdg.add(text)
+            return wdg
+
+        else:    
+            return super(TextWdg,my).get_display()
 
 class FilterTextWdg(TextWdg):
     '''This composite text acts as a filter and can be, for instance, 
@@ -659,8 +679,26 @@ class FilterTextWdg(TextWdg):
 class TextAreaWdg(BaseTextWdg):
 
     ARGS_KEYS = {
-        'rows': 'The number of rows to show',
-        'cols': 'The number of columns to show',
+        'rows': {
+            'description': 'The number of rows to show',
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Options'
+        },
+        'cols':  {
+            'description': 'The number of columns to show',
+            'type': 'TextWdg',
+            'order': 2,
+            'category': 'Options'
+        },
+        'required': {
+            'description': 'designate this field to be filled in',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 3,
+            'category': 'Options'
+        }
+
     }
 
     def __init__(my,name=None, **kwargs):
@@ -734,6 +772,12 @@ class TextAreaWdg(BaseTextWdg):
         my.add(value)
 
         #my.handle_mode()
+        if my.get_option("required") in [True, 'true']:
+            text_area = BaseInputWdg.get_class_display(my)
+            wdg = SpanWdg()
+            my._add_required(wdg)
+            wdg.add(text_area)
+            return wdg
 
         return super(TextAreaWdg,my).get_display()
 
@@ -978,7 +1022,15 @@ class SelectWdg(BaseInputWdg):
     },
     'query': {
         'description': 'Query shorthand in the form of <search_type>|<value_column>|<label_column>"'
+    },
+    'required': {
+        'description': 'designate this field to have some value',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 5,
+        'category': 'Options'
     }
+
  
     }
 
@@ -1397,8 +1449,17 @@ class SelectWdg(BaseInputWdg):
 
         my.handle_behavior()
         
+
+       
         if not my.label and not my.append_widget:
-            return super(SelectWdg, my).get_display()
+            if my.kwargs.get("required") in [True, 'true']:
+                sel = BaseInputWdg.get_class_display(my)
+                wdg = SpanWdg()
+                my._add_required(wdg, offset_x=6)
+                wdg.add(sel)
+                return wdg
+            else:
+                return super(SelectWdg, my).get_display()
         else:
             sel = BaseInputWdg.get_class_display(my)
             span = SpanWdg(my.label, css=my.css)

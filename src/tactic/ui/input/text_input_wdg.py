@@ -119,6 +119,11 @@ class TextInputWdg(BaseInputWdg):
         my.readonly = kwargs.get("read_only")
         if my.readonly in [True, 'true']:
             my.set_readonly(True)
+            bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
+        else:
+            my.readonly = False
+            bgcolor = my.text.get_color("background")
+            my.text.add_style("background", bgcolor)
 
 
         my.icon_wdg = SpanWdg()
@@ -129,11 +134,6 @@ class TextInputWdg(BaseInputWdg):
         my.text.add_class("spt_text_input")
         #my.text.add_style("padding: 4px")
 
-        if my.readonly:
-            bgcolor = my.text.add_color("background", "background", [-20,-20,-20])
-        else:
-            bgcolor = my.text.get_color("background")
-            my.text.add_style("background", bgcolor)
 
         bgcolor2 = my.text.get_color("background", -10)
         if not my.readonly:
@@ -306,7 +306,7 @@ class TextInputWdg(BaseInputWdg):
         if my.kwargs.get("required") in [True, 'true']:
             required_div = DivWdg("*")
             required_div.add_style("position: absolute")
-            required_div.add_style("font-size: 18px")
+            required_div.add_style("font-size: 1.0em")
             top.add(required_div)
             required_div.add_color("color", "color", [50, 0, 0])
             required_div.add_style("margin-left: -10px")
@@ -490,9 +490,9 @@ class TextInputWdg(BaseInputWdg):
             color = my.text.get_color('color')
             # lower the visibility of the hint text according to color of palette
             if color > '#999':
-                color = Palette.modify_color(color, -30)
+                color = Palette.modify_color(color, -40)
             elif color < '#222':
-                color = Palette.modify_color(color, 40)
+                color = Palette.modify_color(color, 50)
 
             if hint_text:
                 my.text.add_attr('title', hint_text)
@@ -501,9 +501,10 @@ class TextInputWdg(BaseInputWdg):
                     'cbjs_action': '''
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
-                            offset: {x:5, y:5}}});
+                            offset: {x:5, y:10}}});
                     over.text.setStyle('color','%s');
-                    over.text.setStyle('font-size','1.1em');
+                    over.text.setStyle('font-size','0.8em');
+                    over.text.setStyle('z-index','100');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''%color})
 

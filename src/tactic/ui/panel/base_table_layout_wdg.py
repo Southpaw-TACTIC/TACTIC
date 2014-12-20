@@ -1077,14 +1077,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                
                 // don't set the width of each column, this is simpler
                 if (width == '100%') {
-                    table.setStyle("width", "");
-                    if (header_table)
-                        header_table.setStyle("width", "");
+                    if (header_table) {
+                        var orig_width = header_table.getAttribute('orig_width');
+                        if (orig_width) {
+                            header_table.setStyle("width", orig_width);
+                            table.setStyle("width", orig_width);
+                            layout.setStyle("width", orig_width);
+
+                        } else {
+                            header_table.setStyle("width", "");
+                            table.setStyle("width", "");
+                        }
+                    } else 
+                        table.setStyle("width", "");
+                        
                 }
                 else {
                     table.setStyle("width", "100%");
-                    if (header_table)
+                    if (header_table) {
+                        header_table.setAttribute("orig_width", header_table.getSize().x);
                         header_table.setStyle("width", "100%");
+                    }
                     layout.setStyle("width", "100%");
                 }
                
@@ -1190,8 +1203,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
-
-        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
+        
+        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         xx = DivWdg()
         xx.add(horiz_wdg)
         div.add(xx)
@@ -1230,7 +1243,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
 
-        outer.add_style("min-width: 100px")
+        outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
         outer.add_class("spt_resizable")

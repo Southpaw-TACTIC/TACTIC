@@ -2741,8 +2741,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
         else if (panel)
             layout = panel.getElement(".spt_layout");
     }
+    // default to version 2 table
+    var version = "2";
     if (layout) {
-        var version = layout.getAttribute("spt_version");
+        version = layout.getAttribute("spt_version");
         if (version == "2") {
             spt.table.set_layout(layout);
         }
@@ -2767,8 +2769,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         if (table_top){
             var table = table_top.getElement('.spt_table_content');
             if (table){ 
-                    var element_names = spt.dg_table.get_element_names(table);
-                    if (element_names)
+                   
+                   var element_names = version == "2" ? spt.table.get_element_names() :  spt.dg_table.get_element_names(table);
+                   
+
+                   if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
             var new_values = [];

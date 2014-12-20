@@ -1053,24 +1053,14 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
 
-
-
-        last_current = Snapshot.get_current(search_type, search_id, context, level_type=level_type, level_id=level_id)
-        if last_current:
-            if last_current.get_search_key() == my.get_search_key():
-                return
-
-            last_current.set_value("is_current", False)
-            last_current.commit()
-
-        # if there is a versionless, point it to this snapshot
-        if update_versionless:
-            my.update_versionless("current")
+       
 
         my.set_value("is_current", True)
         if commit:
             my.commit()
 
+        if update_versionless:
+            my.update_versionless("current")
 
 
     def get_full_snapshot_xml(my):
@@ -1279,7 +1269,7 @@ class Snapshot(SObject):
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,
-            process=None
+            process=None, skip_contexts=[]
             ):
         '''General snapshot function
 
@@ -1296,6 +1286,7 @@ class Snapshot(SObject):
         level_type: the sobject level at which this is checked into
         level_id: the sobject id of the level at which this is checked into
         level_parent_search: if set to True, it would try to search the snapshot of the level's parent is a level search_type, search_id are given
+        skip_contexts: list of contexts to skip
         @return
         snapshot sobject
         '''
@@ -1306,7 +1297,7 @@ class Snapshot(SObject):
             revision=revision, show_retired=show_retired,
             use_cache=False,
             level_type=level_type, level_id=level_id,
-            process=process
+            process=process, skip_contexts=skip_contexts
         )
         
 
@@ -1354,13 +1345,13 @@ class Snapshot(SObject):
 
             parent_id = parent.get_id()
 
-            snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=parent_type, level_id=parent_id)
+            snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=parent_type, level_id=parent_id, skip_contexts=skip_contexts)
             if snapshot:
                 return snapshot
 
     
         # try at the top level
-        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=process)
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=process, skip_contexts=skip_contexts)
         return snapshot
 
     get_snapshot = staticmethod(get_snapshot)
@@ -1379,7 +1370,7 @@ class Snapshot(SObject):
 
     def _get_by_version(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
-            level_type=None, level_id=None, process=None):
+            level_type=None, level_id=None, process=None, skip_contexts=[]):
         '''General snapshot function
 
         @params
@@ -1394,6 +1385,7 @@ class Snapshot(SObject):
             Set this to False is you have just checked in a file
         level_type: the sobject level at which this is checked into
         level_id: the sobject id of the level at which this is checked into
+        skip_contexts: list of contexts to skip
 
         @return
         snapshot sobject
@@ -1443,6 +1435,10 @@ class Snapshot(SObject):
         if context not in [None, '']:
             search.add_filter("context", context)
             key = '%s:%s' %(key, context)
+        if skip_contexts:
+            search.add_filters('context',skip_contexts, op='not in')
+            key = '%s:!%s' %(key, skip_contexts)
+
         if version not in [None, '', -1, "-1", 0, "0", "max"]:
             search.add_filter("version", version)
             key = '%s:%s' %(key, version)
@@ -1501,21 +1497,22 @@ class Snapshot(SObject):
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
             level_type=None, level_id=None, show_retired=False, \
-            process=None):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
+            process=None, skip_contexts=[]):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process, skip_contexts=skip_contexts)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
     def get_latest_by_sobject(sobject, context=None, show_retired=False, \
-            process=None):
+            process=None, skip_contexts=[]):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired, process=process \
+                context=context, show_retired=show_retired, process=process, \
+                skip_contexts=skip_contexts
         )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
@@ -2099,7 +2096,7 @@ class Snapshot(SObject):
                 return
 
         
-
+        
         # if os is linux, it should be symbolic link as a default
         if os.name == 'posix':
             versionless_mode = 'symlink'
