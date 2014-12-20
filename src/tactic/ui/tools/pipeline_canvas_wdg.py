@@ -3874,6 +3874,7 @@ spt.pipeline.set_task_color = function(group_name) {
     if (!group_name) {
         group_name = spt.pipeline.get_current_group();
     }
+    var server = TacticServerStub.get();
     var colors = server.get_task_status_colors();
     var group_colors = colors[group_name];
     if (!group_colors)
