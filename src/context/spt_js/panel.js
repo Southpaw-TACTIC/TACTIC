@@ -312,11 +312,13 @@ spt.panel.get_element_options = function(element) {
                 continue;
             }
 
-            var value = attr.nodeValue;
+            //var value = attr.nodeValue;
+            var value = attr.value;
             if (typeOf(value) == 'object') {
                 spt.alert( "Attribute ["+ attr.nodeName +"] is an object" );
             }
-            options[name] = attr.nodeValue;
+            //options[name] = attr.nodeValue;
+            options[name] = attr.value;
         }
     }
     return options;

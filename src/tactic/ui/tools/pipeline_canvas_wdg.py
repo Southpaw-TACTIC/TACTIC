@@ -3552,6 +3552,10 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
     //spt.pipeline.fit_to_canvas(pipeline_code);
 
+    if (pipeline_stype == "sthpw/task") {
+        spt.pipeline.set_task_color();
+    }
+
     spt.pipeline.redraw_canvas();
 }
 
@@ -3654,10 +3658,10 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var name = xml_nodes[i].getAttribute("name");
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
-        if (!xpos) {
+        if (!xpos || xpos == "0") {
             xpos = offset_left + 150*i;
         }
-        if (!ypos) {
+        if (!ypos || ypos == "0") {
             ypos = offset_top + 50*i;
         }
 
@@ -3823,13 +3827,14 @@ spt.pipeline.set_status_color = function(search_key) {
 
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
-
+    /*
     //var colors = server.get_task_status_colors();
     var colors = {
         'In Progress': 'rgb(0,0,255)',
         Pending: 'rgb(255,255,0)',
         Complete: 'rgb(0,255,0)',
     }
+    */
 
     var colors = server.get_task_status_colors();
     var default_color = 'rgb(128,128,128)';
@@ -3863,6 +3868,28 @@ spt.pipeline.set_status_color = function(search_key) {
 }
 
 
+
+spt.pipeline.set_task_color = function(group_name) {
+
+    if (!group_name) {
+        group_name = spt.pipeline.get_current_group();
+    }
+    var colors = server.get_task_status_colors();
+    var group_colors = colors[group_name];
+    if (!group_colors)
+        group_colors = colors['task'];
+
+    var nodes = spt.pipeline.get_nodes_by_group(group_name);
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i]; 
+        var process = spt.pipeline.get_node_name(node);
+
+        var color = group_colors[process];
+        if (color) {
+            spt.pipeline.set_color(node, color);
+        }
+    }
+}
 
 
 

@@ -253,6 +253,13 @@ class EditWdg(BaseRefreshWdg):
         else:
             my.element_names = my.config.get_element_names()
 
+
+        override_element_names = my.kwargs.get("element_names")
+        if override_element_names:
+            element_names = override_element_names
+
+
+
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
             ignore = ignore.split("|")

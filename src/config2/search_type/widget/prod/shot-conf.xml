@@ -19,12 +19,13 @@
     <element name="description"/>
     <element name='sequence_code'/>
 
-
+    <!--
     <element name="detail" edit="false">
         <display class="HiddenRowToggleWdg">
             <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
         </display>
     </element>
+    -->
 
     <element name="shot">
         <display class="pyasm.prod.web.ShotInfoWdg"/>

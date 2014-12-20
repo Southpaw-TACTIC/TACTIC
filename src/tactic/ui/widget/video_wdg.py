@@ -108,6 +108,11 @@ class VideoWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
+            'cbjs_action': my.get_onload_js()
+        } )
+
+        top.add_behavior( {
+            'type': 'load',
             'index' : my.index,
             'video_id': my.video_id,
             'cbjs_action': '''
@@ -117,7 +122,6 @@ class VideoWdg(BaseRefreshWdg):
             spt.dom.load_js(["video/video.js"], function() {
                 var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
                 } );
-                //videojs(bvr.video_id).play();
             });
             if (spt.gallery) {
                 
@@ -175,3 +179,42 @@ class VideoWdg(BaseRefreshWdg):
 
 
 
+    def get_onload_js(my):
+        return '''
+
+spt.video = {}
+
+spt.video.loaded = false;
+
+spt.video.init_player = function(events) {
+
+    if (spt.video.loaded) {
+        var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
+            spt.video._add_events(this, events);
+        } )
+    }
+    else {
+
+        spt.dom.load_js(["video/video.js"], function() {
+            var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
+                spt.video.loaded = true;
+                spt.video._add_events(this, events);
+            } );
+        } )
+    }
+
+}
+
+spt.video._add_events = function(player, events) {
+    player.on("pause", function() {
+        alert("pause");
+    } );
+    player.on("ended", function() {
+        alert("ended");
+    } );
+
+
+}
+
+
+        '''

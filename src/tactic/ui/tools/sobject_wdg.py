@@ -382,7 +382,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <bottom_expr>@GET(.description)</bottom_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
-                    <group_elements>login</group_elements>
+                    <group_elements>context</group_elements>
                   </display>
                 </element>
                 ''' % values)
@@ -591,7 +591,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #info_div.add_style("display: none")
         info_div.add_class("spt_sobject_detail")
         #info_div.add_style("width: 300px")
-        info_div.add_style("padding: 30px 0px 30px 0px")
+        info_div.add_style("padding: 30px 0px 20px 0px")
 
         info_table = Table()
         info_table.add_color("color", "color")
@@ -599,33 +599,52 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         edit_div = DivWdg()
+        #edit_div.add_border(color="#EEE")
         info_div.add(edit_div)
-        edit_div.add_style("margin-top: -35px")
+        edit_div.add_style("margin-top: -36px")
         edit_div.add_style("margin-left: 1px")
         edit_div.add_style("margin-right: -2px")
         #edit_div.add_style("overflow: scroll")
-        edit_div.add_style("height: 100%")
-
-        view = my.kwargs.get("detail_view")
-        if not view:
-            view = "edit"
+        #edit_div.add_style("height: 100%")
+        edit_div.add_style("max-height: 300px")
+        edit_div.add_style("overflow-y: auto")
 
         ignore = ["preview", "notes"]
 
-        element_names = ['code', 'name','description']
-        config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
-        config_element_names = config.get_element_names()
-        for x in config_element_names:
-            if x in ignore:
-                continue
-            if x not in element_names:
-                element_names.append(x)
-
-
-
         from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
-        edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
-        edit_div.add(edit)
+        if my.parent:
+            sobject = my.get_sobject()
+            search_type = sobject.get_search_type()
+            search_key = sobject.get_search_key()
+
+            # get the element names from the edit view
+            config = WidgetConfigView.get_by_search_type(search_type=search_type, view="edit")
+            element_names = config.get_element_names()
+
+
+            edit = EditLayoutWdg(search_type=search_type, mode='view', view="detail", search_key=search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
+
+            edit_div.add(edit)
+
+        else:
+
+            view = my.kwargs.get("detail_view")
+            if not view:
+                view = "edit"
+
+            element_names = ['code', 'name','description']
+            config = WidgetConfigView.get_by_search_type(search_type=my.full_search_type, view=view)
+            config_element_names = config.get_element_names()
+            for x in config_element_names:
+                if x in ignore:
+                    continue
+                if x not in element_names:
+                    element_names.append(x)
+
+
+
+            edit = EditLayoutWdg(search_type=my.full_search_type, mode='view', view="detail", search_key=my.search_key, width=400, title=' ', ignore=ignore, element_names=element_names)
+            edit_div.add(edit)
 
 
 
@@ -673,7 +692,8 @@ class TaskDetailWdg(SObjectDetailWdg):
         process = my.sobject.get("process")
         task_code = my.sobject.get("code")
 
-        title.add("TASK %s <i style='font-size: 0.8em'>(%s)</i> for %s (%s)" % (process, task_code, name, code))
+        bgcolor = title.get_color("background")
+        title.add("Task <span style='font-size: 1.2em; padding: 4px; margin: 0px 20px; background-color: %s'>%s</span> <i style='font-size: 0.8em'>(%s)</i> for %s (%s)" % (bgcolor, process, task_code, name, code))
         return title
 
 
@@ -693,6 +713,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         return titles, exprs
 
 
+    """
     def get_task_info(my):
         process = my.sobject.get_value("process")
         #titles = ['Process', 'Status', 'Assigned', 'Supervisor','Priority','Start Date', 'End Date', '# Notes', '# Snapshots']
@@ -714,6 +735,7 @@ class TaskDetailWdg(SObjectDetailWdg):
 
     def get_sobject_info_wdg(my):
 
+        # DEPRECATED
         div = DivWdg()
         return div
 
@@ -751,6 +773,7 @@ class TaskDetailWdg(SObjectDetailWdg):
     
 
         return attr_table
+    """
 
 
  
@@ -773,29 +796,31 @@ class TaskDetailWdg(SObjectDetailWdg):
         <tab>''' )
 
 
+        if my.parent:
+            parent_type = my.parent.get_base_search_type()
+            config_xml.append( '''
+            <element name="info" title="Info">
+             <display class='tactic.ui.container.ContentBoxWdg'>
+                  <title>Info</title>
+                  <content_height>auto</content_height>
+                  <content_width>600px</content_width>
+                  <config>
+                    <element name="content">
+                      <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
+                        <search_type>%s</search_type>
+                        <search_key>%s</search_key>
+                        <width>600px</width>
+                        <mode>view</mode>
+                        <view>detail</view>
+                      </display>
+                    </element>
+                  </config>
+                </display>
+            </element>
+            ''' % (parent_type, parent_key) )
 
-        config_xml.append( '''
-        <element name="detail" title="Detail">
-         <display class='tactic.ui.container.ContentBoxWdg'>
-              <title>Edit</title>
-              <content_height>auto</content_height>
-              <content_width>600px</content_width>
-              <config>
-                <element name="content">
-                  <display class='tactic.ui.panel.edit_layout_wdg.EditLayoutWdg'>
-                    <search_type>sthpw/task</search_type>
-                    <search_key>%s</search_key>
-                    <width>600px</width>
-                    <mode>view</mode>
-                    <element_names>process,description,status,assigned,priority,days_due,bid_start_date,bid_end_date</element_names>
-                  </display>
-                </element>
-              </config>
-            </display>
-        </element>
-        ''' % (search_key) )
 
-
+        """
         config_xml.append( '''
         <element name="edit" title="Edit">
           <display class='tactic.ui.panel.EditWdg'>
@@ -803,6 +828,29 @@ class TaskDetailWdg(SObjectDetailWdg):
           </display>
         </element>
         ''' % (search_key) )
+        """
+
+        config_xml.append('''
+        <element name="edit" title="Edit">
+          <display class='tactic.ui.container.ContentBoxWdg'>
+              <title>Edit</title>
+              <content_height>auto</content_height>
+              <config>
+              <element name="content" style="margin: 0px auto; width: 800px">
+              <display class='tactic.ui.panel.EditWdg'>
+                <search_key>%s</search_key>
+                <num_columns>2</num_columns>
+                <view>edit</view>
+                <show_header>false</show_header>
+                <width>90%%</width>
+              </display>
+              </element>
+              </config>
+          </display>
+        </element>
+        ''' % search_key)
+
+
 
 
 
@@ -881,6 +929,7 @@ class TaskDetailWdg(SObjectDetailWdg):
             <process>%s</process>
             <use_applet>false</use_applet>
             <context>%s</context>
+            <show_header>false</show_header>
             %s
           </display>
         </element>
