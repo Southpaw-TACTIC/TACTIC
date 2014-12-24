@@ -1415,7 +1415,7 @@ TacticServerStub = function() {
         var ok = function() {
             window.location.reload();
         };
-        spt.info('You session has expired.', {'click': ok});
+        spt.info('Your session has expired.', {'click': ok});
     }
     this.async_callback = function(client, request, on_error) {
         if (request.readyState == 4) {

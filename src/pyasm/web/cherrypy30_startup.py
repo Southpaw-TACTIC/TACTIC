@@ -131,9 +131,9 @@ class CherryPyStartup(CherryPyStartup20):
             time.sleep(1)
 
             # either refresh ... (LATER: or recreate the page on the server end)
-            # reloading in 2 seconds
+            # reloading in 3 seconds
             html_response = '''<html>
-            <head><meta http-equiv="Refresh" content="2"></head>
+            <head><meta http-equiv="Refresh" content="3"></head>
                 <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div></body> 
             </html>
             '''
