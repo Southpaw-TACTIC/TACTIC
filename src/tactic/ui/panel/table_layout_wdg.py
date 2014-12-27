@@ -1944,6 +1944,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     return True
             
         return False
+
+
     def has_bottom_wdg(my):
         '''return True if a widget has bottom widget defined'''
         for widget in my.widgets:
@@ -2104,7 +2106,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td = table.add_cell()
 
             td = table.add_cell("&nbsp;")
-            td.add_border(color="#BBB")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()

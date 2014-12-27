@@ -515,6 +515,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             icon = IconWdg("Filter Set", "BS_ASTERISK")
+            icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_attr("spt_element_name", element_name)

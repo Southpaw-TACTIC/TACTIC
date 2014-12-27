@@ -220,6 +220,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
         td.add_style("text-align: left")
         td.add_style("vertical-align: top")
         td.add_class("spt_notes_wrapper")
+        td.add_style("padding: 5px 5px")
+
+        title_wdg = DivWdg()
+        td.add(title_wdg)
+        title_wdg.add_style("width: 100%")
+        title_wdg.add("Notes")
+        title_wdg.add("<hr/>")
+        title_wdg.add_style("font-size: 1.2em")
 
         notes_div = DivWdg()
         td.add(notes_div)
@@ -693,7 +701,7 @@ class TaskDetailWdg(SObjectDetailWdg):
         task_code = my.sobject.get("code")
 
         bgcolor = title.get_color("background")
-        title.add("Task <span style='font-size: 1.2em; padding: 4px; margin: 0px 20px; background-color: %s'>%s</span> <i style='font-size: 0.8em'>(%s)</i> for %s (%s)" % (bgcolor, process, task_code, name, code))
+        title.add("<span style='font-size: 1.2em; padding: 4px; margin: 0px 20px 0px 0px; background-color: %s'>%s</span>  Task  <i style='font-size: 0.8em'>(%s)</i> for %s <i style='font-size: 0.8em'>(%s)</i>" % (bgcolor, process, task_code, name, code))
         return title
 
 
@@ -891,7 +899,9 @@ class TaskDetailWdg(SObjectDetailWdg):
           </display>
         </element>
         ''' % values)
- 
+
+
+
 
         """
         config_xml.append( '''
@@ -937,6 +947,22 @@ class TaskDetailWdg(SObjectDetailWdg):
         ''' % (process_name, parent_key, process, context, '\n'.join(options_list))
 
         config_xml.append( wdg_xml)
+
+        config_xml.append('''
+        <element name="status_log" title="Status Log">
+          <display class='tactic.ui.panel.TableLayoutWdg'>
+            <search_type>sthpw/status_log</search_type>
+            <view>table</view>
+            <parent_key>%(search_key)s</parent_key>
+            <width>100%%</width>
+            <show_shelf>false</show_shelf>
+            <expand_on_load>true</expand_on_load>
+          </display>
+        </element>
+        ''' % {"search_key": search_key} )
+
+
+
 
         config_xml.append( '''
         </tab>
