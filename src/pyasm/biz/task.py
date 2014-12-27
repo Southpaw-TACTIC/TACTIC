@@ -306,7 +306,7 @@ class Task(SObject):
         if not pipeline:
             pipeline = SearchType.create("sthpw/pipeline")
             pipeline.set_value("code", pipe_code)
-            pipeline.set_value("pipeline", task.get_default_task_xml())
+            pipeline.set_value("pipeline", Task.get_default_task_xml())
 
         return pipeline
 

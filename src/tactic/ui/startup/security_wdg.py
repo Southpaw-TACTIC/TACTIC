@@ -1426,6 +1426,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
     def get_sobjects(my, group_names):
         # get the project sobjects
         search = Search("sthpw/login")
+        search.add_filters("code", ['admin'], op='not in')
 
         keyword = my.get_value('keyword')
         if keyword:
@@ -1471,6 +1472,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
             for group_name in group_names:
 
                 login = sobject.get_value("login")
+
                 data = group_data.get(group_name)
                 is_in_group = False
                 if data:
