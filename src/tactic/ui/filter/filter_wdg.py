@@ -852,6 +852,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         
         filter_id = "%s_search_type" % (my.prefix)
         search_type_select = SelectWdg(filter_id)
+        search_type_select.add_style("width: 110px")
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
@@ -1027,6 +1028,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
+            relation_select.add_style("width: 100px")
+            relation_select.add_style("float: left")
             relation_select.set_persist_on_submit()
             my.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
@@ -1035,6 +1038,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             labels = ["1 day ago", '2 days ago', '1 week ago', '1 month ago', '1 day from now', '2 days from now', '1 week from now', '1 month from now']
             another_select = SelectWdg("%s_select" % my.prefix)
             another_select.add_class('spt_time_filter')
+            another_select.add_style("width: 100px")
+            another_select.add_style("float: left")
             another_select.add_empty_option("-- Select --")
             another_select.set_option("values", options)
             another_select.set_option("labels", labels)
@@ -1042,7 +1047,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             my.set_filter_value(another_select, filter_index)
             filter_span.add(another_select)
             
-            filter_span.add(SpanWdg(" or &nbsp; ", css='small spt_time_filter'))
+            filter_span.add(SpanWdg("<div style='float: left; margin: 5px'> or </div>"))
             from tactic.ui.widget import CalendarInputWdg
             value_cal = CalendarInputWdg("%s_value" % my.prefix)
             value_cal.add_class('spt_time_filter')
@@ -1051,7 +1056,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             #value_cal.set_option('show_text', True)
             value_cal.set_option('show_time', True)
             
-            value_cal.get_top().add_styles('margin-top: -20px;padding-left: 20px;float: right;width: 230px') 
+            value_cal.get_top().add_styles('padding-left: 5px;float: right;width: 230px') 
             value_cal.set_persist_on_submit()
             
             my.set_filter_value(value_cal, filter_index)
@@ -1141,7 +1146,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                     if (hide_options.contains(select.value))            
                         textbox.style.display='none';
                     else
-                        textbox.style.display='inline';
+                        textbox.style.display='';
                 } else {
                     // datetime 
                     var elems = select.getParent('.spt_filter_wdg').getElements('.spt_time_filter');
@@ -1151,7 +1156,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                         }
                     else {
                          for (var i=0; i<elems.length; i++) {
-                            elems[i].style.display= 'inline';
+                            elems[i].style.display= '';
                         }
                     }
                 }
