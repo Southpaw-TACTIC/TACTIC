@@ -39,7 +39,7 @@ class HelpButtonWdg(BaseRefreshWdg):
 
 
     def exists():
-        return Container.get("Help::exists") == True
+        return Container.get("HelpWdg::exists") == True
     exists = staticmethod(exists)
 
 
@@ -469,7 +469,7 @@ class HelpWdg(BaseRefreshWdg):
         my.show_add_new = my.kwargs.get('show_add_new') not in  ['false', False]
 
     def exists():
-        return Container.get("Help::exists") == True
+        return Container.get("HelpWdg::exists") == True
     exists = staticmethod(exists)
 
 
@@ -720,6 +720,15 @@ class HelpWdg(BaseRefreshWdg):
 
     def get_onload_js(my):
         return '''
+
+
+if (spt.help) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_help");
+
+
 spt.help = {};
 spt.help.top = null;
 spt.help.content = null;

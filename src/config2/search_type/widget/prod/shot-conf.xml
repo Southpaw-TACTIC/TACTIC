@@ -548,7 +548,7 @@
 
     <element name="preview"/>
 
-    <element name="instances" width='1%'>
+    <element name="instances">
         <display class="HiddenRowToggleWdg">
             <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
             <search_type>prod/shot_instance</search_type>
