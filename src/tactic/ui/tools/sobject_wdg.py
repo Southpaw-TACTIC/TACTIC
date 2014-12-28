@@ -194,7 +194,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         td.add_style("padding: 15px")
 
         sobject_info_wdg = my.get_sobject_info_wdg()
-        sobject_info_wdg.add_style("width: auto")
+        sobject_info_wdg.add_style("width: 100%")
 
 
         td.add(sobject_info_wdg)
@@ -665,8 +665,8 @@ class TaskDetailWdg(SObjectDetailWdg):
     def get_sobject_info_wdg(my):
         attr_table = Table()
         attr_table.add_color("color", "color")
-        attr_table.add_color("background", "background", -5)
-        attr_table.add_border()
+        #attr_table.add_color("background", "background", -5)
+        #attr_table.add_border()
 
         sobject = my.get_sobject()
 
@@ -688,6 +688,7 @@ class TaskDetailWdg(SObjectDetailWdg):
                 value = '<i>none</i>'
             attr_table.add_row()
             th = attr_table.add_cell("%s: " % title)
+            th.add_style("font-weight: bold")
             th.add_style("text-align: left")
             th.add_style("padding-right: 15px")
             th.add_style("padding-left: 5px")
