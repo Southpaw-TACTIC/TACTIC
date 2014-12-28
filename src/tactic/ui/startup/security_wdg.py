@@ -515,7 +515,7 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 140px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("2px 2px 2px 2px")
+        #section_wdg.set_box_shadow("2px 2px 2px 2px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -525,7 +525,7 @@ class SecurityWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("text-align: center")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -10)
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -537,13 +537,14 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 1px 1px #999");
+        bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
         '''
         } )
+
         section_wdg.add_behavior( {
         'type': 'mouseout',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "2px 2px 2px 2px #999");
+        bvr.src_el.setStyle("box-shadow", "");
         ''',
         } )
 
@@ -590,16 +591,14 @@ class SecurityWdg(BaseRefreshWdg):
         top.add(title)
 
         from tactic.ui.widget import TitleWdg
-        subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
-        top.add(subtitle)
-
-
+        #subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
+        #top.add(subtitle)
 
         title.add_style("font-size: 18px")
         title.add_style("font-weight: bold")
         title.add_style("text-align: center")
         title.add_style("padding: 10px")
-        title.add_style("margin: -10px -10px 0px -10px")
+        title.add_style("margin: -10px -10px 10px -10px")
         title.add_gradient("background", "background3", 5, -10)
 
 
@@ -621,7 +620,8 @@ class SecurityWdg(BaseRefreshWdg):
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
-        #    var size = $(window).getSize();
+        #    var size = bvr.src_el.getParent().getSize();
+        #    alert(size.x);
         #    bvr.src_el.setStyle("width", size.x);
         #    '''
         #} )
@@ -891,7 +891,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            simple_search_view='simple_search'
+            simple_search_view='simple_search',
+            expand_on_load=True,
         )
         top.add(layout)
 
@@ -1317,7 +1318,8 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             #show_select=False,
             config_xml=config_xml,
             save_class_name=my.get_save_cbk(),
-            init_load_num = -1
+            init_load_num = -1,
+            expand_on_load=True,
 
         )
         layout.set_sobjects(sobjects)

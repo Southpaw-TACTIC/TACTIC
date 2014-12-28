@@ -1584,15 +1584,9 @@ class Security(Base):
 
         # go through all of the groups and add access rules
         for group in my._groups:
-            access_rules_xml = group.get_xml_value("access_rules")
-            my._access_manager.add_xml_rules(access_rules_xml)
-
-        # DEPRECATED
-        # get all of the security rules
-        #security_rules = AccessRule.get_by_groups(my._groups)
-        #for rule in security_rules:
-        #    access_rules_xml = rule.get_xml_value("rule")
-        #    my._access_manager.add_xml_rules(access_rules_xml)
+            #access_rules_xml = group.get_xml_value("access_rules")
+            #my._access_manager.add_xml_rules(access_rules_xml)
+            my._access_manager.add_xml_rules(group)
 
 
 
