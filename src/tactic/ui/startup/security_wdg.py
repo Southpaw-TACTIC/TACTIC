@@ -891,7 +891,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            simple_search_view='simple_search'
+            simple_search_view='simple_search',
+            expand_on_load=True,
         )
         top.add(layout)
 

@@ -99,24 +99,16 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
         left.add(title_div)
-        title_div.add_style("height: 25px")
-        title_div.add_style("padding-left: 5px")
-        title_div.add_style("padding-top: 8px")
-        title_div.add_gradient("background", "background")
+        title_div.add_style("height: 30px")
+        title_div.add_style("padding: 5px 8px")
+        title_div.add_color("background", "background")
         title_div.add_style("min-width: 150px")
 
 
         from tactic.ui.app import HelpButtonWdg
         help_button = HelpButtonWdg(alias="project-automation-triggers|project-automation-notifications")
-        title_div.add(help_button)
-        help_button.add_style("float: right")
-        help_button.add_style("margin-top: -8px")
-        help_button.add_style("margin-left: -8px")
 
         add_button = ActionButtonWdg(title='+', size='small', tip='Add a new trigger')
-        title_div.add(add_button)
-        add_button.add_style("margin-top: -8px")
-        add_button.add_style("float: right")
         add_button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
@@ -134,10 +126,17 @@ class TriggerToolWdg(BaseRefreshWdg):
         '''
         } )
 
+        title_div.add(add_button)
+        add_button.add_style("float: left")
+        title_div.add(help_button)
+        help_button.add_style("float: right")
+
+        """
         if my.title:
             title_div.add("<b>Triggers [%s]</b>" % my.title)
         else:
             title_div.add("<b>Triggers</b>")
+        """
 
         left.add("<br clear='all'/>")
 
