@@ -1276,9 +1276,9 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        save_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
-        button_row.add(save_button)
-        save_button.add_behavior( {
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
+        button_row.add(refresh_button)
+        refresh_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_security_top");

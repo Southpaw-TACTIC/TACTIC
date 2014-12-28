@@ -57,7 +57,8 @@ class HelpButtonWdg(BaseRefreshWdg):
             description = "Show Help"
 
         if my.kwargs.get("use_icon"):
-            help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+            #help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+            help_button = IconButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
         else:
             help_button = ActionButtonWdg(title="?", tip=description, size='small')
         top.add(help_button)
