@@ -2086,7 +2086,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 td = table.add_cell()
 
             td = table.add_cell("&nbsp;")
-            td.add_border(color="#BBB")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
