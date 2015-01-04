@@ -8,3 +8,12 @@ traffic, TACTIC streamlines workflow by applying business logic to disparate dat
 dynamically visualize every aspect through web based delivery. The platform seamlessly combines elements of DAM, PAM, CMS
 and ECM technologies, offering users a set of tools to create a wide range of customized enterprise workflow solutions or
 smart process applications.
+
+For more information, visit the community site for TACTIC:
+
+http://community.southpawtech.com
+
+For prebuilt downloads, go directly to:
+
+http://community.southpawtech.com/downloads
+
