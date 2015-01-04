@@ -13,7 +13,7 @@ For more information, visit the community site for TACTIC:
 
 http://community.southpawtech.com
 
-For prebuilt downloads, go directly to:
+For packaged downloads, go directly to:
 
 http://community.southpawtech.com/downloads
 
