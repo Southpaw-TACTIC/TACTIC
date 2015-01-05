@@ -639,7 +639,7 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
-    def get_max_users(my):
+    def get_max_users(my, site):
         return
 
 
