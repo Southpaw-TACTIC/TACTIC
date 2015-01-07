@@ -4762,6 +4762,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+
                 Container.put("JSLibraries", libraries)
                 Container.put("request_top_wdg", widget)
 
