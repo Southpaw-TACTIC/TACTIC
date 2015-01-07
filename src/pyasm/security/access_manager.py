@@ -317,9 +317,9 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
-        print "---"
-        for key, value in rules.items():
-            print key, value
+        #print "---"
+        #for key, value in rules.items():
+        #    print key, value
 
 
 

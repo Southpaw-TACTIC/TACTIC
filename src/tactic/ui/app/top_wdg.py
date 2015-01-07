@@ -979,8 +979,9 @@ class CustomTopWdg(BaseRefreshWdg):
                 value.add(hash_widget)
             else:
                 value.add(hash_widget.get_display())
-            web.set_content_type("text/html")
-
+            current_type = web.get_content_type()
+            if not current_type:
+                web.set_content_type("text/html")
 
         widget.add(value)
         return widget

@@ -4810,7 +4810,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 if libraries.has_key("spt_help"):
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
-                    print "helpL :", HelpWdg.exists()
 
                 Container.put("JSLibraries", libraries)
                 Container.put("request_top_wdg", widget)
