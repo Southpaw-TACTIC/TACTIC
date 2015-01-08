@@ -133,10 +133,11 @@ class CherryPyStartup(CherryPyStartup20):
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = '''<html>
-            <head><meta http-equiv="Refresh" content="3"></head>
-                <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div></body> 
+                <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>
+                <script>document.location = "/tactic/%s";</script>
+                </body> 
             </html>
-            '''
+            '''% project.get_value("code")
 
             # this response.body is not needed, can be commented out in the future
             response.body = ''
