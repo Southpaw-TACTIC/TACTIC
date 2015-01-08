@@ -24,6 +24,7 @@ from button_new_wdg import ActionButtonWdg, IconButtonWdg, SingleButtonWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 
 import os
+import re
 
 
 
@@ -82,9 +83,11 @@ class DirListWdg(BaseRefreshWdg):
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
         else:
             my.directory = Directory(paths=my.paths, base_dir=base_dir)
+            
 
         if my.directory:
             my.paths = my.directory.get_all_paths()
+            
 
         if not my.paths:
             my.paths = []
@@ -116,7 +119,13 @@ class DirListWdg(BaseRefreshWdg):
 
 
         my.paths = my.kwargs.get("paths")
-        if not my.paths:
+        
+        
+        if my.paths:
+            # replace // and \ with /
+            my.paths = [re.sub(r'//|\\','/', path) for path in my.paths]
+            
+        else:
             my.paths = []
 
 
