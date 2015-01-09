@@ -64,7 +64,7 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                 # if the path is a directory, get all of the files
                 if os.path.isdir(path):
                     for root, dirnames, filenames in os.walk(path):
-
+                        root = re.sub(r'//|\\','/', root)
                         for filename in filenames:
                             item_path = "%s/%s" % (root, filename)
                             paths.append(item_path)
@@ -89,6 +89,7 @@ class SnapshotFilesWdg(BaseRefreshWdg):
                     """
 
                 else:
+                    path = re.sub(r'//|\\','/', path)
                     paths.append(path)
                     my.files[path] = file
                     base_dir_alias =  file.get_value('base_dir_alias')
