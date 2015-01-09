@@ -100,18 +100,30 @@ class UploadServerWdg(Widget):
 
         tmpdir = Environment.get_tmp_dir()
         subdir = web.get_form_value("subdir")
+        custom_upload_dir = web.get_form_value("upload_dir")
         if subdir:
             file_dir = "%s/%s/%s/%s" % (tmpdir, "upload", ticket, subdir)
         else:
             file_dir = "%s/%s/%s" % (tmpdir, "upload", ticket)
+        
+        if custom_upload_dir:
+            if subdir:
+                file_dir = "%s/%s"%(file_dir,subdir)
+            else:
+                file_dir = custom_upload_dir
 
-
+        
+        # set a default for now
+        action = web.get_form_value("action")
+        if not action:
+            action = "create"
+        print "UPLOAD DIR ", file_dir, action
 
         # With some recent change done in cherrypy._cpreqbody line 294
         # we can use the field storage directly and just move the file
         # without using FileUpload
         path = field_storage.get_path()
-        if path and file_name:
+        if path and file_name and action != "append":
             if not os.path.exists(file_dir):
                 os.makedirs(file_dir)
             basename = os.path.basename(path)
@@ -153,11 +165,6 @@ class UploadServerWdg(Widget):
 
 
 
-
-        # set a default for now
-        action = web.get_form_value("action")
-        if not action:
-            action = "create"
 
 
         # process and get the uploaded files

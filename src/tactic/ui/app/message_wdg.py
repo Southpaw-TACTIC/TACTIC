@@ -109,13 +109,14 @@ class FormatMessageWdg(BaseRefreshWdg):
         else:
             if not category:
                 category = "default"
+            preview_text = "No Preview Available"
             thumb = DivWdg()
             thumb.add_style("width: %s" % size)
             thumb.add_style("height: %s" % (size*3/4))
             thumb.add_border()
             thumb.add_color("background", "background")
-            thumb.add("<br/>")
-            thumb.add(category)
+            #thumb.add("<br/>")
+            thumb.add(preview_text)
             thumb.add_style('text-align: center')
             thumb.add_class("hand")
 
@@ -129,7 +130,7 @@ class FormatMessageWdg(BaseRefreshWdg):
     get_preview_wdg = classmethod(get_preview_wdg)
 
     def get_display(my):
-
+        
         message = my.sobjects[0]
         if message.get_search_type() == 'sthpw/message':
             message_code = message.get_value("code")
@@ -143,8 +144,14 @@ class FormatMessageWdg(BaseRefreshWdg):
         td = table.add_cell()
 
         subscription = my.kwargs.get('subscription')
-        td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
+        show_preview = my.kwargs.get('show_preview')
+        if show_preview in ['',None]:
+            show_preview = True
+        show_preview_category_list = ['sobject','chat']
 
+        if (category in show_preview_category_list and show_preview not in ['False','false',False]) or show_preview in ["True" ,"true",True]:  
+            td.add( my.get_preview_wdg(subscription, category=category, message_code=message_code ))
+    
         message_value = message.get_value("message")
         message_login = message.get_value("login")
 
@@ -155,10 +162,11 @@ class FormatMessageWdg(BaseRefreshWdg):
             #message_value = message_value.replace(r"\\", "\\");
             message_value = jsonloads(message_value)
             # that doesn't support delete
-            update_data = message_value.get("update_data")
-            sobject_data = message_value.get("sobject")
-            sobject_code = sobject_data.get('code')
+            
             if category == "sobject":
+                update_data = message_value.get("update_data")
+                sobject_data = message_value.get("sobject")
+                sobject_code = sobject_data.get('code')
                 search_type = message_value.get("search_type")
                 if search_type == "sthpw/note":
                     description = "<b>Note added:</b><br/>%s" % update_data.get("note")
@@ -691,18 +699,19 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_order_by("message.timestamp", direction="desc")
 
         subscriptions = search.get_sobjects()
-
+        
         return subscriptions
 
 
     def set_refresh(my, inner, interval, panel_cls='spt_subscription_top'):
-
+        
         inner.add_behavior( {
             'type': 'load',
             'interval': interval,
             'panel_cls': panel_cls,
             'cbjs_action': '''
             var top = bvr.src_el.getParent("."+bvr.panel_cls);
+
             var dialog = top.getElement(".spt_dialog_top");
             if (dialog && dialog.getStyle("display") == "none") {
                 top.setAttribute("spt_dialog_open", "false");
@@ -731,6 +740,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
 
     def get_display(my):
+        
         top = my.top
         my.set_as_panel(top)
         top.add_class("spt_subscription_top")
@@ -844,19 +854,24 @@ class SubscriptionWdg(BaseRefreshWdg):
             if not message:
                 if mode == "all":
                     td = table.add_cell(FormatMessageWdg.get_preview_wdg(subscription))
-
                     td = table.add_cell()
                     td.add("No Messages")
                 continue
 
             size = 60
 
-            msg_element = FormatMessageWdg(subscription=subscription, short_format='true')
+            
+            show_preview = my.kwargs.get('show_preview')
+            if show_preview in ['',None]:
+                show_preview = True
+
+            msg_element = FormatMessageWdg(subscription=subscription, short_format='true',show_preview=show_preview)
             # this is optional
             msg_element.set_sobject(message)
             description = msg_element.get_buffer_display() 
           
             #td = table.add_cell()
+
             history_icon = IconButtonWdg(title="Subscription History", icon=IconWdg.HISTORY)
             #td.add(icon)
             message_code = subscription.get_value("message_code")
@@ -895,17 +910,29 @@ class SubscriptionWdg(BaseRefreshWdg):
                 timestamp_str = timestamp.strftime("%b %d, %Y - %H:%M")
             else:
                 timestamp_str = ""
-            td.add(timestamp_str)
+
+            
+            show_timestamp = my.kwargs.get('show_timestamp')
+            if show_timestamp in ['',None]:
+                show_timestamp = True
+
+            if show_timestamp in ["True","true",True]:
+                td.add(timestamp_str)
 
             #td = table.add_cell()
             #td.add(subscription.get_value("last_cleared"))
 
             td = table.add_cell()
-            td.add(history_icon)
+            
+            show_message_history = my.kwargs.get('show_message_history')
+            if show_message_history in ['',None]:
+                show_message_history = True
+            if show_message_history in ["True","true",True]:
+                td.add(history_icon)
+
             td.add(HtmlElement.br(2))
             td.add_style('width: 30px')
             icon = IconButtonWdg(title="Unsubscribe", icon=IconWdg.DELETE)
-            td.add(icon)
             subscription_key = subscription.get_search_key()
             icon.add_behavior( {
                 'type': 'click_up',
@@ -921,6 +948,15 @@ class SubscriptionWdg(BaseRefreshWdg):
                     spt.panel.refresh(top);
                 '''
             } )
+            
+            show_unsubscribe = my.kwargs.get('show_unsubscribe')
+            if show_unsubscribe in ['',None]: 
+                show_unsubscribe = False
+            if show_unsubscribe in ["True","true",True]:
+                td.add(icon)
+
+            
+            
 
 
 
@@ -969,6 +1005,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
     WIDTH = 500
 
     def get_display(my):
+
         top = my.top
         top.add_class("spt_subscription_bar_top")
         my.set_as_panel(top)
@@ -1002,6 +1039,11 @@ class SubscriptionBarWdg(SubscriptionWdg):
         else:
             dialog_open = False
 
+        subscription_kwargs ={}
+        subscription_kwargs_list = ['icon','show_preview','show_message_history','show_unsubscribe','show_timestamp']
+        for key in my.kwargs:
+            if key in subscription_kwargs_list:
+                subscription_kwargs[key]= my.kwargs.get(key)
 
         mode = "dialog"
         if mode == "dialog":
@@ -1010,7 +1052,7 @@ class SubscriptionBarWdg(SubscriptionWdg):
             dialog = DialogWdg(display=dialog_open, show_title=False)
             inner.add(dialog)
             dialog.set_as_activator(inner)
-            subscription_wdg = SubscriptionWdg()
+            subscription_wdg = SubscriptionWdg(**subscription_kwargs)
             dialog.add(subscription_wdg)
             subscription_wdg.add_style("width: %spx"%(my.WIDTH+50))
             subscription_wdg.add_color("background", "background")
@@ -1079,7 +1121,14 @@ class SubscriptionBarWdg(SubscriptionWdg):
             msg = num
         else:
             msg = ''
-        icon = IconWdg(msg, IconWdg.STAR)
+        try:
+            icon_display = my.kwargs.get('icon')
+        except:
+            icon_display = "STAR"
+        if icon_display is None:
+            icon_display = "STAR"
+
+        icon = IconWdg(msg, icon_display)
         icon.add_style('float: left')
         inner.add(icon)
         msg_div = DivWdg(msg)
