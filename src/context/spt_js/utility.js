@@ -1547,19 +1547,14 @@ spt.exception.handle_fault_response = function( response_text )
         if (response_text.match(/Cannot login with key/)) {
             // handle case where fault response is the result of login authentication expiring ...
             spt.refresh_page();
-            /*
-            alert("Session has expired, please login again");
-            spt.popup.get_widget( {}, {
-                options: {
-                    title: 'Session Expired',
-                    class_name: "pyasm.widget.WebLoginWdg"
-                }
-            });
-            */
         }
         else {
             // otherwise, it's an error so just throw an exception with the response text XML ...
-            throw(response_text);
+            //var m = response_text.match(/\<value\>\<string\>(\w+)\</string\>/);
+            console.log(response_text);
+            var m = response_text.match(/<value><string>(.*?)<\/string>/);
+            var error = m ? m[1] : response_text;
+            throw(error);
         }
     }
 }

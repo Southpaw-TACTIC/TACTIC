@@ -1455,6 +1455,8 @@ TacticServerStub = function() {
             throw(ret_val.status);
         }
 
+        console.log(ret_val);
+
         if (ret_type == "raw") {
             return ret_val.responseText;
         }

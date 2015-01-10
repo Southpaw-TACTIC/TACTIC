@@ -118,7 +118,7 @@ class Project(SObject):
         user = db_resource_sobj.get_value("login")
         password = db_resource_sobj.get_value("password")
        
-        db_resource = DbResource(database=database, host=host, port=port, vendor=vendor, password=password)
+        db_resource = DbResource(user=user, database=database, host=host, port=port, vendor=vendor, password=password)
         #Container.put(key, db_resource)
         resource_dict[key] = db_resource
 

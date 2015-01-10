@@ -3118,6 +3118,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
+        op_filters = my.kwargs.get("op_filters")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3183,7 +3184,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords": keywords,
             "filter": filter,
             "expand_mode": expand_mode,
-            "show_name_hover": show_name_hover
+            "show_name_hover": show_name_hover,
+            "op_filters": op_filters,
             #"search_wdg": search_wdg
             
         }
