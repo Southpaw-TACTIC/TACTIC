@@ -200,7 +200,6 @@ class AccessManager(Base):
             else:
                 rule_project =  xml.get_attribute(rule_node, 'project')
 
-            print "rule_project: ", rule_project
             if rule_project:
                 project_code = rule_project
                 # special treatment for search_filter to enable

@@ -880,7 +880,7 @@ class NoDatabaseSecurity(Base):
         return my.is_logged_in_flag
     def get_license(my):
         return License()
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         None
     def login_user(my, login_name, password, expiry=None, domain=None):
         my.is_logged_in_flag = True

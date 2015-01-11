@@ -819,6 +819,13 @@ class ThumbWdg(BaseTableElementWdg):
         elif not repo_path or not os.path.exists(repo_path):
             return my.get_no_icon_wdg(missing=True)
 
+        elif repo_path.endswith(".svg"):
+            f = open(repo_path, 'r')
+            html = f.read()
+            f.close()
+            div.add(html)
+            return div
+
         if my.icon_type == 'default':
             # fix template icon_size=100% icon_type which always loads web version
             if type(icon_size) == types.StringType and icon_size.endswith("%"):

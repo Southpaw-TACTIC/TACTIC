@@ -1349,6 +1349,8 @@ spt.pipeline._init = function() {
     data.paint = paint;
     data.ctx = ctx;
 
+    var size = canvas.getSize()
+    spt.pipeline.set_size(size.x, size.y);
 /*
     var cookie = new Cookie('pipeline_canvas');
     var state = JSON.parse( cookie.read() );
