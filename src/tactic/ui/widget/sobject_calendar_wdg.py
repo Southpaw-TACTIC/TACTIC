@@ -34,6 +34,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         my.sobjects_index = []
         my.date = datetime.today()
         my.current_week = 0
+        my.init_color_map()
 
     # FIXME: these are a bit wonky
     def set_sobjects_index(my, indexes):
@@ -57,6 +58,61 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         div = DivWdg()
         return div
 
+    def init_color_map(my):
+        ''' initialize the color map for bg color and text color'''
+        search_type = my.kwargs.get('search_type')
+        
+        if not search_type:
+            search_type = 'sthpw/task'
+
+        # get the color map
+        from pyasm.widget import WidgetConfigView
+        color_config = WidgetConfigView.get_by_search_type(search_type, "color")
+        color_xml = color_config.configs[0].xml
+        my.color_map = {}
+        name = 'status'
+        xpath = "config/color/element[@name='%s']/colors" % name
+        text_xpath = "config/color/element[@name='%s']/text_colors" % name
+        bg_color_node = color_xml.get_node(xpath)
+        bg_color_map = color_xml.get_node_values_of_children(bg_color_node)
+
+        text_color_node = color_xml.get_node(text_xpath)
+        text_color_map = color_xml.get_node_values_of_children(text_color_node)
+        
+        # use old weird query language
+        query = bg_color_map.get("query")
+        query2 = bg_color_map.get("query2")
+        if query:
+            bg_color_map = {}
+
+            search_type, match_col, color_col = query.split("|")
+            search = Search(search_type)
+            sobjects = search.get_sobjects()
+
+            # match to a second table
+            if query2:
+                search_type2, match_col2, color_col2 = query2.split("|")
+                search2 = Search(search_type2)
+                sobjects2 = search2.get_sobjects()
+            else:
+                sobjects2 = []
+
+            for sobject in sobjects:
+                match = sobject.get_value(match_col)
+                color_id = sobject.get_value(color_col)
+
+                for sobject2 in sobjects2:
+                    if sobject2.get_value(match_col2) == color_id:
+                        color = sobject2.get_value(color_col2)
+                        break
+                else:
+                    color = color_id
+
+
+                bg_color_map[match] = color
+
+        my.color_map[name] = bg_color_map, text_color_map
+        
     def get_color(my, sobject, index):
 
         div = DivWdg()
@@ -73,6 +129,13 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
             return color
         except:
             pass
+
+        bg_color, text_color = my.color_map.get('status')
+        if bg_color:
+            color_value = bg_color.get(sobject.get_value('status'))
+            
+            if color_value:
+                return color_value
 
         pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         if not pipeline_code:

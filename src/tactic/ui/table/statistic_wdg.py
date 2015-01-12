@@ -483,18 +483,47 @@ class MilestoneCompletionWdg(TaskCompletionWdg):
 __all__.append("TaskDaysDueElementWdg")
 class TaskDaysDueElementWdg(BaseTableElementWdg):
 
+    
+    ARGS_KEYS = {
+
+        "due_date_col": {
+            'description': "column name that specifies the due_date_col. Defaults to bid_end_date",
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Optional'
+        }
+    }
+
     def is_editable(my):
         return False
 
     def is_groupable(my):
         return True
 
+    def handle_td(my, td):
+        '''background color is better handled on td directly'''
+        if my.mode == 'critical':
+            td.add_style("background: #e84a4d")
+        elif my.mode == 'today':
+            td.add_style("background: #a3d991")
+        elif my.mode == 'done':
+            pass
+        else:
+            td.add_style("background: #FFF")
+
+        super(TaskDaysDueElementWdg, my).handle_td(td)
+            
+    def init(my):
+        my.due_date_col = my.kwargs.get('due_date_col')
+        if not my.due_date_col:
+            my.due_date_col = 'bid_end_date'
+
     def get_display(my):
 
         div = DivWdg()
 
         sobject = my.get_current_sobject()
-        value = sobject.get_value("bid_end_date")
+        value = sobject.get_value(my.due_date_col)
         if not value:
             return div
 
@@ -520,9 +549,10 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             mode = "today"
         else:
             mode = "due"
+        
+        my.mode = mode
 
         if mode == "critical":
-            div.add_style("background: #e84a4d")
             div.add_style("color: #FFF")
             msg = "%s Days" % (-diff)
             div.add_attr("title", msg)
@@ -531,7 +561,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             else:
                 div.add(msg)
         elif mode == "today":
-            div.add_style("background: #a3d991")
             div.add_style("color: #FFF")
             div.add_attr("title", "Due today")
             div.add("Today")
@@ -542,7 +571,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             #div.add("Done")
             pass
         else:
-            div.add_style("background: #FFF")
             div.add_style("color: #000")
             div.add_attr("title", "Due in %s days" % diff)
             if diff == 1:
