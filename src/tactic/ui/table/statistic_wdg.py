@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['TaskCompletionWdg', 'TaskGroupCompletionWdg', 'MilestoneCompletionWdg']
+__all__ = ['TaskCompletionWdg', 'TaskGroupCompletionWdg', 'MilestoneCompletionWdg','TaskDaysDueElementWdg']
 
 from pyasm.common import Date, Calendar, Common, jsonloads
 from pyasm.search import *
@@ -480,7 +480,6 @@ class MilestoneCompletionWdg(TaskCompletionWdg):
 
 
 
-__all__.append("TaskDaysDueElementWdg")
 class TaskDaysDueElementWdg(BaseTableElementWdg):
 
     
@@ -584,9 +583,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         div.add_style("margin: -3px")
 
         return div
-
-
-
 
 
 
