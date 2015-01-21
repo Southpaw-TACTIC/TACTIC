@@ -3182,8 +3182,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
-            "expand_mode": expand_mode,
-            "show_name_hover": show_name_hover
+            "expand_mode": expand_mode
             #"search_wdg": search_wdg
             
         }
@@ -3195,9 +3194,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['styles'] = my.kwargs.get("styles")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['stats_expr'] = my.kwargs.get("stats_expr")
+            kwargs['stats_color'] = my.kwargs.get("stats_color")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':

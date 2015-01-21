@@ -104,7 +104,26 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '11',
             'category': 'Display'
 
+    },
+
+    ARGS_KEYS['show_name_hover'] = {
+            'description': 'If set to true, it shows the name on hover over',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '12',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['show_drop_shadow'] = {
+            'description': 'If set to true, it shows the drop shadow',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '13',
+            'category': 'Display'
+
     }
+
+
 
 
 
