@@ -126,7 +126,8 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
         try:
             color = sobject.get("color")
-            return color
+            if color:
+                return color
         except:
             pass
 
@@ -140,7 +141,6 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         if not pipeline_code:
             pipeline_code = "task"
-
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
