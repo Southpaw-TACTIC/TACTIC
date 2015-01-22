@@ -494,7 +494,9 @@ class SObjectCalendarWdg(CalendarWdg):
         'handler': 'handler class to display each day',
         'sobject_display_expr': 'display expression for each sobject',
         'search_type': 'search type to search for',
-        'search_expr': 'Initial SObjects Expression'
+        'search_expr': 'Initial SObjects Expression',
+        'view': 'Day view',
+        'sobject_view': 'Day sobject view when the user clicks on each day'
     }
 
 
@@ -583,6 +585,10 @@ class SObjectCalendarWdg(CalendarWdg):
         super(SObjectCalendarWdg,my).init()
 
         custom_view = my.kwargs.get('view')
+        my.custom_sobject_view = my.kwargs.get('sobject_view')
+        if not my.custom_sobject_view:
+            my.custom_sobject_view = 'table'
+
         my.custom_layout = None
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
@@ -825,12 +831,13 @@ class SObjectCalendarWdg(CalendarWdg):
             expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
             div.add_behavior( {
                 'type': "click_up",
+                'sobject_view' : my.custom_sobject_view,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.TableLayoutWdg';
                 var title = '%s: %s';
                 var kwargs = {
                     'search_type': '%s',
-                    'view': 'table',
+                    'view': bvr.sobject_view,
                     'show_insert': 'false',
                     'expression': "%s"
                 };
