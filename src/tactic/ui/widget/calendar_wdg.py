@@ -897,7 +897,8 @@ class CalendarInputWdg(BaseInputWdg):
             input = TextWdg(name=name, required=required)
             text = input
         else:
-            input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width, hint_text=title)
+            # TODO: add a kwarg - hint_text
+            input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width)
             text = input.get_text()
 
 
@@ -938,7 +939,8 @@ class CalendarInputWdg(BaseInputWdg):
         elif read_only != 'false':
             # this is an implicit read_only
             read_only = 'true'
-            text.set_option("read_only", read_only)
+            # let TextInputWdg set this attribute
+            #text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
             text.add_event('onclick', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
