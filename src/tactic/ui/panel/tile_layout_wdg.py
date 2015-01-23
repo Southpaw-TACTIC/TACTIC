@@ -91,15 +91,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
 
     },
-    ARGS_KEYS['stats_expr'] = {
+    ARGS_KEYS['overlay_expr'] = {
             'description': 'If a @PYTHON expression is set, expression-driven stats will display in bottom right corner',
             'type': 'TextWdg',
             'order' : '10',
             'category': 'Display'
 
     },
-    ARGS_KEYS['stats_color'] = {
-            'description': 'If comma separated color is set, it controls the background color of stats displayed in bottom right corner',
+    ARGS_KEYS['overlay_color'] = {
+            'description': 'If comma separated color is set, it controls the background color of overlay stats displayed in bottom right corner',
             'type': 'TextWdg',
             'order' : '11',
             'category': 'Display'
@@ -355,8 +355,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not my.spacing:
             my.spacing = '10'
 
-        my.stats_expr = my.kwargs.get('stats_expr')
-        my.stats_color = my.kwargs.get('stats_color')
+        my.overlay_expr = my.kwargs.get('overlay_expr')
+        my.overlay_color = my.kwargs.get('overlay_color')
 
         super(TileLayoutWdg, my).init()
 
@@ -935,9 +935,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
         
-        if my.stats_expr:
+        if my.overlay_expr:
             from tactic.ui.widget import OverlayStatsWdg
-            stat_div = OverlayStatsWdg(expr = my.stats_expr, sobject = sobject, bg_color = my.stats_color)
+            stat_div = OverlayStatsWdg(expr = my.overlay_expr, sobject = sobject, bg_color = my.overlay_color)
             div.add(stat_div)
 
 

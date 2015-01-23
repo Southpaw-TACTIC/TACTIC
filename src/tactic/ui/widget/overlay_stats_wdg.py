@@ -59,11 +59,14 @@ class OverlayStatsWdg(BaseTableElementWdg):
 
 
         js_exprs = []
-        stats = Search.eval(expr, sobjects=[sobject])
-        if isinstance(stats, tuple):
-            stats, js_exprs = stats
+        rtn = Search.eval(expr, sobjects=[sobject])
+        if isinstance(rtn, dict):
+            stats = rtn.get('label')
+            js_exprs = rtn.get('click_expr')
             if len(js_exprs) != len(stats):
                 raise SetupException('the number of stats and js_expr returned from the PYTHON script must be the same.')
+        else:
+            stats = rtn
         if len(bg_color) < len(stats):
             raise SetupException('bg_color provided should not be less than the list returned from expression')
         
