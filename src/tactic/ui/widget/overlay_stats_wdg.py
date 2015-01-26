@@ -76,6 +76,7 @@ class OverlayStatsWdg(BaseTableElementWdg):
             span = SpanWdg(css='badge')
             span.add_style('margin-left','2px')
             span.add_style('background', bg_colors[i])
+            span.add_style('box-shadow','1px 1px 2px #AAAAAA')
             span.add(stat)
             if js_exprs:
                 # change mouse pointer to hand
