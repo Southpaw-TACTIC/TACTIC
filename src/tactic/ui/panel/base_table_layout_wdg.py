@@ -957,8 +957,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             num_div.add_style("padding: 5px")
             
             # -- SEARCH LIMIT DISPLAY
-            if my.items_found == 0 and my.search:
-                my.items_found = my.search.get_count()
+            if my.items_found == 0:
+                if my.search:
+                    my.items_found = my.search.get_count()
+                elif my.sobjects:
+                    my.items_found = len(my.sobjects)
+
+            inner.add_attr("total_count", info.get("count"))
 
             if my.items_found == 1:
                 num_div.add( "%s %s" % (my.items_found, _("item found")))
