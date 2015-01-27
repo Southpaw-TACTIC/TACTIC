@@ -960,8 +960,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
-            value_text.add_style("width", "250")
+            value_text.add_style("float", "left")
             value_text.add_style("height", "30")
+            value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
@@ -994,12 +995,15 @@ class GeneralFilterWdg(BaseFilterWdg):
             relations = ["is equal to", "is greater than", "is less than", "in", "not in", "is empty", "is not empty", "is distinct"]
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.set_option("values", relations)
+            relation_select.add_style("float", "left")
+            relation_select.add_style("width", "80px")
             relation_select.set_persist_on_submit()
             my.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
             value_text = TextWdg("%s_value" % my.prefix)
             value_text.add_class("form-control")
+            value_text.add_styles("float: left; width: 250; margin: 0px 5px")
             value_text.set_persist_on_submit()
 
             #behavior = {
@@ -1027,6 +1031,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
+            relation_select.add_style("width: 80px")
+            relation_select.add_style("float", "left")
             relation_select.set_persist_on_submit()
             my.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
@@ -1035,23 +1041,28 @@ class GeneralFilterWdg(BaseFilterWdg):
             labels = ["1 day ago", '2 days ago', '1 week ago', '1 month ago', '1 day from now', '2 days from now', '1 week from now', '1 month from now']
             another_select = SelectWdg("%s_select" % my.prefix)
             another_select.add_class('spt_time_filter')
+            another_select.add_style("float", "left")
             another_select.add_empty_option("-- Select --")
             another_select.set_option("values", options)
             another_select.set_option("labels", labels)
+            another_select.add_style("width: 80px")
             another_select.set_persist_on_submit()
             my.set_filter_value(another_select, filter_index)
             filter_span.add(another_select)
-            
-            filter_span.add(SpanWdg(" or &nbsp; ", css='small spt_time_filter'))
+            or_div = DivWdg(" or &nbsp; ", css='small spt_time_filter')
+            or_div.add_style('width','20px')
+            or_div.add_style('float','left')
+            filter_span.add(or_div)
             from tactic.ui.widget import CalendarInputWdg
             value_cal = CalendarInputWdg("%s_value" % my.prefix)
             value_cal.add_class('spt_time_filter')
+            value_cal.add_style("float", "left")
 
             value_cal.set_option('show_activator', True)
             #value_cal.set_option('show_text', True)
             value_cal.set_option('show_time', True)
             
-            value_cal.get_top().add_styles('margin-top: -20px;padding-left: 20px;float: right;width: 230px') 
+            value_cal.get_top().add_styles('float: right;width: 230px') 
             value_cal.set_persist_on_submit()
             
             my.set_filter_value(value_cal, filter_index)
@@ -1093,6 +1104,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             op_filter = SelectWdg("%s_op" % my.prefix)
             op_filter.set_option("labels", "have|do not have|match (slow)|do not match (slow)")
             op_filter.set_option("values", "in|not in|match|do not match")
+            op_filter.add_style("float", "left")
+            op_filter.add_style("width: 80px")
             my.set_filter_value(op_filter, filter_index)
             filter_span.add(op_filter)
             filter_span.add(" ")
@@ -1121,6 +1134,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextWdg("%s_value" % my.prefix)
             value_text.add_class("form-control")
+            value_text.add_style("float", "left")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
@@ -1927,7 +1941,7 @@ class HierarchicalFilterWdg(BaseFilterWdg):
 
 
 class SObjectSearchFilterWdg(BaseFilterWdg):
-
+    '''Basic Combination Search usually at the top of the Search Box'''
     def get_args_keys(my):
         return {
         'prefix': 'the prefix name for all of the input elements',
@@ -1966,24 +1980,10 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         
         my.prefix = my.kwargs.get("prefix")
-        # this name corresponds to alter_search()
-        name = '%s_search_text' % my.prefix
-        my.text = TextInputWdg(name=name)
-        my.text.set_attr("size","50")
-        my.text.add_behavior( {
-            'type': 'keyup',
-            'cbjs_action': '''
-                var key = evt.key;
-                if (key == 'enter') {
-                    evt.stop();
-                    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                }
-            '''
-            } )
         #my.text.set_persist_on_submit(prefix=my.prefix)
         #my.set_filter_value(my.text, filter_index)
-
-
+        my.stype_columns = []
+        my.text_value = ''
 
     def get_value(my):
 
@@ -1997,6 +1997,8 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         ''' customize the search here '''
         #search.add_where("begin")
 
+        my.stype_columns = search.get_columns()
+        
         values = FilterData.get().get_values_by_index(my.prefix, 0)
         # check if this filter is enabled
         enabled = values.get("%s_enabled" % my.prefix)
@@ -2008,18 +2010,18 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         if not is_enabled:
             return
 
+        my.num_filters_enabled += 1
 
 
 
         value = my.get_value()
         if not value:
             return
-
+        my.text_value = value
         search.add_op("begin")
 
-        stype_columns = search.get_columns()
         for column in my.columns:
-            if not column in stype_columns:
+            if not column in my.stype_columns:
                 continue
 
             # id and code should be exact matches
@@ -2028,8 +2030,9 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
                     search.add_filter(column, int(value))
                 except ValueError:
                     pass
-            elif column == 'code':
+            elif column != 'keywords':
                 search.add_filter(column, value)
+
 
         #filter_string = Search.get_compound_filter(value, my.columns)
         #if filter_string:
@@ -2038,11 +2041,12 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         # add keywords
         column = 'keywords'
-        if value and column in stype_columns:
+        if value and column in my.stype_columns:
             search.add_text_search_filter(column, value)
 
         search.add_op("or")
 
+       
 
     def set_columns(my, columns):
         my.columns = columns
@@ -2068,10 +2072,36 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         checkbox.set_persist_on_submit(prefix=my.prefix)
         td = widget.add_cell(checkbox)
         td.add_style("padding-right: 10px")
+        
+        
+        if 'keywords' in my.stype_columns:
+            my.columns.append('keywords')
+        
+        # this name corresponds to alter_search()
+        name = '%s_search_text' % my.prefix
+        my.text = TextInputWdg(name=name, hint_text=', '.join(my.columns))
+        my.text.set_attr("size","50")
+        my.text.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+                var key = evt.key;
+                if (key == 'enter') {
+                    evt.stop();
+                    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+                }
+            '''
+            } )
+        
+        
         widget.add_cell(my.text)
-        my.text.add_style("display", "inline")
+        
+        if my.text_value:
+            my.text.set_value(my.text_value)
 
-        hint = HintWdg('[ %s ] columns are used in this search as well as any entries in the keywords column.' %', '.join(my.columns))
+        my.text.add_style("display", "inline")
+        
+        hint_msg = '[ %s ] columns are used in this search.' %', '.join(my.columns)
+        hint = HintWdg(hint_msg)
         widget.add_cell(hint)
 
         return widget
