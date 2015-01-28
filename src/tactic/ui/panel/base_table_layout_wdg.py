@@ -963,8 +963,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 elif my.sobjects:
                     my.items_found = len(my.sobjects)
 
-            inner.add_attr("total_count", info.get("count"))
-
+           
             if my.items_found == 1:
                 num_div.add( "%s %s" % (my.items_found, _("item found")))
             else:
