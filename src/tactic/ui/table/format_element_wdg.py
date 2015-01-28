@@ -606,6 +606,7 @@ class FormatElementWdg(SimpleTableElementWdg):
 
 
     def handle_td(my, td):
+        super(FormatElementWdg, my).handle_td(td)
         version = my.parent_wdg.get_layout_version()
         if version == "2":
             return
@@ -614,6 +615,7 @@ class FormatElementWdg(SimpleTableElementWdg):
             td.add_attr("spt_input_type", "inline")
             td.add_style("text-align: center")
         
+ 
 
 
 
