@@ -1394,6 +1394,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
         top = my.top
         top.add_style("width: 180px")
         top.add_style("height: 150px")
+        top.add_style("padding: 5px")
         top.add_class("spt_time_top")
 
         date_format = my.kwargs.get('date_format')
