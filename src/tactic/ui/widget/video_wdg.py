@@ -76,6 +76,8 @@ class VideoWdg(BaseRefreshWdg):
             my.video_id = video.set_unique_id()
         else:
             video.set_attr("id", my.video_id)
+
+        # FIXME: this has refereneces to the Gallery ....!
         if my.index == 0: 
             overlay = DivWdg()
             overlay.add_class('video_overlay')
@@ -104,7 +106,8 @@ class VideoWdg(BaseRefreshWdg):
 
 
             top.add(overlay) 
-        
+
+
 
         top.add_behavior( {
             'type': 'load',
@@ -119,10 +122,17 @@ class VideoWdg(BaseRefreshWdg):
             if (!bvr.index) bvr.index = 0;
 
             var video_id = bvr.video_id;
+
+            spt.video.init_player(video_id);
+            /*
             spt.dom.load_js(["video/video.js"], function() {
                 var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
                 } );
             });
+            */
+
+
+
             if (spt.gallery) {
                 
                 spt.gallery.videos[bvr.index] = video_id;
@@ -185,8 +195,19 @@ class VideoWdg(BaseRefreshWdg):
 spt.video = {}
 
 spt.video.loaded = false;
+spt.video.player = null;
 
-spt.video.init_player = function(events) {
+spt.video.players = {};
+
+
+spt.video.get_player = function(el) {
+    var video = el.getElement(".video-js");
+    var video_id = video.getAttribute("id");
+    return spt.video.players[video_id];
+
+}
+
+spt.video.init_player = function(video_id, events) {
 
     if (spt.video.loaded) {
         var player = videojs(video_id, {"nativeControlsForTouch": false}, function() {
@@ -200,6 +221,8 @@ spt.video.init_player = function(events) {
                 spt.video.loaded = true;
                 spt.video._add_events(this, events);
             } );
+            spt.video.player = player;
+            spt.video.players[video_id] = player;
         } )
     }
 
@@ -207,10 +230,10 @@ spt.video.init_player = function(events) {
 
 spt.video._add_events = function(player, events) {
     player.on("pause", function() {
-        alert("pause");
+        console.log("pause");
     } );
     player.on("ended", function() {
-        alert("ended");
+        console.log("ended");
     } );
 
 

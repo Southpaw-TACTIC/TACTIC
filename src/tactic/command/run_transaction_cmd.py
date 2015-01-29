@@ -101,6 +101,7 @@ class TransactionQueueAppendCmd(Trigger):
                 rules = "<rules/>"
             access_manager.add_xml_rules(rules)
 
+            # filter based on project code
             namespace = log.get_value("namespace")
             key1 = { 'code': namespace }
             key2 = { 'code': '*' }
@@ -109,7 +110,18 @@ class TransactionQueueAppendCmd(Trigger):
                 continue
 
 
+            # filter based on transaction key
+            """
+            keywords = log.get_value("kewords", no_exception=True)
+            key1 = { 'keywords': keywords }
+            key2 = { 'keywords': '*' }
+            keys = [key1, key2]
+            if not access_manager.check_access("transaction", keys, "allow", default="deny"):
+                continue
+            """
 
+
+            # filter out any specific rules from transaction itself
             from tactic.ui.sync import SyncFilter
             sync_filter = SyncFilter(rules=rules, transaction=log)
             sync_filter.execute()
