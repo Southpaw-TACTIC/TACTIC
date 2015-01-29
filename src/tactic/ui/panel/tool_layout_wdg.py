@@ -173,6 +173,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
 
+        inner.add_attr("total_count", info.get("count"))
 
         """
         from tactic.ui.app import SearchLimitSimpleWdg
