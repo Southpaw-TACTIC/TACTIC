@@ -122,7 +122,7 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<filter>\n")
 
         config.append('''
-        <element name='Keyword Search'>
+        <element name='Combination'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
             <search_type>%s</search_type>
             <prefix>quick</prefix>

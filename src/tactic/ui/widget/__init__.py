@@ -34,6 +34,6 @@ from reset_password_wdg import *
 from title_wdg import *
 from ckeditor_wdg import *
 from video_wdg import *
-
+from overlay_stats_wdg import *
 #from color_input_wdg import *
 #from preview_change_wdg import *

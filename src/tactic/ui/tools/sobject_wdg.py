@@ -408,6 +408,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <title_expr>@REPLACE(@GET(.context), 'attachment/', '')</title_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
+                    <no_results_msg>Drag and drop file here to upload.</no_results_msg>
                   </display>
                 </element>
                 ''' % values)

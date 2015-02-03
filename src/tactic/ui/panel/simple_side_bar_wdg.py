@@ -159,7 +159,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         li = HtmlElement.li()
         li.add_class("spt_side_bar_link")
-        li.add_class("main_li")
+        li.add_class("main_li unselectable")
 
 
         title = my._get_title(config, element_name)
@@ -172,7 +172,8 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         ul = HtmlElement.ul()
         li.add(ul)
         ul.add_class("spt_side_bar_section")
-        ul.add_class("sub_ul")
+        ul.add_class("sub_ul unselectable")
+        ul.add_style('cursor','pointer')
 
         # then get view name from options in order to read a new
         # config and recurse ...
@@ -204,7 +205,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         level = info.get("level")
         if level == 1:
             li.add_class("menu_header")
-            li.add_class("main_link")
+            li.add_class("main_link unselectable")
         else:
             li.add_class("sub_li")
 
