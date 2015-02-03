@@ -189,6 +189,7 @@ class FingerMenuWdg(BaseRefreshWdg):
                  var target = spt.get_event_target( evt );
 
                  var edit_menu = bvr.src_el.getParent('.'+bvr.top_class).getElement('.' + bvr.menu_top_class);
+
                  if (edit_menu) {
                      var menu_pos = edit_menu.getPosition();
                      

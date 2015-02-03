@@ -91,20 +91,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional'
         },
         "show_select": {
-            'description': "Determines whether or not to show the selection checkbox for each row",
+            'description': "Determine whether to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': 03,
             'category': 'Optional'
         },
 
-        'show_search_limit': {
+       'show_search_limit': {
             'description': 'Flag to determine whether or not to show the search limit',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': '04'
         },
+       'search_limit_mode': {
+            'description': 'Determine whether to show the simple search limit at just top, bottom, or both',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'bottom|top|both',
+            'order': '04a'
+        },
+
 
 
 
@@ -664,6 +672,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         group_span.add(my.get_group_wdg() )
         inner.add(group_span)
 
+        info = my.search_limit.get_info()
+        if info.get("count") == None:
+            info["count"] = len(my.sobjects)
+
+        search_limit_mode = my.kwargs.get('search_limit_mode') 
+        if not search_limit_mode:
+            search_limit_mode = 'bottom'
+
+        if my.kwargs.get("show_search_limit") not in ['false', False] and search_limit_mode in ['top','both']:
+            from tactic.ui.app import SearchLimitSimpleWdg
+            limit_wdg = SearchLimitSimpleWdg(
+                count=info.get("count"),
+                search_limit=info.get("search_limit"),
+                current_offset=info.get("current_offset")
+            )
+            inner.add(limit_wdg)
 
     
         # do not set it to 100% here, there are conditions later to change it to 100%
@@ -1000,12 +1024,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # add a hidden insert table
             inner.add( my.get_insert_wdg() )
         
-            info = my.search_limit.get_info()
-            if info.get("count") == None:
-                info["count"] = len(my.sobjects)
-
+            
             # this simple limit provides pagination and should always be drawn. Visible where applicable
-            if my.kwargs.get("show_search_limit") not in ['false', False]:
+            if my.kwargs.get("show_search_limit") not in ['false', False] and search_limit_mode in ['bottom','both']:
                 from tactic.ui.app import SearchLimitSimpleWdg
                 limit_wdg = SearchLimitSimpleWdg(
                     count=info.get("count"),

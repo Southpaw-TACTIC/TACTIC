@@ -1045,7 +1045,7 @@ spt.popup.get_widget = function( evt, bvr )
     var widget_html = server.get_widget(class_name, kwargs);
     spt.behavior.replace_inner_html( content_wdg, widget_html );
 
-    callback();
+    setTimeout(function(){callback()}, 10);
 
     return popup;
 }
