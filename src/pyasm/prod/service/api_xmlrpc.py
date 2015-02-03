@@ -238,7 +238,8 @@ QUERY_METHODS = {
     #'get_related_relationship': 0,
     'test_speed': 0,
     'get_upload_file_size': 0,
-    'get_doc_link': 0
+    'get_doc_link': 0,
+    'get_interaction_count': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -1069,6 +1070,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return sobject_dict
 
 
+
+    #
+    # user interaction
+    #
+    @xmlrpc_decorator
+    def add_interaction(my, ticket, key, data={}):
+
+        interaction = SearchType.create("sthpw/interaction")
+        interaction.set_value("key", key)
+        if data:
+            interaction.set_value("data", jsondumps(data))
+
+        interaction.set_user()
+        project_code = Project.get_project_code()
+        interaction.set_value("project_code", project_code)
+
+        interaction.commit()
+        sobject_dict = my._get_sobject_dict(interaction)
+        return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_interaction_count(my, ticket, key):
+        interaction = Search("sthpw/interaction")
+        interaction.add_filter("key", key)
+        return interaction.get_count()
+
+
+
+ 
 
     #
     # Undo/Redo functionality
@@ -4764,7 +4795,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
  
 
     @xmlrpc_decorator
-    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}):
+    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}, interaction={}):
         '''get a defined widget
 
         @params
@@ -4820,6 +4851,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     print "BVR Count: ", Container.get('Widget:bvr_count')
                     print "Sending: %s KB" % (len(html)/1024)
                     print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+
+
+                # add interaction, if any
+                if interaction:
+                    #interaction = SearchType.create("sthpw/interaction")
+                    pass
 
                 return html
 

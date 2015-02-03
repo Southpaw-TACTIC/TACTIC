@@ -231,6 +231,18 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+
+    /*
+     * interaction logging
+     */
+    this.add_interaction = function(key, data, kwargs) {
+        return this._delegate("add_interaction", arguments, kwargs);
+    }
+
+    this.get_interaction_count = function(key, kwargs) {
+        return this._delegate("get_interaction_count", arguments, kwargs);
+    }
+
     /*
      * Checkin/checkout methods
      */

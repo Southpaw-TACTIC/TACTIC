@@ -701,6 +701,18 @@ class TacticServerStub(object):
 
 
 
+    #
+    # Interaction methods
+    #
+    def get_interaction_count(my, key):
+        '''API Function: get_interaction_count(key, category="default")
+        '''
+        return my.server.get_interaction_count(my.ticket, key)
+
+
+
+
+
 
     #
     # Transaction methods
