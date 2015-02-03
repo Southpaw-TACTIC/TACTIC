@@ -10,13 +10,13 @@
 #
 #
 
-__all__ = [ 'EditWdg', 'PublishWdg','FileAppendWdg']
+__all__ = [ 'EditTitleWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
-from pyasm.widget import WidgetConfigView, WidgetConfig
+from pyasm.widget import WidgetConfigView, WidgetConfig, BaseInputWdg
 from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
 
 
@@ -26,6 +26,19 @@ from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
 
 class EditException(Exception):
     pass
+
+
+class EditTitleWdg(BaseInputWdg):
+    def get_display(my):
+        div = DivWdg()
+        title = my.get_title()
+        if not title:
+            title = my.get_name()
+            title = title.replace("_", " ")
+            title = title.title()
+        div.add(title)
+        div.add_style("font-weight: bold")
+        return div
 
 
 class EditWdg(BaseRefreshWdg):
@@ -239,6 +252,13 @@ class EditWdg(BaseRefreshWdg):
             my.element_names = xml.get_values("config//html//element/@name")
         else:
             my.element_names = my.config.get_element_names()
+
+
+        override_element_names = my.kwargs.get("element_names")
+        if override_element_names:
+            element_names = override_element_names
+
+
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -559,6 +579,7 @@ class EditWdg(BaseRefreshWdg):
             num_columns = int(num_columns)
 
         # go through each widget and draw it
+        index =  0
         for i, widget in enumerate(my.widgets):
 
             # since a widget name called code doesn't necessariy write to code column, it is commented out for now
@@ -590,19 +611,17 @@ class EditWdg(BaseRefreshWdg):
                 widget.add_style("width: 100%")
 
 
-            class EditTitleWdg(BaseRefreshWdg):
-                pass
-
-            #if isinstance(widget, EditTitleWdg):
-            """
-            has_title = True
-            if has_title and i % 3 == 0:
+            if isinstance(widget, EditTitleWdg):
                 tr, td = table.add_row_cell()
                 tr.add_color("background", "background", -5)
-                td.add("TITLE")
                 td.add_style("height", "30px")
                 td.add_style("padding", "0px 10px")
-            """
+
+                td.add(widget)
+
+                index = 0
+
+                continue
 
 
            
@@ -624,18 +643,19 @@ class EditWdg(BaseRefreshWdg):
                   
 
 
-            new_row = i % num_columns == 0
+            new_row = index % num_columns == 0
             if new_row:
                 tr = table.add_row()
 
 
                 if my.color_mode == "default":
-                    if i % 2 == 0:
+                    if index % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -2 )
+                        tr.add_color("background", "background", -1 )
 
 
+            index += 1
 
            
             show_title = widget.get_option("show_title")
@@ -909,6 +929,8 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
+        div.add_style("padding-top: 5px")
+        div.add_style("padding-bottom: 30px")
 
 
         # construct the bvr

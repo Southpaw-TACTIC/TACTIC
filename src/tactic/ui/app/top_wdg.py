@@ -44,6 +44,15 @@ class TopWdg(Widget):
         my.top.add_class("spt_top")
         Container.put("TopWdg::top", my.top)
 
+
+        my.body.add_attr("ondragover", "return false;")
+        my.body.add_attr("ondragleave", "return false;")
+        my.body.add_attr("ondrop", "return false;")
+
+
+
+
+
         click_div = DivWdg()
         my.top.add(click_div)
         click_div.add_behavior( {
@@ -581,8 +590,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-
-
         # custom js files to include
         includes = Config.get_value("install", "include_js")
         includes = includes.split(",")
@@ -591,7 +598,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
             if include:
                 print "include: ", include
                 Container.append_seq("Page:js", include)
-
 
 
         widget = Widget()
@@ -973,8 +979,9 @@ class CustomTopWdg(BaseRefreshWdg):
                 value.add(hash_widget)
             else:
                 value.add(hash_widget.get_display())
-            web.set_content_type("text/html")
-
+            current_type = web.get_content_type()
+            if not current_type:
+                web.set_content_type("text/html")
 
         widget.add(value)
         return widget

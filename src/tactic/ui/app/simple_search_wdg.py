@@ -183,7 +183,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         td.add(my.content)
-        my.content.add_style("margin: -2 -1 -2 -1")
+        my.content.add_style("margin: -2 -1 0 -1")
 
 
         show_search = my.kwargs.get("show_search")
@@ -515,6 +515,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
             icon = IconWdg("Filter Set", "BS_ASTERISK")
+            icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_attr("spt_element_name", element_name)

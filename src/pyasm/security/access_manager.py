@@ -114,7 +114,7 @@ class AccessManager(Base):
 
 
 
-    def add_xml_rules(my, xml):
+    def add_xml_rules(my, xml, project_code=None):
         '''xml should be an XML object with the data in the form of
         <rules>
           <group type='sobject' default='<default>'>
@@ -122,6 +122,15 @@ class AccessManager(Base):
           </group>
         </rules>
         '''
+
+        from pyasm.search import SObject
+        if isinstance(xml, SObject):
+            sobject = xml
+            xml = sobject.get_xml_value("access_rules")
+            if not project_code:
+                project_code = sobject.get_value("project_code")
+
+        project_override = project_code
 
         if isinstance(xml, basestring):
             xmlx = Xml()
@@ -136,7 +145,7 @@ class AccessManager(Base):
         if not rule_nodes:
             return
 
-
+        # store all of the project codes (this will only run once)
         if my.project_codes == None:
             search = Search('sthpw/project')
             projects = search.get_sobjects()
@@ -186,7 +195,11 @@ class AccessManager(Base):
                 #rule_key = str(attrs2)
                 rule_key = str(Common.get_dict_list(attrs2))
 
-            rule_project =  xml.get_attribute(rule_node, 'project')
+            if project_override:
+                rule_project = project_override
+            else:
+                rule_project =  xml.get_attribute(rule_node, 'project')
+
             if rule_project:
                 project_code = rule_project
                 # special treatment for search_filter to enable
@@ -276,7 +289,11 @@ class AccessManager(Base):
                 rule_key = xml.get_attribute(rule_node, 'key')
                 rule_access = xml.get_attribute(rule_node, 'access')
 
-                rule_project =  xml.get_attribute(rule_node, 'project')
+                if project_override:
+                    rule_project = project_override
+                else:
+                    rule_project =  xml.get_attribute(rule_node, 'project')
+
                 if rule_project:
                     project_code = rule_project
                 if rule_access == "":
@@ -297,6 +314,12 @@ class AccessManager(Base):
 
                 for rule_key in rule_keys:
                     rules[rule_key] = rule_access, attrs2
+
+
+        #print "---"
+        #for key, value in rules.items():
+        #    print key, value
+
 
 
     def get_access(my, type, key, default=None):
@@ -574,14 +597,10 @@ class AccessManager(Base):
     def get_by_group(group):
         access_manager = AccessManager()
 
-        access_rules_xml = group.get_xml_value("access_rules")
-        access_manager.add_xml_rules(access_rules_xml)
-
-        # get all of the security rules
-        #security_rules = AccessRule.get_by_groups(my._groups)
-        #for rule in security_rules:
-        #    access_rules_xml = rule.get_xml_value("rule")
-        #    my._access_manager.add_xml_rules(access_rules_xml)
+        #access_rules_xml = group.get_xml_value("access_rules")
+        #project_code = group.get_value("project_code")
+        #access_manager.add_xml_rules(access_rules_xml, project_code=project_code)
+        access_manager.add_xml_rules(group)
 
         return access_manager
     get_by_group = staticmethod(get_by_group)

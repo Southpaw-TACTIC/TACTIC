@@ -141,7 +141,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
         if my.is_insert =='true':
             from tactic.ui.container import WizardWdg
-            wizard = WizardWdg(title='Create New Column')
+            wizard = WizardWdg(title="none")
             config = WidgetConfig.get(view='tab', xml=config_xml)
             table_display = config.get_display_widget('View Mode')
             wizard.add(table_display, "View Mode")

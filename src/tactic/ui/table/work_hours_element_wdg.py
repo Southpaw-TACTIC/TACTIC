@@ -558,6 +558,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                 #text.add_styles("width: 100%;text-align: right;padding-left: 2px")
                 if day == today:
                     text.add_style("border: solid 1px black")
+                else:
+                    text.add_border()
 
                 week_day = my.weekday_dict[idx]
                 if week_day in ['Sat','Sun']:
@@ -566,6 +568,8 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                         text.add_color("background", "background2", modifier=[-15,0,5])
                     else:
                         text.add_color("background", "background2", modifier= [0,15,20])
+
+                text.add_style("margin: 0px 1px")
 
                 if row_to_draw == my.OT_ROW:
                     text.add_attr('input_field_type', 'ot')
@@ -703,6 +707,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             text = TextWdg("total")
             td = table.add_cell(text)
             td.add_style("width: 35px")
+            text.add_border()
 
             text.add_attr('spt_total', '.spt_total%s' % (time_prefix))
             text.add_class('spt_total%s' % (time_prefix))

@@ -85,7 +85,7 @@ spt_js = [
     "load-image.min.js",
 
     # TEST
-    "mooScrollable/Scrollable.js",
+    #"mooScrollable/Scrollable.js",
 ]
 
 

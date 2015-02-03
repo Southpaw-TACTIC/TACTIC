@@ -216,7 +216,7 @@ class CreateProjectCmd(Command):
         print "Creating database '%s' ..." % project_code
         try:
             # create the datbase
-            database.create_database(project_code)
+            database.create_database(db_resource)
         except Exception, e:
             print str(e)
             print "WARNING: Error creating database [%s]" % project_code

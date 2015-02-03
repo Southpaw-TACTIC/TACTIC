@@ -27,10 +27,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
     def init(my):
+        print my.kwargs
         my.top = DivWdg()
         my.set_as_panel(my.top)
         my.top.add_class("spt_pipeline_top")
         my.unique_id = my.top.set_unique_id();
+
+        my.is_editable = my.kwargs.get("is_editable")
+        if my.is_editable in ['false', False]:
+            my.is_editable = False
+        else:
+            my.is_editable = True
+        #my.is_editable = False
 
     def get_unique_id(my):
         return my.unique_id
@@ -42,10 +50,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = 1300
+            my.width = "auto"
         my.height = my.kwargs.get("height")
         if not my.height:
             my.height = 600
+
 
         # create an inner and outer divs
         my.nob_mode = my.kwargs.get('nob_mode')
@@ -100,7 +109,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # inner is used to scale
         inner = DivWdg()
         outer.add(inner)
-        outer.add_color("background", "background", -20)
+        outer.add_color("background", "background", -10)
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
         inner.add_style("position: relative")
@@ -291,6 +300,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         folder = my.get_folder("XXXXX")
         template_div.add(folder)
 
+        # add approval node
+        approval = my.get_approval_node("XXXXX")
+        template_div.add(approval)
+
+
+        # add trigger node
+        trigger = my.get_trigger_node()
+        template_div.add(trigger)
+
+
 
         # resize test
         show_resize = my.kwargs.get("show_resize")
@@ -371,19 +390,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         'type': 'load',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
-
-        // test import
-        /*
-        var pipeline_code = 'shot';
-        spt.pipeline.import_pipeline(pipeline_code);
-        var pipeline_code = 'model';
-        spt.pipeline.import_pipeline(pipeline_code);
-        var pipeline_code = 'model2';
-        spt.pipeline.import_pipeline(pipeline_code);
-
-        var schema_code = 'mms';
-        spt.pipeline.import_schema(schema_code);
-        */
         '''
         } )
 
@@ -542,7 +548,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
-        node.add_style("position: relative")
+        node.add_style("position: absolute")
         node.add_style("width: %spx" % width)
         node.add_style("height: %spx" % height)
         node.add_style("text-align: center")
@@ -559,19 +565,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         left_nob = DivWdg()
         left_nob.add_class("spt_left_nob")
         left_nob.set_round_corners(3, corners=['TL','BL'])
-        left_nob.add_event("onmouseover", "$(this).setStyle('background','red')")
-        left_nob.add_event("onmouseout", "$(this).setStyle('background','')")
+        left_nob.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
+        left_nob.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
         left_nob.add_style("cursor: pointer")
         left_nob.add_style("position: absolute")
-        left_nob.add_style("border: solid 1px #FF0")
+        left_nob.add_style("border: solid 1px black")
+        left_nob.add_style("background: rgba(255,255,0,0.2)")
         left_nob.add_style("width: 10px")
         left_nob.add_style("height: 10px")
         left_nob.add_style("top: %spx" % (height/2-5))
-        left_nob.add_style("left: -12px")
+        left_nob.add_style("left: -11px")
         left_nob.add_style("z-index: 100")
         left_nob.add("")
         node.add(left_nob)
-        
         
             
 
@@ -582,7 +588,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add_style("cursor: pointer")
         right_nob.add_style("position: absolute")
         right_nob.add_style("top: 0px")
-        right_nob.add_style("left: 102px")
+        right_nob.add_style("left: %spx" % (width+1))
         right_nob.add_style("z-index: 100")
         right_nob.add_style("width: 12px")
         right_nob.add_style("height: 40px")
@@ -591,12 +597,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob.add(right_nob_vis)
         right_nob_vis.add("")
         right_nob_vis.set_round_corners(3, corners=['TR','BR'])
-        right_nob_vis.add_style("border: solid 1px #FF0")
+        right_nob_vis.add_style("border: solid 1px black")
+        right_nob_vis.add_style("background: rgba(255,255,0,0.2)")
         right_nob_vis.add_style("width: 10px")
         right_nob_vis.add_style("height: 10px")
         right_nob_vis.add_style("margin-top: %spx" % (height/2-5))
-        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','red')")
-        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','')")
+        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
+        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
 
         if my.nob_mode == 'dynamic':
             left_nob.add_style("display: none")
@@ -621,30 +628,31 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } )
 
         
+        if my.is_editable:
 
-        # add the behavior that will draw the connector
-        left_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-        
-        
+            # add the behavior that will draw the connector
+            left_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            
+            
 
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
-        right_nob.add_behavior( {
-        "type": 'drag',
-        "modkeys": 'SHIFT',
-        "mouse_btn": 'LMB',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.drag_connector'
-        } )
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "modkeys": 'SHIFT',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
 
 
 
@@ -700,8 +708,151 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
+        # add custom node behaviors
+        my.node_behaviors = my.get_node_behaviors()
+        for node_behavior in my.node_behaviors:
+            node.add_behavior( node_behavior )
+
+        content.set_round_corners(5)
 
 
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
+
+
+    def add_nobs(my, node, width, height):
+
+        # add nobbies on the node
+        left_nob = DivWdg()
+        node.add(left_nob)
+        left_nob.add_class("spt_left_nob")
+        left_nob.set_round_corners(3, corners=['TL','BL'])
+        left_nob.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
+        left_nob.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
+        left_nob.add_style("cursor: pointer")
+        left_nob.add_style("position: absolute")
+        left_nob.add_style("border: solid 1px black")
+        left_nob.add_style("background: rgba(255,255,0,0.2)")
+        left_nob.add_style("width: 10px")
+        left_nob.add_style("height: 10px")
+        left_nob.add_style("top: %spx" % (height/2-5))
+        left_nob.add_style("left: -11px")
+        left_nob.add_style("z-index: 100")
+        left_nob.add("")
+        
+         
+        # add nobbies on the node
+        right_nob = DivWdg()
+        node.add(right_nob)
+        right_nob.add_class("spt_right_nob")
+        right_nob.add_style("cursor: pointer")
+        right_nob.add_style("position: absolute")
+        right_nob.add_style("top: 0px")
+        right_nob.add_style("left: %spx" % (width+1))
+        right_nob.add_style("z-index: 100")
+        right_nob.add_style("width: 12px")
+        right_nob.add_style("height: 40px")
+
+        right_nob_vis = DivWdg()
+        right_nob.add(right_nob_vis)
+        right_nob_vis.add("")
+        right_nob_vis.set_round_corners(3, corners=['TR','BR'])
+        right_nob_vis.add_style("border: solid 1px black")
+        right_nob_vis.add_style("background: rgba(255,255,0,0.2)")
+        right_nob_vis.add_style("width: 10px")
+        right_nob_vis.add_style("height: 10px")
+        right_nob_vis.add_style("margin-top: %spx" % (height/2-5))
+        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
+        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
+
+        if my.nob_mode == 'dynamic':
+            left_nob.add_style("display: none")
+            right_nob.add_style("display: none")
+            node.add_behavior( {
+            'type': 'hover',
+            'cbjs_action_over': '''
+            var el = bvr.src_el;
+            var nob = el.getElement(".spt_left_nob");
+            spt.show(nob);
+            var nob = el.getElement(".spt_right_nob");
+            spt.show(nob);
+            ''',
+            'cbjs_action_out': '''
+            var el = bvr.src_el;
+            var nob = el.getElement(".spt_left_nob");
+            spt.hide(nob);
+            var nob = el.getElement(".spt_right_nob");
+            spt.hide(nob);
+
+            '''
+            } )
+
+        left_nob.add_style("display", "none")
+        right_nob.add_style("display", "none")
+       
+
+        if my.is_editable:
+
+            # add the behavior that will draw the connector
+            left_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+            
+            
+
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+
+            right_nob.add_behavior( {
+            "type": 'drag',
+            "modkeys": 'SHIFT',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.drag_connector'
+            } )
+
+
+
+
+            node.add_behavior( {
+            "type": 'mouseenter',
+            "cbjs_action": '''
+            var left_nob = bvr.src_el.getElement(".spt_left_nob");
+            left_nob.setStyle("display", "");
+            var right_nob = bvr.src_el.getElement(".spt_right_nob");
+            right_nob.setStyle("display", "");
+            '''
+            } )
+
+
+            node.add_behavior( {
+            "type": 'mouseleave',
+            "cbjs_action": '''
+            var left_nob = bvr.src_el.getElement(".spt_left_nob");
+            left_nob.setStyle("display", "none");
+            var right_nob = bvr.src_el.getElement(".spt_right_nob");
+            right_nob.setStyle("display", "none");
+            '''
+            } )
+
+
+
+
+
+
+    def add_default_node_behaviors(my, node, text):
+
+        if not my.is_editable:
+            return
 
 
         # CTRL click will allow you to change the node name
@@ -821,15 +972,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
-        # add custom node behaviors
-        my.node_behaviors = my.get_node_behaviors()
-        for node_behavior in my.node_behaviors:
-            node.add_behavior( node_behavior )
-
-        content.set_round_corners(5)
-        return node
-
-
 
     def get_node_size(my):
         width = 100
@@ -844,6 +986,190 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #icon.add_style("top: 2px")
         #icon.add_style("left: 3px")
         #return icon
+
+
+
+
+    def get_approval_node(my, name, process=None):
+
+        node = DivWdg()
+        node.add_class("spt_pipeline_approval")
+        node.add_class("spt_pipeline_node")
+
+
+        node.add_attr("spt_element_name", name)
+        node.add_attr("title", name)
+
+
+        node.add_style("z-index", "200");
+
+
+        width = 60
+        height = 60
+
+
+        node.add_style("position: absolute")
+
+        node.add_style("width: auto")
+        node.add_style("height: auto")
+
+        my.add_nobs(node, width, height)
+
+
+        content = DivWdg()
+        node.add(content)
+        content.add_style("overflow: hidden")
+        content.add_class("spt_content")
+        content.add_style("width: %spx" % width)
+        content.add_style("height: %spx" % height)
+        content.add_style("border-radius: %spx" % (width/2))
+        content.add_style("border: solid 1px black")
+
+
+
+        label = DivWdg()
+        node.add(label)
+        label.add_style("position: absolute")
+
+        label.add_style("width: %spx" % width)
+        label.add_style("height: %spx" % height)
+
+        label.add_style("top: %spx" % (height/4+7) )
+        label.add_class("spt_label");
+        label.add(name)
+        label.add_style("vertical-align: middle")
+        label.add_style("overflow: hidden")
+        label.add_style("text-align: center")
+
+        text = TextWdg()
+        node.add(text)
+        text.add_style("position: absolute")
+        text.add_style("display: none")
+        text.add_style("top: %spx" % (height/4+5) )
+        text.add_style("left: %spx" % (height/4+5) )
+        text.add_style("width: 65px")
+        text.set_value(name)
+
+
+        active = DivWdg()
+        node.add(active)
+        active.add_class("spt_active")
+
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
+
+
+    def get_trigger_node(my):
+
+
+        name = "trigger_template"
+
+        node = DivWdg()
+        node.add_class("spt_pipeline_trigger")
+        node.add_class("spt_pipeline_node")
+
+
+        node.add_attr("spt_element_name", name)
+        node.add_attr("title", name)
+
+        node.add_style("z-index", "200");
+
+
+        width = 30
+        height = 30
+
+
+        node.add_style("position: absolute")
+
+        node.add_style("width: auto")
+        node.add_style("height: auto")
+
+
+        #my.add_nobs(node, width, height)
+
+        content = DivWdg()
+        node.add(content)
+        #content.add_style("overflow: hidden")
+        content.add_class("spt_content")
+        content.add_style("width: %spx" % width)
+        content.add_style("height: %spx" % height)
+        content.add_style("border-radius: %spx" % (width/2))
+        content.add_style("border: solid 1px black")
+
+
+        title = IconWdg(name="trigger", icon="BS_ENVELOPE")
+        label = DivWdg()
+        content.add(label)
+        label.add(title)
+        label.add_style("margin: 5px auto")
+        label.add_style("text-align: center")
+        label.add_style("padding-left: 2px")
+        label.add_style("padding-top: 1px")
+
+        label = DivWdg()
+        node.add(label)
+        label.add_style("position: absolute")
+
+        ##
+        label.add_style("display: none")
+        ##
+
+        label.add_style("width: %spx" % width)
+        label.add_style("height: %spx" % height)
+
+        label.add_style("top: %spx" % (height/4+7) )
+        label.add_class("spt_label");
+        label.add(name)
+        label.add_style("vertical-align: middle")
+        label.add_style("overflow: hidden")
+        label.add_style("text-align: center")
+
+        text = TextWdg()
+        node.add(text)
+        text.add_style("position: absolute")
+        text.add_style("display: none")
+        text.add_style("top: %spx" % (height/4+5) )
+        text.add_style("left: %spx" % (height/4+5) )
+        text.add_style("width: 65px")
+        text.set_value(name)
+
+
+        active = DivWdg()
+        node.add(active)
+        active.add_class("spt_active")
+
+        node.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var node = bvr.src_el.spt_from_node;
+
+            var process = node.getAttribute("spt_element_name");
+            var pipeline_code = node.spt_group;
+            var search_type = spt.pipeline.get_search_type(pipeline_code);
+
+            var class_name = 'tactic.ui.tools.trigger_wdg.TriggerToolWdg';
+            var kwargs = {
+                search_type: search_type,
+                pipeline_code: pipeline_code,
+                process: process,
+            }
+
+            element_name = 'trigger_'+process;
+            title = 'Triggers ['+process+']';
+            //spt.tab.add_new(element_name, title, class_name, kwargs);
+            spt.panel.load_popup(title, class_name, kwargs);
+
+            '''
+        } )
+
+
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
 
 
 
@@ -1023,6 +1349,8 @@ spt.pipeline._init = function() {
     data.paint = paint;
     data.ctx = ctx;
 
+    var size = canvas.getSize()
+    spt.pipeline.set_size(size.x, size.y);
 /*
     var cookie = new Cookie('pipeline_canvas');
     var state = JSON.parse( cookie.read() );
@@ -1188,7 +1516,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         }
 
         if (found == false) {
-            connector.set_color("#FFF");
+            connector.set_color("#111");
         }
 
     }
@@ -1365,7 +1693,7 @@ spt.pipeline.select_node = function(node) {
     var active = node.getElement(".spt_active");
     active.setStyle("display", "");
     var content = node.getElement(".spt_content");
-    content.setStyle("border", "solid 1px red");
+    content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     content.setStyle("opacity", "0.8");
 
     
@@ -1486,6 +1814,55 @@ spt.pipeline.get_full_node_name = function(node, group_name) {
     }
     return name;
 }
+
+
+
+
+spt.pipeline.get_input_nodes = function(node) {
+
+    var group = spt.pipeline.get_group_by_node(node);
+    var connectors = group.get_connectors();
+
+    var nodes = [];
+    for (var i = 0; i < connectors.length; i++) {
+        var connector = connectors[i];
+        var to_node = connector.get_to_node();
+        var from_node = connector.get_from_node();
+        if (to_node == node) {
+            nodes.push(from_node);
+        }
+    }
+
+    return nodes;
+
+}
+
+
+
+spt.pipeline.get_output_nodes = function(node) {
+
+    var group = spt.pipeline.get_group_by_node(node);
+    var connectors = group.get_connectors();
+
+    var nodes = [];
+    for (var i = 0; i < connectors.length; i++) {
+        var connector = connectors[i];
+        var to_node = connector.get_to_node();
+        var from_node = connector.get_from_node();
+        if (from_node == node) {
+            nodes.push(from_node);
+        }
+    }
+
+    return nodes;
+}
+
+
+
+
+
+// Group methods
+
 
 spt.pipeline.get_nodes_by_group = function(group_name) {
     var group = spt.pipeline.get_group(group_name);
@@ -1610,10 +1987,17 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     
     var group = null;
     var select_node = true;
+    var node_type = null;
     if (typeof(kwargs) != 'undefined') {
         group = kwargs.group;
         if (kwargs.select_node != 'undefined') 
             select_node = kwargs.select_node;
+
+        node_type = kwargs.node_type;
+    }
+
+    if (!node_type) {
+        node_type = "node";
     }
 
     if (typeof(group) == 'undefined' || group == null) {
@@ -1628,19 +2012,30 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     }
 
     var nodes = spt.pipeline.get_all_nodes();
-    if (typeof(name) == 'undefined') {
+    if (typeof(name) == 'undefined' || name == null) {
         name = "node"+nodes.length;
     }
 
-    if (typeof(x) == 'undefined') {
+    if (typeof(x) == 'undefined' || x == null) {
         var size = canvas.getSize();
         x = size.x/3 + nodes.length*15;
         y = size.y/3 + nodes.length*10;
     }
 
     var template_container = top.getElement(".spt_pipeline_template");
-    var template = template_container.getElement(".spt_pipeline_node");
+
+    var template_class = "spt_pipeline_" + node_type;
+    var template = template_container.getElement("."+template_class);
+    if (!template) {
+        alert("Can't find template for ["+template_class+"]");
+        return;
+    }
+
+
     var new_node = spt.behavior.clone(template);
+    new_node.spt_node_type = node_type;
+
+
     canvas.appendChild(new_node);
 
     // make the label the last part
@@ -1667,7 +2062,14 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     // switch the color
     //var color = group_info.get_color();
     var color = '';
-    if (group_info.get_node_type() == 'process') 
+    if (node_type == "trigger") {
+        color = "#FFF";
+    }
+    else if (node_type == "approval") {
+        color = "#FFF";
+    }
+
+    else if (group_info.get_node_type() == 'process') 
         color = spt.pipeline.get_group_color(group);
     else // for schema {
         color = spt.pipeline.get_group_color(name);
@@ -2328,13 +2730,13 @@ spt.pipeline.set_line_mode = function(mode) {
 
 spt.pipeline.draw_connector = function(start, end, color) {
     if (typeof(color) == 'undefined') {
-        color = '#999';
+        color = '#111';
     }
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color; 
     //ctx.fillStyle = color;
     //ctx.textBaseline = 'middle';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
 
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -2419,7 +2821,7 @@ spt.pipeline.draw_text = function(text, x, y) {
 }
 spt.pipeline.draw_line = function(start, end, color) {
     if (typeof(color) == 'undefined') {
-        color = '#999';
+        color = '#111';
     }
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color;  
@@ -2458,8 +2860,8 @@ spt.pipeline.draw_arrow = function(halfway, point0, size) {
     }
 
     ctx.lineTo(point1.x+halfway.x, point1.y+halfway.y);
-    ctx.lineTo(point2.x+halfway.x, point2.y+halfway.y);
     ctx.lineTo(halfway.x, halfway.y);
+    ctx.lineTo(point2.x+halfway.x, point2.y+halfway.y);
 
 }
 
@@ -2475,7 +2877,7 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     var pos = spt.pipeline.get_mouse_position(mouse_411);
 
     // do a hit test first
-    var connector = spt.pipeline.hit_test(pos.x-1, pos.y-1, pos.x+1, pos.y+1);
+    var connector = spt.pipeline.hit_test(pos.x-2, pos.y-2, pos.x+2, pos.y+2);
     if (connector != null) {
         spt.pipeline.canvas_drag_disable = true;
         return;
@@ -2550,12 +2952,6 @@ spt.pipeline.zoom_drag_motion = function(evt, bvr, mouse_411) {
 
     spt.pipeline.set_scale( scale );
 
-    var canvas = spt.pipeline.get_canvas();
-    scale_el = canvas.getParent(".spt_pipeline_scale");
-    
-    scale_el.setStyle("-moz-transform", "scale("+scale+")")
-    scale_el.setStyle("-webkit-transform", "scale("+scale+")")
-    
     spt.pipeline.last_mouse_position = mouse_pos;
     spt.pipeline.redraw_canvas();
 }
@@ -2571,13 +2967,18 @@ spt.pipeline.set_scale = function(scale) {
     data.scale = scale;
 
     var canvas = spt.pipeline.get_canvas();
+    //canvas.setStyle("border", "solid 1px blue");
     
     var scale_str = "scale("+scale+", "+scale+")"
  
     scale_el = canvas.getParent(".spt_pipeline_scale");
+    //canvas.setStyle("border", "solid 1px blue");
+
     scale_el.setStyle("-moz-transform", scale_str)
     scale_el.setStyle("-webkit-transform", scale_str)  
     scale_el.setStyle("transform", scale_str)
+
+    //TweenLite.to(scale_el, 0.2, {scale: scale});
     
     spt.pipeline.redraw_canvas();
     
@@ -2672,6 +3073,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var hscale = size.x / hsize;
     var vsize = bottom - top + 40;
     var vscale = size.y / vsize;
+
     if (hscale < vscale) {
         scale = hscale;
     }
@@ -2679,17 +3081,22 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    if (scale > 1.0) {
-        scale = 1.0;
-    }
-    scale = scale * 0.95;
+    //scale = scale * 0.85;
+    scale = 1.0
 
     // zero position at the specified scale
-    var zero_pos_x = size.x/2 - size.x/2 * scale;
-    var zero_pos_y = size.y/2 - size.y/2 * scale;
+    //var zero_pos_x = size.x/2 - size.x/2 * scale;
+    //var zero_pos_y = size.y/2 - size.y/2 * scale;
 
-    var dx = - left - zero_pos_x; 
-    var dy = - top - zero_pos_y;
+
+    var zero_pos_x = 100;
+    var zero_pos_y = 100;
+
+    var zero_pos_x = size.x/2 - hsize/2 - 100;
+    var zero_pos_y = size.y/2 - vsize/2;
+
+    var dx = - left + zero_pos_x; 
+    var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
 
@@ -2768,7 +3175,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
     this.from_node = from_node;
     this.to_node = to_node;
-    this.color = '#FFF';
+    this.color = '#111';
     this.attrs = {};
     this.type = "connector";
 
@@ -2789,16 +3196,20 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_pos = spt.pipeline.get_position(this.to_node);
 
         var from_size = spt.pipeline.get_size(this.from_node);
-        var to_size = spt.pipeline.get_size(this.from_node);
+        var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
         //var scale = 1;
-        var node_width = from_size.x;
-        var node_height = from_size.y;
+        var from_width = from_size.x;
+        var from_height = from_size.y;
+        var to_width = to_size.x;
+        var to_height = to_size.y;
+
 
         // offset by the size
-        from_pos = {x: from_pos.x + node_width, y: from_pos.y + node_height/2 };
-        to_pos = {x: to_pos.x, y: to_pos.y + node_height/2 };
+        from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
+        to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -2829,16 +3240,18 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_pos = spt.pipeline.get_position(this.to_node);
 
         var from_size = spt.pipeline.get_size(this.from_node);
-        var to_size = spt.pipeline.get_size(this.from_node);
+        var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
         //var scale = 1;
-        var node_width = from_size.x;
-        var node_height = from_size.y;
+        var from_width = from_size.x;
+        var from_height = from_size.y;
+        var to_width = to_size.x;
+        var to_height = to_size.y;
 
         // offset by the midpoint
-        from_pos = {x: from_pos.x + node_width/2, y: from_pos.y + node_height/2 };
-        to_pos = {x: to_pos.x + node_width/2, y: to_pos.y + node_height/2 };
+        from_pos = {x: from_pos.x + from_width/2, y: from_pos.y + from_height/2 };
+        to_pos = {x: to_pos.x + to_width/2, y: to_pos.y + to_height/2 };
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -3060,7 +3473,16 @@ spt.pipeline.import_xml = function(xml, code, color) {
     spt.pipeline.set_current_group(code);
 
     // add the nodes
-    var xml_nodes = xml_doc.getElementsByTagName("node");
+    var xml_nodes = []
+    process_nodes = xml_doc.getElementsByTagName("process");
+    approval_nodes = xml_doc.getElementsByTagName("approval");
+    for (var i = 0; i < approval_nodes.length; i++) {
+        xml_nodes.push(approval_nodes[i]);
+    }
+    for (var i = 0; i < process_nodes.length; i++) {
+        xml_nodes.push(process_nodes[i]);
+    }
+
     spt.pipeline.import_nodes(code, xml_nodes);
     var xml_connects = xml_doc.getElementsByTagName("connect");
     spt.pipeline.load_connects(code, xml_connects);
@@ -3111,7 +3533,16 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
 
     // add the nodes
-    var xml_nodes = xml_doc.getElementsByTagName("process");
+    var xml_nodes = []
+    process_nodes = xml_doc.getElementsByTagName("process");
+    approval_nodes = xml_doc.getElementsByTagName("approval");
+    for (var i = 0; i < approval_nodes.length; i++) {
+        xml_nodes.push(approval_nodes[i]);
+    }
+    for (var i = 0; i < process_nodes.length; i++) {
+        xml_nodes.push(process_nodes[i]);
+    }
+
     if (xml_nodes.length == 0) {
         spt.pipeline.add_folder(pipeline_code, color);
     }
@@ -3122,6 +3553,10 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     //spt.pipeline.fit_to_canvas(pipeline_code);
+
+    if (pipeline_stype == "sthpw/task") {
+        spt.pipeline.set_task_color();
+    }
 
     spt.pipeline.redraw_canvas();
 }
@@ -3203,11 +3638,12 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         }
     } 
 
+    // randomize somewhat so that user can see that a new pipeline was loaded
     if (!top) {
-        top = 100;
+        top = 90 + parseInt(Math.random()*20);
     }
     if (!left) {
-        left = 100;
+        left = 90 + parseInt(Math.random()*20);
     }
 
     // find out how many groups there are
@@ -3224,19 +3660,23 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var name = xml_nodes[i].getAttribute("name");
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
-        if (!xpos) {
-            xpos = offset_left + 50*i;
+        if (!xpos || xpos == "0") {
+            xpos = offset_left + 150*i;
         }
-        if (!ypos) {
+        if (!ypos || ypos == "0") {
             ypos = offset_top + 50*i;
         }
 
         xpos = parseInt(xpos) - left + offset_left;
         ypos = parseInt(ypos) - top + offset_top;
 
+
+        var node_type = xml_nodes[i].getAttribute("type");
+
         var options = {
             group: group,
-            select_node: false
+            select_node: false,
+            node_type: node_type
         }
 
         // split the name
@@ -3316,6 +3756,142 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
 
     }
 
+}
+
+
+
+spt.pipeline.load_triggers = function() {
+    var group_name = spt.pipeline.get_current_group();
+    var nodes = spt.pipeline.get_nodes_by_group(group_name);
+
+    var server = TacticServerStub.get();
+    var pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+group_name+"'])", {single: true});
+    if (!pipeline) {
+        log.warning('Pipeline [' + pipeline_code + ']  does not exist');
+        return;
+    }
+
+    var length = nodes.length;
+
+    // get all of the triggers with this pipeline_code
+    var node_names = [];
+    for (var i = 0; i < length; i++) {
+        var node = nodes[i]; 
+        var node_name = node.getAttribute("spt_element_name");
+
+        var trigger = server.eval("@SOBJECT(config/trigger['process','"+node_name+"'])", {single: true});
+
+        if (trigger == null) {
+            continue;
+        }
+
+        var size = node.getSize();
+        var pos = spt.pipeline.get_position(node);
+        var options = {
+            'node_type': 'trigger'
+        }
+        var trigger = spt.pipeline.add_node(i+Math.random()*10000+"", pos.x+size.x+20, pos.y-50, options);
+        var connector = spt.pipeline.add_connector();
+        connector.set_color("#BBB");
+        connector.set_from_node(node);
+        connector.set_to_node(trigger);
+        connector.draw();
+
+        trigger.spt_connector = connector;
+        trigger.spt_from_node = node;
+
+    }
+
+}
+
+
+
+spt.pipeline.set_status_color = function(search_key) {
+
+    var server = TacticServerStub.get();
+    var sobject = server.get_by_search_key(search_key);
+
+    // get all of the tass for this sobject
+    var tasks = server.query("sthpw/task", {parent_key: search_key});
+    var tasks_dict = {};
+    for (var i = 0; i < tasks.length; i++) {
+        var process = tasks[i].process;
+        tasks_dict[process] = tasks[i];
+    }
+
+    var pipeline_code = sobject.pipeline_code;
+
+    var group_name = spt.pipeline.get_current_group();
+    if (group_name != pipeline_code) {
+        spt.pipeline.clear_canvas();
+        spt.pipeline.import_pipeline(pipeline_code);
+    }
+
+    var nodes = spt.pipeline.get_nodes_by_group(group_name);
+
+    /*
+    //var colors = server.get_task_status_colors();
+    var colors = {
+        'In Progress': 'rgb(0,0,255)',
+        Pending: 'rgb(255,255,0)',
+        Complete: 'rgb(0,255,0)',
+    }
+    */
+
+    var colors = server.get_task_status_colors();
+    var default_color = 'rgb(128,128,128)';
+
+    var length = nodes.length;
+    // get all of the triggers with this pipeline_code
+    for (var i = 0; i < length; i++) {
+        var node = nodes[i]; 
+        var process = spt.pipeline.get_node_name(node);
+
+        var task = tasks_dict[process];
+        if (!task) {
+            node.setStyle("opacity", "0.5");
+            spt.pipeline.set_color(node, default_color);
+            continue;
+        }
+
+        var status = task.status;
+        var task_pipeline = task.pipeline_code;
+
+        var color = null;
+        var pipeline_colors = colors[task_pipeline];
+        if (pipeline_colors) {
+            color = pipeline_colors[status];
+        }
+        if (!color) {
+            color = default_color;
+        }
+        spt.pipeline.set_color(node, color);
+    }
+}
+
+
+
+spt.pipeline.set_task_color = function(group_name) {
+
+    if (!group_name) {
+        group_name = spt.pipeline.get_current_group();
+    }
+    var server = TacticServerStub.get();
+    var colors = server.get_task_status_colors();
+    var group_colors = colors[group_name];
+    if (!group_colors)
+        group_colors = colors['task'];
+
+    var nodes = spt.pipeline.get_nodes_by_group(group_name);
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i]; 
+        var process = spt.pipeline.get_node_name(node);
+
+        var color = group_colors[process];
+        if (color) {
+            spt.pipeline.set_color(node, color);
+        }
+    }
 }
 
 
@@ -3416,12 +3992,14 @@ spt.pipeline.export_group = function(group_name) {
             name_dict[name] = true;
         }
 
-        var node_type = node.spt_type;
+        var tag_type = node.spt_type;
+        var node_type = node.spt_node_type;
 
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
-        xml += '  <'+node_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+
         var properties = node.properties;
         for (var key in properties) {
            
