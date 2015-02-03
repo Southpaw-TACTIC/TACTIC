@@ -231,6 +231,18 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+
+    /*
+     * interaction logging
+     */
+    this.add_interaction = function(key, data, kwargs) {
+        return this._delegate("add_interaction", arguments, kwargs);
+    }
+
+    this.get_interaction_count = function(key, kwargs) {
+        return this._delegate("get_interaction_count", arguments, kwargs);
+    }
+
     /*
      * Checkin/checkout methods
      */
@@ -912,6 +924,14 @@ TacticServerStub = function() {
         return this._delegate("create_task", arguments, kwargs);
     } 
 
+    this.get_tasks = function(search_key, kwargs) {
+        return this._delegate("get_tasks", arguments, kwargs);
+    }
+
+    this.get_task_status_colors = function() {
+        return this._delegate("get_task_status_colors", arguments);
+    }
+
 
     this.add_initial_tasks = function(search_key, kwargs) {
         return this._delegate("add_initial_tasks", arguments, kwargs);
@@ -1446,6 +1466,8 @@ TacticServerStub = function() {
         if (ret_val.status != 200) {
             throw(ret_val.status);
         }
+
+        console.log(ret_val);
 
         if (ret_type == "raw") {
             return ret_val.responseText;

@@ -399,11 +399,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             state_filter = my.state.get('filter')
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+
+        if my.kwargs.get('op_filters'):
+            search.add_op_filters(my.kwargs.get("op_filters"))
+
+
         # passed in filter overrides
-        """
-        if state_filter:
-            filter_data.set_data(state_filter)
-        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
         
@@ -637,7 +638,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
+        if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
+            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []

@@ -712,6 +712,18 @@ class TacticServerStub(object):
 
 
 
+    #
+    # Interaction methods
+    #
+    def get_interaction_count(my, key):
+        '''API Function: get_interaction_count(key, category="default")
+        '''
+        return my.server.get_interaction_count(my.ticket, key)
+
+
+
+
+
 
     #
     # Transaction methods
@@ -952,9 +964,10 @@ class TacticServerStub(object):
         results = my.server.get_related_types(my.ticket, search_type)
         return results
 
+
     def query(my, search_type, filters=[], columns=[], order_bys=[],
               show_retired=False, limit=None, offset=None, single=False,
-              distinct=None, return_sobjects=False):
+              distinct=None, return_sobjects=False, parent_key=None):
         '''API Function: query(search_type, filters=[], columns=[], order_bys=[], show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False) 
         General query for sobject information
 
@@ -974,6 +987,8 @@ class TacticServerStub(object):
         distinct - specify a distinct column
         return_sobjects - return sobjects instead of dictionary.  This
                 works only when using the API on the server.
+        parent_key - filter to specify a parent sobject
+
         @return:
         list of dictionary/sobjects - Each array item represents an sobject
                and is a dictionary of name/value pairs

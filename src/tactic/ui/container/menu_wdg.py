@@ -189,23 +189,21 @@ class FingerMenuWdg(BaseRefreshWdg):
                  var target = spt.get_event_target( evt );
 
                  var edit_menu = bvr.src_el.getParent('.'+bvr.top_class).getElement('.' + bvr.menu_top_class);
-                 if (!edit_menu) {
-                     log.critical('edit_menu not found!')
-                     return;
-                 }
-                 var menu_pos = edit_menu.getPosition();
-                 
-                 // when is_left, evt.x tends to be 80 pixels bigger, so increase the tolerance
-                 var tolerance =  edit_menu.is_left ? 5000 : 1500;
+                 if (edit_menu) {
+                     var menu_pos = edit_menu.getPosition();
+                     
+                     // when is_left, evt.x tends to be 80 pixels bigger, so increase the tolerance
+                     var tolerance =  edit_menu.is_left ? 5000 : 1500;
 
-                 var diff = (menu_pos.x - evt.page.x) * (menu_pos.y - evt.page.y);
-                 if (Math.abs(diff) > tolerance) {
-                     spt.hide(edit_menu);
-                 }
-                 else {
-                     spt.finger_menu.timeout_id = setTimeout( function() {
+                     var diff = (menu_pos.x - evt.page.x) * (menu_pos.y - evt.page.y);
+                     if (Math.abs(diff) > tolerance) {
                          spt.hide(edit_menu);
-                     }, 500 )
+                     }
+                     else {
+                         spt.finger_menu.timeout_id = setTimeout( function() {
+                             spt.hide(edit_menu);
+                         }, 500 )
+                    }
                 }
                 '''
 

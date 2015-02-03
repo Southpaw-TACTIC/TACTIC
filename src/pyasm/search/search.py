@@ -616,6 +616,9 @@ class Search(Base):
             my.add_id_filter(0)
             return
 
+        if isinstance(parent, basestring):
+            parent = Search.get_by_search_key(parent)
+
         #parent_search_type = parent.get_base_search_type()
         #search_type = my.get_base_search_type()
         parent_search_type = parent.get_search_type()

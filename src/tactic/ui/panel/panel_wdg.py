@@ -3118,6 +3118,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
+        op_filters = my.kwargs.get("op_filters")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3182,7 +3183,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
-            "expand_mode": expand_mode
+            "expand_mode": expand_mode,
+            "show_name_hover": show_name_hover,
+            "op_filters": op_filters,
             #"search_wdg": search_wdg
             
         }
@@ -3213,6 +3216,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3242,6 +3246,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
         else:
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 

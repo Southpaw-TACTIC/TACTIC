@@ -524,6 +524,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         sobject = my.get_current_sobject()
         value = sobject.get_value(my.due_date_col)
         if not value:
+            div.add("<div style='margin: 0px auto; opacity: 0.3; text-align: center'>no date</div>")
             return div
 
         status = sobject.get_value("status")
