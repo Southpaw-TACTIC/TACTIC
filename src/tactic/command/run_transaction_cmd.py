@@ -205,7 +205,7 @@ class TransactionQueueManager(JobTask):
         return "sthpw/sync_job"
 
 
-    def get_next_job(my):
+    def get_next_job(my, queue_type=None):
         from queue import Queue
         import random
         import time
