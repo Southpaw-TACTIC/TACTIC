@@ -125,19 +125,48 @@ class HelpDocFilterWdg(BaseRefreshWdg):
 
         html = []
         try:
+            paths = path.split('#')
+            anchor = ''
+            if len(paths) > 1:
+                anchor = paths[-1]
+                path = paths[0]
+                read = False
+            else:
+                read = True
+
+            
             f = open(path, 'r')
             count = 0
+            idx = 0 
+            anchor_str = '<a id="%s"></a>'%anchor
+            div_str = '<div class="titlepage">'
+            strip_count = 0
             for line in f:
-                line = my.filter_line(line, count)
-                html.append(line)
-                count += 1
+                if anchor and not read:
+                    tmp_line = line.decode('utf-8','ignore')
+                    div_idx = tmp_line.find(div_str)
+                    idx = tmp_line.find(anchor_str)
+                    if idx != -1:
+                        # use the div above the anchor
+                        line = line[div_idx:-1]
+                        
+                        # in case it doesn't get it right on
+                        while strip_count < 30 and not line.startswith('<div class="titlepage">'):
+                            line = line[1:-1]
+                            strip_count +=  1
+
+                        read = True
+                
+                if read:
+                    line = my.filter_line(line, count)
+                    html.append(line)
+                    count += 1
             f.close()
         except Exception, e:
             print "Error processing: ", e
             html.append("Error processing document: %s<br/><br/>" % str(e))
-
+        
         html = "\n".join(html)
-
         if not html:
             html = "<div/>"
 
@@ -151,7 +180,9 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         #layout = CustomLayoutWdg(html=html, base_dir=rel_dir)
         #html = layout.get_buffer_display()
 
+        
         tree = Xml.parse_html(html)
+        
         xml = Xml(doc=tree)
 
         elements = my.filter_xml(xml)
@@ -260,8 +291,10 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             line = line.replace(">", "/>")
         elif line.find("<a ") != -1:
             import re
-            p = re.compile("<a name.*?></a>")
+            p = re.compile("<a name.*?></>")
+            p2 = re.compile("<a id.*?></a>")
             line = re.sub(p, "", line)
+            line = re.sub(p2, "", line)
 
         line = line.replace("&nbsp;", " ")
         line = line.replace("<hr>", "<hr/>")

@@ -539,8 +539,8 @@ class Xml(Base):
 
 
     import StringIO
-    def parse_html(html):
-        parser = etree.HTMLParser(remove_blank_text=False)
+    def parse_html(html, encoding='utf-8'):
+        parser = etree.HTMLParser(remove_blank_text=False, encoding=encoding)
         tree = etree.parse(StringIO(html), parser)
         return tree
     parse_html = staticmethod(parse_html)
