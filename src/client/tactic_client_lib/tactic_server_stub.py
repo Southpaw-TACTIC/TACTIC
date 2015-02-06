@@ -965,6 +965,7 @@ class TacticServerStub(object):
         return results
 
 
+
     def query(my, search_type, filters=[], columns=[], order_bys=[],
               show_retired=False, limit=None, offset=None, single=False,
               distinct=None, return_sobjects=False, parent_key=None):

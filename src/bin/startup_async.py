@@ -15,13 +15,11 @@ import tacticenv
 
 from tactic.command import TransactionQueueManager, WatchServerFolderTask
 
-import time
+import time, sys, getopt
 
-def main():
+def main(site=None):
     from pyasm.security import Batch
-    Batch()
-
-
+    Batch(site=site)
 
 
     # start up the sync system ...
@@ -48,6 +46,16 @@ def main():
 
 
 if __name__ == '__main__':
-
-    main()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "s:", ["site"])
+    except getopt.error, msg:
+        print msg
+        sys.exit(2)
+    # process options
+    site = None
+    for o, a in opts:
+	if o in ("-s", "--site"):
+            site = a
+ 
+    main(site)
 
