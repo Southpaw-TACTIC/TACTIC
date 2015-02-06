@@ -167,7 +167,6 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             html.append("Error processing document: %s<br/><br/>" % str(e))
         
         html = "\n".join(html)
-
         if not html:
             html = "<div/>"
 
