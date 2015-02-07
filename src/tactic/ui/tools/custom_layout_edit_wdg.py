@@ -66,13 +66,13 @@ class WidgetEditorWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_widget_editor_top")
         top.add_style("padding: 10px")
-        top.add_style("width: 450px")
+        top.add_style("width: 540px")
         top.add_color("background", "background")
 
 
         action_wdg = DivWdg()
         top.add(action_wdg)
-        action_wdg.add_gradient("background", "background", -10)
+        action_wdg.add_color("background", "background", -10)
         action_wdg.add_style("margin: -10px -10px 10px -10px")
         action_wdg.add_style("padding: 5px")
 
@@ -168,7 +168,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
         td.add("Name:")
         td.add_style("width: 150px")
         td = table.add_cell()
-        text = TextWdg("element_name")
+        text = TextInputWdg(name="element_name")
         if element_name:
             text.set_value(element_name)
         td.add(text)

@@ -1931,9 +1931,10 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell("&nbsp;"*5)
         td.add(" &nbsp; Class Name: ")
-        td.add_style("padding: 5px")
+        td.add_style("padding: 15px")
 
-        class_text = TextWdg("xxx_%s|display_class" % prefix)
+
+        class_text = TextInputWdg(name="xxx_%s|display_class" % prefix)
         class_text.add_class("spt_widget_display_class")
         class_text.add_behavior( {
             'type': 'change',
