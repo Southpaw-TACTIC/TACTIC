@@ -791,15 +791,21 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             var node = spt.smenu.get_activator(bvr);
             var process = node.getAttribute("spt_element_name");
             var pipeline_code = node.spt_group;
-
+            var server = TacticServerStub.get();
+            var process_sk = server.eval("@GET(config/process['process','" + process + "']['pipeline_code','" + pipeline_code + "'].__search_key__)", {single :true});
             var class_name = 'tactic.ui.panel.EditWdg';
-
-            var kwargs = {
-                search_key: 'config/process?project=game&code=9GAME',
-                view: 'edit',
-                show_header: false,
+            
+            if (process_sk) {
+                var kwargs = {
+                    search_key: process_sk,
+                    view: 'edit',
+                    show_header: false
+                }
+                spt.panel.load_popup("Edit Process " + process, class_name, kwargs);
             }
-            spt.panel.load_popup("Edit Process " + process, class_name, kwargs);
+            else {
+                 spt.info("Process entry does not exist. Try saving this pipeline first.");
+            }
             '''
         } )
 

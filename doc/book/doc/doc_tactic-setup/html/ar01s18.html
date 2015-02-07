@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18. Expression Language</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Setup" /><link rel="up" href="index.html" title="TACTIC Setup" /><link rel="prev" href="ar01s17.html" title="17. Advanced Automation" /><link rel="next" href="ar01s19.html" title="19. Debugging TACTIC" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s17.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s19.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_expression_language"></a>18. Expression Language</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_expression_language_introduction"></a>18.1. TACTIC Expression Language Introduction</h3></div></div></div><p><span class="strong"><strong>TACTIC Expression Language Introduction</strong></span></p><p><span class="strong"><strong>Introduction</strong></span></p><p>This document describes the construct of the <span class="strong"><strong>TEL</strong></span> TACTIC Expression
+Language. This language is a shorthand form to quickly retrieve
+information about related Search Objects. The expression either starts
+with a list of Search Objects and the operations of the expression
+language operate on these lists (this is quite similar to LISP in
+concept) or it can be used as an absolute search.</p><p>The expression language also borrows from spreadsheet syntax which is
+familiar to many people. The reason behind using an expression language
+is that it is much simpler and compact that using code or direct SQL.
+The TACTIC expression language is designed to be able to easily retrieve
+data in a single command that would otherwise take many lines of code.</p><p><span class="strong"><strong>Simple Example</strong></span></p><p>The expression often starts with a list of Search Objects and then
+operates on these Search Objects.</p><p>If you have a list of "prod/sequence" Search Objects, then the
+following:</p><pre class="screen">@GET(prod/shot.code)</pre><p>will return a list of codes of these prod/shot Search Objects related to
+the starting "prod/sequence". The notation for the method GET is of the
+form &lt;search_type&gt;.&lt;column&gt;. As will be shown below, multiple
+search_types can be strung together to navigate across related
+search_types. The @GET function operate on a list and returned a list.</p><p>If no starting sObject is given, this expression will return a list of
+codes for every shot in the project. In the python or javascript API,
+you can control whether there is a starting sobject with the kwarg
+search_keys</p><p>With the above example, here is how to get the shot codes for the given
+sequence with the code "seq001":</p><p><span class="strong"><strong>Python API</strong></span></p><p>server = TacticServerStub.get()</p><p>expr = "@GET(prod/shot.code)"</p><p>result = server.eval(expr,
+search_keys=[<span class="emphasis"><em>prod/sequence?project=vfx&amp;code=seq001</em></span>])</p><p>By default, the result returned is a list unless you specify the kwarg
+single=True in server.eval()</p><p>result = server.eval(expr,
+search_keys=[<span class="emphasis"><em>prod/sequence?project=vfx&amp;code=seq001</em></span>], single=True)</p><p>In Javascript, via the Script Edtor, you can achieve the same result
+with these scripts:</p><p><span class="strong"><strong>Javascript API</strong></span></p><p>var server = TacticServerStub.get();</p><p>var expr = "@GET(prod/shot.code)"</p><p>var result = server.eval(expr, {search_keys:
+[<span class="emphasis"><em>prod/sequence?project=vfx&amp;code=seq001</em></span>], single: true});</p><p>In certain places, like in a Custom Layout Element, Expression Element
+in a Table, or notification set-up, there is an assumed starting
+sObject, which is the one you are viewing or the notification event
+refers to during an update or insert action.</p><p><span class="strong"><strong>Searching</strong></span></p><p>The expression language can be used as a shorthand for search for Search
+Objects. This is often convenient because the expression language is a
+pure string and can be stored a number of formats, including XML.</p><p>The @SOBJECT method will retrieve entire Search Objects.</p><p>Search for all assets</p><pre class="screen">@SOBJECT(prod/asset)</pre><p>Search only for characters by applying a filter</p><pre class="screen">@SOBJECT(prod/asset['asset_library','chr']</pre><p>You can also apply multiple filters. And operation is implied</p><pre class="screen">@SOBJECT(prod/asset['asset_library','chr']['timestamp','&gt;','2009-01-01'])</pre><p>You can also apply multiple filters. To use OR operation with more than
+2 filters. For example, with code containing the word prop1, OR
+asset_library is chr, OR timestamp after 2009-01-01. Note: EQ stands for
+case-sensitive match.</p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['code','EQ','prop1']['or'])</pre><p>To use OR operation with 2 filters followed by an AND operation. For
+example, with asset_library is chr OR timestamp after 2009-01-01 AND
+code containing the word prop1. If there are only 2 filters, there is no
+need to sandwich it with begin.</p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>To</p><pre class="screen">@SOBJECT(prod/asset['begin']['asset_library','chr']['timestamp','&gt;','2009-01-01']['or']['code','EQ','prop1'])</pre><p>Note that full filter operations from the Client API are supported.</p><p><span class="strong"><strong>Navigating Search Types</strong></span></p><p>One of the true powers of the expression language is the simplicity in
+which it can navigate between various related Search Types using a
+navigational syntax. The expression language makes use of the project
+schema to navigate dependencies between the search_types. For example a
+sequence is related to a shot.</p><p>The navigational syntax is used as arguments for many aggregate methods.
+When detected, the expression language will perform a search through the
+hierarchy to retrieve the desired search results.</p><p>A simple example of the navigation syntax in the expression language is
+as follows:</p><pre class="screen">@GET(prod/sequence.code)</pre><p>This expression will get all of the codes of the sequences of related to
+each Search Object.</p><p>The expression can also navigate multiple levels of search types to dig
+deeply into the hierarchy. For example, this will get all of the
+descriptions of all of the episodes that belong to the sequences of the
+original shots.</p><pre class="screen">@GET(prod/sequence.prod/episode.description)</pre><p>Another useful illustration is to get all of the tasks of all of the
+shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task)</pre><p>Get the last 50 tasks ordered by process of all of the shots:</p><pre class="screen">@SOBJECT(prod/shot.sthpw/task['@ORDER_BY','process']['@LIMIT','50'])</pre><p><span class="strong"><strong>Aggregate functions</strong></span></p><p>The expression language defines a number of aggregate functions which
+will operate on the list.</p><p>This will give the addition of all the duration attributes of the
+provided shots.</p><pre class="screen">@SUM(prod/shot.duration)</pre><p>This will give the average duration attribute of all of the shots.</p><pre class="screen">@AVG(prod/shot.duration)</pre><p>This will give a count of all of the Search Objects</p><pre class="screen">@COUNT(prod/shot)</pre><p>All of these aggregates return a single value which can be used to
+operate on other lists.</p><p><span class="strong"><strong>Operations</strong></span></p><p>The expression language operates on lists. The operator will operate on
+each element of the list independently and return a list For example
+when doing a subtraction operation on items:</p><pre class="screen">@GET(prod/shot.end_frame) - @GET(prod/shot.start_frame)</pre><p>The first @GET will return a list of start frames and the second @GET
+will return a list end frames. When two lists are operated on the
+results are calculated based on items at the same position in each list.
+So if we had two lists:</p><pre class="screen">[300, 155, 100] - [100, 100, 100] = [200, 55, 0]</pre><p>Similarly, lists will be multiplied as follows</p><pre class="screen">[5, 4, 3] * [5, 4, 3] = [25, 16, 9]</pre><p>The expression language supports most operation support by the python
+language itself.</p><pre class="screen">&gt;&gt;&gt; Search.eval("5 * 25")
+125.0
+
+&gt;&gt;&gt; Search.eval("5 + 25")
+30.0
+
+&gt;&gt;&gt; Search.eval("(25 - 5) * 5")
+100.0
+
+&gt;&gt;&gt; Search.eval("5 / 25") 0.20000000000000001
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) * 5")
+2310.0
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) &gt; 0")
+True
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) == 462")
+True
+
+&gt;&gt;&gt; Search.eval("@COUNT(sthpw/task) != 462")
+False</pre><p>The expression language also supports the regular expression syntax</p><p>The following tests whether the name_first column starts with "John"</p><pre class="screen">@GET(.name_first) ~ '^John'</pre><p><span class="strong"><strong>More complex operations</strong></span></p><p>You can do more complex operations by combining the above. The following
+will return a cost list of all of the shots (assigned user wage * number
+of hours worked).</p><pre class="screen">@GET(prod/shot.sthpw/task.sthpw/login.wage) * @GET(prod/shot.num_hours)</pre><p>You could add them all together using @SUM this to get the total</p><pre class="screen">@SUM(
+  @GET(prod/shot.sthpw/task.sthpw/login.wage) * @GET(prod/shot.num_hours)
+)</pre><p>There are times the sObjects returned are not unique. The @UNIQUE
+operator can be used to return a unique list of result. The following
+returns the unique list of login sObjects related to the task list
+provided. The @COUNT operator computes the total number of login
+sObjects.</p><pre class="screen"> # my.tasks is a list of tasks
+ expression = "@COUNT(@UNIQUE(@SOBJECT(sthpw/login)))"
+ result = my.parser.eval(expression, my.tasks)</pre><p><span class="strong"><strong>Manipulating Strings</strong></span></p><p>Most of the operations in the expression language operate on lists and
+either return lists or return single values. However, it is often
+required that expressions be used in string concatenation. A simplified
+notation is to use curly brackets {} to represent an operation that
+converts the result of an expression into a string.</p><p>For a file to be named chr001_model.png, we could use:</p><pre class="screen">{@GET(prod/asset.code)}_{@GET(sthpw/snapshot.context)}.png</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The file naming conventions do not current use the expression
+language. The presently use a simplified expression language. The plan
+is to merge the two at some point.
+</li></ul></div><p><span class="strong"><strong>String Formatting</strong></span></p><p>For string values, the string operator them can use standard print
+formatting:</p><pre class="screen">v{@GET(sthpw/snapshot.version),%0.3d}</pre><p>will return "v012", for example.</p><p>The expression language also supports formatting through regular
+expressions</p><pre class="screen">{ @GET(prod/asset.description),|^(\w{5})| }</pre><p>This will get the first 5 word characters for the description. Since the
+full expression language is supported, it is possible to extract a wide
+variety of parts. Anything matched with () will be returned as the
+value.</p><p>**If there are multiple groupings, the expression language will
+concatenate the values together.</p><p>The following will return the first 3 and last 3 characters of the
+description.</p><pre class="screen">{ @GET(prod/asset.description),|^(\w{3}).*(\w{3})$| }</pre><p>The following will return the last 5 characters of the description of
+the current SObject even if it is written in French or Chinese.</p><pre class="screen">{ @GET(.description),|^(.{5})$| }</pre><p><span class="strong"><strong>Time related formatting</strong></span></p><p>The following formats a timestamp by extracting just the month and date
+(old way):</p><pre class="screen">{ @GET(.timestamp), %b-%m}</pre><p>The following formats a timestamp by extracting just the year</p><pre class="screen">{ @GET(.timestamp), %Y}</pre><p>The following removes the hours, minutes and seconds from the built-in
+$TODAY variable so only 2011-11-11 is displayed</p><pre class="screen">{ $TODAY,|([^\s]+)| }</pre><p>The following formats a timestamp by using the new @FORMAT function</p><pre class="screen">@FORMAT( @GET(.timestamp), '31/12/1999')</pre><pre class="screen">@FORMAT( @GET(.timestamp), 'Dec 31, 1999')</pre><p>The following formats it according to a project wide date-time setting
+or date-only setting. You can define what DATETIME and DATE is in the
+Project Settings page.</p><pre class="screen">@FORMAT( @GET(.timestamp), 'DATETIME')
+@FORMAT( @GET(.timestamp), 'DATE')</pre><p>Either of the following formats a frame count into timecode</p><pre class="screen">@FORMAT( @GET(.frame_count), 'MM:SS.FF')</pre><p>The following formats a frame count into hours, minutes and seconds in
+30fps, leaving out the frames.</p><pre class="screen">@FORMAT( @GET(.frame_count), 'HH:MM:SS', '30')</pre><p>The following formats a cost column in currency format</p><pre class="screen">@FORMAT(@GET(.cost), '-$1,234.00')</pre><p><span class="emphasis"><em>31/12/99 13:37</em></span> can be used to show both date and time</p><p><span class="strong"><strong>Shorthand (mostly for backwards compatibility)</strong></span></p><pre class="screen">@GET(sobject.end_frame) - @GET(sobject.start_frame)
+
+or
+
+@GET(.end_frame) - @GET(.start_frame)</pre><p>Or replicate file naming conventions</p><pre class="screen">{sobject.code}_{snapshot.context}_v{version}.{ext}</pre><p>In the file naming convention language, the are a number of short hand
+keywords:</p><p>sObject Keywords: sobject, snapshot, file, parent , search_type</p><p>Attribute Keywords: context, version, ext, basefile</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_expression_method_reference"></a>18.2. Expression Method Reference</h3></div></div></div><p><span class="strong"><strong>Expression Method Reference</strong></span></p><p><span class="strong"><strong>GET</strong></span></p><p>@GET( [search]:nav )</p><p>v2.5.0+</p><p>The GET method will retrieve attributes or columns from a list of
+SObjects. This method returns a list of the values. The first argument
+supports the search type navigational syntax to travel through related
+search types.</p><p>Get the bid start date of all of the tasks:</p><pre class="screen">@GET(sthpw/task.bid_start_date)</pre><p>Get the assigned user of all of the modelling tasks</p><pre class="screen">@GET(sthpw/task['process','model'].assigned)</pre><p>Get the assigned user of all of the modelling , anim, OR lighting tasks</p><pre class="screen">@GET(sthpw/task['begin']['process','model']['process','anim']['process','lgt']['or'].assigned)</pre><p>The GET function also supports short hand to get all attributes from the
+current SObjects. This will get the assigned column for all current
+SObjects</p><pre class="screen">@GET(.assigned)</pre><p><span class="strong"><strong>GETALL</strong></span></p><p>@GETALL( [search]:nav )</p><p>v4.1.0+</p><p>The GETALL method works in a similar way to GET; this method also
+returns a list of the values. Both work identically if the expression
+given is as simple as (sthpw/login.id). The difference lies in more
+complex queries:</p><pre class="screen">@GETALL(sthpw/task.sthpw/login.first_name)</pre><p>The above query returns the name of the user associated with each task.
+Unlike GET, GETALL will show each user’s name for as many tasks as they
+are associated with. GET does not display any duplicates.</p><p>Example use of GETALL:</p><pre class="screen">@SUM(@GETALL(sthpw/task.sthpw/work_hour.sthpw/login.hourly_wage) *
+     @GETALL(sthpw/task.sthpw/work_hour.straight_time))</pre><p>This example retursns the total cost of a task based on the hours logged
+and the hourly wage of each employee.</p><p><span class="strong"><strong>SOBJECT</strong></span></p><p>v2.5.0+</p><p>The SOBJECT method is similar to the GET SObject except that the entire
+search object is retrieved.</p><p>The following expression gets all of the completed modelling tasks.</p><pre class="screen">@SOBJECT(sthpw/task['status','complete']['process','model'])</pre><p>The following expression gets all of the completed tasks OR model tasks.</p><pre class="screen">@SOBJECT(sthpw/task['begin']['status','complete']['process','model']['or'])</pre><p>The following expression deals with time related attribute. Get the
+tasks where the bid_end_date is before 2012-02-10 and after 2013-01-08</p><pre class="screen">@SOBJECT(sthpw/task['begin']['bid_end_date','is before','2012-02-10']['bid_end_date','is after','2013-01-08']['or'])</pre><p>The following expression deals with numbers. You can use &gt;, &lt; , &gt;=,or
+⇐.</p><pre class="screen">@SOBJECT(sthpw/task['priority','&gt;=','3'])</pre><p>The following expression deals with containing a word. You can use EQ,
+EQI, like. EQ and EQI (case-insensitive) makes use of regular expression
+engine of the database if available. With "like", you have to make use
+of the % wildcard</p><pre class="screen">@SOBJECT(sthpw/task['description','like','%rock%'])</pre><pre class="screen">@SOBJECT(sthpw/task['description','EQ','rock'])</pre><p>The following expression deals with NOT containing a word. You can use
+NEQ, NEQI, not like. NEQ makes use of regular expression engine of the
+database if available. With "not like", you have to make use of the %
+wildcard</p><pre class="screen">@SOBJECT(sthpw/task['description','not like','%rock%'])</pre><pre class="screen">@SOBJECT(sthpw/task['description','NEQ','rock'])</pre><p>The SOBJECT method can also traverse thru related sTypes if their
+relation has been set up in the Project Schema.</p><p>The following expression gets all the shots for sequence <span class="emphasis"><em>SE02</em></span> and
+<span class="emphasis"><em>SE03</em></span>:</p><pre class="screen">@SOBJECT(prod/sequence['code','in','SE02|SE03').prod/shot)</pre><p>Certain relationships like those between anything to notes or tasks are
+already pre-established.</p><p>The following expression gets all the shots that have a note starting
+with the word <span class="emphasis"><em>Hello</em></span>:</p><pre class="screen">@SOBJECT(sthpw/note['note','EQ','^Hello').prod/shot)</pre><p><span class="strong"><strong>COUNT</strong></span></p><p>v2.5.0+</p><p>The COUNT method will return the count of the SObject returned by the
+search specifications.</p><p>To get a count of all the tasks:</p><pre class="screen">@COUNT(sthpw/task)</pre><p>To get a count of all the tasks of all of the shots:</p><pre class="screen">@COUNT(prod/shot.sthpw/task)</pre><p>To get a count of all the modelling tasks of all of the completed shots</p><pre class="screen">@COUNT(prod/shot['status','complete'].sthpw/task['context','model'])</pre><p><span class="strong"><strong>SUM</strong></span></p><p>v2.5.0+</p><p>This method will calculate a sum of all of the values in the first
+argument. The first argument must conform to the navigational syntax.</p><p><span class="strong"><strong>AVG</strong></span></p><p>v2.5.0+</p><p>Calculates the average of all of the values of the first argument, which
+must conform to the navigational syntax.</p><p><span class="strong"><strong>MIN</strong></span></p><p>v2.5.0+</p><p>Returns the minimum value in a list</p><p><span class="strong"><strong>MAX</strong></span></p><p>v2.5.0+</p><p>Returns the maximum value in a list</p><p><span class="strong"><strong>FLOOR</strong></span></p><p>v2.5.0+</p><p>Returns the lowest integer value of a passed in value</p><p><span class="strong"><strong>UNIQUE</strong></span></p><p>@UNIQUE( [expr1]:expr )</p><p>v2.5.0+</p><p>The UNIQUE method goes through a list returned from an expression and
+ensures that only unique elements are present. Duplicates are discarded</p><p><span class="strong"><strong>UNION</strong></span></p><p>@UNION( [expr1]:expr, [expr2]:expr, … )</p><p>v2.5.0+</p><p>The UNION method combines the union of all of the results from a number
+of expressions together into a single list.</p><p>Combine all the users from accounting and marketing together into one
+list:</p><pre class="screen">@UNION(
+  @SOBJECT(sthpw/login['dept','accounting'],
+  @SOBJECT(sthpw/login['dept','marketing']
+)</pre><p><span class="strong"><strong>INTERSECT</strong></span></p><p>@INTERSECT( [expr1]:expr, [expr2]:expr )</p><p>v2.5.0+</p><p>The INTERSECT method takes the intersection of all the results of
+expressions in the arguments.</p><pre class="screen">@INTERSECT(
+  @GET(sthpw/login['dept','supervisor']),
+  @GET(sthpw/login['dept','director'])
+)</pre><p><span class="strong"><strong>IF</strong></span></p><p>@IF( [condition]:expr, [if_true]:expr, [if_false]:expr )</p><p>v2.6.0+</p><p>The following example will return <span class="emphasis"><em>red</em></span> if the number of tasks is
+greater than 5 and <span class="emphasis"><em>green</em></span> if less than or equal to 5. These types of
+expressions are very useful to determine colors of various backgrounds
+or widgets within TACTIC.</p><pre class="screen">@IF( @COUNT(sthpw/task) &gt; 5, 'red', 'green') )</pre><p>Not all of the arguments can be expressions, so the values for both
+is_true and is_false can be expressions that are evaluated:</p><pre class="screen">@IF(
+  @COUNT(sthpw/task) &gt; 5, @GET(.color1), @GET(.color2) )
+)</pre><p><span class="strong"><strong>CASE</strong></span></p><p>@CASE( [condition1]:expr, [if_true]:expr, [condition2:expr],
+[if_true]:expr, … )</p><p>v2.6.0+</p><p>The case statement is an extension of the IF method, but it allows any
+number of arguments. The odd arguments are conditional tests which must
+evaluate to True or False. The case method will go through each of the
+odd arguments until one of the evaluates to True at which point it will
+evaluate the corresponding even argument and return that value.</p><pre class="screen">@CASE(
+  @GET(.age) &lt; 10, 'blue',
+  @GET(.age) &lt; 20, 'green',
+  @GET(.age) &lt; 30, 'yellow',
+  @GET(.age) &gt;= 30, 'red'
+)</pre><p><span class="strong"><strong>FOREACH</strong></span></p><p>v2.6.0+</p><p>The following expression gets all the first name from the login table as
+a list. and then loop through and add &lt;li&gt; &lt;/li&gt; around each item. This
+is more suited in situation where you don’t much control over the data
+returned like in a CustomLayoutWdg:</p><pre class="screen"> @FOREACH( @GET(sthpw/login.first_name), '&lt;li&gt;%s&lt;/li&gt;' )</pre><p><span class="strong"><strong>JOIN</strong></span></p><p>@JOIN( [expr]:expression, [delimiter]:literal</p><p>v2.6.0+</p><p>The join method take the result of an expression and joins all the
+elements together using a delimiter</p><p><span class="strong"><strong>UPDATE</strong></span></p><p>@UPDATE( [expr1]:expression, [column]:string, [value]:expression )</p><p>v2.6.0+</p><p>The UPDATE method provides the ability for an expression to update a
+value in the database</p><p>The following example updates all of the modelling task to approved</p><pre class="screen">@UPDATE( @SOBJECT(sthpw/task['context','model']), 'status', 'Approved' )</pre><p>You can display a model task status column in the Asset page and any
+other asset related pages and have them all pointing back to the task
+search type during an update. It would eliminate any redundant data. The
+following xml definition can be used to set this up in the asset page
+for instance:</p><pre class="screen">&lt;element edit='true' name='asset_task_status' title='Task Status'&gt;
+  &lt;display widget='expression'&gt;
+    &lt;expression&gt;@GET(sthpw/task['context','model'].status)&lt;/expression&gt;
+  &lt;/display&gt;
+  &lt;action class='DatabaseAction'&gt;
+    &lt;expression&gt;@UPDATE(@SOBJECT(sthpw/task['context','model']), 'status', $VALUE) &lt;/expression&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre><p>The edit view for the Widget Config of prod/asset needs to contain this
+snippet to display the selection list of different statuses</p><pre class="screen">  &lt;element name='asset_task_status'&gt;
+      &lt;display class='tactic.ui.widget.TaskStatusSelectWdg'/&gt;
+  &lt;/element&gt;</pre><p><span class="strong"><strong>EVAL</strong></span></p><p>@EVAL( [expr1]:expression )</p><p>@( [expr1]:expression )</p><p>v2.6.0+</p><p><span class="strong"><strong>PYTHON</strong></span></p><p>v3.9.0+</p><p>It takes one argument, the script path of a script you have defined in
+the TACTIC Script Editor. For instance, to draw the bid_start_date and
+bid_end_date of some specific related tasks when the user changes an
+attribute of a shot, you can define a script called notification/dates
+and use this expression in the message field of notification.</p><pre class="screen"> @PYTHON(notification/dates)</pre><pre class="screen"># notification message displaying shoot schedule
+from pyasm.search import Search
+
+expr = "@SOBJECT(sthpw/task['context','minor'])"
+tasks = Search.eval(expr, sobjects=[sobject])
+
+dates = []
+for task in tasks:
+    # assuming they are on the same day
+    day_expr = "@FORMAT(@GET(.bid_start_date),'1999-12-31')"
+    time_expr1 = "@FORMAT(@GET(.bid_start_date),'01:37 PM')"
+    time_expr2 = "@FORMAT(@GET(.bid_end_date),'01:37 PM')"
+
+    day_val= Search.eval(day_expr, sobjects=[task], single=True)
+    time_val1= Search.eval(time_expr1, sobjects=[task], single=True)
+    time_val2= Search.eval(time_expr2, sobjects=[task], single=True)
+    schedule = '%s %s - %s' %(day_val, time_val1, time_val2)
+
+    dates.append(schedule)
+
+return '''
+'''.join(dates)</pre><p><span class="strong"><strong>COLOR</strong></span></p><p>@COLOR(attribute[,offset])</p><p>v4.1.0+</p><p>Returns the current palette’s color for the chosen attribute plus an
+offset. Offset is a number that can be used to make the color lighter or
+darker. The attribute can also be a hex value.</p><p>Ex: @COLOR(<span class="emphasis"><em>color2</em></span>, 2) will return the second color for this palette.</p><p><span class="strong"><strong>GRADIENT</strong></span></p><p>@GRADIENT(attribute[,offset,gradient_range])</p><p>v4.1.0+</p><p>Returns a CSS gradient value that starts at the attribute + offset and
+transitions to attribute + offset + gradient_range.</p><p>Ex: "@GRADIENT(<span class="emphasis"><em>#777777</em></span>,<span class="emphasis"><em>3</em></span>,<span class="emphasis"><em>-4</em></span>)" will return
+\[<span class="emphasis"><em>-webkit-gradient(linear, 0% 0%, 0% 100%, from(#7e7e7e), to(#747474))</em></span>]</p><p><span class="strong"><strong>PALETTE</strong></span></p><p>@PALETTE([palette_name])</p><p>v4.1.0+</p><p>Returns a dictionary representing the current palette or a specific
+palette if the optional argument palette_name is included.</p><p>Example return value:</p><p>{<span class="emphasis"><em>color</em></span>: <span class="emphasis"><em>#000</em></span>, <span class="emphasis"><em>background2</em></span>: <span class="emphasis"><em>#777777</em></span>, <span class="emphasis"><em>color3</em></span>: <span class="emphasis"><em>#333</em></span>, <span class="emphasis"><em>color2</em></span>:
+<span class="emphasis"><em>#333</em></span>, <span class="emphasis"><em>background</em></span>: <span class="emphasis"><em>#DDDDDD</em></span>, <span class="emphasis"><em>shadow</em></span>: <span class="emphasis"><em>rgba(0,0,0,0.6)</em></span>, <span class="emphasis"><em>border</em></span>:
+<span class="emphasis"><em>#888888</em></span>, <span class="emphasis"><em>table_border</em></span>: <span class="emphasis"><em>#DDD</em></span>, <span class="emphasis"><em>background3</em></span>: <span class="emphasis"><em>#999999</em></span>,
+<span class="emphasis"><em>side_bar_title</em></span>: <span class="emphasis"><em>#3C76C2</em></span>, <span class="emphasis"><em>theme</em></span>: <span class="emphasis"><em>default</em></span>}</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_expression_variable_reference"></a>18.3. Expression Variable Reference</h3></div></div></div><p><span class="strong"><strong>Expression Variable Reference</strong></span></p><p>There are a number of predefined variables in the expression language.
+The following list all of the available variables:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+LOGIN - the login of the current user
+</li><li class="listitem">
+LOGIN_ID - the login id of the current user
+</li><li class="listitem">
+LOGINS_IN_GROUP - the group of logins belonging to the group the
+current user is in
+</li><li class="listitem">
+PROJECT - code of the current project
+</li><li class="listitem">
+PROJECT_URL - the URL to the project’s home page (ex:
+<a class="ulink" href="http://10.0.0.65/tactic/media" target="_top">http://10.0.0.65/tactic/media</a>)
+</li><li class="listitem">
+BASE_URL - The base URL of the TACTIC installaiton (ex:
+<a class="ulink" href="http://10.0.0.65/" target="_top">http://10.0.0.65/</a>)
+</li></ul></div><p><span class="strong"><strong>Table 1.</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Variable </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Description </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Usage</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NOW</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Current day and time</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>TODAY</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Current day at midnight (12:00 am)</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_MINUTE</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_MINUTE</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Now + 1 minute</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_MINUTE</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Now + 1 minute</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_HOUR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>This hour at 0 minutes</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_HOUR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_HOUR + 1 hour</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_HOUR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_HOUR - 1 hour</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_DAY</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Today + 1 day</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_YEAR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The first day of this year at midnight (12:00am)</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_YEAR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_YEAR + 1 year</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_YEAR</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_YEAR - year</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_MONTH</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>the first day of this month at midnight (12:00am)</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_MONTH</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_MONTH + 1 month</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_MONTH</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>THIS_MONTH - 1 month</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_***DAY</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace <span class="strong"><strong>*</strong></span> with a particular day of the week</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>NEXT_MONDAY: the next day that is a Monday at midnight</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_***DAY</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace <span class="strong"><strong>*</strong></span> with a particular day of the week</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>PREV_SATURDAY: the last day that was a Saturday at midnight</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_DAY_AGO</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>10_DAY_AGO:
+today - 10 days</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_DAY_AHEAD</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>5_DAY_AHEAD:
+today + 5 days</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_WEEK_AGO</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>same usage as
+**_DAY_AGO</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_WEEK_AHEAD</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>same usage
+as **_DAY_AHEAD</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_MONTH_AGO</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>same usage
+as **_DAY_AGO</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_MONTH_AHEAD</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>same usage
+as **_DAY_AHEAD</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>**_YEAR_AGO</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>same usage as
+**_DAY_AGO</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>**_YEAR_AHEAD</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Replace ** with any number between 1 and 12</p></td><td style="" align="left" valign="top"><p>same usage
+as **_DAY_AHEAD</p></td></tr></tbody></table></div><p>These variables can be used for to refer to state information in
+searches. This expression will retrieve all the login information for
+the current user.</p><pre class="screen">@GET(sthpw/login['login',$LOGIN])</pre><p>They can also be used to find items between certain dates. This
+expression will retrieve all snapshots for this week starting at Sunday.</p><pre class="screen">@GET(sthpw/snapshot['timestamp','&gt;',$LAST_SUNDAY]['timestamp','&lt;',$NEXT_SUNDAY])</pre><p>The following are shorthands that do not require a starting point or
+environment sobject. They can be used in an absolute expression:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+login - the currently logged in user login attribute
+</li><li class="listitem">
+project - the current project
+</li><li class="listitem">
+date - a date object with today’s date
+</li><li class="listitem">
+palette - a palette object used for accessing different attributes of
+the palette for the current project. e.g. @GET(palette.background) can
+be used in the css for a Custom Layout Widget
+</li></ul></div><p>The following are shorthands that require a starting point or
+environment sobject:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+parent - the parent of the current related sobject @GET(parent.code)
+</li><li class="listitem">
+search_type - the sType sobject. e.g. @GET(.search_type.title)
+</li><li class="listitem"><p class="simpara">
+connect - the connected sobject registered in the connection sType.
+Refer to the API methods like connect_sobjects() and
+get_connected_sobjects()
+</p><p class="simpara">To filter down to a particular connected sobject based on the context
+attribute, which defaults to <span class="emphasis"><em>task</em></span>, use @CONTEXT.</p><p class="simpara">e.g. @GET(prod/asset.connect[<span class="emphasis"><em>@CONTEXT</em></span>,<span class="emphasis"><em>some_task</em></span>].description)</p></li></ul></div><p>The following variables are only used in Naming. Refer to the file
+naming section for details.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+EXT - file extension
+</li><li class="listitem">
+BASEFILE - the filename portion of the file without the extension
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s17.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s19.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

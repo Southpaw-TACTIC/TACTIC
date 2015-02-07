@@ -447,6 +447,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             # keep the order for precise redrawing/ refresh_rows purpose
             if not search_keys:
+
                 my.sobjects = []
             else:
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
@@ -999,6 +1000,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     current_offset=info.get("current_offset"),
                 )
                 inner.add(limit_wdg)
+
+            my.total_count = info.get("count")
+            inner.add_attr("total_count", my.total_count)
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -2831,6 +2835,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
       
         cbjs_action =  '''
+
+spt.table.get_total_count = function() {
+     var inner = spt.table.get_layout();
+     return inner.getAttribute('total_count');
+}
 
 spt.table.get_table = function() {
     return spt.table.last_table;

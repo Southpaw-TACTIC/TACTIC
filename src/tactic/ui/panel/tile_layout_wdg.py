@@ -90,7 +90,43 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '09',
             'category': 'Display'
 
+    },
+    ARGS_KEYS['overlay_expr'] = {
+            'description': 'If a @PYTHON expression is set, expression-driven stats will display in bottom right corner',
+            'type': 'TextWdg',
+            'order' : '10',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['overlay_color'] = {
+            'description': 'If comma separated color is set, it controls the background color of overlay stats displayed in bottom right corner',
+            'type': 'TextWdg',
+            'order' : '11',
+            'category': 'Display'
+
+    },
+
+    ARGS_KEYS['show_name_hover'] = {
+            'description': 'If set to true, it shows the name on hover over',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '12',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['show_drop_shadow'] = {
+            'description': 'If set to true, it shows the drop shadow',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '13',
+            'category': 'Display'
+
     }
+
+
+
+
+
 
 
     
@@ -172,7 +208,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner.add_style("margin-left: 20px")
        
 
-        inner.add_attr("ondragenter", "return false")
+        inner.add_attr("ondragenter", "spt.thumb.background_enter(event, this) ")
+        inner.add_attr("ondragleave", "spt.thumb.background_leave(event, this) ")
         inner.add_attr("ondragover", "return false")
         inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
@@ -318,6 +355,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not my.spacing:
             my.spacing = '10'
 
+        my.overlay_expr = my.kwargs.get('overlay_expr')
+        my.overlay_color = my.kwargs.get('overlay_color')
+
         super(TileLayoutWdg, my).init()
 
 
@@ -332,6 +372,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border_color': border_color,
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
+            'accepted_search_type' : my.search_type,
+
             
              # don't use cbjs_pre_motion_setup as it assumes the drag el
                                 
@@ -532,21 +574,32 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             search_type = my.search_type
 
+        border_color = layout_wdg.get_color('border', modifier=20)
 
         layout_wdg.add_behavior( {
             'type': 'load',
             'search_type': search_type,
             'search_key': my.parent_key,
             'process': process,
+            'border_color': border_color,
             'cbjs_action': '''
 
             spt.thumb = {};
 
+            spt.thumb.background_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.background_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
             spt.thumb.background_drop = function(evt, el) {
 
-                evt.stopPropagation();
-                evt.preventDefault();
+                //evt.stopPropagation();
+                //evt.preventDefault();
 
+                el.setStyle('border','none');
                 var top = $(el);
 
                 var server = TacticServerStub.get();
@@ -556,54 +609,69 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
-                spt.app_busy.show("Attaching file");
-
-
+                var filenames = [];
                 for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
                     var file = files[i];
 
-                    var filename = file.name;
+                    filenames.push(file.name);
+                }   
+                
+                var yes = function() {
+                    spt.app_busy.show("Attaching file");
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
 
-                    var search_key;
-                    var data = {
-                        name: filename
-                    }
-                    if (bvr.search_key) {
-                       search_key = bvr.search_key
-                    }
-                    else {
-                        var search_type = bvr.search_type;
-                        var item = server.insert(search_type, data);
-                        search_key = item.__search_key__;
-                    }
+                        var filename = file.name;
 
-                    var context = bvr.process + "/" + filename;
-
-                    var upload_file_kwargs =  {
-                        files: [files[i]],
-                        upload_complete: function() {
-                            var server = TacticServerStub.get();
-                            var kwargs = {mode: 'uploaded'};
-                            server.simple_checkin( search_key, context, filename, kwargs);
-
-                            var layout = el.getParent(".spt_layout");
-                            spt.table.set_layout(layout);
-
-                            spt.table.run_search();
-
+                        var search_key;
+                        var data = {
+                            name: filename
                         }
-                    };
-                    spt.html5upload.upload_file(upload_file_kwargs);
+                        if (bvr.search_key) {
+                           search_key = bvr.search_key
+                        }
+                        else {
+                            var search_type = bvr.search_type;
+                            var item = server.insert(search_type, data);
+                            search_key = item.__search_key__;
+                        }
 
-                    // just support one file at the moment
-                    break;
-         
+                        var context = bvr.process + "/" + filename;
+
+                        var upload_file_kwargs =  {
+                            files: [files[i]],
+                            upload_complete: function() {
+                                var server = TacticServerStub.get();
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+
+                                var layout = el.getParent(".spt_layout");
+                                spt.table.set_layout(layout);
+
+                                spt.table.run_search();
+
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+
+                        // just support one file at the moment
+                        break;
+             
+                    }
+                    spt.app_busy.hide();
                 }
-
-                spt.app_busy.hide();
+                spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes)
             }
  
+            spt.thumb.noop_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.noop_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
 
             spt.thumb.noop = function(evt, el) {
                 evt.dataTransfer.dropEffect = 'copy';
@@ -611,44 +679,56 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+                el.setStyle('border','none');
                 var top = $(el);
                 var thumb_el = top.getElement(".spt_thumb_top");
 
 
+                var filenames = [];
                 for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
                     var file = files[i];
+                    filenames.push(file.name);
+                }   
 
-                    setTimeout( function() {
-                        var loadingImage = loadImage(
-                            file,
-                            function (img) {
-                                thumb_el.innerHTML = "";
-                                thumb_el.appendChild(img);
-                            },
-                            {maxWidth: 240, canvas: true, contain: true}
-                        );
-                    }, 0 );
+                var search_key = top.getAttribute("spt_search_key");
+                var yes = function() {
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
+
+                        setTimeout( function() {
+                            var loadingImage = loadImage(
+                                file,
+                                function (img) {
+                                    thumb_el.innerHTML = "";
+                                    thumb_el.appendChild(img);
+                                },
+                                {maxWidth: 240, canvas: true, contain: true}
+                            );
+                        }, 0 );
 
 
-                    var search_key = top.getAttribute("spt_search_key");
-                    var filename = file.name;
-                    var context = "publish" + "/" + filename;
+                        var filename = file.name;
+                        var context = "publish" + "/" + filename;
 
-                    var upload_file_kwargs =  {
-                        files: files,
-                        upload_complete: function() {
-                            var server = TacticServerStub.get();
-                            var kwargs = {mode: 'uploaded'};
-                            server.simple_checkin( search_key, context, filename, kwargs);
-                        }
-                    };
-                    spt.html5upload.upload_file(upload_file_kwargs);
+                        var upload_file_kwargs =  {
+                            files: files,
+                            upload_complete: function() {
+                                var server = TacticServerStub.get();
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+                        
+
+
          
-
-
-     
+                    }
+                    spt.notify.show_message("Check-in completed for " + search_key);
                 }
+                spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes)
+
             }
             '''
         } )
@@ -774,6 +854,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("unselectable")
         div.add_style('margin', my.spacing)
         div.add_style('background-color','transparent')
+        div.add_style('position','relative')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
@@ -819,6 +900,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             "drag_el": '@',
             'drop_code': 'DROP_ROW',
             'border_color': border_color,
+            'search_type': my.search_type,
             "cb_set_prefix": 'spt.tile_layout.image_drag'
         } )
 
@@ -848,9 +930,16 @@ class TileLayoutWdg(ToolLayoutWdg):
             div.add(my.bottom.get_buffer_display())
         
 
-        div.add_attr("ondragenter", "return false")
+        div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
+        div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
+        
+        if my.overlay_expr:
+            from tactic.ui.widget import OverlayStatsWdg
+            stat_div = OverlayStatsWdg(expr = my.overlay_expr, sobject = sobject, bg_color = my.overlay_color)
+            div.add(stat_div)
+
 
         return div
 
@@ -882,7 +971,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.scale_called = True
 
         show_scale = my.kwargs.get("show_scale")
-
+        print "ST ", my.search_type
         div = DivWdg()
         if show_scale in [False, 'false']:
             div.add_style("display: none")
@@ -999,6 +1088,7 @@ spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
     bvr.dx = 10;
     bvr.dy = 10;
     bvr.drop_code = 'DROP_ROW';
+    bvr.accepted_search_type = bvr.search_type;
 
 
 }
@@ -1022,6 +1112,7 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     if (spt.drop) {
+
         spt.drop.sobject_drop_action(evt, bvr);
     }
     else {

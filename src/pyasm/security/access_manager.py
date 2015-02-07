@@ -299,6 +299,7 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
+
     def get_access(my, type, key, default=None):
 
         # if a list of keys is provided, then go through each key

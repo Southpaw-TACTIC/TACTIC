@@ -125,7 +125,6 @@ class TextInputWdg(BaseInputWdg):
             bgcolor = my.text.get_color("background")
             my.text.add_style("background", bgcolor)
 
-
         my.icon_wdg = SpanWdg()
 
 
@@ -504,7 +503,7 @@ class TextInputWdg(BaseInputWdg):
                             offset: {x:5, y:10}}});
                     over.text.setStyle('color','%s');
                     over.text.setStyle('font-size','0.8em');
-                    over.text.setStyle('z-index','100');
+                    over.text.setStyle('z-index','20');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''%color})
 
