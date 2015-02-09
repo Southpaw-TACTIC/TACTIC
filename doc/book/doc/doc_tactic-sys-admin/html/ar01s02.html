@@ -1,5 +1,127 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>2. Install TACTIC Application</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s01.html" title="1. Planning" /><link rel="next" href="ar01s03.html" title="3. Install Python" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s03.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_install_tactic_application"></a>2. Install TACTIC Application</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_general_tactic_install"></a>2.1. General TACTIC Install</h3></div></div></div><p>This document guides you through the general installation of TACTIC in
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>2. Install TACTIC Application</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s01.html" title="1. Planning" /><link rel="next" href="ar01s03.html" title="3. Install Python" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s03.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_install_tactic_application"></a>2. Install TACTIC Application</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_system_requirements"></a>2.1. TACTIC System Requirements</h3></div></div></div><p><span class="strong"><strong>Client Computer Requirements</strong></span></p><p><span class="strong"><strong>Supported Operating Systems</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Windows
+</li><li class="listitem">
+MAC OS
+</li><li class="listitem">
+Linux
+</li><li class="listitem">
+Smartphones
+</li><li class="listitem">
+Tablets
+</li></ul></div><p>Note - The main criteria in the majority of cases for TACTIC access is the web browser. TACTIC is a cross platform solution.</p><p><span class="strong"><strong>Supported Browsers</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Chrome (Officially Supported)
+</li><li class="listitem">
+Safari (Compatible)
+</li><li class="listitem">
+Mozilla Firefox 33.0+ (Compatible)
+</li><li class="listitem">
+Internet Explorer 11.0+ (compatible for everyday usage - HTML5 support is limited on IE)
+</li></ul></div><p>Note - Other web browsers may work but are not certified for TACTIC.</p><p><span class="strong"><strong>Required Browser Plugins</strong></span></p><p>We have moved away from needing the Java plugin in our latest release, and instead, have moved on to using HTML5 in its place. This was done to remove external dependencies and create a better user experience. However, depending on the version of TACTIC that you use, the Java plugin may be used in many cases to communicate with the client computer’s operating system. This plugin is used primarily in application integration to pass files through the client web browser to and from the TACTIC server. To download the latest version of the Java plugin, go to <a class="ulink" href="http://www.java.com" target="_top">http://www.java.com</a></p><p><span class="strong"><strong>Server Requirements</strong></span></p><p><span class="strong"><strong>Typical TACTIC Server Configurations</strong></span></p><p>Small Shop: Less than 10 Users Medium Content Creation: 10 - 50 Users Large Scale Content Creation: 50 - 150 Users Enterprise Business: More than 150 users High Availability: High service availability (99.9% Up-time guarantee) Remote Collaboration: Live World Wide Production</p><p><span class="strong"><strong>Small Shop (&lt; 10 Users)</strong></span></p><p>A small cloud business might need to track lists of information, tasks, notes and general production data. Simple files can also be tracked.  TACTIC Server</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Single computer configuration with all the services installed on the same machine.
+</li><li class="listitem">
+Online cloud service or in-house installation
+</li><li class="listitem">
+CPU - Dual Core processor
+</li><li class="listitem">
+RAM - At least 600MB ram
+</li><li class="listitem">
+HDD - 10GB (+ asset storage requirements)
+</li><li class="listitem">
+3 TACTIC Process for load balancing
+</li></ul></div><p><span class="strong"><strong>Medium Content Creation (&lt; 50 Users)</strong></span></p><p>Dual server computer configuration with TACTIC. Database and web server on one computer and a separate fileserver. Examples include content creation departments, visual effects studios, media management solutions.</p><p><span class="inlinemediaobject"><img src="media/midium_v2.png" alt="image" /></span></p><p>TACTIC Server</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+CPU - Dual or Quad core processor
+</li><li class="listitem">
+RAM - 4-8GB ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+8 TACTIC Process for load balancing
+</li></ul></div><p>File Server SAN or Fileserver with adequate storage based on project requirements. Note that TACTIC generates a more efficient file system so space is used more efficiently.</p><p><span class="strong"><strong>Large Scale Content Creation (&lt; 150 Users)</strong></span></p><p>Represented by companies who have a 100+ team producing and managing complex assets and production data. Examples include large content creation departments, feature film and episodic CG production.</p><p><span class="inlinemediaobject"><img src="media/large_v2.png" alt="image" /></span></p><p>TACTIC Server</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+1-2 Servers CPU - Quad core processor
+</li><li class="listitem">
+RAM - 8GB+ ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+3 TACTIC Process for load balancing
+</li></ul></div><p>File Server SAN or Fileserver with adequate storage based on project requirements. Note that TACTIC generates a more efficient file system so space is used more efficiently.</p><p><span class="strong"><strong>Enterprise Business (150+ Users)</strong></span></p><p>In large scale enterprise scenarios, the scalability features in TACTIC are heavily used to accommodate the high bandwidth demands of enterprise business.</p><p><span class="inlinemediaobject"><img src="media/enterprise_v2.png" alt="image" /></span></p><p>TACTIC Server</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Multiple Servers
+</li><li class="listitem">
+CPU - Quad core processor
+</li><li class="listitem">
+RAM - 8GB+ ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+10+ TACTIC Process for load balancing on each server
+</li></ul></div><p>File Server SAN or File server with adequate storage based on project requirements. Note that TACTIC generates a more efficient file-system so space is used more efficiently. Database Server Single database server allowing for multiple physical TACTIC servers.</p><p><span class="strong"><strong>High Availability - Up-time Guarantee</strong></span></p><p>In almost any size business, there may be a requirement for TACTIC to be a high availability service. The main aspect of</p><p><span class="inlinemediaobject"><img src="media/High_Availability_v2.png" alt="image" /></span></p><p>configuring TACTIC with this approach is providing redundant services at all levels.  TACTIC Server 2+ Physical TACTIC servers with redundant power, HDD etc.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+CPU - Quad core processor
+</li><li class="listitem">
+RAM - 8GB+ ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+8+ TACTIC Process for load balancing per server
+</li></ul></div><p>File Server SAN or File server with adequate storage based on project requirements. Redundant data retention for file system up-time. Database Server 2+ database servers setup with replication for database up-time. Return to section top</p><p><span class="strong"><strong>Remote Collaboration (World wide production)</strong></span></p><p>TACTIC is a web based enterprise application which can be scaled out to provide seamless collaboration between physical locations using common database and file system technology and practices.</p><p><span class="inlinemediaobject"><img src="media/cloud_v2.png" alt="image" /></span></p><p>TACTIC Server</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Master Physical TACTIC server
+</li><li class="listitem">
+CPU - Quad core processor
+</li><li class="listitem">
+RAM - 4GB+ ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+8+ TACTIC Process for load balancing per server
+</li><li class="listitem">
+Remote collaboration server(s)
+</li><li class="listitem">
+CPU - Quad core processor
+</li><li class="listitem">
+RAM - 4GB+ ram
+</li><li class="listitem">
+HDD - 10GB
+</li><li class="listitem">
+3+ TACTIC Process for load balancing
+</li></ul></div><p><span class="strong"><strong>File Server</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Master Fileserver
+</li><li class="listitem">
+Base central fileserver
+</li><li class="listitem">
+Remote File Server(s)
+</li><li class="listitem">
+Synchronized through common protocols or through specific processes/triggers in TACTIC
+</li></ul></div><p><span class="strong"><strong>TACTIC Server Installation Requirements</strong></span></p><p><span class="strong"><strong>Supported Operating Systems</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Fedora 12
+</li><li class="listitem">
+CentOS 5.5
+</li><li class="listitem">
+Windows Server 2008
+</li><li class="listitem">
+TACTIC has been set-up on a wide variety of operating systems. Our documentation provides detailed instructions on the above, however, it is left to the user to install on others.
+</li></ul></div><p><span class="strong"><strong>API</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Python 2.5-2.7
+</li><li class="listitem">
+Javascript (Client side Interaction)
+</li></ul></div><p><span class="strong"><strong>Web Servers</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+HTTP
+</li><li class="listitem">
+Apache 2.2+
+</li><li class="listitem">
+IIS 7+
+</li></ul></div><p><span class="strong"><strong>Database</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+TACTIC Database Configuration
+</li></ul></div><p><span class="strong"><strong>Installation Process Requirements</strong></span></p><p>What sort of access do you need to complete a full TACTIC installation and implementation?</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+A physical of virtual server dedicated to TACTIC
+</li><li class="listitem">
+Root Access to the server
+</li><li class="listitem">
+Knowledge of the current network infrastructure
+</li><li class="listitem">
+Ability to install Modules etc
+</li><li class="listitem">
+Knowledge of Python is a plus
+</li></ul></div><p>*More information about TACTIC installation can be found in TACTIC installation manuals. Please contact sales for further information or sign up today for our community site - Sign up today!</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_general_tactic_install"></a>2.2. General TACTIC Install</h3></div></div></div><p>This document guides you through the general installation of TACTIC in
 Fedora Linux with some brief background information. For installation on
 Windows or CentOS, please refer to the corresponding sections in this
 book. To completely install TACTIC, there are three main components that
@@ -65,7 +187,9 @@ you will see this:</p><pre class="screen">*** Installation of TACTIC completed a
 Next, please install the Apache Web Server and then copy the Apache config extension
 [/home/apache/tactic_data/config/tactic.conf] to the Apache web server config area. e.g.
 /etc/httpd/conf.d/</pre><p><span class="strong"><strong>Verification</strong></span></p><p>When the installation is completed, an asset directory will be created
-at <span class="emphasis"><em>&lt;TACTIC_DATA_DIR&gt;/assets</em></span>.</p><p>The file tactic_paths.py will be created in the following directories:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Linux</p></td><td style="" align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr></tbody></table></div><p><span class="strong"><strong>Network machine access</strong></span></p><p>If you are on the server, you can access it by using the URL
+at <span class="emphasis"><em>&lt;TACTIC_DATA_DIR&gt;/assets</em></span>.</p><p>The file tactic_paths.py will be created in the following directories:</p><p><span class="strong"><strong>Linux</strong></span></p><pre class="screen">/usr/lib/python#.#/site-packages/tacticenv</pre><p>Default contents:</p><pre class="screen">TACTIC_INSTALL_DIR='/home/apache/tactic'
+TACTIC_SITE_DIR=''
+TACTIC_DATA_DIR='/home/apache/tactic_data'</pre><p><span class="strong"><strong>Network machine access</strong></span></p><p>If you are on the server, you can access it by using the URL
 <a class="ulink" href="http://localhost/tactic" target="_top">http://localhost/tactic</a>. For other people to access it on the network,
 you need to find out its IP address. In a linux server, you can use the
 command "ifconfig" to locate it. It’s the one listed as the inet addr.</p><p>Next, you need to run TACTIC behind Apache.</p><p>TACTIC should be run behind an Apache web server. You can download
@@ -136,7 +260,7 @@ the Install License File chapter.*
 </li><li class="listitem">
 For more information on getting started with projects, please refer to
 Setup documentation.*
-</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_centos_5_4"></a>2.2. How to Install TACTIC on CentOS 5.4</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_centos_5_4"></a>2.3. How to Install TACTIC on CentOS 5.4</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
 CentOS 5.4.</p><p><span class="strong"><strong>CentOS 5.4</strong></span></p><p>Unfortunately, CentOS 5.4 comes pre-packaged with an outdated version of
 Python: Python 2.4. TACTIC requires Python 2.7.</p><p>To get around this, when we install Python 2.7, we do not overwrite the
 original Python 2.4. See steps #8 and #9.</p><p>Overwritting the original Python would break some software packages,
@@ -233,7 +357,7 @@ Open the TACTIC service file for edit.
 Open the TACTIC configuration file for edit.
 </p><pre class="screen">vi /home/apache/tactic_data/config/tactic_linux-conf.xml</pre><p class="simpara">Modify the option variable for python as follows:</p><pre class="screen">&lt;python&gt;/usr/local/bin/python2.7&lt;/python&gt;</pre></li><li class="listitem"><p class="simpara">
 Start TACTIC as a service.
-</p><pre class="screen">sudo /etc/init.d/tactic start</pre></li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_5"></a>2.3. TACTIC Install - CentOS 5.5</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
+</p><pre class="screen">sudo /etc/init.d/tactic start</pre></li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_5"></a>2.4. TACTIC Install - CentOS 5.5</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
 CentOS 5.5. For CentOS 6.2 and above, please refer to the TACTIC Install
 - CentOS 6.2 page.</p><p><span class="strong"><strong>CentOS 5.5</strong></span></p><p>Unfortunately, CentOS 5.5 comes pre-packaged with an outdated version of
 Python: Python 2.4. TACTIC requires Python 2.7.</p><p>To get around this, when we install Python 2.7, we do not overwrite the
@@ -357,7 +481,7 @@ To view different information about the system and set-up, you can
 go to the Site Admin -→ System Info page. For example, you can verify
 if load-balancing is set up and certain key directories are writable by
 TACTIC.
-</li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_7"></a>2.4. TACTIC Install - CentOS 5.7</h3></div></div></div><p>CentOS 5.5 has now been deprecated in favour of CentOS 5.7 or CentOS
+</li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_5_7"></a>2.5. TACTIC Install - CentOS 5.7</h3></div></div></div><p>CentOS 5.5 has now been deprecated in favour of CentOS 5.7 or CentOS
 6.0. Since CentOS 5.5 will no longer receive updates and we urge you to
 consider using a more up to date version of the operating system such as
 CentOS 5.7.</p><p>For CentOS 6.2 and above, please refer to the TACTIC Install - CentOS
@@ -610,7 +734,7 @@ previously. If you are having trouble the following error logs will help
 you diagnose your problems:</p><p><span class="strong"><strong>Common Error Logs</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/opt/tactic/tactic_temp/log/stdout.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC standard out
 log assuming you have chosen /opt/tactic as the base installation path</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/tactic</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error_log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/access_log</p></td><td style="" align="left" valign="top"><p>Path to the Apache access log.</p></td></tr></tbody></table></div><p>Finally, reboot the server and test whether the TACTIC service continues
 to perform across reboots. You are advised to set up log rotation by
-reviewing the Rotate Log section in the Sys Admiin documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_6_2"></a>2.5. TACTIC Install - CentOS 6.2</h3></div></div></div><p>While there may be some slight variations in the steps in different
+reviewing the Rotate Log section in the Sys Admiin documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_centos_6_2"></a>2.6. TACTIC Install - CentOS 6.2</h3></div></div></div><p>While there may be some slight variations in the steps in different
 versions of CentOS 6, this guide can be used for CentOS 6.x as a
 reference.</p><p><span class="strong"><strong>Requirements</strong></span></p><p>TACTIC requires the following software to be installed:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
 Apache HTTP server 2.2
@@ -642,7 +766,7 @@ also issue the following command for it to take effect immediately.</p><pre clas
 following command as root:</p><pre class="screen">yum install httpd</pre><p>This package has several dependencies and they should be installed as
 well.</p><p>It would be good to familarize yourself with some of the more pertinent
 paths in the Apache installation on CentOS 6.2. They are listed below
-for your convenience.</p><div class="table"><a id="idm256617334672"></a><p class="title"><strong>Table 1. Common Paths in Apache 2.2</strong></p><div class="table-contents"><table summary="Common Paths in Apache 2.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf/httpd.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Apache configuration file.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf.d/</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache dynamic configuration directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path the the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/www/html</p></td><td style="" align="left" valign="top"><p>Path to the Document Root folder of the base Apache
+for your convenience.</p><div class="table"><a id="idm256643417168"></a><p class="title"><strong>Table 1. Common Paths in Apache 2.2</strong></p><div class="table-contents"><table summary="Common Paths in Apache 2.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf/httpd.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Apache configuration file.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/etc/httpd/conf.d/</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache dynamic configuration directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path the the Apache error log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/www/html</p></td><td style="" align="left" valign="top"><p>Path to the Document Root folder of the base Apache
 install.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>It’s best to test your Apache install at this point. The included main
 Apache configuration file is enough to get the server started. You will
 need create a small html file to do this. Using your editor of choice,
@@ -683,7 +807,7 @@ RPMs for your operating system and architecture.</p><p>Lastly, we will install t
 issue the following command:</p><pre class="screen">yum install postgresql postgresql-server postgresql-contrib postgresql-devel</pre><p>Now that Postgres is installed, you are advised to make some basic
 configuration to make sure the installation is ready for use with
 TACTIC.</p><p>Here are the pertinent Postgres file paths that will be used throughout
-the install:</p><div class="table"><a id="idm256617301216"></a><p class="title"><strong>Table 2. Common Paths in Postgres 9.2 on CentOS 6.2</strong></p><div class="table-contents"><table summary="Common Paths in Postgres 9.2 on CentOS 6.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Postgres directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/data/pg_hba.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the host based authentication
+the install:</p><div class="table"><a id="idm256643383712"></a><p class="title"><strong>Table 2. Common Paths in Postgres 9.2 on CentOS 6.2</strong></p><div class="table-contents"><table summary="Common Paths in Postgres 9.2 on CentOS 6.2" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the main Postgres directory.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/data/pg_hba.conf</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the host based authentication
 file for Postgres.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2/pgstartup.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Postgres startup log.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/lib/pgsql/9.2/data/pg_log</p></td><td style="" align="left" valign="top"><p>Path to Postgres database logs.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Initialize the database:</p><pre class="screen">su - postgres -c /usr/pgsql-9.2/bin/initdb</pre><p>Once that command successfully completes we can then start the service.
 As root issue the following command:</p><pre class="screen">service postgresql-9.2 start</pre><p>If the service starts successfully, we can move forward. Otherwise, you
 can review any startup errors in the Postgres startup log. Further
@@ -738,7 +862,7 @@ the server.</p><p>Once we have the Tactic source we need to unpack it. As root i
 following commands:</p><pre class="screen">cd /tmp
 unzip tactic-3.9.0.rc04.zip</pre><p>Once the TACTIC source is unpacked, you should familarize yourself with
 its directory structure. The prefix of the paths will change during
-install; however, the directory structure will remain the same.</p><div class="table"><a id="idm256617252656"></a><p class="title"><strong>Table 3. Common Paths in Tactic 3.9.0.rc04</strong></p><div class="table-contents"><table summary="Common Paths in Tactic 3.9.0.rc04" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/doc</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic documentation.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic source files.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src/install</p></td><td style="" align="left" valign="top"><p>Path to the Tactic install script
+install; however, the directory structure will remain the same.</p><div class="table"><a id="idm256643335152"></a><p class="title"><strong>Table 3. Common Paths in Tactic 3.9.0.rc04</strong></p><div class="table-contents"><table summary="Common Paths in Tactic 3.9.0.rc04" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/doc</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic documentation.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Tactic source files.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/tmp/tactic-3.9.0.rc04/src/install</p></td><td style="" align="left" valign="top"><p>Path to the Tactic install script
 and configuration files for Tactic dependencies.</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Before we run the Tactic installer, we must further configure Postgres
 to ensure proper installation of Tactic.</p><p><span class="strong"><strong>Configuring Postgres</strong></span></p><p>Tactic supplies a custom host based authentication file for Postgres.
 After stopping the Postgres service we will install the file in
@@ -816,10 +940,10 @@ chmod 755 /etc/init.d/tactic
 /etc/init.d/tactic start</pre><p>TACTIC should now start properly as a service. Test this by launching a
 web browser and navigating to the TACTIC login page as you did
 previously. If you are having trouble, the following error logs will
-help you diagnose your problems:</p><div class="table"><a id="idm256617202048"></a><p class="title"><strong>Table 4. Common Error Logs</strong></p><div class="table-contents"><table summary="Common Error Logs" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/opt/tactic/tactic_temp/log/stdout.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC standard out
+help you diagnose your problems:</p><div class="table"><a id="idm256643276112"></a><p class="title"><strong>Table 4. Common Error Logs</strong></p><div class="table-contents"><table summary="Common Error Logs" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/opt/tactic/tactic_temp/log/stdout.log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC standard out
 log assuming you have chosen /opt/tactic as the base installation path</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/tactic</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the TACTIC error log in service mode</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/error_log</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Path to the Apache error log</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>/var/log/httpd/access_log</p></td><td style="" align="left" valign="top"><p>Path to the Apache access log</p></td></tr></tbody></table></div></div><br class="table-break" /><p>Finally, reboot the server and test whether the TACTIC service continues
 to perform across reboots. You are advised to set up log rotation by
-reviewing the Rotate Log section in the Sys Admin documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_windows_server_2008"></a>2.6. TACTIC Install - Windows Server 2008</h3></div></div></div><p>To completely install TACTIC Enterprise, there are three main components
+reviewing the Rotate Log section in the Sys Admin documentation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_install_windows_server_2008"></a>2.7. TACTIC Install - Windows Server 2008</h3></div></div></div><p>To completely install TACTIC Enterprise, there are three main components
 that have to be set up in the following order:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 A Database
 </li><li class="listitem">
@@ -911,7 +1035,9 @@ Service updated
 Next, please install the Apache Web Server and then copy the Apache config extension
 [C:/Program Files/Southpaw/tactic_data/config/tactic_win32.conf] to the Apache web server config area. e.g.
 C:/Program Files/Apache Software Foundation/Apache2.2/conf</pre><p><span class="strong"><strong>Verification</strong></span></p><p>When the installation is completed, an asset directory will be created
-at <span class="emphasis"><em>&lt;TACTIC_BASE_DIR&gt;/assets</em></span>.</p><p>The file tactic_paths.py will be created in the following directories:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Windows</p></td><td style="" align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr></tbody></table></div><p><span class="strong"><strong>Network machine access</strong></span></p><p>If you are on the server, you can access it by using the URL
+at <span class="emphasis"><em>&lt;TACTIC_BASE_DIR&gt;/assets</em></span>.</p><p>The file tactic_paths.py will be created in the following directories:</p><p><span class="strong"><strong>Windows</strong></span></p><pre class="screen">C:/Python##/Lib/site-packages/tacticenv</pre><p>Default contents:</p><pre class="screen">TACTIC_INSTALL_DIR='C:/Program Files/Southpaw/tactic'
+TACTIC_SITE_DIR=''
+TACTIC_DATA_DIR='C:/Program Files/Southpaw/tactic_data'</pre><p><span class="strong"><strong>Network machine access</strong></span></p><p>If you are on the server, you can access it by using the URL
 <a class="ulink" href="http://localhost/tactic" target="_top">http://localhost/tactic</a>. For other people to access it on the network,
 you need to find out its IP address. In a linux server, you can use the
 command "ifconfig" to locate it. It’s the one listed as the inet addr.</p><p>Next, you need to run TACTIC behind Apache.</p><p>TACTIC should be run behind an Apache web server. You can download
@@ -1018,7 +1144,7 @@ If the Windows TACTIC Service has trouble starting up, you can try to
 edit the Properties , go to Log On tab, and adjust the Log on as user
 with the Windows login which has write/read access to the tactic_temp
 location as well as the asset_base_dir location.
-</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_install_tactic_fedora_8"></a>2.7. Install TACTIC - Fedora 8</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_fedora_12"></a>2.8. How to Install TACTIC on Fedora 12</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_install_tactic_fedora_8"></a>2.8. Install TACTIC - Fedora 8</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_fedora_12"></a>2.9. How to Install TACTIC on Fedora 12</h3></div></div></div><p>Below are the step-by-step instructions of how to install TACTIC on
 Fedora 12.</p><p><span class="strong"><strong>Fedora 12</strong></span></p><p>There are no known issues with running a TACTIC server on Fedora 12.</p><p>Southpaw Technology has chosen to distribute their virtual machine for
 evaluation on Fedora 12.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Log in as the root user.
@@ -1076,7 +1202,7 @@ Try accessing TACTIC through a web browser on a client machine.
 Once startup_dev works, Ctrl^C out of the process.
 </p><pre class="screen">Ctrl^C</pre></li><li class="listitem"><p class="simpara">
 Start TACTIC as a service.
-</p><pre class="screen">sudo /etc/init.d/tactic start</pre></li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_ubuntu_12"></a>2.9. How to Install TACTIC on Ubuntu 12</h3></div></div></div><div class="informalexample"><p>How To Install TACTIC 3.8 (Open Source Release) On Ubuntu Server 12.04</p><p>Revision 2 - August 12th, 2012</p></div><p>Install Ubuntu Server 12.04 as a VM … go ahead with the default
+</p><pre class="screen">sudo /etc/init.d/tactic start</pre></li></ol></div><p>End of installation instructions.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_install_tactic_on_ubuntu_12"></a>2.10. How to Install TACTIC on Ubuntu 12</h3></div></div></div><div class="informalexample"><p>How To Install TACTIC 3.8 (Open Source Release) On Ubuntu Server 12.04</p><p>Revision 2 - August 12th, 2012</p></div><p>Install Ubuntu Server 12.04 as a VM … go ahead with the default
 creation of initial non-root user (for example when using Easy-install
 for a VMWare VM OS installation), just to expedite the install process
 for Ubuntu Login as the non-root user that was created, and then
@@ -1198,7 +1324,7 @@ TACTIC server is able to run …
 <code class="literal">$ python /home/apache/tactic/src/bin/startup_dev.py</code> … and then, from
 a browser, go to the TACTIC web UI and confirm everything is functioning
 properly Finally set up TACTIC to automatically start up as a service
-when the server is rebooted … <code class="literal">$ sudo update-rc.d tactic defaults</code></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_upgrade_tactic"></a>2.10. Upgrade TACTIC</h3></div></div></div><p>Upgrading TACTIC is usually a relatively simple procedure:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+when the server is rebooted … <code class="literal">$ sudo update-rc.d tactic defaults</code></p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_upgrade_tactic"></a>2.11. Upgrade TACTIC</h3></div></div></div><p>Upgrading TACTIC is usually a relatively simple procedure:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
 Download the new release of TACTIC from the Download section of
 support.southpawtech.com . TACTIC is delivered as a zipped (.zip) file.
 </li><li class="listitem"><p class="simpara">
@@ -1252,7 +1378,7 @@ yet.
 8.  Restart the TACTIC service:</p><p class="simpara"><code class="literal">Select the service Tactic Server, click on the Start
                     button</code>
 9.  Go to the "Projects" view in the Admin site.
-10. Optional: Compare each project’s schema with the one used by TACTIC.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_multiple_tactic_services"></a>2.11. Multiple TACTIC Services</h3></div></div></div><p>Multiple versions of TACTIC can be easily run side by side on the same
+10. Optional: Compare each project’s schema with the one used by TACTIC.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_multiple_tactic_services"></a>2.12. Multiple TACTIC Services</h3></div></div></div><p>Multiple versions of TACTIC can be easily run side by side on the same
 machine. This is extremely useful for testing purposes. Running a newer
 version of TACTIC on a production server machine using the production
 server environment and production database. You can run this without
@@ -1281,7 +1407,7 @@ cd tactic-3.0.0.src/bin
 python upgrade.py</pre></li><li class="listitem"><p class="simpara">
 Execute tactic
 </p><pre class="screen">python startup_dev.py</pre></li></ol></div><p>This will execute TACTIC from the command line in dev mode. All output
-will go to this console.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_install_a_tactic_license"></a>2.12. Install a TACTIC License</h3></div></div></div><p><span class="strong"><strong>Install License</strong></span></p><p>When TACTIC is accessed through the web browser, if a license file
+will go to this console.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_install_a_tactic_license"></a>2.13. Install a TACTIC License</h3></div></div></div><p><span class="strong"><strong>Install License</strong></span></p><p>When TACTIC is accessed through the web browser, if a license file
 cannot be found, TACTIC will prompted for a license file.</p><p><span class="inlinemediaobject"><img src="media/renewLicenseWidget.png" alt="image" /></span></p><p>To install a license file, browse for the license file (.xml) provided
 by Southpaw Technology. Once the file has been selected for upload,
 click <span class="strong"><strong>Install License</strong></span> to upload and install the license file.</p><p>If the license file is valid, TACTIC will display the message "License
