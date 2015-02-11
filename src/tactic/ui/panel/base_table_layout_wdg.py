@@ -1297,7 +1297,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Save button
         save_button = ActionButtonWdg(title="Save", is_disabled=False)
         save_button_top = save_button.get_top()
-        save_button_top.add_style("display", "none")
+        #save_button_top.add_style("display", "none")
         save_button_top.add_class("spt_save_button")
         #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
@@ -1370,8 +1370,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_insert = False
             show_save = False
 
-        if not my.can_save():
-            show_save = False
+        #if not my.can_save():
+        #    show_save = False
 
         if show_insert in [ '', None ]:
             show_insert = my.kwargs.get("show_insert")
