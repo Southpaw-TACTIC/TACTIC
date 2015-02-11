@@ -945,8 +945,8 @@
           <config>
           <element name='content'>
             <display class='tactic.ui.panel.ViewPanelWdg'>
-                <search_type>sthpw/login_group</search_type>
-                <show_shelf>false</show_shelf>
+              <search_type>sthpw/login_group</search_type>
+              <show_shelf>true</show_shelf>
               <view>planner</view>
               <element_names>preview,login_group,users</element_names>
               <search_view>_planner</search_view>
@@ -967,7 +967,7 @@
           <config>
             <element name='content'>
             <display class='tactic.ui.panel.ViewPanelWdg'>
-              <show_shelf>false</show_shelf>
+              <show_shelf>true</show_shelf>
               <search_type>sthpw/login</search_type>
               <view>planner</view>
               <search_view>_planner</search_view>
