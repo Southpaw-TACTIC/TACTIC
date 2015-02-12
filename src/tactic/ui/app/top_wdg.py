@@ -856,13 +856,14 @@ class SitePage(AppServer):
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            widget = xml.get_value("element/@widget")
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
             elif bootstrap == 'true':
                 widget = BootstrapIndexWdg()
                 return widget
-            else:
+            elif widget == 'true':
                 web = WebContainer.get_web()
                 hash = "/".join(my.hash)
                 hash = "/%s" % hash
