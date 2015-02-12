@@ -1122,6 +1122,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if save_button:
             wdg_list.append( {'wdg': save_button} )
+            save_button.add_style("margin-right: 10px")
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+
 
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -1140,11 +1145,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button_div.add_style("margin-left: 5px")
             wdg_list.append({'wdg': button_div})
 
-
-
-        if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
+
+
 
 
         if button_row_wdg.get_num_buttons() != 0:
