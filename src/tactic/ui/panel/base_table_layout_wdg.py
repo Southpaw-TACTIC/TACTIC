@@ -1119,13 +1119,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         wdg_list = []
 
-
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
-            save_button.add_style("margin-right: 10px")
-
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
+            keyword_div.add_style("margin-left: 20px")
 
 
         if my.kwargs.get("show_refresh") != 'false':
@@ -1142,12 +1138,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 5px")
+            button_div.add_style("margin-left: -6px")
             wdg_list.append({'wdg': button_div})
 
+
+
+
+
+
+            
+
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
+            #save_button.add_style("height: 35px")
             wdg_list.append( { 'wdg': spacing_divs[3] } )
-
-
 
 
         if button_row_wdg.get_num_buttons() != 0:
@@ -1299,7 +1303,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
         save_button.add_class("spt_save_button")
-        save_button.add_style("margin-left: 10px")
+        save_button.add_style("margin-left: 10px;")
+
 
         
         save_button.add_behavior({
@@ -1369,8 +1374,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_insert = False
             show_save = False
 
-        #if not my.can_save():
-        #    show_save = False
+        if not my.can_save():
+            show_save = False
 
         if show_insert in [ '', None ]:
             show_insert = my.kwargs.get("show_insert")
