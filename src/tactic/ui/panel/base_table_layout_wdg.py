@@ -1293,13 +1293,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if not show_save:
             return
-
-        # Save button
-        save_button = ActionButtonWdg(title="Save", is_disabled=False)
-        save_button_top = save_button.get_top()
-        #save_button_top.add_style("display", "none")
-        save_button_top.add_class("spt_save_button")
-        #save_button_top.add_class("btn-primary")
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        save_button.add_class("spt_save_button")
         save_button.add_style("margin-left: 10px")
 
         
