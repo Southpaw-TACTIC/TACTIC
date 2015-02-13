@@ -277,6 +277,21 @@ class EditWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
+        if my.parent_key:
+            from pyasm.biz import Schema
+            for element_name in my.element_names:
+                schema = Schema.get_by_project_code(project_code)
+                parent_sobject = Search.get_by_search_key(my.parent_key)
+                parent_stype = parent_sobject.get_search_type()
+                parent_search_type = SearchType.get(parent_stype)
+                relationship = schema.get_relationship_attrs(parent_stype, my.search_type, type="hierarchy")
+                # If parent_key is available, this indicates that the source of the edit widget is from a higher level table 
+                # Therefore, the user does not need to select items that should be pulled from the upper table,
+                # and their select widgets can be excluded from the widget
+                if element_name == relationship.get("from_col"):
+                    ignore.append(element_name)
+
+
         for i, element_name in enumerate(my.element_names):
 
             if element_name in ignore:
