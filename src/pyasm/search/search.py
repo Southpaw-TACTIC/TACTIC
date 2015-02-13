@@ -4240,12 +4240,13 @@ class SObject(object):
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
+        security = Environment.get_security()
+        base_search_type = my.get_base_search_type()
+
         id = my.get_id()
         if id == -1:
             return
 
-        security = Environment.get_security()
-        base_search_type = my.get_base_search_type()
 
         current_project_code = my.get_project_code()
         
@@ -5538,7 +5539,7 @@ class SearchType(SObject):
         return title
 
 
-    def get_id_col(my):
+    def get_search_type_id_col(my):
         id_col = my.data.get("id_column")
         if not id_col:
             return "id"
@@ -5546,12 +5547,14 @@ class SearchType(SObject):
             return id_col
 
 
-    def get_code_col(my):
+    def get_search_type_code_col(my):
         id_col = my.data.get("code_column")
         if not code_col:
             return "code"
         else:
             return code_col
+
+
 
 
     def get_retire_col(my):
