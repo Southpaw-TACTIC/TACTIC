@@ -280,7 +280,7 @@ class EditWdg(BaseRefreshWdg):
         if my.parent_key:
             from pyasm.biz import Schema
             for element_name in my.element_names:
-                schema = Schema.get_by_project_code(project_code)
+                schema = Schema.get()
                 parent_sobject = Search.get_by_search_key(my.parent_key)
                 parent_stype = parent_sobject.get_search_type()
                 parent_search_type = SearchType.get(parent_stype)
