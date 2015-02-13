@@ -1122,8 +1122,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         wdg_list = []
 
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
+
+
+
+
+
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            keyword_div.add_style("margin-left: 20px")
+
 
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -1139,13 +1147,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 5px")
+            button_div.add_style("margin-left: -6px")
             wdg_list.append({'wdg': button_div})
 
 
-
-        if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
@@ -1297,10 +1304,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        save_button = ActionButtonWdg(title="Save", is_disabled=False)
-        save_button_top = save_button.get_top()
-        save_button_top.add_style("display", "none")
-        save_button_top.add_class("spt_save_button")
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button.add_style("display", "none")
+        save_button.add_class("spt_save_button")
+        # it needs to be called save_button_top for the button to re-appear after its dissapeared
+
         #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
 
