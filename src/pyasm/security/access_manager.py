@@ -316,11 +316,6 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
-        #print "---"
-        #for key, value in rules.items():
-        #    print key, value
-
-
 
     def get_access(my, type, key, default=None):
 

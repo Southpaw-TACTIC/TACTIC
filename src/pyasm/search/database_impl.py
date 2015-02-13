@@ -126,14 +126,14 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_id_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        id_col = search_type.get_id_col()
+        id_col = search_type.get_search_type_id_col()
         return id_col
 
 
     def get_code_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        code_col = search_type.get_code_col()
+        code_col = search_type.get_search_type_code_col()
         return code_col
 
 

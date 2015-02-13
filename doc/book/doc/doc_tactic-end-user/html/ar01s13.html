@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13. Glossary List</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC End-User Documentation" /><link rel="up" href="index.html" title="TACTIC End-User Documentation" /><link rel="prev" href="ar01s12.html" title="12. Transactions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s12.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_glossary_list"></a>13. Glossary List</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_context"></a>13.1. Context</h3></div></div></div><p>To allow for separate versioning of files within the same SObject
+(container) during checkin, TACTIC uses "versions" and "contexts."
+Snapshot data always includes this information.</p><p><span class="strong"><strong>Contexts</strong></span> define a separate "channel" for checking in files. For
+example, one SObject may require separate files to be checked in for
+different tasks. For example, in the following list one drawing file is
+checked into a single SObject with both "rough" and "final" contexts
+(and with multiple versions). In this case, the contexts represent files
+checked in for both the <span class="emphasis"><em>rough</em></span> and <span class="emphasis"><em>final</em></span> processes (tasks).</p><pre class="screen">/assets/myProject/drawings/drawing_001/drawing_001_rough_v001.png
+/assets/myProject/drawings/drawing_001/drawing_001_rough_v002.png
+/assets/myProject/drawings/drawing_001/drawing_001_rough_v003.png
+/assets/myProject/drawings/drawing_001/drawing_001_final_v001.png
+/assets/myProject/drawings/drawing_001/drawing_001_final_v002.png</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_searchable_object_sobject"></a>13.2. Searchable Object (sObject)</h3></div></div></div><p>SObjects in TACTIC are not actual physical files, but instead they are
+descriptive containers that store all the information necessary to
+define an object and track it. If the definition of the Search Type
+permits, an SObject can contain relationships to child SObjects.
+Separate SObject children can be used to store extra data. For example,
+they could be "task" SObjects set up based on the pipeline to track
+approvals and notes, or they could be "snapshot" SObjects that store
+file checkin and location information.</p><p>In a project, an SObject can be used to store the production data for
+any digital asset requiring multiple associated files. When you create a
+new SObject, you must create it based on a Search Type (for example, the
+"model" Search Type). When you insert this new SObject, you are simply
+inserting a new entry into the "model" Search Type’s library. Based on
+the associated template Search Type, the new SObject will require
+specific data to be inserted. For example, a name, description, pipeline
+code and so on.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_retire"></a>13.3. Retire</h3></div></div></div><p>At times you may wish to offline an Search Object but, not remove it
+from the system. Every search type has a s_status preperty that when set
+to <span class="emphasis"><em>retired</em></span> hides the SObject but, makes is easy to reactivate it.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_sidebar_2"></a>13.4. Sidebar</h3></div></div></div><p>Views provide users with what they need to see and how they need to see
+it. The are collections of different Search Type properties which are
+relevant to a team members role in Tactic. Views are mainly accessed
+through links in the sidebar either as <span class="strong"><strong>Project Views</strong></span> which are
+configured for the whole production (but ca be controlled with access
+rules) and <span class="strong"><strong>My Views</strong></span> which are views a uses saves as their own personal
+views or "bookmarks". Views can also contain a saved search which,
+provides a view as a live report.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_project_workflow"></a>13.5. Project Workflow</h3></div></div></div><p>Pipelines define a hierarchical set of processes that lay out all of the
+production and approval steps an SObject must go through before being
+completed. It is important to note that each process contains its own
+set of approvals (task pipeline). Typically a process must be completed
+before it can be handed off to the downstream process or processes.
+TACTIC uses pipelines in this manner: when a process is approved, the
+next downstream processes receive the green light to start.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_file_system"></a>13.6. File System</h3></div></div></div><p>When files are checked in to TACTIC, they are passed through the
+directory and file naming conventions. This relieves the user of the
+responsibility of figuring out where to place files on the server and
+what to name them. Naming conventions are defined using the "naming"
+Search Type, which stores an expression used by TACTIC to generate the
+location and name for a file upon checkin.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_query"></a>13.7. Query</h3></div></div></div><p>A query into TACTIC is a request to retrieve Search Objects from the
+database. In the Tactic interface when a user searches for something,
+they are doing a query.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_view"></a>13.8. View</h3></div></div></div><p>Views in the TACTIC interface are built using a "Table" widget that is
+defined based on a Search Type. Views can be configured to display
+specific properties (columns) and also the widgets (tools) that are used
+to display them.</p><p>Views can also be filtered to control which SObjects are displayed with
+search tools. For example, search tools can create reports, or views
+summarizing which SObjects are at which stages in the pipeline. Views
+and reports can be saved as either project views, visible to multiple
+team members, or as personal views, visible to individuals ("My Views").</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_note"></a>13.9. Note</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_event"></a>13.10. Event</h3></div></div></div><p>The TACTIC system is based on events, and every interaction with any
+SObject is tracked. Events may include changing a status, adding a note
+or checking in a file (to list but a few examples). Every event is
+logged into a transaction log, and can be undone. The transaction log is
+very valuable because it enables easy tracking of when something
+happened and who did it.</p><p>An event can also execute another event in the system (or a "trigger").
+Triggers are set up as custom scripts which can be configured to do
+almost anything in TACTIC through the TACTIC Client API. Example uses of
+triggers include changing the status of another task SObject, checking
+in additional files, or executing an external rendering application.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_access_rule"></a>13.11. Access Rule</h3></div></div></div><p>When configuring TACTIC, it is important for both security and
+simplicity to set up appropriate access rules. Access Rules are
+typically applied to user groups, making it easier to control what
+different groups of users or departments can access in TACTIC.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_project"></a>13.12. Project</h3></div></div></div><p>A TACTIC project defines a real-world project or separates one of its
+timelines. Each TACTIC project has its own separate database and
+structure. Projects are the highest level separation in TACTIC. They
+represent a separation in workflow, Searchable Types, Views, Access
+Rules, Naming Conventions Pipelines and more</p><p>Custom TACTIC projects can be built from the ground up to manage
+specific types of objects, processes and files. Alternatively,
+predefined, ready-to-use TACTIC project modules are available to
+expedite the setup process and provide custom integration tools
+appropriate for the project type.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_update"></a>13.13. Update</h3></div></div></div><p>When you update an existing Serch Object in Tactic, this is called an
+update. For example if you change the description property (column
+entry), saving the cnages commits an update to the database.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_snapshot"></a>13.14. Snapshot</h3></div></div></div><p>A snapshot describes an asset at a particular point in time. This
+description is sufficient to reproduce the asset completely at that
+point in time. TACTIC has its own XML description language to completely
+define assets and their dependencies to other assets.</p><p>A snapshot can contain any number of files. For example, in a Flash
+production, a typical checkin will result in 4 files: a .fla (the flash
+file to work on), .swf (a viewable file), and 2 pngs which represent a
+small icon and a large viewable image.</p><p>Every time something is checked in, a new snapshot is created of the
+asset. Snapshots can reference other snapshots, which allows TACTIC to
+define dependencies to other assets or other snapshots of the same
+asset.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_searchable_type_stype"></a>13.15. Searchable Type (sType)</h3></div></div></div><p>Within a project, there are many types of objects to manage, and each
+object type requires different properties and types of files to be
+stored. TACTIC uses <span class="strong"><strong>Search Types</strong></span> to categorize the many types of
+objects that can exist in a project. Search Types are templates that
+determine how these objects are defined and handled. Views, pipelines,
+naming conventions, access rules (and more) are all defined based on
+assignment to a Search Type.</p><p>The basic architecture of the TACTIC system is built around interaction
+with objects through their Search Types. These objects or "instances of
+a Search Type" are called Search Objects or <span class="strong"><strong>SObjects</strong></span>. The TACTIC
+interface is simply a layer of widgets (tools) delivered through a web
+browser that are provided for the user to search for SObjects, display
+them, and interact with them based on their Search Types.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_delete"></a>13.16. Delete</h3></div></div></div><p>Deleting a Search Object revoves it from the database completely.
+Although undoable, this is only right after doign so. If you are unsure,
+retiring is ofter a good choice.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_task"></a>13.17. Task</h3></div></div></div><p>A task is any job that occurs within a process, and is the fundamental
+atomic work element in project management. For details on tasks, go to
+<span class="strong"><strong>Working with Tasks</strong></span>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_notification"></a>13.18. Notification</h3></div></div></div><p>Notifications are triggers built to execute on specific configured
+events, and can be internal to TACTIC (notification SObjects), or even
+emails sent externally. Notifications can be configured to run based on
+rules that define the conditions that must be met in order to send out a
+message. Conditions help to streamline who receives a notification for a
+particular event, as well as the conditions specific to the event.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_trigger"></a>13.19. Trigger</h3></div></div></div><p>Triggers are specific tools and scripts that are executed based on
+events which occur in Tactic. Within the project setup, there are tools
+which help setup triggers and notifications with simple tools. Although
+if required, these Triggers can be quite complex. Using the TACTIC
+Client API, you can achieve almost anything. For example, a trigger can
+be called when a task’s status is changed. This type of trigger would
+first check what the status was changed to, and then only proceed to
+carry out a set of tasks if the status was, for example, "approved".
+This may be as simple as changing the status of another task or as
+complex as loading the final checkin for that task, render it to a video
+file and then check it back into TACTIC.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_checkout"></a>13.20. Checkout</h3></div></div></div><p>Checkouts in Tactic is when a user requests a particular snapshot. This
+request from the users standpoint can simply be a request for the
+current material which prompts TACTIC to deliver all of the files as
+well as any other dependant files to the user.</p><p>There are 2 ways for a user to actually retrieve the files for a
+snapshot.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+The files can be loaded directly from the filesystem/fileserver.
+This way, the files are not copied to the users machine, they are left
+where they are and simply loaded up. For this to work, you would have to
+have direct access to the Tactic assets directory but can be more
+efficient as the files are not moved.
+</li><li class="listitem">
+The files can be downloaded to the local sandbox where a user can
+work on them and save files however they like then when ready to commit
+a checkin, do so through Tactic. The sandbox is good in situations where
+the user is either off-site or there may be bandwidth issues opening the
+files directly.
+</li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_pipeline"></a>13.21. Pipeline</h3></div></div></div><p>Searchable Type metadata may also include a "pipeline_code" property to
+link the SObject to a pipeline SObject. In this event, task SObjects are
+also created from the pipeline’s processes to define the processes the
+SObject will pass through as it progresses through its production. When
+tasks (processes) are defined, they ensure that an asset can only move
+along the pipeline with all checkpoints complete. For example, they can
+determine that the assigned user checks in files, generates notes, sets
+task status and receives management approvals. After all of the
+associated tasks for the SObject are approved and it is packaged up and
+marked complete, its production history information, files, and data are
+all still available as a package.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_process"></a>13.22. Process</h3></div></div></div><p>A process is a definable phase in the pipeline of an asset. Processes
+require some type of delivery upon completion, and often require that an
+asset be checked in as part of the delivery mechanism. A process is
+typically assigned to one person or one department. For large projects,
+a single department could be assigned many processes.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_project_schema"></a>13.23. Project Schema</h3></div></div></div><p>The project schema defines the hierarchy between Search Types in TACTIC.
+The schema definitions are stored in a "schema" SObject which stores the
+parent and child relationships between the various Search Types in the
+project. The schema is automatically updated when search_types are
+created in TACTIC, and can be modified in a schema view.</p><p>Searchable Types define how you want to manage your objects and also
+define a separation in pipelines, views, checkin methods and more. They
+are some of the most important configuration aspects of TACTIC. The
+majority of the TACTIC architecture is built around the use of search
+types for the needs of the project as well as many of the system level
+aspects.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_sandbox"></a>13.24. Sandbox</h3></div></div></div><p>The location on your workstation storing the files you are currently
+working on.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_insert_2"></a>13.25. Insert</h3></div></div></div><p>When creating new Search Objects in your project, you are effectiavely
+<span class="emphasis"><em>inserting</em></span> a new row into the database. If you insert a new Art
+sObject, you are creating a new entry in the "art" table in your
+project’s database.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_checkin"></a>13.26. Checkin</h3></div></div></div><p>Checkins in Tactic is generally the process of placing and registering
+all of the files that represent a "snapshot" of that object. This
+snapshot is a package in itself that understands all of the versioning
+and location for all files and/or folders that are a part of that
+checkin.</p><p>With the notion of each Search Object being a container, creating
+snapshots can be compared to creating and storing packages in this
+container.</p><p>From the back-end of Tactic the great aspect of this process is that
+this package is simply meta data that points to where the actual files
+and folders live in the file system. The main benefits of this that if
+Tactic we to be shut off, the files system will still be available and
+very well organized.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s12.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

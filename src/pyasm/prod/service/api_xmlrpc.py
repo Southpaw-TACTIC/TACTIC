@@ -3696,7 +3696,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             #only update versionless for the last file
             do_update_versionless = False
-            if i == len(filepaths)-1:
+            if i == len(file_paths)-1:
                 do_update_versionless = True
 
             checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type, do_update_versionless=do_update_versionless)
