@@ -1216,6 +1216,36 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
 
+
+
+
+        search = Search("sthpw/milestone")
+        if login:
+            search.add_filter("login", login)
+        if project_code:
+            if project_code == "$PROJECT":
+                search.add_project_filter()
+            else:
+                search.add_filter("project_code", project_code)
+
+        search.add_filter("due_date", my.start_date, op=">")
+        search.add_filter("due_date", my.end_date, op="<")
+        my.milestone_count = search.get_count()
+        my.milestones = search.get_sobjects()
+        my.milestones_count = {} # NOTE: this one is plural!
+        for milestone in my.milestones:
+            date = milestone.get_value("due_date")
+            date = parser.parse(date)
+            date = datetime(date.year, date.month, date.day)
+
+            count = my.milestones_count.get(str(date))
+            if not count:
+                count = 0
+            count += 1
+            my.milestones_count[str(date)] = count
+
+
+
     def get_day_wdg(my, month, day):
 
         div = DivWdg()
@@ -1317,6 +1347,107 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
         line_div.add("%s work hours<br/>" % work_hours)
+
+
+
+
+
+
+
+
+
+
+
+
+        line_div = DivWdg()
+        div.add(line_div)
+        line_div.add_style("padding: 3px")
+
+
+
+        num_milestone = my.milestones_count.get(key)
+        if num_milestone:
+            icon = IconWdg("Milestones", IconWdg.GOOD)
+            line_div.add(icon)
+            line_div.add_style("font-style: italic")            
+            line_div.add_style("cursor: pointer;")
+            line_div.add("Has %i milestone(s)<br/>" % (num_milestone))
+
+            key_array = key.split(" ")
+            single_day = key_array[0]
+            time_key = datetime.strptime(single_day, "%Y-%m-%d")
+            next_day = time_key + timedelta(days=1)
+            next_day = next_day.__str__()
+
+
+
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+
+                var class_name = "tactic.ui.panel.FastTableLayoutWdg";
+                var popup_kwargs = {
+                    "search_type": "sthpw/milestone",
+                    "expression": "@SOBJECT(sthpw/milestone['due_date', '>=','%s']['due_date', '<=','%s'])"
+                    };
+
+                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+
+
+                    //"expression": "@SOBJECT(sthpw/milestone['due_date', 'moo'])"
+
+                ''' % (single_day, next_day)
+            } )
+
+
+        else:
+            num_milestone = 0
+            icon = IconWdg("Milestones", IconWdg.PLUS_ADD)
+            line_div.add(icon)
+            #line_div.add_style("opacity: 0.85")
+            line_div.add("Add milestone<br/>")
+            line_div.add_style("cursor: pointer;")
+        
+
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var server = TacticServerStub.get();
+                var date_div = bvr.src_el.getParent("td");
+                var date = date_div.firstChild.firstChild.textContent;
+
+                date = date.slice(1,date.length-1);
+
+                var table_div = bvr.src_el.getParent(".spt_calendar_top");
+                var month_year = table_div.getElements("td")[1].textContent;
+
+                var month_year_array = month_year.split(" ");
+                var month = month_year_array[0]
+                month = month.slice(0,month.length-1);
+                var year = month_year_array[1];
+
+                var due_date_string = month.concat(" " + date + ", ").concat(year);
+
+                var due_date = new Date(due_date_string);
+
+                var project_code = server.get_project();
+
+                data = {            
+                    "due_date": due_date_string,
+                    "project_code": project_code
+                }; 
+
+                var class_name = "tactic.ui.panel.EditWdg";
+                var popup_kwargs = {
+                    "default": data, 
+                    "search_type": "sthpw/milestone"
+                    };
+
+                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+
+                // change the text to unclickable and change the image to the has image
+                '''
+            } )
 
 
         #div.add("%s tasks completed<br/>" % my.task_count)
