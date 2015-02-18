@@ -2734,12 +2734,18 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
 
 
-    var layout = element.getParent(".spt_layout");
-    if (!layout) {
-        if (element.hasClass("spt_layout"))
-            layout = element;
-        else if (panel)
-            layout = panel.getElement(".spt_layout");
+    
+    var layout;
+    // adopt it if element is already the layout
+    if (element.hasClass("spt_layout"))
+        layout = element;
+    else {
+        layout = element.getParent(".spt_layout");
+        if (!layout) {
+            
+            if (panel)
+                layout = panel.getElement(".spt_layout");
+        }
     }
     // default to version 2 table
     var version = "2";
@@ -2756,7 +2762,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
             return;
         }
     }
-    
     // if panel doesn't exist, then likely this is a table on its own
     if (panel == null) {
         var table_top;
@@ -2772,7 +2777,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
                    
                    var element_names = version == "2" ? spt.table.get_element_names() :  spt.dg_table.get_element_names(table);
                    
-
+              
                    if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
@@ -2945,6 +2950,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var element_names;
     var column_widths = [];
     var search_keys = [];
+    
     if (version == "2") {
         if (bvr.element_names) {
             element_names = bvr.element_names;
@@ -2957,7 +2963,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
             var size = headers[i].getSize();
             column_widths.push(size.x);
         }
-
         // specify selected search keys (disabling for now)
         //search_keys = spt.table.get_selected_search_keys();
         search_keys = []

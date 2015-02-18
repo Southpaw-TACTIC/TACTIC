@@ -846,9 +846,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # TEST: on by default
         show_keyword_search = True
 
+        show_search = my.kwargs.get("show_search") != 'false'
 
        
-        if show_keyword_search:
+        if show_search and show_keyword_search:
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
@@ -1126,7 +1127,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-            button = ActionButtonWdg(title='Search')
+            if show_search:
+                search_label = 'Search'
+            else:
+                search_label = 'Refresh'
+            button = ActionButtonWdg(title=search_label)
             my.run_search_bvr = my.kwargs.get('run_search_bvr')
             if my.run_search_bvr:
                 button.add_behavior(my.run_search_bvr)
