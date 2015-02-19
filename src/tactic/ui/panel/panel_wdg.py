@@ -2673,6 +2673,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '07',
             'category': 'Display'
         },
+         "search_limit_mode": {
+            'description': "determine if it displays top, bottom or both search limit",
+            'type': 'SelectWdg',
+            'values': 'bottom|top|both',
+            'order': '07a',
+            'category': 'Display'
+        },
+
 
         'show_insert': {
             'description': 'Flag to determine whether or not to show the insert button',
@@ -3097,6 +3105,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         schema_default_view = my.kwargs.get("schema_default_view")
         show_keyword_search = my.kwargs.get("show_keyword_search")
         show_search_limit = my.kwargs.get("show_search_limit")
+        search_limit_mode = my.kwargs.get("search_limit_mode")
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
         show_column_manager = my.kwargs.get("show_column_manager")
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -3147,6 +3156,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_search": show_search,
             "show_keyword_search": show_keyword_search,
             "show_search_limit": show_search_limit,
+            "search_limit_mode": search_limit_mode,
             "show_layout_switcher": show_layout_switcher,
             "show_column_manager": show_column_manager,
             "show_context_menu": show_context_menu,
