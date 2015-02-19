@@ -2943,6 +2943,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
     var simple_search_view = target.getAttribute("spt_simple_search_view");
     var simple_search_mode = target.getAttribute("spt_simple_search_mode");
+    var search_limit_mode = target.getAttribute("spt_search_limit_mode");
     var search_dialog_id = target.getAttribute("spt_search_dialog_id");
     var do_initial_search = target.getAttribute("spt_do_initial_search");
     var init_load_num = target.getAttribute("spt_init_load_num");
@@ -3009,6 +3010,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'edit_view': edit_view,
         'simple_search_view': simple_search_view,
         'simple_search_mode': simple_search_mode,
+        'search_limit_mode': search_limit_mode,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
         'checkin_type': checkin_type,
