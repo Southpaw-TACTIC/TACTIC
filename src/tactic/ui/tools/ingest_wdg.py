@@ -186,23 +186,20 @@ class IngestUploadWdg(BaseRefreshWdg):
         bgcolor2 = div.get_color("background3", -3)
 
         #style_text = "text-align: center; margin-top: 100px; color: #A0A0A0; font-size: 3.0em; z-index: 10;"
+
+        background = DivWdg()
+        background.add_class("spt_files_background")
+        files_div.add(background)
+
+        background.add_style("text-align: center")
+        background.add_style("margin-top: 100px")
+        background.add_style("opacity: 0.65")
+        background.add_style("font-size: 3.0em")
+        background.add_style("z-index: 10")
+
         background_text = DivWdg("<p>Drag Files Here</p>")
-        background_text.add_style("text-align: center")
-        background_text.add_style("margin-top: 100px")
-        background_text.add_style("opacity: 0.65")
-        background_text.add_style("font-size: 3.0em")
-        background_text.add_style("z-index: 10")
-        files_div.add(background_text)
 
-        background_text.add_behavior( {
-            'type': 'mouseenter',
-            'bgcolor': bgcolor2,
-            'cbjs_action': '''
-            bvr.src_el.parentNode.setStyle("border","3px dashed %s")
-            bvr.src_el.parentNode.setStyle("background","%s")
-            ''' % (border_color_dark, background_mouseenter)
-        } )
-
+        background.add(background_text)
 
         files_div.add_behavior( {
             'type': 'mouseover',
