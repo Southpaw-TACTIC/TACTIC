@@ -162,6 +162,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br clear='all'/>")
         div.add("<br clear='all'/>")
 
+        border_color_light = div.get_color("background2", 8)
+        border_color_dark = div.get_color("background2", -15)
+        background_mouseout = div.get_color("background3", 10)
+        background_mouseenter = div.get_color("background3", 8)
+
 
         files_div = DivWdg()
         files_div.add_style("position: relative")
@@ -171,8 +176,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("height: 300px")
         files_div.add_style("overflow-y: auto")
         files_div.add_style("padding: 3px")
-        files_div.add_color("background", "#f7f7f7")
-        files_div.add_style("border: 3px dashed #b8e5f5")
+        files_div.add_color("background", background_mouseout)
+        files_div.add_style("border: 3px dashed %s" % border_color_light)
         files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
         #files_div.add_style("display: none")
@@ -180,23 +185,22 @@ class IngestUploadWdg(BaseRefreshWdg):
         bgcolor = div.get_color("background3")
         bgcolor2 = div.get_color("background3", -3)
 
-        style_text = """
-            text-align: center;
-            margin-top: 100px;
-            color: #A0A0A0;
-            font-size: 3.0em;
-            z-index: 10;
-            """
-        background_text = DivWdg("<p style='%s'>Drag Files Here</p>" % style_text)
+        #style_text = "text-align: center; margin-top: 100px; color: #A0A0A0; font-size: 3.0em; z-index: 10;"
+        background_text = DivWdg("<p>Drag Files Here</p>")
+        background_text.add_style("text-align: center")
+        background_text.add_style("margin-top: 100px")
+        background_text.add_style("opacity: 0.65")
+        background_text.add_style("font-size: 3.0em")
+        background_text.add_style("z-index: 10")
         files_div.add(background_text)
 
         background_text.add_behavior( {
             'type': 'mouseenter',
             'bgcolor': bgcolor2,
             'cbjs_action': '''
-            bvr.src_el.parentNode.setStyle("border","3px dashed #64bbdb")
-            bvr.src_el.parentNode.setStyle("background","#d1e9f0")
-            '''
+            bvr.src_el.parentNode.setStyle("border","3px dashed %s")
+            bvr.src_el.parentNode.setStyle("background","%s")
+            ''' % (border_color_dark, background_mouseenter)
         } )
 
 
@@ -204,19 +208,19 @@ class IngestUploadWdg(BaseRefreshWdg):
             'type': 'mouseover',
             'bgcolor': bgcolor2,
             'cbjs_action': '''
-            bvr.src_el.setStyle("border","3px dashed #64bbdb")
-            bvr.src_el.setStyle("background","#d1e9f0")
-            '''
+            bvr.src_el.setStyle("border","3px dashed %s")
+            bvr.src_el.setStyle("background","%s")
+            ''' % (border_color_dark, background_mouseenter)
         } )
 
         files_div.add_behavior( {
             'type': 'mouseout',
             'bgcolor': bgcolor,
             'cbjs_action': '''
-            bvr.src_el.setStyle("border", "3px dashed #b8e5f5")
-            bvr.src_el.setStyle("background","#f7f7f7")
-            '''
-        } )
+            bvr.src_el.setStyle("border", "3px dashed %s")
+            bvr.src_el.setStyle("background","%s")
+            ''' % (border_color_light, background_mouseout)
+        } ) 
 
 
 

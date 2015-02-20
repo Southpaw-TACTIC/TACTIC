@@ -397,7 +397,7 @@ class HashPanelWdg(BaseRefreshWdg):
             name_end = name_array[-1]
             name_end = name_end.replace("_", " ")
             widget.set_name(name_end)
-        except:
+        except IndexError:
             widget.set_name(name)
 
         return widget
