@@ -2597,7 +2597,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         #tr.add_attr("ondragenter", "return false")
         tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
         tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
-        #tr.add_attr("ondrop", "event.stopPropagation();event.preventDefault();alert('cow');")
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
@@ -3812,6 +3811,7 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
+    
 
     // remove the first child
     // FIXME: should we rely on firstChild?
@@ -4027,21 +4027,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     // this assumes there is an input that needs to altered
     var type = edit_cell.getAttribute("spt_input_type");
     var input = edit_wdg.getElement(".spt_input");
-     /*
-    var inputs = edit_wdg.getElements(".spt_input");
-    var input = inputs[0];
-    var hidden_input;
 
-   
-    inputs.each(function(el) { if (el.type == 'hidden') 
-                                hidden_input = el;
-                                else
-                                input = el;});
-   
 
-    //this could be a hidden input
-   
-     */
     var value = edit_cell.getAttribute("spt_input_value");
     var parse_selected_text = function(input)
     {
@@ -4072,6 +4059,12 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (input.hasClass("SPT_NO_RESIZE") ) {
         // do nothing
     }
+    else if (input.hasClass("SPT_NO_ACTION") ) {
+        if (value) {
+            input.value = value;
+        }
+    }
+ 
     else if (input.nodeName == "TEXTAREA") {
         set_focus = true;
 
@@ -4108,6 +4101,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
             input.setStyle( "width", size.x+30 + 'px');
+
+
+            // **** NOT USED ****
             //edit_wdg.setStyle('background','white');
             //edit_wdg.setStyle('color','black');
 
@@ -4124,6 +4120,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 if (cal)
                     spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
             }
+            // -------------------
+
+
+
+
         }
         else if (input.type == "checkbox") {
             var cell_value = edit_cell.getAttribute('spt_input_value');

@@ -171,6 +171,17 @@ class TextInputWdg(BaseInputWdg):
         my.top = DivWdg()
 
 
+
+        height = my.kwargs.get("height")
+        if height:
+            height = height.replace("px", "")
+            height = int(height)
+        else:
+            height = 40
+
+        my.height = height
+
+
         super(TextInputWdg, my).__init__()
 
         my.icon = my.kwargs.get("icon")
@@ -193,8 +204,11 @@ class TextInputWdg(BaseInputWdg):
 
 
     def add_style(my, name, value=None):
+        if not name:
+            return
+
         if not value:
-            name, value = name.split(": ")
+            name, value = re.split(":\ ?", name)
 
         if name == 'width':
             my.width = value
@@ -380,16 +394,7 @@ class TextInputWdg(BaseInputWdg):
 
             edit_div.add(icon)
 
-
-        height = my.kwargs.get("height")
-        if height:
-            height = height.replace("px", "")
-            height = int(height)
-        else:
-            height = 40
-
-
-        my.text.add_style("height: %s" % height)
+        my.text.add_style("height: %s" % my.height)
 
 
         # BOOTSTRAP
@@ -509,7 +514,7 @@ class TextInputWdg(BaseInputWdg):
 
 		
         my.text.add_style("padding: 5px")
-        my.text.add_style("height: %s" % (height-10))
+        my.text.add_style("height: %s" % (my.height-10))
 
 
 
@@ -898,7 +903,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                             hidden.value = value;
                         }
                     }
-                    var custom = bvr.custom.enter;
+                    if (key == 'enter') {
+                        var custom = bvr.custom.enter;
+                    } else {
+                        alert("tab");
+                        var custom = bvr.custom.tab;
+                    }
+
                     if (custom) {
                         eval(custom);
                     }
@@ -976,7 +987,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 25px")
+        #results_div.add_style("top: 25px")
+        results_div.add_style("top: %spx" % (my.height - 10))
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")

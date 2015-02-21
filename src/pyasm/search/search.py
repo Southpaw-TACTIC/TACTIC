@@ -533,7 +533,7 @@ class Search(Base):
                     table = parts[0]
                     name = parts[1]
 
-                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on')
+                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
                     values =  value.split('|')
@@ -542,6 +542,9 @@ class Search(Base):
                     my.add_filters(name, values, op=op, table=table)
                 elif op in ['EQ','NEQ','EQI','NEQI']:
                     my.add_regex_filter(name, value, op)
+                elif op in ['@@']:
+                    value = value.replace('"', "'")
+                    my.add_text_search_filter(name, value, table=table)
 
                 else:
                     if op == 'is after':
