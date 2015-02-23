@@ -1057,7 +1057,7 @@ class PluginInstaller(PluginBase):
         '''get unique sobject in the existing table when installing plugin'''
         base_st = sobject.get_base_search_type()
         if base_st == 'config/widget_config':
-            cols = ['view','search_type','category','widget_type']
+            cols = ['view','search_type','category','widget_type','login']
         elif base_st == 'config/naming':
             cols = ['search_type','context','checkin_type','snapshot_type','condition','latest_versionless','current_versionless','manual_version']
         elif base_st == 'config/url':
