@@ -75,7 +75,7 @@ class PopupWdg(BaseRefreshWdg):
             my.destroy_on_close = True
 
         my.allow_close = True
-        if my.kwargs.get('allow_close') == 'false':
+        if my.kwargs.get('allow_close') in ['false', 'False', False]:
             my.allow_close = False
 
 
@@ -92,7 +92,8 @@ class PopupWdg(BaseRefreshWdg):
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
             var popup=spt.popup.get_popup( bvr.src_el );
-            spt.named_events.fire_event('preclose_' + popup.id, {});
+            var popup_id = popup.id;
+            spt.named_events.fire_event('preclose_' + popup_id, {});
         '''
 
         if my.destroy_on_close:
@@ -899,6 +900,7 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
+    var on_close = options["on_close"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
     var popup = null;
@@ -944,7 +946,8 @@ spt.popup.get_widget = function( evt, bvr )
 
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
-    popup.setStyle("left", "-10000px")
+    popup.setStyle("left", "-10000px");
+    spt.behavior.add(popup, {'type':'listen', 'event_name':"preclose_" + popup_id, 'cbjs_action': String(on_close) + "; on_close();"});
     spt.popup.open( popup );
 
     // add the place holder
