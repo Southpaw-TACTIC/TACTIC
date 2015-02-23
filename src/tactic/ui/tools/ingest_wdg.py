@@ -203,7 +203,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         files_div.add_behavior( {
             'type': 'mouseover',
-            'bgcolor': bgcolor2,
             'cbjs_action': '''
             bvr.src_el.setStyle("border","3px dashed %s")
             bvr.src_el.setStyle("background","%s")
@@ -212,7 +211,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         files_div.add_behavior( {
             'type': 'mouseout',
-            'bgcolor': bgcolor,
             'cbjs_action': '''
             bvr.src_el.setStyle("border", "3px dashed %s")
             bvr.src_el.setStyle("background","%s")
