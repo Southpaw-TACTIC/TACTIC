@@ -1228,8 +1228,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             else:
                 search.add_filter("project_code", project_code)
 
-        search.add_filter("due_date", my.start_date, op=">")
-        search.add_filter("due_date", my.end_date, op="<")
+        search.add_filter("due_date", my.start_date, op=">=")
+        search.add_filter("due_date", my.end_date, op="<=")
         my.milestone_count = search.get_count()
         my.milestones = search.get_sobjects()
         my.milestones_count = {} # NOTE: this one is plural!
@@ -1288,8 +1288,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             div.add("[%s]" % day.day)
 
 
-        div.add("<br/>")
-        div.add("<br/>")
+        div.add(HtmlElement.br(2))
 
 
         key = "%s-%0.2d-%0.2d 00:00:00" % (day.year, day.month, day.day)
@@ -1305,8 +1304,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_tasks = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s task/s due<br/>" % num_tasks)
-
+        line_div.add("%s task/s due" % num_tasks)
+        line_div.add(HtmlElement.br())
 
 
 
@@ -1320,7 +1319,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_snapshots = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s check-in/s<br/>" % num_snapshots )
+        line_div.add("%s check-in/s" % num_snapshots )
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1333,7 +1333,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_notes = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s note/s<br/>" % num_notes)
+        line_div.add("%s note/s" % num_notes)
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1346,7 +1347,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             work_hours = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s work hours<br/>" % work_hours)
+        line_div.add("%s work hours" % work_hours)
+        line_div.add(HtmlElement.br())
 
 
 
@@ -1371,7 +1373,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             line_div.add(icon)
             line_div.add_style("font-style: italic")            
             line_div.add_style("cursor: pointer;")
-            line_div.add("Has %i milestone(s)<br/>" % (num_milestone))
+            line_div.add("Has %i milestone(s)" % (num_milestone))
+            line_div.add(HtmlElement.br())
 
             key_array = key.split(" ")
             single_day = key_array[0]
@@ -1393,9 +1396,6 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
                 spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
 
-
-                    //"expression": "@SOBJECT(sthpw/milestone['due_date', 'moo'])"
-
                 ''' % (single_day, next_day)
             } )
 
@@ -1405,7 +1405,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             icon = IconWdg("Milestones", IconWdg.PLUS_ADD)
             line_div.add(icon)
             #line_div.add_style("opacity: 0.85")
-            line_div.add("Add milestone<br/>")
+            line_div.add("Add milestone")
+            line_div.add(HtmlElement.br())
             line_div.add_style("cursor: pointer;")
         
 
@@ -1427,8 +1428,6 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                 var year = month_year_array[1];
 
                 var due_date_string = month.concat(" " + date + ", ").concat(year);
-
-                var due_date = new Date(due_date_string);
 
                 var project_code = server.get_project();
 
