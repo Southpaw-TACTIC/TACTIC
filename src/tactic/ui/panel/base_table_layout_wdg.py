@@ -280,6 +280,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
+        my.simple_search_view = my.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
@@ -398,11 +399,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             state_filter = my.state.get('filter')
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+
+        if my.kwargs.get('op_filters'):
+            search.add_op_filters(my.kwargs.get("op_filters"))
+
+
         # passed in filter overrides
-        """
-        if state_filter:
-            filter_data.set_data(state_filter)
-        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
         
@@ -506,7 +508,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
 
         if my.is_sobjects_explicitly_set():
@@ -570,7 +572,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_values:
 
-           
             keyword_value = keyword_values[0].get('value')
             if keyword_value:
                 from tactic.ui.filter import KeywordFilterElementWdg
@@ -637,7 +638,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
+        if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
+            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -835,16 +837,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         column = "keywords"
+        simple_search_mode = my.kwargs.get("simple_search_mode")
+        
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
 
-        # TEST
+        # TEST: on by default
         show_keyword_search = True
 
-        
+
        
         if show_keyword_search:
             keyword_div = DivWdg()
@@ -861,11 +865,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="", width="75", show_partial=False, show_toggle=True)
+            keyword_filter = KeywordFilterElementWdg(
+                    column=my.keyword_column,
+                    mode="keyword",
+                    filter_search_type=my.search_type,
+                    icon="",
+                    width="75",
+                    show_partial=False,
+                    show_toggle=True
+            )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -875,39 +886,40 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                 var el = bvr.src_el.getElement(".spt_text_input");
+                var el = bvr.src_el.getElement(".spt_text_input");
                 el.setStyle("width", "230px");
-                bvr.src_el.setStyle("width", "230px");
                 el.focus();
                 el.select();
                 '''})
 
-            keyword_div.add_relay_behavior( {
-                'type': 'click',
-                'bvr_match_class': 'spt_search_toggle',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_view_panel_top");
-                if (top) {
-                    var simple_search = top.getElement(".spt_simple_search");
-                    if (simple_search) {
-                        simple_search.setStyle("display", "");
-                        spt.body.add_focus_element(simple_search);
+            if simple_search_mode != 'inline':
+                keyword_div.add_relay_behavior( {
+                    'type': 'click',
+                    'bvr_match_class': 'spt_search_toggle',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_view_panel_top");
+                    if (top) {
+                        var simple_search = top.getElement(".spt_simple_search");
+                        if (simple_search) {
+                            simple_search.setStyle("display", "");
+                            spt.body.add_focus_element(simple_search);
+                        }
                     }
-                }
 
-               
+                   
 
-                '''
-            } )
+                    '''
+                } )
 
 
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
                 'cbjs_action': '''
-
-                var el = bvr.src_el.getElement(".spt_text_input");
-                el.setStyle("width", "50px");
+                
+                var el = bvr.src_el;
+                
+                el.setStyle("width", "75px");
 
                 '''
             } )
@@ -947,9 +959,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             num_div.add_style("padding: 5px")
             
             # -- SEARCH LIMIT DISPLAY
-            if my.items_found == 0 and my.search:
-                my.items_found = my.search.get_count()
+            if my.items_found == 0:
+                if my.search:
+                    my.items_found = my.search.get_count()
+                elif my.sobjects:
+                    my.items_found = len(my.sobjects)
 
+           
             if my.items_found == 1:
                 num_div.add( "%s %s" % (my.items_found, _("item found")))
             else:
@@ -1106,8 +1122,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         wdg_list = []
 
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
+
+
+
+
+
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            keyword_div.add_style("margin-left: 20px")
+
 
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -1123,13 +1147,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 5px")
+            button_div.add_style("margin-left: -6px")
             wdg_list.append({'wdg': button_div})
 
 
-
-        if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
@@ -1281,10 +1304,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        save_button = ActionButtonWdg(title="Save", is_disabled=False)
-        save_button_top = save_button.get_top()
-        save_button_top.add_style("display", "none")
-        save_button_top.add_class("spt_save_button")
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button.add_style("display", "none")
+        save_button.add_class("spt_save_button")
+        # it needs to be called save_button_top for the button to re-appear after its dissapeared
+
         #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
 

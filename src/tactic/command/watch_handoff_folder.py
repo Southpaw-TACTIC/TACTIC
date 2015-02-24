@@ -37,7 +37,6 @@ class WatchServerFolderTask(SchedulerTask):
     def execute(my):
         Batch()
 
-
         # get all of the file servers
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")

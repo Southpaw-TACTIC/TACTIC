@@ -525,6 +525,7 @@ class UploadAction(DatabaseAction):
         
         field_storage = my.get_value(prefix)
         handoff_path = my.get_value("%s|path" % prefix )
+        custom_ticket = my.get_value("%s|ticket" % prefix )
 
         from pyasm.widget import CheckboxWdg
         cb = CheckboxWdg("%s|is_revision" % prefix)
@@ -537,6 +538,10 @@ class UploadAction(DatabaseAction):
             #if not os.path.exists(handoff_path):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
+
+            # in case it's supplied by widget like SimpleUploadWdg
+            if custom_ticket:
+                ticket = custom_ticket
 
             handoff_path = os.path.basename(handoff_path)
             handoff_path = Common.get_filesystem_name(handoff_path)

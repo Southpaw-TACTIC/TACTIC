@@ -412,6 +412,8 @@ class IconWdg(DivWdg):
             part = icon_path.replace("BS_", "")
             part = part.lower()
             part = part.replace("_","-")
+            if part == "save":
+                part = "floppy-disk"
             icon.add_class("glyphicon-%s" % part)
             if not my.size:
                 my.size = "16px"

@@ -595,6 +595,20 @@ CREATE TABLE change_timestamp (
 );
 
 
+-- interaction
+CREATE TABLE interaction (
+    id serial PRIMARY KEY,
+    code varchar(256),
+    project_code varchar(256),
+    login varchar(256),
+    key varchar(1024),
+    data text,
+    "timestamp" timestamp default now()
+);
+CREATE INDEX "interaction_key_idx" on interaction (key);
+
+
+
 
 
 

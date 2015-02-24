@@ -29,9 +29,14 @@ class GlobalSearchTrigger(Trigger):
 
         input = my.get_input()
         search_key = input.get("search_key")
-        sobj_id = input.get('id')
         search_code = input.get('search_code')
-        assert(sobj_id)
+
+        sobj_id = input.get('id')
+        if not sobj_id:
+            sobj = Search.get_by_search_key(search_key)
+            sobj_id = sobj.get_id()
+
+        assert(sobj_id != None)
 
         # it is possible that the id is not an integer (ie MongoDb)
         # In this case, search_id cannot be used and this id is considered

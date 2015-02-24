@@ -212,7 +212,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
         checkbox.set_attr("value", related_type)
-        if related_type == "sthpw/snapshot":
+        if related_type in ["sthpw/snapshot", "sthpw/file"]:
             checkbox.set_checked()
 
         item_div.add(" ")

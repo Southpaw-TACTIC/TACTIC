@@ -238,7 +238,8 @@ QUERY_METHODS = {
     #'get_related_relationship': 0,
     'test_speed': 0,
     'get_upload_file_size': 0,
-    'get_doc_link': 0
+    'get_doc_link': 0,
+    'get_interaction_count': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -1071,6 +1072,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #
+    # user interaction
+    #
+    @xmlrpc_decorator
+    def add_interaction(my, ticket, key, data={}):
+
+        interaction = SearchType.create("sthpw/interaction")
+        interaction.set_value("key", key)
+        if data:
+            interaction.set_value("data", jsondumps(data))
+
+        interaction.set_user()
+        project_code = Project.get_project_code()
+        interaction.set_value("project_code", project_code)
+
+        interaction.commit()
+        sobject_dict = my._get_sobject_dict(interaction)
+        return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_interaction_count(my, ticket, key):
+        interaction = Search("sthpw/interaction")
+        interaction.add_filter("key", key)
+        return interaction.get_count()
+
+
+
+ 
+
+    #
     # Undo/Redo functionality
     #
     @trace_decorator
@@ -1290,9 +1321,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
-        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
-    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
+    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
+        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects, parent_key)
+    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
         '''
         General query for sobject information
 
@@ -1311,6 +1342,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         distinct - specify a distinct column
         return_sobjects - return sobjects instead of dictionary.  This
                 works only when using the API on the server.
+        parent_key - parent filter
 
         @return
         data - an array of dictionaries.  Each array item represents an sobject
@@ -1363,7 +1395,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if show_retired:
             search.set_show_retired(True)
-    
+
+        if parent_key:
+            search.add_parent_filter(parent_key)
 
         #import time
         #start = time.time()
@@ -3660,7 +3694,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         source_paths.append('')
                         source_paths.append('')
 
-            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type)
+            #only update versionless for the last file
+            do_update_versionless = False
+            if i == len(file_paths)-1:
+                do_update_versionless = True
+
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type, do_update_versionless=do_update_versionless)
             checkin.execute()
             snapshot = checkin.get_snapshot()
 
@@ -4320,6 +4359,53 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
+    def get_tasks(my, ticket, search_key, process=None):
+        '''Get the tasks of an sobject
+
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of tasks
+        '''
+
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+        sobject = Search.get_by_search_key(search_key)
+
+        search = Search("sthpw/task")
+        search.set_parent(sobject)
+        if process:
+            search.add_filter("process", process)
+        tasks = search.get_sobjects()
+
+        ret_tasks = []
+        for task in tasks:
+            task_dict = my._get_sobject_dict(task)
+            ret_tasks.append(task_dict)
+
+        return ret_tasks
+
+
+    @xmlrpc_decorator
+    def get_task_status_colors(my, ticket):
+        '''Get all the colors for a task status
+
+        ticket - authentication ticket
+ 
+        @return:
+        dictionary of colors
+        '''
+        from pyasm.biz import Task
+        return Task.get_status_colors()
+
+
+
+
+
+
+    @xmlrpc_decorator
     def get_input_tasks(my, ticket, search_key):
         '''Get the input tasks of a task based on the pipeline
         associated with the sobject parent of the task
@@ -4714,7 +4800,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
  
 
     @xmlrpc_decorator
-    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}):
+    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}, interaction={}):
         '''get a defined widget
 
         @params
@@ -4757,6 +4843,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+                if libraries.has_key("spt_help"):
+                    from tactic.ui.app import HelpWdg
+                    HelpWdg()
+
                 Container.put("JSLibraries", libraries)
                 Container.put("request_top_wdg", widget)
 
@@ -4766,6 +4856,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     print "BVR Count: ", Container.get('Widget:bvr_count')
                     print "Sending: %s KB" % (len(html)/1024)
                     print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+
+
+                # add interaction, if any
+                if interaction:
+                    #interaction = SearchType.create("sthpw/interaction")
+                    pass
 
                 return html
 

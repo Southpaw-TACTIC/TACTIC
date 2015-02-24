@@ -639,7 +639,7 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
-    def get_max_users(my):
+    def get_max_users(my, site):
         return
 
 
@@ -880,7 +880,7 @@ class NoDatabaseSecurity(Base):
         return my.is_logged_in_flag
     def get_license(my):
         return License()
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         None
     def login_user(my, login_name, password, expiry=None, domain=None):
         my.is_logged_in_flag = True
@@ -1584,15 +1584,9 @@ class Security(Base):
 
         # go through all of the groups and add access rules
         for group in my._groups:
-            access_rules_xml = group.get_xml_value("access_rules")
-            my._access_manager.add_xml_rules(access_rules_xml)
-
-        # DEPRECATED
-        # get all of the security rules
-        #security_rules = AccessRule.get_by_groups(my._groups)
-        #for rule in security_rules:
-        #    access_rules_xml = rule.get_xml_value("rule")
-        #    my._access_manager.add_xml_rules(access_rules_xml)
+            #access_rules_xml = group.get_xml_value("access_rules")
+            #my._access_manager.add_xml_rules(access_rules_xml)
+            my._access_manager.add_xml_rules(group)
 
 
 
@@ -1778,8 +1772,9 @@ class License(object):
 
 
     def get_max_users(my):
+        site = Site.get_site()
         site_obj = Site.get()
-        value = site_obj.get_max_users()
+        value = site_obj.get_max_users(site)
         if not value:
             value = my.xml.get_value("license/data/max_users")
         try:

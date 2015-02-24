@@ -630,6 +630,8 @@ class CheckinButtonElementWdg(ButtonElementWdg):
             search_key = SearchKey.get_by_sobject(parent)
         else:
             my.process = my.get_option('process')
+            if not my.process:
+                my.process = "publish"
             search_key = SearchKey.get_by_sobject(sobject)
 
 
