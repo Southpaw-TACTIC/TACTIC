@@ -247,23 +247,13 @@ spt.behavior.propagate_hover_up = function( hover_type, start_el, evt )
 
 spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
 {
-    try {
 
-        cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
-        eval( cbjs_str );
-        run_bvr();
-    } catch(e) {
-        log.error( "___________________________________________________________________________________________" );
-        log.error( "Caught javascript ERROR: " + e );
-        log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
-        log.error( "..........................................................................................." );
-        log.error( " " );
-        log.error( cbjs_str );
-        log.error( " " );
-        log.error( "___________________________________________________________________________________________" );
-        throw(e)
-    }
+    cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
+
+    eval( cbjs_str );
+    run_bvr();
+
 }
 
 
