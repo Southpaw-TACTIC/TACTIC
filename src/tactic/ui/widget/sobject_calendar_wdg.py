@@ -17,7 +17,7 @@ __all__ = ['SObjectCalendarWdg', 'BaseCalendarDayWdg', 'TaskCalendarWdg', 'TaskC
 from pyasm.common import Common, jsonloads, Container
 from pyasm.biz import Pipeline
 from pyasm.search import Search, SearchType
-from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
+from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
 from calendar_wdg import CalendarWdg
@@ -1231,9 +1231,9 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
         search.add_filter("due_date", my.start_date, op=">=")
         search.add_filter("due_date", my.end_date, op="<=")
         my.milestone_count = search.get_count()
-        my.milestones = search.get_sobjects()
+        milestones = search.get_sobjects()
         my.milestones_count = {} # NOTE: this one is plural!
-        for milestone in my.milestones:
+        for milestone in milestones:
             date = milestone.get_value("due_date")
             date = parser.parse(date)
             date = datetime(date.year, date.month, date.day)
@@ -1292,6 +1292,9 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
         key = "%s-%0.2d-%0.2d 00:00:00" % (day.year, day.month, day.day)
+
+        div.add_attr("date", key)
+        div.add_class("spt_date_div_content")
 
 
         line_div = DivWdg()
@@ -1376,27 +1379,26 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             line_div.add("Has %i milestone(s)" % (num_milestone))
             line_div.add(HtmlElement.br())
 
-            key_array = key.split(" ")
-            single_day = key_array[0]
-            time_key = datetime.strptime(single_day, "%Y-%m-%d")
-            next_day = time_key + timedelta(days=1)
-            next_day = next_day.__str__()
-
-
-
+            
             line_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
 
+                var key_array = "%s".split(" "); // array
+                var single_day = key_array[0]; // string
+                var time_key = Date.parse(single_day); // time object
+                var time_key_str = time_key.format('db'); // string
+                var next_day = time_key.increment('day', 1).format('db'); // string
+
                 var class_name = "tactic.ui.panel.FastTableLayoutWdg";
                 var popup_kwargs = {
                     "search_type": "sthpw/milestone",
-                    "expression": "@SOBJECT(sthpw/milestone['due_date', '>=','%s']['due_date', '<=','%s'])"
+                    "expression": "@SOBJECT(sthpw/milestone['due_date', '>=', '" + time_key_str + "']['due_date', '<=', '" + next_day + "']['@ORDER_BY', 'due_date desc'])"
                     };
 
                 spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
 
-                ''' % (single_day, next_day)
+                ''' % (key)
             } )
 
 
@@ -1415,17 +1417,15 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                 'cbjs_action': '''
                 var server = TacticServerStub.get();
                 var date_div = bvr.src_el.getParent("td");
-                var date = date_div.firstChild.firstChild.textContent;
+                var full_date = date_div.getElement(".spt_date_div_content").getAttribute("date");
+                var date_array = full_date.split(" ");
+                full_date = date_array[0];
 
-                date = date.slice(1,date.length-1);
+                date_array = full_date.split("-");
 
-                var table_div = bvr.src_el.getParent(".spt_calendar_top");
-                var month_year = table_div.getElements("td")[1].textContent;
-
-                var month_year_array = month_year.split(" ");
-                var month = month_year_array[0]
-                month = month.slice(0,month.length-1);
-                var year = month_year_array[1];
+                var date = date_array[2];
+                var month = date_array[1];
+                var year = date_array[0];
 
                 var due_date_string = month.concat(" " + date + ", ").concat(year);
 
@@ -1443,8 +1443,6 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                     };
 
                 spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
-
-                // change the text to unclickable and change the image to the has image
                 '''
             } )
 
