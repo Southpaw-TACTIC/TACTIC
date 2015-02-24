@@ -1280,7 +1280,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                         element_top.add_class(item)
 
                 elif name == 'style':
-                    for item in value.split(";"):
+                    for item in re.split(";\ ?", value):
                         element_top.add_style(item)
 
                 else:
