@@ -947,7 +947,14 @@ spt.popup.get_widget = function( evt, bvr )
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
     popup.setStyle("left", "-10000px");
-    spt.behavior.add(popup, {'type':'listen', 'event_name':"preclose_" + popup_id, 'cbjs_action': String(on_close) + "; on_close();"});
+    var cbjs_action;
+    if (typeof on_close == "function") {
+        cbjs_action = String(on_close) + "; on_close();";
+    }
+    else {
+        cbjs_action = on_close;
+    }
+    spt.behavior.add(popup, {'type':'listen', 'event_name':"preclose_" + popup_id, 'cbjs_action': cbjs_action});
     spt.popup.open( popup );
 
     // add the place holder
