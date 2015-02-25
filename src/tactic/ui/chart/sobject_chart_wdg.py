@@ -549,8 +549,6 @@ class CalendarChartWdg(BaseChartWdg):
                 max_date = timestamp
 
 
-        my.interval = "daily"
-
 
         # defined the buckets based on interval
         dates = [] 
