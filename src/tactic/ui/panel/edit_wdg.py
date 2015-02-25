@@ -279,10 +279,10 @@ class EditWdg(BaseRefreshWdg):
 
         if my.parent_key:
             from pyasm.biz import Schema
+            schema = Schema.get()
+            parent_stype = SearchKey.extract_base_search_type(my.parent_key)
+            relationship = schema.get_relationship_attrs(parent_stype, my.search_type, type="hierarchy")
             for element_name in my.element_names:
-                schema = Schema.get()
-                parent_stype = SearchKey.extract_base_search_type(my.parent_key)
-                relationship = schema.get_relationship_attrs(parent_stype, my.search_type, type="hierarchy")
                 # If parent_key is available, data associated with the parent table does not need
                 # to be specified by the user, and their widgets can be excluded from the edit widget
                 if element_name == relationship.get("from_col"):
