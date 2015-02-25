@@ -393,11 +393,11 @@ class HashPanelWdg(BaseRefreshWdg):
 
         name = hash.lstrip("/")
         name_array = name.split("/")
-        try:
+        if name_array:
             name_end = name_array[-1]
             name_end = name_end.replace("_", " ")
             widget.set_name(name_end)
-        except IndexError:
+        else:
             widget.set_name(name)
 
         return widget
