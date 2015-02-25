@@ -55,15 +55,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_color("background", "background")
 
 
-        title_div = DivWdg()
-        div.add(title_div)
-        title_div.add("Ingest Files")
-        title_div.add_style("font-size: 14px")
-        title_div.add_style("font-weight: bold")
-        title_div.add_style("padding: 10px")
-        title_div.add_color("background", "background3")
-        title_div.add_border()
-
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             div.add("No search type specfied")
@@ -77,13 +68,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
 
-            title_div.add_style("margin: -20px -21px 5px -21px")
-        else:
-            title_div.add_style("margin: -20px -21px 15px -21px")
-
-
-        div.add("<b>Add or drag/drop files to be ingested</b>")
-        div.add("<br/>"*2)
 
 
         data_div = my.get_data_wdg()
@@ -178,6 +162,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add("<br clear='all'/>")
         div.add("<br clear='all'/>")
 
+        border_color_light = div.get_color("background2", 8)
+        border_color_dark = div.get_color("background2", -15)
+        background_mouseout = div.get_color("background3", 10)
+        background_mouseenter = div.get_color("background3", 8)
+
 
         files_div = DivWdg()
         files_div.add_style("position: relative")
@@ -186,46 +175,50 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("max-height: 300px")
         files_div.add_style("height: 300px")
         files_div.add_style("overflow-y: auto")
-        files_div.add_border()
         files_div.add_style("padding: 3px")
-        files_div.add_color("background", "background3")
+        files_div.add_color("background", background_mouseout)
+        files_div.add_style("border: 3px dashed %s" % border_color_light)
+        files_div.add_style("border-radius: 20px 20px 20px 20px")
+        files_div.add_style("z-index: 1")
         #files_div.add_style("display: none")
 
         bgcolor = div.get_color("background3")
         bgcolor2 = div.get_color("background3", -3)
 
-        files_div.add_behavior( {
-            'type': 'mouseenter',
-            'bgcolor': bgcolor2,
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", bvr.bgcolor)
-            '''
-        } )
-
-        files_div.add_behavior( {
-            'type': 'mouseout',
-            'bgcolor': bgcolor,
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background", bvr.bgcolor)
-            '''
-        } )
-
+        #style_text = "text-align: center; margin-top: 100px; color: #A0A0A0; font-size: 3.0em; z-index: 10;"
 
         background = DivWdg()
         background.add_class("spt_files_background")
         files_div.add(background)
+
+        background.add_style("text-align: center")
+        background.add_style("margin-top: 100px")
+        background.add_style("opacity: 0.65")
         background.add_style("font-size: 3.0em")
-        background.add_style("font-weight: bold")
-        background.add_style("opacity: 0.1")
-        background.add_style("position: absolute")
-        background.add_style("left: 50%")
-        background.add_style("top: 100px")
-        background.add_border()
-        inner_background = DivWdg("Drag Files Here")
-        background.add(inner_background)
-        inner_background.add_style("text-align: center")
-        inner_background.set_style("position: absolute")
-        inner_background.set_style("margin-left: -50%")
+        background.add_style("z-index: 10")
+
+        background_text = DivWdg("<p>Drag Files Here</p>")
+
+        background.add(background_text)
+
+        files_div.add_behavior( {
+            'type': 'mouseover',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("border","3px dashed %s")
+            bvr.src_el.setStyle("background","%s")
+            ''' % (border_color_dark, background_mouseenter)
+        } )
+
+        files_div.add_behavior( {
+            'type': 'mouseout',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("border", "3px dashed %s")
+            bvr.src_el.setStyle("background","%s")
+            ''' % (border_color_light, background_mouseout)
+        } ) 
+
+
+
 
 
 

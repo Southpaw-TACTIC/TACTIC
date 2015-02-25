@@ -392,8 +392,13 @@ class HashPanelWdg(BaseRefreshWdg):
         widget = cls.build_widget(options)
 
         name = hash.lstrip("/")
-        name = name.replace("/", " ")
-        widget.set_name(name)
+        name_array = name.split("/")
+        if name_array:
+            name_end = name_array[-1]
+            name_end = name_end.replace("_", " ")
+            widget.set_name(name_end)
+        else:
+            widget.set_name(name)
 
         return widget
 
