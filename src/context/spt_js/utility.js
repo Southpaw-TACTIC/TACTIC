@@ -1607,6 +1607,11 @@ spt.exception.handler = function( ex )
         if (ex.message){
             ex_str = ex.message;
         }
+        else if (spt.get_typeof(ex) =='number') {
+            ex_str = ex;
+            if (ex == 502)
+                ex_str = '502 Proxy Error. The request has exceeded the Timeout setting in the Web Server.'
+        }
         else {
             log.error( "ERROR: currently unable to handle exception of type '" + spt.get_typeof(ex) + "'" );
             ex_str = "*** Unknown exception type ***";
