@@ -1619,7 +1619,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background-color: %s" %bgColor)
+                select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
