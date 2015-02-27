@@ -42,9 +42,6 @@ class Authenticate(object):
         return 'default'
 
     def verify(my, login_name, password):
-
-
-
         '''Method to authenticate the user with a given login name and a
         given password
 

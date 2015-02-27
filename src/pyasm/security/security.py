@@ -639,9 +639,6 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
-    def get_max_users(my, site):
-        return
-
 
     # HACK: Some functions to spoof an sobject
     def get_project_code(my):
@@ -668,6 +665,24 @@ class Site(object):
     #
     # Virtual methods
     #
+
+    def get_max_users(my, site):
+        return
+
+    def get_authenticate_class(my):
+        return
+
+
+    def break_up_request_path(my, path):
+        return {}
+
+    def get_request_path_info(my):
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+        path = web.get_request_path()
+        return my.break_up_request_path(path)
+
+
     def get_by_login(cls, login):
         return ""
     get_by_login = classmethod(get_by_login)
@@ -1132,6 +1147,7 @@ class Security(Base):
         if key == "":
             return None
 
+
         # set the site if the key has one
         site = Site.get().get_by_ticket(key)
         Site.get().set_site(site)
@@ -1292,6 +1308,7 @@ class Security(Base):
 
         # admin always uses the standard authenticate class
         auth_class = None
+
         if login_name == 'admin':
             auth_class = "pyasm.security.TacticAuthenticate"
 
@@ -1301,6 +1318,12 @@ class Security(Base):
                 no_exception=True)
         if not auth_class:
             auth_class = "pyasm.security.TacticAuthenticate"
+
+        #from security import Site
+        #site_obj = Site.get()
+        #site_auth_class = site_obj.get_authenticate_class()
+        #if site_auth_class:
+        #    auth_class = site_auth_class
 
 
         # handle the windows domain, manually typed in domain overrides

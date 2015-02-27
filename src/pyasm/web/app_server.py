@@ -307,7 +307,6 @@ class BaseAppServer(Base):
             security = my.handle_security(security)
             is_logged_in = security.is_logged_in()
         except Exception, e:
-            site_obj = Site.get()
             return my.handle_not_logged_in()
 
  
@@ -586,7 +585,18 @@ class BaseAppServer(Base):
 
         login = web.get_form_value("login")
         password = web.get_form_value("password")
-        site = web.get_form_value("site")
+
+
+        site_obj = Site.get()
+        path_info = site_obj.get_request_path_info()
+        if path_info:
+            site = path_info['site']
+        else:
+            site = web.get_form_value("site")
+
+
+
+
 
         if session_key:
             ticket_key = web.get_cookie(session_key)
@@ -595,11 +605,9 @@ class BaseAppServer(Base):
         elif login and password:
             if not site:
                 # get from the login
-                site_obj = Site.get()
                 site = site_obj.get_by_login(login)
                 site_obj.set_site(site)
             else:
-                site_obj = Site.get()
                 site_obj.set_site(site)
 
             if login == "guest":
@@ -611,9 +619,10 @@ class BaseAppServer(Base):
                 ticket_key = security.get_ticket_key()
                 
         elif ticket_key:
-            # get from the login
-            site_obj = Site.get()
-            site = site_obj.get_by_ticket(ticket_key)
+
+            # get from the ticket
+            if not site:
+                site = site_obj.get_by_ticket(ticket_key)
             if site:
                 site_obj.set_site(site)
 

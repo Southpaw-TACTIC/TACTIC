@@ -586,18 +586,22 @@ class BaseApiXMLRPC(XmlrpcServer):
       
         # if the project code is in the ticket, then set the project
         if type(ticket) == types.DictType:
+            site = ticket.get("site")
             project_code = ticket.get("project")
             language = ticket.get("language")
             palette = ticket.get("palette")
             ticket = ticket.get("ticket")
 
         else:
+            # DEPRECATED
             if ticket.find(":") != -1:
                 project_code, ticket = ticket.split(":")
             else:
                 project_code = None
             language = "python"
             palette = None
+            site = None
+
 
         if my.get_protocol() == "local":
             if project_code:

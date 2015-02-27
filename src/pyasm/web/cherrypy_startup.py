@@ -87,7 +87,7 @@ def _cp_on_http_error(status, message):
 
         startup = cherrypy.startup
         config = startup.config
-        startup.register_site(project_code, config)
+        startup.register_project(project_code, config)
         #cherrypy.config.update( config )
         # give some time to refresh
         import time
@@ -384,7 +384,7 @@ class CherryPyStartup(object):
                 sites.append(context_dir)
 
         for site in sites:
-            my.register_site(site, config)
+            my.register_project(site, config)
 
             # set up the images directory
             for subdir in ['images', 'doc']:
@@ -398,7 +398,7 @@ class CherryPyStartup(object):
 
 
 
-    def register_site(my, site, config):
+    def register_project(my, site, config):
         print "Registering project ... %s" % site
 
         # if there happend to be . in the site name, convert to _
