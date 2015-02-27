@@ -1149,8 +1149,9 @@ class Security(Base):
 
 
         # set the site if the key has one
-        site = Site.get().get_by_ticket(key)
-        Site.get().set_site(site)
+        #site = Site.get().get_by_ticket(key)
+        #Site.get().set_site(site)
+        print "login_widdsafsdfdsfsdsfd"
 
         my.add_access_rules_flag = add_access_rules
 

@@ -127,8 +127,6 @@ class CherryPyStartup(CherryPyStartup20):
         project = Project.get_by_code(project_code)
         if not has_project and project and project.get_value("type") != 'resource':
 
-            print "Register ..."
-
             startup = cherrypy.startup
             config = startup.config
             startup.register_project(project_code, config, site=site)

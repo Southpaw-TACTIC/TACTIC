@@ -596,8 +596,6 @@ class BaseAppServer(Base):
 
 
 
-
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -621,12 +619,11 @@ class BaseAppServer(Base):
         elif ticket_key:
 
             # get from the ticket
-            if not site:
-                site = site_obj.get_by_ticket(ticket_key)
+            #if not site:
+            #    site = site_obj.get_by_ticket(ticket_key)
             if site:
                 site_obj.set_site(site)
 
-            
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
 
 
@@ -644,6 +641,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+
         # clear the password
         web.set_form_value('password','')
 
