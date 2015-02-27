@@ -449,10 +449,14 @@ class TopWdg(Widget):
         user_id = login.get_id()
         login_groups = Environment.get_group_names()
 
+    
+        from pyasm.security import Site
+        site = Site.get_site()
 
         # add environment information
         script = HtmlElement.script('''
         var env = spt.Environment.get();
+        env.set_site('%s');
         env.set_project('%s');
         env.set_user('%s');
         env.set_user_id('%s');
@@ -461,7 +465,7 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
 
-        ''' % (Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir))
         top.add(script)
 
 

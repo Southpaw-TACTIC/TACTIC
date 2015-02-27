@@ -23,6 +23,7 @@
 
 
 spt.Environment = function() {
+    this.site = null;
     this.project_code = null;
     //this.url = null;
     this.user = null;
@@ -42,6 +43,17 @@ spt.Environment = function() {
     this.server_url = location.protocol + "//" + location.hostname;
     if (port)
         this.server_url = this.server_url + ':' + port
+
+
+
+    this.set_site = function(site) {
+        if (site) {
+            this.site = site;
+        }
+    }
+    this.get_site = function() {
+        return this.site;
+    }
 
 
     this.set_project = function(project_code) {

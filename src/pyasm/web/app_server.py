@@ -627,7 +627,7 @@ class BaseAppServer(Base):
                 site_obj.set_site(site)
 
             
-            security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+            login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
 
 
         if not security.is_logged_in():
