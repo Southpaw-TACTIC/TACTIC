@@ -616,6 +616,9 @@ class Search(Base):
             my.add_id_filter(0)
             return
 
+        if isinstance(parent, basestring):
+            parent = Search.get_by_search_key(parent)
+
         #parent_search_type = parent.get_base_search_type()
         #search_type = my.get_base_search_type()
         parent_search_type = parent.get_search_type()
@@ -3566,7 +3569,7 @@ class SObject(object):
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
-                    value = value.strftime('%Y-%m-%d %H:%M:%S %Z')
+                    value = value.strftime('%Y-%m-%d %H:%M:%S %z')
                 changed = True
 
             if changed:
@@ -4237,12 +4240,13 @@ class SObject(object):
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
+        security = Environment.get_security()
+        base_search_type = my.get_base_search_type()
+
         id = my.get_id()
         if id == -1:
             return
 
-        security = Environment.get_security()
-        base_search_type = my.get_base_search_type()
 
         current_project_code = my.get_project_code()
         
@@ -5535,7 +5539,7 @@ class SearchType(SObject):
         return title
 
 
-    def get_id_col(my):
+    def get_search_type_id_col(my):
         id_col = my.data.get("id_column")
         if not id_col:
             return "id"
@@ -5543,12 +5547,14 @@ class SearchType(SObject):
             return id_col
 
 
-    def get_code_col(my):
+    def get_search_type_code_col(my):
         id_col = my.data.get("code_column")
         if not code_col:
             return "code"
         else:
             return code_col
+
+
 
 
     def get_retire_col(my):

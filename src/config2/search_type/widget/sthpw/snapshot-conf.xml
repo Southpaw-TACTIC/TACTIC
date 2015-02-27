@@ -169,8 +169,8 @@
   <element name="version" title="Ver#"/>
   <element name="revision" title="Rev#"/>
   <element name="type"/>
-  <element name="preview" width='1%'/>
-  <element name="dependency" title='Dep' width='1%'/>
+  <element name="preview"/>
+  <element name="dependency" title='Dep'/>
   <element name="login"/>
   <element name="timestamp"/>
   <element name="description"/>
@@ -296,7 +296,7 @@
 
 
 <checkout_tool edit='true'>
-    <element name="preview" width='1%'>
+    <element name="preview">
         <display class='ThumbWdg'>
           <icon_size>100%</icon_size>
         </display>

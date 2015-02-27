@@ -2554,14 +2554,29 @@ class ViewPanelWdg(BaseRefreshWdg):
         'simple_search_view': {
             'description': 'View for defining a simple search',
             'type': 'TextWdg',
+            'order': 5,
             'category': 'Search'
         },
         'simple_search_visible_rows': {
             'description': 'Number of visible rows in the simple search bar',
             'type': 'TextWdg',
+            'order': 6,
             'category': 'Search'
         },
-
+        'simple_search_mode': {
+            'description': 'Display mode of simple search bar',
+            'type': 'SelectWdg',
+            'category': 'Search',
+            'order': 4,
+            'values': 'inline|hidden',
+        },
+        'simple_search_columns': {
+            'description': 'Number of columns in the simple search bar',
+            'type': 'SelectWdg',
+            'order': 7,
+            'values': '2|3|4',
+            'category': 'Search'
+        },
 
         "search_view": "search view to be displayed",
         "order_by": "order by a particular column",
@@ -3019,6 +3034,10 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_mode = my.kwargs.get("mode")
+        if not simple_search_mode:
+            simple_search_mode = my.kwargs.get("simple_search_mode")
+
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
@@ -3039,10 +3058,12 @@ class ViewPanelWdg(BaseRefreshWdg):
                 kwargs['keywords'] = my.kwargs.get("keywords")
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
+            kwargs['columns'] = my.kwargs.get("simple_search_columns")
+ 
 
-            simple_search_mode = my.kwargs.get("mode")
+
             show_shelf = my.kwargs.get("show_shelf")
-            if simple_search_mode == "inline" and show_shelf in [True, 'true']:
+            if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
                 show_search = False
             elif show_shelf in [False, 'false']:
                 show_search = True
@@ -3097,6 +3118,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
+        op_filters = my.kwargs.get("op_filters")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3148,6 +3170,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
+            "simple_search_mode": simple_search_mode,
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
@@ -3161,7 +3184,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords": keywords,
             "filter": filter,
             "expand_mode": expand_mode,
-            "show_name_hover": show_name_hover
+            "show_name_hover": show_name_hover,
+            "op_filters": op_filters,
             #"search_wdg": search_wdg
             
         }
@@ -3173,9 +3197,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['styles'] = my.kwargs.get("styles")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3187,6 +3216,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3216,6 +3246,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
         else:
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 

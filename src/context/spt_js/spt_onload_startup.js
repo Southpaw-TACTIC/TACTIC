@@ -227,11 +227,14 @@ spt.hash.onload_first = function() {
     var class_name = "tactic.ui.app.TopContainerWdg";
     var kwargs = {'args': options, 'values': {}};
     var widget_html = server.get_widget(class_name, kwargs);
-    spt.behavior.replace_inner_html($("top_of_application"), widget_html);
 
-    if (spt.side_bar) {
-        spt.side_bar.restore_state();
-    }
+    setTimeout( function() {
+        spt.behavior.replace_inner_html($("top_of_application"), widget_html);
+
+        if (spt.side_bar) {
+            spt.side_bar.restore_state();
+        }
+    }, 500 );
 
 }
 

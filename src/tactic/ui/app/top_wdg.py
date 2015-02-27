@@ -44,6 +44,15 @@ class TopWdg(Widget):
         my.top.add_class("spt_top")
         Container.put("TopWdg::top", my.top)
 
+
+        my.body.add_attr("ondragover", "return false;")
+        my.body.add_attr("ondragleave", "return false;")
+        my.body.add_attr("ondrop", "return false;")
+
+
+
+
+
         click_div = DivWdg()
         my.top.add(click_div)
         click_div.add_behavior( {
@@ -269,6 +278,25 @@ class TopWdg(Widget):
 
             div.add_class("spt_admin_bar")
 
+
+
+            # home
+            icon_div = DivWdg()
+            div.add(icon_div)
+            icon_div.add_style("float: left")
+            icon_div.add_style("margin-right: 10px")
+            icon_div.add_style("margin-top: -3px")
+            icon_button = IconButtonWdg(title="Home", icon="BS_HOME")
+            icon_div.add(icon_button)
+            icon_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                window.location.href="/";
+                '''
+            } )
+
+
+
             div.add_style("height: 15px")
             div.add_style("padding: 3px 0px 3px 15px")
             #div.add_style("margin-bottom: -5px")
@@ -290,7 +318,7 @@ class TopWdg(Widget):
             icon_div.add_style("float: right")
             icon_div.add_style("margin-right: 10px")
             icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.G_CLOSE)
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="BS_REMOVE")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -298,6 +326,27 @@ class TopWdg(Widget):
                 var parent = bvr.src_el.getParent(".spt_admin_bar");
                 bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(parent);
+                '''
+            } )
+
+            # sign-out
+            icon_div = DivWdg()
+            div.add(icon_div)
+            icon_div.add_style("float: right")
+            icon_div.add_style("margin-right: 5px")
+            icon_div.add_style("margin-top: -3px")
+            icon_button = IconButtonWdg(title="Sign Out", icon="BS_LOG_OUT")
+            icon_div.add(icon_button)
+            icon_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var ok = function(){
+                    var server = TacticServerStub.get();
+                    server.execute_cmd("SignOutCmd", {login: bvr.login} );
+
+                    window.location.href="/";
+                }
+                spt.confirm("Are you sure you wish to sign out?", ok )
                 '''
             } )
 
@@ -581,8 +630,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-
-
         # custom js files to include
         includes = Config.get_value("install", "include_js")
         includes = includes.split(",")
@@ -591,7 +638,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
             if include:
                 print "include: ", include
                 Container.append_seq("Page:js", include)
-
 
 
         widget = Widget()
@@ -856,13 +902,14 @@ class SitePage(AppServer):
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            widget = xml.get_value("element/@widget")
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
             elif bootstrap == 'true':
                 widget = BootstrapIndexWdg()
                 return widget
-            else:
+            elif widget == 'true':
                 web = WebContainer.get_web()
                 hash = "/".join(my.hash)
                 hash = "/%s" % hash
@@ -973,8 +1020,9 @@ class CustomTopWdg(BaseRefreshWdg):
                 value.add(hash_widget)
             else:
                 value.add(hash_widget.get_display())
-            web.set_content_type("text/html")
-
+            current_type = web.get_content_type()
+            if not current_type:
+                web.set_content_type("text/html")
 
         widget.add(value)
         return widget

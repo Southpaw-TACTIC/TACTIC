@@ -63,6 +63,7 @@ from input_wdg import FilterTextWdg
 class BaseTableElementWdg(HtmlElement):
     def __init__(my, name=None, value=None, **kwargs):
 
+        my.kwargs = kwargs
         my.options = {} 
         for key, kw_value in kwargs.items():
             my.set_option(key, kw_value)

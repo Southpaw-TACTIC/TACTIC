@@ -126,14 +126,14 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_id_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        id_col = search_type.get_id_col()
+        id_col = search_type.get_search_type_id_col()
         return id_col
 
 
     def get_code_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        code_col = search_type.get_code_col()
+        code_col = search_type.get_search_type_code_col()
         return code_col
 
 
@@ -923,6 +923,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         if my.database_exists(database):
             return
 
+        if not isinstance(database, basestring):
+            database = database.get_database()
+
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -Q "create database test1"
         # note: The database we are connecting to must be 'sthpw'
@@ -1546,6 +1549,9 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         # if the database already exists, do nothing
         if my.database_exists(database):
             return
+
+        if not isinstance(database, basestring):
+            database = database.get_database()
 
         from pyasm.search import DbResource
         db_resource = DbResource.get_default(database)
