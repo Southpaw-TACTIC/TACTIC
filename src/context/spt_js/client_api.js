@@ -1281,7 +1281,12 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['callback'];
         }
-        this._delegate("get_widget", arguments, kwargs, "string", callback);
+        var on_error = function(e) {
+            if (e == 502)
+                e = '502 Timeout Error.';
+            spt.alert(e); 
+        };
+        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
         return;
     }
 
@@ -1434,8 +1439,11 @@ TacticServerStub = function() {
                         spt.alert(e_msg);
                 }
             } else {
-                //alert("status is " + request.status);
-                throw("status is " + request.status);
+                
+                if (on_error)
+                    on_error(request.status);
+                else
+                    throw("status is " + request.status);
             }
         }
     }
