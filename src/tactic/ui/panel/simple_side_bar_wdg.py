@@ -31,6 +31,8 @@ class SimpleSideBarWdg(SideBarPanelWdg):
         if not view:
             view = "project_view"
 
+        #view = "my_view_%s" % Environment.get_user_name()
+
         views.append(view)
         return view
 
@@ -54,6 +56,7 @@ class SimpleSideBarWdg(SideBarPanelWdg):
             'view': view,
             'config': config,
             'auto_size': my.kwargs.get('auto_size'),
+            'class_name': my.kwargs.get('class_name'),
             'use_href': use_href,
             'target': target,
             'link_mode': link_mode
@@ -88,7 +91,10 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         top = my.top
         content_div = top
 
-        top.add_class("web_menu_wdg")
+        class_name = my.kwargs.get("class_name")
+        if not class_name:
+            class_name = "web_menu_wdg"
+        top.add_class(class_name)
 
         ul = HtmlElement.ul()
         top.add(ul)

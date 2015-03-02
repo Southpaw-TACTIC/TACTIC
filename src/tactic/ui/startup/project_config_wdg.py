@@ -242,7 +242,7 @@ class UserConfigWdg(ProjectConfigWdg):
         """
 
         config_xml.append('''
-        <element name="Users in Project">
+        <element name="Groups">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
         ''')

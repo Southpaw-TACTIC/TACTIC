@@ -89,6 +89,10 @@ class Process(Base):
     def get_task_pipeline(my, default=True):
         ''' assuming the child pipeline is task related '''
         task_pipeline_code = Xml.get_attribute( my.node, "task_pipeline" )
+        node_type = Xml.get_attribute(my.node, "type")
+        if node_type == "approval":
+            return "approval"
+
         if not task_pipeline_code and default:
             return "task"
         else:
@@ -538,7 +542,7 @@ class Pipeline(SObject):
         return connects
 
 
-    def get_input_processes(my, process):
+    def get_input_processes(my, process, type=None):
         connects = my._get_connects(process, direction='to')
         processes= []
         for connect in connects:
@@ -550,7 +554,7 @@ class Pipeline(SObject):
         return processes
 
 
-    def get_output_processes(my, process):
+    def get_output_processes(my, process, type=None):
         connects = my._get_connects(process, direction="from")
         if not connects:
             return []
@@ -564,6 +568,10 @@ class Pipeline(SObject):
             if to_pipeline:
                 pipeline = Pipeline.get_by_code(to_pipeline)
                 process = pipeline.get_process(to)
+
+                if type and type.get_type() != type:
+                    continue
+
                 if process:
                     processes.append(process)
 
@@ -760,6 +768,20 @@ class Pipeline(SObject):
             pipeline.set_pipeline(xml)
             pipeline.set_value("search_type", "sthpw/task")
             #pipeline.commit()
+
+
+        if not pipeline and code == 'approval':
+            # Create a default task pipeline
+            pipeline = SearchType.create("sthpw/pipeline")
+            pipeline.set_value("code", "approval")
+            from pyasm.biz import Task
+            xml = Task.get_default_approval_xml()
+            pipeline.set_value("pipeline", xml)
+            pipeline.set_pipeline(xml)
+            pipeline.set_value("search_type", "sthpw/task")
+            #pipeline.commit()
+
+
 
 
         if not pipeline and allow_default:

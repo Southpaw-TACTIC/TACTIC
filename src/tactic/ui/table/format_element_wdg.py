@@ -13,7 +13,7 @@
 
 __all__ = ['FormatElementWdg']
 
-import re
+import re, datetime
 
 from pyasm.common import TimeCode
 from pyasm.search import Search, SearchKey, SearchType
@@ -333,7 +333,13 @@ class FormatElementWdg(SimpleTableElementWdg):
             if not value:
                 value = ''
             else:
-                value = parser.parse(value)
+                try:
+                    value = parser.parse(value)
+                except:
+                    # try utc
+                    value = int(value)
+                    value = datetime.datetime.fromtimestamp(value)
+
                 value = value.strftime("%b %d, %Y")
 
         elif format == '31 Dec, 1999':

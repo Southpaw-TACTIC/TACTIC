@@ -900,18 +900,6 @@ class SearchWdg(BaseRefreshWdg):
     def set_filter_data(search_type, view=None):
         '''set filter data based on some saved search values in wdg_settings'''
 
-        # NOTE - This is MMS specific and is deprecated and will be deleted
-        # DISABLING FOR Job and Request until job_detail stops stack tracing
-        # This is due to mixing of searches between job and request in the
-        # job detail.  Cannot find the issue.
-        # 1) FilterData is global: should be scoped by search type
-        # 2) After introduction of scroll bars, it started stack tracing
-        # It looks like the state is not being properly passed through
-
-        # temp fix to avoid cross contamination of filter data for Planners UI
-        if search_type in ['MMS/job','MMS/request'] or view == '_planner':
-            return
-        
         filter_data = FilterData.get()
         if not filter_data.get_data():
             # use widget settings

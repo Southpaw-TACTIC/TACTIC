@@ -549,7 +549,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
 
-
         pipeline_codes = SObject.get_values(my.sobjects, 'pipeline_code', unique=True, no_exception=True)
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
         if pipelines:
@@ -564,6 +563,7 @@ class TaskElementWdg(BaseTableElementWdg):
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
         task_pipelines.append( Pipeline.get_by_code("task") )
+        task_pipelines.append( Pipeline.get_by_code("approval") )
         if task_pipelines:
             for task_pipeline in task_pipelines:
                 processes = task_pipeline.get_processes()
@@ -574,6 +574,7 @@ class TaskElementWdg(BaseTableElementWdg):
                     color = process.get_color()
                     #if color:
                     process_dict[process.get_name()] = color
+
 
         security = Environment.get_security()
         my.allowed_statuses = []
@@ -795,13 +796,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 var menu = spt.table.get_edit_menu(bvr.src_el);
                 var activator =  menu.activator_el; 
                 parent = activator.getParent();
-                if (activator.name.indexOf("_DELETE") != -1) {
-                    activator.name = activator.name.replace("_DELETE", "_COPY");
+                if (activator.name.indexOf("|DELETE") != -1) {
+                    activator.name = activator.name.replace("|DELETE", "|COPY");
                     var select = parent.getElement(".spt_task_element_assigned");
-                    select.name = select.name.replace("_DELETE", "_COPY");
+                    select.name = select.name.replace("|DELETE", "|COPY");
                     parent.setStyle("opacity", "1.0");
                 }
-                else if (activator.name.indexOf("_COPY") != -1) {
+                else if (activator.name.indexOf("|COPY") != -1) {
                     var clone = spt.behavior.clone(parent);
                     clone.inject(parent, 'after');
                     var select = clone.getElement(".spt_task_element_assigned");
@@ -817,9 +818,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     var select = clone.getElement(".spt_task_element_assigned");
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
-                    //select.name = select.name + "_COPY" + rnd;
+                    //select.name = select.name + "|COPY" + rnd;
                     select.name = select.name + "_" + rnd;
-                    select.name = select.name.replace("_EDIT", "_COPY");
+                    select.name = select.name.replace("|EDIT", "|COPY");
 
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
@@ -840,7 +841,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 var select = parent.getElement(".spt_task_element_assigned");
                 select.value = '';
-                select.name = select.name.replace("_EDIT", "_DELETE");
+                select.name = select.name.replace("|EDIT", "|DELETE");
 
                 spt.task_element.status_change_cbk(evt, {src_el: activator});
 
@@ -1140,7 +1141,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         div = DivWdg()
-        div.add_style("margin: -4px")
+        div.add_style("margin: -4px auto")
 
         # initialize tool tips only if show track is true
         if my.show_track == 'true' and not my._startup_tips:
@@ -1575,11 +1576,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 if task.is_insert():
                     process = task.get_value("process")
-                    name = 'status_NEW_%s' % process
+                    name = 'status|NEW|%s' % process
                 else:
-                    name = 'status_EDIT_%s' % task.get_id()
+                    name = 'status|EDIT|%s' % task.get_id()
 
                 select = SelectWdg(name)
+                select.add_color('color','color')
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
@@ -1617,7 +1619,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background-color: %s" %bgColor)
+                select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
@@ -1636,6 +1638,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.add_style("width", my.width)
                     div.add(select)
 
+                if status not in filtered_statuses:
+                    filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
 
@@ -1662,9 +1666,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     if task.is_insert():
                         process = task.get_value("process")
-                        name = 'assigned_NEW_%s' % process
+                        name = 'assigned|NEW|%s' % process
                     else:
-                        name = 'assigned_EDIT_%s' % task.get_id()
+                        name = 'assigned|EDIT|%s' % task.get_id()
                     select = SelectWdg(name)
                     #select = SelectWdg('assigned_%s' %subtask.get_id())
                     select_div.add(select)
@@ -1691,6 +1695,38 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         assigned.add_style("opacity: 0.5")
                     assigned_div.add(assigned_label)
                     assigned_div.add("<br/>")
+
+
+        """
+        if process == "design":
+            approval_div = DivWdg()
+            if my.layout in ['horizontal', 'vertical']:
+                table.add_cell(approval_div)
+            else:
+                div.add(approval_div)
+
+            approval_div.add_style("width: 98px")
+            approval_div.add_style("height: auto")
+            approval_div.add_style("padding: 6px 0px")
+            approval_div.add_style("margin: 0px 5px")
+            approval_div.add_style("border: solid 1px #BBB")
+            approval_div.add_style("border-radius: 3px")
+            approval_div.add_color("background","background")
+
+            for i in range(0, 2):
+                if i == 0:
+                    icon = IconWdg(name="Approved by XYZ", icon="BS_REMOVE", size=12)
+                    icon.add_style("border: solid 1px red")
+                else:
+                    icon = IconWdg(name="Approved by XYZ", icon="BS_OK", size=12)
+                    icon.add_style("border: solid 1px green")
+                approval_div.add(icon)
+                icon.add_style("padding: 0px 3px 6px 3px")
+                icon.add_style("margin: 3px")
+                icon.add_style("border-radius: 20px")
+
+
+        """
 
 
 
@@ -1788,9 +1824,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 bid_div.add(text_div)
 
                 if subtask.is_insert():
-                    text = TextWdg('bid_NEW_%s' % process)
+                    text = TextWdg('bid|NEW|%s' % process)
                 else:
-                    text = TextWdg('bid_EDIT_%s' %subtask.get_id())
+                    text = TextWdg('bid|EDIT|%s' %subtask.get_id())
                 text_div.add(text)
                 text.add_style("width: 80px")
                 text.add_style("text-align: center")
@@ -1881,10 +1917,10 @@ class TaskElementCbk(DatabaseAction):
 
         # create all of the new tasks first
         import re
-        p = re.compile("(\w+)_(\w+)_(.*)")
-        copy_p = re.compile("(\w+)_(\w+)_(\w+)_(\w+)")
+        p = re.compile("(\w+)\|(\w+)\|(.*)")
+        copy_p = re.compile("(\w+)\|(\w+)\|(\w+)\|(\w+)")
         for key, value in xx.items():
-            if key.find("_COPY") != -1:
+            if key.find("|COPY") != -1:
                 m = re.match(copy_p, key)
             else:
                 m = re.match(p, key)
@@ -1897,10 +1933,7 @@ class TaskElementCbk(DatabaseAction):
             if column == "bid":
                 column = "bid_duration"
 
-            print "groups: ", groups
             action = groups[1]
-
-            print "action: ", action
 
             if action == "NEW":
                 process = groups[2]
@@ -1965,58 +1998,6 @@ class TaskElementCbk(DatabaseAction):
 
 
 
-
-        """
-
-        for key, value in xx.items():
-            if key.startswith('status_'):
-                tmps = key.split('_') 
-                task_status_ids.append(tmps[1]);
-
-
-            elif key.startswith('assigned_'):
-                tmps = key.split('_') 
-
-                assigned_id = tmps[1]
-
-                if (len(tmps) == 3):
-                    action = tmps[2]
-                else:
-                    action = "EDIT"
-
-                if action == "EDIT":
-                    task_assigned_ids.append(assigned_id)
-                elif action.startswith('COPY'):
-                    task = Search.get_by_id("sthpw/task", assigned_id)
-                    status = value
-                    clone = task.clone()
-                    clone.set_value("assigned", value)
-                    clone.commit()
-                elif action == 'DELETE':
-                    task = Search.get_by_id("sthpw/task", assigned_id)
-                    task.delete()
-
-            elif key.startswith('bid_'):
-                tmps = key.split('_') 
-
-                action = tmps[1]
-                if action == 'NEW':
-                    process = tmps[2]
-                    new_bid = xx.get(key)
-                    if new_bid:
-                        task = SearchType.create("sthpw/task")
-                        task.set_value("process", process)
-                        task.set_parent(my.sobject)
-
-                        task.set_value("bid_duration", new_bid)
-                        task.commit()
-
-                else:
-                    task_bid_ids.append(tmps[1])
-
-        """
-
-        
         # get the tasks
         if task_status_ids: 
             search = Search("sthpw/task")
@@ -2025,8 +2006,7 @@ class TaskElementCbk(DatabaseAction):
 
             for task in tasks:
                 current_status = task.get_value("status")
-                new_status = xx.get('status_EDIT_%s'%task.get_id())
-                print "edit: ", task.get_id(), current_status, new_status
+                new_status = xx.get('status|EDIT|%s'%task.get_id())
                 if current_status == new_status:
                     continue
                 task.set_value("status", new_status)
@@ -2040,7 +2020,7 @@ class TaskElementCbk(DatabaseAction):
 
             for task in tasks:
                 current_assigned = task.get_value("assigned")
-                new_assigned = xx.get('assigned_EDIT_%s'%task.get_id())
+                new_assigned = xx.get('assigned|EDIT|%s'%task.get_id())
                 if current_assigned == new_assigned:
                     continue
 
@@ -2055,7 +2035,7 @@ class TaskElementCbk(DatabaseAction):
             tasks = search.get_sobjects()
 
             for task in tasks:
-                new_bid = xx.get('bid_EDIT_%s'%task.get_id())
+                new_bid = xx.get('bid|EDIT|%s'%task.get_id())
 
                 task.set_value("bid_duration", new_bid)
                 task.commit()

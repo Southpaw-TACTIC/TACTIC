@@ -1377,7 +1377,7 @@ class SelectWdg(BaseInputWdg):
             my.add_style("width: %s" % width)
 
         my.add_border()
-        my.add_style("margin: 0px 5px")
+        #my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'

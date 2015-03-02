@@ -23,8 +23,8 @@
     -->
 
 
-    <element name="dir_naming"/>
-    <element name="file_naming"/>
+    <element name="dir_naming" width="250px"/>
+    <element name="file_naming" width="250px"/>
     <element name="sandbox_dir_naming"/>
 
     <element name="update">
@@ -33,20 +33,20 @@
         </display>
     </element>
 
-    <element name="latest_versionless" width="1%">
+    <element name="latest_versionless">
         <display widget='format'>
             <format>Checkbox</format>
         </display>
     </element>
 
-    <element name="current_versionless" width="1%">
+    <element name="current_versionless">
         <display widget='format'>
             <format>Checkbox</format>
         </display>
     </element>
 
 
-    <element name="manual_version" width="1%">
+    <element name="manual_version">
         <display widget='format'>
             <format>Checkbox</format>
         </display>

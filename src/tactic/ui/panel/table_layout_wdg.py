@@ -175,6 +175,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'order': '12'
         },
 
+        'expand_on_load': {
+            'description': 'expands the table on load, ignore column widths',
+            'type': 'TextWdg',
+            'category': 'Optional',
+            'order': '13'
+        },
+
+
 
 
         "temp" : {
@@ -345,6 +353,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 element_type = SearchType.get_tactic_type(my.search_type, group_column)
                 my.group_by_time[group_column] = element_type in ['time', 'date', 'datetime']
 
+
+        # initialize group_values
+        for i, col in enumerate(my.group_columns):
+            group_value_dict = {}
+            my.group_values[i] = group_value_dict
 
 
 
@@ -694,7 +707,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #column_widths = [60]
             #my.kwargs["column_widths"] = column_widths
 
-        
+
         my.element_names = my.config.get_element_names()  
        
         for i, widget in enumerate(my.widgets):
@@ -1277,10 +1290,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
+        expand_on_load = my.kwargs.get("expand_on_load")
+        if expand_on_load in [True, 'true']:
+            expand_on_load = True
+        else:
+            expand_on_load = False
+
+
         if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'load',
                 'element_names': my.element_names,
+                'expand_on_load': expand_on_load,
                 'column_widths': column_widths,
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -1293,17 +1314,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     total_size += bvr.column_widths[i];
                 }
 
-                // Commented out: stretch out the last one
-                /*
-                if (size.x > total_size) {
-                    bvr.column_widths[i-1] = bvr.column_widths[i-1] + (size.x - total_size);
-                }
-                */
-
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
                     spt.table.set_column_width(name, width);
+                }
+
+                if (bvr.expand_on_load) {
+                    spt.table.expand_table();
                 }
                 '''
             } )
@@ -1951,6 +1969,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     return True
             
         return False
+
+
     def has_bottom_wdg(my):
         '''return True if a widget has bottom widget defined'''
         for widget in my.widgets:
@@ -2595,6 +2615,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if my.is_insert:
                 td.add_attr("spt_element_name", element_name)
 
+        #tr.add_attr("ondragenter", "return false")
+        tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
+        tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
 
         return tr
 
@@ -2913,6 +2938,79 @@ spt.table.run_search = function() {
     spt.dg_table.search_cbk( {}, {src_el: table} );
 }
 
+
+// Preview methods
+
+
+spt.table.dragover_row = function(evt, el) {
+    var top = $(el);
+    top.setStyle("border", "dashed 1px blue");
+    top.setStyle("background", "rgba(0,0,255,0.05)");
+    top.setStyle("opacity", "0.3")
+}
+
+
+spt.table.dragleave_row = function(evt, el) {
+    var top = $(el);
+    top.setStyle("border", "solid 1px #BBB");
+    top.setStyle("background", "");
+    top.setStyle("opacity", "1.0")
+}
+
+
+
+spt.table.drop_row = function(evt, el) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    evt.dataTransfer.dropEffect = 'copy';
+    var files = evt.dataTransfer.files;
+
+    var top = $(el);
+    var thumb_el = top.getElement(".spt_thumb_top");
+    var size = thumb_el.getSize();
+    console.log(size);
+
+    for (var i = 0; i < files.length; i++) {
+        var size = files[i].size;
+        var file = files[i];
+
+
+        var search_key = top.getAttribute("spt_search_key");
+        var filename = file.name;
+        var context = "publish" + "/" + filename;
+
+        var upload_file_kwargs =  {
+            files: files,
+            upload_complete: function() {
+                var server = TacticServerStub.get();
+                var kwargs = {mode: 'uploaded'};
+                server.simple_checkin( search_key, context, filename, kwargs);
+            }
+        };
+        spt.html5upload.upload_file(upload_file_kwargs);
+
+
+        // inline replace the image
+        if (thumb_el) {
+            setTimeout( function() {
+                var loadingImage = loadImage(
+                    file,
+                    function (img) {
+                        img = $(img);
+                        thumb_el.innerHTML = "";
+                        thumb_el.appendChild(img);
+                        img.setSize(size);
+                    },
+                    {maxWidth: 240, canvas: true, contains: true}
+                );
+            }, 0 );
+        }
+
+
+
+    }
+}
 
 
 // Discovery methods
@@ -3734,6 +3832,7 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
+    
 
     // remove the first child
     // FIXME: should we rely on firstChild?
@@ -3949,21 +4048,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     // this assumes there is an input that needs to altered
     var type = edit_cell.getAttribute("spt_input_type");
     var input = edit_wdg.getElement(".spt_input");
-     /*
-    var inputs = edit_wdg.getElements(".spt_input");
-    var input = inputs[0];
-    var hidden_input;
 
-   
-    inputs.each(function(el) { if (el.type == 'hidden') 
-                                hidden_input = el;
-                                else
-                                input = el;});
-   
 
-    //this could be a hidden input
-   
-     */
     var value = edit_cell.getAttribute("spt_input_value");
     var parse_selected_text = function(input)
     {
@@ -3994,6 +4080,12 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (input.hasClass("SPT_NO_RESIZE") ) {
         // do nothing
     }
+    else if (input.hasClass("SPT_NO_ACTION") ) {
+        if (value) {
+            input.value = value;
+        }
+    }
+ 
     else if (input.nodeName == "TEXTAREA") {
         set_focus = true;
 
@@ -4030,6 +4122,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
             input.setStyle( "width", size.x+30 + 'px');
+
+
+            // **** NOT USED ****
             //edit_wdg.setStyle('background','white');
             //edit_wdg.setStyle('color','black');
 
@@ -4046,6 +4141,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 if (cal)
                     spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
             }
+            // -------------------
+
+
+
+
         }
         else if (input.type == "checkbox") {
             var cell_value = edit_cell.getAttribute('spt_input_value');
@@ -5361,6 +5461,46 @@ spt.table.get_column_widths = function() {
 
     return widths;
 }
+
+
+
+spt.table.expand_table = function() {
+    var layout = spt.table.get_layout();
+
+    var version = layout.getAttribute("spt_version");
+    var headers;
+    var table = null;
+    var header_table = null;
+    if (version == '2') {
+        spt.table.set_layout(layout);
+        table = spt.table.get_table();
+        headers = spt.table.get_headers();
+        header_table = spt.table.get_header_table();
+
+    }
+    else {
+        table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+        header_table = table;
+        headers = layout.getElements(".spt_table_th");
+    }
+    var width = table.getStyle("width");
+   
+    // don't set the width of each column, this is simpler
+    if (width == '100%') {
+        table.setStyle("width", "");
+        if (header_table)
+            header_table.setStyle("width", "");
+    }
+    else {
+        table.setStyle("width", "100%");
+        if (header_table)
+            header_table.setStyle("width", "100%");
+        layout.setStyle("width", "100%");
+    }
+ 
+}
+
+
 
 
 

@@ -189,6 +189,9 @@ class RawTableElementWdg(BaseTableElementWdg):
         name = my.get_name()
         return name
 
+    def is_sortable(my):
+        return True
+
     def get_required_columns(my):
         '''method to get the require columns for this'''
         return [

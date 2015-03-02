@@ -39,7 +39,7 @@ class HelpButtonWdg(BaseRefreshWdg):
 
 
     def exists():
-        return Container.get("Help::exists") == True
+        return Container.get("HelpWdg::exists") == True
     exists = staticmethod(exists)
 
 
@@ -57,7 +57,8 @@ class HelpButtonWdg(BaseRefreshWdg):
             description = "Show Help"
 
         if my.kwargs.get("use_icon"):
-            help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+            #help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+            help_button = IconButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
         else:
             help_button = ActionButtonWdg(title="?", tip=description, size='small')
         top.add(help_button)
@@ -502,7 +503,7 @@ class HelpWdg(BaseRefreshWdg):
         my.show_add_new = my.kwargs.get('show_add_new') not in  ['false', False]
 
     def exists():
-        return Container.get("Help::exists") == True
+        return Container.get("HelpWdg::exists") == True
     exists = staticmethod(exists)
 
 
@@ -753,6 +754,15 @@ class HelpWdg(BaseRefreshWdg):
 
     def get_onload_js(my):
         return '''
+
+
+if (spt.help) {
+    return;
+}
+
+spt.Environment.get().add_library("spt_help");
+
+
 spt.help = {};
 spt.help.top = null;
 spt.help.content = null;

@@ -189,11 +189,8 @@ class FingerMenuWdg(BaseRefreshWdg):
                  var target = spt.get_event_target( evt );
 
                  var edit_menu = bvr.src_el.getParent('.'+bvr.top_class).getElement('.' + bvr.menu_top_class);
-                 if (!edit_menu) {
-                     log.critical('edit_menu not found!')
-                     //return;
-                 }
-                 else {
+
+                 if (edit_menu) {
                      var menu_pos = edit_menu.getPosition();
                      
                      // when is_left, evt.x tends to be 80 pixels bigger, so increase the tolerance
@@ -208,7 +205,7 @@ class FingerMenuWdg(BaseRefreshWdg):
                              spt.hide(edit_menu);
                          }, 500 )
                     }
-                 }
+                }
                 '''
 
         if not top_class:

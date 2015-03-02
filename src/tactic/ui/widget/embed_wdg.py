@@ -95,6 +95,9 @@ class EmbedWdg(BaseRefreshWdg):
             thumb_path = my.kwargs.get("thumb_path")
             if not thumb_path:
                 thumb_path = "/context/icons/logo/tactic_sml.png"
+            controls = my.kwargs.get("controls")
+            if not controls:
+                controls = "true"
 
             video_id = None
             sources = [src]
@@ -104,7 +107,7 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height, index=index)
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 

@@ -471,7 +471,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         button_row = ButtonRowWdg(show_title=True)
 
 
-        button = ButtonNewWdg(title="Refresh Schema", icon=IconWdg.REFRESH)
+        button = ButtonNewWdg(title="Refresh Schema", icon="BS_REFRESH")
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -484,7 +484,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
  
 
-        button = ButtonNewWdg(title="Save Schema on Canvas", icon=IconWdg.SAVE)
+        button = ButtonNewWdg(title="Save Schema on Canvas", icon="BS_SAVE")
         icon = button.get_icon_wdg()
       
         """
@@ -548,7 +548,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-        button = ButtonNewWdg(title="Add sType Node", icon=IconWdg.ADD)
+        button = ButtonNewWdg(title="Add sType Node", icon="BS_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -566,7 +566,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
 
-        button = ButtonNewWdg(title="Delete Selected", icon=IconWdg.DELETE)
+        button = ButtonNewWdg(title="Delete Selected", icon="BS_REMOVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -659,7 +659,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         button_row = ButtonRowWdg(show_title=True)
 
-        button = ButtonNewWdg(title="Register Selected sType", icon=IconWdg.REGISTER)
+        button = ButtonNewWdg(title="Register Selected sType", icon="BS_EDIT")
         button_row.add(button)
 
         # Note this is a copy of the context menu
@@ -706,7 +706,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
         
-        button = ButtonNewWdg(title="Edit Pipelines", icon=IconWdg.PIPELINE)
+        button = ButtonNewWdg(title="Edit Pipelines", icon="BS_RANDOM")
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -748,7 +748,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
         project_code = Project.get_project_code()
-        button = ButtonNewWdg(title="Edit Properties", icon=IconWdg.INFO)
+        button = ButtonNewWdg(title="Edit Properties", icon="BS_INFO_SIGN")
         button.add_dialog(my.properties_dialog)
         button_row.add(button)
         button.add_behavior( {

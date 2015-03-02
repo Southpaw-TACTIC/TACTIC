@@ -96,7 +96,7 @@ class File(SObject):
     VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
                 'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb']
 
-    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds']
+    IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
                 
 
 
@@ -785,9 +785,16 @@ class IconCreator(object):
                 if large_path.lower().endswith('psd'):
                     large_path += "[0]"
                 convert_cmd.extend(['-resize','%sx%s'%(thumb_size[0], thumb_size[1])])
+
+                # FIXME: needs PIL for this ... should use ImageMagick to find image size
                 if HAS_PIL:
-                    im = Image.open(large_path)
-                    x,y = im.size
+                    try:
+                        im = Image.open(large_path)
+                        x,y = im.size
+                    except Exception, e:
+                        print "WARNING: ", e
+                        x = 0
+                        y = 0
                     if x < y:
                         # icons become awkward if height is bigger than width
                         # add white background for more reasonable icons

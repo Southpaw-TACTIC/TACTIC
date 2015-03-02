@@ -384,7 +384,8 @@ class TableDataDumper(object):
 
 
                             # repr puts single quotes at the start and end
-                            value = value.strip("'")
+                            if value.startswith("'") and value.endswith("'"):
+                                value = value[1:-1]
                             # and it puts a slash in front
                             value = value.replace(r"\'", "'")
                             # replace literal \n with newline (comes from repr)
