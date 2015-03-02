@@ -17,7 +17,20 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
-    
+    def upgrade_v4_3_0_v02_001(my):
+
+        if my.get_database_type() == 'MySQL':
+            my.run_sql('''
+            ALTER table pipeline MODIFY code varchar(128) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER table pipeline ALTER COLUMN code varchar(128) NULL;
+            ''')
+        else:
+            my.run_sql('''
+            ALTER TABLE pipeline ALTER COLUMN code DROP NOT NULL;
+            ''')
     #
     # 4.2.0.a01
     #
