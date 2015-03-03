@@ -199,7 +199,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # generate it. parent_key could be none if the expression evaluates to None
             expression = my.kwargs.get('expression')
             if expression:
-                if my.search_key and my.search_key != "%s":
+                if my.search_key and (my.search_key not in ["%s", 'None']):
                     start_sobj = Search.get_by_search_key(my.search_key)
                 else:
                     start_sobj = None
