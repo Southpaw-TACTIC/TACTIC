@@ -480,6 +480,8 @@ class Search(Base):
         the Client API, for example.'''
 
         if isinstance(filters, basestring):
+            filters =  filters.replace("&gt;", ">")
+            filters =  filters.replace("&lt;", "<")
             filters = jsonloads(filters)
 
         for filter in filters:
@@ -527,6 +529,10 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
+
+                op = op.replace("lt", "<")
+                op = op.replace("gt", ">")
+
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
