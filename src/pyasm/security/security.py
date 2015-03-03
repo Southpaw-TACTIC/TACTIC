@@ -662,19 +662,6 @@ class Site(object):
             site = Site.get_site()
             return site
 
-    #
-    # Virtual methods
-    #
-
-    def get_max_users(my, site):
-        return
-
-    def get_authenticate_class(my):
-        return
-
-
-    def break_up_request_path(my, path):
-        return {}
 
     def get_request_path_info(my):
         from pyasm.web import WebContainer
@@ -682,6 +669,24 @@ class Site(object):
         path = web.get_request_path()
         return my.break_up_request_path(path)
 
+
+
+    #
+    # Virtual methods
+    #
+
+
+    def get_max_users(my, site):
+        return
+
+    def get_authenticate_class(my):
+        return
+
+    def get_site_root(my):
+        return ""
+
+    def break_up_request_path(my, path):
+        return {}
 
     def get_by_login(cls, login):
         return ""
@@ -1151,7 +1156,6 @@ class Security(Base):
         # set the site if the key has one
         #site = Site.get().get_by_ticket(key)
         #Site.get().set_site(site)
-        print "login_widdsafsdfdsfsdsfd"
 
         my.add_access_rules_flag = add_access_rules
 

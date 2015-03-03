@@ -594,8 +594,6 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
-
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -649,6 +647,15 @@ class BaseAppServer(Base):
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
+
+
+
+        # TEST TEST TEST
+        try:
+            site_obj.handle_ticket(security.get_ticket())
+        except Exception, e:
+            print "ERRRRR: ", e
+
 
             
         # set up default securities

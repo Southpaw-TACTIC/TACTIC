@@ -124,7 +124,12 @@ class CherryPyStartup(CherryPyStartup20):
 
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
-        project = Project.get_by_code(project_code)
+        try:
+            project = Project.get_by_code(project_code)
+        except Exception, e:
+            print "WARNING: ", e
+            raise
+
         if not has_project and project and project.get_value("type") != 'resource':
 
             startup = cherrypy.startup

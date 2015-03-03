@@ -379,13 +379,15 @@ class TopWdg(Widget):
                 '''
             } )
             project_code = Project.get_project_code()
+            site_root = web.get_site_root()
             div.add_behavior( {
                 'type': 'click_up',
+                'site_root': site_root,
+                'project_code': project_code,
                 'cbjs_action': '''
-                var url = "/tactic/%s/admin/link/_startup";
+                var url = "/"+bvr.site_root+"/"+bvr.project_code+"/admin/link/_startup";
                 window.open(url);
-
-                ''' % project_code
+                '''
             } )
 
 

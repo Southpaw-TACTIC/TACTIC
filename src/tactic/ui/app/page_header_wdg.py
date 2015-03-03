@@ -454,23 +454,28 @@ class ProjectSelectWdg(BaseRefreshWdg):
             web = WebContainer.get_web()
             browser = web.get_browser()
 
+            site_root = web.get_site_root()
+            url = "/%s/%s" % (site_root, project_code)
+
             if browser != 'Qt':
 
                 menu_item.add_behavior( {
                 'type': 'click_up',
                 'project_code': project_code,
+                'url': url,
                 'cbjs_action': '''
-                window.open('/tactic/%s/');
-                ''' % project_code
+                window.open(bvr.url);
+                '''
                 } )
 
             else:
                 menu_item.add_behavior( {
                 'project_code': project_code,
+                'url': url,
                 'cbjs_action': '''
                 spt.app_busy.show("Jumping to Project ["+bvr.project_code+"]", "");
-                document.location = '/tactic/%s/';
-                ''' % project_code
+                document.location = bvr.url;
+                '''
                 } )
 
             menu.add(menu_item)

@@ -182,6 +182,11 @@ class WebEnvironment(Environment):
 
 
     def get_site_root(my):
+        from pyasm.security import Site
+        site = Site.get().get_site_root()
+        if site:
+            return site
+
         return "tactic"
 
 

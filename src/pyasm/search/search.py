@@ -527,11 +527,17 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
+
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
                     table = parts[0]
                     name = parts[1]
+
+
+                if value.startswith("{") and value.endswith("}"):
+                    value = Search.eval(value, single=True)
+
 
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))

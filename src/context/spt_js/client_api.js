@@ -162,6 +162,7 @@ TacticServerStub = function() {
         var args = [];
         var ticket = {
             'ticket': this.login_ticket,
+            'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
             'language': 'javascript'
