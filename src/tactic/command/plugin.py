@@ -574,6 +574,9 @@ class PluginCreator(PluginBase):
 
 
     def handle_sobject(my, node):
+        project = Project.get()
+        project_code = project.get_value("code")
+        
         search_type = my.xml.get_attribute(node, "search_type")
 
         include_id = my.xml.get_attribute(node, "include_id")
@@ -605,8 +608,8 @@ class PluginCreator(PluginBase):
         # no path can be extracted.
 
         path = my.get_path_from_node(node)
-
-        print "Writing: ", path
+        
+        #print "Writing: ", path
         fmode = 'w'
         if os.path.exists(path):
             fmode = 'a'
@@ -624,6 +627,9 @@ class PluginCreator(PluginBase):
         dumper.set_include_id(include_id)
         dumper.set_ignore_columns(ignore_columns)
         dumper.set_sobjects(sobjects)
+        if "pipeline" in path:
+            regex = r'^%s/'%project_code
+            dumper.set_replace_token("$PROJECT/",regex,"sthpw/pipeline","code")
         dumper.dump_tactic_inserts(path, mode='sobject')
 
         print "\t....dumped [%s] entries" % (len(sobjects))
@@ -633,16 +639,18 @@ class PluginCreator(PluginBase):
 
 
     def handle_search_type(my, node):
+
         search_type = my.xml.get_attribute(node, "code")
         if not search_type:
             raise TacticException("No code found for search type in manifest")
 
         path = my.xml.get_attribute(node, "path")
+
         if not path:
             path = "%s.spt" % search_type.replace("/", "_")
 
         path = "%s/%s" % (my.plugin_dir, path)
-
+        
         if os.path.exists(path):
             os.unlink(path)
 
@@ -1180,6 +1188,10 @@ class PluginInstaller(PluginBase):
 
 
                             sobject.set_value("code", project_code)
+
+                        if base_search_type == "sthpw/pipeline":
+                            if "$PROJECT" in line:
+                                print "\n\n to replace: %s----\n\n"%line
 
 
                     if unique:

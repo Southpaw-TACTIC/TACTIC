@@ -171,6 +171,7 @@ class TableDataDumper(object):
         my.include_id = True
         my.search_type = None
         my.ignore_columns = []
+        my.replace_dict={}
 
 
     def set_include_id(my, flag=True):
@@ -178,6 +179,21 @@ class TableDataDumper(object):
 
     def set_ignore_columns(my, columns=[]):
         my.ignore_columns = columns
+    
+    
+    def set_replace_token(my,replace,regex,stype,column):
+        #import re
+        #if not regex:
+            #regex = r'^%s/'%project_code
+        #if not re.match(regex,input_str):
+            #raise Exception("Code does not conform to standard format")
+        #if replace[-1] != "/":
+        key = column
+        value = [replace,regex,stype]
+        my.replace_dict[key] = value 
+        
+        
+        
 
 
 
@@ -334,6 +350,7 @@ class TableDataDumper(object):
         column_info = SearchType.get_column_info(my.search_type)
 
         for sobject in my.sobjects:
+            project_code =sobject.get_project_code()
             f.write( "%s\n" % my.delimiter )
 
 
@@ -345,6 +362,29 @@ class TableDataDumper(object):
 
             data = sobject.get_data()
             for name, value in data.items():
+                if "pipeline" in path and  name=="code":
+                    print value
+                '''if my.replace_dict:
+                    
+                    for column,replace_args in my.replace_dict.iteritems():
+                        
+                        stype_name = replace_args[2].split("/")[1]
+                        if stype_name in path:
+                            if name == column:
+                                #print replace_args
+                                import re
+                                regex = replace_args[1]
+                                
+                                replace_str = replace_args[0]
+                                if not re.match(regex,value):
+                                    #raise Exception("%s does not conform to standard format"%column)
+                                    print replace_args, value
+                                #value = re.sub(regex,replace_str,value)'''
+
+    
+                        
+
+
                 if name in my.ignore_columns:
                     continue
 
