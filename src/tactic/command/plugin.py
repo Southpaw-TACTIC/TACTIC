@@ -8,7 +8,7 @@
 # or disclosed in any way without written permission.
 #
 #
-#
+# 
 
 
 __all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginSObjectAdderCmd']
@@ -578,7 +578,7 @@ class PluginCreator(PluginBase):
         project_code = project.get_value("code")
         
         search_type = my.xml.get_attribute(node, "search_type")
-
+        replace_variable = my.xml.get_attribute(node, "replace_variable")
         include_id = my.xml.get_attribute(node, "include_id")
         if include_id in [True, 'true']:
             include_id = True
@@ -627,9 +627,12 @@ class PluginCreator(PluginBase):
         dumper.set_include_id(include_id)
         dumper.set_ignore_columns(ignore_columns)
         dumper.set_sobjects(sobjects)
-        if "pipeline" in path:
-            regex = r'^%s/'%project_code
-            dumper.set_replace_token("$PROJECT/",regex,"sthpw/pipeline","code")
+
+        if replace_variable in ['True',"true",True]:
+            if search_type == "sthpw/pipeline":
+                regex = r'^\b[^\W\d_]+\b/*'
+                dumper.set_replace_token(project_code,"$PROJECT/",regex,"code")
+        
         dumper.dump_tactic_inserts(path, mode='sobject')
 
         print "\t....dumped [%s] entries" % (len(sobjects))
@@ -1190,8 +1193,16 @@ class PluginInstaller(PluginBase):
                             sobject.set_value("code", project_code)
 
                         if base_search_type == "sthpw/pipeline":
-                            if "$PROJECT" in line:
-                                print "\n\n to replace: %s----\n\n"%line
+                            
+                            if "$PROJECT" in sobject.get('code'):
+                                old_code = sobject.get('code')
+                                new_code = old_code.replace("$PROJECT",project_code,1)
+                                search = Search("sthpw/pipeline")
+                                search.add_filter("code", new_code)
+                                exists = search.get_sobject()
+                                if not exists:
+                                    sobject.set_value('code',new_code)
+                                    unique = True
 
 
                     if unique:

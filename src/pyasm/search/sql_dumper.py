@@ -8,7 +8,7 @@
 # or disclosed in any way without written permission.
 #
 #
-#
+# 
 
 __all__ = ['TableSchemaDumper', 'TableDataDumper']
 
@@ -181,15 +181,9 @@ class TableDataDumper(object):
         my.ignore_columns = columns
     
     
-    def set_replace_token(my,replace,regex,stype,column):
-        #import re
-        #if not regex:
-            #regex = r'^%s/'%project_code
-        #if not re.match(regex,input_str):
-            #raise Exception("Code does not conform to standard format")
-        #if replace[-1] != "/":
+    def set_replace_token(my,project_code,replace,regex,column):
         key = column
-        value = [replace,regex,stype]
+        value = [project_code,replace,regex]
         my.replace_dict[key] = value 
         
         
@@ -362,24 +356,19 @@ class TableDataDumper(object):
 
             data = sobject.get_data()
             for name, value in data.items():
-                if "pipeline" in path and  name=="code":
-                    print value
-                '''if my.replace_dict:
+                
+                if my.replace_dict:
                     
                     for column,replace_args in my.replace_dict.iteritems():
-                        
-                        stype_name = replace_args[2].split("/")[1]
-                        if stype_name in path:
-                            if name == column:
-                                #print replace_args
-                                import re
-                                regex = replace_args[1]
-                                
-                                replace_str = replace_args[0]
-                                if not re.match(regex,value):
-                                    #raise Exception("%s does not conform to standard format"%column)
-                                    print replace_args, value
-                                #value = re.sub(regex,replace_str,value)'''
+                        if name == column:
+                            import re
+                            project_code = replace_args[0]
+                            replace_str = replace_args[1]
+                            regex = replace_args[2]
+                            
+                            if not re.match(regex,value):
+                                raise Exception("%s does not conform to standard format"%column)
+                            value = re.sub(regex,replace_str,value)
 
     
                         
