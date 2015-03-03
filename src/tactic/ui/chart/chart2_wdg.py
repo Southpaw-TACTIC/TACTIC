@@ -269,7 +269,8 @@ class ChartWdg(BaseRefreshWdg):
 
 
         # draw the grid
-        grid = ChartGrid(labels=labels, label_values=label_values)
+        rotate_x_axis = my.kwargs.get("rotate_x_axis")
+        grid = ChartGrid(labels=labels, label_values=label_values, rotate_x_axis=rotate_x_axis)
         top.add(grid)
 
 
@@ -399,7 +400,7 @@ class ChartGrid(BaseRefreshWdg):
                     ctx.save();
                     ctx.translate(+(x-offset_x), +(origin.y+offset_y));
                     if (bvr.rotate_x_axis)
-                        ctx.rotate(Math.PI/4);
+                        ctx.rotate(3*Math.PI/16);
                     ctx.translate(-(x-offset_x), -(origin.y+offset_y));
                     ctx.translate(0, 15);
                     ctx.fillText(label, x - offset_x, origin.y + offset_y);
