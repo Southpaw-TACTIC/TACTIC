@@ -66,6 +66,113 @@ except ImportError:
 class Common(Base):
 
 
+
+    def get_next_sobject_code(sobject, column):
+        '''get the next code'''        
+
+        code = sobject.get_value(column)
+
+        code_num = Common._get_next_num(sobject, column)
+        padding = Common._get_code_padding()
+        code_num = str(code_num).zfill( padding )
+
+        # build the new code
+        code_array = code.split("_")
+
+        # Sample cases:
+        # if the array looks like this ["vfx", "layout", "001"]
+        # or the array looks like this ["vfx", "layout", "test"]
+        # or the array looks like this ["vfx", "layout"]
+        # or the array looks like this ["vfx", "001"]
+        # or the array looks like this ["vfx"]
+        # or the array looks like this ["vfx/chocolate"]
+
+        has_number = code_array[-1].isdigit()
+
+        if code_array and has_number:
+            new_code = "%s_%s" % ("_".join(code_array[0:-1]), code_num)
+        elif code_array and not has_number:
+            new_code = "%s_%s" % ("_".join(code_array), code_num)
+        else:
+            new_code = ""
+
+        return new_code
+    get_next_sobject_code = staticmethod(get_next_sobject_code)
+
+    def _get_code_padding():
+        return 3
+    _get_code_padding = staticmethod(_get_code_padding)
+
+    def _get_start_code():
+        return 0
+    _get_start_code = staticmethod(_get_start_code)
+
+    def _get_next_num(sobject, column):
+
+        from pyasm.search import Search
+
+        # assumptions: a code would look something like this asset_001
+        # the only numbers that we care about are the trailing ones
+
+        # To get the next number, first do a search for
+        # Order code by desc (code starts with asset_)
+        # get a count of the search
+        # grab the first result of the search. Get it's trailing number
+        # the number to be returned will is whichever is bigger of the count or the trailing number
+        # if ther is a number for neither, then return 1.
+
+        # set the default start value
+        code_num = Common._get_start_code()
+
+        # get the highest number, extract the number and increase by 1
+        search_type = sobject.get_search_type()
+        search = Search(search_type)
+        search.set_show_retired_flag(True)
+
+        #for column in columns:
+        value = sobject.get_value(column)
+        startswith_value = value.rstrip("0123456789")
+        search.add_filter(column, startswith_value+"%", op='LIKE')
+       
+        # order by descending codes
+        search.add_order_by("code desc")
+        last_sobject = search.get_sobject()
+
+        count = search.get_count()
+        
+        # grab the first result of the search. Get it's trailing number
+        if last_sobject != None:
+            last_sobject_code = last_sobject.get_value("code")
+            last_sobject_code_num = last_sobject_code.lstrip(startswith_value)
+            last_sobject_code_num = re.sub("[^0-9]", "", last_sobject_code_num)
+
+        if not last_sobject_code_num:
+            last_sobject_code_num = 0
+
+        # the number to be returned will is whichever is bigger of the count or the trailing number
+        if int(count) > int(last_sobject_code_num):
+            code_num = int(count) - 1
+            # count is subtracted by 1 because there are two cases
+            # either the code starts with something like asset, or asset_001
+            # if it starts off as asset, then it's the same as starting from 0
+            # if it starts with 001 though, then it's fine, because it'll take the 001 instead
+        else:
+            code_num = last_sobject_code_num
+
+        # increase the larger number by 1
+        try:
+            code_num = int(code_num) + 1
+        except ValueError:
+            code_num = 1
+
+        return code_num
+
+    _get_next_num = staticmethod(_get_next_num)
+
+
+
+
+
     def get_full_class_name(object):
         name = "%s.%s" % (object.__module__, object.__class__.__name__)
         return name
