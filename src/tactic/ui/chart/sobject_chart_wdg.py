@@ -689,6 +689,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
 
+        rotate_x_axis = my.kwargs.get("rotate_x_axis")
 
         chart = ChartWdg(
             width=width,
@@ -696,7 +697,8 @@ class CalendarChartWdg(BaseChartWdg):
             chart_type='bar',
             #legend=my.elements,
             labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)]
+            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
+            rotate_x_axis=rotate_x_axis,
         )
         table.add_cell(chart)
 
