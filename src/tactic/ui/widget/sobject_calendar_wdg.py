@@ -245,8 +245,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         content_wdg.add_style("height: 1px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                     elif mode == "square":
-                        content_wdg.add_style("height: 1px")
-                        content_wdg.add_style("width: 1px")
+                        content_wdg.add_style("height: 3px")
+                        content_wdg.add_style("width: 3px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                         content_wdg.add_style("float: left")
                     else:
