@@ -17,7 +17,7 @@ import os,unittest, shutil, sys
 
 from pyasm.unittest import *
 
-from pyasm.common import Environment, Config, Common, Container
+from pyasm.common import Environment, Config, Common, Container, Xml
 from pyasm.command import Command, UndoCmd
 from pyasm.search import Transaction, SearchType, Search
 from pyasm.security import Batch
@@ -48,17 +48,20 @@ class CheckinTest(unittest.TestCase, Command):
 
         test_env = UnittestEnvironment()
         test_env.create()
+        my.transaction = Transaction.get(create=True)
 
         Project.set_project("unittest")
-
+       
         try:
-            Command.execute_cmd(my)
+            #Command.execute_cmd(my)
 
             # undo the command
-            undo = UndoCmd()
-            undo.execute()
+            #undo = UndoCmd()
+            #undo.execute()
+            my.execute()
 
         finally:
+            my.transaction.rollback()
             test_env.delete()
 
 
@@ -88,6 +91,12 @@ class CheckinTest(unittest.TestCase, Command):
    
         my._test_base_dir_alias()
 
+        # clear the xml and config cache introduced by test_base_dir_alias
+        data = {}
+        Container.put(Config.CONFIG_KEY, data)
+
+        Xml.XML_FILE_CACHE = {}
+        Xml.XML_FILE_MTIME = {}
 
 
     def clear_naming(my):
@@ -122,7 +131,7 @@ class CheckinTest(unittest.TestCase, Command):
         snap = checkin.get_snapshot()
         file_obj = snap.get_file_by_type('main')
         file_name = file_obj.get_file_name()
-        my.assertEquals(file_name, 'copy_test_v002.txt')
+        my.assertEquals(file_name, 'copy_test_publish_v002.txt')
 
     def _test_checkin(my):
 
@@ -278,8 +287,8 @@ class CheckinTest(unittest.TestCase, Command):
         my.assertEquals(True, path.endswith( expected ) )
 
         # preallocate with a file name and file type
-        path = snapshot.get_preallocated_path(file_type, file_name)
-
+        # since it's meant for FileAppendCheckin, the checkin_type should be 'strict'
+        path = snapshot.get_preallocated_path(file_type, file_name, checkin_type='strict')
         if server:
             my.assertEquals(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_\w+_v001.jpg$', path) )
         else:
@@ -308,7 +317,8 @@ class CheckinTest(unittest.TestCase, Command):
         file_type = 'sequence'
         file_range = FileRange(1, 5)
 
-        path = snapshot.get_preallocated_path(file_type=file_type, file_name=file_name)
+        # should specify strict checkin_type for Append checkin after
+        path = snapshot.get_preallocated_path(file_type=file_type, file_name=file_name, checkin_type='strict')
         # imitate a render by building files directly to the path
         for i in range(1,6):
             cur_path = path % i
@@ -318,8 +328,10 @@ class CheckinTest(unittest.TestCase, Command):
 
         # register these files
         snapshot_code = snapshot.get_code()
+
+        # should specify strict checkin_type for Append checkin
         checkin = FileGroupAppendCheckin(snapshot_code, [path], [file_type], file_range, \
-                keep_file_name=True, mode='preallocate')
+                keep_file_name=True, mode='preallocate', checkin_type='strict')
         checkin.execute()
 
         snapshot = checkin.get_snapshot()
@@ -336,7 +348,10 @@ class CheckinTest(unittest.TestCase, Command):
     def _test_get_children(my):
         # test to make sure get_all_children is able to get all the snapshots
         snapshots = my.person.get_all_children("sthpw/snapshot")
-        num_snapshots = 5
+        #for snap in snapshots:
+        #    print snap.get_version() ,  snap.get_description()
+        # 2 versionless + 5 new snapshots = 7
+        num_snapshots = 7
         my.assertEquals(num_snapshots, len(snapshots))
 
 
@@ -736,13 +751,16 @@ class CheckinTest(unittest.TestCase, Command):
             'alias': '/tmp/tactic/alias',
             'alias2': '/tmp/tactic/alias2',
         });
-        # "plugins" is assumed in some branch 
         asset_dict = Environment.get_asset_dirs()
         default_dir = asset_dict.get("default")
         my.assertEquals( "/tmp/tactic/default", default_dir)
 
         aliases = asset_dict.keys()
-        my.assertEquals( 3, len(aliases))
+        # "plugins" is assumed in some branch 
+        if 'plugins' in aliases:
+            my.assertEquals( 4, len(aliases))
+        else:
+            my.assertEquals( 3, len(aliases))
         my.assertNotEquals( None, "alias" in aliases )
 
         # create a naming
@@ -784,6 +802,11 @@ class CheckinTest(unittest.TestCase, Command):
             path = "%s/text.txt" % (lib_dir)
             exists = os.path.exists(path)
             my.assertEquals(True, exists)
+
+        # manually remove this from this pseudo asset_base_dir as we
+        # clean up using the default asset_base_dir at the end
+        os.unlink('/tmp/tactic/alias/alias/text.txt')
+        os.unlink('/tmp/tactic/alias2/alias2/text.txt')
 
 
 

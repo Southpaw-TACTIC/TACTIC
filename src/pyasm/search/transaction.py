@@ -46,6 +46,7 @@ class Transaction(Base):
         my.xml.create_doc("transaction")
         my.transaction_log = None
         my.change_timestamps = {}
+        my.description = ""
 
     def set_record(my, record_flag):
         my.record_flag = record_flag
@@ -965,10 +966,7 @@ class FileUndo:
             if not os.path.exists(src):
                 os.makedirs(src)
         elif type == "create":
-
-            security = Environment.get_security()
-            ticket = security.get_ticket_key()
-
+            
             tmp_dir = Environment.get_tmp_dir()
 
             # first check the upload, then the cache

@@ -25,6 +25,7 @@
     <element name="project_code"/>
     <element name="license_type"/>
     <element name="password" type="password"/>
+    <element name="hourly_wage"/>
 </definition>
 
 
@@ -45,6 +46,7 @@
         <display class="PasswordWdg"/>
         <action class="NullAction"/>
     </element>
+    <element name="hourly_wage"/>
 
 </edit_definition>
 
@@ -57,6 +59,7 @@
     <element name="display_name"/>
     <element name="email"/>
     <element name="license_type"/>
+    <element name="hourly_wage"/>
 </table>
 
 
@@ -178,7 +181,7 @@
 
 
 
-<edit>
+<edit num_columns="1">
     <element name="thumb">
         <display class="pyasm.widget.ThumbInputWdg">
             <show_icon>true</show_icon>
@@ -193,18 +196,33 @@
         <action class="pyasm.command.UploadAction"/>
     </element>
 
+
     <element name="login">
         <display class="TextWdg"/>
         <action class="LoginAction"/>
     </element>
-     
+ 
+
+    <element name="authentication">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+
+    
     <element name="password">
         <display class="PasswordWdg"/>
         <action class="PasswordAction"/>
     </element>
 
-    <element name="password re-enter">
+    <element name="password_reenter" title="Re-enter Password">
         <display class="PasswordWdg"/>
+        <action class="NullAction"/>
+    </element>
+
+
+    <element name="information">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
         <action class="NullAction"/>
     </element>
 
@@ -215,16 +233,15 @@
     <element name="email"/>
 
     <element name="department"/>
-    <!--
-    <element name="project_code"/>
-    -->
 
+    <!--
     <element name="license_type">
       <display class="SelectWdg">
         <empty>true</empty>
         <values>disabled|user|float</values>
       </display>
     </element>
+    -->
 </edit>
 
 <edit_account layout="EditWdg">

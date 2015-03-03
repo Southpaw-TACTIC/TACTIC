@@ -15,7 +15,7 @@ __all__ = ['AppServer', 'BaseAppServer', 'XmlrpcServer', 'get_site_import', 'get
 import re, types
 
 from pyasm.common import *
-from pyasm.search import SObjectFactory, DbContainer, ExceptionLog, SearchType, Search, Sql, DatabaseException
+from pyasm.search import SObjectFactory, DbContainer, DbResource, ExceptionLog, SearchType, Search, Sql, DatabaseException
 from pyasm.security import *
 from pyasm.biz import PrefSetting, Translation
 
@@ -196,11 +196,19 @@ class BaseAppServer(Base):
 
     def handle_not_logged_in(my, allow_change_admin=True):
 
+
+        site_obj = Site.get()
+        site_obj.set_site("default")
+
+        DbResource.clear_cache()
+
+
         from pyasm.widget import WebLoginWdg, BottomWdg
         from tactic.ui.app import TitleTopWdg
 
         from pyasm.biz import Project
         from tactic.ui.panel import HashPanelWdg
+
 
         web = WebContainer.get_web()
 
@@ -236,15 +244,17 @@ class BaseAppServer(Base):
                     web_wdg = None
                 else:
 
-                    # custom loginwidget
+                    # custom login widget
                     if not current_project or current_project == "default":
-                        current_project = Config.get_value("install", "default_project")
+                        current_project = Project.get_default_project()
                     if current_project and current_project != "default":
                         Project.set_project(current_project)
 
                         try:
                             web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
                         except Exception, e:
+                            print "WARNING: ", e
+                            raise
                             from pyasm.widget import ExceptionMinimalWdg
                             web_wdg = ExceptionMinimalWdg(e)
                             web_wdg.add_style("margin: 50px auto")
@@ -283,12 +293,7 @@ class BaseAppServer(Base):
         from pyasm.biz import Project
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
-
-        security = Security()
-        security = my.handle_security(security)
-        is_logged_in = security.is_logged_in()
-
-
+        
         # guest mode
         #
         allow_guest = Config.get_value("security", "allow_guest")
@@ -296,6 +301,17 @@ class BaseAppServer(Base):
             allow_guest = True
         else:
             allow_guest = False
+
+        security = Security()
+        try:
+            security = my.handle_security(security)
+            is_logged_in = security.is_logged_in()
+        except Exception, e:
+            site_obj = Site.get()
+            return my.handle_not_logged_in()
+
+ 
+
 
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
@@ -324,7 +340,7 @@ class BaseAppServer(Base):
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
-            override_default = Config.get_value("install", "default_project")
+            override_default = Project.get_default_project()
             if override_default:
                 project = override_default
         if project != 'default':
@@ -415,10 +431,16 @@ class BaseAppServer(Base):
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
-                    current_project = Config.get_value("install", "default_project")
+                    default_project = Project.get_default_project()
                 if current_project and current_project != "default":
-                    Project.set_project(current_project)
-
+                    try:
+                        Project.set_project(current_project)
+                    except SecurityException, e:
+                        print e
+                        if 'is not permitted to view project' in e.__str__():
+                            pass
+                        else:
+                            raise
                     web_wdg = HashPanelWdg.get_widget_from_hash("/guest", return_none=True)
                     if web_wdg:
                         web_wdg = web_wdg.get_buffer_display()
@@ -503,7 +525,32 @@ class BaseAppServer(Base):
         # install the language
         Translation.install()
 
-        widget = my.get_content(page_type)
+
+        # handle the case where the project does not exist
+        project = Project.get(no_exception=True)
+        if not project:
+            from pyasm.widget import BottomWdg, Error404Wdg
+            Project.set_project("admin")
+            widget = Widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( Error404Wdg() )
+            widget.add( BottomWdg() )
+            widget.get_display()
+            return widget
+
+
+        try:
+            widget = my.get_content(page_type)
+        except Exception, e:
+            print "ERROR: ", e
+            from pyasm.widget import BottomWdg, Error403Wdg
+            widget = Widget()
+            top = my.get_top_wdg()
+            widget.add( top )
+            widget.add( Error403Wdg() )
+            widget.add( BottomWdg() )
+            widget.get_display()
 
         # put an annoying alert if there is a problem with the licensed
         if not is_licensed:
@@ -521,10 +568,8 @@ class BaseAppServer(Base):
 
 
 
-    def handle_security(my, security):
+    def handle_security(my, security, allow_guest=False):
         # set the seucrity object
-
-        print "handle security"
 
         WebContainer.set_security(security)
 
@@ -535,7 +580,6 @@ class BaseAppServer(Base):
         if not ticket_key:
             ticket_key = web.get_cookie("login_ticket")
 
-
         # We can define another place to look at ticket values and use
         # that. ie: Drupal session key
         session_key = Config.get_value("security", "session_key")
@@ -544,13 +588,11 @@ class BaseAppServer(Base):
         password = web.get_form_value("password")
         site = web.get_form_value("site")
 
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
         elif login and password:
-            from pyasm.security import Site
             if not site:
                 # get from the login
                 site_obj = Site.get()
@@ -567,16 +609,17 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-
+                
         elif ticket_key:
-
             # get from the login
+            site_obj = Site.get()
+            site = site_obj.get_by_ticket(ticket_key)
             if site:
-                from pyasm.security import Site
-                site_obj = Site.get()
                 site_obj.set_site(site)
 
-            security.login_with_ticket(ticket_key, add_access_rules=False)
+            
+            security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+
 
         if not security.is_logged_in():
             reset_password = web.get_form_value("reset_password") == 'true'
@@ -592,20 +635,20 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
+        # clear the password
+        web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)
         elif ticket_key:
             web.set_cookie("login_ticket", ticket_key)
 
-
+            
         # set up default securities
         my.set_default_security(security)
 
         # for now apply the access rules after
         security.add_access_rules()
-
-        print "... end handle_security"
 
         return security
 

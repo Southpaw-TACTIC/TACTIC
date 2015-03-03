@@ -314,10 +314,18 @@ class Login(SObject):
                     login.set_value("id", 0)
                     login.set_id(0)
 
+                columns = SearchType.get_columns("sthpw/login")
+
                 login.set_value("login", "admin")
+                login.set_value("code", "admin")
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
+
+                data = login.get_data()
+                for column in columns:
+                    if data.get(column) == None:
+                        login.set_value(column, "")
 
                 password = Config.get_value("security", "password")
                 if not password:
@@ -631,7 +639,31 @@ class Site(object):
     TACTIC installation.  Tickets are scoped by site which determines
     the location of database.'''
 
+    def get_max_users(my, site):
+        return
 
+
+    # HACK: Some functions to spoof an sobject
+    def get_project_code(my):
+        return "admin"
+
+    def get_base_search_type(my):
+        return "sthpw/virtual"
+
+    def get_search_type(my):
+        return "sthpw/virtual"
+
+    def get(my, name, no_exception=True):
+        return my.get_value(name)
+
+    def get_value(my, name, no_exception=True):
+        # This is just to spoof the Site object into being an sobject for
+        # the purposes of using expressions to configure the "asset_dir"
+        # for sites.  Ideally, this class should be derived from sobject,
+        # but this is not yet implemented.
+        if name == "code":
+            site = Site.get_site()
+            return site
 
     #
     # Virtual methods
@@ -650,10 +682,24 @@ class Site(object):
     get_by_ticket = classmethod(get_by_ticket)
 
 
-    def get_site_data(cls, site):
+    def get_connect_data(cls, site):
         return {}
-    get_site_data = classmethod(get_site_data)
+    get_connect_data = classmethod(get_connect_data)
  
+    def get_asset_dir(cls, file_object=None, alias=None):
+        return
+    get_asset_dir = classmethod(get_asset_dir)
+ 
+ 
+    def get_web_dir(cls, file_object=None, alias=None):
+        return
+    get_web_dir = classmethod(get_web_dir)
+
+
+    def get_default_project(cls):
+        return
+ 
+
 
     #######################
 
@@ -662,7 +708,10 @@ class Site(object):
         if not class_name:
             class_name = "pyasm.security.Site"
         #class_name = "spt.modules.portal.PortalSite"
-        site = Common.create_from_class_path(class_name)
+        try:
+            site = Common.create_from_class_path(class_name)
+        except Exception, e:
+            site = Site()
         return site
     get = classmethod(get)
 
@@ -681,6 +730,26 @@ class Site(object):
             return
         Container.put("site", site)
     set_site = classmethod(set_site)
+
+
+    def get_db_resource(cls, site, database):
+        if not site:
+            return None
+        site_obj = cls.get()
+        data = site_obj.get_connect_data(site)
+        if data:
+            host = data.get('host')
+            port = data.get('port')
+            vendor = data.get('vendor')
+            user = data.get('user')
+            password = data.get('password')
+        else:
+            return None
+
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        return db_resource
+
+    get_db_resource = classmethod(get_db_resource)
 
 
 
@@ -716,9 +785,6 @@ class Ticket(SObject):
         ticket = search.get_sobject()
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
-
-       
-
       
 
 
@@ -777,6 +843,28 @@ class Ticket(SObject):
         return ticket
     create = staticmethod(create)
         
+    def update_session_expiry():
+        security = Environment.get_security()
+        login_ticket = security.get_ticket()    
+        impl = Sql.get_default_database_impl()
+        timeout = Config.get_value("security","inactive_ticket_expiry")
+        if not timeout:
+            return
+        offset,type = timeout.split(" ")
+        expiry = impl.get_timestamp_now(offset=offset, type=type)
+        Ticket.update_expiry(login_ticket,expiry)
+        
+    update_session_expiry = staticmethod(update_session_expiry)
+
+
+
+    def update_expiry(ticket,expiry):
+        
+        
+        ticket.set_value("expiry", expiry, quoted=0)
+        ticket.commit(triggers="none")
+
+    update_expiry = staticmethod(update_expiry)
 
 
 
@@ -792,7 +880,7 @@ class NoDatabaseSecurity(Base):
         return my.is_logged_in_flag
     def get_license(my):
         return License()
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         None
     def login_user(my, login_name, password, expiry=None, domain=None):
         my.is_logged_in_flag = True
@@ -820,7 +908,7 @@ class NoDatabaseSecurity(Base):
 class Security(Base):
     '''main class dealing with user identification'''
 
-    def __init__(my):
+    def __init__(my, verify_license=False):
         my._login_var = None
         my._is_logged_in = 0
         my._groups = []
@@ -832,8 +920,7 @@ class Security(Base):
         # define an access manager object
         my._access_manager = AccessManager()
 
-        my.license = License.get(verify=False)
-
+        my.license = License.get(verify=verify_license)
 
         my.login_cache = None
 
@@ -900,6 +987,9 @@ class Security(Base):
         else:
             return ""
 
+    def clear_ticket(my):
+        my_ticket = ""
+
 
     def get_access_manager(my):
         return my._access_manager
@@ -956,7 +1046,6 @@ class Security(Base):
         # rules to the access manager
         if my.add_access_rules_flag:
             my.add_access_rules()
-
         # record that the login is logged in
         my._is_logged_in = 1
 
@@ -1036,7 +1125,7 @@ class Security(Base):
 
 
 
-    def login_with_ticket(my, key, add_access_rules=True):
+    def login_with_ticket(my, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
 
@@ -1075,6 +1164,9 @@ class Security(Base):
 
         # store the ticket
         my._ticket = ticket
+
+        if my._login.get("login") == "guest" and not allow_guest:
+            return None
 
         my._do_login()
 
@@ -1492,15 +1584,9 @@ class Security(Base):
 
         # go through all of the groups and add access rules
         for group in my._groups:
-            access_rules_xml = group.get_xml_value("access_rules")
-            my._access_manager.add_xml_rules(access_rules_xml)
-
-        # DEPRECATED
-        # get all of the security rules
-        #security_rules = AccessRule.get_by_groups(my._groups)
-        #for rule in security_rules:
-        #    access_rules_xml = rule.get_xml_value("rule")
-        #    my._access_manager.add_xml_rules(access_rules_xml)
+            #access_rules_xml = group.get_xml_value("access_rules")
+            #my._access_manager.add_xml_rules(access_rules_xml)
+            my._access_manager.add_xml_rules(group)
 
 
 
@@ -1686,7 +1772,11 @@ class License(object):
 
 
     def get_max_users(my):
-        value = my.xml.get_value("license/data/max_users")
+        site = Site.get_site()
+        site_obj = Site.get()
+        value = site_obj.get_max_users(site)
+        if not value:
+            value = my.xml.get_value("license/data/max_users")
         try:
             value = int(value)
         except ValueError:
@@ -1723,6 +1813,7 @@ class License(object):
         sql = DbContainer.get("sthpw")
         select = Select()
         select.set_database("sthpw")
+        #select.set_database(db_resource)
         select.add_table("login")
 
         columns = sql.get_column_info("login").keys()
@@ -1915,11 +2006,6 @@ class License(object):
             cls.LICENSE = License()
         else:
             if verify:
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
-                print "VERIFY License"
                 cls.LICENSE.verify()
 
         cls.LAST_CHECK = now

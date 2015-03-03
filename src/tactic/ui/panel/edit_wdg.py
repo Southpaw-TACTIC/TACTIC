@@ -10,13 +10,13 @@
 #
 #
 
-__all__ = [ 'EditWdg', 'PublishWdg','FileAppendWdg']
+__all__ = [ 'EditTitleWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
-from pyasm.widget import WidgetConfigView, WidgetConfig
+from pyasm.widget import WidgetConfigView, WidgetConfig, BaseInputWdg
 from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
 
 
@@ -26,6 +26,19 @@ from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
 
 class EditException(Exception):
     pass
+
+
+class EditTitleWdg(BaseInputWdg):
+    def get_display(my):
+        div = DivWdg()
+        title = my.get_title()
+        if not title:
+            title = my.get_name()
+            title = title.replace("_", " ")
+            title = title.title()
+        div.add(title)
+        div.add_style("font-weight: bold")
+        return div
 
 
 class EditWdg(BaseRefreshWdg):
@@ -239,6 +252,13 @@ class EditWdg(BaseRefreshWdg):
             my.element_names = xml.get_values("config//html//element/@name")
         else:
             my.element_names = my.config.get_element_names()
+
+
+        override_element_names = my.kwargs.get("element_names")
+        if override_element_names:
+            element_names = override_element_names
+
+
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -504,7 +524,7 @@ class EditWdg(BaseRefreshWdg):
         if not width:
             width = my.kwargs.get("width")
         if not width:
-            width = 500
+            width = 600
         table.add_style("width: %s" % width)
 
         height = attrs.get('height')
@@ -559,6 +579,7 @@ class EditWdg(BaseRefreshWdg):
             num_columns = int(num_columns)
 
         # go through each widget and draw it
+        index =  0
         for i, widget in enumerate(my.widgets):
 
             # since a widget name called code doesn't necessariy write to code column, it is commented out for now
@@ -582,6 +603,27 @@ class EditWdg(BaseRefreshWdg):
             if my.input_prefix:
                 widget.set_input_prefix(my.input_prefix)
 
+            # Bootstrap
+            widget.add_class("form-control")
+
+            from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
+            if not isinstance(widget, CheckboxWdg):
+                widget.add_style("width: 100%")
+
+
+            if isinstance(widget, EditTitleWdg):
+                tr, td = table.add_row_cell()
+                tr.add_color("background", "background", -5)
+                td.add_style("height", "30px")
+                td.add_style("padding", "0px 10px")
+
+                td.add(widget)
+
+                index = 0
+
+                continue
+
+
            
             if isinstance(widget, HiddenWdg):
                 content_div.add(widget)
@@ -601,22 +643,32 @@ class EditWdg(BaseRefreshWdg):
                   
 
 
-
-            new_row = i % num_columns == 0
+            new_row = index % num_columns == 0
             if new_row:
                 tr = table.add_row()
 
 
                 if my.color_mode == "default":
-                    if i % 2 == 0:
+                    if index % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -5)
+                        tr.add_color("background", "background", -1 )
 
 
+            index += 1
 
            
-            show_title = (widget.get_option("show_title") != "false")
+            show_title = widget.get_option("show_title")
+            if not show_title:
+                show_title = my.kwargs.get("show_title")
+
+            if show_title in ['false', False]:
+                show_title = False
+            else:
+                show_title = True
+
+
+
             if show_title:
                 title = widget.get_title()
 
@@ -624,11 +676,12 @@ class EditWdg(BaseRefreshWdg):
                 td.add_style("padding: 10px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
+ 
                 title_width = my.kwargs.get("title_width")
                 if title_width:
                     td.add_style("width: %s" % title_width)
                 else:
-                    td.add_style("width: 100px")
+                    td.add_style("width: 150px")
 
                 security = Environment.get_security()
                 if security.check_access("builtin", "view_site_admin", "allow"):
@@ -640,12 +693,17 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("border-style: solid" )
 
                 td.add_style("text-align: right" )
- 
+
+                hint = widget.get_option("hint")
+                if hint:
+                    #hint_wdg = HintWdg(hint)
+                    #hint_wdg.add_style("float: right")
+                    #td.add( hint_wdg )
+                    td.add_attr("title", hint)
+
 
             if not show_title:
                 th, td = table.add_row_cell( widget )
-                #td.add_border()
-
                 continue
             else:
                 td = table.add_cell( widget )
@@ -659,9 +717,6 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )
 
-                hint = widget.get_option("hint")
-                if hint:
-                    table.add_data( HintWdg(hint) ) 
 
 
         if not my.is_disabled and not my.mode == 'view':
@@ -804,6 +859,7 @@ class EditWdg(BaseRefreshWdg):
             th.add_style("border-style: solid")
         th.set_attr("colspan", "2")
         th.add_style("height: 30px")
+        th.add_style("padding: 3px 10px")
 
 
     def add_hidden_inputs(my, div):
@@ -873,6 +929,8 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
+        div.add_style("padding-top: 5px")
+        div.add_style("padding-bottom: 30px")
 
 
         # construct the bvr

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>1. Planning</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="next" href="ar01s02.html" title="2. Install TACTIC Application" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s02.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_planning"></a>1. Planning</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_a_scalable_solution"></a>1.1. TACTIC, a Scalable Solution</h3></div></div></div><p>A data management system to grow along with your expanding data needs
+TACTIC software meets the complex content demands of today’s large-scale
+production environment:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Based on existing web technologies, it is easy to maintain and scale
+</li><li class="listitem">
+Easy to load-balance and scale across cores and across multiple
+machines
+</li></ul></div><p><span class="strong"><strong>What Makes TACTIC Scalable?</strong></span></p><p>The TACTIC platform uses web technologies in its underlying
+architecture. As proven by many popular web sites today, web
+technologies are able to scale to a large number of users—to levels far
+beyond the size of any large installation today requiring TACTIC.</p><p>The TACTIC user interface and its API (Application Programmer Interface)
+are both built on web technologies. A web server controls as the user
+front end., and accesses a back-end database. Web servers can handle
+high volumes, so scalability is not an issue—especially for the
+relatively manageable volume seen in even the largest of digital
+productions.</p><p><span class="strong"><strong>Web server technology</strong></span></p><p>TACTIC uses a web server to deliver static content to users, who are
+able to access TACTIC over the web. Web servers are capable of
+delivering enormous numbers of requests, and will remain stable during
+heavy loads. Web servers by definition are the most efficient vehicles
+for web delivery, and TACTIC technology is optimized to take advantage
+of this technology for fast execution and scalability.</p><p><span class="strong"><strong>Leading database technology</strong></span></p><p>TACTIC stores all persistent data in either Oracle or PostgreSQL
+databases, products that both have proven track records in the most
+demanding of production environments.</p><p>Today’s databases coupled with today’s hardware are sufficiently
+powerful to handle any of today’s production needs. The largest of
+digital productions cannot come close to exceeding the data limits of a
+typical database.</p><p><span class="strong"><strong>Optimized requests</strong></span></p><p>With digital productions, the amount of data required is seldom the
+issue. Rather, bottlenecks are typically caused by complex requests
+slowing down database response time. Digital productions tend to use
+deeply nested and enormously complex relationships between various
+pieces of data. It is this complexity that tends to slow down
+applications that try to parse this data in a meaningful human way,
+creating complex requests that slow down database response.</p><p>TACTIC is designed from the ground up to master the complexities of
+digital productions. For every request, it builds a unique
+object-relational mapper specifically designed for the needs of high
+volume, large scale digital production asset management solutions.</p><p>TACTIC is flexible enough to handle the complex relationships between
+any part of the production pipeline, and has proven itself in
+large-scale projects using extremely complex data.</p><p><span class="strong"><strong>Easy code maintenance</strong></span></p><p>The Python programming language is used for TACTIC application
+development. Python has many strengths that contribute to ease of
+maintenance (courtesy of www.python.org):</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+clear, readable syntax
+</li><li class="listitem">
+strong introspection capabilities
+</li><li class="listitem">
+intuitive object orientation
+</li><li class="listitem">
+natural expression of procedural code
+</li><li class="listitem">
+full modularity supporting hierarchical packages
+</li><li class="listitem">
+exception-based error handling
+</li><li class="listitem">
+very high-level dynamic data types
+</li><li class="listitem">
+extensive standard libraries and third party modules for virtually
+every task
+</li><li class="listitem">
+extensions and modules easily written in C, C++ (or Java for Jython,
+or .NET languages for IronPython)
+</li><li class="listitem">
+embeddable within applications as a scripting interface
+</li></ul></div><p><span class="strong"><strong>Load balancing</strong></span></p><p>Load balancing—the distribution of requests across TACTIC processes—is
+possible across cores and across multiple machines, and enables TACTIC
+to scale to large enterprise environments.</p><p>(For details and examples, see <span class="strong"><strong>TACTIC Scalable Configuration
+Examples</strong></span>.)</p><p><span class="strong"><strong>Segregating services</strong></span></p><p>The various TACTIC services can be segregated to run independently of
+each other. This allows important services, such as user interface
+requests, to access their own resources and not be slowed down by other
+more resource-intensive services such as render farms.</p><p>(For details and examples, see <span class="strong"><strong>Scalable TACTIC Deployments</strong></span>.)</p><p><span class="strong"><strong>Types of Scalability</strong></span></p><p>There are several types of scalability that are considerations with the
+use of Python as the TACTIC programming language:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Code scalability: TACTIC contains thousands of classes and many
+hundreds of thousands of lines of code which are facilitated by use of
+the Python language. There has been no reason to believe that the code
+base cannot continue to scale to meet software needs for the foreseeable
+future.
+</li><li class="listitem">
+Memory scalability: Python is known for large memory requirements when
+compared to other languages, but the required memory for TACTIC code is
+much smaller than that found on typical servers, and has seldom been an
+issue.
+</li><li class="listitem">
+Performance scalability: Python’s GIL (Global Interpreter Lock) limits
+Python’s scalability across multiple threads. This limitation has been
+long discussed in newsgroups, with the general consensus that
+scalability is achieved much more easily by load-balancing across
+processes rather than across threads. TACTIC enables easy load balancing
+across processes to achieve full linear scalability.
+</li><li class="listitem">
+Maintenance scalability: Clean and clear syntax makes it easy to
+refactor and maintain code over the long term. Experience has shown that
+our code base is very accessible to new developers, providing confidence
+that code base knowledge can be maintained over the years.
+</li></ul></div><p>Overall, very few limitations with the Python language itself have been
+encountered and have easily circumvented its lack of scalability across
+multiple threads by optimizing proper load balancing across processes.</p><p><span class="strong"><strong>Additional Scalability Considerations</strong></span></p><p><span class="strong"><strong>Availability</strong></span></p><p>TACTIC has been designed to be highly stable even under extremely heavy
+stress. It has been tested and tuned on several projects in environments
+of high stress and high load and has been proven to run under duress
+without going down.</p><p>As with any piece of software, there is always a point a failure—there
+are a number of legitimate reasons for a TACTIC server becoming
+unresponsive or even going down:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+network cutoff
+</li><li class="listitem">
+power failure
+</li><li class="listitem">
+physical memory failure
+</li><li class="listitem">
+overloaded requests for the available resources
+</li></ul></div><p>For projects that require high availability even in the event of
+catastrophic failure, there are a number of hardware solutions to
+provide failover should the primary resource fail. These hardware
+solutions will instantly redirect requests to a redundant resource,
+thereby providing continuous service to the users.</p><p><span class="strong"><strong>Memory requirements</strong></span></p><p>Each available process will use a certain amount of memory, so a balance
+must be struck between the number of processes and the size of the
+complete in-memory TACTIC footprint on the server. In other words,
+adding more processes may or may not increase the availability of TACTIC
+if memory is an issue. If processes start running into swap space,
+performance will be severely affected.</p><p>As memory usage becomes an issue, the choice will be to load balance
+over multiple machines (see <span class="strong"><strong>Scalable TACTIC Deployments</strong></span>).</p><p><span class="strong"><strong>Database Replication</strong></span></p><p>Both Oracle and Postgres have replication capability: the ability to
+distribute the processing load of the database server over a number of
+machines. Database replication is complex and should not be taken
+lightly. With the advent of multiprocessor and multi-cores systems, the
+need for database replication has been reduced significantly. It is
+often much cheaper and less time consuming to increase the
+processors/cores of a server than it is to configure a database for
+replication.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_scalable_tactic_deployment_planning"></a>1.2. Scalable TACTIC Deployment Planning</h3></div></div></div><p>The stages of a TACTIC deployment are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+\1. Determining usage requirements
+</li><li class="listitem">
+\2. Determining hardware requirements
+</li><li class="listitem">
+\3. Determining TACTIC Service and Co-Service Locations
+</li><li class="listitem">
+\4. Post Deployment TACTIC upscaling
+</li></ul></div><p><span class="strong"><strong>Planning NOTES</strong></span></p><p><span class="strong"><strong>Determining TACTIC Usage Requirements</strong></span></p><p>One of the first questions asked in a TACTIC deployment is "what kind of
+deployment is required?" This is a hard question to answer unless it is
+known beforehand exactly how TACTIC will be used. Since every TACTIC
+deployment is customized by the licensee, there is really no way to
+calculate accurately the type of load that will eventually be placed on
+the TACTIC server. Fortunately, due to TACTIC’s scalable architecture, a
+TACTIC deployment can be scaled up easily when there are unforeseen
+increases in usage.</p><p><span class="strong"><strong>Service Requirements</strong></span></p><p>In a TACTIC deployment, running the TACTIC service is the primary
+function of the TACTIC host machine. The co-services can be deployed to
+the location most appropriate for the environment. However, to ensure
+scalability and high availability, the co-services should not be
+deployed on the TACTIC host for any but the smallest of deployments.</p><p>TACTIC uses four major services and co-services in its operation:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+TACTIC service: provides the API and GUI widget system.
+</li><li class="listitem">
+Database co-service: provides indexing and storage for asset meta
+data.
+</li><li class="listitem">
+HTTP co-service: provides delivery (and return) of raw asset data.
+</li><li class="listitem">
+Assets storage co-service: provides storage and back-up capabilities
+of raw asset data.
+</li></ul></div><p><span class="strong"><strong>Limitations</strong></span></p><p>With TACTIC, you can simply add hardware and load-balance it to handle
+more and more requests. You can expand scalability in this way until the
+database server itself becomes the bottleneck. Fortunately, with the
+introduction of multi-CPU and multi-core machines, database limits are
+extremely high.</p><p><span class="emphasis"><em>User Interfaces:</em></span> For applications with end-user interfaces (especially
+those using widgets, where complex interface elements need to be
+constructed), the load required to process TACTIC requests will remain
+much greater than the load required to process SQL calls, no matter how
+much hardware is added to handle such requests.</p><p><span class="emphasis"><em>Client APIs:</em></span> Client APIs provide a much thinner layer to the database
+and so are optimized to handle lower level requests very rapidly.
+However, because API calls are typically used for automated processes,
+they can generate a large number of requests quickly, creating a heavy
+load on the TACTIC server.</p><p><span class="emphasis"><em>Load balancing:</em></span> this is especially important for render farms, which
+can be massive in scale with thousands to tens of thousands of cores. It
+ensures that the high volume of requests is evenly distributed to all of
+the available TACTIC processes. The exact number of processes required
+to handle the high volume is highly dependent on the number of requests
+made and to the complexity of the requests. However, because load
+balancing will provide near-linear scalability, the number of processes
+can be increased to a level that is sufficient for the number of
+requests being demanded of the client API.</p><p><span class="emphasis"><em>Report generation:</em></span> TACTIC’s reporting system is powerful and
+comprehensive, and the load on host CPUs can increase significantly when
+complex reports are being run. Administrators should focus on report
+generation when investigating load utilization.</p><p><span class="emphasis"><em>Checkins:</em></span> There are two kinds of complexity when considering
+scalability for checkins:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Large Checkins: TACTIC offers a wide variety of checkin configurations
+that will accommodate large bandwidth, large files, and complex
+dependency between files.
+</li><li class="listitem">
+Many Checkins: There are few concerns with a large number of checkins.
+The number of checkins that occur even in the largest of productions is
+small compared to the limits of a database.
+</li></ul></div><p><span class="strong"><strong>Determining TACTIC Hardware Requirements</strong></span></p><p><span class="strong"><strong>Hardware Overview</strong></span></p><p>TACTIC works well with most types of hardware, but industry-standard
+server level components are highly recommended. The exact configuration
+will depend on the specific needs of your facility.</p><p>For most deployments, TACTIC can be installed on the typical commodity
+hardware used by most small and large enterprises. TACTIC is a
+purpose-built relational database at its core, and your hardware choices
+can reflect that fact.</p><p>TACTIC service requirements: Assuming TACTIC is the only service on the
+host, the minimal requirements for a production-level deployment of a
+TACTIC host are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+CPU: dual core
+</li><li class="listitem">
+Memory: 4G
+</li><li class="listitem"><p class="simpara">
+Disk space needed for TACTIC to run on: 10G
+</p><p class="simpara">(assets should be stored elsewhere, on an enterprise quality server)</p></li></ul></div><p>These requirements represent the recommended absolute minimal hardware
+required to run a basic TACTIC service in a production environment. For
+development and testing, TACTIC will run on most hardware including
+laptops.</p><p><span class="emphasis"><em>Asset storage:</em></span> It is highly recommended that assets be stored on an
+enterprise-quality, high-availability server, and not on the TACTIC
+host.</p><p><span class="emphasis"><em>RAID Options:</em></span> You can use various RAID configurations to maximize
+reliability and performance. For example, you could locate the Operating
+System on one physical drive, and the database files on another. Or you
+could locate the database on a RAID array.</p><p><span class="emphasis"><em>Asset meta data:</em></span> The amount of asset meta data stored on disk by
+TACTIC is insignificant to today’s hardware specifications and need not
+be a consideration when choosing a server: reliability and performance
+should be higher concerns.</p><p><span class="strong"><strong>Determining TACTIC Service Locations</strong></span></p><p><span class="strong"><strong>Segregating Services</strong></span></p><p>TACTIC offers a number of different services for different purposes. For
+example, the TACTIC server can serve out complex widgets, serve out
+large numbers of client API requests and perform large, complex
+check-ins.</p><p>Each type of service has distinct needs, so it is often beneficial to
+segregate the services to be independent of each other. This allows each
+service to operate within a pool of assigned resources without affecting
+(or being affected by) the other services.</p><p>For example, if a render farm used a client API script that heavily
+loaded the TACTIC server and its requests were shared with user
+interface requests, users would experience inconsistent (and
+occasionally unacceptably slow) response times. This experience would
+cause frustration amongst users, so it would be necessary to segregate
+their user interface service from the render farm’s client API service.</p><p>Each type of service has very different demands and needs, so
+segregating services also allows you to tune the hardware and software
+to the specifications required for the service they are handling.
+Ultimately, you can maximize the use of your available resources.</p><p><span class="strong"><strong>How Load Balancing Works</strong></span></p><p>Load balancing distributes requests to various TACTIC processes using an
+algorithm that determines which request is delegated to which process.
+The default algorithm is a very simple randomizer.</p><p>For most applications, the default algorithm works perfectly fine. It is
+left to chance whether a particular request will be assigned to a
+heavily loaded process or one that is sitting idle, so there may be
+inconsistent performance depending on load and availability of TACTIC
+processes not already loaded.</p><p>IIS delegation algorithms (on MSWeb Server) are also supported. For
+Apache, an example algorithm is provided you can customize to your
+needs.</p><p>Each process, by default, is assigned two simultaneous requests at most.
+This limit has proven in production to be the most effective because it
+prevents the Python process itself from being overloaded waiting for
+required I/O operations. If there are excess requests waiting to be
+processed, they are kept in a queue and assigned sequentially to
+processes as they become available.</p><p>Python’s GIL (global interpreter lock) prevents any Python process from
+using more than one CPU or core, so the number of threads available for
+any given process is limited. True scalability is achieved by
+load-balancing requests over multiple processes. This method scales
+seamlessly and linearly over multiple cores, multiple CPUs and
+ultimately over multiple physical servers with only simple configuration
+changes.</p><p><span class="strong"><strong>Post Deployment TACTIC Upscaling</strong></span></p><p><span class="strong"><strong>Scenarios</strong></span></p><p>TACTIC is easily upscaled in most post deployment scenarios. Upscaling
+does not require any significant downtime of TACTIC services.</p><p>Some scenario examples follow, with bullet points outlining why these
+possible solutions would be followed;</p><p><span class="strong"><strong>Increasing number of TACTIC processes on a single machine</strong></span></p><p><span class="strong"><strong>Splitting TACTIC into multiple servers from one server</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Easy way to upscale/troubleshoot
+</li><li class="listitem">
+Heavy reporting
+</li><li class="listitem">
+Many users/API calls from automated processes
+</li></ul></div><p><span class="strong"><strong>Splitting the HTTP co-service into multiple servers from one server</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Many Checkins
+</li><li class="listitem">
+Large Checkins
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -936,26 +936,51 @@
     <table>
     <tr valign='top'>
 
-    <td min_width='500'>
-    <element name='planner_group' title='Groups' use_container='true' show_resize_scroll='true' height='1000' width='500'>
-       <display class='tactic.ui.panel.ViewPanelWdg'>
-         <search_type>sthpw/login_group</search_type>
-         <view>planner</view>
-         <search_view>_planner</search_view>
-         <do_search>true</do_search>
+    <td style="width: 50%">
+    <element name="planner_group">
+      <display class='tactic.ui.container.ContentBoxWdg'>
+          <title>Groups</title>
+          <content_width>100%</content_width>
+          <icon>BS_LIST_ALT</icon>
+          <config>
+          <element name='content'>
+            <display class='tactic.ui.panel.ViewPanelWdg'>
+              <search_type>sthpw/login_group</search_type>
+              <show_shelf>true</show_shelf>
+              <view>planner</view>
+              <element_names>preview,login_group,users</element_names>
+              <search_view>_planner</search_view>
+              <do_search>true</do_search>
+              <show_layout_switcher>false</show_layout_switcher>
+              <show_gear>false</show_gear>
+            </display>
+         </element>
+         </config>
        </display>
-     </element>
+    </element>
     </td>
 
-    <td min_width='450'>
-    <element name='planner_login' title='Users' use_container='true' show_resize_scroll='true' height='1000' width='620'>
-       <display class='tactic.ui.panel.ViewPanelWdg'>
-         <search_type>sthpw/login</search_type>
-         <view>planner</view>
-         <search_view>_planner</search_view>
-         <do_search>true</do_search>
-       </display>
-     </element>
+    <td style="width: 50%">
+    <element name="planner_login">
+      <display class='tactic.ui.container.ContentBoxWdg'>
+          <title>Users</title>
+          <content_width>100%</content_width>
+          <icon>BS_USER</icon>
+          <config>
+            <element name='content'>
+            <display class='tactic.ui.panel.ViewPanelWdg'>
+              <show_shelf>true</show_shelf>
+              <search_type>sthpw/login</search_type>
+              <view>planner</view>
+              <search_view>_planner</search_view>
+              <do_search>true</do_search>
+              <show_layout_switcher>false</show_layout_switcher>
+              <show_gear>false</show_gear>
+            </display>
+            </element>
+        </config>
+      </display>
+    </element>
     </td>
 
     </tr>

@@ -423,6 +423,7 @@ class CalendarWdg(BaseRefreshWdg):
         header = Table()
         header.add_style("width: 100%")
         header.add_color("color", "color")
+        header.add_style("margin: 5px 3px")
 
 
         # add the month navigators
@@ -472,7 +473,7 @@ class CalendarWdg(BaseRefreshWdg):
         month_nav.add_cell( prev_month_wdg )
         td = month_nav.add_cell(month_wdg)
         td.add_style("text-align: center")
-        td.add_style("width: 105px")
+        td.add_style("width: 100px")
         month_nav.add_cell( next_month_wdg)
 
         prev_month_wdg.add_style("float: left")
@@ -483,7 +484,7 @@ class CalendarWdg(BaseRefreshWdg):
         # add the close icon
         close_icon = my.get_close_icon()
         td = header.add_cell( close_icon )
-        td.add_style("text-align: right")
+        td.add_style("padding-right: 3px")
 
         return header
 
@@ -537,7 +538,7 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_today_icon(my):
 
-        today_icon = IconWdg("Today", IconWdg.TODAY)
+        today_icon = IconWdg("Today", icon="BS_CALENDAR")
         today_icon.add_class('hand')
 
         # button to set calendar input to today's date ...
@@ -627,9 +628,11 @@ class CalendarWdg(BaseRefreshWdg):
             weekday = my.WEEKDAYS[day.weekday()]
 
         div = DivWdg()
-        div.add_style("border-bottom: solid 1px %s" % div.get_color("border"))
+        #div.add_style("border-bottom: solid 1px %s" % div.get_color("border"))
 
         div.add_style("font-weight: bold")
+        div.add_style("padding: 3px 0px 3px 0px")
+        div.add_style("text-align: center")
         div.add( weekday )
         return div
 
@@ -641,7 +644,7 @@ class CalendarWdg(BaseRefreshWdg):
         div.add_style("text-align: center")
         div.add_class("spt_calendar_day hand")
 
-        div.add_style("padding: 3px 6px 3px 6px")
+        div.add_style("padding: 9px 12px 6px 12px")
 
         # NOTE: The bvr below is now added thru relay behavior
 
@@ -819,6 +822,12 @@ class CalendarInputWdg(BaseInputWdg):
                 show_activator = False
 
 
+        if show_activator:
+            activator = "BS_CALENDAR"
+        else:
+            activator = None
+
+
 
         show_calendar = my.get_option('show_calendar')
         if show_calendar in [True, 'true']:
@@ -827,16 +836,17 @@ class CalendarInputWdg(BaseInputWdg):
             show_calendar = False
 
 
-
+        """
         if show_activator:
-            icon = IconWdg("Calendar", IconWdg.DATE)
+            #icon = IconWdg("Calendar", IconWdg.DATE)
+            icon = IconWdg("Calendar", "BS_CALENDAR")
             icon.add_class('hand')
 
             icon_div = DivWdg(icon)
             icon_div.add_class("spt_cal_input_show_cal_btn")  # tag this button so we can find it to hide/show
             icon_div.add_class("APP_CLICK_OFF_TOP_EL")
-            icon_div.add_styles("float: left; margin-top: 4px")
             my.top.add(icon_div)
+            icon_div.add_style("float: left")
 
             icon.add_behavior( {
                 "type": "click_up",
@@ -852,7 +862,6 @@ class CalendarInputWdg(BaseInputWdg):
                 '''
             } )
 
-            """
             clear_icon = IconWdg("Clear", IconWdg.CLOSE_INACTIVE)
             clear_icon.add_class('hand')
             clear_icon.add_style("position: absolute")
@@ -867,7 +876,7 @@ class CalendarInputWdg(BaseInputWdg):
                 '''
             } )
             clear_icon = FloatDivWdg(clear_icon)
-            """
+        """
             
         name = my.get_input_name()
         read_only = my.get_option('read_only')
@@ -875,6 +884,8 @@ class CalendarInputWdg(BaseInputWdg):
 
 
         width = my.get_option('width')
+        if not width:
+            width = 100
 
         title = my.get_display_title()
         
@@ -883,10 +894,11 @@ class CalendarInputWdg(BaseInputWdg):
 
         edit_mode = "inline"
         if edit_mode == "table":
-            input = TextWdg(name=name)
+            input = TextWdg(name=name, required=required)
             text = input
         else:
-            input = TextInputWdg( name=name, read_only=read_only, required=required, icon="DATE", width=width, hint_text=title)
+            # TODO: add a kwarg - hint_text
+            input = TextInputWdg( name=name, read_only=read_only, required=required, icon=activator, width=width)
             text = input.get_text()
 
 
@@ -899,7 +911,7 @@ class CalendarInputWdg(BaseInputWdg):
         time_input_default = my.get_option('time_input_default')
         if show_time:
             if not width:
-                input.add_style("width: 120px")
+                input.add_style("width: 130px")
             my.top.add_attr("show_time", "true")
             show_time = True
         else:
@@ -927,7 +939,8 @@ class CalendarInputWdg(BaseInputWdg):
         elif read_only != 'false':
             # this is an implicit read_only
             read_only = 'true'
-            text.set_option("read_only", read_only)
+            # let TextInputWdg set this attribute
+            #text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
             text.add_event('onclick', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
@@ -1053,7 +1066,6 @@ class CalendarInputWdg(BaseInputWdg):
 
         if show_activator:
             
-
             day_cbk='''
             var top = spt.get_parent(bvr.src_el, '.spt_calendar_top');
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
@@ -1382,6 +1394,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
         top = my.top
         top.add_style("width: 180px")
         top.add_style("height: 150px")
+        top.add_style("padding: 5px")
         top.add_class("spt_time_top")
 
         date_format = my.kwargs.get('date_format')

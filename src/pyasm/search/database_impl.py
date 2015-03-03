@@ -126,14 +126,14 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_id_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        id_col = search_type.get_id_col()
+        id_col = search_type.get_search_type_id_col()
         return id_col
 
 
     def get_code_col(my, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
-        code_col = search_type.get_code_col()
+        code_col = search_type.get_search_type_code_col()
         return code_col
 
 
@@ -910,6 +910,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts.append(host_str)
         parts.append("-U %s" % user)
         parts.append("-P %s" % password)
+        parts.append("-p %s" % port)
 
         
         return " ".join(parts)
@@ -921,6 +922,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # if the database already exists, do nothing
         if my.database_exists(database):
             return
+
+        if not isinstance(database, basestring):
+            database = database.get_database()
 
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -Q "create database test1"
@@ -1546,7 +1550,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if my.database_exists(database):
             return
 
-        create = 'createdb %s -E UNICODE "%s"' % (my._get_db_info(database), database)
+        if not isinstance(database, basestring):
+            database = database.get_database()
+
+        from pyasm.search import DbResource
+        db_resource = DbResource.get_default(database)
+
+        create = 'createdb %s -E UNICODE "%s"' % (my._get_db_info(db_resource), database)
         cmd = os.popen(create)
         result = cmd.readlines()
         # Psql 8.3 doesn't have outputs on creation
@@ -2507,7 +2517,7 @@ class SqliteImpl(PostgresImpl):
             if not type:
                 type = "days"
             elif type.lower() in ['week','weeks']:
-                # doesn't understand week
+                # doesn't understand week, but month, year are fine
                 type = "days"
                 offset = offset * 7
             elif not type.endswith('s'):
@@ -3038,6 +3048,17 @@ class MySQLImpl(PostgresImpl):
         return " ".join(parts)
 
 
+
+    def get_timestamp_now(my, offset=None, type=None, op='+'):
+        '''MySQL get current / offset timestamp from now'''
+        parts = []
+        parts.append("NOW()")
+        if offset:
+            if not type:
+                type = "DAY"
+            parts.append(" INTERVAL %s %s" % (offset, type) )
+        op = ' %s ' % op
+        return op.join(parts)
 
     #
     # Sequence methods

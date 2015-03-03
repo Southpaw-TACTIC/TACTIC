@@ -16,7 +16,7 @@ import os
 
 import js_includes
 
-from pyasm.common import Common, Container, Environment, jsondumps, jsonloads
+from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
@@ -43,6 +43,15 @@ class TopWdg(Widget):
         my.body.add(my.top)
         my.top.add_class("spt_top")
         Container.put("TopWdg::top", my.top)
+
+
+        my.body.add_attr("ondragover", "return false;")
+        my.body.add_attr("ondragleave", "return false;")
+        my.body.add_attr("ondrop", "return false;")
+
+
+
+
 
         click_div = DivWdg()
         my.top.add(click_div)
@@ -269,6 +278,25 @@ class TopWdg(Widget):
 
             div.add_class("spt_admin_bar")
 
+
+
+            # home
+            icon_div = DivWdg()
+            div.add(icon_div)
+            icon_div.add_style("float: left")
+            icon_div.add_style("margin-right: 10px")
+            icon_div.add_style("margin-top: -3px")
+            icon_button = IconButtonWdg(title="Home", icon="BS_HOME")
+            icon_div.add(icon_button)
+            icon_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                window.location.href="/";
+                '''
+            } )
+
+
+
             div.add_style("height: 15px")
             div.add_style("padding: 3px 0px 3px 15px")
             #div.add_style("margin-bottom: -5px")
@@ -290,7 +318,7 @@ class TopWdg(Widget):
             icon_div.add_style("float: right")
             icon_div.add_style("margin-right: 10px")
             icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon=IconWdg.G_CLOSE)
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="BS_REMOVE")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -298,6 +326,27 @@ class TopWdg(Widget):
                 var parent = bvr.src_el.getParent(".spt_admin_bar");
                 bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(parent);
+                '''
+            } )
+
+            # sign-out
+            icon_div = DivWdg()
+            div.add(icon_div)
+            icon_div.add_style("float: right")
+            icon_div.add_style("margin-right: 5px")
+            icon_div.add_style("margin-top: -3px")
+            icon_button = IconButtonWdg(title="Sign Out", icon="BS_LOG_OUT")
+            icon_div.add(icon_button)
+            icon_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var ok = function(){
+                    var server = TacticServerStub.get();
+                    server.execute_cmd("SignOutCmd", {login: bvr.login} );
+
+                    window.location.href="/";
+                }
+                spt.confirm("Are you sure you wish to sign out?", ok )
                 '''
             } )
 
@@ -581,6 +630,15 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
+        # custom js files to include
+        includes = Config.get_value("install", "include_js")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                print "include: ", include
+                Container.append_seq("Page:js", include)
+
 
         widget = Widget()
 
@@ -703,24 +761,31 @@ class IndexWdg(Widget):
         my.hash = hash
         super(IndexWdg, my).__init__()
 
-    def init(my):
+    def get_display(my):
 
         top = DivWdg()
         top.set_id('top_of_application')
 
-        msg_div = DivWdg()
-        msg_div.add_style('text-align: center')
-        msg_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-        msg_div.add("&nbsp; &nbsp;")
-        project = Project.get()
-        title = project.get_value("title")
-        if not title:
-            title = "TACTIC"
 
-        msg_div.add('''Loading "%s" ....'''% title)
-        msg_div.add_style("font-size: 1.5em")
+        from tactic.ui.panel import HashPanelWdg 
+        splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
+        if not splash_div:
 
-        msg_div.add_behavior( {
+            splash_div = DivWdg()
+            splash_div.add_style('text-align: center')
+            splash_div.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+            splash_div.add("&nbsp; &nbsp;")
+            project = Project.get()
+            title = project.get_value("title")
+            if not title:
+                title = "TACTIC"
+
+            splash_div.add('''Loading "%s" ....'''% title)
+            splash_div.add_style("font-size: 1.5em")
+            splash_div.add_style("margin: 200 0 500 0")
+
+
+        splash_div.add_behavior( {
             'type': 'load',
             'hash': my.hash,
             'cbjs_action': '''
@@ -734,11 +799,10 @@ class IndexWdg(Widget):
             '''
         } )
 
-        msg_div.add_style("margin: 200 0 500 0")
-        top.add(msg_div)
 
-        my.add(top)
-        return
+        top.add(splash_div)
+
+        return top
 
 
 
@@ -747,20 +811,25 @@ class IndexWdg(Widget):
 class SitePage(AppServer):
     def __init__(my, context=None):
         super(SitePage,my).__init__()
-        my.context = context
+        my.project_code = context
         my.custom_url = None
 
 
     def set_templates(my):
-        if my.context:
-            context = my.context
-        else:
-            context = WebContainer.get_web().get_full_context_name()
+
+        #if my.project_code:
+        #    project_code = my.project_code
+        #else:
+        #    project_code = WebContainer.get_web().get_full_context_name()
+        project_code = WebContainer.get_web().get_full_context_name()
+        if project_code == "default":
+            project_code = Project.get_default_project()
+
+        #if not project_code:
+        #    project_code = my.project_code
 
         try:
-
-            SearchType.set_global_template("project", context)
-
+            SearchType.set_global_template("project", project_code)
         except SecurityException, e:
             print "WARNING: ", e
 
@@ -833,13 +902,14 @@ class SitePage(AppServer):
             xml = my.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
+            widget = xml.get_value("element/@widget")
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
             elif bootstrap == 'true':
                 widget = BootstrapIndexWdg()
                 return widget
-            else:
+            elif widget == 'true':
                 web = WebContainer.get_web()
                 hash = "/".join(my.hash)
                 hash = "/%s" % hash
@@ -950,8 +1020,9 @@ class CustomTopWdg(BaseRefreshWdg):
                 value.add(hash_widget)
             else:
                 value.add(hash_widget.get_display())
-            web.set_content_type("text/html")
-
+            current_type = web.get_content_type()
+            if not current_type:
+                web.set_content_type("text/html")
 
         widget.add(value)
         return widget

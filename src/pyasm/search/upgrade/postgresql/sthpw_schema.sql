@@ -69,7 +69,7 @@ CREATE TABLE queue (
     login character varying(30) NOT NULL,
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     command character varying(200) NOT NULL,
-    serialized character varying(256) NOT NULL,
+    serialized character varying(256),
     s_status character varying(30),
     project_code character varying(100),
     search_id integer,
@@ -595,6 +595,20 @@ CREATE TABLE change_timestamp (
 );
 
 
+-- interaction
+CREATE TABLE interaction (
+    id serial PRIMARY KEY,
+    code varchar(256),
+    project_code varchar(256),
+    login varchar(256),
+    key varchar(1024),
+    data text,
+    "timestamp" timestamp default now()
+);
+CREATE INDEX "interaction_key_idx" on interaction (key);
+
+
+
 
 
 
@@ -658,6 +672,8 @@ INSERT INTO search_object (code, search_type, namespace, description, "database"
 
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/widget_config', 'config/widget_config', 'config', 'Widget Config', '{project}', 'widget_config', 'pyasm.search.WidgetDbConfig', 'Widget Config', 'public');
+
+INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/custom_script', 'config/custom_script', 'config', 'Custom Script', '{project}', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 

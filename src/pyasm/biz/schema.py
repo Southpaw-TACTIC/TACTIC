@@ -67,6 +67,9 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/cache"/>
     <search_type name="sthpw/queue"/>
     <search_type name="sthpw/watch_folder"/>
+    <search_type name="sthpw/message"/>
+    <search_type name="sthpw/message_log"/>
+    <search_type name="sthpw/subscription"/>
 
 
 
@@ -75,7 +78,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 -->
 
 
-    <connect to="sthpw/project_type" from="sthpw/project" type='hierarchy'/>
+    <connect to="sthpw/project_type" from="sthpw/project" type='hierarchy' relationship="code" from_col='type'/>
 
     <connect from="sthpw/project" to="sthpw/db_resource" from_col="db_resource" relationship="code"/>
 
@@ -344,7 +347,6 @@ SCHEMA_XML['unittest'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
 SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
 <schema parent="__NONE__">
-   <search_type name='config/plugin'/>
    <search_type name='config/naming'/>
    <search_type name='config/widget_config'/>
    <search_type name='config/custom_script'/>
@@ -1291,14 +1293,19 @@ class Schema(SObject):
 
 
  
-    def get(cls, reset_cache=False):
+    def get(cls, reset_cache=False, project_code=None):
+        
+        if not project_code:
+            from project import Project
+            project_code = Project.get_project_code()
+
         if not reset_cache:
-            schema = Container.get("Schema")
+            schema = Container.get("Schema:%s"%project_code)
+            
             if schema:
                 return schema
 
-        from project import Project
-        project_code = Project.get_project_code()
+       
 
         # the predefined ones cannot be overriden
         if project_code in ['unittest']:
@@ -1368,16 +1375,8 @@ class Schema(SObject):
 
 
 
-
-        # if the project schema does not exist, then create an empty one
-        if not schema:
-            schema = Schema("sthpw/schema", dependencies=False)
-            schema.set_value("schema", "<schema/>")
-            schema.set_value("code", project_code)
-            schema.init()
-            schema.add_dependencies()
-
-        Container.put("Schema", schema)
+        Container.put("Schema:%s"%project_code, schema)
+     
         return schema
     get = classmethod(get)
 

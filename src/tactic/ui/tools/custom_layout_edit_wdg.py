@@ -66,13 +66,13 @@ class WidgetEditorWdg(BaseRefreshWdg):
         top = my.top
         top.add_class("spt_widget_editor_top")
         top.add_style("padding: 10px")
-        top.add_style("width: 450px")
+        top.add_style("width: 540px")
         top.add_color("background", "background")
 
 
         action_wdg = DivWdg()
         top.add(action_wdg)
-        action_wdg.add_gradient("background", "background", -10)
+        action_wdg.add_color("background", "background", -10)
         action_wdg.add_style("margin: -10px -10px 10px -10px")
         action_wdg.add_style("padding: 5px")
 
@@ -168,7 +168,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
         td.add("Name:")
         td.add_style("width: 150px")
         td = table.add_cell()
-        text = TextWdg("element_name")
+        text = TextInputWdg(name="element_name")
         if element_name:
             text.set_value(element_name)
         td.add(text)
@@ -772,7 +772,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         right_div.add(shelf_wdg, "shelf_wdg")
 
        
-        if not view:
+        if not view or (not is_new and not cur_config):
             shelf_wdg = my.get_shelf_wdg()
             right_div.add(shelf_wdg, "shelf_wdg")
 
@@ -877,9 +877,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             title_wdg = my.get_title_wdg("HTML", content_id)
             html_div.add(title_wdg)
 
+            # DEPRECATED: never worked very well
             # add in a context menu
+            """
             button = ActionButtonWdg(title="Image")
             html_div.add(button)
+            """
 
             text.add_style("width: 100%")
             text.add_style("height: 600px")
@@ -901,8 +904,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             my.editor_id = editor.get_editor_id()
             html_div.add(editor)
 
+            # DEPRECATED: never worked very well
+            """
             if cur_config:
                 my.handle_image_inject(cur_config, button)
+            """
 
             shelf_wdg = my.get_shelf_wdg()
             right_div.set_widget(shelf_wdg, "shelf_wdg")
@@ -915,7 +921,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             shelf_wdg.add(view_wdg)
 
             view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
-            text = TextInputWdg(name="view", height="32px")
+            text = TextInputWdg(name="view")
             view_wdg.add(text)
             text.add_style("width: 350px")
             view_wdg.add_style("margin-top: 4px")
@@ -930,7 +936,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             type_wdg = DivWdg()
             shelf_wdg.add(type_wdg)
             type_wdg.add_style("float: left")
-            type_wdg.add_style("margin: -2px 5px 5px 20px")
+            type_wdg.add_style("margin: 0px 5px 5px 20px")
 
             select = SelectWdg(name="widget_type")
             if widget_type:
@@ -1185,8 +1191,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-
+            # DEPRECATED: never worked very well
             # check-in
+            """
             files_div = DivWdg()
             tab.add(files_div)
             files_div.set_name("Files")
@@ -1241,7 +1248,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 msg_div.add("Custom Layout must be saved before files can be checked in")
                 msg_div.add_color("background", "background")
                 msg_div.add_style("padding: 30px")
-
+            """
  
 
 
@@ -1283,7 +1290,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon="BS_FLOPPY_SAVE")
+        button = ButtonNewWdg(title="Save", icon="BS_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -2399,7 +2406,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-
+    # DEPRECATED: never worked very well
+    """
     def handle_image_inject(my, config, button):
 
         from tactic.ui.container import DialogWdg
@@ -2445,6 +2453,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         panel = FastTableLayoutWdg(config_xml=config_xml, search_type="sthpw/snapshot",view="inject",show_shelf=False, element_names=element_names, edit=False, show_select=False)
         panel.set_sobjects(snapshots)
         div.add(panel)
+    """
 
 
 __all__.append("AddImageElementWdg")
@@ -2454,7 +2463,7 @@ class AddImageElementWdg(ButtonElementWdg):
 
     def preprocess(my):
         editor_id = my.get_option("editor_id")
-        my.set_option( "cbjs_action", """
+        my.set_option( "cbjs_action", '''
         spt.ace_editor.set_editor("%s");
 
         expression = "/assets/{@GET(sthpw/file.relative_dir)}/{@GET(sthpw/file.file_name)}";
@@ -2470,7 +2479,7 @@ class AddImageElementWdg(ButtonElementWdg):
 
         var dialog = bvr.src_el.getParent(".spt_dialog_top");
         spt.hide(dialog);
-        """ % editor_id )
+        ''' % editor_id )
 
         my.set_option("icon", "ADD")
 

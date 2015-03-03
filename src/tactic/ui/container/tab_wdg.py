@@ -353,7 +353,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
             title: title,
             class_name: class_name,
             kwargs: kwargs,
-            hash: hash
+            hash: hash,
+            mode: 'tab',
         }
         spt.hash.set_hash(state, title, hash);
     }
@@ -747,6 +748,8 @@ spt.tab.save_state = function() {
 
 spt.tab.header_pos = null;
 spt.tab.mouse_pos = null;
+spt.tab.dragging = false;
+
 spt.tab.header_drag_setup = function( evt, bvr, mouse_411) {
     spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
     spt.tab.header_pos = bvr.src_el.getPosition();
@@ -762,9 +765,10 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
     var dx = mouse_411.curr_x - spt.tab.mouse_pos.x;
     var dy = mouse_411.curr_y - spt.tab.mouse_pos.y;
     if (Math.abs(dx) < 20) {
+        spt.tab.dragging = false;
         return;
     }
-
+    spt.tab.dragging = true;
     header.setStyle("position", "absolute");
     header.setStyle("z-index", "100");
     header.setStyle("opacity", "1.0");
@@ -776,20 +780,23 @@ spt.tab.header_drag_motion = function( evt, bvr, mouse_411) {
 spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
     var header = bvr.src_el;
     var drag_pos = header.getPosition();
-
-
+    if (spt.tab.dragging == false)
+        return;
+    
     var headers = spt.tab.get_headers();
     for ( var i = headers.length-1; i >= 0; i-- ) {
         if (headers[i] == header) {
             continue;
         }
         var pos = headers[i].getPosition();
+
         var size = headers[i].getSize();
-        if (drag_pos.x > pos.x + size.x/2) {
+        // the y ensures 2nd row tabs don't jump to first row on click
+        if (drag_pos.x > pos.x + size.x/2 && drag_pos.y >= pos.y) {
             header.inject(headers[i], "after");
             break;
         }
-        if (drag_pos.x > pos.x) {
+        if (drag_pos.x > pos.x && drag_pos.y >= pos.y ) {
             header.inject(headers[i], "before");
             break;
         }
@@ -822,21 +829,17 @@ spt.tab.close = function(src_el) {
 
 
     var content = src_el.getParent(".spt_tab_content");
-    var header;
     var element_name;
     // check if it's a header child
-    if (content) {
+    var header = src_el.getParent(".spt_tab_header");
+    if (header) {
+        element_name = header.getAttribute("spt_element_name");
+        content = spt.tab.get_content(element_name);
+    } else if (content) {
         element_name = content.getAttribute("spt_element_name");
         header = spt.tab.get_selected_header(element_name);
-    } else {
+    } 
 
-        header = src_el.getParent(".spt_tab_header");
-        if (header) {
-            element_name = header.getAttribute("spt_element_name");
-            content = spt.tab.get_content(element_name);
-        }
-
-    }
     if (!header || !content) {
         spt.error('Tab close cannot find the header or content. Abort');
         return;
@@ -1352,14 +1355,16 @@ spt.tab.close = function(src_el) {
             SmartMenu.assign_as_local_activator( icon_div, "BUTTON_MENU", True )
 
             icon_div.add_style("padding-top: 4px")
+            icon_div.add_style("margin-top: 10px")
 
             icon_div.add_style("float: left")
-            icon_div.add_style("height: 20px")
+            icon_div.add_style("height: 16px")
             icon_div.add_style("width: 10px")
             icon_div.add_style("margin-left: -1px")
             icon_div.add_gradient("background", "background", -5, 5)
             icon_div.add_border()
             icon_div.add_style("text-align: center")
+            icon_div.add_style("opacity: 0.5")
             div.add(icon_div);
 
 
@@ -1784,6 +1789,19 @@ spt.tab.close = function(src_el) {
         title_div.add(display_title)
         header.add(title_div)
 
+
+        """
+        count = 12
+        if count:
+            count_wdg = SpanWdg()
+            title_div.add(count_wdg)
+            count_wdg.add_class("badge")
+            count_wdg.add(count)
+            count_wdg.add_style("margin: 0px 5px 0px 10px")
+            count_wdg.add_style("font-size: 0.8em")
+        """
+
+
         title_div.add_attr("title", "%s (%s)" % (title, element_name))
 
         remove_wdg = DivWdg()
@@ -1792,6 +1810,8 @@ spt.tab.close = function(src_el) {
         if is_template or show_remove not in [False, 'false']:
             header.add(remove_wdg)
         #header.add(remove_wdg)
+
+
 
 
         remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
@@ -1833,7 +1853,7 @@ spt.tab.close = function(src_el) {
         } )
 
 
-
+        
 
         # add a drag behavior
         allow_drag = my.kwargs.get("allow_drag")
@@ -1841,7 +1861,7 @@ spt.tab.close = function(src_el) {
             header.add_style("position", "relative");
             header.add_behavior( {
             'type': 'drag',
-            "mouse_btn": 'LMB',
+            #"mouse_btn": 'LMB',
             "drag_el": '@',
             "cb_set_prefix": 'spt.tab.header_drag'
             } )

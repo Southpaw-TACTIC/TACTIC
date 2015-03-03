@@ -29,10 +29,11 @@ import types
 
 from pyasm.common import *
 from pyasm.security import *
-from pyasm.command import Command, PasswordAction
+from pyasm.command import Command, PasswordAction, SignOutCmd
 from pyasm.biz import Schema
 from pyasm.web import *
 
+from tactic.command import Scheduler, SchedulerTask
 from input_wdg import *
 from shadowbox_wdg import *
 from icon_wdg import *
@@ -1147,10 +1148,19 @@ class WebLoginWdg(Widget):
 
     def __init__(my, **kwargs):
         my.kwargs = kwargs
+        # hidden is for inline login when a session expires
+        my.hidden = kwargs.get('hidden') in  [True, 'True']
         super(WebLoginWdg,my).__init__("div")
 
 
     def get_display(my):
+        name_label = my.kwargs.get('name_label')
+        password_label = my.kwargs.get('password_label')
+        if not name_label:
+            name_label = "Name"
+        if not password_label:
+            password_label = "Password"
+
 
         web = WebContainer.get_web()
             
@@ -1181,7 +1191,12 @@ class WebLoginWdg(Widget):
         # if admin password is still the default, force the user to change it
         change_admin = False
         if allow_change_admin:
-            admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            finally:
+                sudo.exit()
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()
@@ -1190,12 +1205,21 @@ class WebLoginWdg(Widget):
                 if admin_password == Login.get_default_encrypted_password():
                     change_admin = True
 
-            #login = Login.get_by_login("admin")
-            #password = login.get_value("password")
-            #if password == Login.get_default_encrypted_password() or not password:
-            #    change_admin = True
+         
+            if admin_login:
+                password = admin_login.get_value("password")
+                if password == Login.get_default_encrypted_password() or not password:
 
+                    change_admin = True
+            else:
+                admin_login = SearchType.create('sthpw/login')
+                admin_login.set_value('login','admin')
+                admin_login.commit()
+                change_admin = True
+                # recreate the admin_login
+                
 
+            sudo.exit()
 
         div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
         div.add("<br/>"*2)
@@ -1281,12 +1305,24 @@ class WebLoginWdg(Widget):
             table.add_cell( domain_wdg )
             table.add_row()
 
-        th = table.add_header( "<b>Name: </b>")
+        
+
+        th = table.add_header( "<b> %s: </b>"%name_label)
         th.add_style("padding: 10px 5px")
         text_wdg = TextWdg("login")
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
         text_wdg.add_style("padding: 2px")
+        if my.hidden:
+            login_name = Environment.get_user_name()
+            text_wdg.set_value(login_name)
+        else:
+            # check if it's first time login
+            custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin|unittest'])")
+            if custom_projects == 0:
+                text_wdg.set_value('admin')
+                
+        
         #text_wdg.add_event("onLoad", "this.focus()")
         table.add_cell( text_wdg )
 
@@ -1295,8 +1331,9 @@ class WebLoginWdg(Widget):
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            table.add_row()
-            table.add_cell("Please change the \"admin\" password:")
+            tr = table.add_row()
+            td = table.add_cell("Please change the \"admin\" password")
+            td.add_styles('height: 24px; padding-left: 6px')
         else:
             text_wdg.add_style("background: #EEE")
 
@@ -1307,7 +1344,7 @@ class WebLoginWdg(Widget):
         password_wdg.add_style("background: #EEE")
         password_wdg.add_style("padding: 2px")
         password_wdg.add_style("width: 130px")
-        th = table.add_header( "<b>Password: </b>" )
+        th = table.add_header( "<b> %s: </b>"%password_label )
         th.add_style("padding: 5px")
         table.add_cell( password_wdg )
 
@@ -1319,7 +1356,8 @@ class WebLoginWdg(Widget):
             password_wdg2.add_style("background: #EEE")
             password_wdg2.add_style("padding: 2px")
             password_wdg2.add_style("width: 130px")
-            table.add_header( "<b>Verify Password: </b>" )
+            th = table.add_header( "<b>Verify Password: </b>" )
+            th.add_style("padding: 5px")
             table.add_cell( password_wdg2 )
 
 
@@ -1329,7 +1367,7 @@ class WebLoginWdg(Widget):
 
         table2 = Table()
         table2.center()
-        table2.add_style("width: 240px")
+        table2.add_style("width: 280px")
 
         table2.add_row()
 
@@ -1354,16 +1392,21 @@ class WebLoginWdg(Widget):
         
         msg = web.get_form_value(my.LOGIN_MSG)
         td = table2.add_cell(css='center_content')
+        
+        if my.hidden:
+            msg = 'Your session has expired. Please login again.'
+            div.add_style("height: 230px")
+
         if msg:
             from tactic.ui.widget import ResetPasswordWdg
             if msg == ResetPasswordWdg.RESET_MSG:
                 td.add(IconWdg("INFO", IconWdg.INFO))
             else:
-                td.add(IconWdg("ERROR", IconWdg.ERROR))
+                pass
 
             td.add(HtmlElement.b(msg))
             td.add_style('line-height', '14px')
-            td.add_style('padding-top', '5px')
+            td.add_style('padding-top', '10px')
 
             tr = table2.add_row()
             tr.add_style('line-height: 70px')
@@ -1379,8 +1422,9 @@ class WebLoginWdg(Widget):
                 link = HtmlElement.js_href(js, data=access_msg)
                 link.add_color('color','color', 60)
                 td.add(link)
+
         else:
-            div.add_style("height: 210px")
+            div.add_style("height: 250px")
 
         div.add(HtmlElement.br())
         div.add(table)
@@ -1394,6 +1438,13 @@ class WebLoginWdg(Widget):
         widget = Widget()
         #widget.add( HtmlElement.br(3) )
         table = Table()
+        table.add_class('spt_login_screen')
+        if my.hidden:
+            table.add_style('display','none')
+            table.add_style('top','0px')
+            table.add_style('position','absolute')
+
+
         table.add_style("width: 100%")
         table.add_style("height: 85%")
         table.add_row()
@@ -1418,6 +1469,22 @@ class WebLoginCmd(Command):
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
+
+    def reenable_user(my, login_sobject, delay):
+        class EnableUserTask(SchedulerTask):
+            def execute(my):
+                Batch()
+                reset_attempts = 0
+                login_sobject = my.kwargs.get('sobject')
+                login_sobject.set_value("license_type", "user")
+                login_sobject.set_value("login_attempt", reset_attempts)
+                login_sobject.commit(triggers=False)
+
+        scheduler = Scheduler.get()
+        task = EnableUserTask(sobject=login_sobject, delay=delay)
+        scheduler.add_single_task(task, delay)
+        scheduler.start_thread()
+
               
     def execute(my):
 
@@ -1466,6 +1533,48 @@ class WebLoginCmd(Command):
                 msg = "Incorrect username or password"
             web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
 
+            login_code = "admin"
+
+            search = Search("sthpw/login")
+            search.add_filter('login',my.login)
+            login_sobject = search.get_sobject()
+            max_attempts=-1
+            try:
+                max_attempts = int(Config.get_value("security", "max_login_attempt"))
+            except:
+                pass
+            if max_attempts >0:
+                login_attempt = login_sobject.get_value('login_attempt')
+
+                login_attempt = login_attempt+1
+                login_sobject.set_value('login_attempt', login_attempt)
+
+                if login_attempt == max_attempts:
+                    #set license_Type to disabled and set off the thread to re-enable it
+                    login_sobject.set_value('license_type', 'disabled')
+                    disabled_time = Config.get_value("security", "account_lockout_duration")
+                    if not disabled_time:
+                        disabled_time = "30 minutes"
+
+
+                    delay,unit = disabled_time.split(" ",1)
+                    if "minute" in unit:
+                        delay = int(delay)*60
+                    
+                    elif "hour" in unit:
+                        delay =int(delay)*3600
+                    
+                    elif "second" in unit:
+                        delay = int(delay)
+                    else:
+                        #make delay default to 30 min
+                        delay = 30*60
+
+                    my.reenable_user(login_sobject, delay)
+
+                
+                login_sobject.commit(triggers=False)
+            
         if security.is_logged_in():
 
             # set the cookie in the browser
@@ -1937,7 +2046,7 @@ class MessageWdg(DivWdg):
         super(MessageWdg,my).__init__(span, css)
         
 class HintWdg(SpanWdg):
-    def __init__(my, message, css='small', icon=IconWdg.HELP, title=''):
+    def __init__(my, message, css='small', icon="BS_QUESTION_SIGN", title=''):
         assert message
         message = message.replace('\n','<br/>')
         icon_wdg = IconWdg("", icon)
@@ -2684,9 +2793,13 @@ class ExceptionMinimalWdg(Widget):
 
 
         # ignore
+        button_div = DivWdg()
+        widget.add(button_div)
+        button_div.add_style("width: 75px")
+        button_div.add_style("margin: 0 auto")
+
         button = ActionButtonWdg(title="Go to Admin")
-        widget.add(button)
-        button.add_style("margin: 0 auto")
+        button_div.add(button)
 
         # click the top layout and jump to default page
         button.add_event('onclick', '''window.location='%s' '''%url )

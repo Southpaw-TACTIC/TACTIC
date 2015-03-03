@@ -89,6 +89,7 @@ class CherryPyStartup(CherryPyStartup20):
         #print stacktrace_str
         #print "-"*50
 
+        # Dump out the error
         print "WARNING: ", path, status, message
         try:
             eval("cherrypy.root.tactic.%s" % project_code)
@@ -98,11 +99,28 @@ class CherryPyStartup(CherryPyStartup20):
         else:
             has_project = True
 
+        # make sure the appropriate site is set (based on the ticket)
+        from pyasm.security import Site
+        cookie = cherrypy.request.cookie
+        if cookie.has_key("login_ticket"):
+            cookie = cookie["login_ticket"].value
+            site = Site.get().get_by_ticket(cookie)
+        else:
+            html_response = '''<html>
+            <head><meta http-equiv="Refresh" content="0; url=/"></head>
+            </html>'''
+            response.body = ''
+            return html_response
+
+        Site.set_site(site)
+
 
         # if the url does not exist, but the project does, then check to
         # to see if cherrypy knows about it
         project = Project.get_by_code(project_code)
         if not has_project and project and project.get_value("type") != 'resource':
+
+            print "register ..."
 
             startup = cherrypy.startup
             config = startup.config
@@ -113,12 +131,13 @@ class CherryPyStartup(CherryPyStartup20):
             time.sleep(1)
 
             # either refresh ... (LATER: or recreate the page on the server end)
-            # reloading in 2 seconds
+            # reloading in 3 seconds
             html_response = '''<html>
-            <head><meta http-equiv="Refresh" content="2"></head>
-                <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div></body> 
+                <body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>
+                <script>document.location = "/tactic/%s";</script>
+                </body> 
             </html>
-            '''
+            '''% project.get_value("code")
 
             # this response.body is not needed, can be commented out in the future
             response.body = ''
@@ -245,6 +264,7 @@ class CherryPyStartup(CherryPyStartup20):
 
         # find out if one of the projects is the root
         root_initialized = False
+        """
         for project in projects:
             project_code = project.get_code()
             if False:
@@ -253,9 +273,10 @@ class CherryPyStartup(CherryPyStartup20):
                 cherrypy.root.projects = SitePage(project_code)
                 root_initialized = True
                 break
+        """
 
         if not root_initialized:
-            project_code = Config.get_value("install", "default_project")
+            project_code = Project.get_default_project()
             if project_code and project_code !='default':
                 from tactic.ui.app import SitePage
                 cherrypy.root.tactic = SitePage(project_code)

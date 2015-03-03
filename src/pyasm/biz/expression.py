@@ -22,6 +22,7 @@ import datetime
 
 from pyasm.common import TacticException, Environment, Container, FormatValue, Config
 from pyasm.search import Search, SObject, SearchKey, SearchType
+from pyasm.security import Site
 
 from project import Project
 
@@ -1245,8 +1246,10 @@ class MethodMode(ExpressionParser):
                 first_arg = args[0]
                 if my.sobjects:
                     sobject = my.sobjects[0]
-                    cmd = PythonCmd(script_path=first_arg, sobject=sobject)
-                    results = cmd.execute()
+                else:
+                    sobject = None
+                cmd = PythonCmd(script_path=first_arg, sobject=sobject)
+                results = cmd.execute()
 
 
         elif method == 'SUM':
@@ -1529,6 +1532,23 @@ class MethodMode(ExpressionParser):
                 result = args[0] % values
                 results.append(result)
 
+
+        elif method == 'REPLACE':
+            if len(args) != 3:
+                raise SyntaxError("Method @%s must have 3 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+
+            expression = args[0]
+            mode = my.get_mode(expression)
+            values = my.dive(mode, expression=expression)
+
+            # FIXME: empty string is handled weirdly elsewhere and resturns "''"
+            if args[2] == "''":
+                args[2] = ''
+
+            results = []
+            for value in values:
+                result = value.replace( args[1], args[2] )
+                results.append(result)
 
 
         elif method == 'UPDATE':
@@ -1944,7 +1964,6 @@ class MethodMode(ExpressionParser):
                     search_type = sobject.get_search_type_obj()
                     related_sobjects.append(search_type)
                     return related_sobjects
-
  
             elif related_type == 'project':
                 related_sobjects = []
@@ -1952,7 +1971,11 @@ class MethodMode(ExpressionParser):
                 related_sobjects.append(project)
                 return related_sobjects
 
-
+            elif related_type == 'site':
+                related_sobjects = []
+                site = Site.get()
+                related_sobjects.append(site)
+                return related_sobjects
 
 
         # if no sobjects have been specified to start with, then use
@@ -1972,6 +1995,9 @@ class MethodMode(ExpressionParser):
             elif related_type == 'project':
                 project = Project.get()
                 related_sobjects = [project]
+            elif related_type == 'site':
+                site = Site.get()
+                related_sobjects = [site]
 
             elif related_type.find("/") == -1:
                 sobject = my.get_env_sobject(related_type)
@@ -2231,6 +2257,8 @@ class MethodMode(ExpressionParser):
                 value = sobject.get_base_search_type()
             elif column == '__project__':
                 value = sobject.get_project_code()
+            elif column == '__all__':
+                value = sobject.get_data()
             else:
                 value = sobject.get_value(column)
             
@@ -2261,7 +2289,10 @@ class MethodMode(ExpressionParser):
             if not value:
                 continue
             if type(value) in types.StringTypes:
-                value = float(value)
+                try:
+                    value = float(value)
+                except:
+                    value = 0
             total += value
 
         return total

@@ -231,6 +231,18 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+
+    /*
+     * interaction logging
+     */
+    this.add_interaction = function(key, data, kwargs) {
+        return this._delegate("add_interaction", arguments, kwargs);
+    }
+
+    this.get_interaction_count = function(key, kwargs) {
+        return this._delegate("get_interaction_count", arguments, kwargs);
+    }
+
     /*
      * Checkin/checkout methods
      */
@@ -862,6 +874,9 @@ TacticServerStub = function() {
 
 
 
+    this.set_current_snapshot = function(snapshot_code) {
+        return this._delegate("set_current_snapshot", arguments, null);
+    }
 
     this.query_snapshots = function(kwargs) {
         return this._delegate("query_snapshots", arguments, kwargs);
@@ -908,6 +923,14 @@ TacticServerStub = function() {
     this.create_task = function(search_key, kwargs) {
         return this._delegate("create_task", arguments, kwargs);
     } 
+
+    this.get_tasks = function(search_key, kwargs) {
+        return this._delegate("get_tasks", arguments, kwargs);
+    }
+
+    this.get_task_status_colors = function() {
+        return this._delegate("get_task_status_colors", arguments);
+    }
 
 
     this.add_initial_tasks = function(search_key, kwargs) {
@@ -1117,7 +1140,11 @@ TacticServerStub = function() {
             return ret_val;
         }
         catch(e) {
-            alert(e);
+            var e_msg = spt.exception.handler(e);
+            if (/Cannot login with key/.test(e_msg)) 
+                this._redirect_login();
+            else
+                alert(e_msg);
             return;
         }
     }
@@ -1128,14 +1155,22 @@ TacticServerStub = function() {
 
 
     this.execute_cmd = function(class_name, args, values, kwargs) {
-        if (kwargs) callback = kwargs.on_complete;
-        else callback = null;
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback);
+        if (kwargs) {
+            callback = kwargs.on_complete;
+            on_error = kwargs.on_error;
+            delete kwargs.on_error;
+            delete kwargs.on_complete;
+        }
+        else { 
+            callback = null;
+            on_error = null;
+        }
+        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback, on_error);
         if (callback) {
             return;
         }
         if (ret_val && ret_val.status == "ERROR") {
-            // FIXME: put in a propert error here
+            // FIXME: put in a proper error here
             //alert("ERROR: " + ret_val.msg);
             throw ret_val;
         }
@@ -1289,8 +1324,9 @@ TacticServerStub = function() {
     //   ret_type: the type of value returned by the function.  Functions that
     //      return lots of data will often return strings back
     //   callback: a function that is run after the data has been returned.
+    //   on_error: A function that is run when a request throws an error.
     //      This is used be get_async_widget() and others
-    this._delegate = function(func_name, passed_args, kwargs, ret_type, callback) {
+    this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
 
         var client = new AjaxService( this.url, '' );
 
@@ -1359,7 +1395,7 @@ TacticServerStub = function() {
         if (typeof(callback) != 'undefined' && callback != null) {
             var self = this;
             client.set_callback( function(request) {
-                self.async_callback(client, request);
+                self.async_callback(client, request, on_error);
             } );
             client.invoke( func_name, args );
 
@@ -1378,14 +1414,44 @@ TacticServerStub = function() {
 
     }
 
-    this.async_callback = function(client, request) {
+    this._show_login = function() {
+        
+        var spinners = $$('.spt_spin');
+        spinners.each(function(x) {spt.hide(x)});
+        var login_scr = document.getElement('.spt_login_screen');
+        login_scr.setStyle('z-index','1100');
+        var custom_content = login_scr.getParent('.spt_custom_content');
+        if (custom_content) {
+            custom_content.setStyle('position','absolute');
+            custom_content.setStyle('top','30%');
+            custom_content.setStyle('left','50%');
+        }
+        spt.popup.show_background();
+        spt.show(login_scr);
+
+    }
+    this._redirect_login = function() {
+       
+        var ok = function() {
+            window.location.reload();
+        };
+        spt.info('Your session has expired.', {'click': ok});
+    }
+    this.async_callback = function(client, request, on_error) {
         if (request.readyState == 4) {
             if (request.status == 200) {
                 try {
                     var data = this._handle_ret_val(client.func_name, request, client.ret_type);
                     client.callback(data);
                 } catch(e) {
-                    spt.alert(spt.exception.handler(e));
+                    var e_msg = spt.exception.handler(e);
+                    if (/Cannot login with key/.test(e_msg)) {
+                        this._redirect_login();
+                    }
+                    else if (on_error)
+                        on_error(e);
+                    else
+                        spt.alert(e_msg);
                 }
             } else {
                 //alert("status is " + request.status);
@@ -1400,6 +1466,8 @@ TacticServerStub = function() {
         if (ret_val.status != 200) {
             throw(ret_val.status);
         }
+
+        console.log(ret_val);
 
         if (ret_type == "raw") {
             return ret_val.responseText;
@@ -1480,6 +1548,10 @@ TacticServerStub = function() {
             jsontext = child.textContent;
         }
 
+        if (jsontext == "OK") {
+            return ret_val;
+        }
+                
         var value;
         try {
             value = JSON.parse(jsontext);

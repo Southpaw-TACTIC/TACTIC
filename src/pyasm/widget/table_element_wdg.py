@@ -63,6 +63,7 @@ from input_wdg import FilterTextWdg
 class BaseTableElementWdg(HtmlElement):
     def __init__(my, name=None, value=None, **kwargs):
 
+        my.kwargs = kwargs
         my.options = {} 
         for key, kw_value in kwargs.items():
             my.set_option(key, kw_value)
@@ -1074,7 +1075,7 @@ class XmlWdg(BaseTableElementWdg):
         return True
 
     def get_width(my):
-        return 600
+        return "600px"
 
     def get_display(my):
         sobject = my.get_current_sobject()
@@ -1086,7 +1087,8 @@ class XmlWdg(BaseTableElementWdg):
             value = zlib.decompress( binascii.unhexlify(value[5:]) )
 
         widget = DivWdg()
-        widget.add_style("max-width: 600px")
+        widget.add_style("min-width: 300px")
+        widget.add_style("width: auto")
         widget.add_style("overflow-x: hidden")
 
         # parse the xml to see if it is valid
@@ -1103,6 +1105,7 @@ class XmlWdg(BaseTableElementWdg):
 
         value = Xml.to_html(value)
         pre = HtmlElement.pre(value)
+        pre.add_style("font-size", "1.0em")
         #pre.add_attr("wrap", "true")
         #pre.add_style("white-space", "pre-line")
         widget.add(pre)

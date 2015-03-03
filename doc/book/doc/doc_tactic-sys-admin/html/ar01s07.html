@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>7. Fileserver</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s06.html" title="6. Server Configuration" /><link rel="next" href="ar01s08.html" title="8. Scalability" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s06.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s08.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_fileserver"></a>7. Fileserver</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_relocating_the_emphasis_assets_emphasis_directory"></a>7.1. Relocating the <span class="emphasis"><em>assets</em></span> directory</h3></div></div></div><p>proper management of assets and asset metadata are essential to managing
+the TACTIC service. Versioned assets are by far the most disk space
+consuming element of asset management. TACTIC can store its asset data
+in any filesystem path location. All that is required is that the tactic
+configuration file contains the path to a directory writable by the
+TACTIC service user.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="strong"><strong>Local Access</strong></span> in a simple configuration, the TACTIC service is
+enabled on the TACTIC host, and all assets checked in and checked out of
+TACTIC are stored on the local filesystem. Typically a user is created
+to run the TACTIC service, or an already assigned user is simply used to
+run the TACTIC service.
+</li><li class="listitem">
+<span class="strong"><strong>Network Access</strong></span> in an addition to the simple configuration, the
+TACTIC service is enabled on the tactic host and all assets checked in
+and checked out tactic are stored on a network mount. Typically a user
+is created to run the TACTIC service and be able to write to the network
+mount.
+</li><li class="listitem">
+*TACTIC user permissions*It is important to note that in a network
+accessible filesystem, allocation of permissions are important only for
+the TACTIC user. Regular system users should not have access to the
+TACTIC assets directory.
+</li><li class="listitem"><p class="simpara">
+<span class="strong"><strong>Browsable access to assets</strong></span> During some conversions to the management
+of assets by TACTIC, a frequent request is for regular user access to
+the assets directory managed by TACTIC. There really is not the much to
+see in these directories as tactics naming convention for versioning of
+assets creates files and directories that are largely mysterious in
+their arrangement.
+</p><p class="simpara">Is very important that the files that are managed by tactic are not
+touched by regular users. Manipulating files or directories managed by
+tactic will definitely result in data loss. Regular users should not
+have writable access to tactic asset directories.</p></li></ul></div><p>Before you begin this process, you should first move or copy your assets
+to their new location using a network share ideally named <span class="emphasis"><em>assets</em></span>. For
+a new installation, you should create an <span class="emphasis"><em>assets</em></span> share or directory in
+your new location.</p><p>In most cases, it is ideal to relocate the <code class="literal">assets</code> directory to a
+dedicated file server. If you already have an assets directory, you can
+rename it to "assets_temp" to break the current connection. You will
+know the connection is broken when your asset and project thumbnails are
+no longer visible in the user interface. Once the assets are
+successfully moved to the new location you will know they are accessible
+when the assets and thumbnails are visible again.</p><p>In Linux, the steps to rename the current assets will be similar to the
+example below:</p><p>\1) Navigate to the apache directory <code class="literal">cd /home/apache</code></p><p>\2) In the shell run <code class="literal">mv assets assets_bak</code></p><p>\3) If you run <code class="literal">ls -la</code>, you should get a listing confirming the change</p><p><span class="inlinemediaobject"><img src="media/renameAssetsToAssetsBak.png" alt="image" /></span></p><p>\4) To confirm the operation was successful, log in to TACTIC and you
+should find that none of the thumbnails or assets are available.</p><p>The config file is named differently on each operating system:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Filename </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Operating System </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Location</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>tactic_win32-conf.xml</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Windows</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>TACTIC_INSTALL_DIR/projects/config</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>tactic_linux-conf.xml</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Linux</p></td><td style="" align="left" valign="top"><p>TACTIC_INSTALL_DIR/projects/config</p></td></tr></tbody></table></div><p><span class="strong"><strong>Updating the tactic_linux-conf.xml file (Linux)</strong></span></p><p>In the <code class="literal">&lt;checkin/&gt;</code> tag in the <code class="literal">tactic_linux-conf.xml</code> config file, the
+<code class="literal">asset_base_dir</code> location defines where assets are stored by TACTIC.
+This location could be on the TACTIC server (the default is
+<code class="literal">/home/apache/assets</code>), or preferably on a network shared drive.</p><p>This path is defined from the perspective of the TACTIC server. An
+example of this entry where it looks to a share on another server would
+be:</p><pre class="screen">asset_base_dir="/home/apache/assets"</pre><p>This location on the server would be mounted to the central assets
+server which in this case would be:</p><pre class="screen">//192.168.0.105/assets</pre><p>This share would have to allow the <span class="emphasis"><em>apache</em></span> user (which is TACTIC) to
+read and write to it.</p><p>There are also two variables that need to be set in the following Apache
+config file:</p><p><code class="literal">/etc/httpd/conf.d/tactic.conf</code></p><p><span class="strong"><strong>Change this:</strong></span></p><pre class="screen">&lt;Directory "/home/apache/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre><p><span class="strong"><strong>To:</strong></span></p><pre class="screen">&lt;Directory "/mnt/d1/tactic/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+
+&lt;/Directory&gt;</pre><p>You will also need to change the assets alias further down in the config
+file:</p><p><span class="strong"><strong>Change this:</strong></span></p><pre class="screen">Alias /assets "/home/apache/assets"</pre><p><span class="strong"><strong>To:</strong></span></p><pre class="screen">Alias /assets ""</pre><p>For the <code class="literal">win32_client_repo_dir</code> location, it should include the
+<code class="literal">asset_base_dir</code> path as seen by the client machine. For example,
+suppose the <code class="literal">asset_base_dir</code> path is "/home/apache/assets" on a Linux
+box. However, from a Windows client, it is mapped as:</p><p>"Z:/assets" or "//192.168.0.105/assets"</p><p>The <code class="literal">win32_client_repo_dir</code> location would then be:</p><p>win32_client_repo_dir="//192.168.0.105/assets"</p><p>The linux_client_repo_dir location is analogous to
+win32_client_repo_dir, except it is meant for a Linux client.</p><p><span class="strong"><strong>Updating the tactic_win32-conf.xml file (Windows)</strong></span></p><p>In the <code class="literal">&lt;checkin/&gt;</code> tag in the <code class="literal">tactic_linux-conf.xml</code> config file, the
+<code class="literal">asset_base_dir</code> location defines where assets are stored by TACTIC.
+This location could be on the TACTIC server (the default is
+<code class="literal">/home/apache/assets</code>), or preferably on a network shared drive.</p><p>This path is defined from the perspective of the TACTIC server. An
+example of this entry where it looks to a share on another server would
+be:</p><pre class="screen">asset_base_dir="/home/apache/assets"</pre><p>This location on the server would be mounted to the central assets
+server which in this case would be:</p><pre class="screen">//192.168.0.105/assets</pre><p>This share would have to allow the <span class="emphasis"><em>apache</em></span> user (which is TACTIC) to
+read and write to it.</p><p>There are also two variables that need to be set in the following Apache
+config file:</p><p><code class="literal">/etc/httpd/conf.d/tactic.conf</code></p><p><span class="strong"><strong>Change this:</strong></span></p><pre class="screen">&lt;Directory "/home/apache/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre><p><span class="strong"><strong>To:</strong></span></p><pre class="screen">&lt;Directory "/mnt/d1/tactic/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+
+&lt;/Directory&gt;</pre><p>You will also need to change the assets alias further down in the config
+file:</p><p><span class="strong"><strong>Change this:</strong></span></p><pre class="screen">Alias /assets "/home/apache/assets"</pre><p><span class="strong"><strong>To:</strong></span></p><pre class="screen">Alias /assets ""</pre><p>For the <code class="literal">win32_client_repo_dir</code> location, it should include the
+<code class="literal">asset_base_dir</code> path as seen by the client machine. For example,
+suppose the <code class="literal">asset_base_dir</code> path is "/home/apache/assets" on a Linux
+box. However, from a Windows client, it is mapped as:</p><p>"Z:/assets" or "//192.168.0.105/assets"</p><p>The <code class="literal">win32_client_repo_dir</code> location would then be:</p><p>win32_client_repo_dir="//192.168.0.105/assets"</p><p>The linux_client_repo_dir location is analogous to
+win32_client_repo_dir, except it is meant for a Linux client.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_configure_the_remote_repo"></a>7.2. Configure the Remote Repo</h3></div></div></div><p>The remote repository (repo) setting describes the specific environment
+that remote users or a remote facility may use, in the situation where
+it differs from the environment used by the master repository.</p><p>To set up a remote repo, you can insert an entry that represents users
+or a group of users that fall under a certain IP address or IP mask
+combo.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>If you want everyone at an IP address to use the same remote repo, a
+typical IP mask value is <code class="literal">255.255.255.255</code></p></blockquote></div><p>The login name is only required when you are not using an IP address or
+IP mask combo to specify users. The sandbox path and local repo path can
+be a network path like:</p><pre class="screen">\\&lt;server_name&gt;\&lt;share_name&gt;\..\repo</pre><p>or (for Windows)</p><pre class="screen">Z:/repo</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s06.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

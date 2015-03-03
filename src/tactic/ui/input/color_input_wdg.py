@@ -21,6 +21,8 @@ from tactic.ui.common import BaseRefreshWdg
 
 import random
 
+from text_input_wdg import TextInputWdg
+
 
 
 class ColorWdg(Widget):
@@ -137,7 +139,7 @@ class ColorInputWdg(BaseInputWdg):
         top = my.top
 
         if not my.input:
-            my.input = TextWdg(my.get_input_name())
+            my.input = TextInputWdg(name=my.get_input_name())
 
         value = my.get_value()
         if value:

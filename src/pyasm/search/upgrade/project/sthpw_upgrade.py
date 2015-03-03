@@ -17,12 +17,54 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.4.0.a01
+    #
+
+    def upgrade_v4_2_0_a01_003(my):
+        my.run_sql('''
+        INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/interaction', 'sthpw/interaction', 'sthpw', 'User Interaction', 'sthpw', 'interaction', 'pyasm.search.SObject', 'User Interaction', 'public');
+        ''')
+            
+
+
+
+    def upgrade_v4_4_0_a01_002(my):
+        my.run_sql('''
+        CREATE INDEX "interaction_key_idx" on interaction (key);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_001(my):
+        my.run_sql('''
+        CREATE TABLE interaction (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            project_code varchar(256),
+            login varchar(256),
+            key varchar(1024),
+            data text,
+            "timestamp" timestamp default now()
+        );
+        ''')
+
+
     
     #
     # 4.2.0.a01
     #
+    def upgrade_v4_2_0_a01_016(my):
+        my.run_sql('''
+        ALTER TABLE login ADD  "login_attempt" INT;
+        ''')
 
-    def upgrade_v4_2_0_a01_013(my):
+    def upgrade_v4_2_0_a01_015(my):
+        my.run_sql('''
+        INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
+        ''')
+            
+
+    def upgrade_v4_2_0_a01_014(my):
         if my.get_database_type() == 'MySQL':
             my.run_sql('''
             ALTER table queue MODIFY serialized varchar(256) NULL;
@@ -37,8 +79,14 @@ class SthpwUpgrade(BaseUpgrade):
             ''')
 
 
-    def upgrade_v4_2_0_a01_012(my):
+    def upgrade_v4_2_0_a01_013(my):
         my.run_sql('''ALTER TABLE sync_server ADD COLUMN file_mode varchar(256);''')
+
+    def upgrade_v4_2_0_a01_012(my):
+        my.run_sql('''
+        ALTER TABLE "watch_folder" ADD "script_path" varchar(1024);
+        ''')
+
 
     def upgrade_v4_2_0_a01_011(my):
         my.run_sql('''

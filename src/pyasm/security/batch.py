@@ -17,12 +17,21 @@ import os, sys
 from pyasm.common import Environment, Container, Config, Common, SecurityException
 
 from pyasm.search import DbContainer
-from security import Security
+from security import Security, Site
 
 class Batch(Environment):
     '''Environment object that is used for batch operations'''
-    def __init__(my, project_code=None, login_code=None):
+    def __init__(my, project_code=None, login_code=None, site=None):
         my.set_app_server("batch")
+
+        if not site:
+            # if not explicitly set, keep the current site
+           site = Site.get_site() 
+
+
+        plugin_dir = Environment.get_plugin_dir()
+        if plugin_dir not in sys.path:
+            sys.path.insert(0, plugin_dir)
 
         super(Batch,my).__init__()
 
@@ -30,6 +39,9 @@ class Batch(Environment):
 
         # clear the main container
         Container.create()
+
+        if site:
+            Site.set_site(site)
 
         # set this as the environment
         if not project_code:
@@ -114,8 +126,14 @@ class XmlRpcInit(Environment):
 
     def _do_login(my):
 
+        allow_guest = Config.get_value("security", "allow_guest")
+        if allow_guest == 'true':
+            allow_guest = True
+        else:
+            allow_guest = False
+
         security = Environment.get_security()
-        ticket = security.login_with_ticket(my.ticket)
+        ticket = security.login_with_ticket(my.ticket, allow_guest=allow_guest)
 
         if not ticket:
             raise SecurityException("Cannot login with key: %s. Session may have expired." % my.ticket)

@@ -133,7 +133,6 @@ class ClientApiTest(unittest.TestCase):
             my._test_pipeline()
             my._test_eval()
             my._test_execute()
-
         except Exception:
             my.server.abort()
             raise
@@ -757,6 +756,8 @@ class ClientApiTest(unittest.TestCase):
         # do another checkin, but leaving a breadcrumb
         my.server.upload_file(file_path)
         result = my.server.simple_checkin(search_key, context, file_path, file_type="foo", is_current=False, breadcrumb=True)
+
+        
         breadcrumb_file = "%s.snapshot" % file_path
         my.assertEquals( True, os.path.exists(file_path) )
         # remove it
@@ -811,7 +812,9 @@ class ClientApiTest(unittest.TestCase):
 
         # test versionless
         versionless_snapshot = my.server.get_snapshot(search_key, context, -1, include_paths=True, include_paths_dict=True, versionless=True)
-        my.assertEquals( {}, versionless_snapshot)
+        paths_dict = versionless_snapshot.get('__paths_dict__')
+        my.assertEquals(paths_dict.get('main') , ['/home/apache/assets/unittest/person/joe/metadata/miso_ramen_metadata.jpg'])
+        #my.assertEquals( {}, versionless_snapshot)
         versionless_snapshot = my.server.get_snapshot(search_key, context, 0, include_paths=True, include_paths_dict=True, versionless=True)
         my.assertEquals( {}, versionless_snapshot)
         
@@ -820,8 +823,9 @@ class ClientApiTest(unittest.TestCase):
         # test querying of snapshots
         filters = [['context', 'metadata']]
         snapshots = my.server.query_snapshots(filters=filters, include_paths=True, include_parent=True, include_files=True)
-        # NOT TRUE the 2nd one is the versionless one auto-created. This doesn't happen any more since hte default is strict checkin_type
-        my.assertEquals( 1, len(snapshots))
+        # the 2nd one is the versionless one auto-created.
+        # now back to '' checkin_type as default in 4.2 
+        my.assertEquals( 2, len(snapshots))
         my.assertEquals( 3, len(snapshots[0].get('__paths__')) )
 
         my.assertEquals( "joe",  snapshots[0].get('__parent__').get('code'))
@@ -858,7 +862,7 @@ class ClientApiTest(unittest.TestCase):
         # check that the file name is correct
         filename = os.path.basename(path)
         # changed naming.. adds "publish"
-        my.assertEquals("miso_ramen_v001.jpg", filename)
+        my.assertEquals("miso_ramen_publish_v001.jpg", filename)
 
 
     def _test_group_checkin(my):
@@ -1032,6 +1036,9 @@ class ClientApiTest(unittest.TestCase):
         if not linux_client_repo_dir:
             linux_client_repo_dir = base_dirs.get('asset_base_dir')
 
+        if isinstance(linux_client_repo_dir, dict):
+            linux_client_repo_dir = linux_client_repo_dir.get('default')
+
         my.assertEquals(1, len(dep_snapshots))
         my.assertEquals(2, len(paths))
 
@@ -1042,6 +1049,8 @@ class ClientApiTest(unittest.TestCase):
 
         paths = dep_snapshots[0].get('__paths__')
         web_base_dir = base_dirs.get('web_base_dir')
+        if isinstance(web_base_dir, dict):
+            web_base_dir = web_base_dir.get('default')
         for path in paths:
             my.assertEquals(path.startswith('%s/unittest/person/'%web_base_dir), True)
     
@@ -1256,7 +1265,8 @@ class ClientApiTest(unittest.TestCase):
         my.assertNotEquals( {}, paths )
         lib_paths = paths.get('lib_paths')
 
-        lib_path_exist = '/home/apache/assets/unittest/person/joe/test_checkin/miso_ramen_test_checkin_v004.jpg' in lib_paths
+        
+        lib_path_exist = '/home/apache/assets/unittest/person/joe/test_checkin/.versions/miso_ramen_test_checkin_v004.jpg' in lib_paths
         my.assertEquals( lib_path_exist, True )
 
         
@@ -1399,7 +1409,7 @@ class ClientApiTest(unittest.TestCase):
 
         # this name doesn't matter
         file_name = 'miso_ramen.jpg'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, checkin_type='strict')
         new_dir = os.path.dirname(path)
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
@@ -1533,9 +1543,8 @@ class ClientApiTest(unittest.TestCase):
         columns = ['code']
         children = my.server.get_all_children(country_key, child_type, columns=columns)
         child = children[0]
-
-        # code and __search_key__
-        my.assertEquals(2, len(child.keys() ) )
+        # code, __search_type__,  and __search_key__
+        my.assertEquals(3, len(child.keys() ) )
 
         # test setting parent
         data = { 'code': 'calgary' }
@@ -1619,14 +1628,17 @@ class ClientApiTest(unittest.TestCase):
         # test virtual snapshot path
         context = 'virtual'
         ext = ".jpg"
-        path = my.server.get_virtual_snapshot_path(search_key, context, ext=ext)
+        path = my.server.get_virtual_snapshot_path(search_key, context, ext=ext, checkin_type='auto')
+        expected = "assets/unittest/person/\w+/%s/.versions/joe_virtual_v001.jpg$" %context
+        my.assertEquals(True, None != re.search(expected, path))
 
+        path = my.server.get_virtual_snapshot_path(search_key, context, ext=ext, checkin_type='strict')
         expected = "assets/unittest/person/\w+/%s/joe_virtual_v001.jpg$" %context
         my.assertEquals(True, None != re.search(expected, path))
 
         # test with no extension
         file_name = 'cow.mov'
-        path = my.server.get_virtual_snapshot_path(search_key, context, file_name=file_name)
+        path = my.server.get_virtual_snapshot_path(search_key, context, file_name=file_name, checkin_type='strict')
         expected = "assets/unittest/person/\w*/%s/cow_virtual_v001.mov$" %context
         my.assertEquals(True, None != re.search(expected, path))
 
@@ -1657,8 +1669,8 @@ class ClientApiTest(unittest.TestCase):
         """
         # test with forced extension (test without starting period)
         ext = "jpg"
-        path = my.server.get_virtual_snapshot_path(search_key, context, file_name=file_name, ext=ext)
-        expected = "assets/unittest/person/\w+/%s/cow_virtual_v001.jpg$" %context
+        path = my.server.get_virtual_snapshot_path(search_key, context, file_name=file_name, ext=ext, checkin_type='')
+        expected = "assets/unittest/person/\w+/%s/.versions/cow_virtual_v001.jpg$" %context
         my.assertEquals(True, None != re.search(expected, path))
 
 
@@ -1671,17 +1683,17 @@ class ClientApiTest(unittest.TestCase):
 
         # preallocate a single file, don't give a file_name
         file_type = 'mov'
-        path = my.server.get_preallocated_path(snapshot_code, file_type)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, checkin_type='strict')
         my.assertEquals( True, None != re.search('unittest/person/\w+/%s/joe_preallocate_v001'%context, path))
 
         # preallocate with a file_name 
         file_name = 'whatever.mov'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, checkin_type='strict')
         my.assertEquals( True, None != re.search('unittest/person/\w+/%s/whatever_preallocate_v001.mov$'%context, path))
 
         # preallocate with a file_name, protocol=sandbox 
         file_name = 'whatever.mov'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, protocol='sandbox')
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, protocol='sandbox', checkin_type='strict')
         my.assertEquals( True, None != re.search('unittest/person/\w+/%s/whatever_preallocate_v001.mov$'%context, path))
         my.assertEquals( True, path.startswith( base_dir ))
 
@@ -1689,7 +1701,7 @@ class ClientApiTest(unittest.TestCase):
         file_type = 'sequence'
         file_name = "images_%0.4d.png"
         file_range = "1-5"
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, checkin_type='strict')
         my.assertEquals( True, None != re.search('unittest/person/\w+/%s/images_%%0.4d_preallocate_v001.png$'%context, path))
 
 
@@ -1710,7 +1722,7 @@ class ClientApiTest(unittest.TestCase):
         # add another preallocated file to the checkin using a specific file_type my_icon
         file_type = 'my_icon'
         file_name = 'icon.png'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, checkin_type='strict')
         f = open(path, 'wb')
         f.write("preallocated add_file()")
         f.close()
@@ -1723,7 +1735,7 @@ class ClientApiTest(unittest.TestCase):
         # add another preallocated file "extra" to the checkin with icon creation
         file_type = 'extra'
         file_name = 'miso_ramen.jpg'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name, checkin_type='strict')
        
         src_path = "%s/test/miso_ramen.jpg" % my.client_lib_dir
         shutil.copy(src_path, path)

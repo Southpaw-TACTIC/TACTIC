@@ -122,7 +122,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("<br/>"*2)
 
         button_div = DivWdg()
-        button_div.add_styles('width: 300px; height: 50px')
+        button_div.add_styles('width: 300px; height: 75px')
         button = ActionButtonWdg(title="Delete")
         button_div.add(button)
         content.add(button_div)
@@ -142,6 +142,19 @@ class DeleteToolWdg(BaseRefreshWdg):
             'search_keys': bvr.search_keys,
             'values': values
         };
+
+        var del_trigger = function() {
+            
+            // for fast table
+            var tmps = spt.split_search_key(bvr.search_keys[0])
+            var tmps2 = tmps[0].split('?');
+            var del_st_event = "delete|" + tmps2[0];
+            var bvr_fire = {};
+            var input = {'search_keys': bvr.search_keys};
+            bvr_fire.options = input;
+            spt.named_events.fire_event(del_st_event, bvr_fire);
+        }
+
         var server = TacticServerStub.get();
         try {
             server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_keys + ']'});
@@ -153,6 +166,8 @@ class DeleteToolWdg(BaseRefreshWdg):
             if (popup.spt_on_post_delete) {
                 popup.spt_on_post_delete();
             }
+
+            del_trigger();
 
             spt.popup.destroy(popup);
 
@@ -190,13 +205,17 @@ class DeleteToolWdg(BaseRefreshWdg):
 
     def get_item_div(my, sobjects, related_type):
         item_div = DivWdg()
+        item_div.add_style("margin: 15px 10px")
 
         sobject = sobjects[0]
 
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
         checkbox.set_attr("value", related_type)
+        if related_type in ["sthpw/snapshot", "sthpw/file"]:
+            checkbox.set_checked()
 
+        item_div.add(" ")
         item_div.add(related_type)
         item_div.add(": ")
 

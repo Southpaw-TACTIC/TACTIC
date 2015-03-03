@@ -1079,11 +1079,11 @@ class ActionButtonWdg(DivWdg):
         my.td.add_behavior(behavior)
 
 
-    def add_style(my, name, value=None):
+    def add_style(my, name, value=None, override=True):
         if my.redirect:
-            return my.redirect.add_style(name, value)
+            return my.redirect.add_style(name, value, override=override)
 
-        super(ActionButtonWdg,my).add_style(name, value)
+        super(ActionButtonWdg,my).add_style(name, value, override=override)
 
     def add_class(my, value):
         if my.redirect:
@@ -1108,6 +1108,8 @@ class ActionButtonWdg(DivWdg):
         my.add_class("spt_button_top")
         # no need to define top
         #my.add(top)
+
+        my.add_style("margin: 0px 3px", override=False)
 
         opacity = my.kwargs.get("opacity")
         if not opacity:
@@ -1225,14 +1227,21 @@ class ActionButtonWdg(DivWdg):
 
 
 
-	if my.browser == 'Qt' and os.name != 'nt':
+        if my.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
         else:
-	    button.add_style("top: 6px")
+            button.add_style("top: 6px")
 
         # BOOTSTRAP
+        color = my.kwargs.get("color")
         button.add_class('btn')
-        button.add_class('btn-default')
+        if color:
+            if color.startswith("#"):
+                button.add_style("background", color)
+            else:
+                button.add_class('btn-%s' % color)
+        else:
+            button.add_class('btn-default')
         button.add_class('btn-sm')
         button.add_style("top: 0px")
 

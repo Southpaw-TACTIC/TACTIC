@@ -1063,21 +1063,21 @@ spt.mouse._get_body = function()
 
 spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
 {
+    var pad_left = parseInt(el_to_copy.getStyle("padding-left"));
+    var pad_right = parseInt(el_to_copy.getStyle("padding-right"));
+    var pad_top = parseInt(el_to_copy.getStyle("padding-top"));
+    var pad_bottom = parseInt(el_to_copy.getStyle("padding-bottom"));
+    /*
     var drag_copy = $(document.createElement('div'));
 
     var w = el_to_copy.clientWidth;     // clientWidth/Height work due to no padding used!
     var h = el_to_copy.clientHeight;
-
-    var pad_left = parseInt(el_to_copy.getStyle("padding-left"));
-    var pad_right = parseInt(el_to_copy.getStyle("padding-right"));
 
     w = w - pad_left - pad_right;
 
     drag_copy.setStyle( 'width', w );
     drag_copy.setStyle( 'min-width', w );
 
-    var pad_top = parseInt(el_to_copy.getStyle("padding-top"));
-    var pad_bottom = parseInt(el_to_copy.getStyle("padding-bottom"));
 
     h = h - pad_top - pad_bottom;
 
@@ -1085,27 +1085,31 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     drag_copy.setStyle( 'min-height', h );
 
     //drag_copy.innerHTML = el_to_copy.innerHTML;
+    */
     var copy = spt.behavior.duplicate_element(el_to_copy);
-    copy.inject(drag_copy, "bottom");
+    
+    //copy.inject(drag_copy, "bottom");
 
     var override_styles = "padding-left: " + pad_left + "px; padding-right: " + pad_right + "px; " +
                           "padding-top: " + pad_top + "px; padding-bottom: " + pad_bottom + "px;";
 
-    spt.css.copy_styles( el_to_copy, drag_copy, override_styles );
+    spt.css.copy_styles( el_to_copy, copy, override_styles );
 
     // apply any extra styles (extra_styling is a CSS string) ...
+    /* this creates drawing artifacts sometimes like a blank square
     var style_map = spt.get_style_map_from_str( extra_styling );
+
     for( var style in style_map ) {
         if( ! style_map.hasOwnProperty(style) ) { continue; }
-        drag_copy.setStyle( style, style_map[style] );
+        copy.setStyle( style, style_map[style] );
     }
-
-    drag_copy.setStyle( "position", "absolute" );
-    spt.show_block( drag_copy );
+    */
+    copy.setStyle( "position", "absolute" );
+    spt.show_block( copy );
 
     var global_container = $("global_container");
-    drag_copy.inject( global_container, "bottom" );
-    return drag_copy;
+    copy.inject( global_container, "bottom" );
+    return copy;
 }
 
 
@@ -1152,7 +1156,6 @@ spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
     if( ! drag_el ) {
         drag_el = spt.behavior.get_bvr_src( bvr );
     }
-
     if( bvr.cbjs_pre_motion_setup && ! bvr._pre_motion_setup_done ) {
         spt.behavior.run_cbjs( bvr.cbjs_pre_motion_setup, bvr, evt, mouse_411 );
         bvr._pre_motion_setup_done = true;
@@ -1236,13 +1239,32 @@ spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
     }
 }
 
+spt.mouse.check_parent = function(target_el, drop_code)
+{
+     var max = 4;
+     var i = 0;
+     while( target_el && i < max) {
+        if( !('getAttribute' in target_el) ) {
+            break;
+        }
+        accept_drop = target_el.getAttribute("SPT_ACCEPT_DROP");
+        if( accept_drop == drop_code ) {
+            return target_el;
+            break;
+        }
+        i += 1;
+        target_el = target_el.parentNode;
+    }
+    return false
+}
 
 spt.mouse.smart_drag_action = function( evt, bvr, mouse_411 )
 {
     // First clean up copy, if copy was used ...
     if( bvr._drag_copy_el ) {
+
         spt.mouse._delete_drag_copy( bvr._drag_copy_el );
-        delete bvr._drag_copy_el;
+        bvr._drag_copy_el = null;
     }
 
     // Reset any pre-motion setup that occurred ...

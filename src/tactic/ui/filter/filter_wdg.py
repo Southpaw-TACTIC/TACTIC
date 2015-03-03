@@ -20,6 +20,7 @@ from pyasm.widget import HiddenWdg, TextWdg, PasswordWdg, SelectWdg, FilterSelec
 
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.input import TextInputWdg
 
 from filter_data import FilterData
 
@@ -489,7 +490,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             spacing.add_style("float: left")
             spacing.add_style("width: %spx" % (incr-level*incr))
             spacing.add_style("height: 3px")
-            #spacing.add_style("border: solid 1px blue")
             spacing.add("&nbsp;")
             filter_container.add(spacing)
 
@@ -646,7 +646,6 @@ class GeneralFilterWdg(BaseFilterWdg):
         spacing.add_style("float: left")
         spacing.add_style("width: %spx" % (incr+5))
         spacing.add("&nbsp;")
-        #spacing.add_style("border: 1px solid blue")
         filter_container.add(spacing)
 
         filter_name = "filter_%s" % i
@@ -670,8 +669,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         filter_id = "%s_%s" % (my.prefix, filter_name)
         div.set_id(filter_id)
-        div.add_style("margin-left: 10px")
+        #div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
+        #div.add_style("width: 600px")
 
         # add the enable/disable checkbox
         checkbox = CheckboxWdg('%s_enabled' % my.prefix)
@@ -731,7 +731,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 related_search_type = search_type
             div.add( search_type_wdg )
 
-            spacing = DivWdg('&nbsp; - &nbsp;')
+            spacing = DivWdg('&nbsp; &nbsp;')
             spacing.add_style("float: left")
             div.add(spacing)
 
@@ -787,9 +787,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_type_wdg = my.get_filter_type_wdg(column_type, filter_index, column=column)
 
 
-        spacing = DivWdg('&nbsp;&nbsp;')
-        spacing.add_style("float: left")
-        div.add(spacing)
+        #spacing = DivWdg('&nbsp;&nbsp;')
+        #spacing.add_style("float: left")
+        #div.add(spacing)
 
  
         div.add( filter_type_wdg )
@@ -807,15 +807,15 @@ class GeneralFilterWdg(BaseFilterWdg):
         from tactic.ui.widget import ActionButtonWdg
         add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
         add_button.add_style("float: left")
-        add_button.add_style("margin-top: -2px")
+        #add_button.add_style("margin-top: -2px")
         add_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': 'spt.dg_table.add_filter(bvr.src_el)'
         } )
 
         sub_button = ActionButtonWdg(title='-', tip='Remove Filter', size='small')
-        sub_button.add_style("float: left")
-        sub_button.add_style("margin-top: -2px")
+        #sub_button.add_style("float: left")
+        #sub_button.add_style("margin-top: -2px")
         sub_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': 'spt.dg_table.remove_filter(bvr.src_el)'
@@ -827,7 +827,11 @@ class GeneralFilterWdg(BaseFilterWdg):
         else:
             top_div.add_class("spt_filter_template")
 
+        top_div.add(div)
+        top_div.add(add_button)
+        top_div.add(sub_button)
 
+        """
         horiz_layout = HorizLayoutWdg( 
             widget_map_list=[
                 {'wdg': div,'style': ""},
@@ -836,6 +840,7 @@ class GeneralFilterWdg(BaseFilterWdg):
            spacing=0, float=""
         )
         top_div.add( horiz_layout )
+        """
         return top_div
 
 
@@ -847,6 +852,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         
         filter_id = "%s_search_type" % (my.prefix)
         search_type_select = SelectWdg(filter_id)
+        search_type_select.add_style("width: 110px")
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
@@ -924,7 +930,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             print("WARNING: FilterWdg: type [%s] not supported, using 'string'" % type)
             type = 'string'
         
-        filter_span = SpanWdg()
+        filter_span = DivWdg()
+        filter_span.add_style("float: left")
         filter_span.add_class("spt_filter_type_wdg")
         filter_span.add_color("color", "color")
         
@@ -939,6 +946,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.add_style("width: 80px")
+            relation_select.add_style("float: left")
             relation_select.remove_empty_option()
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
@@ -950,10 +958,13 @@ class GeneralFilterWdg(BaseFilterWdg):
             #from tactic.ui.input import LookAheadTextInputWdg
             #value_text = LookAheadTextInputWdg(name="%s_value"%my.prefix,search_type=my.search_type, column="id")
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
-            value_text.add_style("margin-top: -2px")
-            value_text.set_option("size", "32")
+            value_text.add_style("float", "left")
+            value_text.add_style("height", "30")
+            value_text.add_style("width", "250")
+            value_text.add_style("margin", "0px 5px")
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
             
@@ -985,11 +996,15 @@ class GeneralFilterWdg(BaseFilterWdg):
             relations = ["is equal to", "is greater than", "is less than", "in", "not in", "is empty", "is not empty", "is distinct"]
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.set_option("values", relations)
+            relation_select.add_style("float", "left")
+            relation_select.add_style("width", "80px")
             relation_select.set_persist_on_submit()
             my.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
+            value_text.add_styles("float: left; width: 250; margin: 0px 5px")
             value_text.set_persist_on_submit()
 
             #behavior = {
@@ -1017,6 +1032,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             relation_select = SelectWdg("%s_relation" % my.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
+            relation_select.add_style("width: 100px")
+            relation_select.add_style("float: left")
             relation_select.set_persist_on_submit()
             my.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
@@ -1025,23 +1042,30 @@ class GeneralFilterWdg(BaseFilterWdg):
             labels = ["1 day ago", '2 days ago', '1 week ago', '1 month ago', '1 day from now', '2 days from now', '1 week from now', '1 month from now']
             another_select = SelectWdg("%s_select" % my.prefix)
             another_select.add_class('spt_time_filter')
+            another_select.add_style("width: 100px")
+            another_select.add_style("float: left")
             another_select.add_empty_option("-- Select --")
             another_select.set_option("values", options)
             another_select.set_option("labels", labels)
+            another_select.add_style("width: 80px")
             another_select.set_persist_on_submit()
             my.set_filter_value(another_select, filter_index)
             filter_span.add(another_select)
             
-            filter_span.add(SpanWdg(" or &nbsp; ", css='small spt_time_filter'))
+            or_div = DivWdg(" or &nbsp; ", css='small spt_time_filter')
+            or_div.add_style('width','20px')
+            or_div.add_style('float','left')
+            filter_span.add(or_div)
             from tactic.ui.widget import CalendarInputWdg
             value_cal = CalendarInputWdg("%s_value" % my.prefix)
             value_cal.add_class('spt_time_filter')
+            value_cal.add_style("float", "left")
 
             value_cal.set_option('show_activator', True)
             #value_cal.set_option('show_text', True)
             value_cal.set_option('show_time', True)
             
-            value_cal.get_top().add_styles('margin-top: -20px;padding-left: 20px;float: right;width: 230px') 
+            value_cal.get_top().add_styles('float: right;width: 230px') 
             value_cal.set_persist_on_submit()
             
             my.set_filter_value(value_cal, filter_index)
@@ -1065,6 +1089,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_span.add(" or ")
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
@@ -1082,6 +1107,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             op_filter = SelectWdg("%s_op" % my.prefix)
             op_filter.set_option("labels", "have|do not have|match (slow)|do not match (slow)")
             op_filter.set_option("values", "in|not in|match|do not match")
+            op_filter.add_style("float", "left")
+            op_filter.add_style("width: 80px")
             my.set_filter_value(op_filter, filter_index)
             filter_span.add(op_filter)
             filter_span.add(" ")
@@ -1109,6 +1136,8 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
             value_text = TextWdg("%s_value" % my.prefix)
+            value_text.add_class("form-control")
+            value_text.add_style("float", "left")
             value_text.set_persist_on_submit()
             my.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
@@ -1129,7 +1158,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                     if (hide_options.contains(select.value))            
                         textbox.style.display='none';
                     else
-                        textbox.style.display='inline';
+                        textbox.style.display='';
                 } else {
                     // datetime 
                     var elems = select.getParent('.spt_filter_wdg').getElements('.spt_time_filter');
@@ -1139,7 +1168,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                         }
                     else {
                          for (var i=0; i<elems.length; i++) {
-                            elems[i].style.display= 'inline';
+                            elems[i].style.display= '';
                         }
                     }
                 }
@@ -1915,7 +1944,7 @@ class HierarchicalFilterWdg(BaseFilterWdg):
 
 
 class SObjectSearchFilterWdg(BaseFilterWdg):
-
+    '''Basic Combination Search usually at the top of the Search Box'''
     def get_args_keys(my):
         return {
         'prefix': 'the prefix name for all of the input elements',
@@ -1954,23 +1983,10 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         
         my.prefix = my.kwargs.get("prefix")
-        # this name corresponds to alter_search()
-        my.text = TextWdg('%s_search_text' %my.prefix)
-        my.text.set_attr("size","50")
-        my.text.add_behavior( {
-            'type': 'keyup',
-            'cbjs_action': '''
-                var key = evt.key;
-                if (key == 'enter') {
-                    evt.stop();
-                    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                }
-            '''
-            } )
         #my.text.set_persist_on_submit(prefix=my.prefix)
         #my.set_filter_value(my.text, filter_index)
-
-
+        my.stype_columns = []
+        my.text_value = ''
 
     def get_value(my):
 
@@ -1984,6 +2000,8 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         ''' customize the search here '''
         #search.add_where("begin")
 
+        my.stype_columns = search.get_columns()
+        
         values = FilterData.get().get_values_by_index(my.prefix, 0)
         # check if this filter is enabled
         enabled = values.get("%s_enabled" % my.prefix)
@@ -1995,18 +2013,18 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         if not is_enabled:
             return
 
+        my.num_filters_enabled += 1
 
 
 
         value = my.get_value()
         if not value:
             return
-
+        my.text_value = value
         search.add_op("begin")
 
-        stype_columns = search.get_columns()
         for column in my.columns:
-            if not column in stype_columns:
+            if not column in my.stype_columns:
                 continue
 
             # id and code should be exact matches
@@ -2015,8 +2033,9 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
                     search.add_filter(column, int(value))
                 except ValueError:
                     pass
-            elif column == 'code':
+            elif column != 'keywords':
                 search.add_filter(column, value)
+
 
         #filter_string = Search.get_compound_filter(value, my.columns)
         #if filter_string:
@@ -2025,20 +2044,22 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         # add keywords
         column = 'keywords'
-        if value and column in stype_columns:
+        if value and column in my.stype_columns:
             search.add_text_search_filter(column, value)
 
         search.add_op("or")
 
+       
 
     def set_columns(my, columns):
         my.columns = columns
 
     def get_display(my):
-        widget = DivWdg()
+        widget = Table()
+        widget.add_row()
         widget.add_style("margin-left: 25px")
 
-        widget.add_style("padding: 5px")
+        widget.add_style("padding: 8px")
         # this is required
         widget.add_class("spt_search_filter")
 
@@ -2052,12 +2073,39 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 
         # this trick only works with when there is only one checkbox with this prefix
         checkbox.set_persist_on_submit(prefix=my.prefix)
-        widget.add(SpanWdg(checkbox, css='small'))
+        td = widget.add_cell(checkbox)
+        td.add_style("padding-right: 10px")
         
-        widget.add(my.text)
+        
+        if 'keywords' in my.stype_columns:
+            my.columns.append('keywords')
+        
+        # this name corresponds to alter_search()
+        name = '%s_search_text' % my.prefix
+        my.text = TextInputWdg(name=name, hint_text=', '.join(my.columns))
+        my.text.set_attr("size","50")
+        my.text.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+                var key = evt.key;
+                if (key == 'enter') {
+                    evt.stop();
+                    spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+                }
+            '''
+            } )
+        
+        
+        widget.add_cell(my.text)
+        
+        if my.text_value:
+            my.text.set_value(my.text_value)
 
-        hint = HintWdg('[ %s ] columns are used in this search as well as any entries in the keywords column.' %', '.join(my.columns))
-        widget.add(hint)
+        my.text.add_style("display", "inline")
+        
+        hint_msg = '[ %s ] columns are used in this search.' %', '.join(my.columns)
+        hint = HintWdg(hint_msg)
+        widget.add_cell(hint)
 
         return widget
 

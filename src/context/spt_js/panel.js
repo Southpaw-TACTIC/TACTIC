@@ -111,7 +111,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             var env = spt.Environment.get();
             var colors = env.get_colors();
             var fade_color = "#FFF";
-            var border = "#000";
+            var border = "#999";
             var bgcolor = "#333";
             var shadow = "#333";
             if (colors) {
@@ -124,7 +124,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             }
 
             var element = $(document.createElement("div"));
-            element.innerHTML = '<div style="border: solid 1px '+border+';background: '+bgcolor+'; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
+            element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; background: #EEE; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
             element.setStyle("margin-top", -size.y);
             element.setStyle("position", "relative");
@@ -146,7 +146,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 xelement.setStyle("opacity", "0.4");
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
-                if (callback) callback();
+                if (callback) callback(panel);
             }
 
 
@@ -287,7 +287,8 @@ spt.panel.show_progress = function(element_id) {
     }
 
     var element = $(element_id);
-    element.innerHTML = '<div style="height: 100%; font-size: 1.5em"><img src="/context/icons/common/indicator_snake.gif" border="0"> Loading ...</div>';
+   
+    element.innerHTML = '<div style="height: 100%; font-size: 1.5em" class="spt_spin"><img src="/context/icons/common/indicator_snake.gif" border="0"> Loading ...</div>';
     //element.fade('in');
 }
 
@@ -311,11 +312,13 @@ spt.panel.get_element_options = function(element) {
                 continue;
             }
 
-            var value = attr.nodeValue;
+            //var value = attr.nodeValue;
+            var value = attr.value;
             if (typeOf(value) == 'object') {
                 spt.alert( "Attribute ["+ attr.nodeName +"] is an object" );
             }
-            options[name] = attr.nodeValue;
+            //options[name] = attr.nodeValue;
+            options[name] = attr.value;
         }
     }
     return options;

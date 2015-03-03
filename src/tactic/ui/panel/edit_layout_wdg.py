@@ -130,7 +130,7 @@ class EditLayoutWdg(TableLayoutWdg):
         inner.add_smart_style("spt_header", "width", "150px")
         inner.add_smart_style("spt_header", "padding", "5px")
         border = inner.get_color("table_border")
-        inner.add_smart_style("spt_header", "border", "solid 1px %s" % border)
+        #inner.add_smart_style("spt_header", "border", "solid 1px %s" % border)
 
         inner.add_smart_style("spt_cell_edit", "background-repeat", "no-repeat")
         inner.add_smart_style("spt_cell_edit", "background-position", "bottom right")
@@ -158,19 +158,14 @@ class EditLayoutWdg(TableLayoutWdg):
                 if isinstance(title, HtmlElement):
                     title.add_style("float: left")
                 th = table.add_header(title)
-                th.add(" : ")
                 th.add_class("spt_header")
                 td = table.add_cell(widget.get_buffer_display())
                 td.add_class("spt_cell_edit")
 
 
                 if j % 2 == 0:
-                    #th.add_color("background-color", "background", -10)
-                    #td.add_color("background-color", "background", -5)
-                    tr.add_color("background-color", "background", -5)
+                    tr.add_color("background-color", "background", -1)
                 else:
-                    #th.add_color("background-color", "background", -10)
-                    #td.add_color("background-color", "background")
                     tr.add_color("background-color", "background")
 
 

@@ -16,7 +16,7 @@ __all__ = ['SObjectCalendarWdg', 'BaseCalendarDayWdg', 'TaskCalendarWdg', 'TaskC
 
 from pyasm.common import Common, jsonloads, Container
 from pyasm.biz import Pipeline
-from pyasm.search import Search
+from pyasm.search import Search, SearchType
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -34,6 +34,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         my.sobjects_index = []
         my.date = datetime.today()
         my.current_week = 0
+        my.init_color_map()
 
     # FIXME: these are a bit wonky
     def set_sobjects_index(my, indexes):
@@ -57,6 +58,108 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         div = DivWdg()
         return div
 
+    def init_color_map(my):
+        ''' initialize the color map for bg color and text color'''
+        search_type = my.kwargs.get('search_type')
+        
+        if not search_type:
+            search_type = 'sthpw/task'
+
+        # get the color map
+        from pyasm.widget import WidgetConfigView
+        color_config = WidgetConfigView.get_by_search_type(search_type, "color")
+        color_xml = color_config.configs[0].xml
+        my.color_map = {}
+        name = 'status'
+        xpath = "config/color/element[@name='%s']/colors" % name
+        text_xpath = "config/color/element[@name='%s']/text_colors" % name
+        bg_color_node = color_xml.get_node(xpath)
+        bg_color_map = color_xml.get_node_values_of_children(bg_color_node)
+
+        text_color_node = color_xml.get_node(text_xpath)
+        text_color_map = color_xml.get_node_values_of_children(text_color_node)
+        
+        # use old weird query language
+        query = bg_color_map.get("query")
+        query2 = bg_color_map.get("query2")
+        if query:
+            bg_color_map = {}
+
+            search_type, match_col, color_col = query.split("|")
+            search = Search(search_type)
+            sobjects = search.get_sobjects()
+
+            # match to a second table
+            if query2:
+                search_type2, match_col2, color_col2 = query2.split("|")
+                search2 = Search(search_type2)
+                sobjects2 = search2.get_sobjects()
+            else:
+                sobjects2 = []
+
+            for sobject in sobjects:
+                match = sobject.get_value(match_col)
+                color_id = sobject.get_value(color_col)
+
+                for sobject2 in sobjects2:
+                    if sobject2.get_value(match_col2) == color_id:
+                        color = sobject2.get_value(color_col2)
+                        break
+                else:
+                    color = color_id
+
+
+                bg_color_map[match] = color
+
+        my.color_map[name] = bg_color_map, text_color_map
+        
+    def get_color(my, sobject, index):
+
+        div = DivWdg()
+        colors = [
+            div.get_color("background3"),
+            div.get_color("background3", -10),
+            div.get_color("background3", -20),
+        ]
+
+        default_color = colors[index%3]
+
+        try:
+            color = sobject.get("color")
+            if color:
+                return color
+        except:
+            pass
+
+        bg_color, text_color = my.color_map.get('status')
+        if bg_color:
+            color_value = bg_color.get(sobject.get_value('status'))
+            
+            if color_value:
+                return color_value
+
+        pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
+        if not pipeline_code:
+            pipeline_code = "task"
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+        if not pipeline:
+            return default_color
+
+        status = sobject.get_value("status", no_exception=True)
+        process = pipeline.get_process(status)
+        if not process:
+            return default_color
+
+        color = process.get_color()
+        if not color:
+            return default_color
+        else:
+            color = Common.modify_color(color, 0)
+
+
+        return color
 
 class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
@@ -113,9 +216,9 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
             no_tasks.add("&nbsp;")
             top.add(no_tasks)
 
-            color = top.get_color("background", [-2, -10, -10])
-            top.add_style("background: %s" % color)
-            top.add_style("opacity: 0.5")
+            #color = top.get_color("background", [-2, -10, -10])
+            #top.add_style("background: %s" % color)
+            #top.add_style("opacity: 0.5")
 
         else:
             for index, sobject in enumerate(my.sobjects_index):
@@ -197,7 +300,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         if expression:
             value = Search.eval(expression, sobject, single=True)
         else:
-            context = sobject.get_value('context')
+            context = sobject.get_value('context', no_exception=True)
             if not context:
                 context = ""
 
@@ -208,8 +311,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                     name = parent.get_name()
                     parts.append(name)
 
-            description = sobject.get_value('description')
-            completion = sobject.get_value('completion')
+            description = sobject.get_value('description', no_exception=True)
+            completion = sobject.get_value('completion', no_exception=True)
             if completion:
                 completion = "%s%%" % completion
                 parts.append(completion)
@@ -241,7 +344,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         return value
 
 
-
+    """
+    # use the one from BaseCalendarDayWdg
     def get_color(my, sobject, index):
 
         div = DivWdg()
@@ -253,40 +357,26 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
         default_color = colors[index%3]
 
-        pipeline_code = sobject.get_value("pipeline_code")
+        try:
+            color = sobject.get("color")
+            return color
+        except:
+            pass
+
+        pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         if not pipeline_code:
             pipeline_code = "task"
 
 
-        """
-        parent = sobject.get_parent()
-        if not parent:
-            #return default_color
-            pipeline_code = "task"
-        else:
-            pipeline_code = parent.get_value("pipeline_code", no_exception=True)
-            if not pipeline_code:
-                #return default_color
-                pipeline_code = "task"
-        """
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
         if not pipeline:
             return default_color
 
-        """
-        process_name = sobject.get_value("process")
-        if not process_name:
-            process_name = sobject.get_value("context")
+     
 
-        # get the process
-        process = pipeline.get_process(process_name)
-        if not process:
-            return default_color
-        """
-
-        status = sobject.get_value("status")
+        status = sobject.get_value("status", no_exception=True)
         process = pipeline.get_process(status)
         if not process:
             return default_color
@@ -299,7 +389,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
 
         return color
-
+    """
 
 
     def get_week_left_wdg(my, week):
@@ -465,7 +555,11 @@ class SObjectCalendarWdg(CalendarWdg):
         'start_date_col': 'Start date column',
         'end_date_col': 'End date column',
         'handler': 'handler class to display each day',
-        'search_type': 'search type to search for'
+        'sobject_display_expr': 'display expression for each sobject',
+        'search_type': 'search type to search for',
+        'search_expr': 'Initial SObjects Expression',
+        'view': 'Day view',
+        'sobject_view': 'Day sobject view when the user clicks on each day'
     }
 
 
@@ -477,15 +571,24 @@ class SObjectCalendarWdg(CalendarWdg):
 
     def handle_search(my):
 
+        # this is an absolute expression
+        my.search_expr = my.kwargs.get("search_expr")
         my.search_type = my.kwargs.get("search_type")
         if not my.search_type:
             my.search_type = 'sthpw/task'
+        if my.search_expr:
+            search = Search.eval(my.search_expr)
 
-        my.op_filters = my.kwargs.get("filters")
-        if my.op_filters:
-            if isinstance(my.op_filters, basestring):
-                my.op_filters = eval(my.op_filters)
+        else:
+            
 
+            my.op_filters = my.kwargs.get("filters")
+            if my.op_filters:
+                if isinstance(my.op_filters, basestring):
+                    my.op_filters = eval(my.op_filters)
+            search = Search(my.search_type)
+            if my.op_filters:
+                search.add_op_filters(my.op_filters)
 
         my.start_column = my.kwargs.get('start_date_col')
         if not my.start_column:
@@ -496,9 +599,7 @@ class SObjectCalendarWdg(CalendarWdg):
             my.end_column = 'bid_end_date'
 
        
-        search = Search(my.search_type)
-        if my.op_filters:
-            search.add_op_filters(my.op_filters)
+        
 
         search.add_op('begin')
 
@@ -537,6 +638,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         search.add_order_by(my.start_column)
+        print "search: ", search.get_statement()
 
         my.sobjects = search.get_sobjects()
 
@@ -546,6 +648,10 @@ class SObjectCalendarWdg(CalendarWdg):
         super(SObjectCalendarWdg,my).init()
 
         custom_view = my.kwargs.get('view')
+        my.custom_sobject_view = my.kwargs.get('sobject_view')
+        if not my.custom_sobject_view:
+            my.custom_sobject_view = 'table'
+
         my.custom_layout = None
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
@@ -730,7 +836,6 @@ class SObjectCalendarWdg(CalendarWdg):
         my.handler.set_current_week(my.current_week)
 
         sobjects = my.date_sobjects.get(str(day))
-
         div = DivWdg()
        
         div.add_style("vertical-align: top")
@@ -781,20 +886,21 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add_style("vertical-align: top")
 
         
-
+        st_title = SearchType.get(my.search_type).get_value('title')
         if sobjects:
             #ids = "".join( [ "['id','%s']" % x.get_id() for x in sobjects ])
             ids = [ str(x.get_id()) for x in sobjects ]
             ids_filter = "['id' ,'in', '%s']" %'|'.join(ids) 
-            expression = "@SOBJECT(sthpw/task%s)" % ids_filter
+            expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
             div.add_behavior( {
                 'type': "click_up",
+                'sobject_view' : my.custom_sobject_view,
                 'cbjs_action': '''
-                var class_name = 'tactic.ui.panel.FastTableLayoutWdg';
-                var title = 'Tasks: %s';
+                var class_name = 'tactic.ui.panel.TableLayoutWdg';
+                var title = '%s: %s';
                 var kwargs = {
                     'search_type': '%s',
-                    'view': 'table',
+                    'view': bvr.sobject_view,
                     'show_insert': 'false',
                     'expression': "%s"
                 };
@@ -806,7 +912,7 @@ class SObjectCalendarWdg(CalendarWdg):
                     spt.app_busy.hide();
                 }, 200)
 
-                ''' % (str(day),my.search_type, expression ),
+                ''' % (st_title, str(day),my.search_type, expression ),
             } )
 
 

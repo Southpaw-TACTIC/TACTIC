@@ -23,6 +23,7 @@ from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
 from tactic.ui.container.smart_menu_wdg import SmartMenu
 from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 
 class SideBarPanelWdg(BaseRefreshWdg):
@@ -287,12 +288,13 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
                 hash = encodeURI( hash );
             }
             var state = {
+                mode: 'tab',
                 hash: hash,
                 element_name: options.element_name,
                 title: title
             };
             var url = "link/"+options.element_name;
-            spt.hash.set_hash( {hash: hash}, title, url );
+            spt.hash.set_hash( state, title, url );
 
         }
         else {
@@ -921,6 +923,11 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
     //}
 
     var ghost_el = $(bvr.drag_el);
+    if (!ghost_el) {
+        var ghost_el = spt.mouse._create_drag_copy( bvr.src_el );
+        bvr.drag_el = ghost_el;
+    }
+
     if( ghost_el )
     {
         // Make a clone of the source div that we clicked on to drag ...
@@ -2547,14 +2554,29 @@ class ViewPanelWdg(BaseRefreshWdg):
         'simple_search_view': {
             'description': 'View for defining a simple search',
             'type': 'TextWdg',
+            'order': 5,
             'category': 'Search'
         },
         'simple_search_visible_rows': {
             'description': 'Number of visible rows in the simple search bar',
             'type': 'TextWdg',
+            'order': 6,
             'category': 'Search'
         },
-
+        'simple_search_mode': {
+            'description': 'Display mode of simple search bar',
+            'type': 'SelectWdg',
+            'category': 'Search',
+            'order': 4,
+            'values': 'inline|hidden',
+        },
+        'simple_search_columns': {
+            'description': 'Number of columns in the simple search bar',
+            'type': 'SelectWdg',
+            'order': 7,
+            'values': '2|3|4',
+            'category': 'Search'
+        },
 
         "search_view": "search view to be displayed",
         "order_by": "order by a particular column",
@@ -2768,6 +2790,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             'empty': 'true',
             'values': 'simple|insert',
             'order': 11
+        },
+        "group_elements" : {
+            'description': 'a preset one or more columns for grouping e.g. sort_order,category',
+            'type': 'TextWdg',
+            'order': 12
         }
 
     }
@@ -2869,9 +2896,11 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = my.top
+        top.add_class("spt_view_panel_top");
+
         inner = DivWdg()
         top.add(inner)
-        top.add_class("spt_view_panel_top");
+        inner.add_style("position: relative")
 
 
         if not Container.get_dict("JSLibraries", "spt_view_panel"):
@@ -3005,6 +3034,10 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_view = my.kwargs.get('simple_search_view')
+        simple_search_mode = my.kwargs.get("mode")
+        if not simple_search_mode:
+            simple_search_mode = my.kwargs.get("simple_search_mode")
+
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             custom_simple_search_view = simple_search_view
@@ -3025,11 +3058,30 @@ class ViewPanelWdg(BaseRefreshWdg):
                 kwargs['keywords'] = my.kwargs.get("keywords")
 
             kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
+            kwargs['columns'] = my.kwargs.get("simple_search_columns")
+ 
+
+
+            show_shelf = my.kwargs.get("show_shelf")
+            if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
+                show_search = False
+            elif show_shelf in [False, 'false']:
+                show_search = True
+            else:
+                show_search = True
+            kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
 
-
+            if simple_search_mode != "inline":
+                simple_search_wdg.add_style("display: none")
+                simple_search_wdg.add_style("position: absolute")
+                simple_search_wdg.add_style("z-index: 200")
+                simple_search_wdg.add_style("top: 40px")
+                #simple_search_wdg.add_style("top: 10px")
+                simple_search_wdg.add_style("left: 10px")
+                simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 
 
@@ -3063,7 +3115,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         checkin_context = my.kwargs.get("checkin_context")
         checkin_type = my.kwargs.get("checkin_type")
         ingest_data_view = my.kwargs.get("ingest_data_view")
-
+        group_elements = my.kwargs.get("group_elements")
+        expand_mode = my.kwargs.get("expand_mode")
+        show_name_hover = my.kwargs.get("show_name_hover")
+        op_filters = my.kwargs.get("op_filters")
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3115,6 +3170,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "element_names":  my.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
+            "simple_search_mode": simple_search_mode,
             "search_dialog_id": search_dialog_id,
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
@@ -3123,9 +3179,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
+            "group_elements" : group_elements,
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
+            "expand_mode": expand_mode,
+            "show_name_hover": show_name_hover,
+            "op_filters": op_filters,
             #"search_wdg": search_wdg
             
         }
@@ -3137,8 +3197,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = my.kwargs.get("top_view")
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['styles'] = my.kwargs.get("styles")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
+            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3150,6 +3216,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3179,6 +3246,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
         else:
+            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
@@ -3372,7 +3440,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
         }
         save_button.add_behavior(behavior)
-        save_button.add_style("float: left")
 
 
         cancel_button = ActionButtonWdg(title='Cancel')
@@ -3388,13 +3455,14 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div = DivWdg(id='save_view_wdg')
         div.add_class("spt_new_view_top")
         div.add_class("spt_save_top")
-        div.add_style("width: 300px")
+        div.add_style("width: 280px")
+        div.add_style("padding: 15px")
         div.add_color("color", "color")
 
         title_div = DivWdg("View Title: ")
         title_div.add_style('width: 100px')
         div.add(title_div)
-        text = TextWdg("save_view_title")
+        text = TextInputWdg(name="save_view_title")
         div.add(text)
         text.add_behavior( {
         'type': 'change',
@@ -3416,7 +3484,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div.add(title_div)
 
         div.add(HtmlElement.br())
-        text = TextWdg("save_view_name")
+        text = TextInputWdg(name="save_view_name")
         text.add_class("spt_new_view_name")
         #text.add_style('display: none')
         text.add_class('spt_save_view_name')
@@ -3485,14 +3553,17 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
 
 
-        div.add(HtmlElement.hr() )
-        button_div = DivWdg()
-        button_div.add_style("text-align: center")
-        button_div.add(save_button)
-        button_div.add(cancel_button)
-        div.add(button_div)
-
         div.add(HtmlElement.br() )
+
+        # need to use a table for now
+        button_table = Table()
+        button_table.add_style("margin: 0px auto")
+        button_table.add_style("text-align: center")
+        button_table.add_row()
+        button_table.add_cell(save_button)
+        button_table.add_cell(cancel_button)
+        div.add(button_table)
+
         
         return div
 

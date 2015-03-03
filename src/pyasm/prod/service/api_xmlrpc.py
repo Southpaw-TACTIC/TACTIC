@@ -238,7 +238,8 @@ QUERY_METHODS = {
     #'get_related_relationship': 0,
     'test_speed': 0,
     'get_upload_file_size': 0,
-    'get_doc_link': 0
+    'get_doc_link': 0,
+    'get_interaction_count': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -606,41 +607,6 @@ class BaseApiXMLRPC(XmlrpcServer):
         # if a session container has been cached, use that
         key = ticket
         container = None
-
-        
-     
-        # TODO:
-        # We set this to false for now because these values, particularly
-        # access rules are cached.  Because of the caching, these are very
-        # difficult to reset when updated
-        """
-        reuse_container = False
-        if reuse_container:
-            container = my.session_containers.get(key)
-            container = None
-            if container:
-
-                # don't completely use the same container, but copy essentials
-                new_container = Container.create()
-                vars = [
-                    'Environment:security',
-                    'Environment:object',
-                    'WebContainer::web',
-                ]
-                for var in vars:
-                    new_container.put(var, container.info[var] )
-
-                # make sure the security object is there
-                security = Environment.get_security()
-                assert(security)
-                if security:
-                    if project_code:
-                        Project.set_project(project_code)
-                        Project.get()
-                else:
-                    container = None
-        """
-
         if not container:
 
             # start a new session and store the container
@@ -1106,6 +1072,36 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #
+    # user interaction
+    #
+    @xmlrpc_decorator
+    def add_interaction(my, ticket, key, data={}):
+
+        interaction = SearchType.create("sthpw/interaction")
+        interaction.set_value("key", key)
+        if data:
+            interaction.set_value("data", jsondumps(data))
+
+        interaction.set_user()
+        project_code = Project.get_project_code()
+        interaction.set_value("project_code", project_code)
+
+        interaction.commit()
+        sobject_dict = my._get_sobject_dict(interaction)
+        return sobject_dict
+
+
+    @xmlrpc_decorator
+    def get_interaction_count(my, ticket, key):
+        interaction = Search("sthpw/interaction")
+        interaction.add_filter("key", key)
+        return interaction.get_count()
+
+
+
+ 
+
+    #
     # Undo/Redo functionality
     #
     @trace_decorator
@@ -1325,9 +1321,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
-        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
-    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
+    def query(my, ticket, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
+        return my._query(search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects, parent_key)
+    def _query(my, search_type, filters=None, columns=None, order_bys=None, show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False, parent_key=None):
         '''
         General query for sobject information
 
@@ -1346,6 +1342,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         distinct - specify a distinct column
         return_sobjects - return sobjects instead of dictionary.  This
                 works only when using the API on the server.
+        parent_key - parent filter
 
         @return
         data - an array of dictionaries.  Each array item represents an sobject
@@ -1398,7 +1395,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if show_retired:
             search.set_show_retired(True)
-    
+
+        if parent_key:
+            search.add_parent_filter(parent_key)
 
         #import time
         #start = time.time()
@@ -2596,6 +2595,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_base_dirs(my, ticket):
         '''get all of the base directories defined on the server'''
         data = Config.get_section_values("checkin")
+        for key, value in data.items():
+            if value.strip().startswith('{'):
+                
+                try:
+                    sub_value = eval(value.strip())
+                    value = sub_value
+                    data[key] = value
+                except:
+                    pass
+
+       
         return data
 
 
@@ -3017,7 +3027,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext=''):
+    def get_preallocated_path(my, ticket, snapshot_code, file_type='main', file_name='', mkdirs=True, protocol='client_repo', ext='', checkin_type='strict'):
         '''Gets the preallocated path for this snapshot.  It not assumed that
         this checkin actually exists in the repository and will create virtual
         entities to simulate a checkin.  This method can be used to determine
@@ -3025,19 +3035,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params
         ticket - authentication ticket
-        snapshot_code: the code of a preallocated snapshot.  This can be
+        snapshot_code - the code of a preallocated snapshot.  This can be
             create by get_snapshot()
-        file_type: the type of file that will be checked in.  Some naming
+        file_type - the type of file that will be checked in.  Some naming
             conventions make use of this information to separate directories
             for different file types
-        file_name: the desired file name of the preallocation.  This information
+        file_name - the desired file name of the preallocation.  This information
             may be ignored by the naming convention or it may use this as a
             base for the final file name
-        mkdir: an option which determines whether the directory of the
+        mkdir - an option which determines whether the directory of the
             preallocation should be created
-        protocol: It's either client_repo or None. It determines whether the
+        protocol - It's either client_repo or None. It determines whether the
             path is from a client or server perspective
-        ext: force the extension of the file name returned
+        ext - force the extension of the file name returned
+        checkin_type - strict, auto , or '' can be used.. A naming entry in the naming, if found,  will be used to determine the checkin type
 
         @return
         the path where () expects the file to be checked into
@@ -3051,7 +3062,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext)
+        parent = None
+        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext, parent, checkin_type)
         return path
 
                     
@@ -3059,7 +3071,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_virtual_snapshot_path(my, ticket, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext=''):
+    def get_virtual_snapshot_path(my, ticket, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type=''):
         '''creates a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions''
         
@@ -3089,6 +3101,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         protocol: It's either client_repo, sandbox, or None. It determines whether the
             path is from a client or server perspective
         ext: force the extension of the file name returned
+        checkin_type - strict, auto, '' can be used to predetermine the checkin_type for get_preallocated_path()
 
 
         @return
@@ -3112,7 +3125,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # create a virtual snapshot
         snapshot = Snapshot.create(sobject, snapshot_type=snapshot_type, context=context, description=description, level_type=level_type, level_id=level_id, commit=False)
 
-        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext=ext)
+        path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext=ext, checkin_type=checkin_type)
         return path
 
 
@@ -3681,7 +3694,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         source_paths.append('')
                         source_paths.append('')
 
-            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type)
+            #only update versionless for the last file
+            do_update_versionless = False
+            if i == len(file_paths)-1:
+                do_update_versionless = True
+
+            checkin = FileAppendCheckin(snapshot_code, sub_file_paths, sub_file_types, keep_file_name=keep_file_name, mode=mode, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type, do_update_versionless=do_update_versionless)
             checkin.execute()
             snapshot = checkin.get_snapshot()
 
@@ -3753,8 +3771,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_object.set_value("file_name", filename)
             file_object.set_value("range", file_range)
 
-            lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
-            upload_path = "%s/%s" % (lib_dir, filename) 
+            #lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
+            #upload_path = "%s/%s" % (lib_dir, filename) 
+            upload_path = file_path
         elif mode == 'inplace':
             upload_path = os.path.dirname(file_path) + '/' + filename
             keep_file_name = True
@@ -3810,7 +3829,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_key = SearchKey.get_by_sobject(sobject)
-
         # get the level object
         if level_key:
             level = SearchKey.get_by_search_key(level_key)
@@ -3832,6 +3850,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException("Snapshot for [%s] with context [%s] is locked" % (search_key, context))
 
         paths = {}
+
         if file_type == "*":
             client_lib_paths = snapshot.get_all_client_lib_paths()
             paths['client_lib_paths'] = client_lib_paths
@@ -4228,7 +4247,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
 
-        snapshot.set_current()
+        # let SnapshotisLatestTrigger handle the rest
+        snapshot.set_value('is_current', True)
+        snapshot.commit()
+        #snapshot.set_current(update_versionless=False)
         return my._get_sobject_dict(snapshot)
 
 
@@ -4333,6 +4355,53 @@ class ApiXMLRPC(BaseApiXMLRPC):
             ret_tasks.append(task_dict)
 
         return ret_tasks
+
+
+
+    @xmlrpc_decorator
+    def get_tasks(my, ticket, search_key, process=None):
+        '''Get the tasks of an sobject
+
+        ticket - authentication ticket
+        search_key - the key identifying an sobject as registered in
+                    the search_type table.
+ 
+        @return:
+        list of tasks
+        '''
+
+        if type(search_key) == types.DictType:
+            search_key = search_key.get('__search_key__')
+        sobject = Search.get_by_search_key(search_key)
+
+        search = Search("sthpw/task")
+        search.set_parent(sobject)
+        if process:
+            search.add_filter("process", process)
+        tasks = search.get_sobjects()
+
+        ret_tasks = []
+        for task in tasks:
+            task_dict = my._get_sobject_dict(task)
+            ret_tasks.append(task_dict)
+
+        return ret_tasks
+
+
+    @xmlrpc_decorator
+    def get_task_status_colors(my, ticket):
+        '''Get all the colors for a task status
+
+        ticket - authentication ticket
+ 
+        @return:
+        dictionary of colors
+        '''
+        from pyasm.biz import Task
+        return Task.get_status_colors()
+
+
+
 
 
 
@@ -4731,7 +4800,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
  
 
     @xmlrpc_decorator
-    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}):
+    def get_widget(my, ticket, class_name, args={}, values={}, libraries={}, interaction={}):
         '''get a defined widget
 
         @params
@@ -4757,6 +4826,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp = hpy()
         hp.setrelheap()
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
 
         try:
             try:
@@ -4770,6 +4843,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+                if libraries.has_key("spt_help"):
+                    from tactic.ui.app import HelpWdg
+                    HelpWdg()
+
                 Container.put("JSLibraries", libraries)
                 Container.put("request_top_wdg", widget)
 
@@ -4779,6 +4856,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     print "BVR Count: ", Container.get('Widget:bvr_count')
                     print "Sending: %s KB" % (len(html)/1024)
                     print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+
+
+                # add interaction, if any
+                if interaction:
+                    #interaction = SearchType.create("sthpw/interaction")
+                    pass
 
                 return html
 
@@ -4910,6 +4993,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return ret_val
 
+   
+
         
     @xmlrpc_decorator
     def execute_cmd(my, ticket, class_name, args={}, values={}, use_transaction=True):
@@ -4925,6 +5010,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
+        try:
+            Ticket.update_session_expiry()
+        except:
+            pass
+        
         ret_val = {}
 
         try:
@@ -5779,6 +5869,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             ticket = my.init(ticket, reuse_container=False)
+
+            from pyasm.security import Site
+            transaction_ticket = Site.get().build_ticket(transaction_ticket)
 
             # set the server in transaction?
             my.set_transaction_state(True)

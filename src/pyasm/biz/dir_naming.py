@@ -38,12 +38,16 @@ class DirNaming(object):
         my.global_context = None
 
         my.naming_expr = None
+        my.checkin_type = ''
 
     def set_sobject(my, sobject):
         my.sobject = sobject
 
     def set_snapshot(my, snapshot):
         my.snapshot = snapshot
+
+    def set_checkin_type(my, checkin_type):
+        my.checkin_type = checkin_type
 
     def set_file_object(my, file_object):
         my._file_object = file_object
@@ -138,14 +142,14 @@ class DirNaming(object):
         my._init_file_object()
 
 
-
+        
         # get the alias from the naming, if it exists
         if not alias and my.protocol in ["file", "http"]:
             if my._file_object:
                 alias = my._file_object.get_value("base_dir_alias")
             else:
                 naming = Naming.get(my.sobject, my.snapshot)
-                if naming:
+                if naming and my.verify_checkin_type(naming):
                     alias = naming.get_value("base_dir_alias")
 
         dirs = []
@@ -178,6 +182,7 @@ class DirNaming(object):
 
         # get from db
         db_dir_name = my.get_from_db_naming(my.protocol)
+
         if db_dir_name:
             dirs.append(db_dir_name)
             return '/'.join(dirs)
@@ -222,6 +227,7 @@ class DirNaming(object):
 
         # get the default
         dirs = my.get_default(dirs)
+        
         dirname = "/".join(dirs)
 
         # remove repeated /
@@ -263,8 +269,7 @@ class DirNaming(object):
         dirs.append( project_code )
         #db_name = search_type_obj.get_database()
         #dirs.append( db_name )
-
-        from pyasm.prod.biz import ProdSetting
+        from pyasm.biz import ProdSetting
         if project_code not in ["admin", 'sthpw']:
             icon_separation = ProdSetting.get_value_by_key("use_icon_separation")           
             if not icon_separation:
@@ -369,17 +374,14 @@ class DirNaming(object):
 
 
         elif protocol == "remote":
-            # NOTE: currently needs web to do this
+            # NOTE: currently needs web to get the full http base url
             base_dir = Environment.get_env_object().get_base_url().to_string()
 
-            repo_handler = my.sobject.get_repo_handler(my.snapshot)
-            if repo_handler.is_tactic_repo():
-                sub_dir = Config.get_value("checkin", "web_base_dir")
-            else:
-                sub_dir = Config.get_value("perforce", "web_base_dir")
+       
+            sub_dir = my.get_base_dir(protocol='http', alias=alias)
+            base_dir = "%s%s" % (base_dir, sub_dir[0])
 
-            base_dir = "%s%s" % (base_dir, sub_dir)
-
+            
         elif protocol == "file":
             base_dir = Environment.get_asset_dir(alias=alias)
 
@@ -512,6 +514,14 @@ class DirNaming(object):
         return naming_util.naming_to_dir(naming_expr, my.sobject, my.snapshot, file=my._file_object, file_type=file_type)
 
 
+    def verify_checkin_type(my, naming):
+        '''verify if the naming's defined checkin_type matches the FileCheckin checkin_type'''
+        if naming and my.checkin_type:
+            checkin_type = naming.get_value('checkin_type')
+            if checkin_type and my.checkin_type != checkin_type:
+                print "mismatch checkin_type!"
+                return False
+        return True
 
     def get_from_db_naming(my, protocol):
         project_code = Project.get_project_code()
@@ -521,6 +531,9 @@ class DirNaming(object):
         # get the naming object
         naming = Naming.get(my.sobject, my.snapshot)
         if not naming:
+            return None
+
+        if not my.verify_checkin_type(naming):
             return None
 
         if protocol == 'sandbox':

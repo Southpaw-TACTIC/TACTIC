@@ -147,7 +147,7 @@ class PageHeaderWdg(Widget):
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(title='My Account', icon=IconWdg.USER, show_arrow=True)
+        button = SingleButtonWdg(title='My Account', icon="BS_USER", show_arrow=True)
         button_div = DivWdg(button)
         button_div.add_style("margin-top: -5px")
         button.add_attr('spt_nudge_menu_horiz', '-80')
@@ -364,7 +364,8 @@ class ProjectSelectWdg(BaseRefreshWdg):
             widget.add_style("float: right")
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
+        #button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
+        button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
         widget.add(button)
 
 
@@ -392,8 +393,15 @@ class ProjectSelectWdg(BaseRefreshWdg):
         menus.append(menu)
         menu.set_allow_icons(False)
 
+        show_create = my.kwargs.get("show_create")
+        if show_create in [False, 'false']:
+            show_create = False
+        else:
+            show_create = True
+
+
         security = Environment.get_security()
-        if security.check_access("builtin", "view_site_admin", "allow", default="deny") or security.check_access("builtin", "create_projects", "allow", default="deny"):
+        if show_create and (security.check_access("builtin", "view_site_admin", "allow", default="deny") or security.check_access("builtin", "create_projects", "allow", default="deny")):
             menu_item = MenuItem(type='title', label='Project Action')
             menu.add(menu_item)
 
@@ -657,7 +665,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         info_page.add("<b>Project Title:</b> &nbsp;&nbsp;")
     
-        text = TextWdg("project_title")
+        text = TextInputWdg(name="project_title")
         text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -669,7 +677,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         #text = TextInputWdg(title="project_title")
         info_page.add(text)
-        text.add_style("width: 250px")
+        text.add_style("width: 100%")
         info_page.add(HtmlElement.br(3))
         span = DivWdg()
         info_page.add(span)
@@ -696,7 +704,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
         info_page.add("<b>Project Code: &nbsp;&nbsp;</b>")
-        text = TextWdg("project_code")
+        text = TextInputWdg(name="project_code")
         #text = TextInputWdg(title="project_code")
         text.add_behavior( {
             'type': 'blur',
@@ -728,7 +736,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
         info_page.add(text)
-        text.add_style("width: 250px")
+        text.add_style("width: 100%")
         text.add_class("spt_project_code")
         info_page.add(HtmlElement.br(4))
 
@@ -750,7 +758,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         info_page.add("<b>Is Main Project? </b>")
 
         checkbox = CheckboxWdg("is_main_project")
-        default_project_code = Config.get_value("install", "default_project")
+        default_project_code = Project.get_default_project()
         info_page.add(checkbox)
         if default_project_code:
             default_project = Project.get_by_code(default_project_code)
@@ -843,8 +851,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
             spt.app_busy.hide();
         '''
         button = UploadButtonWdg(title="Browse", on_complete=on_complete) 
-        button.add_style("margin-left: auto")
-        button.add_style("margin-right: auto")
+        button.add_style("margin-left: 280px")
         image_div.add(button)
 
 
@@ -898,7 +905,6 @@ class ProjectCreateWdg(BaseRefreshWdg):
                 spt.panel.load_popup("Templates", class_name)
             '''
         } )
-        template.add_style("margin-top: -5px")
 
 
 

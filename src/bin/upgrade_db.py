@@ -29,6 +29,8 @@ if __name__ == '__main__':
     tacticversion = "2.5.0"
     project_code = None
     quiet = False
+    site = None
+    version = None
 
 
     if os.name != 'nt' and os.getuid() == 0:
@@ -38,7 +40,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "fyhp:q", ["force","yes","help","project=","quiet"])
+        opts, args = getopt.getopt(sys.argv[1:], "s:fyhp:q", ["site","force","yes","help","project=","quiet"])
     except getopt.error, msg:
         print msg
         sys.exit(2)
@@ -55,6 +57,8 @@ if __name__ == '__main__':
             project_code = a
         if o in ("-q", "--quiet"):
             quiet = True
+        if o in ("-s", "--site"):
+            site = a
    
 
     if len(args) == 0:
@@ -109,8 +113,11 @@ if __name__ == '__main__':
             print "Only y or n is accepted. Exiting..."
             sys.exit(0)
 
+
+
     # check if some projects are already in newer version
-    Batch()
+    Batch(site=site)
+
     search = Search("sthpw/project")
     if project_code:
         search.add_filter("code", project_code)

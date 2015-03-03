@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12. Client Setup</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s11.html" title="11. TACTIC Server VM" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s11.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_client_setup"></a>12. Client Setup</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_client_computer_setup_requirements"></a>12.1. Client Computer Setup Requirements</h3></div></div></div><p>The following are requirements for a client using TACTIC.</p><p><span class="strong"><strong>TACTIC Temp Directory Creation</strong></span></p><p>TACTIC needs to be able to create the TACTIC temporary directory. TACTIC
+uses this directory as scratch pad space to store temporary files.</p><p>The location of this directory depends on the client operating system:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Linux: <code class="literal">/tmp/sthpw</code>
+</li><li class="listitem">
+Windows: <code class="literal">C:/sthpw</code>
+</li><li class="listitem">
+Mac OS X: <code class="literal">/tmp/sthpw</code>
+</li></ul></div><p><span class="strong"><strong>Set environment variables</strong></span></p><p><code class="literal">$TACTIC_ASSET_DIR</code></p><p>This environment variable is used to point to the root of
+<code class="literal">asset_base_dir</code> (the directory where assets are stored). This value
+defaults to "/home/apache/assets" in the TACTIC server. On Windows
+machines, this path is usually mapped as a letter drive (for example,
+Z:\) or as a UNC path (for example, \\server\volume\directory\). This
+environment variable is set by the server on the client machine during
+loading if it does not already exist.</p><p>On a per-project basis, you can set the project setting with the keys
+"win32_client_repo_dir" and "linux_client_repo_dir" so one project can
+have its asset directory mapped to Drive Z: and another mapped to Drive
+T:.</p><p><span class="strong"><strong>Browser Plugins</strong></span></p><p>With the security concerns over Java plugin, TACTIC has lowered the use of Java plugin
+in many cases to communicate with the client
+computer’s operating system. HTML5 features, where applicable, is adopted instead.
+A good example is uploading of files.</p><p>To download the latest version of the Java plugin, go to
+<a class="ulink" href="http://www.java.com" target="_top"><span class="strong"><strong>http://www.java.com</strong></span></a></p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s11.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

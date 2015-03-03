@@ -14,6 +14,7 @@ __all__ = ["Snapshot","SnapshotType","SObjectNotFoundException"]
 
 
 import os, string, types
+import re
 
 from pyasm.common import Container, Xml, Environment, Common, Config
 from pyasm.search import *
@@ -418,7 +419,10 @@ class Snapshot(SObject):
     def get_file_code_by_type(my, type):
         '''gets the file_code'''
         xml = my.get_snapshot_xml()
-        node = xml.get_node("snapshot/file[@type='%s']"%type)
+        if type.find("'") != -1:
+            node = xml.get_node('snapshot/file[@type="%s"]'%type)
+        else:
+            node = xml.get_node("snapshot/file[@type='%s']"%type)
         if node is not None:
             return Xml.get_attribute(node, "file_code")
         else:
@@ -908,7 +912,10 @@ class Snapshot(SObject):
         '''determines whether a given file uses naming convention to find
         it's path'''
         xml = my.get_snapshot_xml()
-        use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
+        if file_type.find("'") != -1:
+            use_naming = xml.get_value('snapshot/file[@type="%s"]/@use_naming' % file_type)
+        else:
+            use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
         if use_naming == "false":
             return False
         else:
@@ -1046,24 +1053,14 @@ class Snapshot(SObject):
                 other_snapshot.commit()
 
 
-
-
-        last_current = Snapshot.get_current(search_type, search_id, context, level_type=level_type, level_id=level_id)
-        if last_current:
-            if last_current.get_search_key() == my.get_search_key():
-                return
-
-            last_current.set_value("is_current", False)
-            last_current.commit()
-
-        # if there is a versionless, point it to this snapshot
-        if update_versionless:
-            my.update_versionless("current")
+       
 
         my.set_value("is_current", True)
         if commit:
             my.commit()
 
+        if update_versionless:
+            my.update_versionless("current")
 
 
     def get_full_snapshot_xml(my):
@@ -1107,9 +1104,9 @@ class Snapshot(SObject):
 
 
         
-    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None):
+    def get_preallocated_path(my, file_type='main', file_name='', mkdir=True, protocol=None, ext='', parent=None, checkin_type=''):
         from pyasm.checkin import FileCheckin
-        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent)
+        return FileCheckin.get_preallocated_path(my, file_type, file_name, mkdir=mkdir, protocol=protocol, ext=ext, parent=parent, checkin_type=checkin_type)
 
 
 
@@ -1272,7 +1269,7 @@ class Snapshot(SObject):
     def get_snapshot(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
             level_type=None, level_id=None, level_parent_search=True,
-            process=None
+            process=None, skip_contexts=[]
             ):
         '''General snapshot function
 
@@ -1289,6 +1286,7 @@ class Snapshot(SObject):
         level_type: the sobject level at which this is checked into
         level_id: the sobject id of the level at which this is checked into
         level_parent_search: if set to True, it would try to search the snapshot of the level's parent is a level search_type, search_id are given
+        skip_contexts: list of contexts to skip
         @return
         snapshot sobject
         '''
@@ -1299,7 +1297,7 @@ class Snapshot(SObject):
             revision=revision, show_retired=show_retired,
             use_cache=False,
             level_type=level_type, level_id=level_id,
-            process=process
+            process=process, skip_contexts=skip_contexts
         )
         
 
@@ -1347,13 +1345,13 @@ class Snapshot(SObject):
 
             parent_id = parent.get_id()
 
-            snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=parent_type, level_id=parent_id)
+            snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=parent_type, level_id=parent_id, skip_contexts=skip_contexts)
             if snapshot:
                 return snapshot
 
     
         # try at the top level
-        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=process)
+        snapshot = Snapshot._get_by_version(search_type, search_id, context=context, version=0, use_cache=False, level_type=None, level_id=None, process=process, skip_contexts=skip_contexts)
         return snapshot
 
     get_snapshot = staticmethod(get_snapshot)
@@ -1372,7 +1370,7 @@ class Snapshot(SObject):
 
     def _get_by_version(search_type, search_id, context=None, version=None, \
             revision=None, show_retired=False, use_cache=True, \
-            level_type=None, level_id=None, process=None):
+            level_type=None, level_id=None, process=None, skip_contexts=[]):
         '''General snapshot function
 
         @params
@@ -1387,6 +1385,7 @@ class Snapshot(SObject):
             Set this to False is you have just checked in a file
         level_type: the sobject level at which this is checked into
         level_id: the sobject id of the level at which this is checked into
+        skip_contexts: list of contexts to skip
 
         @return
         snapshot sobject
@@ -1436,6 +1435,10 @@ class Snapshot(SObject):
         if context not in [None, '']:
             search.add_filter("context", context)
             key = '%s:%s' %(key, context)
+        if skip_contexts:
+            search.add_filters('context',skip_contexts, op='not in')
+            key = '%s:!%s' %(key, skip_contexts)
+
         if version not in [None, '', -1, "-1", 0, "0", "max"]:
             search.add_filter("version", version)
             key = '%s:%s' %(key, version)
@@ -1494,21 +1497,22 @@ class Snapshot(SObject):
 
     def get_latest(search_type, search_id, context=None, use_cache=True, \
             level_type=None, level_id=None, show_retired=False, \
-            process=None):
-        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process)
+            process=None, skip_contexts=[]):
+        snapshot = Snapshot.get_snapshot(search_type, search_id, context, use_cache=use_cache, level_type=level_type, level_id=level_id, show_retired=show_retired, version='-1', revision='-1', level_parent_search=False, process=process, skip_contexts=skip_contexts)
         return snapshot
     get_latest = staticmethod(get_latest)
 
 
 
     def get_latest_by_sobject(sobject, context=None, show_retired=False, \
-            process=None):
+            process=None, skip_contexts=[]):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code")
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
-                context=context, show_retired=show_retired, process=process \
+                context=context, show_retired=show_retired, process=process, \
+                skip_contexts=skip_contexts
         )
         return snapshot
     get_latest_by_sobject = staticmethod(get_latest_by_sobject)
@@ -1612,13 +1616,18 @@ class Snapshot(SObject):
             has_code = SearchType.column_exists(search_type, "code")
             if not has_code:
                 search_ids = []
+                use_id = True
                 for x in sobjects:
                     id = x.get_id()
                     try:
                         id = int(id)
-                        search.add_filters('search_id', search_ids)
                     except:
-                        search.add_filters('search_code', search_ids)
+                        use_id  = False
+                    search_ids.append(id)
+                if use_id:
+                    search.add_filters('search_id', search_ids)
+                else:
+                    search.add_filters('search_code', search_ids)
             else:
                 search_codes = [x.get_value("code") for x in sobjects if x]
                 search.add_filters('search_code', search_codes)
@@ -2041,7 +2050,7 @@ class Snapshot(SObject):
 
 
 
-    def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type=None):
+    def update_versionless(my, snapshot_mode='current', sobject=None, checkin_type=None, naming=None):
 
         # NOTE: no triggers a run on this operation (for performance reasons)
 
@@ -2086,7 +2095,8 @@ class Snapshot(SObject):
             if not is_latest:
                 return
 
-
+        
+        
         # if os is linux, it should be symbolic link as a default
         if os.name == 'posix':
             versionless_mode = 'symlink'
@@ -2161,8 +2171,10 @@ class Snapshot(SObject):
         file_objects = []
 
         paths = {}
+        rejected  = False
         for node in nodes:
             node_name = Xml.get_node_name(node)
+
             if node_name in  ["ref", "input_ref"]:
                 builder.copy_node(node, None)
                 continue
@@ -2170,6 +2182,7 @@ class Snapshot(SObject):
 
 
             file_name = my._get_file_name(node)
+
             file_path = "%s/%s" % (lib_dir,file_name)
             file_code = my._get_file_code(node)
             file_type = my._get_file_type(node)
@@ -2220,7 +2233,7 @@ class Snapshot(SObject):
 
         
             # build the file name
-            # ... if there is a versionless naming, use it
+            # if there is a versionless naming, use it
             if checkin_type == 'strict' or has_versionless:
                 file_naming = Project.get_file_naming()
                 file_naming.set_sobject(sobject)
@@ -2232,10 +2245,29 @@ class Snapshot(SObject):
                 dir_naming = None
             else:
                 # These naming conventions are for the versionless file, not the checked in file
-
-                # with checkin_type = auto ..
+                
                 from pyasm.biz import FileNaming
-                file_naming = FileNaming(naming_expr="{basefile}_{snapshot.process}.{ext}")
+                file_expr = FileNaming.VERSIONLESS_EXPR
+                
+                if not naming and not rejected and not has_versionless and checkin_type == 'auto':
+                   
+                    naming = Naming.get(sobject, my, file_path=file_path)
+                    # reject the naming if it is meant for strict
+                    if naming and naming.get_value('checkin_type') == 'strict':
+                        naming = None
+                        rejected = True
+            
+
+
+                if naming:
+                    file_expr = naming.get_value('file_naming')
+                    # case-insensitive v or V are considered
+                    file_expr = re.sub(r'(?i)_v{version}|_v{snapshot.version}', '' , file_expr)
+                    
+
+                
+                # with checkin_type = auto ..
+                file_naming = FileNaming(naming_expr=file_expr)
                 file_naming.set_sobject(sobject)
                 file_naming.set_snapshot(versionless)
                 file_naming.set_file_object(file_object)
@@ -2253,24 +2285,30 @@ class Snapshot(SObject):
                 else:
                     subdir = ""
 
+                if naming:
+                    dir_naming = naming.get_value('dir_naming')
+                    dir_naming = dir_naming.replace('.versions', '')
+                    if subdir:
+                        dir_naming = '%s/%s'%(dir_naming, subdir)
 
-                # build dir_naming
-                parts = []
-                parts.append("{project.code}")
-                parts.append("{search_type.table_name}")
-                if has_code:
-                    parts.append("{code}")
                 else:
-                    parts.append("{id}")
-                parts.append("{snapshot.process}")
+                    # build dir_naming
+                    parts = []
+                    parts.append("{project.code}")
+                    parts.append("{search_type.table_name}")
+                    if has_code:
+                        parts.append("{code}")
+                    else:
+                        parts.append("{id}")
+                    parts.append("{snapshot.process}")
 
-                # versionless is not in the version dir
-                #parts.append(".versions")
+                    # versionless is not in the version dir
+                    #parts.append(".versions")
 
-                if subdir:
-                    parts.append(subdir)
+                    if subdir:
+                        parts.append(subdir)
 
-                dir_naming = "/".join(parts)
+                    dir_naming = "/".join(parts)
 
 
             

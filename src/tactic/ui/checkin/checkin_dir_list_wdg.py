@@ -111,7 +111,7 @@ class CheckinDirListWdg(DirListWdg):
 
 
         my.preselected = my.kwargs.get("preselected")
-
+        my.use_applet = my.kwargs.get("use_applet")
 
 
     def add_base_dir_behaviors(my, div, base_dir):
@@ -514,6 +514,7 @@ class CheckinDirListWdg(DirListWdg):
 
         top.add_behavior( {
         'type': 'smart_click_up',
+        'use_applet': my.use_applet,
         'bvr_match_class': 'spt_dir_list_item',
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_checkin_top");
@@ -522,21 +523,27 @@ class CheckinDirListWdg(DirListWdg):
         spt.checkin_list.unselect_all_rows();
         spt.checkin_list.select(bvr.src_el);
 
-        var applet = spt.Applet.get();
 
         var path = bvr.src_el.getAttribute("spt_path");
         var checkin_type = top.getElement(".spt_checkin_type");
-        if (applet.is_dir(path)) {
-            checkin_type.value = "dir_checkin";
+        // try to disable applet
+
+        if (bvr.use_applet) {
+            var applet = spt.Applet.get();
+            if (applet.is_dir(path)) {
+                checkin_type.value = "dir_checkin";
+            }
+            else {
+                checkin_type.value = "file_checkin";
+            }
         }
-        else {
+        else
             checkin_type.value = "file_checkin";
-        }
 
         ''' %{'bg_color': bg_color, 'hilight_color': hilight_color}
         } )
 
-
+        """
         top.add_behavior( {
         'type': 'smart_click_up',
         'bvr_match_class': 'spt_dir_list_item',
@@ -563,7 +570,7 @@ class CheckinDirListWdg(DirListWdg):
         } )
 
 
-
+        """
         top.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
@@ -715,6 +722,70 @@ spt.checkin_list.select_preselected = function(){
     el.file_paths = paths;
 }
 
+// can explicitly specify a context, description
+// this is similar to spt.checkin.html5_checkin()
+spt.checkin.html5_strict_checkin = function(files, context, description) {
+    var server = TacticServerStub.get();
+
+    var options = spt.checkin.get_checkin_data();
+    var search_key = options.search_key;
+    var process = options.process;
+    if (!description)
+    	description = options.description;
+
+    var is_current = true;
+    var checkin_type = 'file';
+    var mode = 'uploaded';
+    
+    var top = spt.checkin_list.top;
+    var progress = top.getElement(".spt_checkin_progress");
+    progress.setStyle("display", "");
+
+    var upload_complete = function() {
+
+        try {
+            if (bvr.validate_script_path){
+                var script = spt.CustomProject.get_script_by_path(bvr.validate_script_path);
+                bvr['script'] = script;
+                spt.app_busy.show("Running Validation", bvr.validate_script_path);
+                spt.CustomProject.exec_custom_script(evt, bvr);
+            } 
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var file_path = file.name;
+                if (!context)
+                    context = process + '/' + file.name;
+                snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+                spt.notify.show_message("Check-in of ["+ file.name +"] successful", 4000);
+            }
+            progress.setStyle("display", "");
+
+        }
+        catch(e) {
+            progress.setStyle("background", "#F00");
+            progress.setStyle("display", "none");
+            alert(e);
+            throw(e);
+            
+        }
+
+    }
+
+    var upload_progress = function(evt) {
+
+        var percent = Math.round(evt.loaded * 100 / evt.total);
+        //spt.app_busy.show("Uploading ["+percent+"%% complete]");
+        progress.setStyle("width", percent + "%%");
+    }
+
+    var upload_kwargs = {
+        upload_complete: upload_complete,
+        upload_progress: upload_progress,
+        files: files
+    }
+    spt.html5upload.upload_file(upload_kwargs);
+
+}
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
 spt.checkin_list.set_top(top);
@@ -964,13 +1035,35 @@ spt.checkin_list.select_preselected();
             var server = TacticServerStub.get();
 
             var activator = spt.smenu.get_activator(bvr);
-            var path = activator.getAttribute("spt_path");
 
-            var context = "icon";
-            server.simple_checkin( bvr.search_key, context, path);
+            var path = activator.getAttribute("spt_path");
+            var tmps = path.split('/');
+            var base_name = tmps[1];
+            
+            //server.simple_checkin( bvr.search_key, context, path);
 
             var top = activator.getParent(".spt_checkin_top");
-            spt.panel.refresh(top);
+            var content = top.getElement(".spt_checkin_content");
+            var files = content.files;
+            var selected_file;
+
+            //find selected file
+            for (var k =0; k < files.length; k++){
+                if (files[k].name == base_name) {
+                    selected_file = files[k];
+                    break;
+                }
+            }
+            
+            if (selected_file) {
+                var context = "icon";
+                spt.checkin.html5_strict_checkin(files, context, "Icon Check-in") 
+                spt.panel.refresh(top);
+                
+            }
+            else {
+                spt.alert("Cannot determine chosen file. Please drag and drop to try again.");
+            }
             '''
         } )
 

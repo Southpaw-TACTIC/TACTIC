@@ -125,6 +125,7 @@ class ReportsWdg(BaseRefreshWdg):
             var activator = spt.smenu.get_activator(bvr);
             var report_top = activator.getParent(".spt_report_top");
             var xml = report_top.xml;
+            console.log(xml);
             alert(xml);
             '''
         } )

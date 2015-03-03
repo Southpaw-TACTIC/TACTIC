@@ -21,10 +21,11 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-
 from layout_wdg import SwitchLayoutMenu
 
 import random, types, re
+
+
 
 
 class BaseTableLayoutWdg(BaseConfigWdg):
@@ -125,7 +126,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         config = my.kwargs.get("config")
         config_xml = my.kwargs.get("config_xml")
         my.config_xml = config_xml
-
         if config_xml:
             # get the base configs
             config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
@@ -133,6 +133,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             config.get_configs().insert(0, extra_config)
 
         elif not config:
+            custom_column_configs = WidgetConfigView.get_by_type("column") 
+            
             # handle element names explicitly set
             my.element_names = my.kwargs.get("element_names")
             if my.element_names:
@@ -154,12 +156,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 config.get_configs().insert(0, extra_config)
 
 
-                config.get_configs().extend( WidgetConfigView.get_by_type("column") )
-
 
             else:
                 config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
-
+            
+            config.get_configs().extend( custom_column_configs )
         #
         # FIXME: For backwards compatibility. Remove this
         #
@@ -279,6 +280,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
+        my.simple_search_view = my.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
@@ -385,19 +387,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def alter_search(my, search):
         '''give the table a chance to alter the search'''
+       
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
-
-        keyword_values = filter_data.get_values_by_prefix("keyword")
-        if keyword_values:
-            column = "keywords"
-            keyword_value = keyword_values[0].get('value')
-            if keyword_value and search.column_exists(column):
-                from tactic.ui.filter import KeywordFilterElementWdg
-                keyword_filter = KeywordFilterElementWdg(column=column,mode="keyword")
-                keyword_filter.set_values(keyword_values[0])
-                keyword_filter.alter_search(search)
-
 
 
         # solution for state filter grouping or what not
@@ -407,11 +399,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             state_filter = my.state.get('filter')
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+
+        if my.kwargs.get('op_filters'):
+            search.add_op_filters(my.kwargs.get("op_filters"))
+
+
         # passed in filter overrides
-        """
-        if state_filter:
-            filter_data.set_data(state_filter)
-        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
         
@@ -510,9 +503,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-
     def handle_search(my):
         '''method where the table handles it's own search on refresh'''
+
+
+        from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
+
+
         if my.is_sobjects_explicitly_set():
             return
 
@@ -563,7 +561,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # custom_filter_view and custom_search_view are less used, so excluded here
             my.search_wdg = SearchWdg(search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
+        
         search = my.search_wdg.get_search()
+
+
+        from tactic.ui.filter import FilterData
+        filter_data = FilterData.get_from_cgi()
+
+        keyword_values = filter_data.get_values_by_prefix("keyword")
+
+        if keyword_values:
+
+            keyword_value = keyword_values[0].get('value')
+            if keyword_value:
+                from tactic.ui.filter import KeywordFilterElementWdg
+                keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword")
+                keyword_filter.set_values(keyword_values[0])
+                keyword_filter.alter_search(search)
+
+
         if my.no_results:
             search.set_null_filter()
 
@@ -622,7 +638,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
+        if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
+            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -820,12 +837,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         column = "keywords"
+        simple_search_mode = my.kwargs.get("simple_search_mode")
+        
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
-        if show_keyword_search and SearchType.column_exists(my.search_type,column):
+
+        # TEST: on by default
+        show_keyword_search = True
+
+
+       
+        if show_keyword_search:
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
@@ -839,12 +864,67 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 values = {}
 
+            from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
+
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=column, mode="keyword",filter_search_type=my.search_type, icon="ZOOM")
+            keyword_filter = KeywordFilterElementWdg(
+                    column=my.keyword_column,
+                    mode="keyword",
+                    filter_search_type=my.search_type,
+                    icon="",
+                    width="75",
+                    show_partial=False,
+                    show_toggle=True
+            )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
-            keyword_div.add_style("margin-top: 3px")
-            keyword_div.add_style("margin-left: 8px")
+            keyword_div.add_style("margin-top: 0px")
+            keyword_div.add_style("height: 30px")
+            keyword_div.add_style("margin-left: -6px")
+
+            keyword_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_text_input");
+                el.setStyle("width", "230px");
+                el.focus();
+                el.select();
+                '''})
+
+            if simple_search_mode != 'inline':
+                keyword_div.add_relay_behavior( {
+                    'type': 'click',
+                    'bvr_match_class': 'spt_search_toggle',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_view_panel_top");
+                    if (top) {
+                        var simple_search = top.getElement(".spt_simple_search");
+                        if (simple_search) {
+                            simple_search.setStyle("display", "");
+                            spt.body.add_focus_element(simple_search);
+                        }
+                    }
+
+                   
+
+                    '''
+                } )
+
+
+            keyword_div.add_relay_behavior( {
+                'type': 'blur',
+                'bvr_match_class': "spt_text_input",
+                'cbjs_action': '''
+                
+                var el = bvr.src_el;
+                
+                el.setStyle("width", "75px");
+
+                '''
+            } )
+
+
         else:
             keyword_div = None
 
@@ -870,26 +950,31 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # -- ITEM COUNT DISPLAY
         # add number found
-        num_div = DivWdg()
-        num_div.add_color("color", "color")
-        num_div.add_style("float: left")
-        num_div.add_style("margin-top: 0px")
-        num_div.add_style("font-size: 10px")
-        num_div.add_style("padding: 5px")
-        
-        # -- SEARCH LIMIT DISPLAY
-        # show items found even if hiding search limit tool
-        #if my.show_search_limit:
-        if my.items_found == 0 and my.search:
-            my.items_found = my.search.get_count()
+        if my.show_search_limit:
+            num_div = DivWdg()
+            num_div.add_color("color", "color")
+            num_div.add_style("float: left")
+            num_div.add_style("margin-top: 0px")
+            num_div.add_style("font-size: 10px")
+            num_div.add_style("padding: 5px")
+            
+            # -- SEARCH LIMIT DISPLAY
+            if my.items_found == 0:
+                if my.search:
+                    my.items_found = my.search.get_count()
+                elif my.sobjects:
+                    my.items_found = len(my.sobjects)
 
-        if my.items_found == 1:
-            num_div.add( "%s %s" % (my.items_found, _("item found")))
+           
+            if my.items_found == 1:
+                num_div.add( "%s %s" % (my.items_found, _("item found")))
+            else:
+                num_div.add( "%s %s" % (my.items_found, _("items found")))
+            num_div.add_style("margin-right: 0px")
+            num_div.add_border(style="none")
+            num_div.set_round_corners(6)
         else:
-            num_div.add( "%s %s" % (my.items_found, _("items found")))
-        num_div.add_style("margin-right: 0px")
-        num_div.add_border(style="none")
-        num_div.set_round_corners(6)
+            num_div = None
         
 
 
@@ -903,7 +988,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
             #limit_span.add(dialog)
-            dialog.set_as_activator(num_div, offset={'x':0,'y': -2})
+            dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
             num_div.add_class("hand")
             color = num_div.get_color("background3", -5)
@@ -949,6 +1034,82 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not show_layout_wdg =='false':
             layout_wdg = my.get_layout_wdg()
 
+        show_expand = my.kwargs.get("show_expand")
+        if show_expand in ['false', False]:
+            show_expand = False
+        else:
+            show_expand = True
+        #if show_expand in ['true', True]:
+        #    show_expand = True
+        #else:
+        #    show_expand = False
+        if not my.can_expand():
+            show_expand = False
+ 
+        expand_wdg = None
+        if show_expand:
+            from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+
+            button = ButtonNewWdg(title='Expand Table', icon='BS_FULLSCREEN', show_menu=False, is_disabled=False)
+            
+            expand_behavior = my.get_expand_behavior()
+            if expand_behavior:
+                button.add_behavior( expand_behavior )
+            else:
+                button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+
+                var version = layout.getAttribute("spt_version");
+                var headers;
+                var table = null;
+                var header_table = null;
+                if (version == '2') {
+                    spt.table.set_layout(layout);
+                    table = spt.table.get_table();
+                    headers = spt.table.get_headers();
+                    header_table = spt.table.get_header_table();
+
+                }
+                else {
+                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
+                    header_table = table;
+                    headers = layout.getElements(".spt_table_th");
+                }
+                var width = table.getStyle("width");
+               
+                // don't set the width of each column, this is simpler
+                if (width == '100%') {
+                    if (header_table) {
+                        var orig_width = header_table.getAttribute('orig_width');
+                        if (orig_width) {
+                            header_table.setStyle("width", orig_width);
+                            table.setStyle("width", orig_width);
+                            layout.setStyle("width", orig_width);
+
+                        } else {
+                            header_table.setStyle("width", "");
+                            table.setStyle("width", "");
+                        }
+                    } else 
+                        table.setStyle("width", "");
+                        
+                }
+                else {
+                    table.setStyle("width", "100%");
+                    if (header_table) {
+                        header_table.setAttribute("orig_width", header_table.getSize().x);
+                        header_table.setStyle("width", "100%");
+                    }
+                    layout.setStyle("width", "100%");
+                }
+               
+                '''
+                } )
+            expand_wdg = button
+
+
         help_alias = my.get_alias_for_search_type(my.search_type)
         from tactic.ui.app import HelpButtonWdg
         if HelpButtonWdg.exists():
@@ -959,6 +1120,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         wdg_list = []
+
+
+
+
+
+
+
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            keyword_div.add_style("margin-left: 20px")
+
 
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -974,32 +1147,33 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 10px")
+            button_div.add_style("margin-left: -6px")
             wdg_list.append({'wdg': button_div})
 
 
         if save_button:
             wdg_list.append( {'wdg': save_button} )
-
-
-        if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
+
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
 
         if my.show_search_limit:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
-            wdg_list.append( { 'wdg': num_div } )
+            if num_div:
+                wdg_list.append( { 'wdg': num_div } )
             wdg_list.append( { 'wdg': limit_span } )
         else:
-            wdg_list.append( { 'wdg': num_div } )
+            if num_div:
+                wdg_list.append( { 'wdg': num_div } )
 
         wdg_list.append( { 'wdg': spacing_divs[1] } )
 
         from tactic.ui.widget import ButtonRowWdg
         button_row_wdg = ButtonRowWdg(show_title=True)
+        extra_row_wdg = ButtonRowWdg(show_title=True)
+
         if search_button_row:
             button_row_wdg.add(search_button_row)
             if my.filter_num_div:
@@ -1012,9 +1186,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if layout_wdg:
             button_row_wdg.add(layout_wdg)
 
-
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
+        
+        if expand_wdg:
+            wdg_list.append( { 'wdg': spacing_divs[0] } )
+            wdg_list.append( { 'wdg': extra_row_wdg } )
+            extra_row_wdg.add(expand_wdg)
+
 
 
         show_quick_add = my.kwargs.get("show_quick_add")
@@ -1035,8 +1214,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
-
-        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4, float = 'left' )
+        
+        horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         xx = DivWdg()
         xx.add(horiz_wdg)
         div.add(xx)
@@ -1075,13 +1254,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.view_save_dialog:
             outer.add(my.view_save_dialog)
 
-        outer.add_style("min-width: 100px")
+        outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
         outer.add_class("spt_resizable")
 
-        div.add_style("min-width: 800px")
+        #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
+        div.add_style("margin: 0px -1px 0px -1px")
 
         
         
@@ -1124,10 +1304,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        save_button = ActionButtonWdg(title="Save", is_disabled=False)
-        save_button_top = save_button.get_top()
-        save_button_top.add_style("display", "none")
-        save_button_top.add_class("spt_save_button")
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button.add_style("display", "none")
+        save_button.add_class("spt_save_button")
+        # it needs to be called save_button_top for the button to re-appear after its dissapeared
+
+        #save_button_top.add_class("btn-primary")
+        save_button.add_style("margin-left: 10px")
 
         
         save_button.add_behavior({
@@ -1146,7 +1330,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         else {
             spt.dg_table.update_row(evt, bvr)
         }
-        bvr.src_el.getElement(".spt_save_button").setStyle("display", "none");
+        var save_button = bvr.src_el.getElement(".spt_save_button");
+        if (save_button) {
+            save_button.setStyle("display", "none");
+        }
         ''',
         })
 
@@ -1208,12 +1395,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
+            search_type_obj = SearchType.get(my.search_type)
+            search_type_title = search_type_obj.get_value("title")
+
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
             button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
+                'title': search_type_title,
                 'table_id': my.table_id,
                 #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                 'cbjs_action': '''
@@ -1226,10 +1417,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   view: bvr.view,
                   mode: 'insert',
                   //num_columns: 2,
-                  save_event: 'search_table_' + bvr.table_id
-                 
+                  save_event: 'search_table_' + bvr.table_id,
+                  show_header: false,
                 };
-                spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
                 '''%my.parent_key
 
             } )
@@ -1403,76 +1594,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button_row_wdg.add(save_button)
 
 
-        show_expand = my.kwargs.get("show_expand")
-        #if show_expand in ['false', False]:
-        #    show_expand = False
-        #else:
-        #    show_expand = True
-        if show_expand in ['true', True]:
-            show_expand = True
-        else:
-            show_expand = False
-        if not my.can_expand():
-            show_expand = False
-
-        if show_expand:
-
-            button = ButtonNewWdg(title='Expand Table', icon=IconWdg.ARROW_OUT_GRAY, show_menu=False, is_disabled=False)
-            button_row_wdg.add(button)
-            expand_behavior = my.get_expand_behavior()
-            if expand_behavior:
-                button.add_behavior( expand_behavior )
-            else:
-                button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var layout = bvr.src_el.getParent(".spt_layout");
-
-                var version = layout.getAttribute("spt_version");
-                var headers;
-                var table = null;
-                var header_table = null;
-
-                if (version == '2') {
-
-                    spt.table.set_layout(layout);
-                    table = spt.table.get_table();
-                    header_table = spt.table.get_header_table();
-                    var table_id = table.getAttribute('id');
-                    headers = header_table.getElements(".spt_table_header_" + table_id);
-                }
-                else {
-                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
-                    header_table = table;
-                    headers = layout.getElements(".spt_table_th");
-                }
-
-                var width = table.getStyle("width");
-                if (width == '100%') {
-                    table.setStyle("width", "");
-                }
-                else {
-                    table.setStyle("width", "100%");
-                }
-
-
-                for ( var i = 1; i < headers.length; i++) {
-                    var element_name = headers[i].getAttribute("spt_element_name");
-                    if (element_name == 'preview') {
-                        continue;
-                    }
-
-                    if (width == '100%') {
-                        headers[i].setStyle("width", "1px");
-                    }
-                    else {
-                        headers[i].setStyle("width", "");
-                    }
-
-                }
-                '''
-                } )
-
+        
+        
 
 
 
@@ -1483,8 +1606,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-     
-
+       
         return button_row_wdg
 
 
@@ -1804,8 +1926,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         # Order By (Descending) menu item ...
@@ -1829,8 +1951,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 spt.dg_table.search_cbk( {}, {src_el: search_order_el} );
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
 
         menu_data.append( {
@@ -1865,8 +1987,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -1899,8 +2021,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...
@@ -1926,11 +2048,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_WEEKLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
-         # Group By Week Optional menu item ...
+        # Group By Week Optional menu item ...
         menu_data.append( {
             "type": "action",
             "label": "Group By Month",
@@ -1953,10 +2075,59 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''%BaseTableLayoutWdg.GROUP_MONTHLY
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
 
+        # Group Advanced menu item ...
+        menu_data.append( {
+            "type": "action",
+            "label": "Group (Advanced)",
+
+            
+            "bvr_cb": {
+                "args": {
+                    'title': 'Group - Advanced',
+                    'search_type': my.search_type,
+                    'target_id': my.target_id
+                },
+
+                'cbjs_action':
+                '''
+                var activator = spt.smenu.get_activator(bvr);
+
+
+                    var search_group_el = activator.getParent(".spt_layout").getElement(".spt_search_group");
+                    //var group_by = activator.getProperty("spt_element_name");
+                    var group_by = search_group_el.value;
+
+                    var activator = spt.smenu.get_activator(bvr);
+                    var table = activator.getParent('.spt_table');
+                    var panel = activator.getParent('.spt_panel');
+                    var layout = activator.getParent('.spt_layout');
+                   
+
+                    if (layout.getAttribute("spt_version") == "2") {
+                        spt.table.set_layout(layout);
+                        element_names = spt.table.get_element_names();
+                    }
+                    else {
+                        element_names = spt.dg_table.get_element_names(table); 
+                    }
+                    bvr.args.element_names = element_names;
+                    
+                    bvr.args.group_by = group_by;
+
+
+                    var class_name = 'tactic.ui.panel.TableGroupManageWdg';
+                    var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                    popup.activator = activator;
+                    popup.panel = panel;
+                '''
+            },
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+        } )    
       
         menu_data.append( {
             "type": "separator"
@@ -2064,8 +2235,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
             """
@@ -2108,8 +2279,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
             """
 
@@ -2140,9 +2311,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     '''
             },
-            "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                              'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ]
-                      }
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
         
        
@@ -2161,6 +2331,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "args": {
                     'title': 'Column Manager',
                     'search_type': my.search_type,
+                    'target_id': my.target_id
                 },
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
@@ -2208,8 +2379,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                "hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
 
@@ -2219,13 +2390,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
 
+        group_columns = my.kwargs.get("group_elements")
+        
         # Remove Grouping menu item ...
         menu_data.append( {
             "type": "action",
             "label": "Remove Grouping",
             "bvr_cb": {
+                "group_elements": group_columns,
                 'cbjs_action':
                     '''
+                    if (bvr.group_elements) {
+                        spt.info('[' + bvr.group_elements +  '] has been defined for this view for grouping. Only user-controlled grouping is removed. ');
+                    }
                     var activator = spt.smenu.get_activator(bvr);
                     var el = activator.getParent(".spt_layout").getElement(".spt_search_group");
                     el.value = "";

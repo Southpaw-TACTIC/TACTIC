@@ -588,7 +588,9 @@ class CheckinButtonElementWdg(ButtonElementWdg):
                 bvr2.options = options;
                 bvr2.values = values;
                 bvr2.args = kwargs;
-                spt.popup.get_widget({}, bvr2)
+                var table_layout = spt.table.get_layout();
+                var popup = spt.popup.get_widget({}, bvr2);
+                popup.layout = table_layout;
                 spt.app_busy.hide();
             }
         }
@@ -628,6 +630,8 @@ class CheckinButtonElementWdg(ButtonElementWdg):
             search_key = SearchKey.get_by_sobject(parent)
         else:
             my.process = my.get_option('process')
+            if not my.process:
+                my.process = "publish"
             search_key = SearchKey.get_by_sobject(sobject)
 
 

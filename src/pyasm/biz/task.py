@@ -29,13 +29,13 @@ from dateutil import parser
 
 TASK_PIPELINE = '''
 <pipeline type="serial">
-  <process completion="0" color="#ffc500" name="Assignment"/>
-  <process completion="10" color="#34def2" name="Pending"/>
-  <process completion="20" color="#01949b" name="In Progress"/>
-  <process completion="20" color="#4212ae" name="Waiting"/>
-  <process completion="30" color="#4212ae" name="Need Assistance"/>
-  <process completion="80" color="#ff0800" name="Review"/>
-  <process completion="100" color="#00c611" name="Approved"/>
+  <process completion="0" color="#ecbf7f" name="Assignment"/>
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="20" color="#e9e386" name="In Progress"/>
+  <process completion="20" color="#a96ccf" name="Waiting"/>
+  <process completion="30" color="#a96ccf" name="Need Assistance"/>
+  <process completion="80" color="#e84a4d" name="Review"/>
+  <process completion="100" color="#a3d991" name="Approved"/>
   <connect to="Review" from="Need Assistance"/>
   <connect to="In Progress" from="Pending"/>
   <connect to="Pending" from="Assignment"/>
@@ -45,16 +45,30 @@ TASK_PIPELINE = '''
 </pipeline>
 '''
 
+
+APPROVAL_PIPELINE = '''
+<pipeline type="serial">
+  <process completion="10" color="#8ad3e5" name="Pending"/>
+  <process completion="50" color="#e84a4d" name="Revise"/>
+  <process completion="100" color="#a3d991" name="Approved"/>
+  <connect to="Approved" from="Pending"/>
+  <connect to="Revise" from="Pending"/>
+  <connect to="Approved" from="Needs Work"/>
+</pipeline>
+
+'''
+
+
 default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
 OTHER_COLORS = {
-    "Complete": "#00c611",
-    "Done":     "#00c611",
-    "Final":    "#00c611",
-    "Revise":   "#ff0800",
-    "Ready":    "#34def2",
-    "In-Progress":"#34def2",
+    "Complete": "#a3d991",
+    "Done":     "#a3d991",
+    "Final":    "#a3d991",
+    "Revise":   "#e84a4d",
+    "Ready":    "#a3d991",
+    "In_Progress":"#e9e386",
 }
 
 
@@ -84,21 +98,43 @@ class Task(SObject):
         for node in nodes:
             process = Xml.get_attribute(node, "name")
             color = Task.get_default_color(process)
-            Xml.set_attribute(node, "color", color)
+            if color:
+                Xml.set_attribute(node, "color", color)
 
         return xml.to_string()
     get_default_task_xml = staticmethod(get_default_task_xml)
 
 
+    def get_default_approval_xml():
+        global APPROVAL_PIPELINE
+
+        from pyasm.web import Palette
+        palette = Palette.get()
+        xml = Xml()
+        xml.read_string(APPROVAL_PIPELINE)
+        nodes = Xml.get_nodes(xml, "pipeline/process")
+        for node in nodes:
+            process = Xml.get_attribute(node, "name")
+            color = Task.get_default_color(process)
+            if color:
+                Xml.set_attribute(node, "color", color)
+
+        return xml.to_string()
+    get_default_approval_xml = staticmethod(get_default_approval_xml)
+
+
+
+
+
     def get_default_color(process):
         global default_xml
         global OTHER_COLORS
-        node = default_xml.get_node("pipeline/process[@name='%s']" % process)
+        node = default_xml.get_node("pipeline/process[@name='%s']" % process.title())
         if node is None:
-            return OTHER_COLORS.get(process)
+            return OTHER_COLORS.get(process.title())
         color = default_xml.get_attribute(node, "color")
         if not color:
-            color = OTHER_COLORS.get(process)
+            color = OTHER_COLORS.get(process.title())
 
         from pyasm.web import Palette
         theme = Palette.get()
@@ -107,6 +143,34 @@ class Task(SObject):
 
         return color
     get_default_color = staticmethod(get_default_color)
+
+
+
+    def get_status_colors():
+
+        status_colors = {}
+
+        task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
+        task_pipelines.append( Pipeline.get_by_code("task") )
+        task_pipelines.append( Pipeline.get_by_code("approval") )
+        if task_pipelines:
+            for task_pipeline in task_pipelines:
+                processes = task_pipeline.get_processes()
+                pipeline_code = task_pipeline.get_code()
+                status_colors[pipeline_code] = {}
+                for process in processes:
+                    process_dict = status_colors.get(pipeline_code)
+                    color = process.get_color()
+                    if not color:
+                        color = Task.get_default_color(process.get_name())
+
+                    process_dict[process.get_name()] = color
+
+        return status_colors
+
+    get_status_colors = staticmethod(get_status_colors)
+
+
 
 
     def get_default_processes():
@@ -151,6 +215,12 @@ class Task(SObject):
                 if pipeline:
                     attributes = pipeline.get_process_attrs(task_process)
                     pipeline_code = attributes.get('task_pipeline')
+                    if not pipeline_code:
+                        node_type = attributes.get('type')
+                        if node_type == "approval":
+                            pipeline_code = "approval"
+                        elif node_type == "task":
+                            pipeline_code = "approval"
 
 
 
@@ -236,14 +306,19 @@ class Task(SObject):
         if not pipeline:
             pipeline = SearchType.create("sthpw/pipeline")
             pipeline.set_value("code", pipe_code)
-            pipeline.set_value("pipeline", task.get_default_task_xml())
+            pipeline.set_value("pipeline", Task.get_default_task_xml())
 
         return pipeline
 
     def get_completion(my):
         pipeline = my.get_pipeline()
         status = my.get_value("status")
+        if not status:
+            return 0
         process = pipeline.get_process(status)
+        if not process:
+            return 0
+
         completion = process.get_completion()
         if completion:
             return int(completion)
@@ -282,7 +357,7 @@ class Task(SObject):
                 parent = my.get_parent()
             except Exception, e:
                 print "WARNING: ", e
-                parent = Project.get_project()
+                parent = Project.get()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
             else:
@@ -312,7 +387,7 @@ class Task(SObject):
         bid_start_date = my.get_value("bid_start_date")
         bid_end_date = my.get_value("bid_end_date")
 
-        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
 
@@ -408,7 +483,7 @@ class Task(SObject):
         return tasks
 
 
-    def get_output_tasks(my):
+    def get_output_tasks(my, type=None):
 
         process = my.get_value("process")
         parent = my.get_parent()
@@ -422,7 +497,7 @@ class Task(SObject):
         if not pipeline:
             return []
 
-        processes = pipeline.get_output_processes(process)
+        processes = pipeline.get_output_processes(process, type=type)
         if not processes:
             return []
 
@@ -765,7 +840,7 @@ class Task(SObject):
         start_date = Date()
         start_date.add_days(start_offset)
         
-        bid_duration_unit = ProdSetting.get_by_key("bid_duration_unit")
+        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
 

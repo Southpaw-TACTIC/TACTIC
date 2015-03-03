@@ -311,7 +311,7 @@ class DialogWdg(BaseRefreshWdg):
 
         anchor_wdg = SpanWdg()
         drag_div.add(anchor_wdg)
-        anchor_wdg.add_style("margin: 3px 1px 3px 1px")
+        anchor_wdg.add_style("margin: 5px 5px 3px 1px")
         anchor_wdg.add( IconWdg("Anchor Dialog", "BS_PUSHPIN") )
         anchor_wdg.add_style("float: right")
         anchor_wdg.add_class("hand")

@@ -76,7 +76,7 @@ display class, it will adopt the one defined here-->
         </display>
     </element>
 
-    <element name='delete' title=" " edit="false" width="1px">
+    <element name='delete' title=" " edit="false" width="30px">
         <display class='tactic.ui.table.DeleteElementWdg'/>
     </element>
 

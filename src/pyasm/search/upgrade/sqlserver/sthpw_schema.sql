@@ -70,7 +70,7 @@ CREATE TABLE queue (
     login nvarchar(30) NOT NULL,
     "timestamp" datetime2(6) DEFAULT (getdate()) NOT NULL,
     command nvarchar(200) NOT NULL,
-    serialized nvarchar(256) NOT NULL,
+    serialized nvarchar(256),
     s_status nvarchar(30),
     project_code nvarchar(100),
     search_id integer,
@@ -659,6 +659,8 @@ INSERT INTO search_object (code, search_type, namespace, description, "database"
 
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/widget_config', 'config/widget_config', 'config', 'Widget Config', '{project}', 'widget_config', 'pyasm.search.WidgetDbConfig', 'Widget Config', 'public');
+
+INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 
 INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/custom_script', 'config/custom_script', 'config', 'Custom Script', '{project}', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 

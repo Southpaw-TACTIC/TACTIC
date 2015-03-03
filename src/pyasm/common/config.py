@@ -114,6 +114,7 @@ class Config(Base):
 
 
     def get_section_values(section_name):
+        '''Get the nodes in a section of an xml as dictionary of name:value pair'''
         xml_data = Config.get_xml_data()
         xpath = "config/%s" % section_name
         node = xml_data.get_node(xpath)
@@ -152,6 +153,8 @@ class Config(Base):
         
         if isinstance(value, int):
             value = str(value)
+        elif isinstance(value, dict):
+            value = jsondumps(value)
         elif value.startswith('{'):
             try:
                 value = eval(value)

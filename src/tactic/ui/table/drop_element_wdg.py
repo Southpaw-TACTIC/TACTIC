@@ -22,6 +22,7 @@ from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project
 from pyasm.prod.biz import ShotInstance
 from pyasm.widget import HiddenWdg, IconWdg
+from pyasm.biz import ExpressionParser
 
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -59,6 +60,10 @@ class DropElementWdg(SimpleTableElementWdg):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
     """
+
+
+    def get_width(my):
+        return 150
 
     
     def _get_sorted_instances(my):
@@ -105,9 +110,7 @@ class DropElementWdg(SimpleTableElementWdg):
     def handle_tr(my, tr):
         # define the drop zone
         version = my.parent_wdg.get_layout_version()
-        if version == "2":
-            accepted_type = my.get_option("accepted_drop_type")
-            my.add_drop_behavior(tr, accepted_type)
+        
 
 
 
@@ -185,6 +188,17 @@ class DropElementWdg(SimpleTableElementWdg):
             'cbpy_action': py_callback,
         } )
 
+        widget.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            var orig_border_color = bvr.src_el.getAttribute('orig_border_color');
+            var orig_border_style = bvr.src_el.getAttribute('orig_border_style');
+                bvr.src_el.setStyle('border-color', orig_border_color)
+                bvr.src_el.setStyle('border-style', orig_border_style)
+                '''
+            })
+
+
     def get_text_value(my): 
         sorted_instances = my._get_sorted_instances()
         names = ''
@@ -214,8 +228,8 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
         version = my.parent_wdg.get_layout_version()
-        if version != "2":
-            my.add_drop_behavior(div, accepted_type)
+        #if version != "2":
+        my.add_drop_behavior(div, accepted_type)
 
 
 
@@ -273,7 +287,6 @@ class DropElementWdg(SimpleTableElementWdg):
             # no need for that
             #item_div.add('&nbsp;')
             content_div.add(item_div)
-
         value_wdg = my.get_value_wdg()
         json = jsondumps(my.values)
         json = json.replace('"', '&quot;')
@@ -287,6 +300,7 @@ class DropElementWdg(SimpleTableElementWdg):
     def get_item_div(my, sobject):
         ''' get the item div the sobject'''
         top = DivWdg()
+        top.add_style("padding: 3px 2px")
         top.add_attr('title','Click to remove')
         # FIXME: put this here for now
         top.add_behavior( {
@@ -312,6 +326,7 @@ class DropElementWdg(SimpleTableElementWdg):
         item_div.add_class("spt_drop_display_value")
 
         add_icon = True
+        ExpressionParser.clear_cache()
         if sobject:
             if add_icon:
                 my._add_icon(sobject, item_div)
@@ -405,44 +420,69 @@ spt.drop.src_el = null;
 spt.drop.sobject_drop_setup = function( evt, bvr )
 {
     var ghost_el = $("drag_ghost_copy");
-    if (ghost_el) {
-        ghost_el.setStyle("width","auto");
-        ghost_el.setStyle("height","auto");
-        ghost_el.setStyle("text-align","left");
+    if (!ghost_el) {
+        ghost_el =  new Element('div', {
+			styles: {
+				background: '#393950',
+                                color: '#c2c2c2',
+                                border: 'solid 1px black',
+                                textAlign: 'left',
+                                padding: '10px',
+                                filter: 'alpha(opacity=60)',
+                                opacity: '0.6',
+                                position: 'absolute', 
+                                display: 'none', 
+                                left: '0px', top: '0px',
+                                zIndex: '400'
+                                    
+			},
+            element_copied: '_NONE_',
+			id: 'drag_ghost_copy',
+            class: 'SPT_PUW'
+		});
+            ghost_el.inject(document.body);
+            bvr.drag_el = ghost_el
     }
 
+    ghost_el.setStyle("width","auto");
+    ghost_el.setStyle("height","auto");
+    ghost_el.setStyle("text-align","left");
+    
     // Assumes that source items being dragged are from a DG table ...
     //var src_el = bvr.src_el; 
     var src_el = spt.behavior.get_bvr_src( bvr );
     spt.drop.src_el = src_el;
 
     var src_table_top = src_el.getParent(".spt_table_top");
-    var src_table = src_table_top.getElement(".spt_table");
-    var src_search_keys = spt.dg_table.get_selected_search_keys(src_table);
-
+    var src_layout = src_table_top.getElement(".spt_layout");
+   
+    spt.table.set_layout(src_layout);
+    
+    var src_search_keys = spt.table.get_selected_codes();
+  
 
     if (src_search_keys.length == 0) {
         // if items aren't selected in the table then just get the specific row that was dragged ...
+        var server = TacticServerStub.get();
         var row = src_el.getParent(".spt_table_row");
-        var src_search_key = row.getAttribute("spt_search_key");
-        if (src_search_key != null) {
-            src_search_keys = [src_search_key];
-        }
-        else {
-            var tbody = src_el.getParent(".spt_table_tbody");
-            src_search_keys = [ tbody.get("id").split("|")[1] ];
+        var src_search_key = row.getAttribute("spt_search_key_v2");
+        var tmps = server.split_search_key(src_search_key)
+        if (tmps && tmps[1] != null) {
+            src_search_keys = [tmps[1]];
         }
     }
 
-    var inner_html = [ "<i><b>--- Drop Package Contents ---</b></i><br/><pre>" ];
+    var inner_html = [ "<i><b>--- Drop Contents ---</b></i><br/><pre>" ];
     for( var c=0; c < src_search_keys.length; c++ ) {
         var search_key = src_search_keys[c];
+        if (!search_key) continue;
+
         if( search_key.indexOf("-1") != -1 ) {
             continue;
         }
-        inner_html.push( "    " + search_key.strip() );
+        inner_html.push( "  " + search_key.strip() );
         if( c + 1 < src_search_keys.length ) {
-            inner_html.push( "\\\n" );
+            inner_html.push( "<br>" );
         }
     }
     inner_html.push("</pre>");
@@ -450,6 +490,7 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
     if (ghost_el) {
         ghost_el.innerHTML = inner_html.join("");
     }
+    
 }
 
 
@@ -457,18 +498,32 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
 //
 spt.drop.sobject_drop_action = function( evt, bvr )
 {
-    //var src_el = bvr._drop_source_bvr.src_el; 
-    var src_el = spt.drop.src_el;
-    spt.drop.src_el = null;
-    var dst_el = bvr.src_el;
+    
+    // depending if the drag bvr use_copy attr, the src_el changes
+    var src_el = bvr._drop_source_bvr ? spt.drop.src_el: bvr.src_el;
+    
+    if( bvr._drag_copy_el ) {
    
+        spt.mouse._delete_drag_copy( bvr._drag_copy_el );
+        delete bvr._drag_copy_el;
+    }
+    //var dst_el = bvr.src_el;
+    var dst_el = spt.get_event_target(evt);
+  
+    // sometimes, spt.drop.src_el is cleared during motion for unknown reasons.
+    if (!src_el)
+        src_el = spt.behavior.get_bvr_src( bvr );
+
     if (!src_el)
         return;
+    
+    
+    spt.drop.src_el = null;
     var dst_layout = dst_el.getParent(".spt_layout");
     var src_layout = src_el.getParent(".spt_layout");
 
     // backwards compatibiity to old table
-    var dst_version = dst_layout.getAttribute("spt_version");
+    var dst_version = dst_layout? dst_layout.getAttribute("spt_version") : '2';
     if (dst_version != "2") {
         return spt.dg_table_action.sobject_drop_action(evt, bvr);
     }
@@ -482,7 +537,7 @@ spt.drop.sobject_drop_action = function( evt, bvr )
         return;
     }
 
-
+    
     spt.drop.add_src_to_dst(src_el, dst_el);
 }
  
@@ -491,6 +546,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
 {
     // get all the source items
     var src_layout = src_el.getParent(".spt_layout");
+
     if (!src_layout) {
         log.warning("The source table is not the matching fast table layout.");
         return;
@@ -510,7 +566,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
     for (var i = 0; i < src_rows.length; i++) {
         var row = src_rows[i];
 
-        var search_key = row.getAttribute("spt_search_key");
+        var search_key = row.getAttribute("spt_search_key_v2");
         src_search_keys.push(search_key);
 
         var display_value = row.getAttribute("spt_display_value");
@@ -538,7 +594,8 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
 
     for (var i=0; i < dst_rows.length; i++){
         var top_el = dst_rows[i].getElement(".spt_drop_element_top");
-        spt.drop.clone_src_to_droppable(top_el, src_search_keys, src_display_values);
+        if (top_el)
+            spt.drop.clone_src_to_droppable(top_el, src_search_keys, src_display_values);
     }
 
 }
@@ -562,6 +619,13 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
     for (var i=0; i<src_search_keys.length; i++) {
         var src_search_key = src_search_keys[i];
         var src_display_value = src_display_values[i];
+
+        if (value.indexOf(src_search_key) != -1) {
+            alert("Item ["+src_display_value+"] already present");
+            continue;
+        }
+
+
 
         var clone = spt.behavior.clone(template);
         var item = clone.getElement(".spt_drop_display_value");

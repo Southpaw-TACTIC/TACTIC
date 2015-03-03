@@ -194,9 +194,15 @@ class SnapshotDirListWdg(DirListWdg):
             'bvr_match_class': 'spt_dir_list_item',
             'cbjs_action': '''
             var path = bvr.src_el.getAttribute("spt_path");
+            
+            if (path.indexOf('####') != -1) {
+                spt.info('Cannot open the file sequence');
+            } 
+            else {
             var asset_dir = '%s';
             var url = "/assets/" + path.replace(asset_dir, "");
             window.open(url);
+            }
             ''' % asset_dir
             } )
 
@@ -670,7 +676,7 @@ class SObjectDirListWdg(DirListWdg):
 
         top = my.top
         top.add_style("padding: 10px")
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background")
         top.add_style("min-width: 500px")
         top.add_style("font-size: 12px")
         top.add_class("spt_sobject_dir_list_top")
@@ -685,8 +691,8 @@ class SObjectDirListWdg(DirListWdg):
             title_wdg = DivWdg()
             inner.add(title_wdg)
             title_wdg.add("File Browser [%s]" % my.sobject.get_code())
-            title_wdg.add_gradient("background", "background3")
-            title_wdg.add_style("padding: 5px")
+            title_wdg.add_color("background", "background3")
+            title_wdg.add_style("padding: 16px 10px")
             title_wdg.add_style("margin: -10px -10px 10px -10px")
             title_wdg.add_style("font-weight: bold")
 
@@ -722,10 +728,14 @@ class SObjectDirListWdg(DirListWdg):
 
         div = DivWdg()
 
+        filter_table = Table()
+        div.add(filter_table)
+        filter_table.add_row()
+
+
         button = SingleButtonWdg(title="Refresh", icon=IconWdg.REFRESH)
-        div.add(button)
-        button.add_style("float: left")
-        div.add("&nbsp;"*5)
+        filter_table.add_cell(button)
+        filter_table.add_cell("&nbsp;"*5)
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -746,25 +756,27 @@ class SObjectDirListWdg(DirListWdg):
 
 
 
-        div.add("Process: ")
+        filter_table.add_cell("Process: ")
         select = SelectWdg("process")
+        select.add_style("width: 200px")
         if process != 'all':
             select.set_value(process)
 
         select.set_option("values", processes)
 
-        div.add(select)
+        filter_table.add_cell(select)
 
 
 
-        div.add("&nbsp;"*10)
+        filter_table.add_cell("&nbsp;"*10)
 
-        div.add("Versions: ")
+        filter_table.add_cell("Versions: ")
         select = SelectWdg("versions")
+        select.add_style("width: 200px")
         select.set_option("values", "latest|current|today|last 10|all")
         if versions:
             select.set_value(versions)
-        div.add(select)
+        filter_table.add_cell(select)
 
 
         asset_dir = Environment.get_asset_dir()
@@ -997,6 +1009,19 @@ class SnapshotMetadataWdg(BaseRefreshWdg):
 __all__.append("PathMetadataWdg")
 class PathMetadataWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+        "search_key": {
+            'description': "Search key used to extract metadata from",
+            'type': 'TextWdg',
+            'order': 0,
+        },
+        "path": {
+            'description': "Path of image to be used to extract metadata",
+            'type': 'TextWdg',
+            'order': 1,
+        },
+    }
+ 
     def get_display(my):
 
         search_key = my.kwargs.get("search_key")

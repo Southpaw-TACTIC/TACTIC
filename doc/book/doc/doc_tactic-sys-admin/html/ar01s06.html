@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>6. Server Configuration</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="up" href="index.html" title="TACTIC System-Admin Documentation" /><link rel="prev" href="ar01s05.html" title="5. Install Database" /><link rel="next" href="ar01s07.html" title="7. Fileserver" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_server_configuration"></a>6. Server Configuration</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_configure_the_tactic_service"></a>6.1. Configure the TACTIC Service</h3></div></div></div><p>For development, test, or evaluation purposes, there is no need to run
+TACTIC as a service. The <code class="literal">startup_dev.py</code> script should suit these
+purposes adequately. However, for production, it is highly recommended
+to run TACTIC as a service.</p><p>In the <code class="literal">&lt;TACTIC_INSTALL_DIR&gt;/src/install</code> directory, there is a
+directory called <code class="literal">service</code>, with two files:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /></colgroup><tbody><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="" align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_configuring_ssl"></a>6.2. TACTIC Configuring SSL</h3></div></div></div><p>This document discusses security layers that can be implemented on top
+of the TACTIC service.</p><p><span class="strong"><strong>Services covered</strong></span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Apache HTTP server
+</li><li class="listitem">
+IIS HTTP server
+</li><li class="listitem">
+PPTP server
+</li><li class="listitem">
+IPsec
+</li></ul></div><p>Southpaw Technology does not provide any support, either direct or
+implied, for remote access.</p><p>Any application that is put on a public network can potentially be
+compromised, even with rigorous security testing. TACTIC, in its current
+version, has not been production tested for security scenarios outside
+of completely trusted networks like intranets. This document does not
+make any claims that TACTIC has any level of security beyond what its
+current architecture design allows.</p><p>TACTIC is a bandwidth-intensive application, and client-server
+performance will be affected by any number of network issues between the
+client and the server.</p><p>There are numerous elements of functionality that go beyond utilizing
+HTTP port access in enterprise applications of TACTIC. Many 3rd party
+applications that communicate with TACTIC will produce unexpected
+behavior when utilized in a fashion that was not intended for the
+product, such as use in remote applications.</p><p><span class="strong"><strong>TACTIC on public networks</strong></span></p><p>HTTP transport co-services can be configured to provide authentication
+services to TACTIC.</p><p><span class="strong"><strong>HTTP zone access</strong></span></p><p>The simplest form of HTTP security authentication zone access. To enable
+different security scenarios, the HTTP service must be configured for
+use of these scenarios. Configuration files (usually called .htaccess
+files) contain a number of settings that can be used for integrating the
+application with the capabilities of the Web server.</p><p>When enabling password zone access, the password is transmitted to the
+server in cleartext, unless TLS is enabled.</p><p><span class="strong"><strong>Apache</strong></span></p><p>Apache uses either directives for directory access in the httpd.conf
+file, or can be enabled on a per-directory basis, with the use of a
+.htaccess file. Either way can be used. Apache provides modules for
+LDAP, MySQL, flat-file, ADS, and many other authentication mechanisms.</p><p><span class="strong"><strong>IIS</strong></span></p><p>IIS can be configured at the top level through the IIS snap-in, or by
+individual configuration file. IIS 7 uses a file called Web.config to
+hold settings for integration with applications. The Web.config file
+contains information that control module loading, security
+configuration, session state configuration, and application language and
+compilation settings.</p><p><span class="strong"><strong>Overview</strong></span></p><p>TACTIC can be configured to use the SSL transport layer. This layer is
+independent of the TACTIC service, and can be tailored to the needs of
+the deployment without major changes to the TACTIC service.</p><p>Both major HTTP servers can be configured for SSL support. There are
+many materials online available for configuration of the various flavors
+of these two major HTTP service projects.</p><p>Since there are many different versions of these servers, a simple
+search of “Windows 2003 IIS SSL�? as an example will yield many HOWTOs
+and configuration references. Please consult the documentation for these
+services.</p><p>The configuration examples that have been set out below are by no means
+complete. Depending on the HTTP service used, and the platform used,
+these examples may not be enough set directives or steps to properly
+complete the SSL process. They are given as guides.</p><p><span class="strong"><strong>Steps</strong></span></p><p>The major steps to utilizing SSL in with TACTIC are</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Enabling TACTIC to converse with SSL
+</li><li class="listitem">
+Enabling the SSL service
+</li><li class="listitem">
+Creating a Virtual Server, or extending the existing server to accept
+SSL
+</li><li class="listitem">
+Providing CA certificates
+</li></ul></div><p><span class="strong"><strong>Configuration</strong></span></p><p><span class="strong"><strong>TACTIC configuration</strong></span></p><p>The SSL HTTP layer is kept separate from TACTIC via a proxy, so the only
+configuration change required of TACTIC is in the tactic_(OS).conf file.
+The &lt;security&gt;&lt;protocol&gt; directive must tell TACTIC to expect an SSL
+delivery.</p><pre class="screen">&lt;security&gt;
+    &lt;protocol&gt;https&lt;/protocol&gt;
+&lt;/security&gt;</pre><p>The setting can be set to either “http�? or “https�?.</p><p><span class="strong"><strong>Apache</strong></span></p><p>The apache project uses mod_ssl as a modular way of inserting SSL
+capabilities into the HTTP service.</p><p>The example OS is Fedora 11. “Yum�? is used to add SSL to apache.</p><pre class="screen">[root@lindsay conf.d]# yum install mod_ssl
+Loaded plugins: refresh-packagekit
+…
+Complete!
+[root@lindsay conf.d]#</pre><p>Once mod_ssl is added, the Apache configuration should contain at least
+these directives. The example directives are contained in
+conf.d/ssl.conf in the Fedora 11 example. File locations will vary
+according to OS.</p><pre class="screen">LoadModule ssl_module modules/mod_ssl.so
+Listen 443
+
+SSLPassPhraseDialog  builtin
+SSLSessionCache         shmcb:/var/cache/mod_ssl/scache(512000)
+SSLSessionCacheTimeout  300
+SSLMutex default
+SSLRandomSeed startup file:/dev/urandom  256
+SSLRandomSeed connect builtin
+SSLCryptoDevice builtin
+&lt;VirtualHost _default_:443&gt;
+SSLEngine on
+SSLProtocol all -SSLv2
+SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+SLCertificateFile /etc/pki/tls/certs/localhost.crt
+SSLCertificateFile /etc/pki/tls/certs/localhost.crt
+SSLCertificateKeyFile /etc/pki/tls/private/localhost.key</pre><p>As soon as its added and the server is restarted, the SSL service
+becomes available on the network interface that apache is running on.</p><p><span class="strong"><strong>IIS</strong></span></p><p>IIS can be configured at the top level through the IIS snap-in, or by
+individual configuration file.</p><p>To configure SSL on a Web server or a Web site</p><p>\1. In IIS Manager, double-click the local computer, and then
+double-click the Web Sites folder. 2. Right-click the Web site or file
+that you want to protect with SSL, and then click Properties. 3. Under
+Web site identification click Advanced. 4. In the Advanced Web site
+identification box, under Multiple identities for this Web site, verify
+that the Web site IP address is assigned to port 443, the default port
+for secure communications, and then click OK. Optionally, to configure
+more SSL ports for this Web site, click Add under Multiple identities of
+this Web site, and then click OK. 5. On the Directory Security or File
+Security tab, under Secure communications, click Edit. 6. In the Secure
+Communications box, select the Require secure channel (SSL) check box.
+7. To enable SSL client certificate authentication and mapping features,
+select the Enable client certificate mapping check box, click Edit, add
+the 1-to-1 or many-to-1 mappings you need, and then click OK three
+times.</p><p><span class="strong"><strong>Secure transaction processing</strong></span></p><p>Processing transactions securely on the web means that there is a need
+to be able to transmit information between the web site and the customer
+in a manner that makes it difficult for other people to intercept and
+read. SSL, or Secure Sockets Layer, takes care of this. It works through
+a combination of programs and encryption/decryption routines that exist
+on the web services host, and in browser programs (like Firefox and
+Internet Explorer)</p><p><span class="strong"><strong>Performance</strong></span></p><p>TLS has encryption/decryption routines as part of its security. These
+routines can be bandwidth/CPU intensive. Any usage of TLS can compromise
+TACTIC, if the routines are incorporated into the same host as the
+TACTIC service. See guides on load-balancing for details on offsetting
+this.</p><p><span class="strong"><strong>Overview</strong></span></p><p>A VPN will provide the most trouble-free access to TACTIC remotely. In
+this scenario, the authentication/encryption routines are completely
+removed from the realm of TACTIC configuration. This not only helps to
+isolate TACTIC from complex configuration issues, but also allows for
+isolated troubleshooting of remote access issues.</p><p><span class="strong"><strong>PPTP</strong></span></p><p>PPTP is Microsoft supplied product. If an enterprise deployment of
+TACTIC includes ADS authentication, then PPTP can be used as the VPN
+transport layer. Usually, deployment is quite easily done. In PPTP,
+usernames and passwords are used to complete the VPN link. PPTP can be
+considered the “road-warrior�? VPN, meaning that it is easily deployed
+to users.</p><p><span class="strong"><strong>IPsec</strong></span></p><p>Ipsec is a suite of protocols used to secure data between hosts. A VPN
+can be transported on top of this protocol. Typically, two remote hosts
+are configured to communicate with each other, such as routers. This
+type of VPN is typically used to connect two offices together.</p><p><span class="strong"><strong>Hardware VPNs</strong></span></p><p>Hardware VPNs such as offerings provided by companies like Cisco, can be
+easily implemented. These Systems are designed for minimal ramp-up, and
+can be implemented quickly.</p><p><span class="strong"><strong>Security Terms</strong></span></p><p>“is a form of active eavesdropping in which the attacker makes
+independent connections with the victims and relays messages between
+them, making them believe that they are talking directly to each other
+over a private connection, when in fact the entire conversation is
+controlled by the attacker. The attacker must be able to intercept all
+messages going between the two victims and inject new ones, which is
+straightforward in many circumstances (for example, an attacker within
+reception range of an unencrypted Wi-Fi wireless access point, can
+insert himself as a man-in-the-middle).�?</p><p><span class="strong"><strong>SSL (Wikipedia)</strong></span></p><p>“Transport Layer Security (TLS) and its predecessor, Secure Sockets
+Layer (SSL), are cryptographic protocols that provide security for
+communications over networks such as the Internet. TLS and SSL encrypt
+the segments of network connections at the Transport Layer end-to-end.�?</p><p><span class="strong"><strong>Cleartext (Wikipedia)</strong></span></p><p>Cleartext is transmitted, unencrypted text.</p><p>“In a cryptosystem, weaknesses can be introduced through insecure
+handling of plaintext, allowing an attacker to bypass the cryptography
+altogether. Plaintext is vulnerable in use and in storage, whether in
+electronic or paper format. “</p><p><span class="strong"><strong>PPTP (wikipedia)</strong></span></p><p>The Point-to-Point Tunneling Protocol (PPTP) is a method for
+implementing virtual private networks. PPTP uses a control channel over
+TCP and a GRE tunnel operating to encapsulate PPP packets.</p><p>The PPTP specification does not describe encryption or authentication
+features and relies on the PPP protocol being tunneled to implement
+security functionality. However the most common PPTP implementation,
+shipping with the Microsoft Windows product families, implements various
+levels of authentication and encryption natively as standard features of
+the Windows PPTP stack. The intended use of this protocol is to provide
+similar levels of security and remote access as typical VPN products.</p><p><span class="strong"><strong>IPSEC (Wikipedia)</strong></span></p><p>Internet Protocol Security (IPsec) is a protocol suite for securing
+Internet Protocol (IP) communications by authenticating and encrypting
+each IP packet of a data stream. IPsec also includes protocols for
+establishing mutual authentication between agents at the beginning of
+the session and negotiation of cryptographic keys to be used during the
+session. IPsec can be used to protect data flows between a pair of hosts
+(e.g. computer users or servers), between a pair of security gateways
+(e.g. routers or firewalls), or between a security gateway and a
+host.[1]</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_active_directory_integration"></a>6.3. Active Directory Integration</h3></div></div></div><p>TACTIC provides the ability to easily connect to any active directory
+installation for both authentication and for synchronization of user
+data. With a set of directives in the TACTIC configuration file, it is
+possible to connect to Active Directory for authentication and user
+information.</p><p>This synchronization takes place at login time. At this point, TACTIC
+takes the desired information for a particular user and caches it into
+the "sthpw/login" search type. Subsequent requests would normally use an
+issued ticket given at login time. On these requests, no further
+querying of active directory is needed until the ticket expires or the
+user signs out the application.</p><p>The active directory modules make use of win32 libraries for python.
+These must be installed in order for the connection to active directory
+to function properly</p><p>There are a number of directives in the TACTIC config file that can be
+used to configure the active directory settings. These allow you to
+adjust TACTIC behavior to suit the needs of the facility.</p><p>In order to turn on active directory authentication, you must change the
+authenticate class to the following:</p><p>authenticate_class: tactic.active_directory.ADAuthenticate</p><p>The following directives can be set under the active directory category:</p><p><span class="strong"><strong>domains:</strong></span> This is a "|" delimited list of the domains that exist in the
+network. If specified, a selection box for domains will be added to the
+login page.</p><p>*allow:*can be "all", which allows everyone to log in if authentication
+is approved or it can point to the name of a specific Active Directory
+attribute that must be set to True. If a person is denied access, the
+will receive the error: "Permission denied due to insufficient Active
+Directory clearance".</p><p>*default_groups:*defines the default groups that a user will belong to
+if none is specified. Multiple groups are delimited by "|".</p><p>*default_license_type:*determines the default license type for a user if
+none is specified in the Active Directory attribute "tacticLicenceType".</p><p>Below is an example of a typical entry in the TACTIC config file:</p><p>&lt;active_directory&gt;</p><p>&lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt;</p><p>&lt;allow&gt;tacticEnabled&lt;/allow&gt;</p><p>&lt;default_groups&gt;client&lt;/default_groups&gt;</p><p>&lt;default_license_type&gt;user&lt;/default_license_type&gt;</p><p>&lt;/active_directory&gt;</p><p>Allow anyone to login:</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Allow anyone to login and will be put in the "client" group if user has
+no groups specified.</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;/allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Only allow thos with the attibute tacticEnabled in Active Directory set
+to "true"</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;tacticEnabled&lt;/allow&gt;</p><p>&lt;/active_directory&gt;</p><p>Enable users to select a domain (xxx, yyy or zzz) in the login screen</p><p>&lt;active_directory&gt;</p><p>&lt;allow&gt;all&lt;/allow&gt;</p><p>&lt;domains&gt;xxx|yyy|zzz&lt;/domains&gt;</p><p>&lt;/active_directory&gt;</p><p>Active Directory attributes use camel case notation (aaaBbbCcc), while
+TACTIC users lowercase with underscore separators for columns(
+aaa_bbb_ccc). In order to maintain consistency within the TACTIC
+application, a mapping of columns from active directory to TACTIC is
+provided. The following mappings are made by default:</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>mail</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>email</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>telephoneNumber</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>phone_number</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>department</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>department</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>displayName</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>first_name, last_name (broken up)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>tacticLicenceType</p></td><td style="" align="left" valign="top"><p>license_type</p></td></tr></tbody></table></div><p>The Active Directory variable "tacticLicenseType" is a custom variable
+that indicates which type of license a particular user can occupy in
+TACTIC. If this attribute is missing from a users active directory
+profile, then they will be denied a login. This attribute can be used to
+determine if a particular user in active directory is allowed to login
+to TACTIC.</p><p>The only supported license for this attribute are "user" and "default".
+Other license types have not yet been implemented yet.</p><p>On log in, TACTIC will look at all of the groups that a user belongs to
+in Active Directory and match those group names to the "ad_login_group"
+column in the "sthpw/login_group" search type. This grouping list will
+synchronized at this time, removing the users from groups not specified
+in Active Directory and add those that are specified. This means that
+Active Directory is in full control of the groups that a user is part of
+and therefore must be managed entirely in Active Directory.</p><p>For the name of the group, TACTIC only looks at the root of the path to
+map the group name. For example, an active directory group with the
+following distinguished name:</p><p>memberOf: CN=supervisor,OU=Users,OU=EIS,DC=domain,DC=us,DC=xxxx,DC=com</p><p>TACTIC will need only "supervisor" to be entered in the "ad_login_group"
+column.</p><p>If on logging in, the number of users exceeds the number of users in the
+license, then that user will be denied access and an entry in the
+"sthpw/login" search type will not be made. However, all other users
+currently registered can continue to work normally.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_configuring_tactic_and_co_services"></a>6.4. Configuring TACTIC and Co-Services</h3></div></div></div><p><span class="strong"><strong>TACTIC Service Configuration</strong></span></p><p><span class="strong"><strong>Overview</strong></span></p><p>Multiple TACTIC servers can be leveraged in environments where there is
+heavy report analysis, and where custom TACTIC environments are making
+heavy use of API and GUI calls. To spread out the load of the requests
+made, custom API scripts can be run on one TACTIC server, while another
+TACTIC server can be used to serve GUI requests. The only consideration
+then with multiple TACTIC machines will be where the database and the
+asset directories.</p><p><span class="strong"><strong>Database</strong></span></p><p>TACTIC needs to know where to find assets and asset metadata. To do
+this, each installation of TACTIC must be able to have direct file
+system access to assets storage, and network access to the database
+co-service.</p><p>tactic_(os).conf</p><p>needs to contain this information.</p><pre class="screen">&lt;database&gt;
+&lt;server&gt;[DB server IP]&lt;/server&gt;
+&lt;/database&gt;</pre><p>All other settings, covered previously, can be set according to
+individual requirements of the host machine and environment.</p><p><span class="strong"><strong>Assets Storage</strong></span></p><p>TACTIC needs to know where to find assets. To do this, each installation
+of TACTIC must be able to have direct file system access to assets
+storage. The details of file system management are beyond the scope of
+this document, but typically are within the realm of the system
+administrator.</p><p><span class="strong"><strong>Processes</strong></span></p><p>If the TACTIC server has no other services attached, there is probably
+room to increase the number of processes running on each machine.</p><pre class="screen">&lt;services&gt;
+&lt;process_count&gt;6&lt;/process_count&gt;
+&lt;/services&gt;</pre><p>Refer to Reference: TACTIC Default Configuration for the complete sample
+configuration file.</p><p>Refer to Reference: TACTIC Service Configuration Directives for
+configuration directives.</p><p><span class="strong"><strong>HTTP Co-service Configuration</strong></span></p><p><span class="strong"><strong>Apache</strong></span></p><p>Apache is used for the following sample HTTP configuration for TACTIC.
+Some configuration knowledge of apache is required.</p><p><span class="strong"><strong>Permissions – Allowing TACTIC to store and manipulate assets</strong></span></p><p>This section defines the location and availability of the assets
+directory, which is the primary source of data for the apache server.
+There is also the declaration of an alias to the TACTIC source
+directory, which contains various objects that TACTIC uses, such as
+widget elements.</p><pre class="screen">Alias /context         /home/apache/tactic/src/context
+Alias /assets       /home/apache/assets
+Alias /doc/           /home/apache/tactic/doc/</pre><p>The section with &lt;Directory&gt; directives defines the access rules for the
+assets directory and the "/tactic" directory, which is just a
+conveniently named alias.</p><pre class="screen">&lt;Directory "/home/apache/tactic" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;
+&lt;Directory "/home/apache/assets" &gt;
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from All
+&lt;/Directory&gt;</pre><p><span class="strong"><strong>Proxying/Rewriting a single process – Redirecting requests to TACTIC</strong></span></p><p>Apache needs to know where to find the proxied TACTIC service in the
+httpd.conf file. The below configuration takes advantage of only one
+process being served from port 8081 on the local machine.</p><p>The second section, with RewriteRule directives, defines the re-write
+rules for the TACTIC service, to segregate requests handled by the
+TACTIC server, from static asset delivery through the HTTP service.
+These rules channel any requests that are prefixed with the "/tactic"
+path to the TACTIC server on port 8081.</p><pre class="screen">RewriteRule   ^/tactic/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/tactic http://localhost:8081/tactic/ [P,L]
+RewriteRule   ^/projects/(.+)$ http://localhost:8081/tactic/$1 [P,L]
+RewriteRule   ^/projects http://localhost:8081/tactic/ [P,L]</pre><p><span class="strong"><strong>Proxying/Rewriting multiple processes – Redirecting requests to TACTIC</strong></span></p><p>The proxy configuration can be enhanced with a load balancing scheme for
+one or more machines. Apache has the ability to randomly select from a
+list of locations via a rewrite map.</p><pre class="screen">RewriteMap    lb    rnd:/home/apache/sites/load_balance.txt</pre><p>This map can feed the rewrite rules with a dynamically assigned host
+name.</p><pre class="screen">RewriteRule   ^/tactic/(.+)$ http://${lb:dynamic}/tactic/$1    [P,L]
+RewriteRule   ^/projects/(.+)$ http://${lb:dynamic}/tactic/$1  [P,L]
+RewriteRule   ^/tactic http://${lb:dynamic}/tactic/            [P,L]
+RewriteRule   ^/projects http://${lb:dynamic}/tactic/          [P,L]</pre><p>The file load_balance.txt is an arbitrarily named and located file that
+contains the names of servers that will be referred to by the "rnd"
+function in the Rewrite rules. The "lb:dynamic" reference will be
+replaced by the name of the server file</p><p>The load_balance.txt contains a pipe separated list of hosts named
+"dynamic"</p><pre class="screen">dynamic localhost:8081|localhost:8082|localhost:8083</pre><p>This list is dependent on the number of ports that TACTIC is running on,
+specified by tactic_(OS).conf. Note that apache can proxy from IP
+addresses or hostnames external to the host that the service is parked
+on.</p><p>On this single line list, add all machines and ports that are running
+TACTIC. Since the scheme algorithm is random, it does not matter what
+order the machines/ports are listed in, just that they are actually on
+the list. In this case, there are multiple TACTIC machines, named
+"tacticserver01" and "tacticserver02". The example assumes the machine
+has either DNS entries for these machines or entries in the "hosts"
+file. IP addresses can also be used.</p><pre class="screen">dynamic tacticserver01:8081|tacticserver02:8081|tacticserver01:8082
+# and so on, until all machines/ports are covered</pre><p>Refer to Reference: Apache Configuration for TACTIC for the complete
+sample configuration file.</p><p><span class="strong"><strong>Database Co-service Configuration</strong></span></p><p><span class="strong"><strong>PostgreSQL</strong></span></p><p>PostgreSQL is used as the database co-service in the following sample
+configuration. PostgreSQL has only two configuration files that are
+required to be examined in order to function with TACTIC; pg_hba.conf
+and postgresql.conf</p><p><span class="strong"><strong>Network trust - pg_hba.conf</strong></span></p><p>The pg_hba.conf configuration file contains a list of users and hosts
+with clearance levels. In the default pg_hba.conf file that comes with
+TACTIC, the network trust level is set for the most open access by the
+localhost;</p><pre class="screen"># TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+local      all  all  trust
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          trust
+# IPv6 local connections:
+host    all         all         ::1/128               trust</pre><p>In this example, all local connections to PostgreSQL are trusted. This
+configuration matches the correct configuration required by a single
+machine.</p><pre class="screen">host   all     all  &lt;TACTIC_HOST_IP_ADDR&gt;     trust</pre><p><span class="strong"><strong>Network interface - postgresql.conf.</strong></span></p><p>The postgresql.conf configuration file has a setting that will allow the
+PostgreSQL service to bind to the particular interface required.</p><p>Of concern is the "listen_addresses" attribute.</p><pre class="screen">listen_addresses = 'localhost'</pre><p>By default, the PostgreSQL service is only bound to the localhost. This
+is fine for single machine operation of the TACTIC service.</p><pre class="screen">listen_addresses = '*'</pre><p>This setting or specific IP addresses can be used if the DB service is
+not on the same machine as the TACTIC service</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_setup_email"></a>6.5. Setup Email</h3></div></div></div><p>This document describes how to setup the mail server settings in TACTIC
+in order for notifications to be sent out as emails.</p><p>To setup the SMTP mail server, open the TACTIC config file.</p><p>The TACTIC config file is located here:</p><p>On Linux:</p><pre class="screen">&lt;TACTIC_INSTALL_DIR&gt;/projects/config/tactic_linux-conf.xml</pre><p>On Windows:</p><pre class="screen">&lt;TACTIC_INSTALL_DIR&gt;/projects/config/tactic_win32-conf.xml</pre><p>Go to the <span class="strong"><strong>&lt;services&gt;</strong></span> section of the config file.</p><p>Add the following settings with the prefix <span class="strong"><strong>&lt;mail…&gt;</strong></span>.</p><p>Below is an example of a completed mail config section in <span class="strong"><strong>bold</strong></span>:</p><pre class="screen">    &lt;python&gt;python&lt;/python&gt;
+    &lt;python_path&gt;&lt;/python_path&gt;
+    &lt;render_submit_class&gt;&lt;/render_submit_class&gt;
+    &lt;render_dispatcher&gt;&lt;/render_dispatcher&gt;
+    &lt;system_class&gt;&lt;/system_class&gt;
+    &lt;pool_max_connections&gt;3&lt;/pool_max_connections&gt;
+    &lt;process_count&gt;3&lt;/process_count&gt;</pre><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mailserver</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The URL of the SMTP mail server</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_password</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The password for accessing the SMTP mail server that
+requires authentication</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_user</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The user name for accessing the SMTP mail server that
+requires authentication</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_port</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The port for the SMTP mail server (if different that 25)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_sender_disabled</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>disable using the sender name in sending of
+email in case the email server does not allow sender’s email not owned
+by the sender</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">mail_tls_enabled</code></p></td><td style="" align="left" valign="top"><p>enable TLS (Transport Layer Security) for the
+connection to email server</p></td></tr></tbody></table></div><p>Go to the Notifications view under:</p><p><span class="strong"><strong>Admin Views → Site Admin → Notifications</strong></span></p><p>Click on the green plus button on the tool shelf to insert new a
+notification.</p><p>Fill in the following the minimum fields to create a test notification:</p><p><span class="inlinemediaobject"><img src="media/2_setup_email_email_test.png" alt="image" /></span></p><p>Click on the <span class="strong"><strong>Email Test</strong></span> button to send out a test email to the
+recipient.</p><p>For further details on setting up advanced notifications, please refer
+to the doc titled: <span class="strong"><strong>Advanced Notification Setup</strong></span>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_http_co_service_installation_configuration"></a>6.6. HTTP Co-Service Installation/Configuration</h3></div></div></div><p>The aim of this document is to be able to configure Apache to proxy
+TACTIC on a UNIX machine. For Apache on Windows machines, there may be
+some slight differences in behavior or steps.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+User must have sufficient technical knowledge to navigate the OS
+directories, edit text files, and start/stop services. Knowledge of the
+target web server is required.
+</li><li class="listitem">
+TACTIC must be installed on the host machine. It should be runnable
+to the point where all diagnostics presume no error in the TACTIC
+configuration. In the below examples, TACTIC is installed with all
+default options.
+</li><li class="listitem">
+The web server must be installed on the host machine. Since
+different OS’s can have vastly different HTTP service default
+configurations, configuration files will need to be found by command or
+appropriate documentation consultation.
+</li></ol></div><p>The TACTIC host machine should have the following prerequisites</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+A working TACTIC installation
+</li><li class="listitem">
+An OS capable of running the target HTTP co-service
+</li></ul></div><p>The HTTP configuration assumes that the main server is being used to
+proxy TACTIC requests, without SSL or virtual servers. TACTIC requires
+that the appropriate modules or 3rd party modules are activated.</p><p>This document assumes that TACTIC has been configured correctly and is
+functioning as expected. It is assumed that TACTIC is installed with
+default ports 8081 through 8083. This is the typical default TACTIC
+configuration.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_database_resource"></a>6.7. Database Resource</h3></div></div></div><p>TACTIC can map to any supported database platform. A single TACTIC
+installation can map on to any number of external databases and use them
+as a database resource. These database resources are treated as first
+class citizens in the TACTIC. All of the features that are inherent to
+any native TACTIC data are also available to these external database
+resources. To implement this functionality, db_resource can be used to
+connect a project to a database resource. It defines the location and
+connection credentials to access a database server. Database resources
+can be added under the side bar menu <span class="strong"><strong>Global → Database Resource</strong></span>.</p><p>Specify (or look up) the Database Resource under <span class="strong"><strong>Admin Views →
+Global</strong></span>.</p><p>The database resource entry in Database Resource contains all the
+information needed to connect to a database. In order for TACTIC to
+access another database, it has to have a database resource registered
+and then it has to be mapped to a project.</p><p>In the example below, the new database’s code is named:
+<span class="strong"><strong>my_new_db_resource</strong></span>, which is the reference of this entry. Host, which
+refers to the IP address of the server, is set to be a tested address.
+The Login and Password are the information used to log in the database.</p><p>Since all TACTIC projects have a single database resource that it uses
+as a persistent store for sObjects. By default, the project will use the
+same resource as the sthpw database and is defined in the TACTIC
+config file. However, this can be configured to point to another
+database resource.</p><p>Note that the search type uses a project to find the corresponding
+database. Any project configured to look at a database resource with the
+db_resource and database columns. The db resource defines the connection
+criteria and the column determines which database to connect to that
+resource.</p><p>To add new a database as pure resource database, Specify (or look up)
+the <span class="emphasis"><em>Add Project</em></span> and <span class="emphasis"><em>Projects</em></span> columns under <span class="strong"><strong>Admin Views → Global →
+Database Resource</strong></span>.</p><p>In the example below, the new database called <span class="strong"><strong>test_database001</strong></span> from
+the db_resource <span class="strong"><strong>my_new_db_resource</strong></span> has been added to a Project called
+<span class="strong"><strong>Testing</strong></span>.</p><p>For a project to become a full TACTIC project (complete with separate
+URL space: <code class="literal">http://&lt;server&gt;/&lt;project&gt;</code> and separate themes an interfaces),
+all that is required is the config tables to exist in that database
+resource. Thus a database resource can start off as a data source and
+then, at any time, be upgraded to a full TACTIC project if that is ever
+required by importing the appropriate config tables that the search type
+uses in the project to find the corresponding database. The project is
+configured to look at a database resource with the db_resource and
+database column. The db resource defines the connection criteria and
+the column determines which database to connect to on that resource.</p><p>In order for TACTIC to access another database, it has to have a
+database resource registered and then it has to be mapped to a project.
+This mapping is currently required because all search types are scoped
+and searched using the notation:</p><pre class="screen">&lt;namespace&gt;/&lt;table&gt;?project=&lt;project&gt;&amp;code=&lt;code&gt;</pre><p>An example search_type entry would be:</p><pre class="screen">jobs/media?project=my_test_project</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_remoteaccesstactic"></a>6.8. RemoteAccessTactic</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

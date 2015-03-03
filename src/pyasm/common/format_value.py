@@ -65,6 +65,13 @@ class FormatValue(object):
 
         if isinstance(value, datetime.datetime):
             value = str(value)
+        elif not isinstance(value, basestring):
+            value = str(value)
+
+        if value.startswith("{") and value.endswith("}"):
+            from pyasm.search import Search
+            value = Search.eval(value)
+
         # ------------------------------------------------
         # Integer
         if format == '-1234':
@@ -420,6 +427,23 @@ class FormatValue(object):
             timecode = TimeCode(frames=value, fps=fps)
 
             value = timecode.get_timecode(format)
+
+        # ------------------------------------------------
+        # Dictionary
+        elif format == "DICT":
+
+            dict_as_str = ""
+            dict_list = []
+
+            if not value:
+                value = ''
+
+            else:
+                for key, value in sorted(value.iteritems()):
+                    dict_list.append("%s : %s" % (key, value))
+
+            dict_as_str = "<br />".join(dict_list)
+            value = dict_as_str
 
         # ------------------------------------------------
         # File Size

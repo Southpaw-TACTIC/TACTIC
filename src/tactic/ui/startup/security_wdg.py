@@ -198,10 +198,11 @@ class GroupAssignWdg(BaseRefreshWdg):
 
 
         title = DivWdg()
-        title.add( login.get_full_name() )
+        title.add( "User: %s" % login.get_full_name() )
         top.add(title)
         title.add_gradient("background", "background3")
         title.add_style("padding: 10px")
+        title.add_style("margin-bottom: 5px")
         title.add_style("font-weight: bold")
 
 
@@ -514,7 +515,7 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 140px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("2px 2px 2px 2px")
+        #section_wdg.set_box_shadow("2px 2px 2px 2px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -524,7 +525,7 @@ class SecurityWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("text-align: center")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -10)
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -536,13 +537,14 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 1px 1px #999");
+        bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
         '''
         } )
+
         section_wdg.add_behavior( {
         'type': 'mouseout',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "2px 2px 2px 2px #999");
+        bvr.src_el.setStyle("box-shadow", "");
         ''',
         } )
 
@@ -558,9 +560,9 @@ class SecurityWdg(BaseRefreshWdg):
         div.add_style("margin: 10px")
         #div.add_style("width: 209px")
         #div.add_style("height: 64px")
-	div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
-	#div.set_box_shadow("1px 1px 1px 1px")
+        #div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
 
@@ -589,16 +591,14 @@ class SecurityWdg(BaseRefreshWdg):
         top.add(title)
 
         from tactic.ui.widget import TitleWdg
-        subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
-        top.add(subtitle)
-
-
+        #subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
+        #top.add(subtitle)
 
         title.add_style("font-size: 18px")
         title.add_style("font-weight: bold")
         title.add_style("text-align: center")
         title.add_style("padding: 10px")
-        title.add_style("margin: -10px -10px 0px -10px")
+        title.add_style("margin: -10px -10px 10px -10px")
         title.add_gradient("background", "background3", 5, -10)
 
 
@@ -620,7 +620,8 @@ class SecurityWdg(BaseRefreshWdg):
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
-        #    var size = $(window).getSize();
+        #    var size = bvr.src_el.getParent().getSize();
+        #    alert(size.x);
         #    bvr.src_el.setStyle("width", size.x);
         #    '''
         #} )
@@ -890,7 +891,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            simple_search_view='simple_search'
+            simple_search_view='simple_search',
+            expand_on_load=True,
         )
         top.add(layout)
 
@@ -1181,7 +1183,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         group_names = [x.get_value("login_group") for x in groups]
 
         config_xml = []
-        config_xml.append('''<config><ttt>''')
+        config_xml.append('''<config><table edit='false'>''')
 
 
         filter = []
@@ -1211,21 +1213,25 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             """
 
 
+            group_title = group_name.title()
+            group_title = group_title.replace("_", " ")
+
+
             config_xml.append('''
             <element name='_%s' title='%s' edit='false'>
               <display class='tactic.ui.startup.SecurityCheckboxElementWdg'>
               </display>
             </element>
-            ''' % (group_name, group_name) )
+            ''' % (group_name, group_title) )
 
 
 
 
-        config_xml.append('''</ttt></config>''')
+        config_xml.append('''</table></config>''')
         config_xml = "\n".join(config_xml)
 
         from pyasm.widget import WidgetConfig
-        config = WidgetConfig.get(view="ttt", xml=config_xml)
+        config = WidgetConfig.get(view="table", xml=config_xml)
 
 
         from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg
@@ -1252,26 +1258,27 @@ class ProjectSecurityWdg(BaseRefreshWdg):
              
             '''
 
-            text = LookAheadTextInputWdg(name='keyword', search_type=search_type, column=column, mode='keyword', custom_cbk=custom_cbk)
+            text = LookAheadTextInputWdg(icon="BS_SEARCH", name='keyword', search_type=search_type, column=column, mode='keyword', custom_cbk=custom_cbk)
             search_div = DivWdg()
             top.add(search_div)
-            search_div.add_style("margin-top: 10px")
-            search_div.add_style("padding-left: 25px")
-            search_div.add_style("float: left")
-            search_div.add("Search: ")
+            search_div.add_style("padding-top: 5px")
 
             value = my.get_value("keyword")
             if value:
                 text.set_value(value)
+
             search_div.add(text)
+            search_div.add_style("margin-left: 100px")
+            search_div.add_style("width: 300px")
+
 
         top.add("<br clear='all'/>")
 
 
  
-        save_button = ButtonNewWdg(tip="Refresh", icon=IconWdg.REFRESH)
-        button_row.add(save_button)
-        save_button.add_behavior( {
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
+        button_row.add(refresh_button)
+        refresh_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_security_top");
@@ -1283,7 +1290,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
         
-        save_button = ButtonNewWdg(tip="Save Changes", icon=IconWdg.SAVE)
+        save_button = ButtonNewWdg(tip="Save Changes", icon="BS_SAVE")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
@@ -1305,13 +1312,14 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
         # these are virtual sobjects, don't show search limit to avoid pagination 
         layout = FastTableLayoutWdg(
-            search_type='sthpw/virtual', view='ttt',
+            search_type='sthpw/virtual', view='table',
             show_shelf=False,
             show_search_limit="false",
             #show_select=False,
             config_xml=config_xml,
             save_class_name=my.get_save_cbk(),
-            init_load_num = -1
+            init_load_num = -1,
+            expand_on_load=True,
 
         )
         layout.set_sobjects(sobjects)
@@ -1420,6 +1428,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
     def get_sobjects(my, group_names):
         # get the project sobjects
         search = Search("sthpw/login")
+        search.add_filters("code", ['admin'], op='not in')
 
         keyword = my.get_value('keyword')
         if keyword:
@@ -1465,6 +1474,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
             for group_name in group_names:
 
                 login = sobject.get_value("login")
+
                 data = group_data.get(group_name)
                 is_in_group = False
                 if data:

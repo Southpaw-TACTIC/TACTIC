@@ -21,6 +21,7 @@ from pyasm.widget import TextWdg, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, IconButtonWdg
+from tactic.ui.input import TextInputWdg
 
 
 class PipelineEditWdg(BaseRefreshWdg):
@@ -115,7 +116,8 @@ class PipelineEditWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         pipelines_div.add(buttons_div)
 
-        button = SingleButtonWdg( title="Save Pipelines", icon=IconWdg.SAVE )
+        #button = SingleButtonWdg( title="Save Pipelines", icon=IconWdg.SAVE )
+        button = ActionButtonWdg( title="Save" )
         buttons_div.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -172,8 +174,8 @@ class PipelineEditWdg(BaseRefreshWdg):
             pipeline_div.add(title)
             title.add("Pipeline: ")
             title.add(code)
-            title.add_style("padding: 5px")
-            title.add_gradient("background", "background", -10)
+            title.add_style("padding: 8px 10px")
+            title.add_color("background", "background3")
             title.add_style("font-weight: bold")
             title.add_style("margin: -10 -10 5 -10")
 
@@ -183,14 +185,14 @@ class PipelineEditWdg(BaseRefreshWdg):
             header_wdg.add_color("background", "background", -5)
 
             headers = ['Process', 'Description', 'Task Status']
-            widths = ['90px', '170px', '200px']
+            widths = ['100px', '180px', '210px']
             for header, width in zip(headers,widths):
                 th = DivWdg()
                 header_wdg.add(th)
                 th.add("<b>%s</b>" % header)
                 th.add_style("float: left")
                 th.add_style("width: %s" % width)
-                th.add_style("padding: 3px")
+                th.add_style("padding: 8px 3px")
             header_wdg.add("<br clear='all'/>")
 
 
@@ -267,9 +269,10 @@ class PipelineEditWdg(BaseRefreshWdg):
                 process_div.add(table)
                 table.add_row()
 
-                text = NewTextWdg("process")
+                text = TextInputWdg(name="process")
                 table.add_cell(text)
                 text.add_style("width: 95px")
+                text.add_style("margin: 5px")
                 text.set_value(process_name)
                 text.add_class("spt_process")
 
@@ -279,18 +282,20 @@ class PipelineEditWdg(BaseRefreshWdg):
 
 
 
-                text = NewTextWdg("description")
+                text = TextInputWdg(name="description")
                 table.add_cell(text)
                 text.add_style("width: 175px")
+                text.add_style("margin: 5px")
                 text.set_value(description)
                 # the template has a border
                 if i == 0:
                     text.add_style("border: solid 1px #AAA")
 
 
-                text = NewTextWdg("task_status")
+                text = TextInputWdg(name="task_status")
                 table.add_cell(text)
                 text.add_style("width: 325px")
+                text.add_style("margin: 5px")
 
                 #text.set_value(statuses_str)
                 if task_pipeline:
@@ -542,7 +547,7 @@ class PipelineEditCbk(Command):
 
 
 
-
+"""
 class NewTextWdg(TextWdg):
     def init(my):
 
@@ -571,6 +576,6 @@ class NewTextWdg(TextWdg):
         } )
 
         super(NewTextWdg,my).init()
-
+"""
 
 

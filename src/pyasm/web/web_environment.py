@@ -230,7 +230,7 @@ class WebEnvironment(Environment):
 
 
     def is_title_page(my):
-        project_code = Project.get_project_code()
+        project_code = Project.get_project_code(no_exception=True)
         return project_code == 'admin' and my.get_request_url().to_string().endswith("/tactic/Index")
 
 

@@ -249,7 +249,7 @@ class HtmlElement(Widget):
         my.attrs['style'] = style
 
 
-    def add_style(my, name, value=None):
+    def add_style(my, name, value=None, override=True):
         '''add a style attribute'''
         if not name:
             return
@@ -259,6 +259,11 @@ class HtmlElement(Widget):
             name, value = name.split(": ")
         if not my.styles:
             my.styles = {}
+
+        elif not override and my.styles.has_key(name):
+            return
+
+
         my.styles[name] = value
 
 
@@ -1127,6 +1132,7 @@ class DivWdg(HtmlElement):
     def get_args_keys(cls):
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
+
     ARGS_KEYS = {
         'html': 'HTML code to add inside the div'
     }

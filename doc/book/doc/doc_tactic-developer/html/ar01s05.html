@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5. Plugins</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Developer" /><link rel="up" href="index.html" title="TACTIC Developer" /><link rel="prev" href="ar01s04.html" title="4. Custom Widgets" /><link rel="next" href="ar01s06.html" title="6. Expression Development" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s04.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s06.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_plugins"></a>5. Plugins</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_plugin_manager_interface"></a>5.1. Plugin Manager interface</h3></div></div></div><p><span class="inlinemediaobject"><img src="media/0_plugins_overview.png" alt="image" /></span></p><p><span class="strong"><strong>Plugin Manager</strong></span></p><p>The plugin Manager View is where you will be managing all your plugins.
+From this view, you can create a plugin, fully install a plugin, and
+modify existing plugins. You can find all your installed plugins in the
+plugin list at the left hand side of the view. This shows all the
+plugins you have installed along with all the built-in plugins which
+have come with your TACTIC installation. After selecting a plugin, you
+have access to:</p><p>Plugin Info:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Name
+</li><li class="listitem">
+Code: This is an important entity
+</li><li class="listitem">
+Version: Imporant when you are planning to use or create multiple
+versions of a plugin
+</li><li class="listitem">
+Description
+</li></ul></div><p>Documentation:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+shows all the documentation which has been provided for the plugin
+from the developer
+</li></ul></div><p>Manifest file:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+ability to export the manifest.xml
+</li><li class="listitem">
+ability to publish the plugin (more information on this in the
+documentation on creating a plugin)
+</li><li class="listitem">
+contains technical information about the plugin
+</li><li class="listitem">
+can find more information about this in the documentation about
+creating a plugin
+</li></ul></div><p>Files: The files tab shows the raw folder structure and files of the
+plugin. From here, a number of file operations can be performed.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Adding files (Uploading)
+</li><li class="listitem">
+Removing files
+</li><li class="listitem">
+Creating folders
+</li><li class="listitem">
+Renaming files
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_create_a_plugin"></a>5.2. Create a Plugin</h3></div></div></div><p><span class="strong"><strong>What is a technical description of a TACTIC plugin?</strong></span></p><p>A plugin is a self-contained package of files that TACTIC can make use
+of to extend the base functionality. Virtually any functionality in
+TACTIC can be made into a plugin.</p><p>A plugin can contain:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+project configuration data
+</li><li class="listitem">
+any database data
+</li><li class="listitem">
+js files
+</li><li class="listitem">
+css files
+</li><li class="listitem">
+documentation
+</li><li class="listitem">
+python files
+</li></ul></div><p><span class="strong"><strong>manifest.xml file</strong></span></p><p>The manifest file is a description of the entries in the database that
+are owned by the plugin. This allows the plugin manager to extract the
+appropriate database entries and commit the .spt files. It contains
+elements like:</p><p>data: a collection of name/value pairs that describe information about
+the plugin</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+code
+</li><li class="listitem">
+description
+</li><li class="listitem">
+version
+</li></ul></div><p>sobject: describes which sobjects the plugin contains. It’s an
+expression of the form &lt;sobject search_type=”[search_type]”&gt; with
+attributes:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+code: the specfic code of the object
+</li><li class="listitem">
+expression: an expression of which all matched sobject will belong to
+the plugin
+</li><li class="listitem">
+path: the relative .spt file path that all sobjects will be written to
+</li><li class="listitem">
+ignore_columns: a comma seperate list of columns for the plugin
+exporter to ignore
+</li><li class="listitem"><p class="simpara">
+There are some special attributes for specific search types. The
+config/widget_config search type has the attribute:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+view
+</li></ul></div></li></ul></div><p><span class="strong"><strong>.spt files</strong></span></p><p>".spt" files are database files that contain database schema structure and
+database data. These files enable TACTIC to read and write database data
+that is both platform and database independent. This abstractions allows
+TACTIC plugins to be used on any supported TACTIC platform. An important
+design criteria of .spt files are that they are human readable even when
+the database entry contains xml or software code. More importantly, they
+can be easily diff’ed using standard software tools so that the code
+produced can show proper diffs using any source code management system
+(such as Perforce, SVN or Git). This is essential for collaborative work
+building plugins to delivery to a 3rd party.</p><p><span class="strong"><strong>Creating the Plugin</strong></span></p><p>Once you are in the plugin manager, you can the New button which creates
+a new plugin outline. Afterwards, you can start filling in the details
+like name, type, etc. On creation, a plugin type can be specified.
+Depending on the plugin type a number of bootstrap data will be created
+to support the structure of the plugin. After selecting Create, the
+plugin will be created and you will be able to see it in the plugin
+list.</p><p>If you go to the documentation tab, you will find that you are able to
+create new documentation if the documentation doesn’t exist. This will
+create a new file, doc.html, which you can edit now.</p><p>To add files to the plugin, select the plugin and go to the files tab.
+Here, you will find many options like the ability to upload or simply
+create a new file. The new files that you are uploading or creating are
+used properly when their purpose is explained in the manifest.xml file.</p><p>After customizing the plugin to your needs, you can now package the
+plugin to perhaps upload to the community site so others can use it.
+Documentation on packaging can be found in this section under Packaging
+a Plugin.</p><p><span class="strong"><strong>Best Practices</strong></span></p><p>Widget config tables should not include code or id columns or they must
+be explicitly set to values that are guaranteed to be unique on any
+installation of TACTIC. Otherwise, the plugin should not depend on the
+value of the code or id column.</p><p>This is also true of “custom_scripts” written in the script editor.</p><p>When referring to an sobject, always search by code (not id). When doing
+this, make sure the code contains a namespace that will not conflict
+with any other plugin.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_packaging_a_plugin"></a>5.3. Packaging a Plugin</h3></div></div></div><p><span class="inlinemediaobject"><img src="media/1_manifest_tab.png" alt="image" /></span></p><p><span class="strong"><strong>Plugin Directory</strong></span></p><p>A TACTIC plugin package is simply a .zip file containing all the files
+of a plugin. Plugins are installed in the following directory:</p><p>&lt;TACTIC_DATA_DIR&gt;/plugins</p><p>The .zip files are usually stored in:</p><p>&lt;TACTIC_DATA_DIR&gt;/dist</p><p><span class="strong"><strong>Categories of Plugins</strong></span></p><p>Plugins are defined into categories. Due to the flexibility of the
+plugin architecture, a single plugin can package tools, columns, and
+themes in any combination. These categories are only used to organize
+plugins and can also bootstrap common functionality that would be
+packaged into a plugin.</p><p>All of these will have most of the view definitions in the Custom Layout
+Editor. Each individual view can have a type. See Custom Layout Editor
+documentation for more information on this.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+project: this defines the structure of the project. It may or may not
+include a theme, but it is usually possible to use different themes for
+a given project provided the theme has been set up correctly.
+</li><li class="listitem"><p class="simpara">
+theme: a theme defines the look and feel of a project as experienced
+by end users. A theme should have the following requirements:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+a means of displaying links as represented by the side bar.
+</li><li class="listitem">
+a means of logging out
+</li><li class="listitem">
+overriding the login page (optional)
+</li></ul></div></li><li class="listitem">
+column - This represents a plugin that will be added to columns in a
+table. These will generally consist of one or more columns that can be
+added to a tabular layout.
+</li><li class="listitem">
+tool - A tool is a widget that provides additional functionality to
+the users. Generally a tool needs to be launched by a button or a menu
+item from the sidebar.
+</li></ul></div><p><span class="strong"><strong>Publishing the Plugin</strong></span></p><p>To package your created plugin to the tactic data directory, select the
+plugin and go to the manifest tab. Here, you can make sure that the
+plugin is named and versioned appropriately. You now need to make sure
+that the manifest you’ve wrote is exported, exporting saves the manifest
+data you have there to the manifest.xml file.You can now select Publish
+and TACTIC will package all the files and create a .zip file of the
+plugin folder from the root plugin folder (ie: &lt;TACTIC_DATA_DIR&gt;/plugins
+). When a version is published, the folder of the current plugin is
+taken and copied to a new folder with the name &lt;PLUGIN_CODE&gt;-&lt;VERSION&gt;.
+Note that the PLUGIN_CODE can have “/” to present folders.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_plugin_versions"></a>5.4. Plugin Versions</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s04.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
