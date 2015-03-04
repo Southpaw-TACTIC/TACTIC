@@ -499,29 +499,12 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
     def is_groupable(my):
         return True
 
-<<<<<<< HEAD
-=======
-    def handle_td(my, td):
-        '''background color is better handled on td directly'''
-        if my.mode == 'critical':
-            td.add_style("background: #e84a4d")
-        elif my.mode == 'today':
-            td.add_style("background: #a3d991")
-        elif my.mode == 'done':
-            pass
-        else:
-            td.add_style("background: #FFF")
-
-        super(TaskDaysDueElementWdg, my).handle_td(td)
-            
     def init(my):
         my.due_date_col = my.kwargs.get('due_date_col')
         if not my.due_date_col:
             my.due_date_col = 'bid_end_date'
         my.mode = ''
 
-    def get_display(my):
->>>>>>> c3bb6b30f4107265b68abbff3d5fd0bf4a3002ac
 
     def init_data(my):
 
