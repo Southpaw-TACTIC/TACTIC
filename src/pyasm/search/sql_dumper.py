@@ -17,6 +17,7 @@ import re, sys
 import types
 import datetime
 import codecs
+from pyasm.common import TacticException
 
 from sql import SqlException
 
@@ -181,7 +182,7 @@ class TableDataDumper(object):
         my.ignore_columns = columns
     
     
-    def set_replace_token(my,project_code,replace,regex,column):
+    def set_replace_token(my, project_code, replace, regex, column):
         key = column
         value = [project_code,replace,regex]
         my.replace_dict[key] = value 
@@ -359,15 +360,14 @@ class TableDataDumper(object):
                 
                 if my.replace_dict:
                     
-                    for column,replace_args in my.replace_dict.iteritems():
+                    for column,replace_args in my.replace_dict.items():
                         if name == column:
-                            import re
                             project_code = replace_args[0]
                             replace_str = replace_args[1]
                             regex = replace_args[2]
                             
                             if not re.match(regex,value):
-                                raise Exception("%s does not conform to standard format"%column)
+                                raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
                             value = re.sub(regex,replace_str,value)
 
     

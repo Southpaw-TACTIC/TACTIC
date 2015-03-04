@@ -628,9 +628,10 @@ class PluginCreator(PluginBase):
         dumper.set_ignore_columns(ignore_columns)
         dumper.set_sobjects(sobjects)
 
-        if replace_variable in ['True',"true",True]:
+        if replace_variable =="true":
             if search_type == "sthpw/pipeline":
-                regex = r'^\b[^\W\d_]+\b/*'
+                #regex is looking for a word bfore "/" 
+                regex = r'^\w+\/'
                 dumper.set_replace_token(project_code,"$PROJECT/",regex,"code")
         
         dumper.dump_tactic_inserts(path, mode='sobject')
