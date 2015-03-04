@@ -346,6 +346,7 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
     def get_content_wdg(my):
         kwargs = my.kwargs.copy()
+        kwargs["search"] = my.search
         layout = CustomLayoutWdg(**kwargs)
         layout.set_sobjects(my.sobjects)
         return layout

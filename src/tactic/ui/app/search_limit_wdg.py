@@ -29,7 +29,10 @@ class SearchLimitWdg(Widget):
 
         my.search_limit_name = name
         my.label = label
-        my.search_limit = limit
+        if limit:
+            my.search_limit = int(limit)
+        else:
+            my.search_limit = None
         my.fixed_offset = False
         my.style = my.DETAIL
         my.prefix = "search_limit"

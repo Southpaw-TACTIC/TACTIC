@@ -92,6 +92,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.view:
             my.view = 'table'
 
+
+        my.search = None
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
         my.ingest_data_view = kwargs.get("ingest_data_view")
@@ -306,11 +308,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.look_row_selected_hilite = 'dg_row_selected_hilite'
 
         # MMS_COLOR_OVERRIDE ...
-        if my.skin == 'MMS':
-            my.look_row = 'mms_dg_row'
-            my.look_row_hilite = 'mms_dg_row_hilite'
-            my.look_row_selected = 'mms_dg_row_selected'
-            my.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
+        #if my.skin == 'MMS':
+        #    my.look_row = 'mms_dg_row'
+        #    my.look_row_hilite = 'mms_dg_row_hilite'
+        #    my.look_row_selected = 'mms_dg_row_selected'
+        #    my.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
 
 
         my.palette = web.get_palette()
@@ -563,6 +565,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         search = my.search_wdg.get_search()
+        my.search = search
 
 
         from tactic.ui.filter import FilterData
@@ -639,7 +642,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
         if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
-            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
