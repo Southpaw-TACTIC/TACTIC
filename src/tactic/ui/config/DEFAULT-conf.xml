@@ -302,6 +302,7 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
       <search_type>sthpw/task</search_type>
+      <search_limit_mode>both</search_limit_mode>
       <view>table</view>
       <filter>
       [
