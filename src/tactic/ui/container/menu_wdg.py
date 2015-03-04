@@ -208,7 +208,7 @@ class FingerMenuWdg(BaseRefreshWdg):
                              spt.hide(edit_menu);
                          }, 500 )
                     }
-                 }
+                }
                 '''
 
         if not top_class:

@@ -563,14 +563,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
 
 
-    def init(my):
-        my.due_date_col = my.kwargs.get('due_date_col')
-        if not my.due_date_col:
-            my.due_date_col = 'bid_end_date'
-
-
-
-
     def get_display(my):
 
         my.init_data()
