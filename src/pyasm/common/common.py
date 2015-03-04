@@ -68,7 +68,17 @@ class Common(Base):
 
 
     def get_next_sobject_code(sobject, column):
-        '''get the next code'''        
+        '''Get the next code. When given an sobject, and a column, it gets the value of that
+        attribute of the sobject, and increments its value by 1.
+
+        For example: you have an asset, and you give the column 'code'.
+        - If code is asset, then you will be returned asset_001.
+        - If code is asset_001, then you will be returned asset_002.
+        - If there are already, and only codes asset_007, and asset that exist, 
+        this function returns asset_008.
+        - If your code is 009, then this function will return 009_001.
+        - If there is no code, you will recieve a default TACTIC code.
+        '''        
 
         code = sobject.get_value(column)
 
@@ -79,22 +89,28 @@ class Common(Base):
         # build the new code
         code_array = code.split("_")
 
-        # Sample cases:
-        # if the array looks like this ["vfx", "layout", "001"]
-        # or the array looks like this ["vfx", "layout", "test"]
-        # or the array looks like this ["vfx", "layout"]
-        # or the array looks like this ["vfx", "001"]
-        # or the array looks like this ["vfx"]
-        # or the array looks like this ["vfx/chocolate"]
+        '''
+        Sample cases:
+        if the array looks like this ["vfx", "layout", "001"]
+        or the array looks like this ["vfx", "layout", "test"]
+        or the array looks like this ["vfx", "layout"]
+        or the array looks like this ["vfx", "001"]
+        or the array looks like this ["vfx"]
+        or the array looks like this ["vfx/chocolate"]
+        or the array looks like this ["1"]
+        '''
 
-        has_number = code_array[-1].isdigit()
+        has_end_number = code_array[-1].isdigit()
+        # if the array is something like ["1"]
+        if len(code_array) == 1:
+            has_end_number = False
 
-        if code_array and has_number:
+        new_code = None
+
+        if has_end_number:
             new_code = "%s_%s" % ("_".join(code_array[0:-1]), code_num)
-        elif code_array and not has_number:
-            new_code = "%s_%s" % ("_".join(code_array), code_num)
         else:
-            new_code = ""
+            new_code = "%s_%s" % ("_".join(code_array), code_num)
 
         return new_code
     get_next_sobject_code = staticmethod(get_next_sobject_code)
@@ -114,12 +130,14 @@ class Common(Base):
         # assumptions: a code would look something like this asset_001
         # the only numbers that we care about are the trailing ones
 
-        # To get the next number, first do a search for
-        # Order code by desc (code starts with asset_)
-        # get a count of the search
-        # grab the first result of the search. Get it's trailing number
-        # the number to be returned will is whichever is bigger of the count or the trailing number
-        # if ther is a number for neither, then return 1.
+        '''
+        To get the next number, first do a search for
+        Order code by desc (code starts with asset_)
+        get a count of the search
+        grab the first result of the search. Get it's trailing number
+        the number to be returned will is whichever is bigger of the count or the trailing number
+        if ther is a number for neither, then return 1.
+        '''
 
         # set the default start value
         code_num = Common._get_start_code()
@@ -129,10 +147,32 @@ class Common(Base):
         search = Search(search_type)
         search.set_show_retired_flag(True)
 
-        #for column in columns:
         value = sobject.get_value(column)
         startswith_value = value.rstrip("0123456789")
-        search.add_filter(column, startswith_value+"%", op='LIKE')
+
+        # if column is code, then value is the code
+
+        '''
+        There are two cases in which startswith_value would be an empty string
+        either there was no code to begin with, or the code is all numbers
+        if there is no code, don't do a search.
+        if there are only numbers, go off of the numbers
+        ie: if the code is 403. The return code should be 403_001
+        '''
+        do_search = True
+        if not startswith_value:
+            # if there is no code
+            if not value:
+                do_search = False
+            # if code is all numbers
+            else:
+                startswith_value = value
+
+
+        if do_search:
+            search.add_filter(column, "%s%%" % (startswith_value), op='LIKE')
+        else:
+            return None
        
         # order by descending codes
         search.add_order_by("code desc")
@@ -146,24 +186,27 @@ class Common(Base):
             last_sobject_code_num = last_sobject_code.lstrip(startswith_value)
             last_sobject_code_num = re.sub("[^0-9]", "", last_sobject_code_num)
 
+        # if last_sobject_code_num doesn't exist, then set it to 0
+        # if it does, make sure that it's an int
         if not last_sobject_code_num:
             last_sobject_code_num = 0
+        else:
+            last_sobject_code_num = int(last_sobject_code_num)
 
         # the number to be returned will is whichever is bigger of the count or the trailing number
         if int(count) > int(last_sobject_code_num):
             code_num = int(count) - 1
-            # count is subtracted by 1 because there are two cases
-            # either the code starts with something like asset, or asset_001
-            # if it starts off as asset, then it's the same as starting from 0
-            # if it starts with 001 though, then it's fine, because it'll take the 001 instead
+            '''
+            count is subtracted by 1 because there are two cases
+            either the code starts with something like asset, or asset_001
+            if it starts off as asset, then it's the same as starting from 0
+            if it starts with 001 though, then it's fine, because it'll take the 001 instead
+            '''
         else:
             code_num = last_sobject_code_num
 
         # increase the larger number by 1
-        try:
-            code_num = int(code_num) + 1
-        except ValueError:
-            code_num = 1
+        code_num = code_num + 1
 
         return code_num
 
