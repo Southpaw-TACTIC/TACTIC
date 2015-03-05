@@ -1862,7 +1862,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         # add the context label if it is different from process in use_parent mode
         # this is a special case where we explicitly use processs/context for note
-        if my.use_parent =='true' and my.contexts:
+        #if use_parent =='true' and my.contexts:
+        if my.contexts:
             hidden =HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
