@@ -499,7 +499,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
     def is_groupable(my):
         return True
 
-            
     def init(my):
         my.due_date_col = my.kwargs.get('due_date_col')
         if not my.due_date_col:
