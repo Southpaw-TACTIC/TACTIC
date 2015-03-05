@@ -13,7 +13,8 @@
 __all__ = ['TableSchemaDumper', 'TableDataDumper']
 
 
-import re, sys
+import re 
+import sys
 import types
 import datetime
 import codecs
@@ -182,9 +183,9 @@ class TableDataDumper(object):
         my.ignore_columns = columns
     
     
-    def set_replace_token(my, project_code, replace, regex, column):
+    def set_replace_token(my, replace, column, regex=None):
         key = column
-        value = [project_code,replace,regex]
+        value = [replace, regex]
         my.replace_dict[key] = value 
         
         
@@ -345,7 +346,6 @@ class TableDataDumper(object):
         column_info = SearchType.get_column_info(my.search_type)
 
         for sobject in my.sobjects:
-            project_code =sobject.get_project_code()
             f.write( "%s\n" % my.delimiter )
 
 
@@ -362,13 +362,15 @@ class TableDataDumper(object):
                     
                     for column,replace_args in my.replace_dict.items():
                         if name == column:
-                            project_code = replace_args[0]
-                            replace_str = replace_args[1]
-                            regex = replace_args[2]
+                            replace_str = replace_args[0]
+                            regex = replace_args[1]
                             
-                            if not re.match(regex,value):
-                                raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
-                            value = re.sub(regex,replace_str,value)
+                            if regex:
+                                if not re.match(regex,value):
+                                    raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
+                                value = re.sub(regex,replace_str,value)
+                            else:
+                                value = replace_str
 
     
                         

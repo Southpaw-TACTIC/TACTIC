@@ -632,7 +632,7 @@ class PluginCreator(PluginBase):
             if search_type == "sthpw/pipeline":
                 #regex is looking for a word bfore "/" 
                 regex = r'^\w+\/'
-                dumper.set_replace_token(project_code,"$PROJECT/",regex,"code")
+                dumper.set_replace_token("$PROJECT/", "code", regex)
         
         dumper.dump_tactic_inserts(path, mode='sobject')
 
