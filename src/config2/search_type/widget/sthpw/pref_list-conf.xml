@@ -34,11 +34,11 @@
 
 <!-- view for users to edit their preference -->
 <user>
-    <element name="title"/>
-    <element name="description" edit="false">
+    <element name="title" width="250" />
+    <element name="description" width="350" edit="false">
         <display class="tactic.ui.table.PreferenceDescriptionWdg"/>
     </element>
-    <element name="value" edit="false">
+    <element name="value" width="350" edit="false">
         <display class="tactic.ui.table.PreferenceEditWdg"/>
     </element>
 </user>
