@@ -21,6 +21,21 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.4.0.a01
     #
 
+    def upgrade_v4_3_0_v02_001(my):
+
+        if my.get_database_type() == 'MySQL':
+            my.run_sql('''
+            ALTER table pipeline MODIFY code varchar(128) NULL;
+            ''')
+        elif my.get_database_type() == 'SQLServer':
+            my.run_sql('''
+            ALTER table pipeline ALTER COLUMN code varchar(128) NULL;
+            ''')
+        else:
+            my.run_sql('''
+            ALTER TABLE pipeline ALTER COLUMN code DROP NOT NULL;
+            ''')
+
     def upgrade_v4_2_0_a01_003(my):
         my.run_sql('''
         INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/interaction', 'sthpw/interaction', 'sthpw', 'User Interaction', 'sthpw', 'interaction', 'pyasm.search.SObject', 'User Interaction', 'public');
