@@ -824,7 +824,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
             var kwargs = {
                 ticket: ticket,
                 filename: filename
-            }
+            };
             try {
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
                 var info = ret_val.info;
