@@ -92,7 +92,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.view:
             my.view = 'table'
 
-
+        my.do_search = True
         my.search = None
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
@@ -662,7 +662,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         try:
             my.alter_search(search)
             my.items_found = search.get_count()
-            my.sobjects = search.get_sobjects()
+
+            if my.do_search == True:
+                my.sobjects = search.get_sobjects()
+
         except SqlException, e:
             my.search_wdg.clear_search_data(search.get_base_search_type())
 

@@ -618,7 +618,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         edit_div.add_style("max-height: 300px")
         edit_div.add_style("overflow-y: auto")
 
-        ignore = ["preview", "notes"]
+        ignore = ["preview", "notes", "files"]
 
         from tactic.ui.panel.edit_layout_wdg import EditLayoutWdg
         if my.parent:
@@ -1260,8 +1260,6 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         return top
-
-
 
 
 

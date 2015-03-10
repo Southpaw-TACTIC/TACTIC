@@ -537,19 +537,69 @@ class EditWdg(BaseRefreshWdg):
             width = my.kwargs.get("width")
         if not width:
             width = 600
-        table.add_style("width: %s" % width)
 
         height = attrs.get('height')
         if height:
             table.add_style("height: %s" % height)
 
-        
-        tr = table.add_row()
-
 
         show_header = my.kwargs.get("show_header")
         if show_header not in ['false', False]:
             my.add_header(table, sobj_title)
+
+
+        tr = table.add_row()
+
+        stype_type = search_type_obj.get_value("type", no_exception=True)
+        if stype_type in ['media'] and my.sobjects:
+
+            td = table.add_cell()
+
+            width += 300
+
+            from tactic.ui.panel import ThumbWdg2
+            thumb = ThumbWdg2()
+            thumb.set_sobject(my.sobjects[0])
+            td.add(thumb)
+            thumb.add_style("margin: 0px 10px")
+            path = thumb.get_lib_path()
+
+            td.add_style("padding: 10px")
+            td.add_attr("rowspan", len(my.widgets)+2)
+            td.add_style("min-width: 250px")
+            td.add_style("vertical-align: top")
+            td.add_border(direction="right")
+
+            if path:
+
+                td.add("<h3>File Information</h3>")
+                td.add("<br/>")
+
+                from pyasm.checkin import BaseMetadataParser
+                parser = BaseMetadataParser.get_parser_by_path(path)
+
+                data = parser.get_tactic_metadata()
+                data_table = Table()
+                data_table.add_style("margin: 15px")
+                td.add(data_table)
+                for name, value in data.items():
+                    data_table.add_row()
+                    display_name = Common.get_display_title(name)
+                    dtd = data_table.add_cell("%s: " % display_name)
+                    dtd.add_style("width: 150px")
+                    dtd.add_style("padding: 3px")
+                    dtd = data_table.add_cell(value)
+                    dtd.add_style("padding: 3px")
+
+            else:
+                td.add("<h3>No Image</h3>")
+                td.add("<br/>")
+
+
+        # set the width
+        table.add_style("width: %s" % width)
+
+
 
         single = my.kwargs.get("single")
         if single in ['false', False] and my.mode == 'insert':
@@ -685,7 +735,7 @@ class EditWdg(BaseRefreshWdg):
                 title = widget.get_title()
 
                 td = table.add_cell(title)
-                td.add_style("padding: 10px 15px 10px 5px")
+                td.add_style("padding: 15px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
  
@@ -843,6 +893,8 @@ class EditWdg(BaseRefreshWdg):
 
 
     def add_header(my, table, sobj_title):
+        tr, th = table.add_row_cell()
+
         title_str = my.kwargs.get("title")
 
         if not title_str:
@@ -858,13 +910,12 @@ class EditWdg(BaseRefreshWdg):
                 title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
             
 
-        th = table.add_header()
-        
         title_div = DivWdg()
+        title_div.add_style("font-weight: bold")
         title_div.set_attr('title', my.view)
         th.add(title_div)
         title_div.add(title_str)
-        th.add_color("background", "background3")
+        #th.add_color("background", "background3")
         if my.color_mode == "default":
             th.add_color("border-color", "table_border", default="border")
             th.add_style("border-width: 1px")
@@ -872,6 +923,8 @@ class EditWdg(BaseRefreshWdg):
         th.set_attr("colspan", "2")
         th.add_style("height: 30px")
         th.add_style("padding: 3px 10px")
+
+        th.add("<hr/>")
 
 
     def add_hidden_inputs(my, div):

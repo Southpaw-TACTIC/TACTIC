@@ -71,7 +71,7 @@ class WizardWdg(BaseRefreshWdg):
 
         title = my.kwargs.get("title")
         if not title:
-            title = "No Title"
+            title = "none"
         
         if title != "none":
             title_wdg = DivWdg()
@@ -103,7 +103,6 @@ class WizardWdg(BaseRefreshWdg):
                 if i < len(my.titles):
                     title = my.titles[i]
                 else:
-                    title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
@@ -150,6 +149,8 @@ class WizardWdg(BaseRefreshWdg):
     def add(my, widget, name):
         widget.set_name(name)
         super(WizardWdg, my).add(widget, name)
+
+
 
     def get_header_wdg(my):
         div = DivWdg()
@@ -221,25 +222,11 @@ class WizardWdg(BaseRefreshWdg):
                 title = title.replace(".", " ")
                 title = Common.get_display_title(title)
 
+            title = "%d.%s" % (i+1, title)
             name_div.add(title)
             name_div.add_style("font-weight: bold")
 
 
-            """
-            if (i+1) < len(my.widgets):
-                arrow_div = DivWdg()
-                dots_div.add(arrow_div)
-                arrow_div.add_style("float: left")
-                arrow_div.add_style("position: absolute")
-                arrow_div.add_style("margin-left: %spx" % ((width+left)*(i+1.2)))
-                arrow_div.add_style("top: -4px")
-                arrow_div.add_style("text-align: center")
-                icon = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
-                arrow_div.add(icon)
-            """
-
-
-        #dots_div.add("<br clear='all'/>")
 
 
         div.add_relay_behavior( {

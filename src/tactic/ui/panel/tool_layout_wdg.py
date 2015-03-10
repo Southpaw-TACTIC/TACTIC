@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
+__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomAggregateWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
 from pyasm.common import Common, Container
 from pyasm.search import Search, SearchKey
@@ -344,12 +344,23 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
+    def init(my):
+        my.do_search = False
+        super(CustomLayoutWithSearchWdg, my).init()
+
     def get_content_wdg(my):
         kwargs = my.kwargs.copy()
         kwargs["search"] = my.search
         layout = CustomLayoutWdg(**kwargs)
         layout.set_sobjects(my.sobjects)
         return layout
+
+
+class CustomAggregateWdg(CustomLayoutWithSearchWdg):
+
+    def init(my):
+        my.do_search = False
+        super(CustomLayoutWithSearchWdg, my).init()
 
 
 

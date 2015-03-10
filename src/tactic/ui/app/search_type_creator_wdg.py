@@ -235,7 +235,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         create_div = HtmlElement.div()
-        wizard.add(create_div, "Information")
+        wizard.add(create_div, "Info")
         my.set_as_panel(create_div)
 
         #name_input = TextWdg("search_type_name")

@@ -3209,6 +3209,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
             kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_scale'] = my.kwargs.get("show_scale")
             kwargs['styles'] = my.kwargs.get("styles")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
@@ -3247,6 +3248,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
+
+        elif layout == 'aggregate':
+            from tool_layout_wdg import CustomAggregateWdg
+            layout_table = CustomAggregateWdg(**kwargs)
 
         elif layout == 'custom_item':
             from tool_layout_wdg import CustomItemLayoutWithSearchWdg

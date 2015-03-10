@@ -745,19 +745,20 @@ display class, it will adopt the one defined here-->
     <element name="images">
         <display class="tactic.ui.widget.SimpleUploadWdg">
         </display>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
 
     <element name="files" edit="true">
         <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
         </display>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
 
 
     <element name="snapshot" edit="true">
          <display class="tactic.ui.widget.SimpleUploadWdg"/>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
    
 
@@ -817,12 +818,14 @@ display class, it will adopt the one defined here-->
         <!-- <action class="UploadAction"/>-->
     </element>
 
-    <element name="files">
+
+    <element name="files" edit="true">
         <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
         </display>
         <action class="pyasm.command.UploadAction"/>
-        <!-- <action class="UploadAction"/>-->
     </element>
+
 
 
     <element name="snapshot">

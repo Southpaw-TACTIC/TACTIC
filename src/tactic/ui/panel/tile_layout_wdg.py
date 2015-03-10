@@ -1080,7 +1080,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.scale_called = True
 
         show_scale = my.kwargs.get("show_scale")
-        print "ST ", my.search_type
         div = DivWdg()
         if show_scale in [False, 'false']:
             div.add_style("display: none")
@@ -1474,6 +1473,11 @@ class ThumbWdg2(BaseRefreshWdg):
         return my.path
 
 
+    def get_lib_path(my):
+        return my.lib_path
+
+
+
 
     def get_display(my):
 
@@ -1539,6 +1543,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         icon_path = None
         path = None
+        lib_path = None
 
         base_search_type = sobject.get_base_search_type()
         if base_search_type == "sthpw/snapshot":
@@ -1562,12 +1567,18 @@ class ThumbWdg2(BaseRefreshWdg):
 
             file_type = "main"
             path = snapshot.get_web_path_by_type(file_type)
+            lib_path = snapshot.get_lib_path_by_type(file_type)
 
         if icon_path:
             path = icon_path
         elif path:
             path = my.find_icon_link(path)
 
+
+        # remember the last path
+        my.path = path
+        my.lib_path = lib_path
+        my.icon_path = icon_path
  
         return path
 
