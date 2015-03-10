@@ -1409,7 +1409,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             #line_div.add_style("opacity: 0.85")
             line_div.add("Add milestone")
             line_div.add(HtmlElement.br())
-            line_div.add_style("cursor: pointer;")
+            line_div.add_style("cursor: pointer")
         
 
             line_div.add_behavior( {
