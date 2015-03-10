@@ -798,6 +798,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                             var loadingImage = loadImage(
                                 file,
                                 function (img) {
+                                    img.setStyle("width", "100%");
+                                    img.setStyle("height", "");
                                     thumb_el.innerHTML = "";
                                     thumb_el.appendChild(img);
                                 },

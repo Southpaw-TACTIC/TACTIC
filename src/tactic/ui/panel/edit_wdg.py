@@ -17,7 +17,7 @@ from pyasm.common import Environment, Common, TacticException, jsonloads, Contai
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
 from pyasm.widget import WidgetConfigView, WidgetConfig, BaseInputWdg
-from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
+from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg, TextAreaWdg, CheckboxWdg, SelectWdg
 
 
 from tactic.ui.common import BaseRefreshWdg
@@ -668,7 +668,6 @@ class EditWdg(BaseRefreshWdg):
             # Bootstrap
             widget.add_class("form-control")
 
-            from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
             if not isinstance(widget, CheckboxWdg):
                 widget.add_style("width: 100%")
 
@@ -771,7 +770,7 @@ class EditWdg(BaseRefreshWdg):
                 td = table.add_cell( widget )
                 #td = table.add_cell( widget.get_value() )
                 td.add_style("min-width: 300px")
-                td.add_style("padding: 10px 15px 10px 5px")
+                td.add_style("padding: 10px 25px 10px 5px")
                 td.add_style("vertical-align: top")
 
                 if my.color_mode == "default":
@@ -1144,7 +1143,6 @@ class EditWdg(BaseRefreshWdg):
 
     def get_default_display_wdg(cls, element_name, display_options, element_type, kbd_handler=False):
 
-        from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
         if element_type in ["integer", "smallint", "bigint", "int"]:
             behavior = {
                 'type': 'keyboard',

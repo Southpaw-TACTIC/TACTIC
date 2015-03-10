@@ -2985,7 +2985,14 @@ spt.table.drop_row = function(evt, el) {
             upload_complete: function() {
                 var server = TacticServerStub.get();
                 var kwargs = {mode: 'uploaded'};
-                server.simple_checkin( search_key, context, filename, kwargs);
+                spt.table.dragleave_row(evt, el);
+                try {
+                    server.simple_checkin( search_key, context, filename, kwargs);
+                }
+                catch(e) {
+                    spt.alert("An error occured in the check-in: ["+e+"]");
+                    return;
+                }
             }
         };
         spt.html5upload.upload_file(upload_file_kwargs);
@@ -2998,6 +3005,8 @@ spt.table.drop_row = function(evt, el) {
                     file,
                     function (img) {
                         img = $(img);
+                        img.setStyle("width", "100%");
+                        img.setStyle("height", "");
                         thumb_el.innerHTML = "";
                         thumb_el.appendChild(img);
                         img.setSize(size);
