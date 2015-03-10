@@ -17,7 +17,7 @@ from pyasm.common import Common, Xml
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException
 from pyasm.search import Search, SearchType
-from pyasm.biz import Snapshot, Clipboard
+from pyasm.biz import Snapshot, Clipboard, Project
 from pyasm.checkin import FileCheckin, CheckinException
 
 from pyasm.search import WidgetDbConfig
@@ -74,7 +74,9 @@ class SObjectCopyCmd(Command):
                 if not value:
                     continue
             new_sobject.set_value(name, value)
-
+        if SearchType.column_exists(dst_search_type, "project_code"):
+            project_code = Project.get_project_code()
+            new_sobject.set_value("project_code", project_code)
         new_sobject.commit()
 
 
