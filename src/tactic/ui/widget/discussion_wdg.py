@@ -1566,7 +1566,7 @@ class DiscussionWdg(BaseRefreshWdg):
         
 
         #--------- EDIT NOTES --------#
-        icon.add_class("edit_note")
+        
         icon.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -1736,6 +1736,7 @@ class DiscussionWdg(BaseRefreshWdg):
             var add_note = container.getElement(".spt_discussion_add_note");
 
             if (! add_note) {
+
                 var kwargs = container.getAttribute("spt_kwargs");
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
