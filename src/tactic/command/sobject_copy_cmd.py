@@ -74,8 +74,9 @@ class SObjectCopyCmd(Command):
                 if not value:
                     continue
             new_sobject.set_value(name, value)
-        project_code = Project.get_project_code()
-        new_sobject.set_value("project_code", project_code)
+        if SearchType.column_exists(dst_search_type, "project_code"):
+            project_code = Project.get_project_code()
+            new_sobject.set_value("project_code", project_code)
         new_sobject.commit()
 
 
