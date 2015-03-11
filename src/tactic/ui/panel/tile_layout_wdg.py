@@ -11,7 +11,8 @@
 #
 __all__ = ["TileLayoutWdg"]
 
-import re
+import re, os
+
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
@@ -944,6 +945,80 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+        #unique_id = layout_wdg.get_table_id()
+        layout_wdg.add_behavior( {
+            #'type': 'listen',
+            #'event_name': "loading|%s" % unique_id,
+            'type': 'load',
+            'cbjs_action': '''
+
+            console.log(bvr.src_el);
+            var elements = bvr.src_el.getElements(".spt_generate_icon");
+
+            var rows = [];
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].setStyle("border", "solid 5px green");
+                elements[i].removeClass("spt_generate_icon");
+                var row = elements[i].getParent(".spt_table_row");
+                rows.push(row);
+            }
+
+            if (rows.length == 0) {
+                return;
+            }
+
+            var jobs = [];
+            var count = 0;
+            var chunk = 5;
+            while (true) {
+                var job_item = rows.slice(count, count+chunk);
+                if (job_item.length == 0) {
+                    break;
+                }
+                jobs.push(job_item);
+                count += chunk;
+            }
+
+            var count = -1;
+
+
+            var func = function() {
+                count += 1;
+                var rows = jobs[count];
+                if (! rows || rows.length == 0) {
+                    return;
+                }
+
+                var on_complete = function(ret_val) {
+                    spt.table.refresh_rows(rows, null, null, {
+                        on_complete: func,
+                        icon_generate_refresh:false
+                    });
+                }
+                var cmd = 'pyasm.widget.ThumbCmd';
+
+                var search_keys = [];
+                for (var i = 0; i < rows.length; i++) {
+                    var search_key = rows[i].getAttribute("spt_search_key");
+                    search_keys.push(search_key);
+                }
+
+                var server = TacticServerStub.get();
+                var kwargs = {
+                    search_keys: search_keys
+                };
+                server.execute_cmd(cmd, kwargs, {}, {
+                            on_complete:on_complete, use_transaction:false
+                });
+            }
+            func();
+
+            '''
+        } )
+ 
+
+
+
 
     def get_tile_wdg(my, sobject):
 
@@ -1263,6 +1338,12 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         div.add(table)
         table.add_row()
 
+
+        title = DivWdg()
+        title.add("Scale: ")
+        table.add_cell(title)
+        title.add_style("padding: 0px 10px 0px 0px")
+
         """
         # TO BE DELETED
         less_div = DivWdg()
@@ -1490,15 +1571,36 @@ class ThumbWdg2(BaseRefreshWdg):
 
         sobject = my.get_current_sobject()
 
-        div = DivWdg()
+        div = my.top
         div.add_class("spt_thumb_top")
 
         path = my.path
+
+
+        search_type = sobject.get_base_search_type()
+        if path.endswith("indicator_snake.gif"):
+            image_size = os.path.getsize(my.lib_path)
+            if image_size != 0:
+                # generate icon dynamically
+
+                if search_type == 'sthpw/snapshot':
+                    #parent = sobject.get_parent()
+                    #if parent:
+                    #    div.set_attr("spt_search_key", parent.get_search_key())
+                    div.set_attr("spt_search_key", sobject.get_search_key())
+                else:
+                    div.set_attr("spt_search_key", sobject.get_search_key())
+                div.add_class("spt_generate_icon")
+                div.set_attr("spt_image_size", image_size)
+
+
+
         if path:
             img = HtmlElement.img(src=path)
         else:
             search_type = sobject.get_search_type_obj()
             path = my.get_path_from_sobject(search_type)
+
             if path:
                 img = DivWdg()
                 img.add_style("opacity: 0.2")
@@ -1539,6 +1641,8 @@ class ThumbWdg2(BaseRefreshWdg):
             div.add(name_hover)
 
         return div
+
+
 
 
     def get_path_from_sobject(my, sobject):

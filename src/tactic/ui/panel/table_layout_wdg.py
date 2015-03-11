@@ -4860,23 +4860,26 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // default to update bottom row color
     if (kw['refresh_bottom'] == null) kw.refresh_bottom = true;
 
-
+    
 
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
-    var layout = rows[0].getParent(".spt_layout");
-    spt.table.set_layout(layout);
+    var layout_el = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout_el);
+
+    var class_name = layout_el.getAttribute("spt_class_name");
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
 
-    var view = layout.getAttribute("spt_view");
-    var search_type = layout.getAttribute("spt_search_type");
-    var config_xml = layout.getAttribute("spt_config_xml");
+    var view = layout_el.getAttribute("spt_view");
+    var search_type = layout_el.getAttribute("spt_search_type");
+    var config_xml = layout_el.getAttribute("spt_config_xml");
+    var layout = layout_el.getAttribute("spt_layout");
 
     
-    var table_top = layout.getParent('.spt_table_top');
+    var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
     var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
@@ -4890,8 +4893,9 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         group_elements = [];
     }
 
-    var class_name = 'tactic.ui.panel.TableLayoutWdg';
-    //var class_name = 'tactic.ui.panel.TileLayoutWdg';
+    if (!class_name) {
+        class_name = 'tactic.ui.panel.TableLayoutWdg';
+    }
 
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
@@ -4902,6 +4906,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
+        layout: layout,
         search_keys: search_keys,
         show_shelf: false,
         show_select: show_select,
