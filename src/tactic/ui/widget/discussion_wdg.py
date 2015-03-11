@@ -151,7 +151,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
         my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
-      
 
         DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
         
@@ -170,8 +169,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def preprocess(my):
         parent =  my.get_parent_wdg()
-        if parent and parent.kwargs.get('__hidden__') == True:
-
+        if parent and parent.kwargs.get('__hidden__') in [True, 'True']:
             my.discussion.kwargs['hidden'] = True
             my.hidden = True
            
@@ -485,7 +483,6 @@ class DiscussionWdg(BaseRefreshWdg):
     def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
         '''hidden means it's a hidden row table'''
         
-
         layout.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_note_attachment',
