@@ -4915,6 +4915,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         config_xml: config_xml
     }
 
+    if (layout == "tile") {
+        kwargs['bottom_expr'] = layout_el.getAttribute("spt_bottom_expr");
+        kwargs['title_expr'] = layout_el.getAttribute("spt_title_expr");
+    }
+
 
 
 

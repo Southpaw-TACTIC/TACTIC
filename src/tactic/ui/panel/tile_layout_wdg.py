@@ -944,77 +944,75 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+        if my.kwargs.get("temp") != True:
+            #unique_id = layout_wdg.get_table_id()
+            layout_wdg.add_behavior( {
+                #'type': 'listen',
+                #'event_name': "loading|%s" % unique_id,
+                'type': 'load',
+                'cbjs_action': '''
 
-        #unique_id = layout_wdg.get_table_id()
-        layout_wdg.add_behavior( {
-            #'type': 'listen',
-            #'event_name': "loading|%s" % unique_id,
-            'type': 'load',
-            'cbjs_action': '''
+                var elements = bvr.src_el.getElements(".spt_generate_icon");
 
-            console.log(bvr.src_el);
-            var elements = bvr.src_el.getElements(".spt_generate_icon");
-
-            var rows = [];
-            for (var i = 0; i < elements.length; i++) {
-                elements[i].setStyle("border", "solid 5px green");
-                elements[i].removeClass("spt_generate_icon");
-                var row = elements[i].getParent(".spt_table_row");
-                rows.push(row);
-            }
-
-            if (rows.length == 0) {
-                return;
-            }
-
-            var jobs = [];
-            var count = 0;
-            var chunk = 5;
-            while (true) {
-                var job_item = rows.slice(count, count+chunk);
-                if (job_item.length == 0) {
-                    break;
+                var rows = [];
+                for (var i = 0; i < elements.length; i++) {
+                    elements[i].removeClass("spt_generate_icon");
+                    var row = elements[i].getParent(".spt_table_row");
+                    rows.push(row);
                 }
-                jobs.push(job_item);
-                count += chunk;
-            }
 
-            var count = -1;
-
-
-            var func = function() {
-                count += 1;
-                var rows = jobs[count];
-                if (! rows || rows.length == 0) {
+                if (rows.length == 0) {
                     return;
                 }
 
-                var on_complete = function(ret_val) {
-                    spt.table.refresh_rows(rows, null, null, {
-                        on_complete: func,
-                        icon_generate_refresh:false
+                var jobs = [];
+                var count = 0;
+                var chunk = 5;
+                while (true) {
+                    var job_item = rows.slice(count, count+chunk);
+                    if (job_item.length == 0) {
+                        break;
+                    }
+                    jobs.push(job_item);
+                    count += chunk;
+                }
+
+                var count = -1;
+
+
+                var func = function() {
+                    count += 1;
+                    var rows = jobs[count];
+                    if (! rows || rows.length == 0) {
+                        return;
+                    }
+
+                    var on_complete = function(ret_val) {
+                        spt.table.refresh_rows(rows, null, null, {
+                            on_complete: func,
+                            icon_generate_refresh:false
+                        });
+                    }
+                    var cmd = 'pyasm.widget.ThumbCmd';
+
+                    var search_keys = [];
+                    for (var i = 0; i < rows.length; i++) {
+                        var search_key = rows[i].getAttribute("spt_search_key");
+                        search_keys.push(search_key);
+                    }
+
+                    var server = TacticServerStub.get();
+                    var kwargs = {
+                        search_keys: search_keys
+                    };
+                    server.execute_cmd(cmd, kwargs, {}, {
+                                on_complete:on_complete, use_transaction:false
                     });
                 }
-                var cmd = 'pyasm.widget.ThumbCmd';
+                func();
 
-                var search_keys = [];
-                for (var i = 0; i < rows.length; i++) {
-                    var search_key = rows[i].getAttribute("spt_search_key");
-                    search_keys.push(search_key);
-                }
-
-                var server = TacticServerStub.get();
-                var kwargs = {
-                    search_keys: search_keys
-                };
-                server.execute_cmd(cmd, kwargs, {}, {
-                            on_complete:on_complete, use_transaction:false
-                });
-            }
-            func();
-
-            '''
-        } )
+                '''
+            } )
  
 
 
