@@ -1220,8 +1220,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
         search = Search("sthpw/milestone")
-        if login:
-            search.add_filter("login", login)
+        #if login:
+        #    search.add_filter("login", login)
         if project_code:
             if project_code == "$PROJECT":
                 search.add_project_filter()
