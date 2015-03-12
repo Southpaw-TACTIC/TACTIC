@@ -443,6 +443,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         my.error_columns = set()
         
         
+        my.expand_on_load = my.kwargs.get("expand_on_load")
+       
+        if my.expand_on_load in [False, 'false']:
+            my.expand_on_load = False
+        else:
+            my.expand_on_load = True
 
 
         my.sobject_levels = []
@@ -943,6 +949,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_behavior( {
             'type': 'load',
             'chunk': chunk_size,
+            'expand_on_load': my.expand_on_load,
             'unique_id': my.get_table_id(),
             'cbjs_action': '''
             var layout = bvr.src_el.getParent(".spt_layout");
@@ -976,6 +983,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
                     spt.named_events.fire_event(unique_id, {});
+                    // run at the end of last load
+                    if (bvr.expand_on_load) {
+                        spt.table.expand_table();
+                    }
+
                     return;
                 }
 
@@ -989,9 +1001,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_behavior( {
             'type': 'load',
             'unique_id': my.get_table_id(),
+            'expand_on_load': my.expand_on_load,
             'cbjs_action': '''
                 var unique_id = "loading|"+bvr.unique_id;
                 spt.named_events.fire_event(unique_id, {});
+                if (bvr.expand_on_load) {
+                     spt.table.expand_table();
+                }
             '''
             } )
  
@@ -1290,18 +1306,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
-        expand_on_load = my.kwargs.get("expand_on_load")
-        if expand_on_load in [True, 'true']:
-            expand_on_load = True
-        else:
-            expand_on_load = False
-
+        
 
         if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'load',
                 'element_names': my.element_names,
-                'expand_on_load': expand_on_load,
                 'column_widths': column_widths,
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -1320,12 +1330,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     spt.table.set_column_width(name, width);
                 }
 
-                if (bvr.expand_on_load) {
-                    spt.table.expand_table();
-                }
+               
                 '''
             } )
 
+       
 
 
         """
@@ -5466,7 +5475,6 @@ spt.table.get_column_widths = function() {
 
 spt.table.expand_table = function() {
     var layout = spt.table.get_layout();
-
     var version = layout.getAttribute("spt_version");
     var headers;
     var table = null;
