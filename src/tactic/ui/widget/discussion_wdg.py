@@ -1562,39 +1562,6 @@ class DiscussionWdg(BaseRefreshWdg):
         td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 5px")
-
-        
-
-        #--------- EDIT NOTES --------#
-        
-        icon.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_dialog_top");
-           
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
-
-            if (! add_note) {
-                var kwargs = container.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/'/g, '"');
-                kwargs = JSON.parse(kwargs);
-
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
-                var class_name = 'tactic.ui.widget.DiscussionEditWdg';
-                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
-                add_note = top.getElement(".spt_discussion_add_note");
-                spt.toggle_show_hide(add_note);
-            }
-
-            '''
-            } )
-
-
         title = DivWdg()
         title.add_class("spt_note_header")
         title.add_style("margin: 5px 0px")
@@ -1726,7 +1693,7 @@ class DiscussionWdg(BaseRefreshWdg):
         #--------- EDIT NOTES --------#
         right.add_class("edit_note")
         right.add_behavior( {
-            'type': 'hover',
+            'type': 'load',
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -1736,7 +1703,6 @@ class DiscussionWdg(BaseRefreshWdg):
             var add_note = container.getElement(".spt_discussion_add_note");
 
             if (! add_note) {
-
                 var kwargs = container.getAttribute("spt_kwargs");
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
