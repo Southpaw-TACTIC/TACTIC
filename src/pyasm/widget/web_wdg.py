@@ -1193,8 +1193,10 @@ class WebLoginWdg(Widget):
         if allow_change_admin:
             from pyasm.security import Sudo
             sudo = Sudo()
-            
-            admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            try:
+                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            finally:
+                sudo.exit()
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()

@@ -141,7 +141,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
         if my.is_insert =='true':
             from tactic.ui.container import WizardWdg
-            wizard = WizardWdg(title='Create New Column')
+            wizard = WizardWdg(title="none")
             config = WidgetConfig.get(view='tab', xml=config_xml)
             table_display = config.get_display_widget('View Mode')
             wizard.add(table_display, "View Mode")
@@ -1931,9 +1931,10 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell("&nbsp;"*5)
         td.add(" &nbsp; Class Name: ")
-        td.add_style("padding: 5px")
+        td.add_style("padding: 15px")
 
-        class_text = TextWdg("xxx_%s|display_class" % prefix)
+
+        class_text = TextInputWdg(name="xxx_%s|display_class" % prefix)
         class_text.add_class("spt_widget_display_class")
         class_text.add_behavior( {
             'type': 'change',

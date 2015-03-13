@@ -2734,12 +2734,18 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
 
 
-    var layout = element.getParent(".spt_layout");
-    if (!layout) {
-        if (element.hasClass("spt_layout"))
-            layout = element;
-        else if (panel)
-            layout = panel.getElement(".spt_layout");
+    
+    var layout;
+    // adopt it if element is already the layout
+    if (element.hasClass("spt_layout"))
+        layout = element;
+    else {
+        layout = element.getParent(".spt_layout");
+        if (!layout) {
+            
+            if (panel)
+                layout = panel.getElement(".spt_layout");
+        }
     }
     // default to version 2 table
     var version = "2";
@@ -2756,7 +2762,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
             return;
         }
     }
-    
     // if panel doesn't exist, then likely this is a table on its own
     if (panel == null) {
         var table_top;
@@ -2772,7 +2777,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
                    
                    var element_names = version == "2" ? spt.table.get_element_names() :  spt.dg_table.get_element_names(table);
                    
-
+              
                    if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
@@ -2937,6 +2942,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         class_name = "tactic.ui.panel.TableLayoutWdg";
     }
     var simple_search_view = target.getAttribute("spt_simple_search_view");
+    var simple_search_mode = target.getAttribute("spt_simple_search_mode");
+    var search_limit_mode = target.getAttribute("spt_search_limit_mode");
     var search_dialog_id = target.getAttribute("spt_search_dialog_id");
     var do_initial_search = target.getAttribute("spt_do_initial_search");
     var init_load_num = target.getAttribute("spt_init_load_num");
@@ -2944,6 +2951,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var element_names;
     var column_widths = [];
     var search_keys = [];
+    
     if (version == "2") {
         if (bvr.element_names) {
             element_names = bvr.element_names;
@@ -2956,7 +2964,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
             var size = headers[i].getSize();
             column_widths.push(size.x);
         }
-
         // specify selected search keys (disabling for now)
         //search_keys = spt.table.get_selected_search_keys();
         search_keys = []
@@ -3002,6 +3009,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'insert_view': insert_view,
         'edit_view': edit_view,
         'simple_search_view': simple_search_view,
+        'simple_search_mode': simple_search_mode,
+        'search_limit_mode': search_limit_mode,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
         'checkin_type': checkin_type,
@@ -3015,7 +3024,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     var pat = /TileLayoutWdg/;
     if (pat.test(class_name)) {
-        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow']
+        var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'overlay_expr', 'overlay_color'];
         for (var k=0; k < attr_list.length; k++) {
             var attr_val = target.getAttribute('spt_'+ attr_list[k]);
             if (attr_val)

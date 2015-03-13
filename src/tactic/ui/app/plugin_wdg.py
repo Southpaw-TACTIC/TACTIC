@@ -730,6 +730,7 @@ class PluginEditWdg(BaseRefreshWdg):
         if my.mode == 'insert':
             tr.add_style("display: none")
         td = table.add_cell()
+        td.add_class('spt_table_header')
         td.add("Version: ")
 
         td.add_style("vertical-align: top")
@@ -809,10 +810,15 @@ class PluginEditWdg(BaseRefreshWdg):
                 spt.alert("Cannot publish DEV version. Please change the version.");
                 return;
             }
+            if (version.match(/^v/i)) {
+                spt.alert("We recommend Version not starting with a V.")
+                return;
+            }
 
 
+            // PluginCreator handles version as well
             var exec = function() {
-                var class_name = 'tactic.ui.app.PluginVersionCreator';
+                var class_name = 'tactic.command.PluginCreator';
                 var kwargs = {
                     code: code,
                     version: version,
@@ -1173,8 +1179,10 @@ class PluginEditWdg(BaseRefreshWdg):
             }
 
 
+            // PluginCreator handles version as well
             var exec = function() {
-                var class_name = 'tactic.ui.app.PluginVersionCreator';
+                var class_name = 'tactic.command.PluginCreator';
+
                 var kwargs = {
                     code: code,
                     version: version,
@@ -1588,7 +1596,10 @@ class PluginEditWdg(BaseRefreshWdg):
                 spt.alert("Cannot create DEV version");
                 return;
             }
-
+            if (version.match(/^v/i)) {
+                spt.alert("We recommend Version not starting with a V.")
+                return;
+            }
 
             var class_name = 'tactic.ui.app.PluginVersionCreator';
             var kwargs = {
@@ -1604,7 +1615,7 @@ class PluginEditWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_plugin_top");
             spt.panel.refresh(top);
 
-            spt.notify.show_message('Plugin [' + code + '] v' + version+ ' created.');
+            spt.notify.show_message('Plugin [' + code + '] ' + version+ ' created.');
             
             '''
             } )

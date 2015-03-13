@@ -1009,6 +1009,19 @@ class SnapshotMetadataWdg(BaseRefreshWdg):
 __all__.append("PathMetadataWdg")
 class PathMetadataWdg(BaseRefreshWdg):
 
+    ARGS_KEYS = {
+        "search_key": {
+            'description': "Search key used to extract metadata from",
+            'type': 'TextWdg',
+            'order': 0,
+        },
+        "path": {
+            'description': "Path of image to be used to extract metadata",
+            'type': 'TextWdg',
+            'order': 1,
+        },
+    }
+ 
     def get_display(my):
 
         search_key = my.kwargs.get("search_key")

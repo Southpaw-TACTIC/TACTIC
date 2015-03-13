@@ -302,6 +302,7 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
       <search_type>sthpw/task</search_type>
+      <search_limit_mode>both</search_limit_mode>
       <view>table</view>
       <filter>
       [
@@ -945,12 +946,14 @@
           <config>
           <element name='content'>
             <display class='tactic.ui.panel.ViewPanelWdg'>
-                <search_type>sthpw/login_group</search_type>
-                <show_shelf>false</show_shelf>
+              <search_type>sthpw/login_group</search_type>
+              <show_shelf>true</show_shelf>
               <view>planner</view>
               <element_names>preview,login_group,users</element_names>
               <search_view>_planner</search_view>
               <do_search>true</do_search>
+              <show_layout_switcher>false</show_layout_switcher>
+              <show_gear>false</show_gear>
             </display>
          </element>
          </config>
@@ -967,11 +970,13 @@
           <config>
             <element name='content'>
             <display class='tactic.ui.panel.ViewPanelWdg'>
-              <show_shelf>false</show_shelf>
+              <show_shelf>true</show_shelf>
               <search_type>sthpw/login</search_type>
               <view>planner</view>
               <search_view>_planner</search_view>
               <do_search>true</do_search>
+              <show_layout_switcher>false</show_layout_switcher>
+              <show_gear>false</show_gear>
             </display>
             </element>
         </config>

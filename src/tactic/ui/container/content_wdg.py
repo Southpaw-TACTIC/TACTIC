@@ -35,12 +35,14 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         #top.add_style("opacity: 0.1")
 
+        """
         top.add_behavior( {
             'type': 'loadX',
             'cbjs_action': '''
             new Fx.Tween(bvr.src_el, {duration: 500}).start("opacity", 1.0);
             '''
         } )
+        """
 
         colors = {
             #"color3": top.get_color("color3"),

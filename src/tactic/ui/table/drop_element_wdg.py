@@ -498,9 +498,10 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
 //
 spt.drop.sobject_drop_action = function( evt, bvr )
 {
-    //var src_el = bvr._drop_source_bvr.src_el; 
-    var src_el = spt.drop.src_el;
-  
+    
+    // depending if the drag bvr use_copy attr, the src_el changes
+    var src_el = bvr._drop_source_bvr ? spt.drop.src_el: bvr.src_el;
+    
     if( bvr._drag_copy_el ) {
    
         spt.mouse._delete_drag_copy( bvr._drag_copy_el );
@@ -545,6 +546,7 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
 {
     // get all the source items
     var src_layout = src_el.getParent(".spt_layout");
+
     if (!src_layout) {
         log.warning("The source table is not the matching fast table layout.");
         return;

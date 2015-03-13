@@ -552,8 +552,10 @@ class CsvImportWdg(BaseRefreshWdg):
             upload_wdg.add_style('display: none')
             msg.add(upload_wdg)
 
+
             msg.add("<br/>")
           
+            """
             msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
             msg.add("<b>Published URL: </b><br/>") 
@@ -561,6 +563,7 @@ class CsvImportWdg(BaseRefreshWdg):
             text = TextInputWdg(name="web_url")
             text.add_style("width: 100%")
             msg.add(text)
+            """
  
 
 

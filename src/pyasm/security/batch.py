@@ -24,6 +24,11 @@ class Batch(Environment):
     def __init__(my, project_code=None, login_code=None, site=None):
         my.set_app_server("batch")
 
+        if not site:
+            # if not explicitly set, keep the current site
+           site = Site.get_site() 
+
+
         plugin_dir = Environment.get_plugin_dir()
         if plugin_dir not in sys.path:
             sys.path.insert(0, plugin_dir)
@@ -121,8 +126,14 @@ class XmlRpcInit(Environment):
 
     def _do_login(my):
 
+        allow_guest = Config.get_value("security", "allow_guest")
+        if allow_guest == 'true':
+            allow_guest = True
+        else:
+            allow_guest = False
+
         security = Environment.get_security()
-        ticket = security.login_with_ticket(my.ticket)
+        ticket = security.login_with_ticket(my.ticket, allow_guest=allow_guest)
 
         if not ticket:
             raise SecurityException("Cannot login with key: %s. Session may have expired." % my.ticket)

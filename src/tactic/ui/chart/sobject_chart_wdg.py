@@ -549,6 +549,7 @@ class CalendarChartWdg(BaseChartWdg):
                 max_date = timestamp
 
 
+
         # defined the buckets based on interval
         dates = [] 
         if my.interval == 'weekly':
@@ -558,6 +559,16 @@ class CalendarChartWdg(BaseChartWdg):
             max_date = max_date + timedelta(days=8)
 
             dates = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=min_date, until=max_date))
+
+
+        elif my.interval == 'daily':
+            min_date = datetime(min_date.year, min_date.month, min_date.day)
+            max_date = datetime(max_date.year, max_date.month, max_date.day)
+            min_date = min_date - timedelta(days=1)
+            #max_date = max_date + timedelta(days=1)
+
+            dates = list(rrule.rrule(rrule.DAILY, dtstart=min_date, until=max_date))
+
 
         elif my.interval == 'monthly':
             min_date = datetime(min_date.year, min_date.month, 1)
@@ -577,6 +588,7 @@ class CalendarChartWdg(BaseChartWdg):
             my.dates_dict[str(date)] = []
 
 
+        # put the appropriate sobjects in each date_dict item
         for sobject in sobjects:
             timestamp = sobject.get_value(my.column)
             timestamp = parser.parse(timestamp)
@@ -586,12 +598,15 @@ class CalendarChartWdg(BaseChartWdg):
                 timestamp = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=timestamp-timedelta(days=7), count=1))
                 timestamp = timestamp[0]
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
+            elif my.interval == "daily":
+                timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
+
             else:
                 timestamp = datetime(timestamp.year,timestamp.month,1)
 
             if my.dates_dict:
-            	week_sobjects = my.dates_dict[str(timestamp)]
-            	week_sobjects.append(sobject)
+            	interval_sobjects = my.dates_dict[str(timestamp)]
+            	interval_sobjects.append(sobject)
 
 
 
@@ -602,6 +617,8 @@ class CalendarChartWdg(BaseChartWdg):
                 #chart_labels.append("Week %s" % date.strftime("%W"))
                 label = (date + timedelta(days=6)).strftime("%d")
                 chart_labels.append("%s - %s" % (date.strftime("%b %d"), label))
+            elif my.interval == 'daily':
+                chart_labels.append(date.strftime("%b %d"))
             else:
                 chart_labels.append(date.strftime("%b %Y"))
 
@@ -672,6 +689,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
 
+        rotate_x_axis = my.kwargs.get("rotate_x_axis")
 
         chart = ChartWdg(
             width=width,
@@ -679,7 +697,8 @@ class CalendarChartWdg(BaseChartWdg):
             chart_type='bar',
             #legend=my.elements,
             labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)]
+            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
+            rotate_x_axis=rotate_x_axis,
         )
         table.add_cell(chart)
 
@@ -819,15 +838,23 @@ class CalendarChartWdg(BaseChartWdg):
                 timestamp = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=timestamp-timedelta(days=7), count=1))
                 timestamp = timestamp[0]
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
+
+
+            elif my.interval == "daily":
+
+                timestamp = list(rrule.rrule(rrule.DAILY, dtstart=timestamp-timedelta(days=1), count=1))
+                timestamp = timestamp[0]
+                timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
+
             else:
                 timestamp = datetime(timestamp.year,timestamp.month,1)
 
-            week_sobjects = dates_dict.get(str(timestamp))
-            if week_sobjects == None:
-                week_sobjects = []
-                dates_dict[str(timestamp)] = week_sobjects
+            interval_sobjects = dates_dict.get(str(timestamp))
+            if interval_sobjects == None:
+                interval_sobjects = []
+                dates_dict[str(timestamp)] = interval_sobjects
 
-            week_sobjects.append(sobject)
+            interval_sobjects.append(sobject)
 
         #for key, x in dates_dict.items():
         #    print key, len(x)

@@ -82,7 +82,13 @@ class FingerMenuWdg(BaseRefreshWdg):
 
 
         main_action = '''
-            var menu_top = bvr.src_el.getParent('.' + bvr.top_class).getElement('.' + bvr.menu_top_class);
+            
+            var parent = bvr.src_el.getParent('.' + bvr.top_class);
+            if (!parent) {
+                bvr.top_class = 'spt_tab_content';
+         		parent = bvr.src_el.getParent('.' + bvr.top_class);
+            }
+            var menu_top = parent.getElement('.' + bvr.menu_top_class);
             var menu = menu_top.getElement('.spt_menu_top');
             // don't use getSize()
     
@@ -161,7 +167,7 @@ class FingerMenuWdg(BaseRefreshWdg):
         '''
 
         if not top_class:
-            top_class = "spt_table"
+            top_class = "spt_layout_top"
 
         if js_action:
             main_action = '''%s
@@ -191,26 +197,29 @@ class FingerMenuWdg(BaseRefreshWdg):
                  var edit_menu = bvr.src_el.getParent('.'+bvr.top_class).getElement('.' + bvr.menu_top_class);
                  if (!edit_menu) {
                      log.critical('edit_menu not found!')
-                     return;
-                 }
-                 var menu_pos = edit_menu.getPosition();
-                 
-                 // when is_left, evt.x tends to be 80 pixels bigger, so increase the tolerance
-                 var tolerance =  edit_menu.is_left ? 5000 : 1500;
-
-                 var diff = (menu_pos.x - evt.page.x) * (menu_pos.y - evt.page.y);
-                 if (Math.abs(diff) > tolerance) {
-                     spt.hide(edit_menu);
+                     //return;
                  }
                  else {
-                     spt.finger_menu.timeout_id = setTimeout( function() {
+                     var menu_pos = edit_menu.getPosition();
+                     
+                     // when is_left, evt.x tends to be 80 pixels bigger, so increase the tolerance
+                     var tolerance =  edit_menu.is_left ? 5000 : 1500;
+
+                     var diff = (menu_pos.x - evt.page.x) * (menu_pos.y - evt.page.y);
+                     if (Math.abs(diff) > tolerance) {
                          spt.hide(edit_menu);
-                     }, 500 )
+                     }
+                     else {
+                         spt.finger_menu.timeout_id = setTimeout( function() {
+                             spt.hide(edit_menu);
+                         }, 500 )
+                    }
                 }
                 '''
 
         if not top_class:
-            top_class = "spt_table"
+            #top_class = "spt_table"
+            top_class = "spt_layout_top"
 
         if js_action:
             main_action = '''%s

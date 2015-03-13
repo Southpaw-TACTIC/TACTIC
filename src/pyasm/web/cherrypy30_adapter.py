@@ -124,7 +124,7 @@ class CherryPyAdapter(CherryPyAdapter20):
     def set_content_type(my, content_type):
         my.response.headers['Content-Type'] = content_type
 
-    def get_content_type(my, content_type):
+    def get_content_type(my):
         return my.response.headers['Content-Type']
 
 

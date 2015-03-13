@@ -231,6 +231,18 @@ TacticServerStub = function() {
         return this._delegate("subscribe", arguments, kwargs);
     }
 
+
+    /*
+     * interaction logging
+     */
+    this.add_interaction = function(key, data, kwargs) {
+        return this._delegate("add_interaction", arguments, kwargs);
+    }
+
+    this.get_interaction_count = function(key, kwargs) {
+        return this._delegate("get_interaction_count", arguments, kwargs);
+    }
+
     /*
      * Checkin/checkout methods
      */
@@ -912,6 +924,14 @@ TacticServerStub = function() {
         return this._delegate("create_task", arguments, kwargs);
     } 
 
+    this.get_tasks = function(search_key, kwargs) {
+        return this._delegate("get_tasks", arguments, kwargs);
+    }
+
+    this.get_task_status_colors = function() {
+        return this._delegate("get_task_status_colors", arguments);
+    }
+
 
     this.add_initial_tasks = function(search_key, kwargs) {
         return this._delegate("add_initial_tasks", arguments, kwargs);
@@ -1281,7 +1301,12 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['callback'];
         }
-        this._delegate("get_widget", arguments, kwargs, "string", callback);
+        var on_error = function(e) {
+            if (e == 502)
+                e = '502 Timeout Error.';
+            spt.alert(e); 
+        };
+        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
         return;
     }
 
@@ -1415,7 +1440,7 @@ TacticServerStub = function() {
         var ok = function() {
             window.location.reload();
         };
-        spt.info('You session has expired.', {'click': ok});
+        spt.info('Your session has expired.', {'click': ok});
     }
     this.async_callback = function(client, request, on_error) {
         if (request.readyState == 4) {
@@ -1434,8 +1459,11 @@ TacticServerStub = function() {
                         spt.alert(e_msg);
                 }
             } else {
-                //alert("status is " + request.status);
-                throw("status is " + request.status);
+                
+                if (on_error)
+                    on_error(request.status);
+                else
+                    throw("status is " + request.status);
             }
         }
     }
@@ -1446,6 +1474,8 @@ TacticServerStub = function() {
         if (ret_val.status != 200) {
             throw(ret_val.status);
         }
+
+        console.log(ret_val);
 
         if (ret_type == "raw") {
             return ret_val.responseText;

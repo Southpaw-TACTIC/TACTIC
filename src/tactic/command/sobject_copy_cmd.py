@@ -60,7 +60,7 @@ class SObjectCopyCmd(Command):
 
         data = sobject.get_data()
         for name, value in data.items():
-            if name in ['id', 'code', 'pipeline_code']:
+            if name in ['id','pipeline_code']:
                 continue
 
             if name not in columns:
@@ -68,6 +68,11 @@ class SObjectCopyCmd(Command):
 
             if not value:
                 continue
+
+            if name == "code":
+                value = Common.get_next_sobject_code(sobject, 'code')
+                if not value:
+                    continue
             new_sobject.set_value(name, value)
 
         new_sobject.commit()

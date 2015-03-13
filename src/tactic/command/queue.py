@@ -246,7 +246,7 @@ class JobTask(SchedulerTask):
         if num_jobs >= my.max_jobs:
             print "Already at max jobs [%s]" % my.max_jobs
             return
-       
+      
         my.job = my.get_next_job(queue_type)
         if not my.job:
             return
@@ -474,9 +474,10 @@ def run_batch(kwargs):
     kwargs = k.get("kwargs")
     login = k.get("login")
     project_code = k.get("project_code")
+    site = k.get("site")
 
     from pyasm.security import Batch
-    Batch(project_code=project_code, login_code=login)
+    Batch(site=site, project_code=project_code, login_code=login)
 
     cmd = Common.create_from_class_path(command, kwargs=kwargs)
     Command.execute_cmd(cmd)

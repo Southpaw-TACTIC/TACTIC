@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -112,7 +112,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
   
    
     def is_editable(cls):
-        return False
+        return True
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
@@ -145,10 +145,16 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el.getParent('.spt_note');
+           var note_top = bvr.src_el
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
-        my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
+
+        # disable the default activator
+        # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
+
+        # add action triggle for context itself
+        my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
+        my.menu.set_activator_over(layout, 'edit_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
       
@@ -1152,6 +1158,12 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+
+            edit_note_wdg = DivWdg()
+            edit_note_wdg.add_class("spt_edit_note_container")
+
+            note_dialog.add(edit_note_wdg)
+
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1330,6 +1342,11 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_class("spt_add_note_container")
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
+
+                    edit_note_wdg = DivWdg()
+                    edit_note_wdg.add_class("spt_edit_note_container")
+
+                    note_dialog.add(edit_note_wdg)
 
 
                 note_content = DivWdg()
@@ -1557,14 +1574,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         icon = IconWdg("Note", "BS_PENCIL")
-        td.add(icon)
+        #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 5px")
-
-
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("margin: 5px 0px")
+        title.add_style("margin: 5px 12px")
         title.add_style("font-weight: bold")
 
         tbody = content.add_tbody()
@@ -1677,7 +1692,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
-                    left.add("%s</br>" % login)
                     name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
                     left.add("%s</br>" % name)
                     left.add("%s</br>" % login_sobj.get_value("email"))
@@ -1717,6 +1731,7 @@ class DiscussionWdg(BaseRefreshWdg):
         content.close_tbody()
 
         return div
+
 
 
 
@@ -1862,7 +1877,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         # add the context label if it is different from process in use_parent mode
         # this is a special case where we explicitly use processs/context for note
-        if my.use_parent =='true' and my.contexts:
+        #if use_parent =='true' and my.contexts:
+        if my.contexts:
             hidden =HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
@@ -2077,7 +2093,7 @@ class DiscussionAddNoteCmd(Command):
 
             path = path.replace("\\", "/")
             basename = os.path.basename(path)
-            basename = File.get_filesystem_name(basename) 
+            basename = Common.get_filesystem_name(basename) 
             new_path = "%s/%s" % (upload_dir, basename)
             context = "publish"
 
@@ -2097,8 +2113,10 @@ class DiscussionAddNoteCmd(Command):
                     source_paths.append(web_path)
                     source_paths.append(icon_path)
 
+            # specify strict checkin_type to prevent latest versionless generated
             checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
-                    source_paths=source_paths,  context=context)
+                    source_paths=source_paths,  context=context, checkin_type='strict')
+
             checkin.execute()
 
 

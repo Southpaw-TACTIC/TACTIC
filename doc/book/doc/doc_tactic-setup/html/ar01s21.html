@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>21. Misc</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Setup" /><link rel="up" href="index.html" title="TACTIC Setup" /><link rel="prev" href="ar01s20.html" title="20. Widgets" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s20.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_misc"></a>21. Misc</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_how_to_set_up_a_simple_search_filter"></a>21.1. How To Set Up A Simple Search Filter</h3></div></div></div><p><span class="inlinemediaobject"><img src="media/1_simple_search_filter_setup_overview.png" alt="image" /></span></p><p><span class="strong"><strong>Description</strong></span></p><p>Adding a Simple Search Filter at the top of a view helps filter the
+table for particular values on certain columns. A filter can be created
+using a Select Filter Element Widget or by running an expression using a
+Checkbox Filter Element Widget. (To set up the Select and Checkbox
+Filter Element Widgets, please refer to the setup docs by the same
+name.)</p><p><span class="strong"><strong>Implementation</strong></span></p><p>Below are the steps to modify or add a Simple Search Filter to a view.
+The Simple Search View for the ticket list in the Scrum Project is used
+below as an example.</p><p>1) Go to the sidebar and open the view:</p><p><span class="strong"><strong>Admin Views → Project → Manage Side Bar</strong></span></p><p><span class="inlinemediaobject"><img src="media/2_simple_search_filter_manage_sidebar.png" alt="image" /></span></p><p>2) Look for the value in the following field:</p><p><span class="strong"><strong>Display Definition → Search → Simple Search View</strong></span></p><p>3) Open the Widget Config under:</p><p><span class="strong"><strong>Admin Views → Project → Widget Config</strong></span>.</p><p>Filter by the <span class="emphasis"><em>search_type</em></span>: <span class="strong"><strong>scrum/ticket</strong></span></p><p>Filter by the <span class="emphasis"><em>view</em></span> found in the Simple Search View field of the Manage
+Side Bar view.</p><p>In the Scrum example with the tickets, we would search for the
+_view_named: <span class="strong"><strong>simple_search_filter</strong></span></p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>If the <span class="emphasis"><em>Simple Search View</em></span> field is empty, TACTIC will look for the
+default Simple Search View filter named: <span class="strong"><strong>custom_filter</strong></span>.</p></blockquote></div><p>4) In the Widget Config entry, edit the <span class="emphasis"><em>config</em></span> field:</p><p>In the example below, the following Checkbox Filter Element Widgets were
+added: my_tickets, beth_tickets and ted_tickets</p><pre class="screen">&lt;config&gt;
+  &lt;simple_search_filter&gt;
+
+    &lt;element name='assigned'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@GET(sthpw/login.login)&lt;/values_expr&gt;
+          &lt;column&gt;assigned&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+    &lt;element name='status'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values&gt;new|open|in_dev|need_info|on_hold|need_validation|closed|invalid&lt;/values&gt;
+          &lt;column&gt;status&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+    &lt;element name='type'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@UNIQUE(@GET(scrum/ticket.type))&lt;/values_expr&gt;
+          &lt;column&gt;type&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+
+    &lt;element name='sprint'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@GET(scrum/sprint.title)&lt;/values_expr&gt;
+          &lt;column&gt;scrum/sprint.title&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+    &lt;element name='feature'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@GET(scrum/feature.title)&lt;/values_expr&gt;
+          &lt;column&gt;scrum/feature.title&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+    &lt;element name='product'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@GET(scrum/product.title)&lt;/values_expr&gt;
+          &lt;column&gt;scrum/feature.scrum/product.title&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+    &lt;element name='customer'&gt;
+        &lt;display class='tactic.ui.filter.SelectFilterElementWdg'&gt;
+          &lt;values_expr&gt;@UNIQUE(@GET(scrum/ticket.customer_code))&lt;/values_expr&gt;
+          &lt;column&gt;customer_code&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+
+
+  &lt;/simple_search_filter&gt;
+&lt;/config&gt;</pre><p>Here are some miscellaneous date related examples:</p><pre class="screen">   &lt;element name="dates"&gt;
+      &lt;display class="tactic.ui.filter.DateFilterElementWdg"&gt;
+            &lt;column&gt;creation_date&lt;/column&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;
+    &lt;!-- this makes use of the status log to filter tasks completed or set to review since a particular date --&gt;
+    &lt;element name='completed_date'&gt;
+        &lt;display class='tactic.ui.filter.DateFilterElementWdg'&gt;
+          &lt;column&gt;sthpw/status_log['to_status','in','Complete|Review'].timestamp&lt;/column&gt;
+        &lt;/display&gt;
+    &lt;/element&gt;
+
+   &lt;element name="date_range"&gt;
+      &lt;display class="tactic.ui.filter.DateRangeFilterElementWdg"&gt;
+            &lt;start_date_col&gt;bid_start_date&lt;/start_date_col&gt;
+            &lt;end_date_col&gt;bid_end_date&lt;/end_date_col&gt;
+            &lt;op&gt;in&lt;/op&gt;
+      &lt;/display&gt;
+    &lt;/element&gt;</pre><p>For more examples of the Keyword Search, Select Filter, and Date Filter,
+refer to those docuements.</p><p><span class="strong"><strong>Note</strong></span>: To filter for data from another database, the cross_db attribute
+of the KeywordFilterElementWdg can be used.</p><pre class="screen">&lt;!-- in a task view, search for the shot's title attribute--&gt;
+
+&lt;element name="keywords"&gt;
+  &lt;display class="tactic.ui.filter.KeywordFilterElementWdg"&gt;
+    &lt;mode&gt;keyword&lt;/mode&gt;
+    &lt;column&gt;vfx/shot.title&lt;/column&gt;
+    &lt;cross_db&gt;true&lt;/cross_db&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_connecting_stypes_2"></a>21.2. Connecting sTypes</h3></div></div></div><p>In a project, items (ie. files, assets) may be related to each other.
+For example, a car is built with various parts that can be identified
+separately but are all related to the same car. Another example can be
+found cinematic film production. The cinematic footage of one movie is
+commonly broken down into sequences and shots.</p><p><span class="strong"><strong>How do these relationships work in TACTIC?</strong></span> - Each sType is represented
+as a table in the database and each entry in the table represents an
+sObject. The relationships are created when storing matching data
+"properties" in each of the tables. In the example tables below there
+are "Sequence" and "Shot" sTypes. The "code" column matches the
+"sequence_code" column which illustrates which shot is related to which
+sequence.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">code </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">description</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>SEQ001</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The first sequence</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>SEQ002</p></td><td style="" align="left" valign="top"><p>The first sequence</p></td></tr></tbody></table></div><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">sequence_code </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">code </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">description</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>SEQ001</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>SEQ001_001</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Sequence one shot one</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>SEQ001</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>SEQ001_002</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Sequence one shot two</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>SEQ002</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>SEQ002_001</p></td><td style="" align="left" valign="top"><p>Sequence two shot one</p></td></tr></tbody></table></div><p>In the Schema Editor, relationships are represented by lines connecting
+the nodes. When these connections are made, the columns used to relate
+the sTypes can be chosen in the Connection Editor.</p><p>To create a new connection, hover over a node and click-drag a
+connection to the desired node (sType).</p><p><span class="inlinemediaobject"><img src="media/node-connect-drag.png" alt="image" /></span></p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>The direction of the arrow in the connection indicates from child to
+parent.</p></blockquote></div><p>After a connection is made, the Connection Attributes editor will open
+to enable the choice of column relationships. It is also possible to
+create new columns from this editor.</p><p><span class="inlinemediaobject"><img src="media/node-connect-attributes.png" alt="image" /></span></p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>The yellow <span class="strong"><strong>Switch</strong></span> button <span class="inlinemediaobject"><img src="media/toggle.png" alt="image" /></span> in the middle
+of the tool toggles which node is the child and which one is the parent.</p></blockquote></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_note_discussion"></a>21.3. Note (discussion)</h3></div></div></div><p><span class="strong"><strong>Note (discussion)</strong></span></p><p><span class="strong"><strong>Description</strong></span></p><p>The Notes Widget allows users to write notes for a particular item
+(sObject). This widget allows team members to exchange comments for a
+process by writing them in the Notes Widget. The notes are displayed
+chronologically with latest one appearing at the top. The complete
+history is displayed by default. It’s one of the common columns which
+can be added in any view for an sType. A similar note entry widget
+called the Note Sheet Widget, focuses more on the speed of entry rather
+than the display of the conversation.</p><p><span class="strong"><strong>Info</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Name</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Notes</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>tactic.ui.widget.DiscussionWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Category</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Table Element Widget</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Supported Interfaces</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>TableLayoutWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>TACTIC Version Support</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2.5</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Required database columns</strong></span></p></td><td style="" align="left" valign="top"><p>This widget interacts with the built in
+sthpw/note table</p></td></tr></tbody></table></div><p><span class="strong"><strong>Usage</strong></span></p><p>To create a new note, select the New Note button.</p><p>This will switch the DiscussionWdg into insert mode where notes and
+context of the notes can be entered.</p><p>In most cases, the grouping for the notes is derived through selecting a
+<span class="emphasis"><em>context</em></span>. This context is often chosen in relation to the context of a
+given <span class="emphasis"><em>task</em></span> or <span class="emphasis"><em>snapshot</em></span> (Checkin) for the same parent sObject. This
+then associates all tasks, notes and snapshots under a specific Search
+Object. This allows users to retrieve historical data for a Search
+Object through a context. This answers the question "What’s the history
+of this Asset from the design department?"</p><p>To navigate the history of the notes, click on a particular note and it
+will expand and display the full note.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>Depending on the configuration, the grouping (context) items will be
+grouped and separated by a group label represented as &lt;&lt; <span class="emphasis"><em>label</em></span>&gt;&gt;. In
+that case, selecting the group label will trigger a warning pop-up.</p><p>To unset a value, you can usually select the empty value with the label
+<span class="emphasis"><em>-- Select --</em></span>.</p></blockquote></div><p><span class="strong"><strong>Implementation</strong></span></p><p>The Notes widget is a common column which can be added using the Column
+Manager. The item name is "notes". A "default" context is used in this
+simple implementation.</p><p><span class="strong"><strong>Options</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>context</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a global context can be specified</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>append_context</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a context can be appended to the current list
+(deprecated)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>setting</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>A project setting can be used to drive the contexts. This
+provides the key of the project setting.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>append_setting</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>This serves the same purpose as setting but would
+append the contexts at the end</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>include_submission</strong></span></p></td><td style="" align="left" valign="top"><p>If set to true, it would include the notes for
+the submission (a child) of the current sObject.</p></td></tr></tbody></table></div><p><span class="strong"><strong>Advanced</strong></span></p><pre class="screen">&lt;element name="discussion" edit="false"&gt;
+        &lt;display class="pyasm.widget.DiscussionWdg"&gt;
+            &lt;context&gt;default&lt;/context&gt;
+        &lt;/display&gt;
+&lt;/element&gt;</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_hidden_row"></a>21.4. Hidden Row</h3></div></div></div><p><span class="strong"><strong>Description</strong></span></p><p>The HiddenRowToggleWdg is used to add a cell to a table which when toggled, exposes a hidden view. This vew supports the embedding the following Widgets:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+TableLayoutWdg
+</li><li class="listitem">
+CustomLayoutWdg
+</li><li class="listitem">
+ViewPanelWdg
+</li></ul></div><p><span class="inlinemediaobject"><img src="media/hidden-row-toggle-wdg_image01.png" alt="image" /></span></p><p><span class="inlinemediaobject"><img src="media/hidden-row-toggle-wdg_image02.png" alt="image" /></span></p><p><span class="strong"><strong>Info</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Name</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>HiddenRowToggleWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Common Title</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Hidden Row</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>tactic.ui.table.HiddenRowToggleWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Category</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Table Layout Widget</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Supported Interfaces</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>TableLayoutWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>TACTIC Version Support</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3.0.0 <code class="literal">+</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Required database columns</strong></span></p></td><td style="" align="left" valign="top"><p>none</p></td></tr></tbody></table></div><p><span class="strong"><strong>Usage</strong></span></p><p>The HiddenRowToggleWdg is primarily a configuration tool which provides very simple usage for the user. By clicking the expand arrow, the hidden row will expand. Also, to batch expand the same HiddenRow for multiple rows in the table, select the desired rows (SObjects) and in the table header, do one of the following:</p><p>Click the triangle to expand or collapse the HiddenRow for the selected SObjects.</p><p><span class="strong"><strong>Options</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>dynamic_class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The class to embed in the hidden row</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>static</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The view is loaded when the page loads</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>parent_key</strong></span></p></td><td style="" align="left" valign="top"><p>The parent key of the parent SObject (Internal)</p></td></tr></tbody></table></div><p><span class="strong"><strong>Advanced</strong></span></p><pre class="screen">The following HiddenRowToggleWdg is defined in the definition view for a prod/sequence. The embedded table shows a view of prod/shot SObjects in a view called shot_hierarchy
+
+  &lt;element name='shots'&gt;
+    &lt;display class='HiddenRowToggleWdg'&gt;
+      &lt;dynamic_class&gt;tactic.ui.panel.TableLayoutWdg&lt;/dynamic_class&gt;
+        &lt;search_type&gt;prod/shot&lt;/search_type&gt;
+        &lt;view&gt;shot_hierarchy&lt;/view&gt;
+        &lt;mode&gt;simple&lt;/mode&gt;
+        &lt;do_search&gt;true&lt;/do_search&gt;
+        &lt;show_row_select&gt;false&lt;/show_row_select&gt;
+    &lt;/display&gt;
+  &lt;/element&gt;
+
+The following HiddenRowToggleWdg is used to show a view of prod/asset SObjects which have been planned (assiciated) to a prod/shot SObject. In this case, the available &lt;expression/&gt; option is used in the TableLayoutWdg to get the assets by traversing through the follwoing search types:
+
+prod/shot -&gt; prod/shot_instance -&gt; prod/asset
+  &lt;element name='assets'&gt;
+    &lt;display class='HiddenRowToggleWdg'&gt;
+      &lt;dynamic_class&gt;tactic.ui.panel.TableLayoutWdg&lt;/dynamic_class&gt;
+        &lt;search_type&gt;prod/asset&lt;/search_type&gt;
+        &lt;view&gt;assets_hierarchy&lt;/view&gt;
+        &lt;expression&gt;@SOBJECT(prod/shot_instance.prod/asset)&lt;/expression&gt;
+        &lt;mode&gt;simple&lt;/mode&gt;
+        &lt;do_search&gt;true&lt;/do_search&gt;
+        &lt;show_row_select&gt;false&lt;/show_row_select&gt;
+    &lt;/display&gt;
+  &lt;/element&gt;
+
+The following example shows how the dynamic_class is used to point to which widget to use in the hidden row.
+
+  &lt;element name='tasks'&gt;
+    &lt;display class='HiddenRowToggleWdg'&gt;
+      &lt;dynamic_class&gt;tactic.ui.panel.TableLayoutWdg&lt;/dynamic_class&gt;
+        &lt;search_type&gt;sthpw/task&lt;/search_type&gt;
+        &lt;view&gt;task_hierarchy&lt;/view&gt;
+        &lt;mode/&gt;
+        &lt;do_search&gt;true&lt;/do_search&gt;
+        &lt;show_row_select&gt;true&lt;/show_row_select&gt;
+    &lt;/display&gt;
+  &lt;/element&gt;</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_custom_url_configuration"></a>21.5. Custom URL Configuration</h3></div></div></div><p>TACTIC’s Custom Layout Editor provides users with the ability to
+completely customize the end user inteface. The HTML, Python, Styles,
+and Behaviours tabs offer the flexibility to dictate the appearance,
+functionality and actions of generated views. However, there are times
+where the appearance, functionality and actions need to be dynamic,
+changing depending on different events or conditions.</p><p>Custom URL Configuration encompasses these possibilities by offering the
+availability of variable options. Views can be modified by options that
+are set statically by the user and change dynamically with the system.
+These options can be inserted into code developed to define a view to
+perform a desired behaviour.</p><p>The Custom URL can be configured through Project Essentials under Custom
+URL. Entries can be added into the table with a specified URL path,
+pointing to a Custom Layout view to be modified, for example, and the
+associated HTML code under the Widget column to define the view.</p><p>image:media/Custom URL.png[image]</p><p>A list of options are available to the user to set within the HTML that
+defines a view from the Widget column. These options and associated
+descriptions and values are provided below. The first three options
+refer to the visibility and usability of the respective user interface
+element (sidebar, index and admin) when the Custom Layout component is
+drawn. The palette option establishes the overall color of these
+respective user interface elements.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Option</strong></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Description</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Values</strong></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>sidebar</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Determines whether the sidebar, as seen in the administrative
+layer, is available in the view.</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>true/false</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>index</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Determines whether the element will be displayed with the
+theming and configuration set up from the index URL. If set to "true",
+it will only work if there is an entry with a URL as "/index" in the
+Custom URL table.</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>true/false</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>admin</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Determines whether the element will be displayed with the
+theming and configuration of the administrative layer.</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>true/false</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>palette</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Determines the overall color theme of all of the tables and
+associated menus in the view.</p></td><td style="" align="left" valign="top"><p>aqua/aviator/bon noche/bright/dark/
+silver/origami</p></td></tr></tbody></table></div><p>Two examples are shown to demonstrate how to statically set these
+options to configure a URL, as well as how to specify a view as the home
+or landing page of a TACTIC project.</p><p><span class="emphasis"><em>Example 1: HTML Element Options</em></span></p><p>The example below is taking a specific view for a job established by the
+URL /job/JOB002 and setting the admin, sidebar and palette options
+inline with the definition of the element tag. Notice that the URL
+defined is only a portion of a full URL. The full URL would follow a
+format of <span class="emphasis"><em>http://&lt;IP&gt;/tactic/jobs/job/JOB002</em></span>. Only the latter portion
+of the URL is required.</p><p><span class="emphasis"><em>URL Column</em></span></p><pre class="screen">/job/JOB002</pre><p><span class="emphasis"><em>Widget Column</em></span></p><pre class="screen">&lt;?xml version="1.0"?&gt; &lt;element admin='true' sidebar='false'
+palette='bright'&gt; &lt;display class='tactic.ui.panel.CustomLayoutWdg'&gt;
+&lt;search_type&gt;my_project/my_sType&lt;/search_type&gt; &lt;view&gt;my_view&lt;/view&gt;
+&lt;/display&gt; &lt;/element&gt;</pre><p><span class="emphasis"><em>Example 2: Setting Home Page through URL</em></span></p><p>The user can set a custom view created in the Custom Layout Editor as
+the home or landing page when the user and all other users sign in. The
+HTML set in the Widget column can point to a specific view in the Custom
+Layout Editor to set as the home page. In this case, the display class
+would need to be defined as a Custom Layout Widget to accommodate for
+the use of a Custom Layout view.</p><p>Notice how the URL is set as "/index", which differs from the Custom
+Layout view in the HTML. The URL must be set as "/index" in order to
+have this view set as the home page.</p><p><span class="emphasis"><em>URL Column</em></span></p><pre class="screen">/index</pre><p><span class="emphasis"><em>Widget Column</em></span></p><pre class="screen">&lt;element name='index'&gt; &lt;display class='tactic.ui.panel.CustomLayoutWdg'&gt;
+&lt;view&gt;custom_layout_folder/my_custom_view&lt;/view&gt; &lt;/display&gt; &lt;/element&gt;</pre><p><span class="strong"><strong>Dynamically Setting Options</strong></span></p><p>The following examples will demonstrate how to dynamically set options.
+The first example will demonstrate how to configure multiple views using
+a dynamic URL following from Example 1 in the Statically Setting Options
+section. The second example will follow from the second example under
+the Statically Setting Options section. The Custom Layout view set as
+the home page will actually utilize mako with HTML in order to set the
+value of a variable to be used in the HTML. This variable is used to set
+the display class of the element.</p><p><span class="emphasis"><em>Example 1: Configuring Multiple Views through a Dynamic URL</em></span></p><p>In Example 1 from the Statically Setting Options section, the view being
+modified was for a specific job. In this example, you can see that the
+same modifications can be applied to the views for all jobs. The {…}
+syntax allows for a variable value. In this case, the "code" variable
+can change. The job "code" defines the jobs in the project through an
+alphanumeric sequence, such as "JOB002". This variable syntax allows the
+URL to keep changing for all the jobs present in the project. This means
+that different jobs can appear in the same view as it will have the same
+HTML definition.</p><p>Notice how the display class is changed to a Table Layout as opposed to
+a Custom Layout Widget. This is just to demonstrate the different
+display classes available to the user as well.</p><p><span class="emphasis"><em>URL Column</em></span></p><pre class="screen">/job/\{code}</pre><p><span class="emphasis"><em>Widget Column</em></span></p><pre class="screen">&lt;?xml version="1.0"?&gt; &lt;element admin='true' sidebar='false'
+palette='bright'&gt; &lt;display class='tactic.ui.panel.TableLayoutWdg'&gt;
+&lt;search_type&gt;my_project/my_sType&lt;/search_type&gt; &lt;view&gt;my_view&lt;/view&gt;
+&lt;/display&gt; &lt;/element&gt;</pre><p><span class="emphasis"><em>Example 2: Custom Layout Editor - Setting Element Display Class in HTML
+with Changing Mako Variable Value</em></span></p><p>The focus on this example will be the utilization of Mako and HTML in
+the Custom Layout Editor for the view defined in Example 1 of the
+Statically Setting Options section. The code from Example 1 of the
+Statically Setting Options section is shown again here for reference.</p><p>The Mako code is set up to determine whether a search key is existent in
+TACTIC. What this means is TACTIC is aware if an entry with a specific
+ID already exists in the sType table. This code is utilizing that
+ability and checking whether that entry does already exist. The entry’s
+existence determines what the display_widget variable will be set to.</p><p>In the HTML for the "last_name" element, the display class is variable
+as indicative of the syntax "${…}", which wraps the variable
+display_widget. Based on the existence of the search key, the display
+class of the "last_name" element will be either a text input widget or a
+lookahead text input widget.</p><p><span class="emphasis"><em>URL Column</em></span></p><pre class="screen">/index</pre><p><span class="emphasis"><em>Widget Column</em></span></p><pre class="screen">&lt;element name='index'&gt; &lt;display class='tactic.ui.panel.CustomLayoutWdg'&gt;
+&lt;view&gt;custom_layout_folder/my_custom_view&lt;/view&gt; &lt;/display&gt; &lt;/element&gt;</pre><p><span class="emphasis"><em>HTML Tab in Custom Layout Editor for
+custom_layout_folder/my_custom_view View</em></span></p><pre class="screen">&lt;div&gt;
+    &lt;div&gt;
+    &lt;%
+        sType2_key = kwargs.get("search_key") or ""
+        if sType2_key:
+            display_widget = "tactic.ui.input.TextInputWdg"
+        else:
+            display_widget = "tactic.ui.input.LookAheadTextInputWdg"
+    %&gt;
+    &lt;/div&gt;
+&lt;table&gt;
+  &lt;tr&gt;
+     &lt;td&gt;Last Name&lt;/td&gt;
+     &lt;td class="spt_element"&gt;
+       &lt;element name="last_name"&gt;
+         &lt;display class="$\{display_widget}"&gt;
+         &lt;search_type&gt;my_project/my_sType&lt;/search_type&gt;
+         &lt;column&gt;my_view2&lt;/column&gt;
+         &lt;search_key&gt;$\{sType2_key}&lt;/search_key&gt;
+         &lt;filter_search_type&gt;my_project/my_sType&lt;/filter_search_type&gt;
+         &lt;value_column&gt;id&lt;/value_column&gt;
+         &lt;current_value_column&gt;id&lt;/current_value_column&gt;
+         &lt;/display&gt;
+       &lt;/element&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/div&gt;</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_single_item_detail"></a>21.6. Single Item Detail</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_built_in_plugins"></a>21.7. Built-in Plugins</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_drop_item"></a>21.8. Drop Item</h3></div></div></div><p><span class="strong"><strong>Drop Item</strong></span></p><p><span class="inlinemediaobject"><img src="media/2_drop_element_usage.png" alt="image" /></span></p><p><span class="strong"><strong>Description</strong></span></p><p>Facilitates drag-and-drop of an item between 2 views. For example, drag
+a user from one view and drop it into a user group.</p><p><span class="strong"><strong>Info</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Name</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Drop Element Widget</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Common Title</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Drop Element Widget</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>tactic.ui.table.DropElementWdg</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>TACTIC Version Support</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3.0.0</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Required database columns</strong></span></p></td><td style="" align="left" valign="top"><p>none</p></td></tr></tbody></table></div><p><span class="strong"><strong>Usage</strong></span></p><p>For example, in the Shot Planner view, individual assets can be added to
+a shot by simply dragging the asset from one view and dropping it onto
+the shot in another view. Once the asset is dropped onto the shot, the
+asset will appear in the column with a "NEW" flag. Hit the save button
+in the shot view to preserve the changes.</p><p><span class="strong"><strong>Options</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Accepted Drop Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The acceptable sType that can be clicked on to be
+dragged and dropped onto another type. For example, sType is vfx/asset.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Instance Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>For the item that is being dragged, it is the sType
+that the item can be dropped onto. For example, sType is
+vfx/asset_in_shot"</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Cbjs Drop Action</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The call back JavaScript to run each time an item
+is dropped into the column.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Display Expr</strong></span></p></td><td style="" align="left" valign="top"><p>The expression to run to display in view mode. For
+example "@"</p></td></tr></tbody></table></div><p><span class="strong"><strong>Implementation</strong></span></p><p>A many-to-many relationship between the 2 types needs to be created in
+the Schema Editor. By convention, the "join" node that need to be
+created to connect the 2 types should be named: "&lt;sType1&gt;_in_&lt;sType2&gt; ".
+For example, for the join node named: "asset_in_shot". The
+"asset_in_shot" node stores the data representing the relationship
+between the asset and which shot it appears in.</p><p>The view where the item to be dropped onto the Drop Element column of,
+can exist in a custom layout table or a view opened in a new window
+within the TACTIC session.</p><p><span class="inlinemediaobject"><img src="media/3_drop_element_usage_asset_in_shot.png" alt="image" /></span></p><pre class="screen">&lt;element name="asset_drop" width="333px" edit="false"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;vfx/asset&lt;/accepted_drop_type&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+  &lt;/display&gt;
+  &lt;action class="tactic.ui.table.DropElementAction"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre><p><span class="strong"><strong>Examples</strong></span></p><p>Example 1: implementation of "asset_in_shot', where an asset can be drag
+and dropped onto a shot:</p><pre class="screen">&lt;element name="asset_drop" width="333px" edit="false"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;vfx/asset&lt;/accepted_drop_type&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+  &lt;/display&gt;
+  &lt;action class="tactic.ui.table.DropElementAction"&gt;
+    &lt;instance_type&gt;vfx/asset_in_shot&lt;/instance_type&gt;
+  &lt;/action&gt;
+&lt;/element&gt;</pre><p>Example 2: implementation of "user_in_group', where a user can be drag
+and dropped onto a group:</p><p><span class="inlinemediaobject"><img src="media/1_drop_element_overview.png" alt="image" /></span></p><pre class="screen">&lt;element name="users"&gt;
+  &lt;display class="tactic.ui.table.DropElementWdg"&gt;
+    &lt;css_background-color&gt;#425952&lt;/css_background-color&gt;
+    &lt;instance_type&gt;sthpw/login_in_group&lt;/instance_type&gt;
+    &lt;accepted_drop_type&gt;sthpw/login&lt;/accepted_drop_type&gt;
+  &lt;/display&gt;
+&lt;/element&gt;</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_expression_value_element"></a>21.9. Expression Value Element</h3></div></div></div><p><span class="strong"><strong>Expression Value Element</strong></span></p><p><span class="inlinemediaobject"><img src="media/1_expression_value_element_overview.png" alt="image" /></span></p><p><span class="inlinemediaobject"><img src="media/2_expression_value_element_overview_after.png" alt="image" /></span></p><p><span class="strong"><strong>Description</strong></span></p><p>The Expression Value Element widget accepts a TACTIC Expression as the
+input and displays the evaluated expression as the output.</p><p><span class="strong"><strong>Info</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Name</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Expression Value Element Widget</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>expression_value</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>TACTIC Version Support</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2.5.0</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Required database columns</strong></span></p></td><td style="" align="left" valign="top"><p>Yes, a database column by the same name.</p></td></tr></tbody></table></div><p><span class="strong"><strong>Usage</strong></span></p><p>For example, we can dynamically display the number of login names in the
+login table. This would be an example of an absolute expression because
+the expression does not take into input any data from the row the field
+is on. A relative expression has access to the row and table information
+that the row the expression is on.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>The difference between an <span class="strong"><strong>absolute expression</strong></span> and a <span class="strong"><strong>relative
+expression</strong></span>:</p><p>-an <span class="strong"><strong>absolute expression</strong></span> does not take into input any data from the row
+or table that the field exists on</p><p>-a <span class="strong"><strong>relative expression</strong></span> has access to the row and table information
+that the field exists on</p></blockquote></div><p><span class="strong"><strong>Implementation</strong></span></p><p>Go into edit mode for the Expression Value Element widget. Input an
+absolute TACTIC expression as the value.</p><p>In display mode, this widget will display the result of the evaluation
+of the expression.</p><p><span class="strong"><strong>Options</strong></span></p><p>There are no options available for this widget.</p><p><span class="strong"><strong>Example 1</strong></span></p><p>For example, enter the following absolute TACTIC Expression as the value
+for the Expression Value Element widget:</p><pre class="screen">@COUNT(sthpw/snapshot.sthpw/file)</pre><p>In display mode, this widget will evaluate the expression and display
+the count of the number snapshot files in the database.</p><p><span class="strong"><strong>Example 2</strong></span></p><p>For example, enter the following absolute TACTIC Expression as the value
+for the Expression Value Element widget:</p><pre class="screen">@COUNT(sthpw/login.sthpw/login)</pre><p>In display mode, this widget will evaluate the expression and display
+the count of the number of logins in the login table.</p><p><span class="strong"><strong>Example 3</strong></span></p><p>For example, enter the following absolute TACTIC Expression as the value
+for the Expression Value Element widget:</p><pre class="screen">@GET(sthpw/task["context = 'model'"].code)</pre><p>In display mode, this widget will evaluate the expression and display
+the code for all the tasks where the context is <span class="emphasis"><em>model</em></span>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_submitting_a_support_ticket"></a>21.10. Submitting a Support Ticket</h3></div></div></div><p>To submit an official support ticket to the Southpaw Support Team you
+will need a <span class="strong"><strong>TACTIC Ticketing Account</strong></span>. Ticketing accounts are typically
+setup for users by Southpaw as part of official TACTIC support. Contact
+your TACTIC representative for more information.</p><p>You may also visit the Southpaw Technology Support site at:</p><p><span class="strong"><strong><a class="ulink" href="http://support.southpawtech.com" target="_top">support.southpawtech.com</a></strong></span></p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>If you do not already have an account for the support site, you may sign
+up from the login page. Accounts on the support site need to be verified
+by the support team. This typically takes about 24 hours</p><p>.</p></blockquote></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s20.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

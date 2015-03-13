@@ -185,7 +185,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                 #color = attributes.get("color")
                 process = pipeline.get_process(value)
                 if process:
-                    process.get_color()
+                    color = process.get_color()
 
         if color:
            td.add_style("background-color: %s" % color)
