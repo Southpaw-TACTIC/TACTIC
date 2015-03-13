@@ -112,7 +112,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
   
    
     def is_editable(cls):
-        return False
+        return True
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
@@ -1157,6 +1157,12 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+
+            edit_note_wdg = DivWdg()
+            edit_note_wdg.add_class("spt_edit_note_container")
+
+            note_dialog.add(edit_note_wdg)
+
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1335,6 +1341,11 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_class("spt_add_note_container")
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
+
+                    edit_note_wdg = DivWdg()
+                    edit_note_wdg.add_class("spt_edit_note_container")
+
+                    note_dialog.add(edit_note_wdg)
 
 
                 note_content = DivWdg()
@@ -1696,31 +1707,22 @@ class DiscussionWdg(BaseRefreshWdg):
         #--------- EDIT NOTES --------#
         right.add_class("edit_note")
         right.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_dialog_top");
-           
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
-
-            if (! add_note) {
-                var kwargs = container.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/'/g, '"');
-                kwargs = JSON.parse(kwargs);
-
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
+                'type': 'load',
+                'cbjs_action': '''
+    
+                var top = bvr.src_el.getParent(".spt_dialog_top");
+               
+    
+                var container = top.getElement(".spt_edit_note_container");
+    
+                var kwargs = null;
+                
                 var class_name = 'tactic.ui.widget.DiscussionEditWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
-                add_note = top.getElement(".spt_discussion_add_note");
-                spt.toggle_show_hide(add_note);
-            }
-
-            '''
-            } )
+              
+    
+                '''
+                } )
         
 
         context = note.get_value("context")
