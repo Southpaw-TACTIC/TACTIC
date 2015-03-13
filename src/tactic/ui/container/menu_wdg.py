@@ -82,7 +82,13 @@ class FingerMenuWdg(BaseRefreshWdg):
 
 
         main_action = '''
-            var menu_top = bvr.src_el.getParent('.' + bvr.top_class).getElement('.' + bvr.menu_top_class);
+            
+            var parent = bvr.src_el.getParent('.' + bvr.top_class);
+            if (!parent) {
+                bvr.top_class = 'spt_tab_content';
+         		parent = bvr.src_el.getParent('.' + bvr.top_class);
+            }
+            var menu_top = parent.getElement('.' + bvr.menu_top_class);
             var menu = menu_top.getElement('.spt_menu_top');
             // don't use getSize()
     
@@ -161,7 +167,6 @@ class FingerMenuWdg(BaseRefreshWdg):
         '''
 
         if not top_class:
-            #top_class = "spt_table"
             top_class = "spt_layout_top"
 
         if js_action:

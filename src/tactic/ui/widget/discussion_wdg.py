@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -145,7 +145,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           //var note_top = bvr.src_el.getParent('.spt_note');
            var note_top = bvr.src_el
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
@@ -2090,7 +2089,7 @@ class DiscussionAddNoteCmd(Command):
 
             path = path.replace("\\", "/")
             basename = os.path.basename(path)
-            basename = File.get_filesystem_name(basename) 
+            basename = Common.get_filesystem_name(basename) 
             new_path = "%s/%s" % (upload_dir, basename)
             context = "publish"
 
@@ -2110,8 +2109,10 @@ class DiscussionAddNoteCmd(Command):
                     source_paths.append(web_path)
                     source_paths.append(icon_path)
 
+            # specify strict checkin_type to prevent latest versionless generated
             checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
-                    source_paths=source_paths,  context=context)
+                    source_paths=source_paths,  context=context, checkin_type='strict')
+
             checkin.execute()
 
 
