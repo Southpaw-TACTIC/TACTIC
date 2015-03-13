@@ -112,7 +112,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
   
    
     def is_editable(cls):
-        return True
+        return False
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
@@ -154,7 +154,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
         # add action triggle for context itself
         my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
-        my.menu.set_activator_over(layout, 'edit_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
       
@@ -1159,11 +1158,7 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
 
-            edit_note_wdg = DivWdg()
-            edit_note_wdg.add_class("spt_edit_note_container")
-
-            note_dialog.add(edit_note_wdg)
-
+            
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1343,12 +1338,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
 
-                    edit_note_wdg = DivWdg()
-                    edit_note_wdg.add_class("spt_edit_note_container")
-
-                    note_dialog.add(edit_note_wdg)
-
-
+                
                 note_content = DivWdg()
                 note_dialog.add(note_content)
                 note_content.add_style("max-height: 500px")
