@@ -156,6 +156,10 @@ class FileCheckin(BaseCheckin):
             parts = my.context.split("/")
         my.process = parts[0]
         my.checkin_type = checkin_type
+
+        if my.checkin_type and my.checkin_type not in ['strict','auto']:
+            raise CheckinException("checkin_type can only be '', strict, or auto")
+
         my.dir_naming = dir_naming
         my.file_naming = file_naming
 
