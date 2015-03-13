@@ -161,7 +161,8 @@ class FingerMenuWdg(BaseRefreshWdg):
         '''
 
         if not top_class:
-            top_class = "spt_table"
+            #top_class = "spt_table"
+            top_class = "spt_layout_top"
 
         if js_action:
             main_action = '''%s
@@ -212,7 +213,8 @@ class FingerMenuWdg(BaseRefreshWdg):
                 '''
 
         if not top_class:
-            top_class = "spt_table"
+            #top_class = "spt_table"
+            top_class = "spt_layout_top"
 
         if js_action:
             main_action = '''%s

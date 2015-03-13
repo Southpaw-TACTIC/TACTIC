@@ -145,7 +145,8 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el.getParent('.spt_note');
+           //var note_top = bvr.src_el.getParent('.spt_note');
+           var note_top = bvr.src_el
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
 
@@ -153,6 +154,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
 
         # add action triggle for context itself
+        my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
         my.menu.set_activator_over(layout, 'edit_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
@@ -1570,12 +1572,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         icon = IconWdg("Note", "BS_PENCIL")
-        td.add(icon)
+        #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 5px")
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("margin: 5px 0px")
+        title.add_style("margin: 5px 12px")
         title.add_style("font-weight: bold")
 
         tbody = content.add_tbody()
@@ -1688,7 +1690,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
-                    left.add("%s</br>" % login)
                     name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
                     left.add("%s</br>" % name)
                     left.add("%s</br>" % login_sobj.get_value("email"))
@@ -1700,27 +1701,6 @@ class DiscussionWdg(BaseRefreshWdg):
         right = content.add_cell()
         right.add_style("vertical-align: top")
         right.add_style("padding: 10px 30px")
-
-        #--------- EDIT NOTES --------#
-        right.add_class("edit_note")
-        right.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-    
-                var top = bvr.src_el.getParent(".spt_dialog_top");
-               
-    
-                var container = top.getElement(".spt_edit_note_container");
-    
-                var kwargs = null;
-                
-                var class_name = 'tactic.ui.widget.DiscussionEditWdg';
-                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
-              
-    
-                '''
-                } )
-        
 
         context = note.get_value("context")
 
