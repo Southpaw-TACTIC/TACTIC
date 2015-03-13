@@ -415,7 +415,7 @@ class CheckinDirListWdg(DirListWdg):
                 is_select = True
 
 
-                subcontext = SelectWdg("subcontext")
+                subcontext = SelectWdg("subcontext", bs=False)
                 subcontext.set_option("show_missing", False)
                 subcontext.set_option("values", my.subcontext_options)
                 #subcontext.add_empty_option("----")
@@ -447,6 +447,12 @@ class CheckinDirListWdg(DirListWdg):
                     # the Text field will adopt the subcontext value of the last check-in
                     subcontext.set_value(subcontext_val)
                     item_div.add_attr("spt_subcontext", subcontext_val)
+                elif my.subcontext_options:
+                    # handles file which may have previous strict checkin 
+                    subcontext_val = my.subcontext_options[0]
+                    item_div.add_attr("spt_subcontext", subcontext_val)
+
+                     
 
             else:
                 if is_select:

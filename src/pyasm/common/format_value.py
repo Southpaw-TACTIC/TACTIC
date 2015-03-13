@@ -448,7 +448,7 @@ class FormatValue(object):
         # ------------------------------------------------
         # File Size
         elif format in ['KB']:
-
+            value = float(value)
             ext = " B"
             if not value:
                 value = 0
