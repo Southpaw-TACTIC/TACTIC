@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['ButtonRowWdg', 'ButtonNewWdg', 'ActionButtonWdg', 'IconButtonWdg', 'IconButtonElementWdg', 'SingleButtonWdg']
+__all__ = ['ButtonRowWdg', 'ButtonWdg', 'ButtonNewWdg', 'ActionButtonWdg', 'IconButtonWdg', 'IconButtonElementWdg', 'SingleButtonWdg']
 
 import os
 
@@ -233,7 +233,8 @@ class ButtonRowWdg(BaseRefreshWdg):
         return top
 
 
-class ButtonNewWdg(BaseRefreshWdg):
+
+class ButtonWdg(BaseRefreshWdg):
     ARGS_KEYS = {
         'tip': {
             'description': 'The tool tip of the button',
@@ -246,7 +247,11 @@ class ButtonNewWdg(BaseRefreshWdg):
         'title': 'The title of the button',
         'show_menu': 'True|False - determines whether or not to show the menu',
         'show_title': 'True|False - determines whether or not to show the title',
-        'is_disabled': 'True|False - determines whether or not the button is disabled'
+        'is_disabled': 'True|False - determines whether or not the button is disabled',
+        'sub_icon': {
+            'description': 'The subscript icon key to be used for the button',
+            'category': 'Option',
+        },
     }
 
     def init(my):
@@ -452,6 +457,14 @@ class ButtonNewWdg(BaseRefreshWdg):
         
 
         my.icon_div = icon_div
+
+        sub_icon = my.kwargs.get("sub_icon")
+        if sub_icon:
+            sub_icon = IconWdg(icon=sub_icon, size="8")
+            button.add(sub_icon)
+            sub_icon.add_style("position: absolute")
+            sub_icon.add_style("bottom: 4px")
+            sub_icon.add_style("right: 0px")
         
        
 
@@ -772,6 +785,8 @@ class ButtonNewWdg(BaseRefreshWdg):
         SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
  
 
+class ButtonNewWdg(ButtonWdg):
+    pass
 
 
 

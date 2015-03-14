@@ -48,13 +48,13 @@ display class, it will adopt the one defined here-->
         <display class="tactic.ui.table.DropElementWdg"/>
     </element>
 
-    <!-- end test -->
-   <!--
-    <element name="snapshot">
-        <display class="ThumbWdg">
-            <icon_size>100%</icon_size>
-        </display>
-    </element>-->
+
+
+    <element name="pipeline" edit="true">
+      <display widget="expression">
+        <expression>@GET(sthpw/pipeline.name)</expression>
+      </display>
+    </element>
 
 
 
@@ -864,14 +864,16 @@ display class, it will adopt the one defined here-->
     </element>
   
 
-  <element name="pipeline_code">
+  <element name="pipeline">
     <display class="tactic.ui.input.PipelineInputWdg"/>
-  <!--
-    <display class="SelectWdg">
-        <query>sthpw/pipeline|code|code</query>
-        <empty>true</empty>
-    </display>
-    -->
+  </element>
+
+
+
+  <element name="pipeline_code">
+      <display class="tactic.ui.input.PipelineInputWdg">
+          <use_code>true</use_code>
+      </display>
   </element>
 
 

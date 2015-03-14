@@ -697,6 +697,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("overflow: hidden")
         label.add_style("text-align: center")
 
+
+        from tactic.ui.input import LookAheadTextInputWdg, TextInputWdg
         text = TextWdg()
         node.add(text)
         text.add_style("position: absolute")

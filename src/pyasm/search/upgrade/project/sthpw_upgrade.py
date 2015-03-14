@@ -20,6 +20,11 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.4.0.a01
     #
+    def upgrade_v4_4_0_a01_004(my):
+        my.run_sql('''
+        ALTER TABLE pipeline ADD COLUMN "name" varchar(256);
+        ''')
+
 
     def upgrade_v4_4_0_a01_003(my):
         my.run_sql('''

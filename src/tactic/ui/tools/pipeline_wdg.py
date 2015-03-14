@@ -550,6 +550,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipeline_div.add_attr('spt_pipeline', pipeline.get_code())
         pipeline_div.add_style("padding: 3px")
         pipeline_div.add_class("hand")
+        name = pipeline.get_value("name")
         description = pipeline.get_value("description")
         if not description:
             description = pipeline.get_code()
@@ -583,13 +584,17 @@ class PipelineListWdg(BaseRefreshWdg):
         pipeline_div.add(color_div)
 
         pipeline_code = pipeline.get_code()
-        title = pipeline_code.split("/")[-1]
+        if name:
+            title = name
+        else:
+            title = pipeline_code.split("/")[-1]
         pipeline_div.add("&nbsp;&nbsp;&nbsp;%s" % title)
 
         pipeline_div.add_behavior( {
         'type': 'listen',
         'pipeline_code': pipeline_code,
-        'event_name': 'pipeline_%s|click' %pipeline_code,
+        'title': title,
+        'event_name': 'pipeline_%s|click' % pipeline_code,
         'cbjs_action': '''
         //var src_el = bvr.firing_element;
         var top = null;
@@ -603,6 +608,15 @@ class PipelineListWdg(BaseRefreshWdg):
         if (!top) {
             top = spt.get_element(document, '.spt_pipeline_tool_top');
         }
+
+
+        var editor_top = top.getElement(".spt_pipeline_editor_top");
+        if (editor_top && editor_top.hasClass("spt_has_changes")) {
+            if (!confirm("Current pipeline has changes.  Do you wish to continue?")) {
+            }
+        }
+
+
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
@@ -625,6 +639,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         // add to the current list
         var value = bvr.pipeline_code;
+        var title = bvr.title;
         var select = top.getElement(".spt_pipeline_editor_current");
         for ( var i = 0; i < select.options.length; i++) {
             var select_value = select.options[i].value;
@@ -634,7 +649,7 @@ class PipelineListWdg(BaseRefreshWdg):
             }
         }
 
-        var option = new Option(value, value);
+        var option = new Option(title, value);
         select.options[select.options.length] = option;
 
         select.value = value;
@@ -1348,6 +1363,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         icon.add_named_listener('pipeline|save', unglow_action)
 
+
+
         button.set_show_arrow_menu(True)
         menu = Menu(width=200)
         
@@ -1443,7 +1460,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Node", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add Process", icon="BS_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1459,7 +1476,47 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = ButtonNewWdg(title="Add Node", icon="BS_PLUS")
+
+        button.set_show_arrow_menu(True)
+        menu = Menu(width=200)
+
+
+
+        expr = "@GET(sthpw/pipeline['search_type','!=','sthpw/task'].config/process.process)"
+        processes = Search.eval(expr)
+        processes.sort()
+
+        #processes = [x.get("process") for x in process_sobjs]
+        for process in processes:
+            menu_item = MenuItem(type='action', label='Add "%s"' % process)
+            menu.add(menu_item)
+            menu_item.add_behavior( {
+            'process': process,
+            'cbjs_action': '''
+            var act = spt.smenu.get_activator(bvr);
+            var top = act.getParent(".spt_pipeline_editor_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+
+            var process = bvr.process;
+            spt.pipeline.add_node(process);
+
+            top.addClass("spt_has_changes");
+     
+
+            '''
+            } )
+
+        menus = [menu.get_data()]
+        SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
+        SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
+ 
+
+ 
+
+
+
+        button = ButtonNewWdg(title="Add Approval", icon="BS_PLUS", sub_icon="BS_OK")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1476,7 +1533,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Node", icon="BS_ENVELOPE")
+        button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
         button_row.add(button)
 
         button.add_behavior( {

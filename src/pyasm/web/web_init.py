@@ -158,6 +158,10 @@ class DisplayNameTrigger(Trigger):
         first = sobject.get_value('first_name')
         last = sobject.get_value('last_name')
 
+        # if display name is already set, don't alter
+        if sobject.get_value("display_name"):
+            return
+
         sobject.set_value('display_name', '%s, %s'%(last, first))
 
         # The admin user may not be committed yet
@@ -165,6 +169,9 @@ class DisplayNameTrigger(Trigger):
             return
 
         sobject.commit(triggers=False)
+
+
+
 
 
 class WebInit(Common):
@@ -223,7 +230,7 @@ class WebInit(Common):
 
 
 
-        # FIXME: should this really be a web_init trigger.  This needs
+        # FIXME: should this really be a web_init trigger?  This needs
         # to be run even from batch commands
         event = "change|sthpw/task|status"
         trigger = SearchType.create("sthpw/trigger")

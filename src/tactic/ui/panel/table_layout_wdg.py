@@ -1016,6 +1016,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
+            table.add_style("width: %s" % width)
+
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
             my.add_table_bottom(table)
@@ -2331,7 +2333,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         no_results_mode = my.kwargs.get('no_results_mode')
         if no_results_mode == 'compact':
-            table.add_style('width', '100%')
 
             tr, td = table.add_row_cell()
             tr.add_class("spt_table_no_items")
@@ -2348,8 +2349,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
 
-
-        table.add_style('width', '100%')
 
         tr, td = table.add_row_cell()
         tr.add_class("spt_table_no_items")

@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['ShelfWdg', 'ShelfEditWdg']
+__all__ = ['ShelfWdg', 'ShelfEditWdg', 'ScriptEditorWdg']
 
 from pyasm.common import Environment, Common, SecurityException, Container
 from pyasm.search import Search
@@ -109,7 +109,7 @@ class ShelfWdg(BaseRefreshWdg):
 
 
 
-class ShelfEditWdg(BaseRefreshWdg):
+class ScriptEditorWdg(BaseRefreshWdg):
     '''This is a simple editor for shelf custom code'''
 
     def init(my):
@@ -197,7 +197,7 @@ class ShelfEditWdg(BaseRefreshWdg):
             script_folder = script_sobj.get_value("folder")
             script_name = script_sobj.get_value("title")
             script_value = script_sobj.get_value("script")
-            script_language = script_sobj.get_value("langauge")
+            script_language = script_sobj.get_value("language")
         else:
             script_code = ''
             script_folder = ''
@@ -244,7 +244,9 @@ class ShelfEditWdg(BaseRefreshWdg):
             },
             'args': {
                 'search_type': my.search_type,
-                'view': 'table'
+                'view': 'table',
+                'show_shelf': False,
+                'element_names': ['folder', 'title', 'description', 'language'],
             },
         } )
         
@@ -320,7 +322,8 @@ class ShelfEditWdg(BaseRefreshWdg):
 
         code_span = SpanWdg()
         code_span.add("<b>Code: &nbsp;</b>")
-        save_span.add_cell(code_span)
+        td = save_span.add_cell(code_span)
+        td.add_style("display: none")
         code_text = TextInputWdg(name="shelf_code")
         code_text.add_style("display: inline")
         code_text.add_style("width: 100px")
@@ -331,20 +334,25 @@ class ShelfEditWdg(BaseRefreshWdg):
         td = save_span.add_cell(code_text)
         td.add_style("padding-top: 10px")
 
+        td.add_style("display: none")
+
+
         save_span.add_cell("&nbsp;&nbsp;")
 
         # script name (path??)
-        save_span.add_cell("<b>Script Path: &nbsp;</b>")
+        td = save_span.add_cell("<b>Script Path: &nbsp;</b>")
+        td.add_style("padding-top: 10px")
         save_text = TextInputWdg(name="shelf_folder")
-        save_text.add_style("width: 120px")
-        save_text.add_attr("size", "40")
+        save_text.add_style("width: 250px")
         save_text.set_id("shelf_folder")
         save_text.add_class("spt_folder")
         save_text.set_value(script_folder)
         td = save_span.add_cell(save_text)
         td.add_style("padding-top: 10px")
 
-        save_span.add_cell("&nbsp; / &nbsp;")
+        td = save_span.add_cell("&nbsp; / &nbsp;")
+        td.add_style("padding-top: 10px")
+        td.add_style("font-size: 1.5em")
         save_text = TextInputWdg(name="shelf_title")
         save_text.add_style("width: 350px")
         save_text.add_attr("size", "40")
@@ -366,55 +374,6 @@ class ShelfEditWdg(BaseRefreshWdg):
 
         text = TextAreaWdg("shelf_script")
 
-        #text.add_behavior( {
-        #    'type': 'double_click',
-        #    'cbjs_action': '''
-        #    var text = $('shelf_script');
-        #    editor(text)
-        #    '''
-        #    } )
-
-
-        """
-        text.set_id("shelf_script")
-        text.add_style("width: 550px")
-        text.add_style("height: 300px")
-        text.add_class("codepress")
-        text.add_class("html")
-        text.add_behavior( {
-        'type': 'load',
-        'cbjs_action': '''
-            editAreaLoader.init({
-                id: "shelf_script", // id of the textarea to transform      
-                start_highlight: true,  // if start with highlight
-                allow_resize: "both",
-                allow_toggle: true,
-                word_wrap: true,
-                language: "en",
-                syntax: "js",   // need to make this setable
-                replace_tab_by_spaces: "4",
-                font_size: "8",
-                toolbar: "search, go_to_line, fullscreen, |, undo, redo, |, select_font, |, syntax_selection, |, highlight",
-                syntax_selection_allow: "js,python"
-
-        });
-
-        '''
-        } )
-
-        text.add_style("margin-top: 5px")
-        text.add_style("font-family: courier new")
-        text.add_style("font-size: 11px")
-        text.set_id("shelf_script")
-        #text.add_attr("cols", "80")
-        #text.add_attr("rows", "20")
-        text.add_style("min-height", "400px")
-        text.add_style("height", "400px")
-        text.add_style("width", "600px")
-        text.set_value(script_value)
-
-        td.add(text)
-        """
 
 
         td = table.add_cell()
@@ -451,13 +410,6 @@ class ShelfEditWdg(BaseRefreshWdg):
         hover_color = palette.color("background3", 20)
         widget.add_color("background", bg_color)
 
-        '''
-        # Try the table layout widget
-        from tactic.ui.panel import TableLayoutWdg
-        table = TableLayoutWdg(id='js_edit_list',search_type="config/custom_script", view='simple')
-        table.set_sobjects(scripts)
-        widget.add(table)
-        '''
 
         title = DivWdg()
         title.add("Saved Scripts")
@@ -680,6 +632,8 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
         '''
 
 
+class ShelfEditWdg(ScriptEditorWdg):
+    pass
 
 
 
