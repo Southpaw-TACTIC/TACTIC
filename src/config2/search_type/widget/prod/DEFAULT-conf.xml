@@ -54,6 +54,9 @@ display class, it will adopt the one defined here-->
       <display widget="expression">
         <expression>@GET(sthpw/pipeline.name)</expression>
       </display>
+      <action class="pyasm.command.DatabaseAction">
+        <column>pipeline_code</column>
+      </action>
     </element>
 
 
@@ -866,6 +869,9 @@ display class, it will adopt the one defined here-->
 
   <element name="pipeline">
     <display class="tactic.ui.input.PipelineInputWdg"/>
+    <action class="pyasm.command.DatabaseAction">
+        <column>pipeline_code</column>
+    </action>
   </element>
 
 

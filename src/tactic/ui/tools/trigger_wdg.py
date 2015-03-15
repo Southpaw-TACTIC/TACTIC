@@ -328,6 +328,8 @@ class TriggerDetailWdg(BaseRefreshWdg):
             my.pipeline = Pipeline.get_by_code(my.pipeline_code)
             #my.search_type = ""
             my.search_type = my.kwargs.get("search_type")
+            if not my.search_type:
+                my.search_type = my.pipeline.get_value("search_type")
 
         else:
             my.pipeline = None
@@ -2163,6 +2165,8 @@ class PythonClassTriggerEditCbk(Command):
             trigger = Search.get_by_search_key(search_key) 
         else:
             trigger = SearchType.create("config/trigger")
+
+        trigger.set_value("mode", 'same process,same transaction')
 
         # need the trigger code
         trigger_code = my.kwargs.get('code')

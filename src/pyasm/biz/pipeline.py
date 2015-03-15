@@ -269,13 +269,18 @@ class Pipeline(SObject):
         '''Function that should be run on insert/update. It's already automatically called during insert.
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
-        column, then update it. it updates the process table also.'''
+        column, then update it.  It updates the process table also.'''
         my.update_process_table()
         search_type = my.get_value('search_type')
 
         # don't do anything for task table
         if search_type =='sthpw/task':
             return
+
+
+        if not search_type:
+            return
+
 
         columns = SearchType.get_columns(search_type)
         if not 'pipeline_code' in columns:

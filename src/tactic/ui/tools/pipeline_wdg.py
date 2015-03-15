@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','ConnectorPropertyWdg','PipelineSaveCbk']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','ConnectorPropertyWdg','PipelineSaveCbk', 'ProcessInfoWdg']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
@@ -384,6 +384,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div.add_style("min-height: 290px")
         pipelines_div.add_style("min-width: 200px")
         pipelines_div.add_style("width: 200px")
+        pipelines_div.add_style("height: auto")
 
         inner = DivWdg()
         inner.add_class("spt_pipeline_list_top")
@@ -405,12 +406,40 @@ class PipelineListWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-        # project_specific  pipelines
+
+
+
+        # template pipeline
+        search = Search("sthpw/pipeline")
+        search.add_filter("project_code", project_code)
+        search.add_filter("code", "%s/__TEMPLATE__" % project_code)
+        pipeline = search.get_sobject()
+        if not pipeline:
+            pipeline = SearchType.create("sthpw/pipeline")
+            pipeline.set_value("code", "%s/__TEMPLATE__" % project_code)
+            pipeline.set_project()
+            pipeline.set_value("name", "VFX Processes")
+            pipeline.commit()
+
+
+        pipeline_div = my.get_pipeline_wdg(pipeline)
+        inner.add(pipeline_div)
+
+
+        inner.add("<br/>")
+
+
+
+
+
+
+        # project_specific pipelines
         from pyasm.widget import SwapDisplayWdg
         swap = SwapDisplayWdg(on_event_name='proj_pipe_on', off_event_name='proj_pipe_off')
         # open by default
         inner.add(swap)
         swap.add_style("float: left")
+
 
         title = DivWdg("<b>Project Pipelines</b>")
         title.add_style("padding-bottom: 2px")
@@ -1014,9 +1043,73 @@ class ProcessInfoWdg(BaseRefreshWdg):
     def get_display(my):
 
         top = my.top
+        top.add_style("padding: 20px")
+        top.add_color("background", "background")
 
-        search = Search("config/pipeline")
-        process = search.get_sobject()
+        process = "model"
+
+        search = Search("config/process")
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        # triggers
+        search = Search("config/trigger")
+        search.add_filter("process", process)
+        trigger_count = search.get_count()
+
+
+        # notifications
+        search = Search("sthpw/notification")
+        search.add_project_filter()
+        search.add_filter("process", process)
+        notification_count = search.get_count()
+
+
+        # naming count
+        search = Search("config/naming")
+        search.add_filter("context", "%s/%%" % process, op='like')
+        naming_count = search.get_count()
+
+
+        table = Table()
+        top.add(table)
+        table.add_style('width: 100%')
+
+        table.add_row()
+        td = table.add_cell("Trigger Count:")
+        td.add_style("text-align: right")
+        td.add_style("width: 150px")
+        td.add_style("padding: 10px 10px")
+        td = table.add_cell(str(trigger_count))
+        td.add_style("text-align: right")
+
+        table.add_row()
+        td = table.add_cell("Notification Count:")
+        td.add_style("text-align: right")
+        td.add_style("padding: 10px 10px")
+        td = table.add_cell(str(notification_count))
+        td.add_style("text-align: right")
+
+        table.add_row()
+        td = table.add_cell("Naming Count: ")
+        td.add_style("text-align: right")
+        td.add_style("padding: 10px 10px")
+        td = table.add_cell(str(naming_count))
+        td.add_style("text-align: right")
+
+
+        from tactic.ui.panel import EditWdg
+
+        edit = EditWdg(
+                search_type="config/process",
+                show_header=False,
+        )
+        edit.set_sobject(process_sobj)
+        top.add(edit)
+                
+
+
 
 
         # Don't touch
@@ -1043,15 +1136,11 @@ class ProcessInfoWdg(BaseRefreshWdg):
         # sandbox_create_script_path
         # transfer_mode
 
-        code = "8GAME"
-        from tactic.ui.panel import EditWdg
-        edit_wdg = EditWdg(
-                search_type="config/process",
-                code=code
-                )
-        top.add(edit_wdg)
-
         return top
+
+
+
+
 
 
 
@@ -1481,8 +1570,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu = Menu(width=200)
 
 
-
-        expr = "@GET(sthpw/pipeline['search_type','!=','sthpw/task'].config/process.process)"
+        
+        expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
         processes = Search.eval(expr)
         processes.sort()
 

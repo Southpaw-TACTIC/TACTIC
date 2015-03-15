@@ -446,55 +446,6 @@ class Trigger(Command):
                 trigger_class = trigger_sobj.get_value("class_name")
 
             try:
-                # DEPRECATED
-                # FIXME: get rid of this hard coding!!!!
-                """
-                if trigger_class.startswith("SPT."):
-                    if trigger_class == 'SPT.MaterialCostTrigger':
-                        script_code = '21MMS'
-                    elif trigger_class == 'SPT.MaterialAggrgtCostTrigger':
-                        script_code = '41MMS'
-                    elif trigger_class == 'SPT.SubtaskCreateTrigger':
-                        script_code = '161MMS'
-                    elif trigger_class == 'SPT.LaborAggrgtTrigger':
-                        script_code = '202MMS'
-                    elif trigger_class == 'SPT.VndrCostAggrgtTrigger':
-                        script_code = '203MMS'
-                    elif trigger_class == 'SPT.PiecesAggrgtTrigger':
-                        script_code = '204MMS'
-                    elif trigger_class == 'SPT.PersonalTimeLogTrigger':
-                        script_code = '261MMS'
-                    elif trigger_class == 'SPT.SubtaskPiecesTrigger':
-                        script_code = '321MMS'
-                    elif trigger_class == 'SPT.SubtaskPiecesDeleteTrigger':
-                        script_code = '322MMS'
-                    elif trigger_class == 'SPT.ProductTypeAggrgtTrigger':
-                        script_code = '681MMS'
-                    elif trigger_class == 'SPT.JobCreatedTrigger':
-                        script_code = '701MMS'
-                    elif trigger_class == 'SPT.SubtaskClosedTrigger':
-                        script_code = '702MMS'
-                    elif trigger_class == 'SPT.JobClosedTrigger':
-                        script_code = '703MMS'
-                        # script_code = '141MMS'
-                    else:
-                        raise TriggerException("No script code found for trigger [%s]" % trigger_class)
-
-                    from subprocess_trigger import SubprocessTrigger
-                    trigger = SubprocessTrigger()
-                    trigger.set_mode("MMS")
-                    namespace, class_name = trigger_class.split(".")
-
-                    from pyasm.biz import Project
-                    data = {
-                        "project": Project.get_project_code(),
-                        "ticket": Environment.get_ticket(),
-                        "class_name": class_name,
-                        "script_code": script_code
-                    }
-                    trigger.set_data(data)
-                """
-
                 if trigger_class in ['pyasm.command.EmailTrigger2', 'pyasm.command.EmailTriggerTest']:
                     # allow the trigger handler to know the calling sobj
                     trigger = Common.create_from_class_path(trigger_class)

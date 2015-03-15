@@ -1576,7 +1576,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         search_type = sobject.get_base_search_type()
-        if path.endswith("indicator_snake.gif"):
+        if path and path.endswith("indicator_snake.gif"):
             image_size = os.path.getsize(my.lib_path)
             if image_size != 0:
                 # generate icon dynamically
