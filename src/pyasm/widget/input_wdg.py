@@ -892,6 +892,9 @@ class CheckboxWdg(BaseInputWdg):
         # state of the element (on or off) or the "value" option
         values = my.get_values(for_display=True)
         # for multiple checkboxes using the same name
+
+        my.add_style("width", "16px", override=False)
+        my.add_style("height", "16px", override=False)
         
         if len(values) == 1:
             # skip boolean
@@ -1374,7 +1377,7 @@ class SelectWdg(BaseInputWdg):
             my.add_style("width: %s" % width)
 
         my.add_border()
-        my.add_style("margin: 0px 5px")
+        #my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'

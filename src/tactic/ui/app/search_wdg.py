@@ -122,7 +122,7 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<filter>\n")
 
         config.append('''
-        <element name='Keyword Search'>
+        <element name='Combination'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
             <search_type>%s</search_type>
             <prefix>quick</prefix>
@@ -504,7 +504,7 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
         filter_top.add_style("padding: 5px")
-        filter_top.add_style("min-width: 700px")
+        filter_top.add_style("min-width: 800px")
         filter_top.add_border()
         my.set_as_panel(filter_top)
 
@@ -671,11 +671,12 @@ class SearchWdg(BaseRefreshWdg):
                 'cbjs_action': cbjs_action
             } )
             div.add_color("color", "color", +5)
-            div.add_gradient("background", "background", -5, -5)
+            #div.add_gradient("background", "background", -5, -5)
             div.add_style("margin-top: -1px")
+            div.add_style("height: 18px")
 
             div.add_border()
-            div.add_style("padding: 3px")
+            div.add_style("padding: 8px 5px")
             div.add_style("whitespace: nowrap")
 
             
@@ -703,7 +704,7 @@ class SearchWdg(BaseRefreshWdg):
             #div.add_style("background-color: #333")
             div.add_color("background", "background")
             div.add_border()
-            div.add_style("padding: 5px 3px 5px 3px")
+            div.add_style("padding: 10px 8px")
             div.add_style("margin-top: -1px")
             #div.add_style("margin-left: 20px")
             #div.add_style("width: 660")
@@ -715,7 +716,9 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         buttons_div.add_style("margin-top: 7px")
         buttons_div.add_style("margin-bottom: 7px")
-        buttons_div.add(my.get_search_wdg() )
+        search_wdg = my.get_search_wdg()
+        search_wdg.add_style("margin: 15px auto")
+        buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
 
@@ -897,18 +900,6 @@ class SearchWdg(BaseRefreshWdg):
     def set_filter_data(search_type, view=None):
         '''set filter data based on some saved search values in wdg_settings'''
 
-        # NOTE - This is MMS specific and is deprecated and will be deleted
-        # DISABLING FOR Job and Request until job_detail stops stack tracing
-        # This is due to mixing of searches between job and request in the
-        # job detail.  Cannot find the issue.
-        # 1) FilterData is global: should be scoped by search type
-        # 2) After introduction of scroll bars, it started stack tracing
-        # It looks like the state is not being properly passed through
-
-        # temp fix to avoid cross contamination of filter data for Planners UI
-        if search_type in ['MMS/job','MMS/request'] or view == '_planner':
-            return
-        
         filter_data = FilterData.get()
         if not filter_data.get_data():
             # use widget settings

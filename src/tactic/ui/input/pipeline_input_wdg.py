@@ -58,9 +58,10 @@ class PipelineInputWdg(BaseInputWdg):
 
         else: 
             # only for inline
-            behavior =  { 'type': 'click',
-                   'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'}
-            select.add_behavior(behavior)
+            #behavior =  { 'type': 'click',
+            #       'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'}
+            #select.add_behavior(behavior)
+            pass
         
 
         return select

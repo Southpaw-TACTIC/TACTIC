@@ -565,7 +565,10 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             my.sobject = my.get_current_sobject()
             widget = DivWdg(id="task_elem_%s"% my.sobject.get_id())
             widget.add_class('spt_task_panel')
-            my.set_as_panel(widget)
+            try:
+                my.set_as_panel(widget)
+            except:
+                pass
        
         #TODO: remove this
         my.init_setup(widget)

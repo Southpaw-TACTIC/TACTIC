@@ -17,7 +17,7 @@ __all__ = ['SObjectCalendarWdg', 'BaseCalendarDayWdg', 'TaskCalendarWdg', 'TaskC
 from pyasm.common import Common, jsonloads, Container
 from pyasm.biz import Pipeline
 from pyasm.search import Search, SearchType
-from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
+from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
 from calendar_wdg import CalendarWdg
@@ -34,6 +34,7 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         my.sobjects_index = []
         my.date = datetime.today()
         my.current_week = 0
+        my.init_color_map()
 
     # FIXME: these are a bit wonky
     def set_sobjects_index(my, indexes):
@@ -57,6 +58,61 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
         div = DivWdg()
         return div
 
+    def init_color_map(my):
+        ''' initialize the color map for bg color and text color'''
+        search_type = my.kwargs.get('search_type')
+        
+        if not search_type:
+            search_type = 'sthpw/task'
+
+        # get the color map
+        from pyasm.widget import WidgetConfigView
+        color_config = WidgetConfigView.get_by_search_type(search_type, "color")
+        color_xml = color_config.configs[0].xml
+        my.color_map = {}
+        name = 'status'
+        xpath = "config/color/element[@name='%s']/colors" % name
+        text_xpath = "config/color/element[@name='%s']/text_colors" % name
+        bg_color_node = color_xml.get_node(xpath)
+        bg_color_map = color_xml.get_node_values_of_children(bg_color_node)
+
+        text_color_node = color_xml.get_node(text_xpath)
+        text_color_map = color_xml.get_node_values_of_children(text_color_node)
+        
+        # use old weird query language
+        query = bg_color_map.get("query")
+        query2 = bg_color_map.get("query2")
+        if query:
+            bg_color_map = {}
+
+            search_type, match_col, color_col = query.split("|")
+            search = Search(search_type)
+            sobjects = search.get_sobjects()
+
+            # match to a second table
+            if query2:
+                search_type2, match_col2, color_col2 = query2.split("|")
+                search2 = Search(search_type2)
+                sobjects2 = search2.get_sobjects()
+            else:
+                sobjects2 = []
+
+            for sobject in sobjects:
+                match = sobject.get_value(match_col)
+                color_id = sobject.get_value(color_col)
+
+                for sobject2 in sobjects2:
+                    if sobject2.get_value(match_col2) == color_id:
+                        color = sobject2.get_value(color_col2)
+                        break
+                else:
+                    color = color_id
+
+
+                bg_color_map[match] = color
+
+        my.color_map[name] = bg_color_map, text_color_map
+        
     def get_color(my, sobject, index):
 
         div = DivWdg()
@@ -70,14 +126,21 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
         try:
             color = sobject.get("color")
-            return color
+            if color:
+                return color
         except:
             pass
+
+        bg_color, text_color = my.color_map.get('status')
+        if bg_color:
+            color_value = bg_color.get(sobject.get_value('status'))
+            
+            if color_value:
+                return color_value
 
         pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         if not pipeline_code:
             pipeline_code = "task"
-
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
@@ -182,8 +245,8 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                         content_wdg.add_style("height: 1px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                     elif mode == "square":
-                        content_wdg.add_style("height: 1px")
-                        content_wdg.add_style("width: 1px")
+                        content_wdg.add_style("height: 3px")
+                        content_wdg.add_style("width: 3px")
                         content_wdg.add_style("margin: 1px 1px 1px 1px")
                         content_wdg.add_style("float: left")
                     else:
@@ -494,7 +557,9 @@ class SObjectCalendarWdg(CalendarWdg):
         'handler': 'handler class to display each day',
         'sobject_display_expr': 'display expression for each sobject',
         'search_type': 'search type to search for',
-        'search_expr': 'Initial SObjects Expression'
+        'search_expr': 'Initial SObjects Expression',
+        'view': 'Day view',
+        'sobject_view': 'Day sobject view when the user clicks on each day'
     }
 
 
@@ -583,6 +648,10 @@ class SObjectCalendarWdg(CalendarWdg):
         super(SObjectCalendarWdg,my).init()
 
         custom_view = my.kwargs.get('view')
+        my.custom_sobject_view = my.kwargs.get('sobject_view')
+        if not my.custom_sobject_view:
+            my.custom_sobject_view = 'table'
+
         my.custom_layout = None
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
@@ -825,12 +894,13 @@ class SObjectCalendarWdg(CalendarWdg):
             expression = "@SOBJECT(%s%s)" % (my.search_type, ids_filter)
             div.add_behavior( {
                 'type': "click_up",
+                'sobject_view' : my.custom_sobject_view,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.TableLayoutWdg';
                 var title = '%s: %s';
                 var kwargs = {
                     'search_type': '%s',
-                    'view': 'table',
+                    'view': bvr.sobject_view,
                     'show_insert': 'false',
                     'expression': "%s"
                 };
@@ -1146,6 +1216,36 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
 
+
+
+
+        search = Search("sthpw/milestone")
+        #if login:
+        #    search.add_filter("login", login)
+        if project_code:
+            if project_code == "$PROJECT":
+                search.add_project_filter()
+            else:
+                search.add_filter("project_code", project_code)
+
+        search.add_filter("due_date", my.start_date, op=">=")
+        search.add_filter("due_date", my.end_date, op="<=")
+        my.milestone_count = search.get_count()
+        milestones = search.get_sobjects()
+        my.milestones_count = {} # NOTE: this one is plural!
+        for milestone in milestones:
+            date = milestone.get_value("due_date")
+            date = parser.parse(date)
+            date = datetime(date.year, date.month, date.day)
+
+            count = my.milestones_count.get(str(date))
+            if not count:
+                count = 0
+            count += 1
+            my.milestones_count[str(date)] = count
+
+
+
     def get_day_wdg(my, month, day):
 
         div = DivWdg()
@@ -1188,11 +1288,13 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             div.add("[%s]" % day.day)
 
 
-        div.add("<br/>")
-        div.add("<br/>")
+        div.add(HtmlElement.br(2))
 
 
         key = "%s-%0.2d-%0.2d 00:00:00" % (day.year, day.month, day.day)
+
+        div.add_attr("date", key)
+        div.add_class("spt_date_div_content")
 
 
         line_div = DivWdg()
@@ -1205,8 +1307,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_tasks = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s task/s due<br/>" % num_tasks)
-
+        line_div.add("%s task/s due" % num_tasks)
+        line_div.add(HtmlElement.br())
 
 
 
@@ -1220,7 +1322,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_snapshots = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s check-in/s<br/>" % num_snapshots )
+        line_div.add("%s check-in/s" % num_snapshots )
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1233,7 +1336,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_notes = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s note/s<br/>" % num_notes)
+        line_div.add("%s note/s" % num_notes)
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1246,7 +1350,101 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             work_hours = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s work hours<br/>" % work_hours)
+        line_div.add("%s work hours" % work_hours)
+        line_div.add(HtmlElement.br())
+
+
+
+
+
+
+
+
+
+
+
+
+        line_div = DivWdg()
+        div.add(line_div)
+        line_div.add_style("padding: 3px")
+
+
+
+        num_milestone = my.milestones_count.get(key)
+        if num_milestone:
+            icon = IconWdg("Milestones", IconWdg.GOOD)
+            line_div.add(icon)
+            line_div.add_style("font-style: italic")            
+            line_div.add_style("cursor: pointer;")
+            line_div.add("Has %i milestone(s)" % (num_milestone))
+            line_div.add(HtmlElement.br())
+
+            
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+
+                var key_array = "%s".split(" "); // array
+                var single_day = key_array[0]; // string
+                var time_key = Date.parse(single_day); // time object
+                var time_key_str = time_key.format('db'); // string
+                var next_day = time_key.increment('day', 1).format('db'); // string
+
+                var class_name = "tactic.ui.panel.FastTableLayoutWdg";
+                var popup_kwargs = {
+                    "search_type": "sthpw/milestone",
+                    "expression": "@SOBJECT(sthpw/milestone['due_date', '>=', '" + time_key_str + "']['due_date', '<=', '" + next_day + "']['@ORDER_BY', 'due_date desc'])"
+                    };
+
+                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+
+                ''' % (key)
+            } )
+
+
+        else:
+            num_milestone = 0
+            icon = IconWdg("Milestones", IconWdg.PLUS_ADD)
+            line_div.add(icon)
+            #line_div.add_style("opacity: 0.85")
+            line_div.add("Add milestone")
+            line_div.add(HtmlElement.br())
+            line_div.add_style("cursor: pointer;")
+        
+
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var server = TacticServerStub.get();
+                var date_div = bvr.src_el.getParent("td");
+                var full_date = date_div.getElement(".spt_date_div_content").getAttribute("date");
+                var date_array = full_date.split(" ");
+                full_date = date_array[0];
+
+                date_array = full_date.split("-");
+
+                var date = date_array[2];
+                var month = date_array[1];
+                var year = date_array[0];
+
+                var due_date_string = month.concat(" " + date + ", ").concat(year);
+
+                var project_code = server.get_project();
+
+                data = {            
+                    "due_date": due_date_string,
+                    "project_code": project_code
+                }; 
+
+                var class_name = "tactic.ui.panel.EditWdg";
+                var popup_kwargs = {
+                    "default": data, 
+                    "search_type": "sthpw/milestone"
+                    };
+
+                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+                '''
+            } )
 
 
         #div.add("%s tasks completed<br/>" % my.task_count)

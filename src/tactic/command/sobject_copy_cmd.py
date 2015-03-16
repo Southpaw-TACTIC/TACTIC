@@ -17,7 +17,7 @@ from pyasm.common import Common, Xml
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException
 from pyasm.search import Search, SearchType
-from pyasm.biz import Snapshot, Clipboard
+from pyasm.biz import Snapshot, Clipboard, Project
 from pyasm.checkin import FileCheckin, CheckinException
 
 from pyasm.search import WidgetDbConfig
@@ -60,7 +60,7 @@ class SObjectCopyCmd(Command):
 
         data = sobject.get_data()
         for name, value in data.items():
-            if name in ['id', 'code', 'pipeline_code']:
+            if name in ['id','pipeline_code']:
                 continue
 
             if name not in columns:
@@ -68,8 +68,14 @@ class SObjectCopyCmd(Command):
 
             if not value:
                 continue
-            new_sobject.set_value(name, value)
 
+            if name == "code":
+                value = Common.get_next_sobject_code(sobject, 'code')
+                if not value:
+                    continue
+            new_sobject.set_value(name, value)
+        project_code = Project.get_project_code()
+        new_sobject.set_value("project_code", project_code)
         new_sobject.commit()
 
 

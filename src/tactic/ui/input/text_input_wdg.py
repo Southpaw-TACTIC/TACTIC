@@ -125,6 +125,8 @@ class TextInputWdg(BaseInputWdg):
             bgcolor = my.text.get_color("background")
             my.text.add_style("background", bgcolor)
 
+        my.icon_wdg = SpanWdg()
+
 
         my.border_color = my.text.get_color("border")
 
@@ -169,10 +171,23 @@ class TextInputWdg(BaseInputWdg):
         my.top = DivWdg()
 
 
+
+        height = my.kwargs.get("height")
+        if height:
+            height = height.replace("px", "")
+            height = int(height)
+        else:
+            height = 40
+
+        my.height = height
+
+
         super(TextInputWdg, my).__init__()
 
-
         my.icon = my.kwargs.get("icon")
+        my.icon_pos = my.kwargs.get("icon_pos")
+        if not my.icon_pos:
+            my.icon_pos = "left"
         if my.icon:
             my.icon_div = DivWdg()
 
@@ -189,8 +204,11 @@ class TextInputWdg(BaseInputWdg):
 
 
     def add_style(my, name, value=None):
+        if not name:
+            return
+
         if not value:
-            name, value = name.split(": ")
+            name, value = re.split(":\ ?", name)
 
         if name == 'width':
             my.width = value
@@ -206,7 +224,7 @@ class TextInputWdg(BaseInputWdg):
 
 
     def get_icon_wdg(my):
-        return my.icon_div
+        return my.icon_wdg
 
 
 
@@ -376,16 +394,7 @@ class TextInputWdg(BaseInputWdg):
 
             edit_div.add(icon)
 
-
-        height = my.kwargs.get("height")
-        if height:
-            height = height.replace("px", "")
-            height = int(height)
-        else:
-            height = 40
-
-
-        my.text.add_style("height: %s" % height)
+        my.text.add_style("height: %s" % my.height)
 
 
         # BOOTSTRAP
@@ -408,9 +417,8 @@ class TextInputWdg(BaseInputWdg):
         input_group = DivWdg()
         div.add(input_group)
 
-        if my.icon:
+        if my.icon and my.icon_pos == "left":
             input_group.add_class("input-group")
-            addon = SpanWdg()
             if isinstance(my.icon, basestring):
                 if len(my.icon) > 1:
                     icon = IconWdg(title="", icon=my.icon, width=16)
@@ -418,15 +426,31 @@ class TextInputWdg(BaseInputWdg):
                     icon = my.icon
             else:
                 icon = my.icon
-            input_group.add(addon)
-            addon.add_class("input-group-addon")
-            addon.add(icon)
-
+            input_group.add(my.icon_wdg)
+            my.icon_wdg.add_class("input-group-addon")
+            my.icon_wdg.add(icon)
 
 
         input_group.add(my.text)
         my.text.add_class("form-control")
         my.text.add_style('color', div.get_color('color')) 
+
+        if my.icon and my.icon_pos == "right":
+            input_group.add_class("input-group")
+            if isinstance(my.icon, basestring):
+                if len(my.icon) > 1:
+                    icon = IconWdg(title="", icon=my.icon, width=16)
+                else:
+                    icon = my.icon
+            else:
+                icon = my.icon
+            input_group.add(my.icon_wdg)
+            my.icon_wdg.add_class("input-group-addon")
+            my.icon_wdg.add(icon)
+
+
+
+
 
         # Bootstrap example hierarchy
         """
@@ -436,6 +460,9 @@ class TextInputWdg(BaseInputWdg):
         </div>
         """
 
+
+        # Example validation
+        """
         my.text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -453,28 +480,7 @@ class TextInputWdg(BaseInputWdg):
             }
             '''
         } )
-
-
-
-        table = Table()
-        #top.add(table)
-        tr = table.add_row()
-        table.add_style("width: %s" % my.width)
-
-        # add in an icon div
-        if my.icon:
-            td = table.add_cell(my.icon_div)
-            td.add_style("width: 20")
-            td.add_style("border: solid 1px %s" % my.border_color)
-
-            icon = IconWdg("", my.icon, width=16)
-            my.icon_div.add(icon)
-            my.icon_div.add_style("padding: 4px 8px")
-            my.icon_div.add_style("height: %spx" % (height -16))
-            my.icon_div.add_style("overflow-y: hidden")
-            my.icon_div.add_style("margin-right: -1px")
-
-
+        """
 
 
         default = my.kwargs.get("value")
@@ -488,9 +494,9 @@ class TextInputWdg(BaseInputWdg):
             color = my.text.get_color('color')
             # lower the visibility of the hint text according to color of palette
             if color > '#999':
-                color = Palette.modify_color(color, -30)
+                color = Palette.modify_color(color, -40)
             elif color < '#222':
-                color = Palette.modify_color(color, 40)
+                color = Palette.modify_color(color, 50)
 
             if hint_text:
                 my.text.add_attr('title', hint_text)
@@ -499,64 +505,33 @@ class TextInputWdg(BaseInputWdg):
                     'cbjs_action': '''
                     var over = new OverText(bvr.src_el, {
                         positionOptions: {
-                            offset: {x:5, y:5}}});
+                            offset: {x:5, y:10}}});
                     over.text.setStyle('color','%s');
-                    over.text.setStyle('font-size','1.1em');
+                    over.text.setStyle('font-size','0.8em');
+                    over.text.setStyle('z-index','20');
                     over.text.setStyle('font-family','Arial, Serif');
                     '''%color})
 
 		
-
-        #my.text.add_style("-moz-border-radius: 5px")
-        #my.text.set_round_corners()
-
-        td = table.add_cell()
-
-        td.add(my.text)
-        td.add_style("position: relative")
-
-
-
-        td.add_style("border-color: %s" % my.border_color)
-        td.add_style("border-width: 1px 0px 1px 1px")
-        td.add_style("border-style: solid")
-        #my.text.add_style("border: none")
-
-        #my.text.add_style("width: 100%")
-
         my.text.add_style("padding: 5px")
-        my.text.add_style("height: %s" % (height-10))
-
-        #td = table.add_cell()
-        td.add_style("border-color: %s" % my.border_color)
-        td.add_style("border-width: 1px 1px 1px 1px")
-        td.add_style("border-style: solid")
+        my.text.add_style("height: %s" % (my.height-10))
 
 
 
 
-        icon_wdg = DivWdg()
-        my.text.add(icon_wdg)
-        #icon_wdg.add_style("top: 0px")
-        icon_wdg.add_style("float: right")
-        icon_wdg.add_style("position: relative")
-
-
-        
-        if WebContainer.get_web().get_browser() in ['Webkit', 'Qt']:
-            top_offset = '-2'
-            right_offset = '6'
-        else:
-            top_offset = '6'
-            right_offset = '8'
-
-        #icon_wdg.add_style("top: 0px")
-        #icon_wdg.add_style("right: 0px")
 
         if not my.readonly:
+            # DISABLE for now
             pass
-            #TODO: put the Clear glyph icon in as an option
             """
+            icon_wdg = DivWdg()
+            my.text.add(icon_wdg)
+            #icon_wdg.add_style("top: 0px")
+            icon_wdg.add_style("float: right")
+            icon_wdg.add_style("position: relative")
+
+
+
             icon = IconWdg("Clear", "BS_REMOVE", opacity=0.3)
             icon.add_class("spt_icon_inactive")
             icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
@@ -644,6 +619,7 @@ class LookAheadTextInputWdg(TextInputWdg):
         my.name = name
         my.text.set_name(name)
         my.hidden.set_name(name)
+
 
 
     def init(my):
@@ -927,7 +903,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                             hidden.value = value;
                         }
                     }
-                    var custom = bvr.custom.enter;
+                    if (key == 'enter') {
+                        var custom = bvr.custom.enter;
+                    } else {
+                        alert("tab");
+                        var custom = bvr.custom.tab;
+                    }
+
                     if (custom) {
                         eval(custom);
                     }
@@ -1005,7 +987,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
-        results_div.add_style("top: 25px")
+        #results_div.add_style("top: 25px")
+        results_div.add_style("top: %spx" % (my.height - 10))
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")

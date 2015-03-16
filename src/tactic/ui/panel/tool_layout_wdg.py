@@ -29,6 +29,14 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'order': 0,
             'category': 'Required'
         },
+         "search_limit_mode": {
+            'description': "Determine whether to show the simple search limit at just top, bottom, or both'",
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Display'
+        },
+
+
     } 
 
 
@@ -133,6 +141,23 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         if my.kwargs.get("show_shelf") not in ['false', False]:
             action = my.get_action_wdg()
             inner.add(action)
+        
+        info = my.search_limit.get_info()
+        if info.get("count") == None:
+            info["count"] = len(my.sobjects)
+
+        search_limit_mode = my.kwargs.get('search_limit_mode') 
+        if not search_limit_mode:
+            search_limit_mode = 'bottom'
+
+        if search_limit_mode in ['top','both']:
+            from tactic.ui.app import SearchLimitSimpleWdg
+            limit_wdg = SearchLimitSimpleWdg(
+                count=info.get("count"),
+                search_limit=info.get("search_limit"),
+                current_offset=info.get("current_offset")
+            )
+            inner.add(limit_wdg)
 
         content = DivWdg()
         inner.add( content )
@@ -169,20 +194,18 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         limit_span.add_style("width: 250px")
         limit_span.add_style("margin: 5 auto")
 
-        info = my.search_limit.get_info()
-        if info.get("count") == None:
-            info["count"] = len(my.sobjects)
+      
+        inner.add_attr("total_count", info.get("count"))
 
-
-        """
-        from tactic.ui.app import SearchLimitSimpleWdg
-        limit_wdg = SearchLimitSimpleWdg(
-            count=info.get("count"),
-            search_limit=info.get("search_limit"),
-            current_offset=info.get("current_offset"),
-        )
-        inner.add(limit_wdg)
-        """
+               
+        if search_limit_mode in ['bottom','both']:
+            from tactic.ui.app import SearchLimitSimpleWdg
+            limit_wdg = SearchLimitSimpleWdg(
+                count=info.get("count"),
+                search_limit=info.get("search_limit"),
+                current_offset=info.get("current_offset"),
+            )
+            inner.add(limit_wdg)
 
 
 

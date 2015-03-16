@@ -23,7 +23,7 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import jsondumps, jsonloads, Common
+from pyasm.common import jsondumps, jsonloads, Common, Environment
 from pyasm.biz import Notification, CustomScript, Pipeline, Project
 from pyasm.web import DivWdg, WebContainer, Table, HtmlElement, SpanWdg
 from pyasm.command import Command
@@ -34,6 +34,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, Che
 from tactic.ui.container import ResizableTableWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 import os
 
@@ -95,28 +96,20 @@ class TriggerToolWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         left.add_style("border: solid 1px %s" % left.get_color("border") )
         left.add_color("color", "color3")
-        left.add_color("background", "background3")
+        left.add_color("background", "background")
 
         title_div = DivWdg()
         left.add(title_div)
-        title_div.add_style("height: 25px")
-        title_div.add_style("padding-left: 5px")
-        title_div.add_style("padding-top: 8px")
-        title_div.add_gradient("background", "background")
+        title_div.add_style("height: 30px")
+        title_div.add_style("padding: 5px 8px")
+        title_div.add_color("background", "background")
         title_div.add_style("min-width: 150px")
 
 
         from tactic.ui.app import HelpButtonWdg
         help_button = HelpButtonWdg(alias="project-automation-triggers|project-automation-notifications")
-        title_div.add(help_button)
-        help_button.add_style("float: right")
-        help_button.add_style("margin-top: -8px")
-        help_button.add_style("margin-left: -8px")
 
         add_button = ActionButtonWdg(title='+', size='small', tip='Add a new trigger')
-        title_div.add(add_button)
-        add_button.add_style("margin-top: -8px")
-        add_button.add_style("float: right")
         add_button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
@@ -134,10 +127,17 @@ class TriggerToolWdg(BaseRefreshWdg):
         '''
         } )
 
+        title_div.add(add_button)
+        add_button.add_style("float: left")
+        title_div.add(help_button)
+        help_button.add_style("float: right")
+
+        """
         if my.title:
             title_div.add("<b>Triggers [%s]</b>" % my.title)
         else:
             title_div.add("<b>Triggers</b>")
+        """
 
         left.add("<br clear='all'/>")
 
@@ -280,9 +280,7 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         title = trigger.get_value("title", no_exception=True)
         if not title:
-            title = trigger.get_code()
-
-
+            title = "<i style='opacity: 0.7'>%s</i>" % trigger.get_code()
 
         trigger_div.add_attr("title", description)
 
@@ -355,7 +353,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
     def get_add_trigger_wdg(my, trigger):
+
         div = DivWdg()
+
         
         button = ActionButtonWdg(title='Save')
         button.add_style("float: right")
@@ -434,7 +434,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             else:
                 div.add("<b>Edit existing trigger</b><hr/><br/>")
 
-            div.add("Trigger: %s - %s<br/>" % (trigger.get_code(), trigger.get_value("description") ))
+            div.add("Trigger: &nbsp; &nbsp; %s - %s<br/>" % (trigger.get_code(), trigger.get_value("description") ))
 
 
 
@@ -471,16 +471,20 @@ class TriggerDetailWdg(BaseRefreshWdg):
         div.add("<br/>")
 
         table = Table()
+        table.add_style("width: 100%")
         table.add_color("color", "color")
         div.add(table)
 
         tr = table.add_row()
         td = table.add_cell()
         td.add_style("padding-bottom: 5px")
-        td.add("Title: ")
-        title_text = TextWdg("title")
-        title_text.add_style("width: 200px")
+        # This is labeled as name, but is really title in the database.
+        # The column in the database should have been called "name"
+        td.add("Name: ")
+        title_text = TextInputWdg(name="title")
+        title_text.add_style("margin-bottom: 10px")
         title_text.set_value(title)
+        title_text.add_style("width: 100%")
         td = table.add_cell()
         td.add(title_text)
  
@@ -488,15 +492,18 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         tr = table.add_row()
         td = table.add_cell()
-        td.add_style("padding-bottom: 5px")
+        td.add_style("padding-bottom: 15px")
         td.add("Description: ")
         desc_text = TextAreaWdg("description")
-        desc_text.add_style("width: 200px")
-        desc_text.add_style("height: 40px")
+        desc_text.add_style("margin-bottom: 10px")
+        desc_text.add_class("form-control")
+        desc_text.add_style("width: 100%")
+        desc_text.add_style("height: 60px")
         desc_text.set_value(description)
         td = table.add_cell()
         td.add(desc_text)
-        
+       
+        """
         table.add_row()
         td = table.add_cell()
         td.add("Unique Code (optional): ")
@@ -507,6 +514,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         desc_text.add_style("width: 200px")
         desc_text.set_value(code)
         td.add(desc_text)
+        """
         td.add("<br/>")
  
 
@@ -514,6 +522,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add("<b>Event: </b>")
         td.add_style("padding-top", "20px")
+        td.add("<hr/>")
 
 
         # Higher level triggers
@@ -567,9 +576,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
-        td.add_color("background", "background", -5)
         td.add_style("padding: 10px")
-        td.add_border()
         td.add("When&nbsp;&nbsp;&nbsp;")
 
         #td = table.add_cell()
@@ -642,7 +649,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
 
-
         # Handle the action
         if my.mode == 'pipeline':
             trigger_labels = [
@@ -650,17 +656,14 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'Update another task status',
                 'Create another task',
                 'Set actual task date',
-                'Run python code',
-                'Run python trigger',
             ]
             trigger_values = [
                 'notification',
                 'task_status',
                 'task_create',
                 'task_date',
-                'python_script',
-                'python_class',
             ]
+
         else:
             trigger_labels = [
                 'Send a notification',
@@ -668,8 +671,6 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 #'Add a note',
                 #'Set task complete',
                 #'Delete versions',
-                'Run python code',
-                'Run python trigger',
             ]
             #TODO: enable task_complete
             trigger_values = [
@@ -678,10 +679,22 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 #'note_insert',
                 #'task_complete',
                 #'version_delete',
-                'python_script',
-                'python_class',
             ]
 
+
+        security = Environment.get_security()
+        is_admin = security.is_admin()
+
+        if is_admin:
+            trigger_labels.extend( [
+                'Run Python code',
+                'Run Python trigger'
+            ] )
+            
+            trigger_values.extend( [
+                'python_script',
+                'python_class'
+            ] )
 
         #trigger_edit = TaskCompleteTestWdg()
         #trigger_values.append(trigger_edit.get_trigger_type())
@@ -699,14 +712,13 @@ class TriggerDetailWdg(BaseRefreshWdg):
         title.add("Action:")
         title.add_style("font-weight: bold")
         title.add_style("padding: 20 0 0 0")
+        td.add("<hr/>")
 
         table.add_row()
         #td = table.add_cell()
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
-        td.add_color("background", "background", -5)
         td.add_style("padding: 10px")
-        td.add_border()
         if trigger_type != 'notification':
             
             td.add("Do the following: ")
@@ -1179,11 +1191,12 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
     def get_process_div(my, process):
         process_div = DivWdg()
-        process_div.add_style("padding: 3px")
+        process_div.add_style("padding: 8px 5px")
 
         checkbox = CheckboxWdg("dst_process")
         process_div.add(checkbox)
         checkbox.add_attr("spt_is_multiple", "true")
+        checkbox.add_style("margin: 5px 8px 8px -8px")
 
         is_checked = False
         dst_status = ''
@@ -1216,6 +1229,8 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
             status_select.set_value(dst_status )
         process_div.add(status_select)
         status_select.set_option("values", statuses)
+        status_select.add_style("margin-top: 5px")
+        status_select.add_style("margin-left: 15px")
 
         return process_div
 
@@ -1851,6 +1866,20 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        is_admin = Environment.get_security().is_admin()
+        if not is_admin:
+            div = DivWdg()
+            div.add_style("width: 300px")
+            div.add_style("padding: 30px")
+            div.add_style("text-align: center")
+            div.add_style("margin: 20px auto")
+            div.add_color("background", "background3")
+            div.add_border()
+            div.add("Only admin can create python scripts")
+            return div
+
+
+
         web = WebContainer.get_web()
         div = DivWdg()
         div.add_class("spt_python_script_trigger_top")
@@ -1951,6 +1980,8 @@ class PythonScriptTriggerEditCbk(Command):
 
     def execute(my):
 
+        # only admin can save triggers
+
         search_key = my.kwargs.get("search_key")
         if search_key:
             trigger = Search.get_by_search_key(search_key) 
@@ -2046,6 +2077,21 @@ class PythonScriptTriggerEditCbk(Command):
 class PythonClassTriggerEditWdg(BaseRefreshWdg):
 
     def get_display(my):
+
+        is_admin = Environment.get_security().is_admin()
+        if not is_admin:
+            div = DivWdg()
+            div.add_style("width: 300px")
+            div.add_style("padding: 30px")
+            div.add_style("text-align: center")
+            div.add_style("margin: 20px auto")
+            div.add_color("background", "background3")
+            div.add_border()
+            div.add("Only admin can create python scripts")
+            return div
+
+
+
         div = DivWdg()
         div.add_class("spt_python_class_top")
 

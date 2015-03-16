@@ -8,15 +8,17 @@
 # or disclosed in any way without written permission.
 #
 #
-#
+# 
 
 __all__ = ['TableSchemaDumper', 'TableDataDumper']
 
 
-import re, sys
+import re 
+import sys
 import types
 import datetime
 import codecs
+from pyasm.common import TacticException
 
 from sql import SqlException
 
@@ -171,6 +173,7 @@ class TableDataDumper(object):
         my.include_id = True
         my.search_type = None
         my.ignore_columns = []
+        my.replace_dict={}
 
 
     def set_include_id(my, flag=True):
@@ -178,6 +181,15 @@ class TableDataDumper(object):
 
     def set_ignore_columns(my, columns=[]):
         my.ignore_columns = columns
+    
+    
+    def set_replace_token(my, replace, column, regex=None):
+        key = column
+        value = [replace, regex]
+        my.replace_dict[key] = value 
+        
+        
+        
 
 
 
@@ -345,6 +357,25 @@ class TableDataDumper(object):
 
             data = sobject.get_data()
             for name, value in data.items():
+                
+                if my.replace_dict:
+                    
+                    for column,replace_args in my.replace_dict.items():
+                        if name == column:
+                            replace_str = replace_args[0]
+                            regex = replace_args[1]
+                            
+                            if regex:
+                                if not re.match(regex,value):
+                                    raise TacticException("%s does not conform to standard format. Expected format must match %s"%(column,regex))
+                                value = re.sub(regex,replace_str,value)
+                            else:
+                                value = replace_str
+
+    
+                        
+
+
                 if name in my.ignore_columns:
                     continue
 

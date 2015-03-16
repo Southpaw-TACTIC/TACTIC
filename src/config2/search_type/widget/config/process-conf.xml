@@ -55,11 +55,14 @@
         </display>
     </element>
     <element name='process'/>
+    <element name='color'/>
     <element name='sort_order'/>
+    <element name="check_in_options">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
+    </element>
     <element name='checkin_mode'/>
     <element name='context_options'/>
     <element name='subcontext_options'/>
-    <element name='color'/>
 </edit>
 
 <insert>

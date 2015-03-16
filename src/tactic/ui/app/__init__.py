@@ -50,5 +50,7 @@ from quick_box_wdg import *
 from message_wdg import *
 from db_resource_wdg import *
 
+from simple_search_wdg import *
+
 
 
