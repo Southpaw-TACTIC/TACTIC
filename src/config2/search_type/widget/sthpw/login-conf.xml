@@ -26,7 +26,78 @@
     <element name="license_type"/>
     <element name="password" type="password"/>
     <element name="hourly_wage"/>
+    <element name="activity">
+       <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>CALENDAR</icon>
+            <cbjs_action>
+                var class_name = 'tactic.ui.tools.ScheduleUserToolWdg';
+                var login_row = bvr.src_el.getParent(".spt_table_row");
+                var sk = login_row.getAttribute('spt_search_key_v2');
+                var server = TacticServerStub.get();
+                var login = server.get_by_search_key(sk);
+                var kwargs = {
+                    login: login.code
+                };
+
+                var title = login.display_name + ' Schedule';
+                var top = bvr.src_el.getParent(".spt_dashboard_top");
+                spt.tab.set_tab_top(top);
+                spt.tab.add_new("user_schedule", title, class_name, kwargs);
+            </cbjs_action>
+        </display>
+    </element>
+     <element name="groups">
+       <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>GROUP_LINK</icon>
+            <cbjs_action>
+                var class_name = 'tactic.ui.startup.GroupAssignWdg';
+                var login_row = bvr.src_el.getParent(".spt_table_row");
+                var sk = login_row.getAttribute('spt_search_key');
+                var kwargs = {
+                    search_key: sk
+                };
+                var popup = spt.panel.load_popup("Group Assignment", class_name, kwargs);
+            </cbjs_action>
+        </display>
+    </element>
+    <element name="security">
+       <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>LOCK</icon>
+            <cbjs_action>
+                var class_name = 'tactic.ui.startup.GroupSummaryWdg';
+                var login_row = bvr.src_el.getParent(".spt_table_row");
+                var sk = login_row.getAttribute('spt_search_key');
+                var kwargs = {
+                    search_key: sk
+                };
+                var popup = spt.panel.load_popup("Security Summary", class_name, kwargs);
+            </cbjs_action>
+        </display>
+    </element>
+    <element name="edit_user">
+       <display class="tactic.ui.table.ButtonElementWdg">
+            <icon>EDIT</icon>
+            <cbjs_action>
+                var top = bvr.src_el.getParent(".spt_panel_user_top");
+                var class_name = 'tactic.ui.panel.EditWdg';
+                var login_row = bvr.src_el.getParent(".spt_table_row");
+                var sk = login_row.getAttribute('spt_search_key');
+
+                var kwargs = {
+                    search_type: "sthpw/login",
+                    view: "edit",
+                    search_key: sk
+                };
+                var popup = spt.panel.load_popup("Edit User", class_name, kwargs);
+
+                popup.on_save_cbk = function() {
+                    spt.panel.refresh(top);
+                }
+            </cbjs_action>
+        </display>
+    </element>
 </definition>
+
 
 
 <edit_definition>
@@ -47,9 +118,23 @@
         <action class="NullAction"/>
     </element>
     <element name="hourly_wage"/>
-
 </edit_definition>
 
+<manage_user>
+    <element name="preview">
+       <display class="ThumbWdg">
+        <icon_size>30</icon_size>
+        </display>
+    </element>
+    <element name="login"/>
+    <element name="first_name"/>
+    <element name="last_name"/>
+    <element name="display_name"/>
+    <element name="activity"/>
+    <element name="groups"/>
+    <element name="security"/>
+    <element name="edit_user"/>
+</manage_user>
 
 <table>
     <element name="preview"/>
@@ -308,6 +393,16 @@
         </display>
     </element>
 </simple_filter>
+
+<simple_manage_filter>
+    <element name='keyword' title=''>
+        <display class='tactic.ui.filter.KeywordFilterElementWdg'>
+            <mode>keyword</mode>
+            <column>first_name</column>
+        </display>
+    </element>
+</simple_manage_filter>
+
 
 
 </config>
