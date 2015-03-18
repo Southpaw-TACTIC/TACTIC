@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -145,7 +145,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el.getParent('.spt_note');
+           var note_top = bvr.src_el
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
 
@@ -153,10 +153,9 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
 
         # add action triggle for context itself
-        my.menu.set_activator_over(layout, 'edit_note', js_action=js_action)
+        my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
-      
 
         DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
         
@@ -175,8 +174,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def preprocess(my):
         parent =  my.get_parent_wdg()
-        if parent and parent.kwargs.get('__hidden__') == True:
-
+        if parent and parent.kwargs.get('__hidden__') in [True, 'True']:
             my.discussion.kwargs['hidden'] = True
             my.hidden = True
            
@@ -490,7 +488,6 @@ class DiscussionWdg(BaseRefreshWdg):
     def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
         '''hidden means it's a hidden row table'''
         
-
         layout.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_note_attachment',
@@ -1157,6 +1154,8 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+
+            
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1336,7 +1335,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
 
-
+                
                 note_content = DivWdg()
                 note_dialog.add(note_content)
                 note_content.add_style("max-height: 500px")
@@ -1562,45 +1561,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         icon = IconWdg("Note", "BS_PENCIL")
-        td.add(icon)
+        #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 5px")
-
-        
-
-        #--------- EDIT NOTES --------#
-        icon.add_class("edit_note")
-        icon.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_dialog_top");
-           
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
-
-            if (! add_note) {
-                var kwargs = container.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/'/g, '"');
-                kwargs = JSON.parse(kwargs);
-
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
-                var class_name = 'tactic.ui.widget.DiscussionEditWdg';
-                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
-                add_note = top.getElement(".spt_discussion_add_note");
-                spt.toggle_show_hide(add_note);
-            }
-
-            '''
-            } )
-
-
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("margin: 5px 0px")
+        title.add_style("margin: 5px 12px")
         title.add_style("font-weight: bold")
 
         tbody = content.add_tbody()
@@ -1713,7 +1679,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
-                    left.add("%s</br>" % login)
                     name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
                     left.add("%s</br>" % name)
                     left.add("%s</br>" % login_sobj.get_value("email"))
@@ -1725,36 +1690,6 @@ class DiscussionWdg(BaseRefreshWdg):
         right = content.add_cell()
         right.add_style("vertical-align: top")
         right.add_style("padding: 10px 30px")
-
-        #--------- EDIT NOTES --------#
-        right.add_class("edit_note")
-        right.add_behavior( {
-            'type': 'hover',
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_dialog_top");
-           
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
-
-            if (! add_note) {
-                var kwargs = container.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/'/g, '"');
-                kwargs = JSON.parse(kwargs);
-
-                var layout = spt.table.get_layout();
-                var upload_id = layout.getAttribute('upload_id')
-                kwargs.upload_id = upload_id; 
-                var class_name = 'tactic.ui.widget.DiscussionEditWdg';
-                spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
-                add_note = top.getElement(".spt_discussion_add_note");
-                spt.toggle_show_hide(add_note);
-            }
-
-            '''
-            } )
-        
 
         context = note.get_value("context")
 
@@ -2145,7 +2080,7 @@ class DiscussionAddNoteCmd(Command):
 
             path = path.replace("\\", "/")
             basename = os.path.basename(path)
-            basename = File.get_filesystem_name(basename) 
+            basename = Common.get_filesystem_name(basename) 
             new_path = "%s/%s" % (upload_dir, basename)
             context = "publish"
 
@@ -2165,8 +2100,10 @@ class DiscussionAddNoteCmd(Command):
                     source_paths.append(web_path)
                     source_paths.append(icon_path)
 
+            # specify strict checkin_type to prevent latest versionless generated
             checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
-                    source_paths=source_paths,  context=context)
+                    source_paths=source_paths,  context=context, checkin_type='strict')
+
             checkin.execute()
 
 

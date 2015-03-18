@@ -516,6 +516,9 @@ class SecurityTest(unittest.TestCase):
           
            
           <rule group='search_type' code='unittest/person'  project='unittest' access='allow'/>
+          <rule group='builtin' key='view_site_admin' access='allow'/>
+          <rule group='builtin' key='export_all_csv' project='unittest' access='allow'/>
+          <rule group='builtin' key='retire_delete' project='*' access='allow'/>
         
            </rules>
         ''')
@@ -524,6 +527,22 @@ class SecurityTest(unittest.TestCase):
     
 
         access_manager.add_xml_rules(xml)
+
+        test = access_manager.check_access('builtin', 'view_site_admin','allow')
+        my.assertEquals(test, True)
+
+        test = access_manager.check_access('builtin', 'export_all_csv','allow')
+        my.assertEquals(test, False)
+
+        # this is the new way to control per project csv export
+        keys = [{'key':'export_all_csv', 'project': 'unittest'}, {'key':'export_all_csv'}]
+        test = access_manager.check_access('builtin', keys ,'allow')
+        my.assertEquals(test, True)
+
+
+        test = access_manager.check_access('builtin', 'retire_delete','allow')
+
+        my.assertEquals(test, True)
 
         # test sensitive sobject
         test = access_manager.get_access('sobject', 'corporate/budget')

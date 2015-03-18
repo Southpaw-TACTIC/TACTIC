@@ -928,6 +928,8 @@ class DirListWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_dir_list_item',
             'cbjs_action': '''
             var el = bvr.src_el.getElement(".spt_select");
+            if (!el) return;
+
             if (el.checked) {
                 el.checked = false;
             }

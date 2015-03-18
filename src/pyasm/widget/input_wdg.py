@@ -1039,6 +1039,7 @@ class SelectWdg(BaseInputWdg):
         my.kwargs = kwargs
         css = kwargs.get('css')
         label = kwargs.get('label')
+        bs = kwargs.get('bs')
         my.sobjects_for_options = None
         my.empty_option_flag = False
         my.empty_option_label, my.empty_option_value = (my.SELECT_LABEL, "")
@@ -1054,8 +1055,9 @@ class SelectWdg(BaseInputWdg):
         my.add_class("spt_input")
 
         # BOOTSTRAP
-        my.add_class("form-control")
-        my.add_class("input-sm")
+        if bs != False:
+            my.add_class("form-control")
+            my.add_class("input-sm")
 
 
 
