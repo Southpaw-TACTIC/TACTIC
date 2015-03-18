@@ -390,6 +390,7 @@ class WizardWdg(BaseRefreshWdg):
             if not submit_title:
                 submit_title = "Submit"
             submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
+            submit.add_class("spt_wizard_submit")
             submit.add_behavior( {
             'type': 'click_up',
             'command': command,
