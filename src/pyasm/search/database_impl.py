@@ -125,8 +125,8 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get_id_col(my, db_resource, search_type):
         from pyasm.search import SearchType
-        search_type = SearchType.get(search_type)
-        id_col = search_type.get_search_type_id_col()
+        search_type_obj = SearchType.get(search_type)
+        id_col = search_type_obj.get_search_type_id_col()
         return id_col
 
 
@@ -1420,9 +1420,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if isinstance(table, SearchType):
             search_type = table
             table = search_type.get_table()
-            id_col = search_type.get_id_col()
+            id_col = search_type.get_search_type_id_col()
             if id_col:
                 return "%s_%s_seq" % (table, id_col)
+
         return "%s_id_seq" % table
 
 
