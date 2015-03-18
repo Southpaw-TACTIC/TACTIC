@@ -818,11 +818,8 @@ class UserPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-
-        #search = Search("sthpw/login")
-        #search.add_filter("login", "admin", op="!=")
-        #logins = search.get_sobjects()
-        current_users = Search.eval("@COUNT(sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or'])")
+        expr_filter = "sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']"
+        current_users = Search.eval("@COUNT(%s)" %expr_filter)
 
         top = my.top
         top.add_class("spt_panel_user_top")
@@ -909,21 +906,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
 
-        #logins = []
         if not current_users:
-            """
-            arrow_div = DivWdg()
-            top.add(arrow_div)
-            arrow_div.add("<b><<< Click to Add</b>")
-            arrow_div.add_style("position: relative")
-            arrow_div.add_style("margin-top: -35px")
-            arrow_div.add_style("margin-left: 35px")
-            arrow_div.add_style("float: left")
-            arrow_div.add_style("padding: 5px")
-            arrow_div.set_box_shadow("1px 1px 2px 2px")
-            arrow_div.set_round_corners(10, corners=['TL','BL'])
-            """
-
             div = DivWdg()
             top.add(div)
             div.add_style("text-align: center")
@@ -952,7 +935,7 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add(div)
         #div.add_style("max-height: 300px")
         #div.add_style("overflow-y: auto")
-        expr = "@SEARCH(sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or'])"
+        expr = "@SEARCH(%s)" %expr_filter
         panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
             show_gear='false', show_select='false', height='700', expression=expr, simple_search_view='simple_manage_filter')
         div.add(panel)
