@@ -804,8 +804,10 @@ class HtmlElement(Widget):
         for i in xrange(count):
             element = HtmlElement("br")
             widget.add(element)
-        if clear:
-            element.set_attr("clear", clear)
+            if clear:
+                element.set_attr("clear", clear)
+            if count==1:
+                return element
         return widget
     br = staticmethod(br)
 

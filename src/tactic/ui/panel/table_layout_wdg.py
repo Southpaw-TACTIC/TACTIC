@@ -985,6 +985,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     spt.named_events.fire_event(unique_id, {});
                     // run at the end of last load
                     if (bvr.expand_on_load) {
+                        spt.table.set_layout(layout);
                         spt.table.expand_table();
                     }
 
