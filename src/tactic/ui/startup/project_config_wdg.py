@@ -95,7 +95,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
 
         panel = {
             'widget': search_type_panel,
-            'title': 'List of Searchable Types (sTypes)',
+            'title': 'Searchable Type (sType) List',
             'width': '50%'
         }
         panels.append(panel)
@@ -220,7 +220,7 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panel = {
             'widget': user_panel,
-            'title': 'List of Users',
+            'title': 'User List',
         }
         panels.append(panel)
 
@@ -243,8 +243,14 @@ class UserConfigWdg(ProjectConfigWdg):
         """
 
         config_xml.append('''
-        <element name="Users in Project">
+        <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
+        </element>
+        <element name="Group List">
+            <display class='tactic.ui.panel.ViewPanelWdg'>
+                <search_type>sthpw/login_group</search_type>
+                <view>startup</view>
+            </display>
         </element>
         ''')
 
