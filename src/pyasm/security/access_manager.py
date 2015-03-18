@@ -312,7 +312,7 @@ class AccessManager(Base):
             return None
 
 
-        # qualify the key with a project_code
+        # qualify the key with a project_code 
         project_code = "*"
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice
@@ -321,7 +321,12 @@ class AccessManager(Base):
             if rule_project:
                 project_code = rule_project
                 key2.pop('project')
-            key = Common.get_dict_list(key2)
+            
+            # backward compatibility with the key attribute
+            if len(key2) == 1 and key2.keys() == ['key']:
+                key = key2['key']
+            else:
+                key = Common.get_dict_list(key2)
         # special case for projects
         elif type == "project":
             project_code = key
