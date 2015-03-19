@@ -883,9 +883,10 @@ class PluginEditWdg(BaseRefreshWdg):
 
             title_wdg = DivWdg()
             dir_div.add(title_wdg)
-            title_wdg.add_color("background", "background", -10)
+            title_wdg.add_color("background", "background3")
             title_wdg.add_style("margin: -5 -16 15 -16")
             title_wdg.add_style("padding: 5px")
+            title_wdg.add_style("height: 35px")
             title_wdg.add_border()
 
             button_row = ButtonRowWdg()
@@ -962,7 +963,9 @@ class PluginEditWdg(BaseRefreshWdg):
 
             from tactic.ui.input import UploadButtonWdg
             upload_button = UploadButtonWdg(name="Upload")
+            upload_button.add_style('float: left')
             title_wdg.add(upload_button)
+            title_wdg.add(HtmlElement.br(2))
 
             upload_button.set_on_complete('''
                 var file = spt.html5upload.get_file();
@@ -1279,15 +1282,16 @@ class PluginEditWdg(BaseRefreshWdg):
             rel_path = "/builtin_plugins/%s/doc.html" % my.dirname
         else:
             rel_path = "/plugins/%s/doc.html" % my.dirname
-
+        
         if os.path.exists(doc_path):
             doc_div = DivWdg()
 
             dirname = os.path.dirname(doc_path)
             basename = os.path.basename(doc_path)
-
+            
             shelf_wdg = DivWdg()
             shelf_wdg.add_style("height: 35px")
+            shelf_wdg.add_style("padding: 5px 10px")
             shelf_wdg.add_color("background", "background3")
             doc_div.add(shelf_wdg)
 
@@ -1298,7 +1302,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 'dirname': dirname,
                 'basename': basename,
                 'cbjs_action': '''
-                var path = bvr.rel_path;
+                //var path = bvr.rel_path;
 
                 var class_name = 'tactic.ui.app.PluginDirListEditFileWdg';
                 var kwargs = {
@@ -1308,11 +1312,11 @@ class PluginEditWdg(BaseRefreshWdg):
                 spt.panel.load_popup(bvr.basename, class_name, kwargs);
                 '''
                 } )
-
-
-            from tactic.ui.app import HelpContentWdg
-            doc_wdg = HelpContentWdg(rel_path=rel_path)
-            doc_div.add(doc_wdg)
+			# prevent drawing bug when file size is 0 byte
+            if os.path.getsize(doc_path) > 0:
+                from tactic.ui.app import HelpContentWdg
+                doc_wdg = HelpContentWdg(rel_path=rel_path)
+                doc_div.add(doc_wdg)
         else:
             doc_div = DivWdg()
             doc_div.add("No Documentation File in Plugin")
@@ -1487,7 +1491,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Activate', tip='Activate Plugin in Current Project')
             shelf_div.add(button)
-            button.add_style("margin: 10px auto")
+            
             button.add_style("margin: 20px 250px")
             button.add_behavior( {
             'type': 'click_up', 
