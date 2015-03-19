@@ -910,7 +910,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                 } )
 
-
+            """
+            # this make clicking on the Search not work when the focus is on text input
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
@@ -922,7 +923,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 '''
             } )
-
+            """
 
         else:
             keyword_div = None
