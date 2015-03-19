@@ -1312,7 +1312,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 spt.panel.load_popup(bvr.basename, class_name, kwargs);
                 '''
                 } )
-			# prevent drawing bug when file size is 0 byte
+            # prevent drawing bug when file size is 0 byte
             if os.path.getsize(doc_path) > 0:
                 from tactic.ui.app import HelpContentWdg
                 doc_wdg = HelpContentWdg(rel_path=rel_path)
