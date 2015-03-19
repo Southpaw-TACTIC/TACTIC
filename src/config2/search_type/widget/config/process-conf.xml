@@ -35,7 +35,7 @@
 
 
 <table>
-    <element name='pipeline_code'/>
+    <element name='pipeline'/>
     <element name='process'/>
     <element name='search_type'/>
     <element name='sort_order'/>
@@ -49,11 +49,13 @@
 
 
 <edit>
+    <!--
     <element name='pipeline_code'>
          <display class="TextWdg">
              <read_only>true</read_only>
         </display>
     </element>
+    -->
     <element name='process'/>
     <element name='color'/>
     <element name='sort_order'/>
@@ -65,11 +67,28 @@
     <element name='subcontext_options'/>
 </edit>
 
+
+<pipeline_tool_edit>
+    <element name='color'/>
+    <element name='sort_order'/>
+    <element name="check_in_options">
+        <display class="tactic.ui.panel.EditTitleWdg"/>
+    </element>
+    <element name='checkin_mode'/>
+    <element name='context_options'/>
+    <element name='subcontext_options'/>
+</pipeline_tool_edit>
+
+
+
+
+
 <insert>
     <element name='pipeline_code'>
         <display class="SelectWdg">
              <empty>true</empty>
              <values_expr>@GET(sthpw/pipeline['search_type','not in','sthpw/task'].code)</values_expr>
+             <labels_expr>@GET(sthpw/pipeline['search_type','not in','sthpw/task'].name)</labels_expr>
         </display>
     </element>
     <element name='process'/>
@@ -86,9 +105,6 @@
          <display class="TextWdg">
              <hint>(main), (auto), (text) or | separated list of subcontexts</hint>
          </display>
-    </element>
-    <element name='pipeline_code'>
-        <display class="TextWdg"/>
     </element>
     <element name='checkin_mode'>
         <display class='SelectWdg'>

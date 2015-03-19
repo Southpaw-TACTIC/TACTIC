@@ -1897,7 +1897,6 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script_sobj = None
             script = ''
 
-        is_task_status_changed = event == 'change|sthpw/task|status'
         
         div.add("Run Script Path: <br/>")
         script_path_text = LookAheadTextInputWdg(
@@ -1956,6 +1955,8 @@ if task_status != src_status:
     return
 ###################### Add the script below: ############################
 '''         
+        """
+        is_task_status_changed = event == 'change|sthpw/task|status'
         if is_task_status_changed:
             if not script.startswith('#pre'):
                 
@@ -1968,12 +1969,14 @@ if task_status != src_status:
         if not is_task_status_changed:
             if script.startswith('#pre'):
                 script = ''
+        """
 
         div.add("Code: <br/>")
         script_text = TextAreaWdg("script")
         script_text.add_class("spt_python_script_text")
         div.add(script_text)
-        script_text.set_value(script)
+        if script:
+            script_text.set_value(script)
         script_text.add_style("height: 300px")
         script_text.add_style("width: 500px")
 

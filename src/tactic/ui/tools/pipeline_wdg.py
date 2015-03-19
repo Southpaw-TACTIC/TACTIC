@@ -121,30 +121,30 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         # TEST
-        # NOTE: the canavas in PipelineCanvasWdg requires a set size ... it does not respond
+        # NOTE: the canvas in PipelineCanvasWdg requires a set size ... it does not respond
         # well to sizes like 100% or auto.  Unless this is fixed, we cannot have a table
         # responsively respond to a changing window size.
-        """
         info = table.add_cell()
         #info.add_style("display: none")
+        process = "model"
         info.add_class("spt_pipeline_tool_info")
         info.add_style("width: 250px")
         info.add_border()
         info_wdg = DivWdg()
         info.add(info_wdg)
-        info_wdg.add("<h2>Node Info</h2></hr/>")
-        info_wdg.add_style("width: 100%")
-        info_wdg.add_style("min-width: 300px")
 
         from tactic.ui.panel import EditWdg
-        search_key = "config/process?project=vfx&code=SPT_PROCESS00038"
+        search = Search("config/process")
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+        search_key = process_sobj.get_search_key()
         kwargs = {
                 'search_key': search_key,
-                'show_header': False
+                'show_header': False,
+                'width': '400px',
         }
-        edit_wdg = EditWdg(**kwargs)
+        edit_wdg = ProcessInfoWdg(**kwargs)
         info_wdg.add(edit_wdg)
-        """
 
 
 
@@ -768,7 +768,21 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
+
+        var node_name = spt.pipeline.get_node_name(node);
+
         spt.pipeline_properties.show_node_properties(node);
+
+        var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        var info = top.getElement(".spt_pipeline_tool_info");
+        if (info) {
+            var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+            var kwargs = {
+                process: node_name
+            }
+            spt.panel.load(info, class_name, kwargs);
+        }
+
         '''
         }
  
@@ -1042,11 +1056,30 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
     def get_display(my):
 
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        if not pipeline_code:
+            pipeline_code = "S2_PIPELINE00066"
+        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
+
         top = my.top
+        if not process:
+            return top
+
         top.add_style("padding: 20px")
         top.add_color("background", "background")
+        top.add_style("min-width: 300px")
 
-        process = "model"
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: -20px -20px 10px -20px")
+        top.add(title_wdg)
+        title_wdg.add("Process: %s" % process)
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 10px 10px")
+
 
         search = Search("config/process")
         search.add_filter("process", process)
@@ -1075,35 +1108,57 @@ class ProcessInfoWdg(BaseRefreshWdg):
         table = Table()
         top.add(table)
         table.add_style('width: 100%')
+        table.add_style('margin: 0px 5px')
 
         table.add_row()
-        td = table.add_cell("Trigger Count:")
+        td = table.add_cell("Triggers:")
         td.add_style("text-align: right")
-        td.add_style("width: 150px")
         td.add_style("padding: 10px 10px")
-        td = table.add_cell(str(trigger_count))
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % trigger_count)
+        td.add_style("width: 250px")
+        td.add_style("text-align: right")
+
+        button = ActionButtonWdg(title="View")
+        td.add(button)
+        button.add_style("float: right")
+        button.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.TriggerToolWdg';
+            var kwargs = {
+                pipeline_code: bvr.pipeline_code,
+                process: bvr.process,
+            }
+            spt.panel.load_popup("Triggers ["+bvr.process+"]", class_name, kwargs);
+            '''
+        } )
+
+        table.add_row()
+        td = table.add_cell("Notifications:")
+        td.add_style("text-align: right")
+        td.add_style("padding: 10px 10px")
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % notification_count)
         td.add_style("text-align: right")
 
         table.add_row()
-        td = table.add_cell("Notification Count:")
+        td = table.add_cell("Naming Conventions: ")
         td.add_style("text-align: right")
         td.add_style("padding: 10px 10px")
-        td = table.add_cell(str(notification_count))
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % naming_count)
         td.add_style("text-align: right")
 
-        table.add_row()
-        td = table.add_cell("Naming Count: ")
-        td.add_style("text-align: right")
-        td.add_style("padding: 10px 10px")
-        td = table.add_cell(str(naming_count))
-        td.add_style("text-align: right")
 
+        top.add("<hr/>")
 
         from tactic.ui.panel import EditWdg
 
         edit = EditWdg(
                 search_type="config/process",
                 show_header=False,
+                width="400px",
+                #view="pipeline_tool_edit",
         )
         edit.set_sobject(process_sobj)
         top.add(edit)
@@ -1166,10 +1221,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         my.width = my.kwargs.get("width")
         if not my.width:
-            my.width = "1300"
+            #my.width = "1300"
+            my.width = ""
         my.height = my.kwargs.get("height")
         if not my.height:
             my.height = 600
+
 
         
         #search_type_wdg = my.get_search_type_wdg()
@@ -1251,6 +1308,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add_style("padding: 5px")
         shelf_wdg.add_style("margin-bottom: 5px")
         shelf_wdg.add_style("overflow-x: hidden")
+        shelf_wdg.add_style("min-width: 800px")
 
         show_shelf = my.kwargs.get("show_shelf")
         show_shelf = True
@@ -1570,7 +1628,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu = Menu(width=200)
 
 
-        
+        # TEST TEST TEST 
         expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
         processes = Search.eval(expr)
         processes.sort()
