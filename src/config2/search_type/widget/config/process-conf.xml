@@ -61,6 +61,7 @@
     <element name='sort_order'/>
     <element name="check_in_options">
         <display class="tactic.ui.panel.EditTitleWdg"/>
+        <action class="NullAction"/>
     </element>
     <element name='checkin_mode'/>
     <element name='context_options'/>
@@ -73,6 +74,7 @@
     <element name='sort_order'/>
     <element name="check_in_options">
         <display class="tactic.ui.panel.EditTitleWdg"/>
+        <action class="NullAction"/>
     </element>
     <element name='checkin_mode'/>
     <element name='context_options'/>

@@ -158,8 +158,8 @@ class TriggerToolWdg(BaseRefreshWdg):
 
             cur_trigger = triggers[0]
 
-            for trigger in triggers:
-                trigger_div = my.get_trigger_wdg(trigger)
+            for i, trigger in enumerate(triggers):
+                trigger_div = my.get_trigger_wdg(trigger, i+1)
                 triggers_div.add(trigger_div)
                 trigger_div.add("<br clear='all'/>")
         else:
@@ -180,8 +180,8 @@ class TriggerToolWdg(BaseRefreshWdg):
             search.add_op("or")
         search.add_project_filter()
         triggers = search.get_sobjects()
-        for trigger in triggers:
-            trigger_div = my.get_trigger_wdg(trigger)
+        for i, trigger in enumerate(triggers):
+            trigger_div = my.get_trigger_wdg(trigger, i+1)
             triggers_div.add(trigger_div)
             trigger_div.add("<br clear='all'/>")
 
@@ -248,9 +248,9 @@ class TriggerToolWdg(BaseRefreshWdg):
 
 
 
-    def get_trigger_wdg(my, trigger):
+    def get_trigger_wdg(my, trigger, index=1):
         trigger_div = DivWdg()
-        trigger_div.add_style("padding: 3px")
+        trigger_div.add_style("padding: 3px 3px 3px 12px")
         trigger_div.add_class("hand")
 
         hover = trigger_div.get_color("background", -20)
@@ -280,7 +280,7 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         #checkbox = CheckboxWdg(trigger_code)
         #trigger_div.add(checkbox)
-        trigger_div.add(title)
+        trigger_div.add("%s. %s" % (index, title))
 
         search_key = SearchKey.get_by_sobject(trigger)
 
@@ -426,16 +426,18 @@ class TriggerDetailWdg(BaseRefreshWdg):
             event = trigger.get_value("event")
 
             if my.process:
-                div.add("<b>Edit existing trigger for process [%s]</b><hr/><br/>" % my.process)
+                div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % my.process)
             else:
-                div.add("<b>Edit existing trigger</b><hr/><br/>")
+                div.add("<b>Edit existing trigger</b><hr/>")
 
+            """
             title = trigger.get_value("title")
             desc = trigger.get_value("description")
             if not desc:
                 div.add("Trigger: &nbsp; &nbsp; %s<br/>" % title )
             else:
                 div.add("Trigger: &nbsp; &nbsp; %s - %s<br/>" % (title, desc))
+            """
 
 
 

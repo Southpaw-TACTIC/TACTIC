@@ -1222,16 +1222,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Add To Current Group')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var node = spt.smenu.get_activator(bvr);
-            spt.pipeline.init(node);
-            var group_name = spt.pipeline.get_current_group();
-            spt.pipeline.add_node_to_group(node, group_name);
-            '''
-        } )
-        menu.add(menu_item)
+        mode = "single"
+
+        if mode == "multiple":
+            menu_item = MenuItem(type='action', label='Add To Current Group')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var node = spt.smenu.get_activator(bvr);
+                spt.pipeline.init(node);
+                var group_name = spt.pipeline.get_current_group();
+                spt.pipeline.add_node_to_group(node, group_name);
+                '''
+            } )
+            menu.add(menu_item)
 
 
         """
@@ -1247,9 +1250,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         menu.add(menu_item)
         """
 
-
+        """
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
+        """
 
 
 
@@ -1278,15 +1282,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label='Delete Group')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var node = spt.smenu.get_activator(bvr);
-            spt.pipeline.init( { src_el: node } );
-            spt.pipeline.remove_group(node.spt_group);
-            '''
-        } )
-        menu.add(menu_item)
+        if mode == "multiple":
+            menu_item = MenuItem(type='action', label='Delete Group')
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var node = spt.smenu.get_activator(bvr);
+                spt.pipeline.init( { src_el: node } );
+                spt.pipeline.remove_group(node.spt_group);
+                '''
+            } )
+            menu.add(menu_item)
 
 
         return menu

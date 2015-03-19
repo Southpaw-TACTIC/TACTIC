@@ -43,6 +43,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_tool_top")
         #top.add_style("margin-top: 10px")
 
+        inner = DivWdg()
+        top.add(inner)
+
         #table = Table()
         table = ResizableTableWdg()
 
@@ -50,7 +53,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         table.add_color("background", "background")
         table.add_color("color", "color")
-        top.add(table)
+        inner.add(table)
 
         my.save_event = top.get_unique_event()
 
@@ -75,7 +78,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         spt.panel.refresh(list);
         '''
 
-        top.add_behavior( {
+        inner.add_behavior( {
         'type': 'listen',
         'event_name': my.save_event,
         'cbjs_action': cbjs_action
@@ -94,7 +97,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         save_new_event = '%s_new' %my.save_event
-        top.add_named_listener(save_new_event,  save_new_cbjs_action)
+        inner.add_named_listener(save_new_event,  save_new_cbjs_action)
 
 
         # only for editing pipelines for a particular Stype when the UI refreshes
@@ -126,13 +129,13 @@ class PipelineToolWdg(BaseRefreshWdg):
         # responsively respond to a changing window size.
         info = table.add_cell()
         #info.add_style("display: none")
-        process = "model"
         info.add_class("spt_pipeline_tool_info")
-        info.add_style("width: 250px")
+        info.add_style("width: 400px")
         info.add_border()
         info_wdg = DivWdg()
         info.add(info_wdg)
 
+        """
         from tactic.ui.panel import EditWdg
         search = Search("config/process")
         search.add_filter("process", process)
@@ -145,6 +148,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         }
         edit_wdg = ProcessInfoWdg(**kwargs)
         info_wdg.add(edit_wdg)
+        """
 
 
 
@@ -214,7 +218,11 @@ class PipelineToolWdg(BaseRefreshWdg):
                           'type':'load',
                           'cbjs_action':  load_cbjs_action})
 
-        return top
+
+        if my.kwargs.get("is_refresh"):
+            return inner
+        else:
+            return top
 
 
 
@@ -770,6 +778,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         var node = bvr.src_el;
 
         var node_name = spt.pipeline.get_node_name(node);
+        var group_name = spt.pipeline.get_current_group();
 
         spt.pipeline_properties.show_node_properties(node);
 
@@ -778,6 +787,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         if (info) {
             var class_name = 'tactic.ui.tools.ProcessInfoWdg';
             var kwargs = {
+                pipeline_code: group_name,
                 process: node_name
             }
             spt.panel.load(info, class_name, kwargs);
@@ -1051,6 +1061,53 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
 
+class PipelineInfoWdg(BaseRefreshWdg):
+    def get_display(my):
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+
+        top = my.top
+
+        if not pipeline_code:
+            return top
+
+        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
+
+        if not process:
+            return top
+
+
+        search_type = pipeline.get_value("search_type")
+
+        top.add_style("padding: 20px 0px")
+        top.add_color("background", "background")
+        top.add_style("min-width: 300px")
+
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        top.add(title_wdg)
+        title_wdg.add("Pipeline: %s" % pipeline.get("name"))
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px")
+
+
+        # sobject count
+        if search_type:
+            search = Search(search_type)
+            search.add_filter("pipeline_code", pipeline.get_code())
+            sobject_count = search.get_count()
+
+
+        return top
+
+
+
+
+
 
 class ProcessInfoWdg(BaseRefreshWdg):
 
@@ -1058,27 +1115,33 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
-        if not pipeline_code:
-            pipeline_code = "S2_PIPELINE00066"
-        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
 
         top = my.top
+
+        if not pipeline_code:
+            return top
+
+        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
+
         if not process:
             return top
 
-        top.add_style("padding: 20px")
+
+        search_type = pipeline.get_value("search_type")
+
+        top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
         top.add_style("min-width: 300px")
 
 
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -20px -20px 10px -20px")
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
         title_wdg.add("Process: %s" % process)
         title_wdg.add_style("font-size: 1.2em")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 10px 10px")
+        title_wdg.add_style("padding: 15px 10px")
 
 
         search = Search("config/process")
@@ -1105,9 +1168,20 @@ class ProcessInfoWdg(BaseRefreshWdg):
         naming_count = search.get_count()
 
 
+        # sobject count
+        if search_type:
+            search = Search(search_type)
+            search.add_filter("pipeline_code", pipeline.get_code())
+            sobject_count = search.get_count()
+        else:
+            sobject_count = 0
+
+
+
+
         table = Table()
         top.add(table)
-        table.add_style('width: 100%')
+        table.add_style('width: auto')
         table.add_style('margin: 0px 5px')
 
         table.add_row()
@@ -1142,12 +1216,84 @@ class ProcessInfoWdg(BaseRefreshWdg):
         td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % notification_count)
         td.add_style("text-align: right")
 
+        button = ActionButtonWdg(title="View")
+        td.add(button)
+        button.add_style("float: right")
+        button.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.TriggerToolWdg';
+            var kwargs = {
+                pipeline_code: bvr.pipeline_code,
+                process: bvr.process,
+            }
+            spt.panel.load_popup("Triggers ["+bvr.process+"]", class_name, kwargs);
+            '''
+        } )
+
+
+
+
         table.add_row()
         td = table.add_cell("Naming Conventions: ")
         td.add_style("text-align: right")
         td.add_style("padding: 10px 10px")
         td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % naming_count)
         td.add_style("text-align: right")
+
+
+        button = ActionButtonWdg(title="View")
+        td.add(button)
+        button.add_style("float: right")
+        button.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.TableLayoutWdg';
+            var kwargs = {
+                search_type: "config/naming",
+                //expression: "@SOBJECT(config/naming['context','like','"+bvr.process+"'])",
+                show_shelf: true,
+            }
+            spt.panel.load_popup("Naming Conventions ["+bvr.process+"]", class_name, kwargs);
+            '''
+        } )
+
+
+
+
+
+        table.add_row()
+        td = table.add_cell("Item Count: ")
+        td.add_style("text-align: right")
+        td.add_style("padding: 10px 10px")
+        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % sobject_count)
+        td.add_style("text-align: right")
+
+
+        button = ActionButtonWdg(title="View")
+        td.add(button)
+        button.add_style("float: right")
+        button.add_behavior( {
+            'type': 'click_up',
+            'search_type': search_type,
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.TableLayoutWdg';
+            var kwargs = {
+                search_type: bvr.search_type,
+                op_filters: [['pipeline_code',bvr.pipeline_code]],
+            }
+            spt.panel.load_popup("Items ["+bvr.process+"]", class_name, kwargs);
+            '''
+        } )
+
+
+
 
 
         top.add("<hr/>")
@@ -1159,13 +1305,10 @@ class ProcessInfoWdg(BaseRefreshWdg):
                 show_header=False,
                 width="400px",
                 #view="pipeline_tool_edit",
+                search_key=process_sobj.get_search_key(),
         )
-        edit.set_sobject(process_sobj)
         top.add(edit)
                 
-
-
-
 
         # Don't touch
         # ---
@@ -1434,6 +1577,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.panel.refresh(top);
         '''
         } )
@@ -1487,6 +1631,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             spt.named_events.fire_event('pipeline|save', {});
         } 
+
+
+
+        //spt.panel.refresh(top);
 
         spt.app_busy.hide();
 
@@ -1720,6 +1868,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
+        # This is redundant with refresh
+        """
         button = ButtonNewWdg(title="Clear Canvas", icon="BS_REMOVE")
         button_row.add(button)
 
@@ -1743,6 +1893,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         '''
         } )
+        """
 
  
 
