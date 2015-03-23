@@ -30,6 +30,7 @@ from button_wdg import ButtonElementWdg
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg
+from tactic_client_lib import TacticServerStub
 
 from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
 
@@ -550,15 +551,39 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
         pipeline_codes = SObject.get_values(my.sobjects, 'pipeline_code', unique=True, no_exception=True)
-        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
+
+        # pipeline_codes can have an item that is something like $PROJECT/shot.
+        # when this happens, in the eval, $PROJECT is replaced by something like 'vfx'
+        # because there are quotes around it, it messes up the expression 
+        # So, replace $PROJECT here, and thus, getting rid of the code
+        server = TacticServerStub.get()
+        if pipeline_codes:
+            pipeline_codes[0] = pipeline_codes[0].replace("$PROJECT", server.get_project())
+        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
+
+        # get all of the tasks that appear in all the pipelines, without duplicates
+        my.all_processes_array = []
+        my.all_processes_dict = {}
+        # ^ that's what the pipeline column should display (each task in the pipeline)
+
+        # the default pipeline is the longest pipeline in the table
+        # this is so that the tasks appear in the right order.
+        my.default_pipeline_array = []
+
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
+                # if this pipeline has more processes than the default, make this the default
+                if len(processes) > len(my.default_pipeline_array):
+                    my.default_pipeline_array = processes
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
+                    if not my.all_processes_dict.get(process.get_name()):
+                        my.all_processes_array.append(process.get_name())
+                        my.all_processes_dict[process.get_name()] = pipeline
                     process_dict = my.label_dict.get(pipeline_code)
-                    process_dict[process.get_name()] = process.get_label()
+                    process_dict[process.get_name()] = process.get_label()  
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -595,6 +620,7 @@ class TaskElementWdg(BaseTableElementWdg):
                     my.allowed_statuses.append(status)
 
         if my.sobjects:
+            # these are the items in the table being displayed. ie: shots in shot table
             search_type = my.sobjects[0].get_base_search_type()
             if search_type:
                 sobj_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','%s'])" %search_type)
@@ -762,13 +788,42 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 
                 table.add_row()
-                
+
+
+                if my.all_processes_array:
+                    processes = my.all_processes_array
+
+                # sort the processes, so that the task appears in the right order
+                default_pipeline_tasks = []
+
+                # get an array of all the tasks, in order
+                for task in my.default_pipeline_array:
+                    default_pipeline_tasks.append(task.get_name())
+
+                sorted_processes = []
+
+                # this will add every item in default pipeline to sorted processes
+                for item in default_pipeline_tasks:
+                    for process in processes:
+                        if item == process:
+                            sorted_processes.append(item)
+
+                # add everything else not in the default pipeline after
+                for process in processes:
+                    if process not in sorted_processes:
+                        sorted_processes.append(process)
+
+
+                processes = sorted_processes
+                my.all_processes_array = processes
+
                 for process in processes:
                     title = Common.get_display_title(process)
                     td = table.add_cell(title)
                     td.add_style("width: 117px")
                     td.add_style("text-align: center")
                     td.add_style("font-weight: bold")
+                    td.add_attr("process", process)
 
                 return table
             else:
@@ -881,12 +936,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             
 
 
-    def get_tasks(my):
+    def get_tasks(my, sobject=None):
         #my.preprocess()
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
-        sobject = my.get_current_sobject()
+        if not sobject:
+            sobject = my.get_current_sobject()
 
         # use parent?
         #sobject = sobject.get_parent()
@@ -984,19 +1040,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             if my.filler_cache == None:
                 my.filler_cache = {}
-                for process in processes:
-                    process_sobj = pipeline.get_process(process)
-                    task_pipeline = process_sobj.get_task_pipeline()
 
-                    task = SearchType.create("sthpw/task")
-                    task.set_value("process", process)
-                    task.set_value("context", process)
-                    if task_pipeline:
-                        task.set_value("pipeline_code", task_pipeline)
-     
-                    my.filler_cache[process] = task
+            for process in processes:
+                process_sobj = pipeline.get_process(process)
+                task_pipeline = process_sobj.get_task_pipeline()
 
+                task = SearchType.create("sthpw/task")
+                task.set_value("process", process)
+                task.set_value("context", process)
+                if task_pipeline:
+                    task.set_value("pipeline_code", task_pipeline)
 
+                #if not my.filler_cache[process]: 
+                my.filler_cache[process] = task
 
             missing = []
             task_processes = [x.get_value("process") for x in tasks]
@@ -1135,9 +1191,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_display(my):
         
-        my.tasks = my.get_tasks()
+        
 
         sobject = my.get_current_sobject()
+        my.tasks = my.get_tasks(sobject)
+      
 
 
         div = DivWdg()
@@ -1250,7 +1308,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
             last = len(items) - 1
-            for idx, tasks in enumerate(items):
+            pipeline_code = sobject.get("pipeline_code") #.get("task_status_edit")
+            pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
+            pipeline_processes = None
+
+            if pipeline:
+                pipeline_processes = pipeline[0].get_processes()
+
+            pipeline_processes_array = []
+
+            for pipeline_process in pipeline_processes:
+                pipeline_processes_array.append(pipeline_process.get_name())
+
+            #for process in my.all_processes_array:
+
+            #TODO: CHRISTINA: Fix here!!
+            for idx, tasks in enumerate(my.all_processes_array):
 
                 if my.layout in ['vertical']:
                     table.add_row()
@@ -1265,11 +1338,33 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         td.add_style("width: 2500px")
                     elif my.layout == 'horizontal':
                         td.add_style("width: 8500px")
-                    
+
+                is_task = False
+                for item in items:
+
+                    if tasks in item[0].get_name():
+                        tasks = item
+                        is_task = True
+                        break
+                        
+
+                if not is_task:
+                    tasks = items[0]
+
                 task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
                 if tasks[0].get_id() == -1:
                     td.add_style("opacity: 0.5")
 
+                if not is_task:
+                    task_wdg.add_style("opacity: 0")
+                    #task_wdg = DivWdg()
+                    task_wdg.add_behavior( {
+                        'type': 'click',
+                        'cbjs_action': '''
+                            console.log("clicked");
+                            return "";
+                        '''
+                    } )
 
 
                 td.add(task_wdg)
