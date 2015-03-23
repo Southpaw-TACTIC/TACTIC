@@ -914,9 +914,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
         
-        for i, col in enumerate(my.group_columns):
-            group_value_dict = {}
-            my.group_values[i] = group_value_dict
 
         for row, sobject in enumerate(my.sobjects):
 
