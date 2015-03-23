@@ -4917,7 +4917,9 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
             if( show_retired ) {
                 server.retire_sobject(search_key);
                 var fade = false;
-                spt.panel.refresh(row, {}, fade);
+               
+                spt.table.run_search();
+                //spt.panel.refresh(row, {}, fade);
             } else {
                 server.retire_sobject(search_key);
                 on_complete = function() {spt.behavior.destroy_element(row);}
