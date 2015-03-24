@@ -319,7 +319,6 @@ class TaskElementWdg(BaseTableElementWdg):
         my.permission = {}
 
         my.filler_cache = None
-        my.all_tasks = []
 
 
     def get_width(my):
@@ -618,16 +617,15 @@ class TaskElementWdg(BaseTableElementWdg):
             
             if web_data and web_data[0].get("task_data"):
                 task_data_array = jsonloads(web_data[0].get("task_data"))
-                print task_data_array, type(task_data_array)
                 task_data_array = task_data_array['processes']
-                print task_data_array, type(task_data_array)
                 if len(task_data_array) > len(sorted_processes):
                     sorted_processes = task_data_array
 
-            my.all_processes_array = sorted_processes
+            
             my.sorted_processes = sorted_processes
-            if len(my.all_tasks) < len(my.sorted_processes):
-                my.all_tasks = my.sorted_processes
+            if len(my.all_processes_array) < len(my.sorted_processes):
+                my.all_processes_array = my.sorted_processes
+            my.all_processes_array = sorted_processes
 
 
 
@@ -856,18 +854,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
         sorted_processes = ", ".join(my.sorted_processes)
-        th.add_attr('processes', sorted_processes)
-        th.add_class("tasks_header")
-
-        hidden = HiddenWdg('task_data')
-        hidden.add_class('spt_task_data')
-
-        header_data = {'tasks': sorted_processes}
-
-        header_data = jsondumps(header_data).replace('"', "&quot;")
-        hidden.set_value(header_data, set_form_value=False )
-
-        th.add(hidden)
 
         if my.show_link_task_menu:
             # handle finger menu
@@ -1084,7 +1070,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if task_pipeline:
                     task.set_value("pipeline_code", task_pipeline)
 
-                #if not my.filler_cache[process]: 
                 my.filler_cache[process] = task
 
             missing = []
@@ -1350,7 +1335,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
             last = len(items) - 1
-            pipeline_code = sobject.get("pipeline_code") #.get("task_status_edit")
+            pipeline_code = sobject.get("pipeline_code")
             pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
             pipeline_processes = None
 
@@ -1384,8 +1369,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     if tasks in item[0].get_name():
                         tasks = item
                         is_task = True
-                        break
-                        
+                        break                        
 
                 if not is_task:
                     tasks = items[0]
@@ -1396,7 +1380,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 if not is_task:
                     task_wdg.add_style("opacity: 0")
-                    #task_wdg = DivWdg()
                     task_wdg.add_behavior( {
                         'type': 'click',
                         'cbjs_action': '''
