@@ -465,7 +465,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if my.search_type == base_search_type:
             matched_search_key = True
-        if search_keys:
+        if search_keys and search_keys != '[]':
             if isinstance(search_keys, basestring):
                 if search_keys == "__NONE__":
                     search_keys = []
