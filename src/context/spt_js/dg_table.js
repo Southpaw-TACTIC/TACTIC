@@ -4916,9 +4916,12 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         try {
             if( show_retired ) {
                 server.retire_sobject(search_key);
-                var fade = false;
                
-                spt.table.run_search();
+                var func = function() { spt.table.expand_table(); };
+
+                var kw =  {on_complete: func, refresh_bottom: false};
+                spt.table.refresh_rows([row], null, null, kw);
+
                 //spt.panel.refresh(row, {}, fade);
             } else {
                 server.retire_sobject(search_key);
@@ -4973,10 +4976,15 @@ spt.dg_table.drow_smenu_reactivate_cbk = function(evt, bvr)
         server.reactivate_sobject(search_key);
         var is_project = search_key.test('sthpw/project?') ? true : false;
         
-        //on_complete = "$(id).setStyle('display', 'none')";
-        on_complete = function() {spt.table.refresh_rows([row])};
+        
+        var kw = {on_complete: function() {spt.table.expand_table()}};
+        on_complete = function() {
+                        spt.table.refresh_rows([row], null, null, kw); 
+                        };
         if (is_project)
-            on_complete = function() {spt.table.refresh_rows([row]); spt.panel.refresh('ProjectSelectWdg');}
+            on_complete = function() {
+                spt.table.refresh_rows([row], null, null, kw); 
+                spt.panel.refresh('ProjectSelectWdg');}
         Effects.fade_out(row, 500, on_complete);
     }
     else {
