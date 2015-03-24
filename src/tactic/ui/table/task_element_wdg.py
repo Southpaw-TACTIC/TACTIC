@@ -319,6 +319,7 @@ class TaskElementWdg(BaseTableElementWdg):
         my.permission = {}
 
         my.filler_cache = None
+        my.all_tasks = []
 
 
     def get_width(my):
@@ -434,6 +435,10 @@ class TaskElementWdg(BaseTableElementWdg):
     def preprocess(my):
         my._get_display_options()
 
+        web = WebContainer.get_web()
+        web_data = web.get_form_values("web_data")
+        if web_data:
+            web_data = jsonloads(web_data[0])
 
         my.assignee = []
         my.assignee_labels = []
@@ -584,6 +589,48 @@ class TaskElementWdg(BaseTableElementWdg):
                         my.all_processes_dict[process.get_name()] = pipeline
                     process_dict = my.label_dict.get(pipeline_code)
                     process_dict[process.get_name()] = process.get_label()  
+
+            # sort the processes, so that the task appears in the right order
+            my.default_pipeline_tasks = []
+
+            # get an array of all the tasks, in order
+            for task in my.default_pipeline_array:
+                my.default_pipeline_tasks.append(task.get_name())
+
+            my.sorted_processes = []
+            sorted_processes = []
+
+
+
+            # this will add every item in default pipeline to sorted processes
+            for item in my.default_pipeline_tasks:
+                for process in my.all_processes_array:
+                    if item == process:
+                        sorted_processes.append(item)
+
+            
+
+            # add everything else not in the default pipeline after
+            for process in my.all_processes_array:
+                if process not in sorted_processes:
+                    sorted_processes.append(process)            
+
+            
+            if web_data and web_data[0].get("task_data"):
+                task_data_array = jsonloads(web_data[0].get("task_data"))
+                print task_data_array, type(task_data_array)
+                task_data_array = task_data_array['processes']
+                print task_data_array, type(task_data_array)
+                if len(task_data_array) > len(sorted_processes):
+                    sorted_processes = task_data_array
+
+            my.all_processes_array = sorted_processes
+            my.sorted_processes = sorted_processes
+            if len(my.all_tasks) < len(my.sorted_processes):
+                my.all_tasks = my.sorted_processes
+
+
+
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -790,34 +837,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 table.add_row()
 
 
-                if my.all_processes_array:
-                    processes = my.all_processes_array
 
-                # sort the processes, so that the task appears in the right order
-                default_pipeline_tasks = []
-
-                # get an array of all the tasks, in order
-                for task in my.default_pipeline_array:
-                    default_pipeline_tasks.append(task.get_name())
-
-                sorted_processes = []
-
-                # this will add every item in default pipeline to sorted processes
-                for item in default_pipeline_tasks:
-                    for process in processes:
-                        if item == process:
-                            sorted_processes.append(item)
-
-                # add everything else not in the default pipeline after
-                for process in processes:
-                    if process not in sorted_processes:
-                        sorted_processes.append(process)
-
-
-                processes = sorted_processes
-                my.all_processes_array = processes
-
-                for process in processes:
+                for process in my.sorted_processes:
                     title = Common.get_display_title(process)
                     td = table.add_cell(title)
                     td.add_style("width: 117px")
@@ -834,7 +855,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
+        sorted_processes = ", ".join(my.sorted_processes)
+        th.add_attr('processes', sorted_processes)
+        th.add_class("tasks_header")
 
+        hidden = HiddenWdg('task_data')
+        hidden.add_class('spt_task_data')
+
+        header_data = {'tasks': sorted_processes}
+
+        header_data = jsondumps(header_data).replace('"', "&quot;")
+        hidden.set_value(header_data, set_form_value=False )
+
+        th.add(hidden)
 
         if my.show_link_task_menu:
             # handle finger menu
@@ -916,7 +949,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_td(my, td):
         # This is for old table
-        td.add_attr('spt_input_type', 'inline')
+        td.add_attr('spt_input_type', 'tasks')
 
         # this is for new fast table
         td.add_class("spt_input_inline")
@@ -1201,6 +1234,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         div = DivWdg()
         div.add_style("margin: -4px auto")
 
+        hidden = HiddenWdg('task_data')
+        hidden.add_class('spt_task_data')
+
+        header_data = {'processes': my.sorted_processes}
+        header_data = jsondumps(header_data).replace('"', "&quot;")
+        hidden.set_value(header_data, set_form_value=False )
+
+        div.add(hidden)
+
         # initialize tool tips only if show track is true
         if my.show_track == 'true' and not my._startup_tips:
             my.startup_tips(div)
@@ -1320,9 +1362,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             for pipeline_process in pipeline_processes:
                 pipeline_processes_array.append(pipeline_process.get_name())
 
-            #for process in my.all_processes_array:
-
-            #TODO: CHRISTINA: Fix here!!
             for idx, tasks in enumerate(my.all_processes_array):
 
                 if my.layout in ['vertical']:
