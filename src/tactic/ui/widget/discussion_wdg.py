@@ -112,7 +112,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
   
    
     def is_editable(cls):
-        return True
+        return False
     is_editable = classmethod(is_editable)
 
     def handle_th(my, th, wdg_idx=None):
@@ -154,7 +154,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
         # add action triggle for context itself
         my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
-        my.menu.set_activator_over(layout, 'edit_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
 
@@ -459,7 +458,9 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
         my.allow_email = my.kwargs.get('allow_email')
-        
+            
+
+
 
 
 
@@ -470,7 +471,6 @@ class DiscussionWdg(BaseRefreshWdg):
         spt.discussion = {};
         spt.discussion.refresh = function(src_el) {
             var discussion_top = spt.has_class(src_el, 'spt_discussion_top') ? src_el: src_el.getParent(".spt_discussion_top");
-
             // find out which contexts are open
             var contexts = discussion_top.getElements(".my_context");
             var default_contexts_open = [];
@@ -934,7 +934,22 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_menu_wdg(my, top):
+        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
+           with the top element passed in'''
+        edit_wdg = DiscussionEditWdg()
+        my.menu = edit_wdg.get_menu()
 
+        # extra js_action on mouseover to assign the search key of the note to hidden input
+        js_action ='''
+           var sk_input = menu_top.getElement('.spt_note_action_sk');
+           var note_top = bvr.src_el
+           sk_input.value = note_top.getAttribute('note_search_key');
+            '''
+
+        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
+        my.menu.set_activator_out(top, 'spt_discussion_top')
+        return edit_wdg
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
@@ -1021,6 +1036,7 @@ class DiscussionWdg(BaseRefreshWdg):
             my.default_contexts_open = []
 
 
+
         if my.is_refresh =='true':
             top = Widget()
         else:
@@ -1043,6 +1059,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
+                
         notes = my.get_notes()
 
         if my.use_parent == 'true' and not notes and not my.parent:
@@ -1156,10 +1173,6 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
 
-            edit_note_wdg = DivWdg()
-            edit_note_wdg.add_class("spt_edit_note_container")
-
-            note_dialog.add(edit_note_wdg)
 
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
@@ -1339,11 +1352,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_class("spt_add_note_container")
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
-
-                    edit_note_wdg = DivWdg()
-                    edit_note_wdg.add_class("spt_edit_note_container")
-
-                    note_dialog.add(edit_note_wdg)
 
 
                 note_content = DivWdg()
