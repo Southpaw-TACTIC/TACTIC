@@ -235,12 +235,12 @@ class WebInit(Common):
         Trigger.append_static_trigger(trigger, startup=True)
 
 
-        event = "change|sthpw/task|status"
-        trigger = SearchType.create("sthpw/trigger")
-        trigger.set_value("event", event)
-        trigger.set_value("class_name", "pyasm.web.web_init.TaskApprovalTrigger")
-        trigger.set_value("mode", "same process,same transaction")
-        Trigger.append_static_trigger(trigger, startup=True)
+#        event = "change|sthpw/task|status"
+#        trigger = SearchType.create("sthpw/trigger")
+#        trigger.set_value("event", event)
+#        trigger.set_value("class_name", "pyasm.web.web_init.TaskApprovalTrigger")
+#        trigger.set_value("mode", "same process,same transaction")
+#        Trigger.append_static_trigger(trigger, startup=True)
 
 
 
