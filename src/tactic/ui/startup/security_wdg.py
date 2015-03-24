@@ -229,12 +229,29 @@ class GroupAssignWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_groups_top");
             var add = top.getElement(".spt_groups_add");
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
             spt.toggle_show_hide(add);
+            spt.toggle_show_hide(checkbox);
+            spt.toggle_show_hide(checkbox_label);
             '''
         } )
 
+        checkbox = CheckboxWdg("Include Project Name")
+        checkbox.set_option("value", "true")
+        checkbox.add_class("spt_include_project_checkbox")
+        checkbox.add_style("display: none")
+        checkbox.add_style("margin-left: 30px")
+        checkbox.set_checked()
+        checkbox_label = SpanWdg(" Project specific")
+        checkbox_label.add_style("display: none")
+        checkbox_label.add_class("spt_include_project_checkbox_label")
+        checkbox.add(checkbox_label)
+        top.add(checkbox)
 
-        action_button = ActionButtonWdg(title="Save >>")
+
+        action_button = ActionButtonWdg(title="Save")
+        action_button.add_style("margin-right: 10px")
         top.add(action_button)
         action_button.add_style("float: right")
         action_button.add_behavior( {
@@ -246,9 +263,13 @@ class GroupAssignWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_groups_top");
 
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checked = checkbox.checked;
+
             var values = spt.api.Utility.get_input_values(top);
             var kwargs = {
-                values: values
+                values: values,
+                "checked": checked
             }
 
             var cmd = 'tactic.ui.startup.GroupAssignCbk';
@@ -335,7 +356,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         title = DivWdg()
         div.add(title)
-        title.add("Add New Groups: ")
+        title.add(" Add New Groups: ")
         title.add_color("background", "background3")
         title.add_style("padding: 8px")
         title.add_style("margin: -5px -5px 10px -5px")
@@ -422,8 +443,13 @@ class GroupAssignCbk(Command):
             new_group = Common.get_filesystem_name(new_group)
 
             group = SearchType.create("sthpw/login_group")
-            group.set_value("login_group", new_group)
-            group.set_value("project_code", project_code)
+            
+            if my.kwargs.get("checked") in [True, "true", "True"]:
+                group.set_value("project_code", project_code)
+                group.set_value("login_group", new_group)
+            else:
+                group.set_value("login_group", title)
+
             group.set_value("description", title)
             group.commit()
 
