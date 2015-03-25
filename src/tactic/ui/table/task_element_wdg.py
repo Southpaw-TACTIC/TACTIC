@@ -437,7 +437,10 @@ class TaskElementWdg(BaseTableElementWdg):
         web = WebContainer.get_web()
         web_data = web.get_form_values("web_data")
         if web_data:
-            web_data = jsonloads(web_data[0])
+            try:
+                web_data = jsonloads(web_data[0])
+            except ValueError:
+                raise TacticException("Decoding JSON has failed")
 
         my.assignee = []
         my.assignee_labels = []
@@ -566,25 +569,25 @@ class TaskElementWdg(BaseTableElementWdg):
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
 
         # get all of the tasks that appear in all the pipelines, without duplicates
-        my.all_processes_array = []
+        my.all_processes_list = []
         my.all_processes_dict = {}
         # ^ that's what the pipeline column should display (each task in the pipeline)
 
         # the default pipeline is the longest pipeline in the table
         # this is so that the tasks appear in the right order.
-        my.default_pipeline_array = []
+        my.default_pipeline_list = []
 
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
                 # if this pipeline has more processes than the default, make this the default
-                if len(processes) > len(my.default_pipeline_array):
-                    my.default_pipeline_array = processes
+                if len(processes) > len(my.default_pipeline_list):
+                    my.default_pipeline_list = processes
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
                     if not my.all_processes_dict.get(process.get_name()):
-                        my.all_processes_array.append(process.get_name())
+                        my.all_processes_list.append(process.get_name())
                         my.all_processes_dict[process.get_name()] = pipeline
                     process_dict = my.label_dict.get(pipeline_code)
                     process_dict[process.get_name()] = process.get_label()  
@@ -592,40 +595,41 @@ class TaskElementWdg(BaseTableElementWdg):
             # sort the processes, so that the task appears in the right order
             my.default_pipeline_tasks = []
 
-            # get an array of all the tasks, in order
-            for task in my.default_pipeline_array:
-                my.default_pipeline_tasks.append(task.get_name())
+            # get an list of all the tasks, in order
+            for process in my.default_pipeline_list:
+                my.default_pipeline_tasks.append(process.get_name())
 
             my.sorted_processes = []
-            sorted_processes = []
 
 
 
             # this will add every item in default pipeline to sorted processes
             for item in my.default_pipeline_tasks:
-                for process in my.all_processes_array:
+                for process in my.all_processes_list:
                     if item == process:
-                        sorted_processes.append(item)
+                        my.sorted_processes.append(item)
 
             
 
             # add everything else not in the default pipeline after
-            for process in my.all_processes_array:
-                if process not in sorted_processes:
-                    sorted_processes.append(process)            
+            for process in my.all_processes_list:
+                if process not in my.sorted_processes:
+                    my.sorted_processes.append(process)            
 
             
             if web_data and web_data[0].get("task_data"):
-                task_data_array = jsonloads(web_data[0].get("task_data"))
-                task_data_array = task_data_array['processes']
-                if len(task_data_array) > len(sorted_processes):
-                    sorted_processes = task_data_array
+                task_data_json = web_data[0].get("task_data")
+                try:
+                    task_data_list = jsonloads(task_data_json)
+                except ValueError:
+                    raise TacticException("Decoding JSON has failed")
+                task_data_list = task_data_list['processes']
+                if len(task_data_list) > len(my.sorted_processes):
+                    my.sorted_processes = task_data_list
 
-            
-            my.sorted_processes = sorted_processes
-            if len(my.all_processes_array) < len(my.sorted_processes):
-                my.all_processes_array = my.sorted_processes
-            my.all_processes_array = sorted_processes
+            if len(my.all_processes_list) < len(my.sorted_processes):
+                my.all_processes_list = my.sorted_processes
+            my.all_processes_list = my.sorted_processes
 
 
 
@@ -1304,7 +1308,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add(label)
             div.add_style("opacity: 0.8")
         else:
-            # reset to make these into arrays
+            # reset to make these into lists
             items = []
             last_process_context = None
             item = None
@@ -1342,12 +1346,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if pipeline:
                 pipeline_processes = pipeline[0].get_processes()
 
-            pipeline_processes_array = []
+            pipeline_processes_list = []
 
             for pipeline_process in pipeline_processes:
-                pipeline_processes_array.append(pipeline_process.get_name())
+                pipeline_processes_list.append(pipeline_process.get_name())
 
-            for idx, tasks in enumerate(my.all_processes_array):
+            for idx, tasks in enumerate(my.all_processes_list):
 
                 if my.layout in ['vertical']:
                     table.add_row()
