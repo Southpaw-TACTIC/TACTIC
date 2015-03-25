@@ -126,7 +126,6 @@
 
 
 <insert>
-    <element name="code"/>
     <element name="name"/>
     <element name="description"/>
     <element name="search_type">
@@ -186,7 +185,6 @@
 
 
 <edit>
-    <element name="code"/>
     <element name="name"/>
     <element name="description"/>
     <element name="search_type"/>
