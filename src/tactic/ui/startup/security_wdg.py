@@ -15,7 +15,7 @@ __all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk',
 
 import tacticenv
 
-from pyasm.common import Environment, Common, Xml, jsonloads, Container
+from pyasm.common import Environment, Common, Xml, jsonloads, Container, TacticException
 from pyasm.search import Search, SearchType
 from pyasm.security import LoginGroup, LoginInGroup
 from pyasm.biz import Project
@@ -32,6 +32,7 @@ from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 from tactic.ui.panel import SideBarBookmarkMenuWdg
 
+from tactic_client_lib import TacticServerStub
 
 class UserAssignWdg(BaseRefreshWdg):
 
@@ -433,22 +434,59 @@ class GroupAssignCbk(Command):
             # make sure the group doesn't already exist
             #login_group = LoginGroup.get_by_login_group(new_group)
 
+            project_included = False
+            user_defined_project_code = ""
+            original_new_group = new_group
+            is_project_specific = False
+            if my.kwargs.get("checked") in [True, "true", "True"]:
+                is_project_specific = True
+
             if new_group.find("/") == -1:
                 title = new_group
                 new_group = "%s/%s" % (project_code, new_group)
             else:
                 parts = new_group.split("/")
                 title = parts[1]
+                user_defined_project_code = parts[0]
+                project_included = True
 
             new_group = Common.get_filesystem_name(new_group)
 
             group = SearchType.create("sthpw/login_group")
+
+            # the following sections contains the 4 cases possible when creating a new group
+            # through the popup
             
-            if my.kwargs.get("checked") in [True, "true", "True"]:
+            # if the user has (project/name) and (not project specific)
+            if not is_project_specific and project_included:
+                
+                # Raise exception because it's contradictory data
+                raise TacticException('''You've given a project name while declaring the group not project specific. You can either not use the format "project_code/group_name", or check the "Project specific" checkbox.''')
+
+            # if the user has (project/name) and (project specific)
+            elif is_project_specific and project_included:
+
+                # first check is the user_defined_project_code is actually a project
+                # if it is, then set that as the project code. If not, don't set anything
+
+                expr = "@GET(sthpw/project.code)"
+                server = TacticServerStub.get()
+                existing_project_codes = server.eval(expr)
+
+                if user_defined_project_code in existing_project_codes:
+                    group.set_value("project_code", user_defined_project_code)
+                else:
+                    raise TacticException('''The project code that you've given doesn't exist. Please choose an existing project code. Note: the format is "project_code/group_name". Projects include: %s''' % ", ".join(existing_project_codes))
+                group.set_value("login_group", original_new_group)
+
+            # if the user has (name) and (not project specific)
+            elif not is_project_specific and not project_included:
+                group.set_value("login_group", title)
+
+            # if the user has (name) and (project specific)
+            else:
                 group.set_value("project_code", project_code)
                 group.set_value("login_group", new_group)
-            else:
-                group.set_value("login_group", title)
 
             group.set_value("description", title)
             group.commit()
