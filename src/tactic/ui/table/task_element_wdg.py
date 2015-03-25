@@ -1340,6 +1340,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             last = len(items) - 1
             pipeline_code = sobject.get("pipeline_code")
+            server = TacticServerStub.get()
+            pipeline_code = pipeline_code.replace("$PROJECT", server.get_project())
             pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
             pipeline_processes = None
 
