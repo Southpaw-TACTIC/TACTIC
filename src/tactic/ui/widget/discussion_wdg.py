@@ -145,7 +145,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el
+           var note_top = bvr.src_el;
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
 
