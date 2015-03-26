@@ -459,7 +459,9 @@ class GroupAssignCbk(Command):
             if not is_project_specific and project_included:
                 
                 # Raise exception because it's contradictory data
-                raise TacticException('''You've given a project code while declaring the group not project specific. You can either not use the format "project_code/group_name", or check the "Project specific" checkbox.''')
+                raise TacticException('''You've given a project code while declaring 
+                    the group not project specific. You can either not use the format 
+                    "project_code/group_name", or check the "Project specific" checkbox.''')
 
             # if the input is (project/name) and (project specific)
             elif is_project_specific and project_included:
@@ -467,13 +469,14 @@ class GroupAssignCbk(Command):
                 # first check is the user_defined_project_code is actually a project
                 # if it is, then set that as the project code. If not, don't set anything
 
-                expr = "@SOBJECT(sthpw/project['code', '%s'])" % user_defined_project_code
-                existing_project_codes = Search.eval(expr)
+                user_defined_project = Project.get_by_code(user_defined_project_code)
 
-                if existing_project_codes:
+                if user_defined_project:
                     group.set_value("project_code", user_defined_project_code)
                 else:
-                    raise TacticException('''The project code that you've given doesn't exist. Please choose an existing project code. Note: the format is "project_code/group_name". Projects include: %s''' % ", ".join(existing_project_codes))
+                    raise TacticException('''The project code that you've given doesn't exist.
+                        Please choose an existing project code. Note: the format is
+                        "project_code/group_name".''')
                 group.set_value("login_group", original_new_group)
 
             # if the input is (name) and (not project specific)
