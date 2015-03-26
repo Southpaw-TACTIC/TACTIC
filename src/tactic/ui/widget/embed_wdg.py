@@ -54,6 +54,14 @@ class EmbedWdg(BaseRefreshWdg):
         width = my.kwargs.get("width")
         index = my.kwargs.get("index")
 
+        if not height:
+            height = "auto"
+        if not width:
+            width = "100%"
+
+        width = "100%"
+        height = "auto"
+
 
         #div = DivWdg()
         #top.add(div)
@@ -87,6 +95,8 @@ class EmbedWdg(BaseRefreshWdg):
         ext = ext.lstrip(".")
         if ext in File.IMAGE_EXT:
             embed = HtmlElement.img(src)
+            embed.add_style("width: 100%")
+            embed.add_style("height: auto")
         elif ext in File.VIDEO_EXT:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
@@ -137,7 +147,7 @@ class EmbedWdg(BaseRefreshWdg):
         # NOTE: to keep true original aspect ratio, don't set this height
         # and let GalleryWdg inner load script to take care of it on load
         # that js portion needs uncommenting as well
-        embed.add_style("height", "100%")
+        #embed.add_style("height", "100%")
         #embed.set_box_shadow("1px 1px 1px 1px")
         return top
 
