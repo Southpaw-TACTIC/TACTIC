@@ -629,6 +629,11 @@ class TaskElementWdg(BaseTableElementWdg):
                 except ValueError:
                     raise TacticException("Decoding JSON has failed")
                 process_data_list = process_data_list['processes']
+                
+                #process_data_list = process_data_list['processes']
+                if len(process_data_list) > len(my.sorted_processes):
+                    my.sorted_processes = process_data_list
+
                 # combine this list with the newly generated list.
                 for process in process_data_list:
                     if process not in my.sorted_processes:
@@ -1227,8 +1232,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         div = DivWdg()
         div.add_style("margin: -4px auto")
 
-        hidden = HiddenWdg('task_data')
-        hidden.add_class('spt_task_data')
+        hidden = HiddenWdg('process_data')
+        hidden.add_class('spt_process_data')
 
         header_data = {'processes': my.sorted_processes}
         header_data = jsondumps(header_data).replace('"', "&quot;")
