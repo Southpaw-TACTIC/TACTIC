@@ -30,7 +30,6 @@ from button_wdg import ButtonElementWdg
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg
-from tactic_client_lib import TacticServerStub
 
 from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
 
@@ -563,18 +562,18 @@ class TaskElementWdg(BaseTableElementWdg):
         # when this happens, in the eval, $PROJECT is replaced by something like 'vfx'
         # because there are quotes around it, it messes up the expression 
         # So, replace $PROJECT here, and thus, getting rid of the code
-        server = TacticServerStub.get()
+        project_code = Project.get_project_code()
         if pipeline_codes:
-            pipeline_codes[0] = pipeline_codes[0].replace("$PROJECT", server.get_project())
+            pipeline_codes[0] = pipeline_codes[0].replace("$PROJECT", project_code)
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
 
-        # get all of the tasks that appear in all the pipelines, without duplicates
-        my.all_processes_list = []
-        my.all_processes_dict = {}
-        # ^ that's what the pipeline column should display (each task in the pipeline)
+        # get all of the processes that appear in all the pipelines, without duplicates
+        my.all_processes_set = set()
+        # ^ that's what the pipeline column should display (each process in the pipeline)
 
         # the default pipeline is the longest pipeline in the table
-        # this is so that the tasks appear in the right order.
+        # this is so that the processes appear in the right order.
+        # all other processes should follow after this
         my.default_pipeline_list = []
 
         if pipelines:
@@ -586,50 +585,56 @@ class TaskElementWdg(BaseTableElementWdg):
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
-                    if not my.all_processes_dict.get(process.get_name()):
-                        my.all_processes_list.append(process.get_name())
-                        my.all_processes_dict[process.get_name()] = pipeline
+                    # put the processes found into a set to avoid duplicates.
+                    my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
-                    process_dict[process.get_name()] = process.get_label()  
+                    process_dict[process.get_name()] = process.get_label() 
+
+            #my.all_processes_set = list(all_processes_set)
 
             # sort the processes, so that the task appears in the right order
-            my.default_pipeline_tasks = []
+            my.default_pipeline_processes = []
 
-            # get an list of all the tasks, in order
+            # get an list of all the processes, in order
             for process in my.default_pipeline_list:
-                my.default_pipeline_tasks.append(process.get_name())
+                my.default_pipeline_processes.append(process.get_name())
 
             my.sorted_processes = []
 
 
 
-            # this will add every item in default pipeline to sorted processes
-            for item in my.default_pipeline_tasks:
-                for process in my.all_processes_list:
+            # this will add every process in default pipeline to sorted processes 
+            # (in the correct order)
+            for item in my.default_pipeline_processes:
+                for process in my.all_processes_set:
                     if item == process:
                         my.sorted_processes.append(item)
-
             
 
             # add everything else not in the default pipeline after
-            for process in my.all_processes_list:
+            for process in my.all_processes_set:
                 if process not in my.sorted_processes:
-                    my.sorted_processes.append(process)            
+                    my.sorted_processes.append(process)
 
-            
-            if web_data and web_data[0].get("task_data"):
-                task_data_json = web_data[0].get("task_data")
+            # Note: my.sorted_processes should now contains all the processes found on
+            # this load of this class, in order. However, if it's not the initial load,
+            # not all processes may be present
+
+            # go to the HTML and grab the list of processes stored in the header of the table.
+            # this will provide a complete list of everything that's been loaded already
+            if web_data and web_data[0].get("process_data"):
+                process_data_json = web_data[0].get("process_data")
                 try:
-                    task_data_list = jsonloads(task_data_json)
+                    process_data_list = jsonloads(process_data_json)
                 except ValueError:
                     raise TacticException("Decoding JSON has failed")
-                task_data_list = task_data_list['processes']
-                if len(task_data_list) > len(my.sorted_processes):
-                    my.sorted_processes = task_data_list
+                process_data_list = process_data_list['processes']
+                # combine this list with the newly generated list.
+                for process in process_data_list:
+                    if process not in my.sorted_processes:
+                        my.sorted_processes.append(process)
 
-            if len(my.all_processes_list) < len(my.sorted_processes):
-                my.all_processes_list = my.sorted_processes
-            my.all_processes_list = my.sorted_processes
+            my.all_processes_set = my.sorted_processes
 
 
 
@@ -857,7 +862,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
-        sorted_processes = ", ".join(my.sorted_processes)
 
         if my.show_link_task_menu:
             # handle finger menu
@@ -1337,11 +1341,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             table.add_style('border-collapse: collapse')
             table.add_row()
 
+            project_code = Project.get_project_code()
 
             last = len(items) - 1
             pipeline_code = sobject.get("pipeline_code")
-            server = TacticServerStub.get()
-            pipeline_code = pipeline_code.replace("$PROJECT", server.get_project())
+            pipeline_code = pipeline_code.replace("$PROJECT", project_code)
             pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
             pipeline_processes = None
 
@@ -1353,7 +1357,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             for pipeline_process in pipeline_processes:
                 pipeline_processes_list.append(pipeline_process.get_name())
 
-            for idx, tasks in enumerate(my.all_processes_list):
+            for idx, tasks in enumerate(my.all_processes_set):
 
                 if my.layout in ['vertical']:
                     table.add_row()
@@ -1370,12 +1374,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         td.add_style("width: 8500px")
 
                 is_task = False
+
+                #print "============================================="
+                #print items
+
                 for item in items:
 
                     if tasks in item[0].get_name():
                         tasks = item
                         is_task = True
-                        break                        
+                        break
 
                 if not is_task:
                     tasks = items[0]
@@ -1389,7 +1397,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     task_wdg.add_behavior( {
                         'type': 'click',
                         'cbjs_action': '''
-                            console.log("clicked");
+                            return "";
+                        '''
+                    } )
+
+                    task_wdg.add_behavior( {
+                        'type': 'mouseenter',
+                        'cbjs_action': '''
                             return "";
                         '''
                     } )
@@ -2110,6 +2124,8 @@ class TaskElementCbk(DatabaseAction):
             m = re.match(p, key)
             if not m:
                 continue
+
+            groups = m.groups()
 
             column = groups[0]
             action = groups[1]
