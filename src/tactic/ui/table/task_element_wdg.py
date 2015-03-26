@@ -576,6 +576,7 @@ class TaskElementWdg(BaseTableElementWdg):
         # all other processes should follow after this
         my.default_pipeline_list = []
 
+        # get all the processes
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
@@ -589,8 +590,6 @@ class TaskElementWdg(BaseTableElementWdg):
                     my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
                     process_dict[process.get_name()] = process.get_label() 
-
-            #my.all_processes_set = list(all_processes_set)
 
             # sort the processes, so that the task appears in the right order
             my.default_pipeline_processes = []
@@ -867,6 +866,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
+
+        hidden = HiddenWdg('process_data')
+        hidden.add_class('spt_process_data')
+
+        header_data = {'processes': my.sorted_processes}
+        header_data = jsondumps(header_data).replace('"', "&quot;")
+        hidden.set_value(header_data, set_form_value=False )
+
+        th.add(hidden)
+
 
         if my.show_link_task_menu:
             # handle finger menu
@@ -1232,15 +1241,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         div = DivWdg()
         div.add_style("margin: -4px auto")
 
-        hidden = HiddenWdg('process_data')
-        hidden.add_class('spt_process_data')
-
-        header_data = {'processes': my.sorted_processes}
-        header_data = jsondumps(header_data).replace('"', "&quot;")
-        hidden.set_value(header_data, set_form_value=False )
-
-        div.add(hidden)
-
         # initialize tool tips only if show track is true
         if my.show_track == 'true' and not my._startup_tips:
             my.startup_tips(div)
@@ -1341,7 +1341,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
             table = Table(css='minimal')
-            table.add_style("width: 99%")
             table.add_style("border-width: 2px")
             table.add_style('border-collapse: collapse')
             table.add_row()
@@ -1357,64 +1356,56 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if pipeline:
                 pipeline_processes = pipeline[0].get_processes()
 
+            # all the processes to be drawn so that the user can see it
             pipeline_processes_list = []
 
             for pipeline_process in pipeline_processes:
                 pipeline_processes_list.append(pipeline_process.get_name())
 
-            for idx, tasks in enumerate(my.all_processes_set):
-
-                if my.layout in ['vertical']:
-                    table.add_row()
+            # if the sobject/pipeline has no tasks
+            if not items:
+                # draw a div giving a warning of no items
+                error_div = DivWdg("Error. There were no tasks found. If reloading the page doesn't fix the issue, please contact the system administrator.")
                 td = table.add_cell()
-                td.add_style("vertical-align: top")
-                last_one = False
-                if idx == last:
-                    last_one = True
-                    # have to push all the blocks to the left in case the number of tasks vary
-                    # these numbers can handle 
-                    if my.layout == 'panel':
-                        td.add_style("width: 2500px")
-                    elif my.layout == 'horizontal':
-                        td.add_style("width: 8500px")
+                td.add(error_div)
 
-                is_task = False
+            else:
+                for idx, tasks in enumerate(my.all_processes_set):
 
-                #print "============================================="
-                #print items
+                    if my.layout in ['vertical']:
+                        table.add_row()
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+                    last_one = False
+                    if idx == last:
+                        last_one = True
 
-                for item in items:
+                    # whether or not the task should be displayed.
+                    is_task = False
 
-                    if tasks in item[0].get_name():
-                        tasks = item
-                        is_task = True
-                        break
+                    for item in items:
 
-                if not is_task:
-                    tasks = items[0]
+                        if item and (tasks in item[0].get_name()):
+                            tasks = item
+                            is_task = True
+                            break
 
-                task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
-                if tasks[0].get_id() == -1:
-                    td.add_style("opacity: 0.5")
+                    if not is_task:
+                        tasks = items[0]
 
-                if not is_task:
-                    task_wdg.add_style("opacity: 0")
-                    task_wdg.add_behavior( {
-                        'type': 'click',
-                        'cbjs_action': '''
-                            return "";
-                        '''
-                    } )
+                    task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
+                    if tasks[0].get_id() == -1:
+                        td.add_style("opacity: 0.5")
 
-                    task_wdg.add_behavior( {
-                        'type': 'mouseenter',
-                        'cbjs_action': '''
-                            return "";
-                        '''
-                    } )
+                    if not is_task:
+                        
+                        task_wdg = DivWdg()
+                        # TODO: this should be made to be dependent on how big the task wdg is
+                        task_wdg.add_style("width: 115px")
+                        task_wdg.add_style("padding: 2px")
 
 
-                td.add(task_wdg)
+                    td.add(task_wdg)
 
 
             div.add(table)
@@ -1575,7 +1566,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             proc = task.get_value("process")
             label_dict = my.label_dict.get(pipeline_code)
             if label_dict and label_dict.has_key(proc):
-            	context_div.add(label_dict[proc])
+                context_div.add(label_dict[proc])
 
         if not my.context_color_mode:
             process_color = ''
@@ -1890,20 +1881,20 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             icon = IconButtonWdg(tip='Edit Task', icon=IconWdg.EDIT)
             icon.add_class('hand')
             icon.add_behavior({'type': 'click_up',
-		'view': my.task_edit_view,
+        'view': my.task_edit_view,
                 'search_key': SearchKey.get_by_sobject(task, use_id=True),
                 'cbjs_edit': '''spt.edit.edit_form_cbk(evt, bvr);
                          update_event = "update|%s";
                         spt.named_events.fire_event(update_event, {})''' %parent_key,
-		'cbjs_action': '''
+        'cbjs_action': '''
                         var kwargs = {search_key: bvr.search_key,
                         
                                   view: bvr.view, cbjs_edit: bvr.cbjs_edit
                          };
-			var title = 'edit_popup';
+            var title = 'edit_popup';
                         var cls_name = 'tactic.ui.panel.EditWdg';
                         spt.api.load_popup(title, cls_name, kwargs);
-		'''}) 
+        '''}) 
 
             icon_div = DivWdg(icon)
             icon_div.add_style("margin-top: -6px")
