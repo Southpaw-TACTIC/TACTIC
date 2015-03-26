@@ -1723,8 +1723,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 select.add_behavior( {
                     'type': 'change',
+                    'color': status_colors,
                     'cbjs_action': '''
+                    var status_colors = bvr.color;
                     var value = bvr.src_el.value;
+                    bvr.src_el.style.background = status_colors[value];
                     var context = bvr.src_el.getAttribute("spt_context");
                     var layout = bvr.src_el.getParent(".spt_layout");
                     spt.table.set_layout(layout);
