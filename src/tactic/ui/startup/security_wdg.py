@@ -9,7 +9,7 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg','SecurityBuilder']
 
 
 
