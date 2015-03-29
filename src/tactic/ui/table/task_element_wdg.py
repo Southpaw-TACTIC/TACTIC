@@ -17,13 +17,12 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps, Common
+from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-from pyasm.common import Environment, TacticException
 from button_wdg import ButtonElementWdg
 
 
@@ -574,15 +573,15 @@ class TaskElementWdg(BaseTableElementWdg):
         # the default pipeline is the longest pipeline in the table
         # this is so that the processes appear in the right order.
         # all other processes should follow after this
-        my.default_pipeline_list = []
+        default_pipeline = []
 
         # get all the processes
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
                 # if this pipeline has more processes than the default, make this the default
-                if len(processes) > len(my.default_pipeline_list):
-                    my.default_pipeline_list = processes
+                if len(processes) > len(default_pipeline):
+                    default_pipeline = processes
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
@@ -592,11 +591,10 @@ class TaskElementWdg(BaseTableElementWdg):
                     process_dict[process.get_name()] = process.get_label() 
 
             # sort the processes, so that the task appears in the right order
-            my.default_pipeline_processes = []
+            default_pipeline_processes = []
 
             # get an list of all the processes, in order
-            for process in my.default_pipeline_list:
-                my.default_pipeline_processes.append(process.get_name())
+            default_pipeline_processes = [x.get_name() for x in default_pipeline]
 
             my.sorted_processes = []
 
@@ -604,7 +602,7 @@ class TaskElementWdg(BaseTableElementWdg):
 
             # this will add every process in default pipeline to sorted processes 
             # (in the correct order)
-            for item in my.default_pipeline_processes:
+            for item in default_pipeline_processes:
                 for process in my.all_processes_set:
                     if item == process:
                         my.sorted_processes.append(item)
@@ -615,7 +613,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 if process not in my.sorted_processes:
                     my.sorted_processes.append(process)
 
-            # Note: my.sorted_processes should now contains all the processes found on
+            # Note: my.sorted_processes should now contain all the processes found on
             # this load of this class, in order. However, if it's not the initial load,
             # not all processes may be present
 
@@ -629,7 +627,6 @@ class TaskElementWdg(BaseTableElementWdg):
                     raise TacticException("Decoding JSON has failed")
                 process_data_list = process_data_list['processes']
                 
-                #process_data_list = process_data_list['processes']
                 if len(process_data_list) > len(my.sorted_processes):
                     my.sorted_processes = process_data_list
 
@@ -637,11 +634,6 @@ class TaskElementWdg(BaseTableElementWdg):
                 for process in process_data_list:
                     if process not in my.sorted_processes:
                         my.sorted_processes.append(process)
-
-            my.all_processes_set = my.sorted_processes
-
-
-
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -1370,7 +1362,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 td.add(error_div)
 
             else:
-                for idx, tasks in enumerate(my.all_processes_set):
+                for idx, tasks in enumerate(my.sorted_processes):
 
                     if my.layout in ['vertical']:
                         table.add_row()
