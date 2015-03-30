@@ -317,6 +317,7 @@ class TaskElementWdg(BaseTableElementWdg):
         my.permission = {}
 
         my.filler_cache = None
+        my.sorted_processes = []
 
 
     def get_width(my):
@@ -596,7 +597,7 @@ class TaskElementWdg(BaseTableElementWdg):
             # get an list of all the processes, in order
             default_pipeline_processes = [x.get_name() for x in default_pipeline]
 
-            my.sorted_processes = []
+            
 
 
 
