@@ -4636,6 +4636,10 @@ spt.table.save_changes = function(kwargs) {
                     var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
                     single_web_data['workhour_data'] = web_values['workhour_data'];
                 }
+                else if (cell.getAttribute("spt_input_type") =='tasks') {
+                    var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
+                    single_web_data['process_data'] = web_values['process_data'];
+                }
                 else { // generic inline-type widget
                     var web_values = spt.api.Utility.get_input_values(cell, null, false);
                     single_web_data['inline_data'] = web_values;
