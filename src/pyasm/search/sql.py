@@ -313,17 +313,25 @@ class Sql(Base):
         db_resource = my.get_db_resource()
         database = my.get_database_name()
 
-        key = '%s:%s' %(db_resource, table)
+        from pyasm.security import Site
+        #use_cache = False
+        site = Site.get_site()
+        if site:
+            key = '%s:%s:%s' %(site, db_resource, table)
+        else:
+            key = '%s:%s' %(db_resource, table)
         if use_cache:
             columns = Container.get_dict("Sql:table_columns", key)
             if columns:
                 return columns[:]
-                #return columns
 
             # use global cache
             if database == 'sthpw':
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                if site:
+                    cache = CacheContainer.get("%s:sthpw_column_info" % site)
+                else:
+                    cache = CacheContainer.get("sthpw_column_info")
                 if cache:
                     columns = cache.get_value_by_key("columns", table)
                     if columns != None:

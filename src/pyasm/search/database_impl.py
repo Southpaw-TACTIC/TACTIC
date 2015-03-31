@@ -1113,7 +1113,13 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             # use global cache
             if prefix.endswith(':sthpw'):
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                from pyasm.security import Site
+                site = Site.get()
+                if site:
+                    key = "%s:sthpw_column_info" % site
+                else:
+                    key = "sthpw_column_info"
+                cache = CacheContainer.get()
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:
@@ -1789,7 +1795,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             # use global cache
             if prefix.endswith(':sthpw'):
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                from pyasm.security import Site
+                site = Site.get()
+                if site:
+                    key = "%s:sthpw_column_info" % site
+                else:
+                    key = "sthpw_column_info"
+                cache = CacheContainer.get(key)
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:

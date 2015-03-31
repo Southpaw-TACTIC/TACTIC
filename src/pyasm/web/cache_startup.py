@@ -63,11 +63,18 @@ class CacheStartup(object):
             return
 
         # cache sthpw tables definitions
-        data = CacheContainer.get("sthpw_column_info")
+        from pyasm.security import Site
+        site = Site()
+        if site:
+            key = "%s:sthpw_column_info" % site
+        else:
+            key = "sthpw_column_info"
+
+        data = CacheContainer.get(key)
         if data == None:
             tables = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket']
             kwargs = {
-                "key": 'sthpw_column_info',
+                "key": key,
                 "database": 'sthpw',
                 "tables": tables,
             }

@@ -5969,7 +5969,7 @@ class SearchType(SObject):
         #query = select.get_statement()
         #results = sql.do_query(query)
         results = select.execute(sql)
-
+        from pyasm.security import Site
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template
