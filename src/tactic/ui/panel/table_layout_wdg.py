@@ -2941,9 +2941,16 @@ spt.table.get_layout = function() {
 
 
 // Search methods
-spt.table.run_search = function() {
+spt.table.run_search = function(kwargs) {
+    if (!kwargs) {
+        kwargs = {};
+    }
     var table = spt.table.get_table();
-    spt.dg_table.search_cbk( {}, {src_el: table} );
+    var bvr = {
+        src_el: table,
+        extra_args: kwargs
+    }
+    spt.dg_table.search_cbk( {}, bvr );
 }
 
 
