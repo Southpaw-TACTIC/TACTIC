@@ -12,8 +12,9 @@
 __all__ = ["EmbedWdg"]
 
 from pyasm.common import Environment
-from pyasm.biz import File
+from pyasm.biz import File, Snapshot
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
+
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -43,6 +44,7 @@ class EmbedWdg(BaseRefreshWdg):
         file = my.kwargs.get("file")
         if file:
             src = file.get_web_path()
+
 
         opacity = 1.0
         if not src:
@@ -92,9 +94,10 @@ class EmbedWdg(BaseRefreshWdg):
             embed = DivWdg()
 
 
-            thumb_path = my.kwargs.get("thumb_path")
+            thumb_path = my.kwargs.get("poster")
+            
             if not thumb_path:
-                thumb_path = "/context/icons/logo/tactic_sml.png"
+                thumb_path = "/context/icons/logo/tactic_silver.png"
             controls = my.kwargs.get("controls")
             if not controls:
                 controls = "true"
