@@ -2309,7 +2309,6 @@ spt.checkin.html5_checkin = function(files) {
     var transaction_ticket = server.transaction_ticket;
 
     var upload_complete = function() {
-
         try {
             var has_error = false;
 

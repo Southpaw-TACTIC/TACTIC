@@ -465,7 +465,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if my.search_type == base_search_type:
             matched_search_key = True
-        if search_keys:
+        if search_keys and search_keys != '[]':
             if isinstance(search_keys, basestring):
                 if search_keys == "__NONE__":
                     search_keys = []
@@ -985,6 +985,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     spt.named_events.fire_event(unique_id, {});
                     // run at the end of last load
                     if (bvr.expand_on_load) {
+                        spt.table.set_layout(layout);
                         spt.table.expand_table();
                     }
 
@@ -4649,6 +4650,10 @@ spt.table.save_changes = function(kwargs) {
                 else if (cell.getAttribute("spt_input_type") =='work_hour') {
                     var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
                     single_web_data['workhour_data'] = web_values['workhour_data'];
+                }
+                else if (cell.getAttribute("spt_input_type") =='tasks') {
+                    var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
+                    single_web_data['process_data'] = web_values['process_data'];
                 }
                 else { // generic inline-type widget
                     var web_values = spt.api.Utility.get_input_values(cell, null, false);

@@ -15,7 +15,7 @@ from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, T
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
-from pyasm.biz import ExpressionParser
+from pyasm.biz import ExpressionParser, Project
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -917,7 +917,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                 } )
 
-
+            """
+            # this make clicking on the Search not work when the focus is on text input
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
@@ -929,7 +930,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 '''
             } )
-
+            """
 
         else:
             keyword_div = None
@@ -1267,7 +1268,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
-        outer.add_class("spt_resizable")
+        #outer.add_class("spt_resizable")
 
         #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
@@ -1813,7 +1814,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_column_manager_wdg(my):
 
         security = Environment.get_security()
-        if not security.check_access("builtin", "view_column_manager", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
+
+        if not security.check_access("builtin", access_keys, "allow"):
             return None
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
@@ -2331,9 +2336,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         menu_data.append( {
             "type": "title", "label": "Table Columns &amp; Contents"
         } )
+        project_code = Project.get_project_code()
 
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
         # Column Manager menu item ...
-        if security.check_access("builtin", "view_column_manager", "allow"):
+        if security.check_access("builtin", access_keys, "allow"):
             menu_data.append( {
             "type": "action",
             "label": "Column Manager",
@@ -2787,7 +2794,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         security = Environment.get_security()
-        if security.check_access("builtin", "retire_delete", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
         
             spec_list.extend( [{ "type": "separator" },
                 
@@ -2932,4 +2942,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_layout_version(my):
         return "2"
+
+    def _get_access_keys(my, key, project_code):
+        '''get access keys for a builtin rule'''
+        access_key1 = {
+            'key': key,
+            'project': project_code
+        }
+
+        access_key2 = {
+            'key': key 
+
+        }
+        access_keys = [access_key1, access_key2]
+        return access_keys
+
 
