@@ -92,7 +92,8 @@ class EmbedWdg(BaseRefreshWdg):
             embed = DivWdg()
 
 
-            thumb_path = my.kwargs.get("thumb_path")
+            thumb_path = my.kwargs.get("poster")
+            
             if not thumb_path:
                 thumb_path = "/context/icons/logo/tactic_sml.png"
 
