@@ -34,7 +34,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, Che
 from tactic.ui.container import ResizableTableWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
 from tactic.ui.widget import ActionButtonWdg
-from tactic.ui.input import TextInputWdg
+from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 
 import os
 
@@ -128,24 +128,18 @@ class TriggerToolWdg(BaseRefreshWdg):
         } )
 
         title_div.add(add_button)
-        add_button.add_style("float: left")
+        add_button.add_style("float: right")
         title_div.add(help_button)
         help_button.add_style("float: right")
-
-        """
-        if my.title:
-            title_div.add("<b>Triggers [%s]</b>" % my.title)
-        else:
-            title_div.add("<b>Triggers</b>")
-        """
 
         left.add("<br clear='all'/>")
 
 
         triggers_div = DivWdg()
         left.add(triggers_div)
-        triggers_div.add_style("margin: 5px")
+        triggers_div.add_style("margin: 0px 5px")
         triggers_div.add_style("min-height: 400px")
+        left.add_color("background", "background", -3)
 
         # find the triggers
         search = Search("config/trigger")
@@ -164,8 +158,8 @@ class TriggerToolWdg(BaseRefreshWdg):
 
             cur_trigger = triggers[0]
 
-            for trigger in triggers:
-                trigger_div = my.get_trigger_wdg(trigger)
+            for i, trigger in enumerate(triggers):
+                trigger_div = my.get_trigger_wdg(trigger, i+1)
                 triggers_div.add(trigger_div)
                 trigger_div.add("<br clear='all'/>")
         else:
@@ -186,8 +180,8 @@ class TriggerToolWdg(BaseRefreshWdg):
             search.add_op("or")
         search.add_project_filter()
         triggers = search.get_sobjects()
-        for trigger in triggers:
-            trigger_div = my.get_trigger_wdg(trigger)
+        for i, trigger in enumerate(triggers):
+            trigger_div = my.get_trigger_wdg(trigger, i+1)
             triggers_div.add(trigger_div)
             trigger_div.add("<br clear='all'/>")
 
@@ -254,9 +248,9 @@ class TriggerToolWdg(BaseRefreshWdg):
 
 
 
-    def get_trigger_wdg(my, trigger):
+    def get_trigger_wdg(my, trigger, index=1):
         trigger_div = DivWdg()
-        trigger_div.add_style("padding: 3px")
+        trigger_div.add_style("padding: 3px 3px 3px 12px")
         trigger_div.add_class("hand")
 
         hover = trigger_div.get_color("background", -20)
@@ -286,7 +280,7 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         #checkbox = CheckboxWdg(trigger_code)
         #trigger_div.add(checkbox)
-        trigger_div.add(title)
+        trigger_div.add("%s. %s" % (index, title))
 
         search_key = SearchKey.get_by_sobject(trigger)
 
@@ -334,6 +328,8 @@ class TriggerDetailWdg(BaseRefreshWdg):
             my.pipeline = Pipeline.get_by_code(my.pipeline_code)
             #my.search_type = ""
             my.search_type = my.kwargs.get("search_type")
+            if not my.search_type:
+                my.search_type = my.pipeline.get_value("search_type")
 
         else:
             my.pipeline = None
@@ -430,11 +426,18 @@ class TriggerDetailWdg(BaseRefreshWdg):
             event = trigger.get_value("event")
 
             if my.process:
-                div.add("<b>Edit existing trigger for process [%s]</b><hr/><br/>" % my.process)
+                div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % my.process)
             else:
-                div.add("<b>Edit existing trigger</b><hr/><br/>")
+                div.add("<b>Edit existing trigger</b><hr/>")
 
-            div.add("Trigger: &nbsp; &nbsp; %s - %s<br/>" % (trigger.get_code(), trigger.get_value("description") ))
+            """
+            title = trigger.get_value("title")
+            desc = trigger.get_value("description")
+            if not desc:
+                div.add("Trigger: &nbsp; &nbsp; %s<br/>" % title )
+            else:
+                div.add("Trigger: &nbsp; &nbsp; %s - %s<br/>" % (title, desc))
+            """
 
 
 
@@ -480,12 +483,11 @@ class TriggerDetailWdg(BaseRefreshWdg):
         td.add_style("padding-bottom: 5px")
         # This is labeled as name, but is really title in the database.
         # The column in the database should have been called "name"
-        td.add("Name: ")
+        td.add("Name:<br/>")
         title_text = TextInputWdg(name="title")
         title_text.add_style("margin-bottom: 10px")
         title_text.set_value(title)
         title_text.add_style("width: 100%")
-        td = table.add_cell()
         td.add(title_text)
  
 
@@ -493,31 +495,15 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr = table.add_row()
         td = table.add_cell()
         td.add_style("padding-bottom: 15px")
-        td.add("Description: ")
+        td.add("Description:<br/>")
         desc_text = TextAreaWdg("description")
         desc_text.add_style("margin-bottom: 10px")
         desc_text.add_class("form-control")
         desc_text.add_style("width: 100%")
         desc_text.add_style("height: 60px")
         desc_text.set_value(description)
-        td = table.add_cell()
         td.add(desc_text)
        
-        """
-        table.add_row()
-        td = table.add_cell()
-        td.add("Unique Code (optional): ")
-        td.add_style("padding-bottom: 5px")
-        td = table.add_cell()
-        desc_text = TextWdg("code")
-        desc_text.add_attr("title", "Unique code for this trigger.  This will be autogenerated if left empty")
-        desc_text.add_style("width: 200px")
-        desc_text.set_value(code)
-        td.add(desc_text)
-        """
-        td.add("<br/>")
- 
-
         table.add_row()
         tr, td = table.add_row_cell()
         td.add("<b>Event: </b>")
@@ -577,7 +563,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add_color("color", "color")
         td.add_style("padding: 10px")
-        td.add("When&nbsp;&nbsp;&nbsp;")
+        td.add("When:&nbsp;&nbsp;&nbsp;")
 
         #td = table.add_cell()
 
@@ -1037,7 +1023,7 @@ class EventTriggerEditWdg(BaseRefreshWdg):
 
 
 
-            top.add("to: ")
+            top.add("To: ")
 
             status = SelectWdg("src_status")
             status.set_option("values", task_statuses)
@@ -1052,7 +1038,7 @@ class EventTriggerEditWdg(BaseRefreshWdg):
 
             top.add(status)
             top.add("<br/>")
-            top.add_style("padding: 10px")
+            top.add_style("padding: 10px 0px")
 
         elif event.startswith("checkin|") and not process:
             # search_type mode does not have a process
@@ -1065,7 +1051,7 @@ class EventTriggerEditWdg(BaseRefreshWdg):
             else:
                 listen_process = None
             
-            top.add_style("padding: 10px")
+            top.add_style("padding: 10px 0px")
 
             if not pipeline:
                 return top
@@ -1913,10 +1899,14 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script_sobj = None
             script = ''
 
-        is_task_status_changed = event == 'change|sthpw/task|status'
         
-        div.add("Script Path (Optional): <br/>")
-        script_path_text = TextWdg("script_path")
+        div.add("Run Script Path: <br/>")
+        script_path_text = LookAheadTextInputWdg(
+                name="script_path",
+                search_type="config/custom_script",
+                column="path",
+
+        )
         div.add(script_path_text)
         script_path_text.add_style("width: 500px")
         script_path_text.set_value(script_path)
@@ -1936,6 +1926,22 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             '''
         } )
 
+
+        edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor")
+        edit_button.add_style("float: right")
+        edit_button.add_style("padding: 5px 0px")
+        div.add(edit_button)
+        edit_button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.app.ScriptEditorWdg'
+            var kwargs = {
+                //script_path: "maya/checkin_playblast"
+            }
+            spt.panel.load_popup("TACTIC Script Editor", class_name, kwargs);
+            '''
+        } )
+
         div.add(HtmlElement.br(2))
 
         # add the pre_script only when pre_script doesn's exist and the event is 'change|sthpw/task|status'
@@ -1951,6 +1957,8 @@ if task_status != src_status:
     return
 ###################### Add the script below: ############################
 '''         
+        """
+        is_task_status_changed = event == 'change|sthpw/task|status'
         if is_task_status_changed:
             if not script.startswith('#pre'):
                 
@@ -1963,12 +1971,14 @@ if task_status != src_status:
         if not is_task_status_changed:
             if script.startswith('#pre'):
                 script = ''
+        """
 
         div.add("Code: <br/>")
         script_text = TextAreaWdg("script")
         script_text.add_class("spt_python_script_text")
         div.add(script_text)
-        script_text.set_value(script)
+        if script:
+            script_text.set_value(script)
         script_text.add_style("height: 300px")
         script_text.add_style("width: 500px")
 
@@ -2160,6 +2170,8 @@ class PythonClassTriggerEditCbk(Command):
             trigger = Search.get_by_search_key(search_key) 
         else:
             trigger = SearchType.create("config/trigger")
+
+        trigger.set_value("mode", 'same process,same transaction')
 
         # need the trigger code
         trigger_code = my.kwargs.get('code')

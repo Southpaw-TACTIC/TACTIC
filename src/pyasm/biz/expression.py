@@ -47,6 +47,7 @@ class ExpressionParser(object):
         my.related_types = []
         my.index = -1
         my.sobjects = []
+        my.search = None
         my.result = None
         my.vars = {}
         my.show_retired = False
@@ -56,7 +57,7 @@ class ExpressionParser(object):
 
 
 
-    def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={} ):
+    def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None ):
 
         if not expression:
             return ''
@@ -87,6 +88,8 @@ class ExpressionParser(object):
 
         my.expression = expression
         my.sobjects = sobjects
+        if search:
+            my.search = search.copy()
         my.env_sobjects = env_sobjects
         my.state = state
 
@@ -529,6 +532,7 @@ class ExpressionParser(object):
 
 
         new_parser.sobjects = my.sobjects
+        new_parser.search = my.search
         new_parser.env_sobjects = my.env_sobjects
         new_parser.state = my.state
         new_parser.vars = my.vars
@@ -1191,7 +1195,10 @@ class MethodMode(ExpressionParser):
                 
         elif method == 'SOBJECT':
             if not len(args):
-                results = my.sobjects
+                if my.search:
+                    results = my.search.get_sobjects()
+                else:
+                    results = my.sobjects
             else:
                 first_arg = args[0]
                 search_types = my._split_arg(first_arg)
@@ -1872,7 +1879,10 @@ class MethodMode(ExpressionParser):
 
         #key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
         my.related_types = related_types
-        key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
+        if my.search:
+            key = "%s|%s|%s" % (my.expression, related_types, str(my.search))
+        else:
+            key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
         results = Container.get_dict(my.EXPRESSION_KEY, key)
@@ -2017,7 +2027,12 @@ class MethodMode(ExpressionParser):
             else:
                 related_sobjects = []
                 # do the full search
-                search = Search(related_type)
+                if not my.search:
+                    search = Search(related_type)
+                else:
+                    # Base type have to be the same
+                    assert(related_type, my.search.get_base_search_type())
+                    search = my.search
 
                 if my.show_retired:
                     search.set_show_retired(True)
@@ -2066,6 +2081,7 @@ class MethodMode(ExpressionParser):
             cur_search_type = sample_sobject.get_base_search_type()
         elif is_search:
             cur_search_type = related_search.get_base_search_type()
+
         list = []
         for i, related_type in enumerate(related_types):
             if related_type == '':

@@ -1045,7 +1045,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 'type': 'mouseout',
                 'cbjs_action': '''
                 var size = bvr.src_el.getSize();
-                console.log("exit");
                 spt.container.set_value("CustomLayoutEditor::size", size);
                 '''
             } )

@@ -169,6 +169,9 @@ class DisplayNameTrigger(Trigger):
         sobject.commit(triggers=False)
 
 
+
+
+
 class WebInit(Common):
 
     def execute(my):
@@ -225,7 +228,7 @@ class WebInit(Common):
 
 
 
-        # FIXME: should this really be a web_init trigger.  This needs
+        # FIXME: should this really be a web_init trigger?  This needs
         # to be run even from batch commands
         event = "change|sthpw/task|status"
         trigger = SearchType.create("sthpw/trigger")

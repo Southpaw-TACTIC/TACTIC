@@ -1017,6 +1017,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not my.sobjects:
             my.handle_no_results(table)
+            table.add_style("width: %s" % width)
+
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
             my.add_table_bottom(table)
@@ -2332,7 +2334,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         no_results_mode = my.kwargs.get('no_results_mode')
         if no_results_mode == 'compact':
-            table.add_style('width', '100%')
 
             tr, td = table.add_row_cell()
             tr.add_class("spt_table_no_items")
@@ -2349,8 +2350,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
 
-
-        table.add_style('width', '100%')
 
         tr, td = table.add_row_cell()
         tr.add_class("spt_table_no_items")
@@ -2943,9 +2942,16 @@ spt.table.get_layout = function() {
 
 
 // Search methods
-spt.table.run_search = function() {
+spt.table.run_search = function(kwargs) {
+    if (!kwargs) {
+        kwargs = {};
+    }
     var table = spt.table.get_table();
-    spt.dg_table.search_cbk( {}, {src_el: table} );
+    var bvr = {
+        src_el: table,
+        extra_args: kwargs
+    }
+    spt.dg_table.search_cbk( {}, bvr );
 }
 
 
@@ -2995,7 +3001,14 @@ spt.table.drop_row = function(evt, el) {
             upload_complete: function() {
                 var server = TacticServerStub.get();
                 var kwargs = {mode: 'uploaded'};
-                server.simple_checkin( search_key, context, filename, kwargs);
+                spt.table.dragleave_row(evt, el);
+                try {
+                    server.simple_checkin( search_key, context, filename, kwargs);
+                }
+                catch(e) {
+                    spt.alert("An error occured in the check-in: ["+e+"]");
+                    return;
+                }
             }
         };
         spt.html5upload.upload_file(upload_file_kwargs);
@@ -3008,6 +3021,8 @@ spt.table.drop_row = function(evt, el) {
                     file,
                     function (img) {
                         img = $(img);
+                        img.setStyle("width", "100%");
+                        img.setStyle("height", "");
                         thumb_el.innerHTML = "";
                         thumb_el.appendChild(img);
                         img.setSize(size);
@@ -4856,23 +4871,26 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // default to update bottom row color
     if (kw['refresh_bottom'] == null) kw.refresh_bottom = true;
 
-
+    
 
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
-    var layout = rows[0].getParent(".spt_layout");
-    spt.table.set_layout(layout);
+    var layout_el = rows[0].getParent(".spt_layout");
+    spt.table.set_layout(layout_el);
+
+    var class_name = layout_el.getAttribute("spt_class_name");
     var element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
 
-    var view = layout.getAttribute("spt_view");
-    var search_type = layout.getAttribute("spt_search_type");
-    var config_xml = layout.getAttribute("spt_config_xml");
+    var view = layout_el.getAttribute("spt_view");
+    var search_type = layout_el.getAttribute("spt_search_type");
+    var config_xml = layout_el.getAttribute("spt_config_xml");
+    var layout = layout_el.getAttribute("spt_layout");
 
     
-    var table_top = layout.getParent('.spt_table_top');
+    var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
     var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
@@ -4886,8 +4904,9 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         group_elements = [];
     }
 
-    var class_name = 'tactic.ui.panel.TableLayoutWdg';
-    //var class_name = 'tactic.ui.panel.TileLayoutWdg';
+    if (!class_name) {
+        class_name = 'tactic.ui.panel.TableLayoutWdg';
+    }
 
     var current_table = spt.table.get_table(); 
     // must pass the current table id so that the row bears the class with the table id
@@ -4898,12 +4917,18 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         table_id : current_table.getAttribute('id'), 
         search_type: search_type,
         view: view,
+        layout: layout,
         search_keys: search_keys,
         show_shelf: false,
         show_select: show_select,
         element_names: element_names,
         group_elements: group_elements,
         config_xml: config_xml
+    }
+
+    if (layout == "tile") {
+        kwargs['bottom_expr'] = layout_el.getAttribute("spt_bottom_expr");
+        kwargs['title_expr'] = layout_el.getAttribute("spt_title_expr");
     }
 
 

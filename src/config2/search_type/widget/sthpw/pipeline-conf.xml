@@ -67,6 +67,7 @@
 <table>
     <element name="code"/>
     <element name="editor"/>
+    <element name="name"/>
     <element name="description"/>
     <element name="pipeline_hidden"/>
     <element name="search_type"/>
@@ -86,6 +87,7 @@
 <!-- used to display a summary of the pipeline in the Pipeline Editor Tool -->
 <tool>
     <element name="code"/>
+    <element name="name"/>
     <element name="description" width='300px'/>
     <element name="pipeline_hidden"/>
     <element name="stype"/>
@@ -124,7 +126,7 @@
 
 
 <insert>
-    <element name="code"/>
+    <element name="name"/>
     <element name="description"/>
     <element name="search_type">
         <display class="tactic.ui.input.SearchTypeInputWdg"/>
@@ -141,6 +143,9 @@
 
 <edit_definition>
     <element name="code"/>
+    <element name="name">
+        <display class="TextWdg"/>
+    </element>
     <element name="description"/>
     <element name="search_type">
         <display class="tactic.ui.input.SearchTypeInputWdg"/>
@@ -180,7 +185,7 @@
 
 
 <edit>
-    <element name="code"/>
+    <element name="name"/>
     <element name="description"/>
     <element name="search_type"/>
     <element name="project_code"/>
@@ -193,6 +198,9 @@
       <display class='TextWdg'>
         <read_only>true</read_only>
       </display>
+    </element>
+    <element name="name">
+        <display class='TextWdg'/>
     </element>
     <element name="description"/>
     <element name="search_type">

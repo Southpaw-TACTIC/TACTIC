@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
+__all__ = ["ToolLayoutWdg","CustomLayoutWithSearchWdg", "CustomAggregateWdg", "CustomItemLayoutWithSearchWdg","RepoBrowserLayoutWdg","CardLayoutWdg"]
 
 from pyasm.common import Common, Container
 from pyasm.search import Search, SearchKey
@@ -109,7 +109,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         # extraneous variables inherited from TableLayoutWdg
         my.edit_permission = True
 
-        top = DivWdg()
+        top = my.top
         my.set_as_panel(top)
         top.add_class("spt_sobject_top")
 
@@ -121,6 +121,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
+
+        class_name = Common.get_full_class_name(my)
+        inner.add_attr("spt_class_name", class_name)
 
 
         if not Container.get_dict("JSLibraries", "spt_html5upload"):
@@ -344,11 +347,23 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
+    def init(my):
+        my.do_search = False
+        super(CustomLayoutWithSearchWdg, my).init()
+
     def get_content_wdg(my):
         kwargs = my.kwargs.copy()
+        kwargs["search"] = my.search
         layout = CustomLayoutWdg(**kwargs)
         layout.set_sobjects(my.sobjects)
         return layout
+
+
+class CustomAggregateWdg(CustomLayoutWithSearchWdg):
+
+    def init(my):
+        my.do_search = False
+        super(CustomLayoutWithSearchWdg, my).init()
 
 
 

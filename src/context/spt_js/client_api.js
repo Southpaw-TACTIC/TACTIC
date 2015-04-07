@@ -236,7 +236,8 @@ TacticServerStub = function() {
      * interaction logging
      */
     this.add_interaction = function(key, data, kwargs) {
-        return this._delegate("add_interaction", arguments, kwargs);
+        callback = function() {console.log("done")};
+        return this._delegate("add_interaction", arguments, kwargs, null, callback);
     }
 
     this.get_interaction_count = function(key, kwargs) {

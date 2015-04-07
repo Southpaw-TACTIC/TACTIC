@@ -123,6 +123,7 @@ class ExpressionTest(unittest.TestCase):
             my._test_utf8()
             my._test_palette()
             my._test_related_sobject()
+            my._test_input_search()
 
             my._test_return_types()
             my._test_file()
@@ -150,6 +151,7 @@ class ExpressionTest(unittest.TestCase):
             my._test_connection()
             my._test_cache()
             my._test_cross_proj_count()
+
         finally:
             my.transaction.rollback()
 
@@ -861,6 +863,50 @@ class ExpressionTest(unittest.TestCase):
 
         Project.set_project('unittest')
         '''
+
+
+
+    def _test_input_search(my):
+
+        # should find all of them
+        search = Search("unittest/person")
+        expr = "@SOBJECT(unittest/person)"
+        result = Search.eval(expr, search=search)
+        my.assertEquals(8, len(result))
+
+
+        search = Search("unittest/person")
+        search.add_limit(5)
+        expr = "@SOBJECT(unittest/person)"
+        result = Search.eval(expr, search=search)
+        my.assertEquals(5, len(result))
+
+
+
+        search = Search("unittest/person")
+        expr = "@SOBJECT(unittest/person['age','<','30'])"
+        result = Search.eval(expr, search=search)
+
+        search = Search("unittest/person")
+        search.add_filter("age", 30, op="<")
+        result2 = search.get_sobjects()
+
+        my.assertEquals(len(result), len(result2))
+
+
+        # This is not supported yet
+        search = Search("unittest/person")
+        expr = "@SOBJECT(unittest/city)"
+        try:
+            results = Search.eval(expr, search=search)
+        except:
+            pass
+        #my.assertEquals("unitest/city", results[0].get_base_search_type())
+
+
+
+
+
 
     def _test_single(my):
         

@@ -48,13 +48,16 @@ display class, it will adopt the one defined here-->
         <display class="tactic.ui.table.DropElementWdg"/>
     </element>
 
-    <!-- end test -->
-   <!--
-    <element name="snapshot">
-        <display class="ThumbWdg">
-            <icon_size>100%</icon_size>
-        </display>
-    </element>-->
+
+
+    <element name="pipeline" edit="true">
+      <display widget="expression">
+        <expression>@GET(sthpw/pipeline.name)</expression>
+      </display>
+      <action class="pyasm.command.DatabaseAction">
+        <column>pipeline_code</column>
+      </action>
+    </element>
 
 
 
@@ -745,19 +748,20 @@ display class, it will adopt the one defined here-->
     <element name="images">
         <display class="tactic.ui.widget.SimpleUploadWdg">
         </display>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
 
     <element name="files" edit="true">
         <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
         </display>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
 
 
     <element name="snapshot" edit="true">
          <display class="tactic.ui.widget.SimpleUploadWdg"/>
-        <action class="NullAction"/>
+        <action class="pyasm.command.UploadAction"/>
     </element>
    
 
@@ -817,12 +821,14 @@ display class, it will adopt the one defined here-->
         <!-- <action class="UploadAction"/>-->
     </element>
 
-    <element name="files">
+
+    <element name="files" edit="true">
         <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
         </display>
         <action class="pyasm.command.UploadAction"/>
-        <!-- <action class="UploadAction"/>-->
     </element>
+
 
 
     <element name="snapshot">
@@ -861,14 +867,19 @@ display class, it will adopt the one defined here-->
     </element>
   
 
-  <element name="pipeline_code">
+  <element name="pipeline">
     <display class="tactic.ui.input.PipelineInputWdg"/>
-  <!--
-    <display class="SelectWdg">
-        <query>sthpw/pipeline|code|code</query>
-        <empty>true</empty>
-    </display>
-    -->
+    <action class="pyasm.command.DatabaseAction">
+        <column>pipeline_code</column>
+    </action>
+  </element>
+
+
+
+  <element name="pipeline_code">
+      <display class="tactic.ui.input.PipelineInputWdg">
+          <use_code>true</use_code>
+      </display>
   </element>
 
 

@@ -228,7 +228,8 @@ class DatabaseAction(Command):
             if parent_key_action:
                 my.sobject.add_relationship(value)
             else:
-                my.sobject.set_value(column, value )
+                if column != "pipeline_code":
+                    my.sobject.set_value(column, value )
 
             if my.commit_flag == True:
                 my.sobject.commit()

@@ -1376,7 +1376,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             line_div.add(icon)
             line_div.add_style("font-style: italic")            
             line_div.add_style("cursor: pointer;")
-            line_div.add("Has %i milestone(s)" % (num_milestone))
+            line_div.add("%i milestone/s" % (num_milestone))
             line_div.add(HtmlElement.br())
 
             
@@ -1396,7 +1396,9 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
                     "expression": "@SOBJECT(sthpw/milestone['due_date', '>=', '" + time_key_str + "']['due_date', '<=', '" + next_day + "']['@ORDER_BY', 'due_date desc'])"
                     };
 
-                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+                spt.tab.set_main_body_tab();
+                spt.tab.add_new("add_milestone", "Add Milestone", class_name, popup_kwargs);
+                //spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
 
                 ''' % (key)
             } )
@@ -1404,12 +1406,12 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
         else:
             num_milestone = 0
-            icon = IconWdg("Milestones", IconWdg.PLUS_ADD)
+            icon = IconWdg("Milestones", "BS_PLUS")
             line_div.add(icon)
             #line_div.add_style("opacity: 0.85")
             line_div.add("Add milestone")
             line_div.add(HtmlElement.br())
-            line_div.add_style("cursor: pointer;")
+            line_div.add_style("cursor: pointer")
         
 
             line_div.add_behavior( {
