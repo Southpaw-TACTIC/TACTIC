@@ -128,7 +128,7 @@ class TransactionLog(SObject):
 
 
     # static functions
-    def create(cls, command, transaction_data, description, title='', state=None):
+    def create(cls, command, transaction_data, description, title='', state=None, keywords=None):
         user_name = Environment.get_user_name()
         #namespace = Environment.get_env_object().get_context_name()
         from pyasm.biz import Project
@@ -167,6 +167,9 @@ class TransactionLog(SObject):
         log.set_value("ticket", ticket)
         if state:
             log.set_value("state", state)
+
+        if keywords:
+            log.set_value("keywords", keywords)
 
         server = Config.get_value("install", "server")
         if server:

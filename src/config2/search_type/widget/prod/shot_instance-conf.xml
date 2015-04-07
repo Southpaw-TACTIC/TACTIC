@@ -66,7 +66,7 @@
    
   <element name="preview"/>
 
-  <element name="history" width='1%'>
+  <element name="history">
     <display class="HiddenRowToggleWdg">
         <dynamic_class>pyasm.prod.web.InstanceHistoryWdg</dynamic_class>
         <asset_search_type>prod/asset</asset_search_type>
@@ -92,7 +92,7 @@
    
   <element name="preview"/>
 
-  <element name="history" width='1%'>
+  <element name="history">
     <display class="HiddenRowToggleWdg">
       <dynamic_class>pyasm.prod.web.InstanceHistoryWdg</dynamic_class>
     </display>

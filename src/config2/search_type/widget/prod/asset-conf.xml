@@ -353,13 +353,13 @@
 <load default="table" layout="TableWdg">
     <element name="preview"/>
 
-    <element name="checkin" edit='false' width='1%'>
+    <element name="checkin" edit='false'>
         <display class="HiddenRowToggleWdg">
             <dynamic_class>pyasm.prod.web.AssetHistoryWdg</dynamic_class>
         </display>
     </element>
     <!--
-    <element name="xxx" edit='false' width='1%'>
+    <element name="xxx" edit='false'>
         <display class="HiddenRowToggleWdg">
             <dynamic_class>tactic.ui.panel.ViewPanelWdg</dynamic_class>
             <search_type>sthpw/snapshot</search_type>

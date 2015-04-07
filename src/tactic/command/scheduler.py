@@ -20,6 +20,7 @@ import tacticenv
 from kronos import Scheduler as KronosScheduler
 from pyasm.common import Container, Environment
 from pyasm.biz import Project
+from pyasm.security import Site
 
 import time, datetime, types
 
@@ -175,9 +176,15 @@ class SchedulerTask(object):
         my.kwargs = kwargs
         user = my.kwargs.get('user')
         project = my.kwargs.get('project')
+
+        my.site = my.kwargs.get('site')
+        if not my.site:
+            # if not explicitly set, keep the site that is current
+            my.site = Site.get_site()
+
         if user and project:
             from pyasm.security import Batch
-            Batch(login_code=user, project_code=project)
+            Batch(site=my.site, login_code=user, project_code=project)
 
         my.security = Environment.get_security()
 
@@ -186,6 +193,10 @@ class SchedulerTask(object):
         return my.kwargs.get("name")
 
     def _do_execute(my):
+        # restablish the site
+        if my.site:
+            Site.set_site(my.site)
+
         Environment.set_security(my.security)
         my.execute()
 

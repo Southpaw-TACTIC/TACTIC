@@ -15,7 +15,7 @@ from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, T
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
-from pyasm.biz import ExpressionParser
+from pyasm.biz import ExpressionParser, Project
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -199,7 +199,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # generate it. parent_key could be none if the expression evaluates to None
             expression = my.kwargs.get('expression')
             if expression:
-                if my.search_key and my.search_key != "%s":
+                if my.search_key and (my.search_key not in ["%s", 'None']):
                     start_sobj = Search.get_by_search_key(my.search_key)
                 else:
                     start_sobj = None
@@ -280,6 +280,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.min_cell_height:
             my.min_cell_height = "20"
 
+        my.simple_search_view = my.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
@@ -398,11 +399,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             state_filter = my.state.get('filter')
         if my.kwargs.get('filter'): 
             state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+
+        if my.kwargs.get('op_filters'):
+            search.add_op_filters(my.kwargs.get("op_filters"))
+
+
         # passed in filter overrides
-        """
-        if state_filter:
-            filter_data.set_data(state_filter)
-        """
         values = filter_data.get_values_by_prefix("group")
         order = WebContainer.get_web().get_form_value('order')
         
@@ -506,7 +508,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
 
         if my.is_sobjects_explicitly_set():
@@ -570,7 +572,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_values:
 
-           
             keyword_value = keyword_values[0].get('value')
             if keyword_value:
                 from tactic.ui.filter import KeywordFilterElementWdg
@@ -637,7 +638,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             parent_key = my.kwargs.get("search_key")
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
-        if parent_key and parent_key != "%s" and parent_key != "__NONE__":
+        if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
+            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -835,18 +837,21 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         column = "keywords"
+        simple_search_mode = my.kwargs.get("simple_search_mode")
+        
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [True, 'true']:
             show_keyword_search = True
         else:
             show_keyword_search = False
 
-        # TEST
+        # TEST: on by default
         show_keyword_search = True
 
-        
+        show_search = my.kwargs.get("show_search") != 'false'
+
        
-        if show_keyword_search:
+        if show_search and show_keyword_search:
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
             hidden = HiddenWdg("prefix", "keyword")
@@ -861,11 +866,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 values = {}
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type)
+            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
 
             from tactic.ui.filter import KeywordFilterElementWdg
-            keyword_filter = KeywordFilterElementWdg(column=my.keyword_column, mode="keyword", filter_search_type=my.search_type, \
-                icon="", width="75", show_partial=False, show_toggle=True)
+            keyword_filter = KeywordFilterElementWdg(
+                    column=my.keyword_column,
+                    mode="keyword",
+                    filter_search_type=my.search_type,
+                    icon="",
+                    width="75",
+                    show_partial=False,
+                    show_toggle=True
+            )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
             keyword_div.add_style("margin-top: 0px")
@@ -875,43 +887,45 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
-                 var el = bvr.src_el.getElement(".spt_text_input");
+                var el = bvr.src_el.getElement(".spt_text_input");
                 el.setStyle("width", "230px");
-                bvr.src_el.setStyle("width", "230px");
                 el.focus();
                 el.select();
                 '''})
 
-            keyword_div.add_relay_behavior( {
-                'type': 'click',
-                'bvr_match_class': 'spt_search_toggle',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_view_panel_top");
-                if (top) {
-                    var simple_search = top.getElement(".spt_simple_search");
-                    if (simple_search) {
-                        simple_search.setStyle("display", "");
-                        spt.body.add_focus_element(simple_search);
+            if simple_search_mode != 'inline':
+                keyword_div.add_relay_behavior( {
+                    'type': 'click',
+                    'bvr_match_class': 'spt_search_toggle',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_view_panel_top");
+                    if (top) {
+                        var simple_search = top.getElement(".spt_simple_search");
+                        if (simple_search) {
+                            simple_search.setStyle("display", "");
+                            spt.body.add_focus_element(simple_search);
+                        }
                     }
-                }
 
-               
+                   
 
-                '''
-            } )
+                    '''
+                } )
 
-
+            """
+            # this make clicking on the Search not work when the focus is on text input
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
                 'cbjs_action': '''
-
-                var el = bvr.src_el.getElement(".spt_text_input");
-                el.setStyle("width", "50px");
+                
+                var el = bvr.src_el;
+                
+                el.setStyle("width", "75px");
 
                 '''
             } )
-
+            """
 
         else:
             keyword_div = None
@@ -947,9 +961,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             num_div.add_style("padding: 5px")
             
             # -- SEARCH LIMIT DISPLAY
-            if my.items_found == 0 and my.search:
-                my.items_found = my.search.get_count()
+            if my.items_found == 0:
+                if my.search:
+                    my.items_found = my.search.get_count()
+                elif my.sobjects:
+                    my.items_found = len(my.sobjects)
 
+           
             if my.items_found == 1:
                 num_div.add( "%s %s" % (my.items_found, _("item found")))
             else:
@@ -1106,13 +1124,25 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         wdg_list = []
 
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
+
+
+
+
+
+
+        if keyword_div:
+            wdg_list.append( {'wdg': keyword_div} )
+            keyword_div.add_style("margin-left: 20px")
+
 
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-            button = ActionButtonWdg(title='Search')
+            if show_search:
+                search_label = 'Search'
+            else:
+                search_label = 'Refresh'
+            button = ActionButtonWdg(title=search_label)
             my.run_search_bvr = my.kwargs.get('run_search_bvr')
             if my.run_search_bvr:
                 button.add_behavior(my.run_search_bvr)
@@ -1123,13 +1153,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            button_div.add_style("margin-left: 5px")
+            button_div.add_style("margin-left: -6px")
             wdg_list.append({'wdg': button_div})
 
 
-
-        if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
+        if save_button:
+            wdg_list.append( {'wdg': save_button} )
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
@@ -1234,7 +1263,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
-        outer.add_class("spt_resizable")
+        #outer.add_class("spt_resizable")
 
         #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
@@ -1281,10 +1310,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        save_button = ActionButtonWdg(title="Save", is_disabled=False)
-        save_button_top = save_button.get_top()
-        save_button_top.add_style("display", "none")
-        save_button_top.add_class("spt_save_button")
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button.add_style("display", "none")
+        save_button.add_class("spt_save_button")
+        # it needs to be called save_button_top for the button to re-appear after its dissapeared
+
         #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
 
@@ -1778,7 +1809,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_column_manager_wdg(my):
 
         security = Environment.get_security()
-        if not security.check_access("builtin", "view_column_manager", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
+
+        if not security.check_access("builtin", access_keys, "allow"):
             return None
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
@@ -2296,9 +2331,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         menu_data.append( {
             "type": "title", "label": "Table Columns &amp; Contents"
         } )
+        project_code = Project.get_project_code()
 
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
         # Column Manager menu item ...
-        if security.check_access("builtin", "view_column_manager", "allow"):
+        if security.check_access("builtin", access_keys, "allow"):
             menu_data.append( {
             "type": "action",
             "label": "Column Manager",
@@ -2752,7 +2789,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         security = Environment.get_security()
-        if security.check_access("builtin", "retire_delete", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
         
             spec_list.extend( [{ "type": "separator" },
                 
@@ -2897,4 +2937,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_layout_version(my):
         return "2"
+
+    def _get_access_keys(my, key, project_code):
+        '''get access keys for a builtin rule'''
+        access_key1 = {
+            'key': key,
+            'project': project_code
+        }
+
+        access_key2 = {
+            'key': key 
+
+        }
+        access_keys = [access_key1, access_key2]
+        return access_keys
+
 

@@ -892,6 +892,9 @@ class CheckboxWdg(BaseInputWdg):
         # state of the element (on or off) or the "value" option
         values = my.get_values(for_display=True)
         # for multiple checkboxes using the same name
+
+        my.add_style("width", "16px", override=False)
+        my.add_style("height", "16px", override=False)
         
         if len(values) == 1:
             # skip boolean
@@ -1036,6 +1039,7 @@ class SelectWdg(BaseInputWdg):
         my.kwargs = kwargs
         css = kwargs.get('css')
         label = kwargs.get('label')
+        bs = kwargs.get('bs')
         my.sobjects_for_options = None
         my.empty_option_flag = False
         my.empty_option_label, my.empty_option_value = (my.SELECT_LABEL, "")
@@ -1051,8 +1055,9 @@ class SelectWdg(BaseInputWdg):
         my.add_class("spt_input")
 
         # BOOTSTRAP
-        my.add_class("form-control")
-        my.add_class("input-sm")
+        if bs != False:
+            my.add_class("form-control")
+            my.add_class("input-sm")
 
 
 
@@ -1374,7 +1379,7 @@ class SelectWdg(BaseInputWdg):
             my.add_style("width: %s" % width)
 
         my.add_border()
-        my.add_style("margin: 0px 5px")
+        #my.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'

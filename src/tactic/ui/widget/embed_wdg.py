@@ -12,8 +12,9 @@
 __all__ = ["EmbedWdg"]
 
 from pyasm.common import Environment
-from pyasm.biz import File
+from pyasm.biz import File, Snapshot
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
+
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -43,6 +44,7 @@ class EmbedWdg(BaseRefreshWdg):
         file = my.kwargs.get("file")
         if file:
             src = file.get_web_path()
+
 
         opacity = 1.0
         if not src:
@@ -92,9 +94,13 @@ class EmbedWdg(BaseRefreshWdg):
             embed = DivWdg()
 
 
-            thumb_path = my.kwargs.get("thumb_path")
+            thumb_path = my.kwargs.get("poster")
+            
             if not thumb_path:
-                thumb_path = "/context/icons/logo/tactic_sml.png"
+                thumb_path = "/context/icons/logo/tactic_silver.png"
+            controls = my.kwargs.get("controls")
+            if not controls:
+                controls = "true"
 
             video_id = None
             sources = [src]
@@ -104,7 +110,7 @@ class EmbedWdg(BaseRefreshWdg):
             height = '100%'
             #width = "640"
             #height = "480"
-            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls="true", width=width, height=height, index=index)
+            video = VideoWdg(video_id=video_id, sources=sources, source_types=source_types, poster=poster, preload=preload, controls=controls, width=width, height=height, index=index)
             embed.add(video)
             video.get_video().add_class("spt_resizable")
 

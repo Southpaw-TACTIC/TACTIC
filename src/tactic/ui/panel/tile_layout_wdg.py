@@ -41,6 +41,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             'category': 'Display'
         }
 
+
+    ARGS_KEYS['bottom_expr'] = {
+            'description': 'an optional expression for the bottom of the tile',
+            'order' : '03',
+            'category': 'Display'
+        }
+
+
     ARGS_KEYS['show_scale'] = {
             'description': 'If set to true, the scale slider bar is displayed',
             'type': 'SelectWdg',
@@ -90,7 +98,43 @@ class TileLayoutWdg(ToolLayoutWdg):
             'order' : '09',
             'category': 'Display'
 
+    },
+    ARGS_KEYS['overlay_expr'] = {
+            'description': 'If a @PYTHON expression is set, expression-driven stats will display in bottom right corner',
+            'type': 'TextWdg',
+            'order' : '10',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['overlay_color'] = {
+            'description': 'If comma separated color is set, it controls the background color of overlay stats displayed in bottom right corner',
+            'type': 'TextWdg',
+            'order' : '11',
+            'category': 'Display'
+
+    },
+
+    ARGS_KEYS['show_name_hover'] = {
+            'description': 'If set to true, it shows the name on hover over',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '12',
+            'category': 'Display'
+
+    },
+    ARGS_KEYS['show_drop_shadow'] = {
+            'description': 'If set to true, it shows the drop shadow',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order' : '13',
+            'category': 'Display'
+
     }
+
+
+
+
+
 
 
     
@@ -133,7 +177,89 @@ class TileLayoutWdg(ToolLayoutWdg):
         process = my.kwargs.get("process")
         if process:
             search.add_filter("process", process)
+
+        context = my.kwargs.get("context")
+        if context:
+            search.add_filter("context", context)
+
         return super(ToolLayoutWdg, my).alter_search(search)
+
+
+
+    def handle_group(my, inner, row, sobject):
+
+
+        last_group_column = None
+        
+        for i, group_column in enumerate(my.group_columns):
+            group_values = my.group_values[i]
+            
+            eval_group_column =  my._grouping_data.get(group_column)
+            if eval_group_column:
+                group_column = eval_group_column
+            
+            group_value = sobject.get_value(group_column, no_exception=True)
+            if my.group_by_time.get(group_column): #my.group_interval:
+                #group_value = sobject.get_value(group_column, no_exception=True)
+                group_value = my._get_simplified_time(group_value)
+            if not group_value:
+                group_value = "__NONE__"
+            
+            last_value = group_values.get(group_column)
+           
+            # if this is the first row or the group value has changed,
+            # then create a new group
+            if last_value == None or group_value != last_value:
+                if row != 0:
+                    inner.add("<br clear='all'/>")
+
+
+                if group_value == '__NONE__':
+                    label = '---'
+                else:
+                    group_label_expr = my.kwargs.get("group_label_expr")
+                    if group_label_expr:
+                        label = Search.eval(group_label_expr, sobject, single=True)
+                    else:
+                        label = Common.process_unicode_string(group_value)
+
+                title = label
+                if my.group_by_time.get(group_column):
+                    if my.group_interval == BaseTableLayoutWdg.GROUP_WEEKLY:
+                        title = 'Week  %s' %label
+                    elif my.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
+                        # order by number, but convert to alpha title
+                        labels = label.split(' ')
+                        if len(labels)== 2:
+                            timestamp = datetime(int(labels[0]),int(labels[1]),1)
+                            title = timestamp.strftime("%Y %b")
+
+
+                group_wdg = DivWdg()
+                inner.add(group_wdg)
+
+                group_wdg.add_style("width: auto")
+                group_wdg.add_border()
+                group_wdg.add(title)
+                group_wdg.add_style("height: 16px")
+                group_wdg.add_style("margin: 20px 0px")
+                group_wdg.add_style("padding: 10px 10px")
+                group_wdg.add_color("background", "background3")
+                group_wdg.add_style("font-size: 1.2em")
+                group_wdg.add_style("font-weight: bold")
+
+
+                group_values[group_column] = group_value
+            
+                last_group_column = group_column
+                # clear the next dict to facilate proper grouping in the next major group
+                next_dict = my.group_values.get(i+1)
+                if next_dict:
+                    next_dict = {}
+                    my.group_values[i+1] = next_dict
+
+
+
 
 
 
@@ -172,7 +298,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner.add_style("margin-left: 20px")
        
 
-        inner.add_attr("ondragenter", "return false")
+        inner.add_attr("ondragenter", "spt.thumb.background_enter(event, this) ")
+        inner.add_attr("ondragleave", "spt.thumb.background_leave(event, this) ")
         inner.add_attr("ondragover", "return false")
         inner.add_attr("ondrop", "spt.thumb.background_drop(event, this)")
 
@@ -181,7 +308,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.sobjects:
             inner.add( my.get_scale_wdg() )
 
+            my.process_groups()
+
             for row, sobject in enumerate(my.sobjects):
+
+                my.handle_group(inner, row, sobject)
+
 
                 if False and not temp and row > 4: 
                     tile_wdg = DivWdg()
@@ -288,6 +420,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             my.bottom = None
 
+        my.bottom_expr = my.kwargs.get("bottom_expr")
+
+
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get()
         data_list = filter_data.get_values_by_prefix("tile_layout")
@@ -318,6 +453,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not my.spacing:
             my.spacing = '10'
 
+        my.overlay_expr = my.kwargs.get('overlay_expr')
+        my.overlay_color = my.kwargs.get('overlay_color')
+
         super(TileLayoutWdg, my).init()
 
 
@@ -332,6 +470,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border_color': border_color,
             'dx': 10, 'dy': 10,
             'drop_code': 'DROP_ROW',
+            'accepted_search_type' : my.search_type,
+
             
              # don't use cbjs_pre_motion_setup as it assumes the drag el
                                 
@@ -532,21 +672,32 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             search_type = my.search_type
 
+        border_color = layout_wdg.get_color('border', modifier=20)
 
         layout_wdg.add_behavior( {
             'type': 'load',
             'search_type': search_type,
             'search_key': my.parent_key,
             'process': process,
+            'border_color': border_color,
             'cbjs_action': '''
 
             spt.thumb = {};
 
+            spt.thumb.background_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.background_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
             spt.thumb.background_drop = function(evt, el) {
 
-                evt.stopPropagation();
-                evt.preventDefault();
+                //evt.stopPropagation();
+                //evt.preventDefault();
 
+                el.setStyle('border','none');
                 var top = $(el);
 
                 var server = TacticServerStub.get();
@@ -556,54 +707,69 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
-                spt.app_busy.show("Attaching file");
-
-
+                var filenames = [];
                 for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
                     var file = files[i];
 
-                    var filename = file.name;
+                    filenames.push(file.name);
+                }   
+                
+                var yes = function() {
+                    spt.app_busy.show("Attaching file");
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
 
-                    var search_key;
-                    var data = {
-                        name: filename
-                    }
-                    if (bvr.search_key) {
-                       search_key = bvr.search_key
-                    }
-                    else {
-                        var search_type = bvr.search_type;
-                        var item = server.insert(search_type, data);
-                        search_key = item.__search_key__;
-                    }
+                        var filename = file.name;
 
-                    var context = bvr.process + "/" + filename;
-
-                    var upload_file_kwargs =  {
-                        files: [files[i]],
-                        upload_complete: function() {
-                            var server = TacticServerStub.get();
-                            var kwargs = {mode: 'uploaded'};
-                            server.simple_checkin( search_key, context, filename, kwargs);
-
-                            var layout = el.getParent(".spt_layout");
-                            spt.table.set_layout(layout);
-
-                            spt.table.run_search();
-
+                        var search_key;
+                        var data = {
+                            name: filename
                         }
-                    };
-                    spt.html5upload.upload_file(upload_file_kwargs);
+                        if (bvr.search_key) {
+                           search_key = bvr.search_key
+                        }
+                        else {
+                            var search_type = bvr.search_type;
+                            var item = server.insert(search_type, data);
+                            search_key = item.__search_key__;
+                        }
 
-                    // just support one file at the moment
-                    break;
-         
+                        var context = bvr.process + "/" + filename;
+
+                        var upload_file_kwargs =  {
+                            files: [files[i]],
+                            upload_complete: function() {
+                                var server = TacticServerStub.get();
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+
+                                var layout = el.getParent(".spt_layout");
+                                spt.table.set_layout(layout);
+
+                                spt.table.run_search();
+
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+
+                        // just support one file at the moment
+                        break;
+             
+                    }
+                    spt.app_busy.hide();
                 }
-
-                spt.app_busy.hide();
+                spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes)
             }
  
+            spt.thumb.noop_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.noop_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
 
             spt.thumb.noop = function(evt, el) {
                 evt.dataTransfer.dropEffect = 'copy';
@@ -611,44 +777,56 @@ class TileLayoutWdg(ToolLayoutWdg):
                 evt.stopPropagation();
                 evt.preventDefault();
 
+                el.setStyle('border','none');
                 var top = $(el);
                 var thumb_el = top.getElement(".spt_thumb_top");
 
 
+                var filenames = [];
                 for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
                     var file = files[i];
+                    filenames.push(file.name);
+                }   
 
-                    setTimeout( function() {
-                        var loadingImage = loadImage(
-                            file,
-                            function (img) {
-                                thumb_el.innerHTML = "";
-                                thumb_el.appendChild(img);
-                            },
-                            {maxWidth: 240, canvas: true, contain: true}
-                        );
-                    }, 0 );
+                var search_key = top.getAttribute("spt_search_key");
+                var yes = function() {
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
+
+                        setTimeout( function() {
+                            var loadingImage = loadImage(
+                                file,
+                                function (img) {
+                                    thumb_el.innerHTML = "";
+                                    thumb_el.appendChild(img);
+                                },
+                                {maxWidth: 240, canvas: true, contain: true}
+                            );
+                        }, 0 );
 
 
-                    var search_key = top.getAttribute("spt_search_key");
-                    var filename = file.name;
-                    var context = "publish" + "/" + filename;
+                        var filename = file.name;
+                        var context = "publish" + "/" + filename;
 
-                    var upload_file_kwargs =  {
-                        files: files,
-                        upload_complete: function() {
-                            var server = TacticServerStub.get();
-                            var kwargs = {mode: 'uploaded'};
-                            server.simple_checkin( search_key, context, filename, kwargs);
-                        }
-                    };
-                    spt.html5upload.upload_file(upload_file_kwargs);
+                        var upload_file_kwargs =  {
+                            files: files,
+                            upload_complete: function() {
+                                var server = TacticServerStub.get();
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+                        
+
+
          
-
-
-     
+                    }
+                    spt.notify.show_message("Check-in completed for " + search_key);
                 }
+                spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes)
+
             }
             '''
         } )
@@ -774,6 +952,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("unselectable")
         div.add_style('margin', my.spacing)
         div.add_style('background-color','transparent')
+        div.add_style('position','relative')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % my.table_id)
@@ -819,6 +998,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             "drag_el": '@',
             'drop_code': 'DROP_ROW',
             'border_color': border_color,
+            'search_type': my.search_type,
             "cb_set_prefix": 'spt.tile_layout.image_drag'
         } )
 
@@ -846,11 +1026,29 @@ class TileLayoutWdg(ToolLayoutWdg):
         if my.bottom:
             my.bottom.set_sobject(sobject)
             div.add(my.bottom.get_buffer_display())
+        elif my.bottom_expr:
+            bottom_value = Search.eval(my.bottom_expr, sobject, single=True)
+            bottom_value = bottom_value.replace("\n", "<br/>")
+            bottom = DivWdg()
+            bottom.add(bottom_value)
+            bottom.add_class("spt_tile_bottom")
+            bottom.add_style("padding: 10px")
+            bottom.add_style("height: 50px")
+            bottom.add_style("overflow-y: auto")
+            div.add(bottom)
+            #bottom.add_style("width: %s" % (my.aspect_ratio[0]-20))
         
 
-        div.add_attr("ondragenter", "return false")
+        div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
+        div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
+        
+        if my.overlay_expr:
+            from tactic.ui.widget import OverlayStatsWdg
+            stat_div = OverlayStatsWdg(expr = my.overlay_expr, sobject = sobject, bg_color = my.overlay_color)
+            div.add(stat_div)
+
 
         return div
 
@@ -882,7 +1080,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.scale_called = True
 
         show_scale = my.kwargs.get("show_scale")
-
+        print "ST ", my.search_type
         div = DivWdg()
         if show_scale in [False, 'false']:
             div.add_style("display: none")
@@ -930,6 +1128,12 @@ spt.tile_layout.set_scale = function(scale) {
         var el = els[i];
         el.setStyle( "width",  size_x);
         el.setStyle( "height", size_y);
+    }
+
+    var els = top.getElements(".spt_tile_bottom");
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        el.setStyle( "width",  size_x-20);
     }
 
     var container_id = "tile_layout::scale"+bvr.scale_prefix;
@@ -999,6 +1203,7 @@ spt.tile_layout.image_drag_setup = function(evt, bvr, mouse_411) {
     bvr.dx = 10;
     bvr.dy = 10;
     bvr.drop_code = 'DROP_ROW';
+    bvr.accepted_search_type = bvr.search_type;
 
 
 }
@@ -1022,6 +1227,7 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
     if (spt.drop) {
+
         spt.drop.sobject_drop_action(evt, bvr);
     }
     else {

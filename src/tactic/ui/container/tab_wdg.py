@@ -1355,14 +1355,16 @@ spt.tab.close = function(src_el) {
             SmartMenu.assign_as_local_activator( icon_div, "BUTTON_MENU", True )
 
             icon_div.add_style("padding-top: 4px")
+            icon_div.add_style("margin-top: 10px")
 
             icon_div.add_style("float: left")
-            icon_div.add_style("height: 20px")
+            icon_div.add_style("height: 16px")
             icon_div.add_style("width: 10px")
             icon_div.add_style("margin-left: -1px")
             icon_div.add_gradient("background", "background", -5, 5)
             icon_div.add_border()
             icon_div.add_style("text-align: center")
+            icon_div.add_style("opacity: 0.5")
             div.add(icon_div);
 
 
@@ -1786,6 +1788,19 @@ spt.tab.close = function(src_el) {
             display_title = title
         title_div.add(display_title)
         header.add(title_div)
+
+
+        """
+        count = 12
+        if count:
+            count_wdg = SpanWdg()
+            title_div.add(count_wdg)
+            count_wdg.add_class("badge")
+            count_wdg.add(count)
+            count_wdg.add_style("margin: 0px 5px 0px 10px")
+            count_wdg.add_style("font-size: 0.8em")
+        """
+
 
         title_div.add_attr("title", "%s (%s)" % (title, element_name))
 

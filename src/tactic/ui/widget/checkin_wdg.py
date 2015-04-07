@@ -352,6 +352,26 @@ class CheckinWdg(BaseRefreshWdg):
                 '''
                 } )
 
+            else:
+                 js_div.add_behavior( {
+                    'type': 'load',
+                    'handoff_dir': handoff_dir,
+                    'asset_dir': asset_dir,
+                    'wdg_transfer_mode': my.transfer_mode,
+                    'cbjs_action': '''
+                    
+                    var env = spt.Environment.get();
+                    if (bvr.wdg_transfer_mode) {
+                        return;
+                    }
+
+                    if (!env.get_transfer_mode()) {
+                        env.set_transfer_mode("web");
+                    }
+
+                    '''
+                } )
+
 
 
 
@@ -864,7 +884,9 @@ spt.checkin.get_checkin_data = function() {
     var range = '';
     var type = top.getElement(".spt_checkin_type").value;
     var is_current_el = top.getElement(".spt_is_current");
-    is_current = is_current_el.checked || is_current_el.value=='true';
+    
+    if (is_current_el)
+        is_current = is_current_el.checked || is_current_el.value=='true';
 
     var process_el = top.getElement(".spt_checkin_process");
     var process = '';
@@ -1137,8 +1159,12 @@ i   }
 
 spt.checkin.drop_files = function(evt, el) {
     el = $(el);
-    var search_key = el.getAttribute("spt_search_key")
-
+    var search_key = el.getAttribute("spt_search_key");
+    var process = el.getAttribute("spt_process");
+    var subcontext_options = el.getAttribute("spt_subcontext_options");
+    if (subcontext_options) 
+        subcontext_options = subcontext_options.split('|');
+    
     evt.stopPropagation();
     evt.preventDefault();
     evt.dataTransfer.dropEffect = 'copy';
@@ -1168,7 +1194,9 @@ spt.checkin.drop_files = function(evt, el) {
         paths: file_names,
         sizes: sizes,
         md5s: md5s,
-        use_applet: 'false'
+        use_applet: 'false',
+        process: process,
+        subcontext_options: subcontext_options
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
@@ -1748,8 +1776,9 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var env = spt.Environment.get();
             var transfer_mode = bvr.transfer_mode;
-            if (!transfer_mode)
+            if (!transfer_mode) 
                 transfer_mode = env.get_transfer_mode();
+           
             bvr.src_el.innerHTML = "Transfer mode: " + transfer_mode;
             '''
         } )
@@ -2227,24 +2256,59 @@ var top = bvr.src_el.getParent(".spt_checkin_top");
 var progress = top.getElement(".spt_checkin_progress");
 progress.setStyle("display", "");
 
+spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
+    var this_context = context;
+    if (is_context)
+        return this_context;
+
+    if (subcontext) {
+
+        this_context = process + "/" + subcontext;
+    }
+    else if (use_file_name) {
+        file_path = file_path.replace(/\\\\/g, "/");
+        var this_sub_context = file_path.replace(bvr.sandbox_dir+"/", "");
+        //this_sub_context = file_path;
+        if (this_sub_context == file_path) {
+            // nothing was found so just use the filename
+            var parts = file_path.split(/[\\/\\\\]/);
+            var file_name = parts[parts.length-1];
+            this_context = process + "/" + file_name;
+        }
+        else {
+            this_context = process + "/" + this_sub_context;
+        }
+    }
+    else {
+        this_context = context;
+    }
+    return this_context
+}
+
+
 spt.checkin.html5_checkin = function(files) {
     var server = TacticServerStub.get();
 
     var options = spt.checkin.get_checkin_data();
     var search_key = options.search_key;
     var process = options.process;
+    var context = options.context;
     var description = options.description;
-    var process = options.process;
 
     var is_current = true;
-    var checkin_type = 'file';
+    var file_type = 'file';
     var mode = 'uploaded';
 
-    server.start({title: 'HTML5 Check-in', description: checkin_type + ' ' + search_key});
+    var checkin_type = '';
+
+    
+    var is_context =  options.contexts ? true : false;
+    var subcontexts = options.subcontexts;
+    
+    server.start({title: 'HTML5 Check-in', description: file_type + ' ' + search_key});
     var transaction_ticket = server.transaction_ticket;
 
     var upload_complete = function() {
-
         try {
             var has_error = false;
 
@@ -2263,8 +2327,34 @@ spt.checkin.html5_checkin = function(files) {
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var file_path = file.name;
-                var context = process + '/' + file.name;
-                snapshot = server.simple_checkin(search_key, context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
+               
+                var subcontext = subcontexts[i];
+                if (is_context)
+                    context = contexts[i];
+
+                var use_file_name = false;
+                var checkin_type = 'strict';
+
+                if (subcontext == "(auto)") {
+                    subcontext = null;
+                    use_file_name = true;
+                    checkin_type = 'auto';
+                }
+                else if (subcontext == '(main)') {
+                    subcontext = null;
+                    checkin_type = 'strict';
+                }
+                else if (!is_context && !subcontext) {
+                    use_file_name = true;
+                    checkin_type = '';
+                }
+                var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
+
+
+
+
+
+                snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type});
             }
             progress.setStyle("display", "");
         }
@@ -2280,10 +2370,9 @@ spt.checkin.html5_checkin = function(files) {
         if (! has_error) {
             server.finish();
             spt.panel.refresh(top);
-            spt.info("Check-in succeeded.");
+            spt.info("Check-in finished.");
         }
 
-        //spt.app_busy.hide();
     }
 
     var upload_progress = function(evt) {
@@ -2308,8 +2397,23 @@ spt.checkin.html5_checkin = function(files) {
 var top = bvr.src_el.getParent(".spt_checkin_top");
 var el = top.getElement(".spt_checkin_content");
 var files = el.files;
-spt.checkin.html5_checkin(files);
-            '''
+
+var selected = spt.checkin.get_selected_items();
+var selected_files = [];
+
+// check in only the highlighted files uploaded
+for (var j=0; j < selected.length; j++){
+    for (var k=0; k < files.length; k++) {
+        var expr = new RegExp(files[k].name + '$')
+        if (selected[j].getAttribute('spt_path').test(expr)) {
+            selected_files.push(files[k]);
+            break;
+        }
+    }
+            
+}
+spt.checkin.html5_checkin(selected_files);
+        '''
         }
 
 
@@ -2471,34 +2575,7 @@ try {
     
     var has_error = false;
 
-    var _get_context = function(context, subcontext, is_context, file_path, use_file_name){
-        var this_context = context;
-        if (is_context)
-            return this_context;
-
-        if (subcontext) {
-
-            this_context = process + "/" + subcontext;
-        }
-        else if (use_file_name) {
-            file_path = file_path.replace(/\\\\/g, "/");
-            var this_sub_context = file_path.replace(bvr.sandbox_dir+"/", "");
-            //this_sub_context = file_path;
-            if (this_sub_context == file_path) {
-                // nothing was found so just use the filename
-                var parts = file_path.split(/[\\/\\\\]/);
-                var file_name = parts[parts.length-1];
-                this_context = process + "/" + file_name;
-            }
-            else {
-                this_context = process + "/" + this_sub_context;
-            }
-        }
-        else {
-            this_context = context;
-        }
-        return this_context
-    }
+ 
 
     // if there is a validation script, execute it
     // execute the validation trigger?
@@ -2627,7 +2704,7 @@ try {
                 use_file_name = true;
                 checkin_type = '';
             }
-            var this_context = _get_context(context, subcontext, is_context, file_paths[0], use_file_name);
+            var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_paths[0], use_file_name);
 
             if (transfer_mode == 'preallocate')
                 snapshot = server.add_directory(snapshot.code, file_paths[0], { mode: transfer_mode});
@@ -2677,7 +2754,7 @@ try {
 
                         var file_path = sub_file_paths[j];
 
-                        var this_context = _get_context(context, subcontext, is_context, file_path, use_file_name);
+                        var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
                         padding = 0;
 
                         spt.app_busy.show("Checking in ...", file_path)
@@ -2691,7 +2768,7 @@ try {
 
                 }
                 else {
-                    var this_context = _get_context(context, subcontext, is_context, file_path, use_file_name);
+                    var this_context =spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
                     padding = 0 ;
                     spt.app_busy.show("Checking in ...", file_path)
                     if (transfer_mode == 'preallocate')
@@ -2830,7 +2907,8 @@ else {
         progress.add_style("display: none")
         progress.add_class("spt_checkin_progress")
         progress.add_style("width: 0%")
-        progress.add_style("height: 10px")
+        progress.add_style("height: 8px")
+        progress.add_style("margin-top: 10px")
         progress.add_border()
         progress.add_color("background", "background")
 
@@ -3142,6 +3220,11 @@ class FileSelectorWdg(BaseRefreshWdg):
         div.add_style("width: auto")
         div.add_style("padding: 10px")
         div.add_attr("spt_search_key", my.search_key)
+        div.add_attr("spt_process", my.process)
+        context_options = my.kwargs.get("context_options")
+        subcontext_options = my.kwargs.get("subcontext_options")
+
+        div.add_attr("spt_subcontext_options", '|'.join(subcontext_options))
         div.add_attr("ondragenter", "return false")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.checkin.drop_files(event, this)")
@@ -4219,7 +4302,6 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             var search_keys = [];
             for (var i = 0; i < items.length; i++) {
                 var item = items[i];
-                console.log(item);
                 var search_key = item.search_type + '&code=' + item.search_code;
                 search_keys.push(search_key);
             }

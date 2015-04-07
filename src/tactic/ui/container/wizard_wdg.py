@@ -83,13 +83,30 @@ class WizardWdg(BaseRefreshWdg):
         inner.add("<br/>")
 
 
+        my.titles = my.kwargs.get("titles")
+        if isinstance(my.titles, basestring):
+            my.titles = my.titles.split("|")
+        if not my.titles:
+            my.titles = []
+
+
+
+
         views = my.kwargs.get("views")
         if views:
             from tactic.ui.panel import CustomLayoutWdg
             if isinstance(views, basestring):
                 views = views.split("|")
-            for view in views:
-                title = Common.get_display_title(view)
+
+            for i, view in enumerate(views):
+
+                if i < len(my.titles):
+                    title = my.titles[i]
+                else:
+                    title = widget.get_name()
+                    title = title.replace(".", " ")
+                    title = Common.get_display_title(title)
+
                 widget = CustomLayoutWdg(view=view)
                 my.add(widget, title)
 
@@ -146,10 +163,6 @@ class WizardWdg(BaseRefreshWdg):
         dots_div.add_style("margin: -28px auto 0px auto")
         div.add(dots_div)
 
-        titles = my.kwargs.get("titles")
-        if not titles:
-            titles = []
-
         left = 50
         width = 50
 
@@ -201,8 +214,8 @@ class WizardWdg(BaseRefreshWdg):
             name_div = DivWdg()
             dot_div.add(name_div)
 
-            if i < len(titles):
-                title = titles[i]
+            if i < len(my.titles):
+                title = my.titles[i]
             else:
                 title = widget.get_name()
                 title = title.replace(".", " ")
@@ -377,6 +390,7 @@ class WizardWdg(BaseRefreshWdg):
             if not submit_title:
                 submit_title = "Submit"
             submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
+            submit.add_class("spt_wizard_submit")
             submit.add_behavior( {
             'type': 'click_up',
             'command': command,

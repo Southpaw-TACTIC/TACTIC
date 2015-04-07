@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>17. Advanced Automation</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="TACTIC Setup" /><link rel="up" href="index.html" title="TACTIC Setup" /><link rel="prev" href="ar01s16.html" title="16. Advanced Configuration" /><link rel="next" href="ar01s18.html" title="18. Expression Language" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ar01s16.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s18.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_advanced_automation"></a>17. Advanced Automation</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_tactic_event_system_introduction"></a>17.1. TACTIC Event System Introduction</h3></div></div></div><p>The TACTIC Event System is built into the base transactional system in
+Tactic’s core. Every transaction which occurs in Tactic can fire an
+event which in turn, can be used to execute a trigger or notification.</p><p>These events can be incorporated to automate specific processes that are
+often repetitive. At the simplest level, there are interfaces that help
+prepare and configure these aspects but, it is good to understand how
+they work. Overall, there are 2 levels that these events can be
+configured. The first is using the predefined event options provided in
+the Project Workflow or Project Schema interfaces and the second in the
+low level database events.</p><p><span class="strong"><strong>Predefined Events</strong></span></p><p>The following list of events are the events provided in the Project
+Workflow interface. For more information in setting up Notifications and
+Triggers with this interface, please refer to <span class="strong"><strong>Project Automation -
+Triggers</strong></span> and <span class="strong"><strong>Project Automation - Notifications</strong></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>A task Status is Changed</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>When the status of a task is changed.
+Further options are provided allowing for selection.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>A new note is added</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>When a new note (sthpw/note) is added to the
+project.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>A task is assigned</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>When a task is assigned to a user.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Files are checked in</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>When files are checked in to an SObject.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Files are checked out</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>When files are checked out from an SObject.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Custom event</strong></span></p></td><td style="" align="left" valign="top"><p>Allows for calling of an event using the raw Database
+Events.</p></td></tr></tbody></table></div><p><span class="strong"><strong>Raw Database Events</strong></span></p><p>Below is the list of the database level events. These events are run
+regardless of how they are called (interface, api, external integration
+etc)</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>done</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a transaction completes</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>insert</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a Search Object has been inserted.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>update</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a Search Object has been updated.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>change</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a Search Object has changed. This combines
+the events insert, update and delete.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>retire</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a Search Object has been retired.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>delete</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a Search Object has been deleted.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>checkin</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a checkin occurs for a Search Object</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>checkout</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Executed each time a checkout occurs for a Search Object</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>timed</strong></span></p></td><td style="" align="left" valign="top"><p>Executed on a timed interval. This is only supported for
+triggers.</p></td></tr></tbody></table></div><p>For example, in a transaction where the status of a task is being
+changed, an association to this event can be made with the following
+notation:</p><pre class="screen">update|sthpw/task|assigned</pre><p>The notation can consist of 3 sections although only the event is
+required.</p><pre class="screen">&lt;Event&gt;|&lt;SType&gt;|&lt;Column&gt;</pre><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The raw database event.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>SType</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The Searchable Type (SType) the event is occurring for.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Column</strong></span></p></td><td style="" align="left" valign="top"><p>The Column that was changed in the SType.</p></td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_project_automation_triggers"></a>17.2. Project Automation - Triggers</h3></div></div></div><p>Triggers are events that are called upon a transaction to automate
+workflow. These triggers can be accessed within the Project Workflow
+view.</p><p><span class="strong"><strong>Admin Viwes → Project Admin → Project Workflow</strong></span></p><p><span class="inlinemediaobject"><img src="media/pipeline.png" alt="image" /></span></p><p>Each process in the pipeline can have their own triggers. Right clicking
+on a process and choosing <span class="strong"><strong>show notification/trigger</strong></span> option will open a
+tab to define a trigger for that specific process.</p><p><span class="inlinemediaobject"><img src="media/OpenTriggers.png" alt="image" /></span></p><p><span class="inlinemediaobject"><img src="media/TriggersTab.png" alt="image" /></span></p><p>The trigger tab will also display the assigned process. Clicking the
+insert button will open the trigger UI.</p><p><span class="inlinemediaobject"><img src="media/AddNewTrigger.png" alt="image" /></span></p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Title</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Title of the trigger.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Description</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Description of the trigger.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Unique Code</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Drop down list of trigger events. This event is where the
+trigger is called.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Action</strong></span></p></td><td style="" align="left" valign="top"><p>The action is what the event will</p></td></tr></tbody></table></div><p><span class="strong"><strong>EVENT</strong></span></p><p>The Events drop down list provides a wide range of different triggers.</p><p><span class="inlinemediaobject"><img src="media/Event.png" alt="image" /></span></p><p>Depending on the trigger the Event box may show additional options.</p><p><span class="strong"><strong>A new note is added</strong></span> - This Event will be called when a new note is
+inserted into the process.</p><p><span class="strong"><strong>A task status is changed</strong></span> - This event will be called when a status is
+changed. The event box also gives a additional option to choose specific
+status.</p><p><span class="inlinemediaobject"><img src="media/Event_TaskStatusIsChanged.png" alt="image" /></span></p><p><span class="strong"><strong>A task is assigned</strong></span> - This event will be called when any task in the
+specified process is assigned.</p><p><span class="strong"><strong>Files are checked in</strong></span> - This event will be called when there is a
+checkin to the specified trigger. This event also gives a additional
+option to choose what process the action will effect.</p><p><span class="inlinemediaobject"><img src="media/Event_FilesAreCheckedIn.png" alt="image" /></span></p><p><span class="strong"><strong>Files are checked out</strong></span>- This event will be called when there is a
+checkout to the specified trigger.</p><p><span class="strong"><strong>Cusom Event</strong></span> -</p><p><span class="inlinemediaobject"><img src="media/Event_CustomEvent.png" alt="image" /></span></p><p><span class="strong"><strong>ACTION</strong></span></p><p>The Action drop down list provides a series of predifined actions that
+work with the above events.</p><p><span class="inlinemediaobject"><img src="media/Action.png" alt="image" /></span></p><p><span class="strong"><strong>Send a notification</strong></span> - See project automation notification docs.</p><p><span class="strong"><strong>Update another task status</strong></span> - This action will update a task status.
+This action also opens additional options to update status of current
+and other process of the pipeline as well as the option of status.</p><p><span class="inlinemediaobject"><img src="media/Action_UpdateAnotherTaskStatus.png" alt="image" /></span></p><p><span class="strong"><strong>Create another task</strong></span> - This Action will create a task upon event. This
+action also opens additional options to choose from creating a task in
+current or next process.</p><p><span class="inlinemediaobject"><img src="media/Action_CreateAnotherTask.png" alt="image" /></span></p><p><span class="strong"><strong>Run python code</strong></span> - This Action will run python code upon event. The
+action box opens additional options to name and insert a python code.</p><p><span class="inlinemediaobject"><img src="media/Action_RunPythonCode.png" alt="image" /></span></p><p><span class="strong"><strong>Run python trigger</strong></span> - This Action will run python trigger upon event.
+The action box opens additional option to insert the name of the
+trigger. These can be custom written scripts that can be called from
+Tactic’s API.</p><p><span class="inlinemediaobject"><img src="media/Action_RunPythonTrigger.png" alt="image" /></span></p><p>When satisfied with the options set to run a trigger, the trigger must
+be saved in order to be applied. When the trigger is saved the title of
+the trigger will appear benieth the triggers panel.</p><p><span class="inlinemediaobject"><img src="media/save_trigger.png" alt="image" /></span></p><p>There are no limitations of how many triggers you can have. Each process
+can have multiple triggers applied.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_project_automation_notifications"></a>17.3. Project Automation - Notifications</h3></div></div></div><p><span class="strong"><strong>Description</strong></span></p><p>Notifications are sent to inform the user that a particular transaction
+or event has occurred.</p><p>They are stored in a notification_log which can be found under <span class="strong"><strong>Admin
+Views → Site Admin → Notifications</strong></span>.</p><p><span class="strong"><strong>Notifications.</strong></span></p><p>Notifications present information reported by transactions. They usually
+include what items are created or updated in addition to a description
+of the command. Below is an example of a notification:</p><p><span class="inlinemediaobject"><img src="media/notificationSobject.png" alt="image" /></span></p><p>With the mail server setting set up properly (set in the TACTIC Config
+file), TACTIC can send out email notifications to users.</p><p><span class="inlinemediaobject"><img src="media/notificationEmail.png" alt="image" /></span></p><p><span class="strong"><strong>Implementation</strong></span></p><p>There are 2 perspectives to work from when configuring notifications in
+TACTIC.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="strong"><strong>Project Workflow</strong></span> - Notifications can be set up per process in a
+pipeline which are used to automate the pipeline/workflow
+</li><li class="listitem">
+<span class="strong"><strong>Project Schema</strong></span> - Notifications can be set up at a simpler level
+where any of the Raw Database events can be used to trigger a
+notification regardless of process.
+</li></ul></div><p><span class="strong"><strong>Project Workflow</strong></span></p><p>In the Workflow Editor, right click on a process and choose <span class="strong"><strong>show
+notification/trigger</strong></span> to open a tab to define a trigger for that
+particular process.</p><p><span class="inlinemediaobject"><img src="media/3_project_automation_notifications_show_trigger.png" alt="image" /></span></p><p>This will open a new Triggers tab in the panel at the bottom for the
+assigned process.</p><p>Click the [+] button to insert a trigger. This will open the
+trigger/notification UI.</p><p><span class="inlinemediaobject"><img src="media/AddNewTrigger.png" alt="image" /></span></p><p>Notifications and Triggers work together in many ways. A notification is
+defined as an Action. To send a notification, an event must occur.</p><p>In the Action drop down list <span class="strong"><strong>Send a Notification</strong></span> must be selected.</p><p><span class="inlinemediaobject"><img src="media/Action.png" alt="image" /></span></p><p><span class="strong"><strong>Send a Notification</strong></span> - This action will send a notification. The action
+box will open additional options to insert a subject and message.</p><p>Below is an example of a notification being sent on the event when a
+task status is changed to review:</p><p><span class="inlinemediaobject"><img src="media/9_project_automation_notifications_email_template.png" alt="image" /></span></p><p>The <span class="strong"><strong>Mail To:</strong></span> and <span class="strong"><strong>Mail CC:</strong></span> input fields accepts the following types
+of input:</p><p><span class="strong"><strong>Email</strong></span> - Capability to add regular emails allows to send personal email
+addresses e.g. <a class="ulink" href="mailto:joe@my_email.com" target="_top">joe@my_email.com</a></p><p><span class="strong"><strong>Group</strong></span> - Capabilty to send to a group of users in TACTIC e.g.
+Supervisor</p><p><span class="strong"><strong>Expression</strong></span> - Capabilty to insert expressions that specifies a user in
+TACTIC. All expressions are identified by curly brackets "{}". e.g.
+{@SOBJECT(sthpw/login)}</p><p><span class="strong"><strong>Send a Notification</strong></span> - This action will send a notification. The action
+box will open additional options to insert a subject and message.</p><p>Below is an example which uses more expressions for a notification being
+sent whenever a task is assigned.</p><p><span class="inlinemediaobject"><img src="media/9b_project_automation_notifications_task_is_assigned.png" alt="image" /></span></p><p><span class="strong"><strong>Project Schema</strong></span></p><p>All notification configurations can be accessed through <span class="strong"><strong>Admin Views →
+Site Admin→ Notifications</strong></span></p><p><span class="inlinemediaobject"><img src="media/10_project_automation_notifications_no_process.png" alt="image" /></span></p><p>If there is no process specified, then the notification will be
+triggered regardless of process. e.g. during a snapshot or a checkin</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_notification_setup"></a>17.4. Advanced Notification Setup</h3></div></div></div><p>The notification view is located in the TACTIC Sidebar under:</p><p><span class="strong"><strong>Site Admin → Notifications</strong></span></p><p>This can also be accessed through the <span class="strong"><strong>Workflow Editor</strong></span>, by right
+clicking on a node and selecting from the context menu <span class="strong"><strong>Show
+Triggers/Notifications</strong></span>.</p><p>This view provides all the functionality required to set up the various
+types of notifications used to establish better production communication
+and instant status updates.</p><p><span class="inlinemediaobject"><img src="media/1_advanced_notification_setup_overview.png" alt="image" /></span></p><p><span class="strong"><strong>Insert Notifications</strong></span></p><p>To insert a new notification, select from the sidebar:</p><p><span class="strong"><strong>Site Admin → Notifications</strong></span></p><p>The following table explains the basic usage of each property.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The TACTIC event to execute the notification for</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Project Code</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The project code for the notification. This allows for
+filtering of notifications for a specific project</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The type of notification being sent. By default for
+notifications, this must be set to "email"</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Search Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>The search type attribute identifies the parent sType if
+the event is for a task, note, or snapshot. It used to be achived by
+adding a rule as in Example 2.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Mail_to</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>An expression of the users to mail to in the email (supports
+multiple lines of expressions and / or email addresses and names of
+groups of users made in TACTIC)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Mail_cc</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>An expression of the users to mail to in the email. It will
+appear in the cc category. (supports multiple lines of expressions and /
+or email addresses and groups)</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Mail_bcc</strong></span></p></td><td style="" align="left" valign="top"><p>An expression of the users to mail to in the email. It will
+appear in the bcc category. (supports multiple lines of expressions and
+/ or email addresses and groups)</p></td></tr></tbody></table></div><p><span class="strong"><strong>Note:</strong></span> The default is to email the person that causes the notification
+to fire through the event set up. To turn off this behavior, you can add
+an entry in Project Setting: key = email_to_sender , value = false.</p><p>Below are examples of what can be used in <span class="emphasis"><em>mail_to</em></span>, <span class="emphasis"><em>mail_cc</em></span>, or
+<span class="emphasis"><em>mail_bcc</em></span>:</p><p>For example, email the user <span class="emphasis"><em>admin</em></span> only:</p><pre class="screen">@SOBJECT(sthpw/login['login', 'admin'])</pre><p>For example, send to the user related to this sObject. If this is an
+event for task update, the email will be addressed to the assigned user:</p><pre class="screen">@SOBJECT(sobject.sthpw/login)</pre><p>If it is already a task for the event update|sthpw/task, which contains
+the assigned or supervisor attribute, the email will be addressed to
+both by just retrieving these attributes in two lines.</p><pre class="screen">@GET(sobject.assigned)
+@GET(sobject.supervisor)</pre><p>Let’s say you want something simpler and skip the use of task. If you
+have an sType called mystuff/manager that already contains an email
+address or comma separated email addresses in an attribute called email,
+you may want to email to the dedicated manager for a paricular shot.
+Assuming your shot sType mystuff/shot and mystuff/manager has a schema
+connection already, you can email them when updating your shot with the
+event update|mystuff/shot.</p><pre class="screen">@GET(sobject.mystuff/manager.email)</pre><p>If you want to email to the same manager David and a person named Carin
+defined in Users when updating any shots with the event
+update|mystuff/shot, there is no need to start off with the variable
+sobject representing the shot in transaction.</p><pre class="screen">@GET(mystuff/manager['first_name']['David'].email)
+@GET(sthpw/login['first_name']['Carin'].email)</pre><p>For example, send to the user related to this sObject as well as the
+user <span class="emphasis"><em>john</em></span>. If the event is insert|sthpw/note, it will be the person
+who enters the note. If the event is <span class="emphasis"><em>update|sthpw/task</em></span>, the person is
+the assignee of the task:</p><pre class="screen">@UNION(@SOBJECT(sthpw/login['login', 'john']), @SOBJECT(sobject.sthpw/login))</pre><p>To make these mail_to expressions more readable, put more than 1
+expression or email addresses on multiple lines. There is no need for
+@UNION. @GET can even be used to just get to the list of login names.</p><p>For example, to send to everyone in the supervisor group, the assignee
+of a task, to all the users in the <span class="strong"><strong>mangers</strong></span> group and the email address
+<a class="ulink" href="mailto:support@southpawtech.com" target="_top">support@southpawtech.com</a>, enter 3 lines under mail_to:</p><pre class="screen">@SOBJECT(sobject.sthpw/login)
+@GET(sthpw/login_in_group['login_group','supervisor'].login)
+managers
+support@southpawtech.com</pre><p><span class="strong"><strong>More on Expressions in Notifications</strong></span></p><p>The word "sobject" often appears in the <span class="emphasis"><em>Mail to:</em></span> column but not in
+Message or Subject. This is because the implementation allows sending
+notifications to users related to the current sObject or just about
+anyone not necessarily related to the current sObject. As illustrated
+above, @SOBJECT(sobject.sthpw/login) is the task assignee but the users
+under the group supervisor is not related to this task and so the
+keyword "sobject" is not used. In the Message area, to refer to the
+current sObject status (task status if the event is update|sthpw/task),
+just use an @GET(.status), as the sobject is always assumed to be in
+this context.</p><p><span class="strong"><strong>Task related notification</strong></span></p><p>To establish the relationship between the login search type and task
+search type, the following built-in schema line is used. It is not
+necessary to add it to the schema. It can be used as an example to
+create a custom search_type.</p><pre class="screen">&lt;connect to='sthpw/task' relationship='code' from_col='login' from='sthpw/login' to_col='assigned'/&gt;</pre><p><span class="strong"><strong>Note related notification</strong></span></p><p>To establish the relationship between the login search type and note
+search type, the following built-in schema line is used. It is not
+necessary to add it to the schema. It can be used as an example to
+create a custom search_type and to edit the schema.</p><pre class="screen">&lt;connect to='sthpw/note' relationship='code' from_col='login' from='sthpw/login' to_col='login'/&gt;</pre><p>Sending a notification to the person who just entered the note is not
+often used. Instead, an email handler can be used in this situation to
+send to the supervisor and assignee of the task under the same context.
+A built-in email handler is called "pyasm.command.NoteEmailHandler".
+Instead of entering it into an expression for <span class="emphasis"><em>mail_to</em></span>, enter it into
+the <span class="emphasis"><em>email_handler_class</em></span> field.</p><p><span class="strong"><strong>Email Test</strong></span></p><p><span class="inlinemediaobject"><img src="media/2_advanced_notification_email_test.png" alt="image" /></span></p><p>Once the fields <span class="emphasis"><em>event</em></span>, <span class="emphasis"><em>mail_to</em></span>, and <span class="emphasis"><em>message</em></span> are properly filled
+in, to test the email, click on the <span class="strong"><strong>Email Test</strong></span> button. It catches
+syntax errors or typos in expression in these fields as well as
+reporting any email server error if the service section of the TACTIC
+config file has not been properly filled in. Settings like firewall and
+TLS settings may also block an email from being sent out.</p><p><span class="strong"><strong>Example 1:</strong></span></p><p>In this example, the notification will be sent out each time a ticket is
+updated. It will also only send to users in the <span class="emphasis"><em>admin</em></span> and <span class="emphasis"><em>moderator</em></span>
+groups.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>update|support/ticket</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Description</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Sent when tickets are updated</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Subject</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="inlinemediaobject"><img src="media/multiline_message.png" alt="image" /></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Message</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>mail_to</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>admin , <a class="ulink" href="mailto:user@gmail" target="_top">user@gmail</a></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Rules</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Email Handler Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Project Code</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>support</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Type</strong></span></p></td><td style="" align="left" valign="top"><p>email</p></td></tr></tbody></table></div><p><span class="strong"><strong>Example 2:</strong></span></p><p>In this example, the notification will be sent out each time a
+shot-based note is updated. It will send to manager’s group and everyone
+assigned to the tasks of the shot. Since project_code is left empty,
+this works across all the projects in the system.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>insert|sthpw/note</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Description</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Sent when shot-based notes are added</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Subject</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>{$PROJECT} {@GET(parent.sequence_code)} - {@GET(parent.code)} {@GET(.process)}</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Message</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="inlinemediaobject"><img src="media/message_2.png" alt="image" /></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Rules</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="inlinemediaobject"><img src="media/rules.png" alt="image" /></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Email Handler Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Project Code</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>email</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>mail_to</strong></span></p></td><td style="" align="left" valign="top"><p><span class="inlinemediaobject"><img src="media/mail_to.png" alt="image" /></span></p></td></tr></tbody></table></div><p><span class="strong"><strong>Example 3:</strong></span></p><p>In this example, the notification will be sent out each time a note is
+added. It also allows users to have their own Email Message Template and
+preserve its html format.</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>insert|sthpw/note</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Description</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Sent when new note is added</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Subject</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>TACTIC: a new note has been added.</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Message</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="inlinemediaobject"><img src="media/message_3.png" alt="image" /></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Rules</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Email Handler Class</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Project Code</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>[multiblock cell omitted]</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Type</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>email</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>mail_to</strong></span></p></td><td style="" align="left" valign="top"><p>admin, <a class="ulink" href="mailto:user@gmail.com" target="_top">user@gmail.com</a></p></td></tr></tbody></table></div><p><span class="inlinemediaobject"><img src="media/3_advanced_notification_setup_overview.png" alt="Sample HTML Message" /></span></p><p><span class="strong"><strong>Notification Expressions</strong></span></p><p>TACTIC uses the TACTIC Expression Language to build dynamic Notification
+Subject and Message contents. This allows for each notification to be
+sent based on properties from the Search Objects it is being sent for.</p><p>In the simple example Subject below, the "id" property is used from the
+"ticket" search object.</p><pre class="screen">TACTIC Ticket {$GET(.id)} has been updated</pre><p>The expected results of this would be similar to the following:</p><p>"TACTIC Ticket 14 has been updated"</p><p><span class="strong"><strong>Example 1</strong></span></p><p>In essence, anything between the curly brackets "{}" is evaluated as an
+expression by TACTIC.</p><div class="blockquote"><blockquote class="blockquote"><p><span class="strong"><strong>Note</strong></span></p><p>For more information regarding TACTIC Expression Language please refer
+to the <span class="strong"><strong>TACTIC Expression Language</strong></span> docs</p></blockquote></div><p><span class="strong"><strong>Filtering Notifications</strong></span></p><p>TACTIC’s notification architecture is a rules-based system built using
+the trigger architecture. Every time a command is executed, TACTIC looks
+through the list of defined triggers (including notifications) for a
+match. Under the <span class="strong"><strong>Triggers</strong></span> view will be an entry for the EmailTrigger
+class that is registered under the "email" event. It is possible to
+create custom Email Trigger handlers in that view.</p><p>There are 3 main criteria used to filter out notifications:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="strong"><strong>group</strong></span>: Filters out notifications to be sent only to users in the
+included groups.
+</li><li class="listitem">
+<span class="strong"><strong>project</strong></span>: Filters out notifications so that only a certain project
+can fire the email trigger.
+</li><li class="listitem">
+<span class="strong"><strong>rules</strong></span>: Rules are an XML snippet which can finely control the
+conditions when an email trigger may be fired.
+</li></ul></div><p><span class="strong"><strong>Groups</strong></span></p><p>By planning groups to send notifications to, it allows for simple
+connections for deciphering which groups of users will receive
+notifications when the conditions of a particular notification rule are
+met. Once a notification has been created, it can be associated with any
+number of groups of users. All users in this group will then be sent a
+notification when the rule is triggered.</p><p>The Groups view can be found under:</p><p><span class="strong"><strong>Admin→Site Admin →Groups</strong></span></p><p>To specify a group to send a notification to, specify the group in the
+<span class="strong"><strong>mail_to</strong></span> column.</p><p><span class="strong"><strong>Project</strong></span></p><p>By setting the project in the project column of a Notification, TACTIC
+will only use the notification trigger for the chosen project.</p><p><span class="strong"><strong>Access Rules</strong></span></p><p>When a notification rule has passed all of the criteria, a message is
+constructed. Most email events occur after a command has been completed.
+The email handler then takes the information from the command and
+creates a default message to be sent to the appropriate people.</p><p>All rules are contained in groups. For notifications, there are a few
+predefined groups:</p><p><span class="strong"><strong>Example 1</strong></span></p><p>This rule group only allows tasks for prod/asset for the project
+sample3d to send out notification. Otherwise, it would send out
+notifications for tasks of all search types</p><pre class="screen">&lt;rules&gt;
+   &lt;rule&gt;@GET(.search_type)=='prod/asset?project=sample3d'&lt;/rule&gt;
+&lt;/rules&gt;</pre><p><span class="strong"><strong>Example 2</strong></span></p><p>This rule group makes use of a key/value pair of attributes: that is,
+when the attribute with the value of "key" is equal to "value", the rule
+is passed. In the example below, all SObjects containing the attribute
+"context" with the value "client" are triggered.</p><pre class="screen"> (deprecated)
+
+&lt;rules&gt;
+    &lt;rule group="SObject" key="context" value="client"/&gt;
+&lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(.context)=='client'&lt;/rule&gt;
+&lt;/rules&gt;</pre><p><span class="strong"><strong>Example 3</strong></span></p><p>For certain SObjects in TACTIC (like tasks), parent attributes can be
+used for constructing rules. The concept behind this is the same as
+group="sObject", but now we are referring to the parent of a task (for
+example, a 3D asset). This notification will only be sent if the task’s
+parent, a 3D asset, is categorized under the "prp" asset library.</p><pre class="screen">&lt;!-- DEPRICATED --&gt;
+&lt;rules&gt;
+    &lt;rule group='parent' key='asset_library' value='prp'/&gt;
+&lt;/rules&gt;</pre><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(prod/asset.asset_library)=='prp'&lt;rule&gt;
+&lt;/rules&gt;</pre><p><span class="strong"><strong>Example 4</strong></span></p><p>For notes in TACTIC, we may have 2 processes for notes (e.g. anim,
+anim_2) We can check if the process partially contains the word <span class="strong"><strong>anim</strong></span>
+by the following:</p><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;'anim' in @GET(.process)&lt;rule&gt;
+&lt;/rules&gt;</pre><p>Note: list comparisons like @GET(.process) in [<span class="emphasis"><em>anim</em></span>,<span class="emphasis"><em>anim_2</em></span>] are not
+supported</p><p><span class="strong"><strong>Example 5</strong></span></p><p>For a check-in notification in TACTIC, we can choose to send only if the
+is_current attribute is True for the event insert|sthpw/snapshot by the
+following:</p><pre class="screen">&lt;rules&gt;
+    &lt;rule&gt;@GET(.is_current)==True&lt;rule&gt;
+&lt;/rules&gt;</pre><p><span class="strong"><strong>Email Handler Class</strong></span></p><p>Each time a notification is executed, TACITC uses either the default
+email handler or it uses and email handler override defined by the Email
+Handler Class property for the notification.</p><p>The Email Handler Class digs deeply into the structure of the
+notifications using Python and the TACTIC client API. It is only needed
+for very specific rules which determine when a notification is sent.</p><p>An example override is shown below:</p><p><span class="strong"><strong>Email Hander Cls:</strong></span> sites.support.email.TicketEmailHandler</p><pre class="screen">__all__ = ['TicketEmailHandler']
+
+from pyasm.common import Environment, Xml, Date
+from pyasm.security import Login
+from pyasm.search import Search
+from pyasm.biz import GroupNotification, Pipeline, Task, Snapshot, File, Note
+
+
+class TicketEmailHandler(object):
+    '''Email sent when a ticket is updated'''
+
+    def __init__(my, notification, SObject, parent, command):
+        my.notification = notification
+        my.sobject = SObject
+        my.command = command
+        my.parent = parent
+
+    def check_rule(my):
+        '''determine whether an email should be sent'''
+        return True
+
+    def get_to(my):
+
+        ticket = my.sobject
+        user = ticket.get_value("login")
+        login = Login.get_by_login(user)
+        recipients = []
+        recipients.append(login)
+
+        return recipients
+
+
+    def get_cc(my):
+
+        admin = Login.get_by_login("admin")
+        recipients = []
+        recipients.append(admin)
+
+        return recipients
+
+
+    def get_subject(my):
+
+        ticket = my.sobject
+        title = "Ticket Number: "
+        id = ticket.get_value("id")
+
+        return "%s%s"  % (title, id)
+
+
+    def get_message(my):
+
+        ticket = my.sobject
+        id = ticket.get_value("id")
+        subject = ticket.get_value("subject")
+        summary = ticket.get_value("summary")
+        status = ticket.get_value("status")
+
+        msg = []
+        msg.append("Ticket: %s" % id)
+        msg.append("")
+        msg.append("Status: %s" % status)
+        msg.append("")
+        msg.append("subject: %s" % subject)
+        msg.append("Summary: %s" % summary)
+        msg.append("")
+
+        return "\n".join(msg)</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_event_usage"></a>17.5. Advanced Event Usage</h3></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_advanced_trigger_setup"></a>17.6. Advanced Trigger Setup</h3></div></div></div><p>Examples of how to set up a client side trigger.</p><p>Different types of database events cause the client trigger to be fired.</p><p>These include the following events: accept, update.</p><p><span class="strong"><strong>Example 1: Simple Javascript Alert</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Open the Client Trigger view under: Admin Views → Project
+Essentials → *Client*Triggers
+</li><li class="listitem"><p class="simpara">
+Add the following new entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+Open the Script Editor (keyboard short-cut is "9") and create the
+following entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>log.critical(input)</p></td></tr></tbody></table></div></li><li class="listitem">
+Go to the view of the sType my_project/my_sType.
+</li><li class="listitem">
+Refresh the tab if the view is stale.
+</li><li class="listitem"><p class="simpara">
+Modify an entry and click off the field. The changed cell should
+turn green.
+</p><p class="simpara">Notice in the web browser Javascript console output, the contents of the
+input object is displayed. You can access useful information in there
+like search key by specifying "input.search_key".</p></li></ol></div><p><span class="strong"><strong>Example 2: Refresh the row after it is saved</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Open the Client Trigger view under: Admin Views → Project
+Essentials → *Client*Triggers
+</li><li class="listitem"><p class="simpara">
+Add the following new entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>update</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType2</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+Open the Script Editor (keyboard short-cut is "9") and create the
+following entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script2</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div><p class="simpara">log.critical(input); if (input.kwargs) { var search_key =
+input.kwargs.search_keys[0]; var update_data = input.kwargs.update_data;
+var update_dict = eval(input.kwargs.update_data); var prev_description =
+update_dict[0]["description"]; var server = TacticServerStub.get(); //
+Append the word <span class="emphasis"><em>Hello</em></span> to the description. var data = {<span class="emphasis"><em>description</em></span>:
+prev_description + ' Hello'}; server.update(search_key, data); }
+4.  Go to the view of the sType my_project/my_sType2.
+5.  Refresh the tab if the view is stale.
+6.  Modify an entry’s description field. Try typing in "This is test"
+and save.</p><p class="simpara">Notice that after the entry is saved, and when you refresh the view, the
+description has the word "Hello" appended to it.</p></li></ol></div><p><span class="strong"><strong>Example 3: Automatically Put all Field Text into CAPS after Editing
+(When Row Turns Green)</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Open the Client Trigger view under: Admin Views → Project
+Essentials → *Client*Triggers
+</li><li class="listitem"><p class="simpara">
+Add the following new entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>accept</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType3</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+Open the Script Editor (keyboard short-cut is "9") and create the
+following entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div></li></ol></div><p>TacticServerStub.get(); var column_name = input.element_name; // only
+affect Name column if (column_name == "name") { var column_data =
+input.new_value; column_data = column_data.toUpperCase();
+input.cell.setAttribute(<span class="emphasis"><em>spt_input_value</em></span>, column_data);
+spt.table.set_display(input.cell, column_data, <span class="emphasis"><em>text</em></span>); } }catch( e ){
+spt.alert(spt.exception.handler( e )); }
+4.  Go to the view of the sType my_project/my_sType3.
+5.  Refresh the tab if the view is stale.
+6.  From the code example provided, modify an entry’s name field. Change
+the text in the name field to "Tester" and the row should turn green. Be
+sure to save the change.</p><p>+
+Notice that after the entry is saved, the text in the name field will
+now appear as "TESTER".</p><p><span class="strong"><strong>Example 4: Look at Name Values in Table through a Lookahead and Pop Up
+a Form with Details</strong></span></p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Open the Client Trigger view under: Admin Views → Project
+Essentials → *Client*Triggers
+</li><li class="listitem"><p class="simpara">
+Add the following new entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Event</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>lookahead</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>my_project/my_sType4</p></td><td style="" align="left" valign="top"><p><span class="strong"><strong>Callback</strong></span></p></td></tr></tbody></table></div></li><li class="listitem"><p class="simpara">
+Open the Script Editor (keyboard short-cut is "9") and create the
+following entry:
+</p><div class="informaltable"><table cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="strong"><strong>Script Path</strong></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>my_script_folder/my_client_side_script4</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>script type</em></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>javascript</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="emphasis"><em>code</em></span></p></td><td style="" align="left" valign="top"><p>(see code below)</p></td></tr></tbody></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><h3 class="title">Note</h3><p>The code below is an example written to look for names of people
+in an sType table and pop up a form with details about the person. The
+details form would be created in the Custom Layout Editor. In the
+example, the view is called my_project.name_detail.popup. Ensure that
+all values that should be displayed as part of the details in the form
+are also pulled from the sType table i.e. age.</p></div><p class="simpara">try{ server = TacticServerStub.get(); var class_name =
+<span class="emphasis"><em>tactic.ui.panel.CustomLayoutWdg</em></span>; var search_type =
+<span class="emphasis"><em>my_project/my_sType4</em></span>; var name = input.display; var name_id =
+input.value; if (!name) input.value = null; var form_table =
+input.firing_element.getParent(".spt_form_table"); var last_input_name =
+form_table.getElement(<span class="emphasis"><em>.spt_last_input_name</em></span>); var last_names =
+last_input_name.value.split(<span class="emphasis"><em>||</em></span>); // Check if the current name input is
+what was typed in last var reused_name = false; // Check if the current
+name is unknown in my_sType4 table var unknown_name = false; if
+(last_names.length == 2) { reused_name = last_names[0] == name;
+unknown_name = (last_names[1] == name_id )&amp;&amp; (last_names[0] != name); }
+if (!name || name_id == <span class="emphasis"><em>' || name_id === null || reused_name ||
+unknown_name) { } else{ var kwargs = { 'view</em></span>:
+<span class="emphasis"><em>my_project.name_detail.popup</em></span>, <span class="emphasis"><em>name_id</em></span>: name_id }; // Load the popup
+var pop = spt.panel.load_popup("Name Details", class_name, kwargs);
+last_input_name.value = name + <span class="emphasis"><em>||</em></span> + name_id; pop.activator =
+form_table; } }catch( e ){ spt.alert(spt.exception.handler( e )); }
+4.  In order to have a lookahead that will look at the my_sType4 table,
+a lookahead must be built within a custom view i.e.
+my_views/lookahead_form in the Custom Layout Editor (this will be a
+different view from the aforementioned name details form). An example of
+the code required to create this view is shown below.</p><p class="simpara"><span class="emphasis"><em>HTML Tab in Custom Layout Editor for New View</em></span>&lt;div&gt; &lt;div&gt; &lt;% name_key =
+kwargs.get("search_key") or "" %&gt; &lt;/div&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt;Name&lt;/td&gt; &lt;td&gt;
+&lt;element name="name"&gt; &lt;display
+class="tactic.ui.input.LookAheadTextInputWdg"&gt;
+&lt;search_type&gt;my_project/my_sType4&lt;/search_type&gt; &lt;column&gt;name&lt;/column&gt;
+&lt;search_key&gt;${name_key}&lt;/search_key&gt;
+&lt;filter_search_type&gt;metadata/Title&lt;/filter_search_type&gt;
+&lt;value_column&gt;id&lt;/value_column&gt;
+&lt;current_value_column&gt;id&lt;/current_value_column&gt; &lt;/display&gt; &lt;/element&gt;
+&lt;/td&gt; &lt;/tr&gt; &lt;/table&gt; &lt;/div&gt;
+5.  Go to the my_views/lookahead_form in Custom Layout Editor and click
+on the "Test" button to test the fucntionality of the view. The view can
+also be added to the sidebar.
+6.  In the view, begin typing a name. A list of different name values
+from the my_sType4 table should appear in a drop down from the
+lookahead.
+7.  Clicking on one of the values in the drop down of the lookahead will
+then pop up the my_project.name_detail.popup with all of the values from
+the external system.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_versionless_checkin"></a>17.7. Versionless Checkin</h3></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s16.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

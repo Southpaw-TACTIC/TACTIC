@@ -9,13 +9,13 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg','SecurityBuilder']
 
 
 
 import tacticenv
 
-from pyasm.common import Environment, Common, Xml, jsonloads, Container
+from pyasm.common import Environment, Common, Xml, jsonloads, Container, TacticException
 from pyasm.search import Search, SearchType
 from pyasm.security import LoginGroup, LoginInGroup
 from pyasm.biz import Project
@@ -31,7 +31,6 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 from tactic.ui.panel import SideBarBookmarkMenuWdg
-
 
 class UserAssignWdg(BaseRefreshWdg):
 
@@ -229,12 +228,29 @@ class GroupAssignWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_groups_top");
             var add = top.getElement(".spt_groups_add");
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
             spt.toggle_show_hide(add);
+            spt.toggle_show_hide(checkbox);
+            spt.toggle_show_hide(checkbox_label);
             '''
         } )
 
+        checkbox = CheckboxWdg("Include Project Name")
+        checkbox.set_option("value", "true")
+        checkbox.add_class("spt_include_project_checkbox")
+        checkbox.add_style("display: none")
+        checkbox.add_style("margin-left: 30px")
+        checkbox.set_checked()
+        checkbox_label = SpanWdg(" Project specific")
+        checkbox_label.add_style("display: none")
+        checkbox_label.add_class("spt_include_project_checkbox_label")
+        checkbox.add(checkbox_label)
+        top.add(checkbox)
 
-        action_button = ActionButtonWdg(title="Save >>")
+
+        action_button = ActionButtonWdg(title="Save")
+        action_button.add_style("margin-right: 10px")
         top.add(action_button)
         action_button.add_style("float: right")
         action_button.add_behavior( {
@@ -246,9 +262,13 @@ class GroupAssignWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_groups_top");
 
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checked = checkbox.checked;
+
             var values = spt.api.Utility.get_input_values(top);
             var kwargs = {
-                values: values
+                "values": values,
+                "checked": checked
             }
 
             var cmd = 'tactic.ui.startup.GroupAssignCbk';
@@ -335,7 +355,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         title = DivWdg()
         div.add(title)
-        title.add("Add New Groups: ")
+        title.add(" Add New Groups: ")
         title.add_color("background", "background3")
         title.add_style("padding: 8px")
         title.add_style("margin: -5px -5px 10px -5px")
@@ -412,18 +432,62 @@ class GroupAssignCbk(Command):
             # make sure the group doesn't already exist
             #login_group = LoginGroup.get_by_login_group(new_group)
 
+            project_included = False
+            user_defined_project_code = ""
+            original_new_group = new_group
+            is_project_specific = False
+            if my.kwargs.get("checked") in [True, "true", "True"]:
+                is_project_specific = True
+
             if new_group.find("/") == -1:
                 title = new_group
                 new_group = "%s/%s" % (project_code, new_group)
             else:
                 parts = new_group.split("/")
                 title = parts[1]
+                user_defined_project_code = parts[0]
+                project_included = True
 
             new_group = Common.get_filesystem_name(new_group)
 
             group = SearchType.create("sthpw/login_group")
-            group.set_value("login_group", new_group)
-            group.set_value("project_code", project_code)
+
+            # the following sections contains the 4 cases possible when creating a new group
+            # through the popup
+            
+            # if the input is (project/name) and (not project specific)
+            if not is_project_specific and project_included:
+                
+                # Raise exception because it's contradictory data
+                raise TacticException('''You've given a project code while declaring 
+                    the group not project specific. You can either not use the format 
+                    "project_code/group_name", or check the "Project specific" checkbox.''')
+
+            # if the input is (project/name) and (project specific)
+            elif is_project_specific and project_included:
+
+                # first check is the user_defined_project_code is actually a project
+                # if it is, then set that as the project code. If not, don't set anything
+
+                user_defined_project = Project.get_by_code(user_defined_project_code)
+
+                if user_defined_project:
+                    group.set_value("project_code", user_defined_project_code)
+                else:
+                    raise TacticException('''The project code that you've given doesn't exist.
+                        Please choose an existing project code. Note: the format is
+                        "project_code/group_name".''')
+                group.set_value("login_group", original_new_group)
+
+            # if the input is (name) and (not project specific)
+            elif not is_project_specific and not project_included:
+                group.set_value("login_group", title)
+
+            # if the input is (name) and (project specific)
+            else:
+                group.set_value("project_code", project_code)
+                group.set_value("login_group", new_group)
+
             group.set_value("description", title)
             group.commit()
 
@@ -515,7 +579,7 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 140px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("2px 2px 2px 2px")
+        #section_wdg.set_box_shadow("2px 2px 2px 2px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -525,7 +589,7 @@ class SecurityWdg(BaseRefreshWdg):
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("text-align: center")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -10)
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -537,13 +601,14 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 1px 1px #999");
+        bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
         '''
         } )
+
         section_wdg.add_behavior( {
         'type': 'mouseout',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "2px 2px 2px 2px #999");
+        bvr.src_el.setStyle("box-shadow", "");
         ''',
         } )
 
@@ -590,16 +655,14 @@ class SecurityWdg(BaseRefreshWdg):
         top.add(title)
 
         from tactic.ui.widget import TitleWdg
-        subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
-        top.add(subtitle)
-
-
+        #subtitle = TitleWdg(name_of_title='Security Tools',help_alias='manage-security')
+        #top.add(subtitle)
 
         title.add_style("font-size: 18px")
         title.add_style("font-weight: bold")
         title.add_style("text-align: center")
         title.add_style("padding: 10px")
-        title.add_style("margin: -10px -10px 0px -10px")
+        title.add_style("margin: -10px -10px 10px -10px")
         title.add_gradient("background", "background3", 5, -10)
 
 
@@ -621,7 +684,8 @@ class SecurityWdg(BaseRefreshWdg):
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
-        #    var size = $(window).getSize();
+        #    var size = bvr.src_el.getParent().getSize();
+        #    alert(size.x);
         #    bvr.src_el.setStyle("width", size.x);
         #    '''
         #} )
@@ -891,7 +955,8 @@ class SecurityGroupListWdg(BaseRefreshWdg):
         layout = ViewPanelWdg(
             search_type='sthpw/login_group',
             view='startup',
-            simple_search_view='simple_search'
+            simple_search_view='simple_search',
+            expand_on_load=True,
         )
         top.add(layout)
 
@@ -1275,9 +1340,9 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        save_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
-        button_row.add(save_button)
-        save_button.add_behavior( {
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
+        button_row.add(refresh_button)
+        refresh_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_security_top");
@@ -1317,7 +1382,8 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             #show_select=False,
             config_xml=config_xml,
             save_class_name=my.get_save_cbk(),
-            init_load_num = -1
+            init_load_num = -1,
+            expand_on_load=True,
 
         )
         layout.set_sobjects(sobjects)
@@ -1426,6 +1492,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
     def get_sobjects(my, group_names):
         # get the project sobjects
         search = Search("sthpw/login")
+        search.add_filters("code", ['admin'], op='not in')
 
         keyword = my.get_value('keyword')
         if keyword:
@@ -1471,6 +1538,7 @@ class UserSecurityWdg(ProjectSecurityWdg):
             for group_name in group_names:
 
                 login = sobject.get_value("login")
+
                 data = group_data.get(group_name)
                 is_in_group = False
                 if data:

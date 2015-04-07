@@ -17,7 +17,7 @@
     <element name="code"/>
     <element name="description"/>
 
-    <element name="manifest_hidden" title='Manifest' width='1%'>
+    <element name="manifest_hidden" title='Manifest'>
       <display class='HiddenRowToggleWdg'>
         <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
         <search_type>sthpw/plugin</search_type>
@@ -103,13 +103,13 @@
     <element name="code"/>
     <element name="version"/>
     <element name="description"/>
-    <element name="manifest_hidden" width='1%'/>
-    <element name="drop_zone" width='1%'/>
-    <element name="create" width='1%'/>
+    <element name="manifest_hidden"/>
+    <element name="drop_zone"/>
+    <element name="create"/>
     <!--
-    <element name="download" width='1%'/>
+    <element name="download"/>
     -->
-    <element name="uninstall" width='1%'/>
+    <element name="uninstall"/>
 </table>
 
 

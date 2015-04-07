@@ -147,7 +147,7 @@ class PageHeaderWdg(Widget):
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(title='My Account', icon=IconWdg.USER, show_arrow=True)
+        button = SingleButtonWdg(title='My Account', icon="BS_USER", show_arrow=True)
         button_div = DivWdg(button)
         button_div.add_style("margin-top: -5px")
         button.add_attr('spt_nudge_menu_horiz', '-80')
@@ -364,7 +364,8 @@ class ProjectSelectWdg(BaseRefreshWdg):
             widget.add_style("float: right")
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
+        #button = SingleButtonWdg(title='Open Project', icon=IconWdg.PROJECT, show_arrow=True)
+        button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
         widget.add(button)
 
 
@@ -392,8 +393,15 @@ class ProjectSelectWdg(BaseRefreshWdg):
         menus.append(menu)
         menu.set_allow_icons(False)
 
+        show_create = my.kwargs.get("show_create")
+        if show_create in [False, 'false']:
+            show_create = False
+        else:
+            show_create = True
+
+
         security = Environment.get_security()
-        if security.check_access("builtin", "view_site_admin", "allow", default="deny") or security.check_access("builtin", "create_projects", "allow", default="deny"):
+        if show_create and (security.check_access("builtin", "view_site_admin", "allow", default="deny") or security.check_access("builtin", "create_projects", "allow", default="deny")):
             menu_item = MenuItem(type='title', label='Project Action')
             menu.add(menu_item)
 
@@ -820,7 +828,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
           
           
             var filename = file.name;
-            filename = spt.path.get_filesystem_name(filename);
+            /*filename = spt.path.get_filesystem_name(filename);*/
             var kwargs = {
                 ticket: ticket,
                 filename: filename

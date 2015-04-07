@@ -523,8 +523,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             # This attempts to display all search types, but it causes problems
             # because it is the default and if any of the above kwargs is
             # missing, it leads to misleading results.  Disabling for now
+            #else:
+            #    raise Exception("No search_key or search_type/s specified")
             else:
-                raise Exception("No search_key or search_type/s specified")
+                search_types = []
+                my.sobjects = []
+                parent_ids = []
 
 
         else:

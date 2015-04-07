@@ -480,6 +480,8 @@ class Search(Base):
         the Client API, for example.'''
 
         if isinstance(filters, basestring):
+            filters =  filters.replace("&gt;", ">")
+            filters =  filters.replace("&lt;", "<")
             filters = jsonloads(filters)
 
         for filter in filters:
@@ -527,13 +529,17 @@ class Search(Base):
                     my.add_filters(name, value, table=table)
             elif len(filter) == 3:
                 name, op, value = filter
+
+                op = op.replace("lt", "<")
+                op = op.replace("gt", ">")
+
                 table = ""
                 if name.find(".") != -1:
                     parts = name.split(".")
                     table = parts[0]
                     name = parts[1]
 
-                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on')
+                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #my.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
                     values =  value.split('|')
@@ -542,6 +548,9 @@ class Search(Base):
                     my.add_filters(name, values, op=op, table=table)
                 elif op in ['EQ','NEQ','EQI','NEQI']:
                     my.add_regex_filter(name, value, op)
+                elif op in ['@@']:
+                    value = value.replace('"', "'")
+                    my.add_text_search_filter(name, value, table=table)
 
                 else:
                     if op == 'is after':
@@ -615,6 +624,9 @@ class Search(Base):
         if not parent:
             my.add_id_filter(0)
             return
+
+        if isinstance(parent, basestring):
+            parent = Search.get_by_search_key(parent)
 
         #parent_search_type = parent.get_base_search_type()
         #search_type = my.get_base_search_type()
@@ -3566,7 +3578,7 @@ class SObject(object):
                         value = SPTDate.add_gmt_timezone(value)
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
-                    value = value.strftime('%Y-%m-%d %H:%M:%S %Z')
+                    value = value.strftime('%Y-%m-%d %H:%M:%S %z')
                 changed = True
 
             if changed:
@@ -4237,12 +4249,13 @@ class SObject(object):
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
         '''
+        security = Environment.get_security()
+        base_search_type = my.get_base_search_type()
+
         id = my.get_id()
         if id == -1:
             return
 
-        security = Environment.get_security()
-        base_search_type = my.get_base_search_type()
 
         current_project_code = my.get_project_code()
         
@@ -5535,7 +5548,7 @@ class SearchType(SObject):
         return title
 
 
-    def get_id_col(my):
+    def get_search_type_id_col(my):
         id_col = my.data.get("id_column")
         if not id_col:
             return "id"
@@ -5543,12 +5556,14 @@ class SearchType(SObject):
             return id_col
 
 
-    def get_code_col(my):
+    def get_search_type_code_col(my):
         id_col = my.data.get("code_column")
         if not code_col:
             return "code"
         else:
             return code_col
+
+
 
 
     def get_retire_col(my):
