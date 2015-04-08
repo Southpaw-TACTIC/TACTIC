@@ -18,6 +18,11 @@ TacticServerStub = function() {
     this.server_name = null;
     this.project = null;
 
+    this.set_transaction_ticket = function(ticket) {
+        this.transaction_ticket = ticket;
+    }
+
+
     this.set_ticket = function(login_ticket) {
         this.login_ticket = login_ticket;
         //this.transaction_ticket = login_ticket;

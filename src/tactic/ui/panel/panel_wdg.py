@@ -3213,8 +3213,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = my.kwargs.get("title_expr")
             kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
             kwargs['overlay_color'] = my.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
