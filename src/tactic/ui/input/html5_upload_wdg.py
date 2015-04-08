@@ -80,7 +80,7 @@ spt.html5upload = {};
 spt.html5upload.form = $(bvr.form_id);
 spt.html5upload.files = [];
 spt.html5upload.events = {};
-
+spt.html5upload.ticket;
 
 spt.html5upload.set_form = function(form) {
     if (!form) {
@@ -178,7 +178,7 @@ spt.html5upload.clear = function() {
     var event_name = 'select_file';
 
     spt.html5upload.events[event_name] = null;
-    
+    spt.html5upload.ticket = null; 
 }
 
 
@@ -373,7 +373,7 @@ class UploadButtonWdg(BaseRefreshWdg):
         if not upload_progress:
             upload_progress = '''
             var percent = Math.round(evt.loaded * 100 / evt.total);
-            spt.app_busy.show("Uploading ["+percent+"%% complete]");
+            spt.app_busy.show("Uploading ["+percent+"% complete]");
             '''
 
         reader_load = my.kwargs.get("reader_load")
@@ -426,11 +426,15 @@ class UploadButtonWdg(BaseRefreshWdg):
                   reader_load: reader_load,
                   upload_start: upload_start,
                   upload_complete: upload_complete,
-                  upload_progress: upload_progress 
+                  upload_progress: upload_progress
                 };
             if (bvr.ticket)
                upload_file_kwargs['ticket'] = bvr.ticket; 
+            else if (spt.html5upload.ticket) {
                 
+               upload_file_kwargs['ticket'] = spt.html5upload.ticket; 
+            }
+
 
             var onchange = function () {
                 %s;
