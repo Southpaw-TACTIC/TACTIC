@@ -642,10 +642,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
         if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
-<<<<<<< HEAD
-=======
-            #print "parent_key: ", parent_key
->>>>>>> 0fb2cea62ff1d0621e93f7f9314f7148164c743b
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []

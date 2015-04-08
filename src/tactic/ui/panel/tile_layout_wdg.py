@@ -721,7 +721,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'border_color': border_color,
                 'cbjs_action': '''
                 
-                console.log("SK " + bvr.search_key)
                 spt.thumb = {};
 
                 spt.thumb.background_enter = function(evt, el) {
@@ -851,11 +850,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 var loadingImage = loadImage(
                                     file,
                                     function (img) {
-<<<<<<< HEAD
                                         img.setStyle("width", "100%");
                                         img.setStyle("height", "");
-=======
->>>>>>> 0fb2cea62ff1d0621e93f7f9314f7148164c743b
                                         thumb_el.innerHTML = "";
                                         thumb_el.appendChild(img);
                                     },
@@ -881,10 +877,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
              
                         }
-<<<<<<< HEAD
-=======
                         spt.notify.show_message("Check-in completed for " + search_key);
->>>>>>> 0fb2cea62ff1d0621e93f7f9314f7148164c743b
                     }
                     spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes)
 
