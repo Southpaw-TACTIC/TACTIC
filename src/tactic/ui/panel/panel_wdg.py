@@ -3231,6 +3231,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
         elif layout == 'fast_table':
+            kwargs['height'] = my.kwargs.get("height")
             kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
@@ -3245,6 +3246,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 
         elif layout == 'card':
+            kwargs['height'] = my.kwargs.get("height")
             kwargs['preview_width'] = my.kwargs.get("preview_width")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
