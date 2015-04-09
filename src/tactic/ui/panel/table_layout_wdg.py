@@ -790,20 +790,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             h_scroll.add(scroll)
             height = my.kwargs.get("height")
-            if not height:
-                height = "500px"
-            scroll.add_style("height: %s" % height)
+            if height:
+                scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            """
-            scroll.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                new Scrollable(bvr.src_el);
-                '''
-                } )
-            """
+            if not height:
+                # set to browser height
+                scroll.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    var y = window.getSize().y;
+                    bvr.src_el.setStyle('height', y);
+                    '''
+                    } )
 
 
             table = my.table
