@@ -2948,6 +2948,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var do_initial_search = target.getAttribute("spt_do_initial_search");
     var init_load_num = target.getAttribute("spt_init_load_num");
     var mode = target.getAttribute("spt_mode");
+    var height = target.getAttribute("spt_height");
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -3018,6 +3019,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'ingest_data_view': ingest_data_view,
         'init_load_num': init_load_num,
         'mode': mode,
+        'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
     }
