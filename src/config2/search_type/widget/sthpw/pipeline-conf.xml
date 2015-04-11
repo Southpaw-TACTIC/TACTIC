@@ -156,15 +156,15 @@
             <column>search_type</column>
         </action>
     </element>
-<!--
     <element name="pipeline">
         <display class="pyasm.widget.TextAreaWdg">
           <cols>75</cols>
           <rows>30</rows>
       </display>
-        <action class="pyasm.command.XmlAction"/>
+        <action class="pyasm.command.XmlAction">
+            <column>pipeline</column>
+        </action>
     </element>
--->
     <element name="project_code">
         <display class="MultiSelectWdg">
             <query>sthpw/project|code|code</query>
