@@ -375,10 +375,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # get all the attributes
             if element_name and element_name != "None":
                 attrs = my.config.get_element_attributes(element_name)
+                widget.set_attributes(attrs)
             else:
                 attrs = {}
             
             my.attributes.append(attrs)
+
+
             # defined access for this view
             def_default_access = attrs.get('access')
             if not def_default_access:

@@ -76,6 +76,8 @@ class BaseTableElementWdg(HtmlElement):
         # FIXME: this should really be put in with  list of attrs
         my.width = 0
         my.view_attributes = {}
+        my.attributes = {}
+
         my.state = {}
 
         my.generator_element = None
@@ -345,6 +347,10 @@ class BaseTableElementWdg(HtmlElement):
         else:
             my.parent_wdg.aux_data.insert(idx, new_dict)
 
+
+    def set_attributes(my, attrs):
+        '''set attributes dict like access, width, or edit'''
+        my.attributes = attrs
 
     def handle_tr(my, tr):
         pass
