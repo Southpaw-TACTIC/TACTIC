@@ -547,6 +547,9 @@ class FormatElementWdg(SimpleTableElementWdg):
             div.add_class("spt_boolean_top")
             from pyasm.widget import CheckboxWdg
             checkbox = CheckboxWdg(my.get_name())
+            if my.attributes.get('edit') == 'false':
+                checkbox.set_option('disabled','disabled')
+
             checkbox.set_option("value", "true")
             if value:
                 checkbox.set_checked()

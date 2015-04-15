@@ -895,7 +895,10 @@ class CheckboxWdg(BaseInputWdg):
 
         my.add_style("width", "16px", override=False)
         my.add_style("height", "16px", override=False)
-        
+
+        if my.is_read_only():
+            my.set_attr('disabled', 'disabled')
+
         if len(values) == 1:
             # skip boolean
             value = values[0]
