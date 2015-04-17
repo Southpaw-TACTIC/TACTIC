@@ -27,19 +27,33 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
     ARGS_KEYS = {
     'tab_element_names': {
         "description": "List of element names that will be in the tab",
-        'category': 'Options'
+        'category': 'Options',
+        'order': 1
+
     },
     'use_parent': {
         'description': 'Display the parent of this sobject for the detail',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'category': 'Options'
+        'category': 'Options',
+        'order': 2
+    },
+    'show_task_process': {
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 3
     }
+
     }
  
     def __init__(my, **kwargs):
         my.widget = None
         super(SObjectDetailElementWdg, my).__init__(**kwargs)
+
+    def init(my):
+        my.show_task_process = my.kwargs.get('show_task_process')
 
     def set_widget(my, widget):
         my.widget = widget
@@ -87,6 +101,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         'search_key': my.search_key,
         'use_parent': use_parent,
         'tab_element_names': tab_element_names,
+        'show_task_process': my.show_task_process,
         'code': code,
         'name': name,
         'cbjs_action': '''
@@ -96,7 +111,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
             search_key: bvr.search_key,
             use_parent: bvr.use_parent,
             tab_element_names: bvr.tab_element_names,
-
+            show_task_process: bvr.show_task_process
         };
 
 

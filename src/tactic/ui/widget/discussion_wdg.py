@@ -108,7 +108,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
     },
 
     'show_task_process': {
-        'description': 'Determine if Add note widget only shows the existing task processes',
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
         'category': 'Options',
         'type': 'SelectWdg',
         'values': 'true|false',
