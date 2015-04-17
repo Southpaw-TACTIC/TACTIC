@@ -3219,6 +3219,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['overlay_color'] = my.kwargs.get("overlay_color")
             kwargs['allow_drag'] = my.kwargs.get("allow_drag")
             kwargs['upload_mode'] = my.kwargs.get("upload_mode")
+            kwargs['process'] = my.kwargs.get("process")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
