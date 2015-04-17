@@ -34,10 +34,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
     ARGS_KEYS = {
     'tab_element_names': {
         "description": "List of element names that will be in the tab",
+        'category': 'Options',
+        'type': 'TextWdg',
+        'order': 1
+    },
+    'show_task_process': {
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 2
     }
+
     }
 
 
+    def init(my):
+        my.show_task_process = my.kwargs.get('show_task_process')
 
     def get_title_wdg(my):
 
@@ -213,6 +226,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             td.add(sobject_info_wdg)
             td.add_style("vertical-align: top")
             td.add_style("overflow: hidden")
+            td.add_style("width: 30vw")
 
 
         # right
@@ -232,7 +246,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         notes_div = DivWdg()
         td.add(notes_div)
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False, show_note_expand=False)
+        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False, show_note_expand=False, show_task_process=my.show_task_process)
         notes_div.add(discussion_wdg)
         notes_div.add_style("min-width: 300px")
         notes_div.add_style("height: 200")
