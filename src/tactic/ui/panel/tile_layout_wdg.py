@@ -840,7 +840,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                         filenames.push(file.name);
                     }   
 
-                    var search_key = top.getAttribute("spt_search_key");
+                    // use the parent key if available
+                    var search_key = bvr.search_key ? bvr.search_key : top.getAttribute("spt_search_key");
                     var yes = function() {
                         for (var i = 0; i < files.length; i++) {
                             var size = files[i].size;
