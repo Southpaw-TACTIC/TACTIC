@@ -901,7 +901,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.has_group_bottom() or my.has_bottom_wdg():
             init_load_num = -1
 
-
         # check the widgets if there are any that can't be async loaded
         for widget in my.widgets:
             if not widget.can_async_load():
@@ -2004,7 +2003,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # reversed for ease of tallying 
         my.group_rows.reverse()
        
-
+        group_level = 0
         for idx, group_row in enumerate(my.group_rows):
             sobjects = group_row.get_sobjects()
             
@@ -2142,7 +2141,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
                 td = table.add_cell()
 
-            td = table.add_cell("&nbsp;")
+            #td = table.add_cell("&nbsp;")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
@@ -2228,11 +2227,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-
-                    tr, td = table.add_row_cell()
-                    td.add("&nbsp;")
-                    tr.add_border(size=1)
-
+                    
+                        tr, td = table.add_row_cell()
+                        td.add("&nbsp;")
+                        tr.add_border(size=1)
+                    
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           
