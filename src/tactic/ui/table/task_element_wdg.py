@@ -650,8 +650,23 @@ class TaskElementWdg(BaseTableElementWdg):
                     color = process.get_color()
                     #if color:
                     process_dict[process.get_name()] = color
-
-
+       
+        # ensured all status_colors are filled with by cascading to task or
+        # default built in color
+        for task_pipeline in task_pipelines:
+            task_pipeline_code = task_pipeline.get_code()
+            status_colors = my.status_colors.get(task_pipeline_code)
+            if status_colors:
+                for key, value in status_colors.items():
+                    color = value
+                    if not color:
+                        task_status_colors = my.status_colors.get("task")
+                        color = task_status_colors.get(key)
+                    if not color:
+                        color = Task.get_default_color(key)
+                    status_colors[key] = color
+        
+        
         security = Environment.get_security()
         my.allowed_statuses = []
         for pipeline_code, color_dict in my.status_colors.items():
@@ -1509,20 +1524,14 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # handle the colors
-        bgColor = ''
         process_color = ''
         
         task_pipeline_code = 'task'
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
         status_colors = my.status_colors.get(task_pipeline_code)
-        if status_colors != None:
-            bgColor = status_colors.get(status)
-            if not bgColor:
-                status_colors = my.status_colors.get("task")
-                bgColor = status_colors.get(status)
-        if not bgColor:
-            bgColor = Task.get_default_color(status)
+        bgColor = status_colors.get(status)
+
 
 
         process_colors = my.process_colors.get(pipeline_code)
@@ -2222,13 +2231,7 @@ class TaskSummaryElementWdg(TaskElementWdg):
             task_pipeline_code = task.get_value("pipeline_code")
 
             status_colors = my.status_colors.get(task_pipeline_code)
-            if status_colors != None:
-                bgColor = status_colors.get(status)
-                if not bgColor:
-                    status_colors = my.status_colors.get("task")
-                    bgColor = status_colors.get(status)
-            if not bgColor:
-                bgColor = Task.get_default_color(status)
+            bgColor = status_colors.get(status)
 
 
 
