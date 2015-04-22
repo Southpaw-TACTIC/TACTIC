@@ -359,7 +359,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if tabs:
             tabs = tabs.split(",")
         else:
-            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit","pipeline"]
+            tabs = ["tasks","revisions","attachments","snapshots","checkin","edit"]
+
+
+        if my.sobject.get_value("pipeline_code", no_exception=True):
+            tabs.append("pipeline")
+        if my.sobject.get_value("_is_collection", no_exception=True):
+            tabs.append("collection")
 
         for tab in tabs:
 
@@ -465,6 +471,21 @@ class SObjectDetailWdg(BaseRefreshWdg):
                   </display>
                 </element>
                 ''' % values)
+
+
+            elif tab == "collection":
+                config_xml.append('''
+                <element name="collection" title="Collection">
+                  <display class='tactic.ui.panel.ViewPanelWdg'>
+                    <view>table</view>
+                    <show_shelf>false</show_shelf>
+                    <search_key>%(search_key)s</search_key>
+                    <search_type>jobs/media_in_media</search_type>
+                  </display>
+                </element>
+                ''' % values)
+
+
 
             elif tab.find("/") != -1:
                 parts = tab.split("/")

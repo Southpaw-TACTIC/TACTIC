@@ -528,8 +528,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         # TEST TEST TEST TEST
-        #collection_type = "jobs/item_in_item"
-        collection_type = "jobs/media_in_media"
+        parts = my.search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
         layout_wdg.add_attr("spt_collection_type", collection_type)
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
@@ -1342,7 +1342,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         var parent_key = dst_top.getAttribute("spt_search_key");
         var server = TacticServerStub.get();
         var parent = server.get_by_search_key(parent_key);
-        if (parent.is_collection == true) {
+        if (parent._is_collection == true) {
 
             var layout = bvr.src_el.getParent(".spt_layout");
             var collection_type = layout.getAttribute("spt_collection_type");
@@ -1353,7 +1353,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 parent_code: parent_code,
                 search_code: src_code
             };
-            server.insert(collection_type, data);
+            var sobject = server.get_unique_sobject(collection_type, data);
+            console.log(sobject);
+            //server.insert(collection_type, data);
             //spt.table.refresh_rows([dst_top], null, null);
         }
         return;
@@ -1533,10 +1535,13 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             detail_div.add_style("float: right")
             detail_div.add_style("margin-top: -2px")
 
-            if sobject.get_value("is_collection", no_exception=True) == True:
+            if sobject.get_value("_is_collection", no_exception=True) == True:
                 detail_div.add_class("spt_tile_collection");
 
-                collection_type = "jobs/media_in_media"
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+                #collection_type = "jobs/media_in_media"
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
@@ -1718,8 +1723,14 @@ class ThumbWdg2(BaseRefreshWdg):
 
     def get_path_from_sobject(my, sobject):
 
-        if sobject.get_value("is_collection", no_exception=True):
-            return "/context/icons/mime-types/folder2.jpg"
+        if sobject.get_value("_is_collection", no_exception=True):
+            from pyasm.common import Environment
+            install_dir = Environment.get().get_install_dir()
+            path = "/context/icons/mime-types/folder2.jpg"
+
+            my.lib_path = "%s/src%s" % (install_dir, path)
+            my.icon_path = "%s/src%s" % (install_dir, path)
+            return path
 
         icon_path = None
         path = None

@@ -364,6 +364,10 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
    <connect from="config/ingest_rule" to="config/ingest_session" type="code" from_col="spt_ingest_session_code" to_col="code"/>
 
+   <connect from="jobs/media_in_media" to="*" type="code" from_col="saerch_code" to_col="code" path+"parent"/>
+   <connect from="jobs/media_in_media" to="*" type="code" from_col="parent_code" to_col="code" path+"child"/>
+
+
 </schema>
 '''
 

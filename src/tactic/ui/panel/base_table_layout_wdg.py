@@ -1600,7 +1600,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                           save_event: bvr.event_name,
                           show_header: false,
                           default: {
-                            is_collection: true
+                            _is_collection: true
                           }
                         };
                         spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
