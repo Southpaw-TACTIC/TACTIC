@@ -272,7 +272,7 @@ def xmlrpc_decorator(meth):
 
 
 
-    def new(my, original_ticket, *args):
+    def new(my, original_ticket, *args, **kwargs):
         results = None
         try:
             ticket = my.init(original_ticket)
@@ -844,13 +844,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
     '''Client Api'''
 
     #@trace_decorator
-    def get_ticket(my, login_name, password):
+    def get_ticket(my, login_name, password, site=None):
         '''simple test to verify that the xmlrpc connection is working
 
         @params
         login_name - unique name of the user
         password - unencrypted password of the user
         '''
+        from pyasm.security import Site
+        if site:
+            Site.set_site(site)
 
         ticket = ""
         try:
