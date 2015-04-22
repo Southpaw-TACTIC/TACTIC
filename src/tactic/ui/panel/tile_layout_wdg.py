@@ -1354,7 +1354,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 search_code: src_code
             };
             server.insert(collection_type, data);
-            return;
+            //spt.table.refresh_rows([dst_top], null, null);
         }
         return;
     }
@@ -1538,7 +1538,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
                 collection_type = "jobs/media_in_media"
 
-                num_items = Search.eval("@COUNT(%s'parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
                 #detail = IconButtonWdg(title="Detail", icon="BS_FOLDER_CLOSE")
                 #detail_div.add(detail)
@@ -1678,7 +1678,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
         if path and path.startswith("/context"):
             img.add_style("padding: 10px 15%")
-            img.add_style("width: 70%")
+            img.add_style("width: 100%")
+            img.add_style("height: auto")
+            div.add_style("height: 100%")
+            div.add_style("text-align: center")
         elif path:
             img.add_style("width: %s" % width)
             if height:
@@ -1714,6 +1717,9 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
     def get_path_from_sobject(my, sobject):
+
+        if sobject.get_value("is_collection", no_exception=True):
+            return "/context/icons/mime-types/folder2.jpg"
 
         icon_path = None
         path = None

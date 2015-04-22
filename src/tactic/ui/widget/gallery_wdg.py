@@ -282,8 +282,9 @@ class GalleryWdg(BaseRefreshWdg):
 
         scroll.add(content)
         content.add_class("spt_gallery_content")
-        # make the itesm vertically align to bottom
-        content.add_styles("display: flex; flex-flow: row nowrap; align-items: flex-end;")
+
+        # make the items vertically align to bottom
+        #content.add_styles("display: flex; flex-flow: row nowrap; align-items: flex-end;")
         content.add_style("width: %s" % total_width)
 
         top.add_behavior( {
@@ -343,7 +344,9 @@ class GalleryWdg(BaseRefreshWdg):
         for i, path in enumerate(paths):
             path_div = DivWdg(css='spt_gallery_item')
             content.add(path_div)
-            path_div.add_style("float: left")
+            #path_div.add_style("float: left")
+            path_div.add_style("display: inline-block")
+            path_div.add_style("vertical-align: middle")
 
             if path == my.curr_path:
                 curr_index = i
@@ -395,7 +398,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.behavior.destroy_element(top);
             '''
         } )
-        icon.add_style("background", "rgba(0,0,0,0.7)")
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
@@ -413,7 +417,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_prev(arrow); 
             '''
         } )
-        icon.add_style("background", "rgba(0,0,0,0.7)")
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
         icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
@@ -431,7 +436,8 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_next(arrow); 
             '''
         } )
-        icon.add_style("background", "rgba(0,0,0,0.7)")
+        icon.add_style("background", "rgba(48,48,48,0.7)")
+        icon.add_style("border-radius", "5px")
 
 
 
