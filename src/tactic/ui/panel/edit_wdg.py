@@ -551,7 +551,7 @@ class EditWdg(BaseRefreshWdg):
         tr = table.add_row()
 
         stype_type = search_type_obj.get_value("type", no_exception=True)
-        if stype_type in ['media'] and my.sobjects:
+        if my.mode != 'insert' and stype_type in ['media'] and my.sobjects:
 
             td = table.add_cell()
 

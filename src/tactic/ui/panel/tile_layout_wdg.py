@@ -527,6 +527,36 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+        # TEST TEST TEST TEST
+        #collection_type = "jobs/item_in_item"
+        collection_type = "jobs/media_in_media"
+        layout_wdg.add_attr("spt_collection_type", collection_type)
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'collection_type': collection_type,
+            'search_type': my.search_type,
+            'bvr_match_class': 'spt_tile_collection',
+            'cbjs_action': '''
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var top = bvr.src_el.getParent(".spt_tile_top");
+
+            var search_key = top.getAttribute("spt_search_key");
+            var parent_code = top.getAttribute("spt_search_code");
+
+            var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+parent_code+"']."+bvr.search_type+")";
+            //spt.table.run_search( { expression: expr } );
+            var class_name = "tactic.ui.panel.ViewPanelWdg";
+            var kwargs = {
+                search_type: bvr.search_type,
+                layout: 'tile',
+                expression: expr,
+                keywords: "__NONE__",
+                use_last_search: false,
+            }
+            spt.tab.add_new("collection", "Collection", class_name, kwargs);
+            '''
+        } )
+ 
 
 
         mode = my.kwargs.get("expand_mode")
@@ -1300,8 +1330,36 @@ spt.tile_layout.image_drag_motion = function(evt, bvr, mouse_411) {
 }
 
 spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
-    if (spt.drop) {
 
+    var dst_el = spt.get_event_target(evt);
+    var dst_top = dst_el.getParent(".spt_tile_top");
+    if (dst_top) {
+        if( bvr._drag_copy_el ) {
+            spt.behavior.destroy_element(bvr._drag_copy_el);
+        }
+
+        // add to the collection
+        var parent_key = dst_top.getAttribute("spt_search_key");
+        var server = TacticServerStub.get();
+        var parent = server.get_by_search_key(parent_key);
+        if (parent.is_collection == true) {
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            var collection_type = layout.getAttribute("spt_collection_type");
+            var src_top = bvr.src_el.getParent(".spt_tile_top");
+            var src_code = src_top.getAttribute("spt_search_code");
+            var parent_code = dst_top.getAttribute("spt_search_code");
+            var data = {
+                parent_code: parent_code,
+                search_code: src_code
+            };
+            server.insert(collection_type, data);
+            return;
+        }
+        return;
+    }
+
+    if (spt.drop) {
         spt.drop.sobject_drop_action(evt, bvr);
     }
     else {
@@ -1472,13 +1530,23 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
             detail_div = DivWdg()
             div.add(detail_div)
-            detail_div.add_class("spt_tile_detail")
             detail_div.add_style("float: right")
             detail_div.add_style("margin-top: -2px")
 
-            #detail = IconButtonWdg(title="Detail", icon=IconWdg.ZOOM)
-            detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
-            detail_div.add(detail)
+            if sobject.get_value("is_collection", no_exception=True) == True:
+                detail_div.add_class("spt_tile_collection");
+
+                collection_type = "jobs/media_in_media"
+
+                num_items = Search.eval("@COUNT(%s'parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
+                #detail = IconButtonWdg(title="Detail", icon="BS_FOLDER_CLOSE")
+                #detail_div.add(detail)
+            else:
+                detail_div.add_class("spt_tile_detail")
+
+                detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+                detail_div.add(detail)
 
 
         header_div = DivWdg()
@@ -1615,6 +1683,8 @@ class ThumbWdg2(BaseRefreshWdg):
             img.add_style("width: %s" % width)
             if height:
                 img.add_style("height: %s" % height)
+            else:
+                img.add_style("height: auto")
             img.add_style('margin-left','auto')
             img.add_style('margin-right','auto')
 

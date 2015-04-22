@@ -383,15 +383,6 @@ class GalleryWdg(BaseRefreshWdg):
         #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
         icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
         inner.add(icon)
-        #icon = DivWdg()
-        #icon.add("X")
-        #icon.add_style("font-size: 42px")
-        #icon.add_style("color: #ddd")
-        #icon.add_style("width: 48px")
-        #icon.add_style("height: 48px")
-        #icon.add_style("text-align: center")
-        #icon.add_style("border-radius: 30px")
-        #icon.add_style("border: solid 3px #ddd")
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
         icon.add_style("bottom: 80px")
@@ -404,6 +395,7 @@ class GalleryWdg(BaseRefreshWdg):
             spt.behavior.destroy_element(top);
             '''
         } )
+        icon.add_style("background", "rgba(0,0,0,0.7)")
 
 
         icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
@@ -421,6 +413,7 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_prev(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(0,0,0,0.7)")
 
 
         icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
@@ -438,6 +431,7 @@ class GalleryWdg(BaseRefreshWdg):
             spt.gallery.show_next(arrow); 
             '''
         } )
+        icon.add_style("background", "rgba(0,0,0,0.7)")
 
 
 
