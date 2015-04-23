@@ -417,6 +417,52 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def _process_search_args(my):
+
+        # this is different name from the old table selected_search_keys
+        search_keys = my.kwargs.get("search_keys")
+      
+        # if a search key has been explicitly set without expression, use that
+        expression = my.kwargs.get('expression') 
+        matched_search_key = False
+        if my.search_key:
+            base_search_type = SearchKey.extract_base_search_type(my.search_key)
+        else:
+            base_search_type = ''
+
+        if my.search_type == base_search_type:
+            matched_search_key = True
+        if search_keys and search_keys != '[]':
+            if isinstance(search_keys, basestring):
+                if search_keys == "__NONE__":
+                    search_keys = []
+                else:
+                    search_keys = search_keys.split(",")
+
+            # keep the order for precise redrawing/ refresh_rows purpose
+            if not search_keys:
+
+                my.sobjects = []
+            else:
+                my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
+            my.items_found = len(my.sobjects)
+            # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
+        elif my.search_key and matched_search_key and not expression:
+            sobject = Search.get_by_search_key(my.search_key)
+            if sobject: 
+                my.sobjects = [sobject]
+                my.items_found = len(my.sobjects)
+
+
+        elif my.kwargs.get("do_search") != "false":
+            my.handle_search()
+
+
+
+
+
+
     def get_display(my):
 
         # fast table should use 0 chunk size
@@ -452,6 +498,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         my.sobject_levels = []
+
+
+        # Make this into a function.  Former code is kept here for now.
+        my._process_search_args()
+        """
         # this is different name from the old table selected_search_keys
         search_keys = my.kwargs.get("search_keys")
       
@@ -478,6 +529,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 my.sobjects = []
             else:
                 my.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+
             my.items_found = len(my.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
         elif my.search_key and matched_search_key and not expression:
@@ -489,6 +541,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         elif my.kwargs.get("do_search") != "false":
             my.handle_search()
+        """
+
+
 
 
         # set some grouping parameters

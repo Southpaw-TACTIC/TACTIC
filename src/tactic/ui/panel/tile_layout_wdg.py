@@ -1357,9 +1357,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 search_code: src_code
             };
             var sobject = server.get_unique_sobject(collection_type, data);
-            console.log(sobject);
             //server.insert(collection_type, data);
-            //spt.table.refresh_rows([dst_top], null, null);
+            spt.table.refresh_rows([dst_top], null, null);
         }
         return;
     }
