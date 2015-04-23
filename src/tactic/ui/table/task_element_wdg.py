@@ -1530,7 +1530,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
         status_colors = my.status_colors.get(task_pipeline_code)
-        bgColor = status_colors.get(status)
+        bgColor = ''
+        if not status_colors:
+            status_colors = my.status_colors.get('task')
+        if status_colors:
+            bgColor = status_colors.get(status)
 
 
 
@@ -2231,8 +2235,10 @@ class TaskSummaryElementWdg(TaskElementWdg):
             task_pipeline_code = task.get_value("pipeline_code")
 
             status_colors = my.status_colors.get(task_pipeline_code)
-            bgColor = status_colors.get(status)
-
+            if not status_colors:
+                status_colors = my.status_colors.get('task')
+            if status_colors:
+                bgColor = status_colors.get(status)
 
 
 
