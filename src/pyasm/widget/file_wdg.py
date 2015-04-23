@@ -805,8 +805,20 @@ class ThumbWdg(BaseTableElementWdg):
         # define a div
         div = my.top
         div.add_class("spt_thumb_top")
+        div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
-        div.force_default_context_menu()
+        if sobject.get_value("_is_collection", no_exception=True):
+            expr = "@COUNT(jobs/media_in_media)"
+            num_items = Search.eval(expr, sobject)
+            if not num_items:
+                num_items = "0"
+            num_div = DivWdg(num_items)
+            num_div.add_class("badge")
+            num_div.add_style("font-size: 0.8em")
+            num_div.add_style("margin: 2px")
+            num_div.add_style("position: absolute")
+            div.add(num_div)
+             
  
       
         # if no link path is found, display the no icon image
@@ -994,7 +1006,9 @@ class ThumbWdg(BaseTableElementWdg):
         if my.show_file_type:
             links_list = ThumbWdg.get_file_info_list(xml, file_objects, sobject, snapshot, my.show_versionless)
             my.set_type_link(div, links_list) 
-             
+
+
+
         return div
 
 

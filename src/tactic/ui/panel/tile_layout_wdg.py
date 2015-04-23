@@ -540,6 +540,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             var layout = bvr.src_el.getParent(".spt_layout");
             var top = bvr.src_el.getParent(".spt_tile_top");
 
+            var name = top.getAttribute("spt_name");
+            var search_code = top.getAttribute("spt_search_code");
+
             var search_key = top.getAttribute("spt_search_key");
             var parent_code = top.getAttribute("spt_search_code");
 
@@ -553,7 +556,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 keywords: "__NONE__",
                 use_last_search: false,
             }
-            spt.tab.add_new("collection", "Collection", class_name, kwargs);
+            spt.tab.add_new(search_code, name, class_name, kwargs);
             '''
         } )
  

@@ -478,9 +478,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 <element name="collection" title="Collection">
                   <display class='tactic.ui.panel.ViewPanelWdg'>
                     <view>table</view>
+                    <layout>tile</layout>
                     <show_shelf>false</show_shelf>
                     <search_key>%(search_key)s</search_key>
                     <search_type>jobs/media_in_media</search_type>
+                    <element_names>preview,search_code</element_names>
                   </display>
                 </element>
                 ''' % values)
