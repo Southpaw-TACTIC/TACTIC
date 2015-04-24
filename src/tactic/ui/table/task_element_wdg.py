@@ -563,8 +563,11 @@ class TaskElementWdg(BaseTableElementWdg):
         # because there are quotes around it, it messes up the expression 
         # So, replace $PROJECT here, and thus, getting rid of the code
         project_code = Project.get_project_code()
+
         if pipeline_codes:
-            pipeline_codes[0] = pipeline_codes[0].replace("$PROJECT", project_code)
+            # prevent expression error
+            pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+        
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
 
         # get all of the processes that appear in all the pipelines, without duplicates
