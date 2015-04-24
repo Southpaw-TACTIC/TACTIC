@@ -105,6 +105,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'type' : 'SelectWdg',
         'values' : 'true|false',
         'order': 9
+    },
+
+    'show_task_process': {
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 10
     }
 
     }
@@ -157,7 +165,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
 
-        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
+        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email, my.show_task_process)
         
 
 
@@ -165,6 +173,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
        
         my.hidden = False
         my.allow_email = my.kwargs.get('allow_email') != 'false'
+        my.show_task_process = my.kwargs.get('show_task_process') == 'true'
         my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
         
 
@@ -457,6 +466,8 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parents = []
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
+        my.show_task_process = my.kwargs.get('show_task_process')
+        
         my.allow_email = my.kwargs.get('allow_email')
         
 
@@ -485,7 +496,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True, show_task_process=False):
         '''hidden means it's a hidden row table'''
         
         layout.add_relay_behavior( {
@@ -511,6 +522,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,
+            'show_task_process': show_task_process,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -531,6 +543,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 kwargs.upload_id = upload_id; 
                 kwargs.hidden = bvr.hidden;
                 kwargs.allow_email = bvr.allow_email;
+                kwargs.show_task_process = bvr.show_task_process;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -1028,7 +1041,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.load_js(top)
             
                 if my.kwargs.get("add_behaviors") != False:
-                    my.add_layout_behaviors(top, allow_email=my.allow_email)
+                    my.add_layout_behaviors(top, allow_email=my.allow_email, show_task_process=my.show_task_process)
 
 
             # add a refresh listener
@@ -1740,11 +1753,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         my.upload_id = my.kwargs.get("upload_id")
         
         my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
-        
+        my.show_task_process = my.kwargs.get('show_task_process') in ['true', True]
 
     def get_display(my):
 
-        my.use_parent = my.kwargs.get("use_parent")
         parent = my.kwargs.get("parent")
         if not parent:
             search_key = my.kwargs.get("search_key")
@@ -1783,12 +1795,17 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add(search_key_hidden)
 
 
-
         #if my.contexts:
         #    process_names = my.contexts
         
         if my.process:
             process_names = [my.process]
+        
+        elif my.show_task_process:
+            task_expr = "@GET(sthpw/task.process)"
+            task_processes = Search.eval(task_expr, sobjects=[parent])
+            
+            process_names = task_processes
         else:
             pipeline_code = parent.get_value("pipeline_code", no_exception=True)
             if pipeline_code:
@@ -1804,7 +1821,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         if my.append_processes:
             process_names.extend(my.append_processes)
-
+        
         security = Environment.get_security()
         project_code = Project.get_project_code()
         allowed = []

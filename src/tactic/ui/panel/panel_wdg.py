@@ -2803,8 +2803,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'a preset one or more columns for grouping e.g. sort_order,category',
             'type': 'TextWdg',
             'order': 12
+        },
+        "height" : {
+            'description': 'a specified height for the table, tile, or card layout',
+            'category': 'Display',
+            'type': 'TextWdg',
+            'order': 13
         }
-
     }
 
     def get_display(my):
@@ -3117,6 +3122,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
+        height = my.kwargs.get("height")
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
@@ -3191,6 +3197,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "group_elements" : group_elements,
             "mode": mode,
+            "height": height,
             "keywords": keywords,
             "filter": filter,
             "expand_mode": expand_mode,

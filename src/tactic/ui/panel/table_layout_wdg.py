@@ -628,8 +628,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 'event_name': client_trigger.get_value('event'),
                 'script_path': client_trigger.get_value('callback'),
                 'cbjs_action': '''
-                if (bvr.firing_element)
-                    spt.table.set_table(bvr.firing_element);
+                if (bvr.firing_element) {
+                    var layout = bvr.firing_element.getParent(".spt_layout");
+                    if (layout)
+                        spt.table.set_table(bvr.firing_element);
+                }
 
                 var input = bvr.firing_data;
                 //var new_value = input.new_value;
@@ -845,20 +848,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             h_scroll.add(scroll)
             height = my.kwargs.get("height")
-            if not height:
-                height = "500px"
-            scroll.add_style("height: %s" % height)
+            if height:
+                scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            """
-            scroll.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                new Scrollable(bvr.src_el);
-                '''
-                } )
-            """
+            if not height:
+                # set to browser height
+                scroll.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    var y = window.getSize().y;
+                    bvr.src_el.setStyle('height', y);
+                    '''
+                    } )
 
 
             table = my.table
@@ -955,7 +958,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # override init_load_num if group column has group_bottom
         if my.has_group_bottom() or my.has_bottom_wdg():
             init_load_num = -1
-
 
         # check the widgets if there are any that can't be async loaded
         for widget in my.widgets:
@@ -2063,7 +2065,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # reversed for ease of tallying 
         my.group_rows.reverse()
        
-
+        group_level = 0
         for idx, group_row in enumerate(my.group_rows):
             sobjects = group_row.get_sobjects()
             
@@ -2201,7 +2203,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
                 td = table.add_cell()
 
-            td = table.add_cell("&nbsp;")
+            #td = table.add_cell("&nbsp;")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
@@ -2287,11 +2289,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-
-                    tr, td = table.add_row_cell()
-                    td.add("&nbsp;")
-                    tr.add_border(size=1)
-
+                    
+                        tr, td = table.add_row_cell()
+                        td.add("&nbsp;")
+                        tr.add_border(size=1)
+                    
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           
