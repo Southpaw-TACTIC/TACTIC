@@ -441,7 +441,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
 
                 // refresh table
-                spt.dg_table.search_cbk(table, bvr);
+                spt.table.run_search();
 
                 spt.app_busy.hide();
                 '''
