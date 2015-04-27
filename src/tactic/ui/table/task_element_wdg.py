@@ -551,6 +551,10 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
         pipeline_codes = SObject.get_values(my.sobjects, 'pipeline_code', unique=True, no_exception=True)
+        
+        # prevent expression error
+        project_code = Project.get_project_code()
+        pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
         if pipelines:
             for pipeline in pipelines:
