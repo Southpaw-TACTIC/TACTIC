@@ -442,6 +442,13 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                 // refresh table
                 spt.table.run_search();
+                var event = "update|" + search_type;
+                try {
+                    spt.named_events.fire_event(event, bvr);
+                }
+                catch(e) {
+                    spt.alert("Error firing event: " + event);
+                }
 
                 spt.app_busy.hide();
                 '''
