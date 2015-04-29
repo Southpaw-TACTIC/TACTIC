@@ -1996,7 +1996,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search.add_filter("event", "insert|sthpw/note")
         notification = search.get_sobject()
         if notification:
-            handler = EmailHandler(notification, None, None, None)
+            handler = EmailHandler(notification, None, None, None, None)
             to = handler.get_mail_users("mail_to")
             cc = handler.get_mail_users("mail_cc")
             to_emails = []
