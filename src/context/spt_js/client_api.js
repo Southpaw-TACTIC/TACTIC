@@ -809,9 +809,10 @@ TacticServerStub = function() {
         var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types, expand_paths: expand_paths});
         var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types, expand_paths: expand_paths});
 
+        var applet;
         var dst_paths = [];
         if (kwargs.mode in {'client_repo':'', 'web':''}) {
-            var applet = spt.Applet.get();
+            applet = spt.Applet.get();
         } 
         var env = spt.Environment.get();
         var server_root = env.get_server_url();
