@@ -6015,7 +6015,7 @@ spt.table.delete_selected = function()
     var selected_rows = spt.table.get_selected_rows();
     var num = selected_rows.length;
     if (num == 0) {
-        spt.alert("Nothing selected to " + action);
+        spt.alert("Nothing selected to delete.");
         return;
     }
 

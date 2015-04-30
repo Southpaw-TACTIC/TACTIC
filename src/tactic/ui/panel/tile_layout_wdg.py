@@ -961,14 +961,15 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
-                    row.removeClass("spt_table_selected");
+                    
                     spt.table.unselect_row(row);
                     row.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
 
                 }
                 else {
                     checkbox.checked = true;
-                    row.addClass("spt_table_selected");
+                    
+                    
                     spt.table.select_row(row);
                     row.setStyle("box-shadow", "0px 0px 15px #FF0");
 
@@ -1205,7 +1206,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         button.add_style('float','left')
         button.add_style('margin-right: 25px')
         button.add_behavior({'type':'click_up',
-        'cbjs_action':  '''spt.table.delete_selected();
+        'cbjs_action':  '''
+            spt.tile_layout.set_layout(bvr.src_el); 
+            spt.table.delete_selected();
                 '''
         })
         return button

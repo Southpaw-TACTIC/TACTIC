@@ -408,6 +408,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <filter>
                       [
                         {"prefix":"main_body","main_body_enabled":"on","main_body_column":"is_latest","main_body_relation":"is","main_body_value":"true"},
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"version","main_body_relation":"is greater than","main_body_value":"-1"},
                         {"prefix":"main_body","main_body_enabled":"on","main_body_column":"process","main_body_relation":"is","main_body_value":"attachment"}
                       ]
                       </filter>
