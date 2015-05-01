@@ -776,7 +776,6 @@ TacticServerStub = function() {
         if (!kwargs) {
             kwargs = {};
         }
-
         if (! kwargs.mode ) {
             transfer_mode = spt.Environment.get().get_transfer_mode();
             kwargs.mode = transfer_mode;
@@ -786,8 +785,8 @@ TacticServerStub = function() {
         }
 
 
-        if (kwargs.mode in {'client_repo':'', 'web':''} == false) {
-            throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
+        if (kwargs.mode in {'client_repo':'', 'web':'', 'browser':''} == false) {
+            throw("Mode '" + kwargs.mode + "' must be in [client_repo, web, browser]");
         }
 
         var file_types;
@@ -810,8 +809,11 @@ TacticServerStub = function() {
         var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types, expand_paths: expand_paths});
         var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types, expand_paths: expand_paths});
 
+        var applet;
         var dst_paths = [];
-        var applet = spt.Applet.get();
+        if (kwargs.mode in {'client_repo':'', 'web':''}) {
+            applet = spt.Applet.get();
+        } 
         var env = spt.Environment.get();
         var server_root = env.get_server_url();
 
@@ -851,7 +853,7 @@ TacticServerStub = function() {
                 dst = sandbox_dir + "/" + basename;
             }
 
-            dst_paths.push(dst)
+            dst_paths.push(dst);
 
             if (kwargs.mode == 'client_repo'){
                 applet.copytree(path, dst);
@@ -864,6 +866,14 @@ TacticServerStub = function() {
                 else {
                     alert(url + ' does not exist on the server. It may have been backed up.');
                 }
+            }
+            else if (kwargs.mode == 'browser'){
+                var download_el = document.createElement("a");
+                download_el.setAttribute("href",path);
+                download_el.setAttribute("download","");
+                document.body.appendChild(download_el);
+                download_el.click();
+                document.body.removeChild(download_el);
             }
         }
         }
@@ -1613,6 +1623,8 @@ TacticServerStub.get = function() {
     }
     return this.server;
 }
+
+
 
 
 
