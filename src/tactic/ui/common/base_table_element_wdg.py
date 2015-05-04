@@ -499,6 +499,16 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                     value_wdg.add( str(value) )
                     return value_wdg
 
+
+        if sobject:
+            value_wdg = DivWdg()
+            value_wdg.add_update_text( {
+                'search_key': sobject.get_search_key(),
+                'column': name
+            } )
+            return value_wdg
+
+
         return value
 
 
