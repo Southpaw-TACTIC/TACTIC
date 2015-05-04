@@ -660,11 +660,14 @@ spt.has_class = function( el, cls )
     }
 
     var class_name;
-    if (el.className.baseVal) {
+    if (el.className.baseVal || el.className.baseVal != null) {
         class_name = el.className.baseVal;
     }
-    else {
+    else if (el.className) {
         class_name = el.className;
+    }
+    else {
+        return false;
     }
 
     var regex = new RegExp( "\\b" + cls + "\\b" );
