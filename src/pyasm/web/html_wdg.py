@@ -79,6 +79,7 @@ class HtmlElement(Widget):
         my.styles = None
         my.relay_styles = None
         my.behaviors = None
+        my.updates = None
 
         if css:
             my.set_class(css)    
@@ -146,6 +147,7 @@ class HtmlElement(Widget):
         my.classes = None
         my.styles = None
         my.behaviors = None
+        my.updates = None
 
         my._widgets = None
         my.named_widgets = None
@@ -211,11 +213,16 @@ class HtmlElement(Widget):
         '''Sets the id attribute of the html element'''
         my.attrs['id'] = id
 
-    def set_unique_id(my,prefix=None):
-        unique_id = my.generate_unique_id(is_random=True)
-        if prefix:
-            unique_id = prefix + '_' + unique_id
-        my.set_id(unique_id)
+    def set_unique_id(my,prefix=None, force=False):
+        if force:
+            unique_id = 0
+        else:
+            unique_id = my.get_id()
+        if not unique_id:
+            unique_id = my.generate_unique_id(is_random=True)
+            if prefix:
+                unique_id = prefix + '_' + unique_id
+            my.set_id(unique_id)
         return unique_id
 
     def get_id(my):
@@ -764,6 +771,101 @@ class HtmlElement(Widget):
             buffer.write("</%s>" % my.type)
 
         my.clear()
+
+
+
+    ###################
+    # Dynamic Updates
+    ###################
+
+    def add_update(my, update):
+        if my.updates == None:
+            my.updates = [] 
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+        my.add_class("spt_update")
+        my.add_behavior( {
+            'type': 'load',
+            'update': update,
+            'cbjs_action': '''
+            var id = bvr.src_el.getAttribute("id");
+            var update = {};
+            update[id] = bvr.update;
+            bvr.src_el.spt_update = update;
+            '''
+        } )
+
+
+
+
+    def add_update_text(my, update, value=None):
+        if my.updates == None:
+            my.updates = [] 
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+
+        if value:
+            my.add(value)
+        else:
+            my.add( my.eval_update(update) )
+
+        my.add_class("spt_update")
+        my.add_behavior( {
+            'type': 'load',
+            'update': update,
+            'cbjs_action': '''
+            var id = bvr.src_el.getAttribute("id");
+            var update = {};
+            update[id] = bvr.update;
+            bvr.src_el.spt_update = update;
+            '''
+        } )
+
+
+
+
+    def add_update_attr(my, attr, update):
+        if my.updates == None:
+            my.updates = []
+
+        update['attr'] = attr
+
+        my.set_unique_id("SPT")
+        my.updates.append(update)
+
+        # evaluate
+        my.add_attr(attr, my.eval_update(update) )
+
+
+
+    def eval_update(my, update):
+        search_key = update.get("search_key")
+        column = update.get("column")
+        expression = update.get("expression")
+
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+        else:
+            sobject = None
+
+        if column:
+            value = sobject.get(column)
+        else:
+            value = Search.eval(expression, sobject, single=True)
+
+        return value
+
+
+
+    def get_updates(my):
+        return {my.get_id(): my.updates}
+
+
+
 
 
 
