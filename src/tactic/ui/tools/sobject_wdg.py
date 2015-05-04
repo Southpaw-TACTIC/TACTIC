@@ -414,14 +414,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
             elif tab == "attachments":
                 config_xml.append('''
                 <element name="attachments" title="Attachments">
-                  <display class='tactic.ui.panel.TileLayoutWdg'>
+                  <display class='tactic.ui.panel.ViewPanelWdg'>
                     <search_type>sthpw/snapshot</search_type>
                     <parent_key>%(search_key)s</parent_key>
                     <process>attachment</process>
                     <layout>tile</layout>
+                    <filter>
+                      [
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"is_latest","main_body_relation":"is","main_body_value":"true"},
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"version","main_body_relation":"is greater than","main_body_value":"-1"},
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"process","main_body_relation":"is","main_body_value":"attachment"}
+                      ]
+                      </filter>
+
                     <title_expr>@REPLACE(@GET(.context), 'attachment/', '')</title_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
+                    <upload_mode>both</upload_mode>
                     <no_results_msg>Drag and drop file here to upload.</no_results_msg>
                   </display>
                 </element>
