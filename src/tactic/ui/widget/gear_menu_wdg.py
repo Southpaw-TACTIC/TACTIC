@@ -441,7 +441,22 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
 
                 // refresh table
-                spt.dg_table.search_cbk(table, bvr);
+                spt.table.run_search();
+                var event = "update|" + search_type;
+                kwargs = {
+                    firing_element: activator
+                }
+                var input = {
+                    kwargs: kwargs
+                }
+                var bvr2 = {};
+                bvr2.options = input;
+                try {
+                    spt.named_events.fire_event(event, bvr2);
+                }
+                catch(e) {
+                    spt.alert("Error firing event: " + event);
+                }
 
                 spt.app_busy.hide();
                 '''

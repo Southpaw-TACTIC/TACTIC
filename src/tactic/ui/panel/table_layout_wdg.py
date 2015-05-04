@@ -573,8 +573,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 'event_name': client_trigger.get_value('event'),
                 'script_path': client_trigger.get_value('callback'),
                 'cbjs_action': '''
-                if (bvr.firing_element)
-                    spt.table.set_table(bvr.firing_element);
+                if (bvr.firing_element) {
+                    var layout = bvr.firing_element.getParent(".spt_layout");
+                    if (layout)
+                        spt.table.set_table(bvr.firing_element);
+                }
 
                 var input = bvr.firing_data;
                 //var new_value = input.new_value;
