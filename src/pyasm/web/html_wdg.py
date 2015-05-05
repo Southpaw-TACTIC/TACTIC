@@ -842,10 +842,14 @@ class HtmlElement(Widget):
 
 
 
-    def eval_update(my, update):
+    def eval_update(cls, update):
         search_key = update.get("search_key")
         column = update.get("column")
         expression = update.get("expression")
+
+        value = update.get("value")
+        if value != None:
+            return value
 
         if search_key:
             sobject = Search.get_by_search_key(search_key)
@@ -854,11 +858,11 @@ class HtmlElement(Widget):
 
         if column:
             value = sobject.get(column)
-        else:
+        elif expression:
             value = Search.eval(expression, sobject, single=True)
 
         return value
-
+    eval_update = classmethod(eval_update)
 
 
     def get_updates(my):

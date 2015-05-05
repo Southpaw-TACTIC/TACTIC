@@ -1941,7 +1941,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
 
-
+                # TODO: while convenient, this is extremely heavy
                 select.add_behavior( {
                     'type': 'change',
                     'color': status_colors,
@@ -1999,6 +1999,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
+                select.add_update( {
+                    "search_key": task.get_search_key(),
+                    "column": "status",
+                    "cbjs_postaction": '''
+                    var element = bvr.src_el;
+                    if ("createEvent" in document) {
+                        var evt = document.createEvent("HTMLEvents");
+                        evt.initEvent("change", false, true);
+                        element.dispatchEvent(evt);
+                    }
+                    else
+                        element.fireEvent("onchange");
+
+                    '''
+                } )
 
 
       
