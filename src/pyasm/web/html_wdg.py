@@ -841,7 +841,13 @@ class HtmlElement(Widget):
 
 
     def eval_update(cls, update):
+        # search key is used to determine whether a change has occured.
+        # when it is None, the expression is always evaluated ... however,
+        # sometimes a search key is needed for the expression. In this case,
+        # use "parent_key".
         search_key = update.get("search_key")
+        parent_key = update.get("parent_key")
+
         column = update.get("column")
         expression = update.get("expression")
 
@@ -851,6 +857,8 @@ class HtmlElement(Widget):
 
         if search_key:
             sobject = Search.get_by_search_key(search_key)
+        elif parent_key:
+            sobject = Search.get_by_search_key(parent_key)
         else:
             sobject = None
 
@@ -858,6 +866,9 @@ class HtmlElement(Widget):
             value = sobject.get(column)
         elif expression:
             value = Search.eval(expression, sobject, single=True)
+            print "expression: ", expression
+            print "value: ", value
+            print
 
         return value
     eval_update = classmethod(eval_update)

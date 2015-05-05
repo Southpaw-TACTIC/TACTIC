@@ -1829,6 +1829,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         select.add_style("width", my.width)
 
+                    select.add_update( {
+                        "search_key": task.get_search_key(),
+                        "column": "assigned",
+                        "cbjs_postaction": '''
+                        var element = bvr.src_el;
+                        if ("createEvent" in document) {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+                            element.dispatchEvent(evt);
+                        }
+                        else
+                            element.fireEvent("onchange");
+
+                        '''
+                    } )
+
                 else:
                     
                     assigned_label = assigned

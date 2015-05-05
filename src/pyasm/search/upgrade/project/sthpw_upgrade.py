@@ -21,6 +21,19 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.4.0.a01
     #
 
+
+    def upgrade_v4_4_0_a01_007(my):
+        my.run_sql('''
+        CREATE INDEX "change_timestamp_timestamp_idx" on change_timestamp(timestamp);
+        ''')
+
+
+    def upgrade_v4_4_0_a01_006(my):
+        my.run_sql('''
+        ALTER TABLE change_timestamp ADD COLUMN "timestamp" timestamp;
+        ''')
+
+
     def upgrade_v4_4_0_a01_005(my):
         my.run_sql('''
         INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/interaction', 'sthpw/interaction', 'sthpw', 'User Interaction', 'sthpw', 'interaction', 'pyasm.search.SObject', 'User Interaction', 'public');
