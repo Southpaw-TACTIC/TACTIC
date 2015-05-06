@@ -798,7 +798,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -3437,7 +3437,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "#777";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
