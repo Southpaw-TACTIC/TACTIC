@@ -2651,7 +2651,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display'
         },
         "show_search": {
-            'description': "determines whether or not to show the search box",
+            'description': "determines whether to show the Advanced Search button in the shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': '05',
@@ -3076,12 +3076,15 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             show_shelf = my.kwargs.get("show_shelf")
+            """
             if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
-                show_search = False
+                show_search = "false"
             elif show_shelf in [False, 'false']:
-                show_search = True
+                show_search = "true"
+            
             else:
                 show_search = True
+            """
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
