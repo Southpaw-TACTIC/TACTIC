@@ -2230,19 +2230,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-<<<<<<< HEAD
-                    
-                        tr, td = table.add_row_cell()
-                        td.add("&nbsp;")
-                        tr.add_border(size=1)
-                    
-=======
 
                         tr, td = table.add_row_cell()
                         td.add("&nbsp;")
                         tr.add_border(size=1)
 
->>>>>>> 4.3
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           
