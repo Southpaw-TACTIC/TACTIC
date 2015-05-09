@@ -762,7 +762,6 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         {
             bvr['script'] = script;
             bvr.values = kwargs;
-            spt.app_busy.show("Running Checkout Panel Script", kwargs.checkout_panel_script_path);
             setTimeout( function() {
             try {
                 spt.CustomProject.exec_custom_script(evt, bvr);

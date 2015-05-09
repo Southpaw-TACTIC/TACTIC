@@ -413,9 +413,10 @@ class DialogWdg(BaseRefreshWdg):
         #content_div.add_style("padding: 5px")
 
         view = my.kwargs.get("view")
+        view_args = my.kwargs.get("view_args")
         if view:
             from tactic.ui.panel import CustomLayoutWdg
-            my.add( CustomLayoutWdg(view=view) )
+            my.add( CustomLayoutWdg(view=view,kwargs=view_args) )
 
         if not my.content_wdg:
             my.content_wdg = "No Content"
