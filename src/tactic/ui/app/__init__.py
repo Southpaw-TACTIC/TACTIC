@@ -18,6 +18,7 @@ from search_limit_wdg import *
 
 from top_wdg import *
 
+from dynamic_update_wdg import *
 from undo_log_wdg import *
 from license_manager_wdg import *
 from setup_manager_wdg import *
