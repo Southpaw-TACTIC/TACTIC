@@ -414,6 +414,8 @@ class DialogWdg(BaseRefreshWdg):
 
         view = my.kwargs.get("view")
         view_kwargs = my.kwargs.get("view_kwargs")
+        if not view_kwargs:
+            view_kwargs = {}
         if view:
             from tactic.ui.panel import CustomLayoutWdg
             my.add( CustomLayoutWdg(view=view,view_kwargs=view_kwargs) )
