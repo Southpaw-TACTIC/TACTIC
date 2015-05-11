@@ -946,7 +946,22 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_menu_wdg(my, top):
+        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
+           with the top element passed in'''
+        edit_wdg = DiscussionEditWdg()
+        my.menu = edit_wdg.get_menu()
 
+        # extra js_action on mouseover to assign the search key of the note to hidden input
+        js_action ='''
+           var sk_input = menu_top.getElement('.spt_note_action_sk');
+           var note_top = bvr.src_el;
+           sk_input.value = note_top.getAttribute('note_search_key');
+            '''
+
+        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
+        my.menu.set_activator_out(top, 'spt_discussion_top')
+        return edit_wdg
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''

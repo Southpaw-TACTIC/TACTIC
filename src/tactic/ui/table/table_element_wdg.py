@@ -505,10 +505,10 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         show_sub_context = my.get_option("show_sub_context")
 
         use_applet = my.get_option("use_applet")
-        if use_applet in ['false', False]:
-            use_applet = False
-        else:
+        if use_applet in ['true', True]:
             use_applet = True
+        else:
+            use_applet = False
         
         kwargs = {}
         kwargs['checkin_script'] = checkin_script

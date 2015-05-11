@@ -98,7 +98,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional'
         },
 
-       'show_search_limit': {
+        'show_search_limit': {
             'description': 'Flag to determine whether or not to show the search limit',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -375,10 +375,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # get all the attributes
             if element_name and element_name != "None":
                 attrs = my.config.get_element_attributes(element_name)
+                widget.set_attributes(attrs)
             else:
                 attrs = {}
             
             my.attributes.append(attrs)
+
+
             # defined access for this view
             def_default_access = attrs.get('access')
             if not def_default_access:
@@ -916,9 +919,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
         
-        for i, col in enumerate(my.group_columns):
-            group_value_dict = {}
-            my.group_values[i] = group_value_dict
 
         for row, sobject in enumerate(my.sobjects):
 
@@ -2230,11 +2230,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-                    
+
                         tr, td = table.add_row_cell()
                         td.add("&nbsp;")
                         tr.add_border(size=1)
-                    
+
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           

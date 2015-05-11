@@ -246,8 +246,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
         notes_div = DivWdg()
         td.add(notes_div)
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False, show_note_expand=False, show_task_process=my.show_task_process)
+        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
+            show_note_expand=False, show_task_process=my.show_task_process)
+        
         notes_div.add(discussion_wdg)
+        menu = discussion_wdg.get_menu_wdg(notes_div)
+        notes_div.add(menu)
+
         notes_div.add_style("min-width: 300px")
         notes_div.add_style("height: 200")
         notes_div.add_style("overflow-y: auto")
@@ -1246,8 +1251,11 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True, show_note_expand=True)
+        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True,\
+            show_note_expand=True)
         notes_div.add(discussion_wdg)
+        menu = discussion_wdg.get_menu_wdg(notes_div)
+        notes_div.add(menu)
 
         search = Search('sthpw/snapshot')
         search.add_parent_filter(sobject)
