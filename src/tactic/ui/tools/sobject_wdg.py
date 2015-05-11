@@ -34,10 +34,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
     ARGS_KEYS = {
     'tab_element_names': {
         "description": "List of element names that will be in the tab",
+        'category': 'Options',
+        'type': 'TextWdg',
+        'order': 1
+    },
+    'show_task_process': {
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 2
     }
+
     }
 
 
+    def init(my):
+        my.show_task_process = my.kwargs.get('show_task_process')
 
     def get_title_wdg(my):
 
@@ -213,6 +226,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             td.add(sobject_info_wdg)
             td.add_style("vertical-align: top")
             td.add_style("overflow: hidden")
+            td.add_style("width: 30vw")
 
 
         # right
@@ -232,8 +246,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
         notes_div = DivWdg()
         td.add(notes_div)
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False, show_note_expand=False)
+        discussion_wdg = DiscussionWdg(search_key=my.search_key, context_hidden=False,\
+            show_note_expand=False, show_task_process=my.show_task_process)
+        
         notes_div.add(discussion_wdg)
+        menu = discussion_wdg.get_menu_wdg(notes_div)
+        notes_div.add(menu)
+
         notes_div.add_style("min-width: 300px")
         notes_div.add_style("height: 200")
         notes_div.add_style("overflow-y: auto")
@@ -400,14 +419,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
             elif tab == "attachments":
                 config_xml.append('''
                 <element name="attachments" title="Attachments">
-                  <display class='tactic.ui.panel.TileLayoutWdg'>
+                  <display class='tactic.ui.panel.ViewPanelWdg'>
                     <search_type>sthpw/snapshot</search_type>
                     <parent_key>%(search_key)s</parent_key>
                     <process>attachment</process>
                     <layout>tile</layout>
+                    <filter>
+                      [
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"is_latest","main_body_relation":"is","main_body_value":"true"},
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"version","main_body_relation":"is greater than","main_body_value":"-1"},
+                        {"prefix":"main_body","main_body_enabled":"on","main_body_column":"process","main_body_relation":"is","main_body_value":"attachment"}
+                      ]
+                      </filter>
+
                     <title_expr>@REPLACE(@GET(.context), 'attachment/', '')</title_expr>
                     <width>100%%</width>
                     <show_shelf>false</show_shelf>
+                    <upload_mode>both</upload_mode>
                     <no_results_msg>Drag and drop file here to upload.</no_results_msg>
                   </display>
                 </element>
@@ -1223,8 +1251,11 @@ class SObjectSingleProcessDetailWdg(BaseRefreshWdg):
 
 
         from tactic.ui.widget.discussion_wdg import DiscussionWdg
-        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True, show_note_expand=True)
+        discussion_wdg = DiscussionWdg(search_key=sobject.get_search_key(), process=process, context_hidden=True,\
+            show_note_expand=True)
         notes_div.add(discussion_wdg)
+        menu = discussion_wdg.get_menu_wdg(notes_div)
+        notes_div.add(menu)
 
         search = Search('sthpw/snapshot')
         search.add_parent_filter(sobject)

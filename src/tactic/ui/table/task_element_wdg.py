@@ -563,8 +563,11 @@ class TaskElementWdg(BaseTableElementWdg):
         # because there are quotes around it, it messes up the expression 
         # So, replace $PROJECT here, and thus, getting rid of the code
         project_code = Project.get_project_code()
+
         if pipeline_codes:
-            pipeline_codes[0] = pipeline_codes[0].replace("$PROJECT", project_code)
+            # prevent expression error
+            pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+        
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
 
         # get all of the processes that appear in all the pipelines, without duplicates
@@ -577,6 +580,12 @@ class TaskElementWdg(BaseTableElementWdg):
         default_pipeline = []
 
         # get all the processes
+        
+        # prevent expression error
+        project_code = Project.get_project_code()
+        pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
+        
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
@@ -650,8 +659,23 @@ class TaskElementWdg(BaseTableElementWdg):
                     color = process.get_color()
                     #if color:
                     process_dict[process.get_name()] = color
-
-
+       
+        # ensured all status_colors are filled with by cascading to task or
+        # default built in color
+        for task_pipeline in task_pipelines:
+            task_pipeline_code = task_pipeline.get_code()
+            status_colors = my.status_colors.get(task_pipeline_code)
+            if status_colors:
+                for key, value in status_colors.items():
+                    color = value
+                    if not color:
+                        task_status_colors = my.status_colors.get("task")
+                        color = task_status_colors.get(key)
+                    if not color:
+                        color = Task.get_default_color(key)
+                    status_colors[key] = color
+        
+        
         security = Environment.get_security()
         my.allowed_statuses = []
         for pipeline_code, color_dict in my.status_colors.items():
@@ -1509,20 +1533,18 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # handle the colors
-        bgColor = ''
         process_color = ''
         
         task_pipeline_code = 'task'
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
         status_colors = my.status_colors.get(task_pipeline_code)
-        if status_colors != None:
+        bgColor = ''
+        if not status_colors:
+            status_colors = my.status_colors.get('task')
+        if status_colors:
             bgColor = status_colors.get(status)
-            if not bgColor:
-                status_colors = my.status_colors.get("task")
-                bgColor = status_colors.get(status)
-        if not bgColor:
-            bgColor = Task.get_default_color(status)
+
 
 
         process_colors = my.process_colors.get(pipeline_code)
@@ -2253,14 +2275,10 @@ class TaskSummaryElementWdg(TaskElementWdg):
             task_pipeline_code = task.get_value("pipeline_code")
 
             status_colors = my.status_colors.get(task_pipeline_code)
-            if status_colors != None:
+            if not status_colors:
+                status_colors = my.status_colors.get('task')
+            if status_colors:
                 bgColor = status_colors.get(status)
-                if not bgColor:
-                    status_colors = my.status_colors.get("task")
-                    bgColor = status_colors.get(status)
-            if not bgColor:
-                bgColor = Task.get_default_color(status)
-
 
 
 

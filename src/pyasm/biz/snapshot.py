@@ -710,7 +710,7 @@ class Snapshot(SObject):
             dir = my.get_sandbox_dir(file_type=file_type)
         elif mode == 'local_repo':
             dir = my.get_local_repo_dir(file_type=file_type,file_object=file_object)
-        elif mode == 'web':
+        elif mode in ['web', 'browser']:
             dir = my.get_web_dir(file_type=file_type,file_object=file_object)
         elif mode == 'relative':
             dir = my.get_relative_dir(file_type=file_type,file_object=file_object)
@@ -724,7 +724,7 @@ class Snapshot(SObject):
         '''
         xml = my.get_snapshot_xml()
         files_dict = my._get_files_dict(xml)
-        assert mode in ['lib', 'client_repo', 'sandbox', 'local_repo', 'web', 'relative']
+        assert mode in ['lib', 'client_repo', 'sandbox', 'local_repo', 'web', 'relative', 'browser']
         paths = []
         nodes = xml.get_nodes("snapshot/file")
 

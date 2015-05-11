@@ -2651,7 +2651,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display'
         },
         "show_search": {
-            'description': "determines whether or not to show the search box",
+            'description': "determines whether to show the Advanced Search button in the shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': '05',
@@ -2803,8 +2803,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'a preset one or more columns for grouping e.g. sort_order,category',
             'type': 'TextWdg',
             'order': 12
+        },
+        "height" : {
+            'description': 'a specified height for the table, tile, or card layout',
+            'category': 'Display',
+            'type': 'TextWdg',
+            'order': 13
         }
-
     }
 
     def get_display(my):
@@ -3071,12 +3076,15 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             show_shelf = my.kwargs.get("show_shelf")
+            """
             if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
-                show_search = False
+                show_search = "false"
             elif show_shelf in [False, 'false']:
-                show_search = True
+                show_search = "true"
+            
             else:
                 show_search = True
+            """
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
@@ -3117,6 +3125,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
+        height = my.kwargs.get("height")
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
@@ -3191,6 +3200,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "group_elements" : group_elements,
             "mode": mode,
+            "height": height,
             "keywords": keywords,
             "filter": filter,
             "expand_mode": expand_mode,
@@ -3214,8 +3224,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = my.kwargs.get("title_expr")
             kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
             kwargs['overlay_color'] = my.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
+            kwargs['process'] = my.kwargs.get("process")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
