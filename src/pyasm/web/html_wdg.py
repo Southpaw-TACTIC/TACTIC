@@ -21,7 +21,7 @@ import types
 
 from event_container import *
 
-from pyasm.common import Container, jsondumps, jsonloads, Common
+from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
 from pyasm.search import Search
 from widget import Widget
 from web_container import WebContainer
@@ -851,6 +851,7 @@ class HtmlElement(Widget):
         column = update.get("column")
         expression = update.get("expression")
 
+
         value = update.get("value")
         if value != None:
             return value
@@ -864,11 +865,19 @@ class HtmlElement(Widget):
 
         if column:
             value = sobject.get(column)
+            #print "column: ", column
+            #print "value: ", value
+            #print
         elif expression:
             value = Search.eval(expression, sobject, single=True)
-            print "expression: ", expression
-            print "value: ", value
-            print
+            #print "expression: ", expression
+            #print "value: ", value
+            #print
+
+        format_str = update.get("format")
+        if format_str:
+            format = FormatValue()
+            value = format.get_format_value( value, format_str )
 
         return value
     eval_update = classmethod(eval_update)

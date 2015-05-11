@@ -125,8 +125,24 @@ class FormatElementWdg(SimpleTableElementWdg):
 
         format = my.get_option('format')
         value = my.get_format_value( value, format )
-
         top.add(value)
+
+
+        sobject = my.get_current_sobject()
+        if sobject:
+
+            column =  my.kwargs.get('column')
+            if column:
+                name = column
+            else:
+                name = my.get_name()
+
+            top.add_update( {
+                'search_key': sobject.get_search_key(),
+                'column': name,
+                'format': format
+
+            } )
 
         return top
 
