@@ -98,7 +98,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional'
         },
 
-       'show_search_limit': {
+        'show_search_limit': {
             'description': 'Flag to determine whether or not to show the search limit',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -375,10 +375,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # get all the attributes
             if element_name and element_name != "None":
                 attrs = my.config.get_element_attributes(element_name)
+                widget.set_attributes(attrs)
             else:
                 attrs = {}
             
             my.attributes.append(attrs)
+
+
             # defined access for this view
             def_default_access = attrs.get('access')
             if not def_default_access:
@@ -573,8 +576,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 'event_name': client_trigger.get_value('event'),
                 'script_path': client_trigger.get_value('callback'),
                 'cbjs_action': '''
-                if (bvr.firing_element)
-                    spt.table.set_table(bvr.firing_element);
+                if (bvr.firing_element) {
+                    var layout = bvr.firing_element.getParent(".spt_layout");
+                    if (layout)
+                        spt.table.set_table(bvr.firing_element);
+                }
 
                 var input = bvr.firing_data;
                 //var new_value = input.new_value;
@@ -790,20 +796,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             h_scroll.add(scroll)
             height = my.kwargs.get("height")
-            if not height:
-                height = "500px"
-            scroll.add_style("height: %s" % height)
+            if height:
+                scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            """
-            scroll.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                new Scrollable(bvr.src_el);
-                '''
-                } )
-            """
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
+                # set to browser height
+                scroll.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    var y = window.getSize().y;
+                    bvr.src_el.setStyle('height', y);
+                    '''
+                    } )
 
 
             table = my.table
@@ -901,7 +907,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if my.has_group_bottom() or my.has_bottom_wdg():
             init_load_num = -1
 
-
         # check the widgets if there are any that can't be async loaded
         for widget in my.widgets:
             if not widget.can_async_load():
@@ -914,9 +919,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
         
-        for i, col in enumerate(my.group_columns):
-            group_value_dict = {}
-            my.group_values[i] = group_value_dict
 
         for row, sobject in enumerate(my.sobjects):
 
@@ -2019,7 +2021,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # reversed for ease of tallying 
         my.group_rows.reverse()
        
-
+        group_level = 0
         for idx, group_row in enumerate(my.group_rows):
             sobjects = group_row.get_sobjects()
             
@@ -2157,7 +2159,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 tr.add_class("spt_group_%s" % my.group_ids.get(last_group_column))
                 td = table.add_cell()
 
-            td = table.add_cell("&nbsp;")
+            #td = table.add_cell("&nbsp;")
 
             if my.kwargs.get("show_select") not in [False, 'false']:
                 td = table.add_cell()
@@ -2244,9 +2246,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         my.group_summary = []
                         my.group_rows.append(tr)
 
-                    tr, td = table.add_row_cell()
-                    td.add("&nbsp;")
-                    tr.add_border(size=1)
+                        tr, td = table.add_row_cell()
+                        td.add("&nbsp;")
+                        tr.add_border(size=1)
 
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
@@ -3450,7 +3452,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "#777";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -6030,7 +6032,7 @@ spt.table.delete_selected = function()
     var selected_rows = spt.table.get_selected_rows();
     var num = selected_rows.length;
     if (num == 0) {
-        spt.alert("Nothing selected to " + action);
+        spt.alert("Nothing selected to delete.");
         return;
     }
 
