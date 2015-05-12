@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['workflow_init']
+__all__ = ['Workflow']
 
 import tacticenv
 
@@ -20,6 +20,96 @@ from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task
 from tactic.command import PythonCmd
 
+
+class Workflow(object):
+
+    def init(my):
+        # initialize the triggers for the workflow
+
+        event = "process|pending"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessPendingTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+        event = "process|action"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessActionTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+
+        event = "process|complete"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessCompleteTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+        event = "process|revise"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessReviseTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+        event = "process|error"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessErrorTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+        # by default a stataus change to a trigger calls the node's trigger
+        event = "change|sthpw/task|status"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", TaskStatusChangeTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger)
+
+
+
+class TaskStatusChangeTrigger(Trigger):
+
+    def execute(my):
+
+        # find the node in the pipeline
+        task = my.get_caller()
+        sobject = task.get_parent()
+        if not sobject:
+            return
+
+        pipeline = Pipeline.get_by_sobject(sobject)
+        if not pipeline:
+            return
+
+        process_name = task.get_value("process")
+        status = task.get_value("status")
+
+        process = pipeline.get_process(process_name)
+        node_type = process.get_type()
+        process_name = process.get_name()
+
+        event = "process|%s" % status.lower()
+        print "event: ", event
+        output = {
+            'sobject': sobject,
+            'pipeline': pipeline,
+            'process': process,
+        }
+        Trigger.call(task, event, output=output)
+
+        
+
+
+
+
+#
+# Built in process triggers
+#
 
 
 class BaseProcessTrigger(Trigger):
@@ -42,7 +132,6 @@ class BaseProcessTrigger(Trigger):
             triggers = process_sobj.get_json_value("trigger")
         if not triggers:
             triggers = {}
-
 
         ret_val = {}
 
@@ -73,7 +162,10 @@ class ProcessPendingTrigger(BaseProcessTrigger):
         process_obj = pipeline.get_process(process)
         node_type = process_obj.get_type()
 
-        my.set_all_tasks(sobject, process, "pending")
+        my.run_callback(process, "on_pending")
+
+        if node_type == None or node_type != "manual":
+            my.set_all_tasks(sobject, process, "pending")
 
         if node_type in ["auto", "condition"]:
             Trigger.call(my, "process|action", output=my.input)
@@ -273,40 +365,16 @@ class ProcessReviseTrigger(BaseProcessTrigger):
 
 
 
+class ProcessErrorTrigger(BaseProcessTrigger):
 
+    def execute(my):
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+        pipeline = my.input.get("pipeline")
+ 
+        print "Error: Failed to process [%s] on sobject [%s]" % (process, sobject.get_search_key() )
 
-def workflow_init():
-
-    event = "process|pending"
-    trigger = SearchType.create("sthpw/trigger")
-    trigger.set_value("event", event)
-    trigger.set_value("class_name", ProcessPendingTrigger)
-    trigger.set_value("mode", "same process,same transaction")
-    Trigger.append_static_trigger(trigger)
-
-
-
-    event = "process|complete"
-    trigger = SearchType.create("sthpw/trigger")
-    trigger.set_value("event", event)
-    trigger.set_value("class_name", ProcessCompleteTrigger)
-    trigger.set_value("mode", "same process,same transaction")
-    Trigger.append_static_trigger(trigger)
-
-    event = "process|action"
-    trigger = SearchType.create("sthpw/trigger")
-    trigger.set_value("event", event)
-    trigger.set_value("class_name", ProcessActionTrigger)
-    trigger.set_value("mode", "same process,same transaction")
-    Trigger.append_static_trigger(trigger)
-
-
-    event = "process|revise"
-    trigger = SearchType.create("sthpw/trigger")
-    trigger.set_value("event", event)
-    trigger.set_value("class_name", ProcessReviseTrigger)
-    trigger.set_value("mode", "same process,same transaction")
-    Trigger.append_static_trigger(trigger)
+        # TODO: send a message so that those following this sobject will be notified
 
 
 

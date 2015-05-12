@@ -21,7 +21,8 @@ from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 from pyasm.search import Search, SearchType
 from pyasm.command import Command, Trigger
 
-from workflow import *
+from workflow import Workflow
+from task import Task
 
 from pyasm.security import Batch
 
@@ -56,10 +57,12 @@ class WorkflowCmd(Command):
         #print "project: ", Project.get().get_data()
 
         try:
-            workflow_init()
-            my._test_auto_process()
-            my._test_check()
-            my._test_choice()
+            Workflow().init()
+            my._test_manual()
+            my._test_task()
+            #my._test_auto_process()
+            #my._test_check()
+            #my._test_choice()
         except Exception, e:
             print "Error: ", e
             raise
@@ -70,10 +73,11 @@ class WorkflowCmd(Command):
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
         pipeline_id = random.randint(0, 10000000)
-        pipeline.set_value("code", "test%s" % pipeline_id)
-        pipeline.set_id(pipeline_id)
-        pipeline.set_value("id", pipeline_id)
+        #pipeline.set_value("code", "test%s" % pipeline_id)
+        #pipeline.set_id(pipeline_id)
+        #pipeline.set_value("id", pipeline_id)
         pipeline.set_value("pipeline", pipeline_xml)
+        pipeline.commit()
 
         process_names = pipeline.get_process_names()
 
@@ -92,6 +96,11 @@ class WorkflowCmd(Command):
             process = SearchType.create("config/process")
             process.set_value("process", process_name)
             process.set_value("pipeline_code", pipeline.get_code())
+            process.set_json_value("trigger", {
+                'on_complete': '''
+                sobject.set_value('%s', "complete")
+                ''' % process_name,
+            } )
             process.commit()
 
             processes_dict[process_name] = process
@@ -136,15 +145,6 @@ class WorkflowCmd(Command):
         '''
         pipeline, processes = my.get_pipeline(pipeline_xml)
 
-        for process in processes.keys():
-            a_process = processes.get(process)
-            a_process.set_json_value("trigger", {
-                'on_complete': '''
-                #print "complete: ", process
-                sobject.set_value('%s', "complete")
-                ''' % process
-            } )
-            a_process.commit()
 
         process = "a"
         output = {
@@ -282,16 +282,6 @@ class WorkflowCmd(Command):
 
         pipeline, processes = my.get_pipeline(pipeline_xml)
 
-        for process in processes.keys():
-            a_process = processes.get(process)
-            a_process.set_json_value("trigger", {
-                'on_complete': '''
-                sobject.set_value('%s', "complete")
-                ''' % process,
-            } )
-            a_process.commit()
-
-
         process = processes.get("b")
         process.set_json_value("trigger", {
             'on_action': '''
@@ -322,6 +312,80 @@ class WorkflowCmd(Command):
 
 
 
+    def _test_manual(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        sobject.set_value("code", "test")
+        sobject.set_value("a", False)
+        sobject.set_value("b", False)
+
+
+        pipeline_xml = '''
+        <pipeline>
+          <process name="a"/>
+          <process type="auto" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
+        my.assertEquals( False, sobject.get_value("a"))
+        my.assertEquals( False, sobject.get_value("b"))
+
+
+    def _test_task(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+
+
+        pipeline_xml = '''
+        <pipeline>
+          <process name="a"/>
+          <process type="auto" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code() )
+        sobject.commit()
+
+        for process_name, process in processes.items():
+            process.set_json_value("trigger", {
+                #'on_in_progress': '''
+                #sobject.set_value('name_first', '%s')
+                #''' % process_name,
+                'on_complete': '''
+                sobject.set_value('name_first', '%s')
+                ''' % process_name,
+            } )
+            process.commit()
+ 
+
+        task = Task.create(sobject, process="a", description="Test Task")
+
+        # TODO: not quite sure if this should be related to "action"
+        #task.set_value("status", "in_progress")
+        #task.commit()
+        #my.assertEquals( "in_progress", sobject.get_value("name_first"))
+
+        task.set_value("status", "complete")
+        task.commit()
+        my.assertEquals( "a", sobject.get_value("name_first"))
 
 
 

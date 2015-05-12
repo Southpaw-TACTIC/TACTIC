@@ -625,9 +625,6 @@ class Task(SObject):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
-        #task.set_value( "search_type", sobject.get_search_type() )
-        #task.set_value( "search_id", sobject.get_id() )
-        #task.set_value( "search_code", sobject.get_code() )
         task.set_parent(sobject)
 
         task.set_value("process", process )
@@ -638,7 +635,6 @@ class Task(SObject):
 
         if not project_code:
             project_code = sobject.get_project_code()
-            #project_code = Project.get_project_code()
         task.set_value("project_code", project_code )
         task.set_value("pipeline_code", pipeline_code) 
 
