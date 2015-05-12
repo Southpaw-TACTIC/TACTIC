@@ -526,7 +526,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'insert|sthpw/note',
                 'change|sthpw/task|status',
                 'change|sthpw/task|assigned',
-                'change|sthpw/note',
+                'change|sthpw/note'
             ]
             if my.search_type:
                 event_labels.append('Files are checked in')
