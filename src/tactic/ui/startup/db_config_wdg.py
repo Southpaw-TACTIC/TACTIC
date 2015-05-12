@@ -301,15 +301,15 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         title = "Security"
         category = "security"
-        options = ['version','ticket_expiry','authenticate_mode','authenticate_class',
+        options = ['ticket_expiry','authenticate_mode','authenticate_class',
             'authenticate_version','auto_create_user','api_require_password',
             'api_password','max_login_attempt','account_logout_duration',
             'allow_guest','guest_mode']
-        options_type = {'version':'number','ticket_expiry':'string',
+        options_type = {'ticket_expiry':'string',
             'authenticate_mode':'string','authenticate_class':'string',
             'authenticate_version':'number','auto_create_user':'bool',
             'api_require_password':'bool','api_password':'string',
-            'max_login_attempt':'number','account_logout_duration':'string',
+            'max_login_attempt':'number','account_logout_duration':'number',
             'allow_guest':'bool','guest_mode':'string'}
         top.add( my.configure_category(title, category, options,options_type) )
 
@@ -321,7 +321,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         #wizard_wdg.add(DivWdg("dog"), "dog")
         return top
 
-    def configure_category(my, title, category, options,options_type = {}):
+    def configure_category(my, title, category, options, options_type = {}):
         div = DivWdg()
 
         title_wdg = DivWdg()
@@ -496,7 +496,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
             
             var top = bvr.src_el.getParent(".spt_db_config_top");
             var failed_els = top.getElements('.spt_input_validation_failed')
-            if(failed_els.length > 0){
+            if (failed_els.length > 0){
                 spt.alert('One of the fields fail validation. Please correct it before saving')
                 return;
             }
@@ -955,14 +955,14 @@ class DbConfigSaveCbk(Command):
         my.section = 'Security'
         web = WebContainer.get_web()
 
-        options = ['version','allow_guest','ticket_expiry','authenticate_mode',
+        options = ['allow_guest','ticket_expiry','authenticate_mode',
             'authenticate_class','authenticate_version','auto_create_user',
             'api_require_password','api_password','max_login_attempt','account_logout_duration']
         for option in options:
-            secure = web.get_form_value("security/%s" %option)
+            security_value = web.get_form_value("security/%s" %option)
 
-            if secure:
-                Config.set_value("security", option, secure)
+            if security_value:
+                Config.set_value("security", option, security_value)
             else:
                 Config.set_value("security", option,  "")
 
