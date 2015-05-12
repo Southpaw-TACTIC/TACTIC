@@ -1073,10 +1073,10 @@ spt.popup.get_widget = function( evt, bvr )
 
     if (popup_body && (popup_header || popup_footer)) {
         if (popup_header) {
-            popup_header_height = $(popup_header).getSize().y
+            popup_header_height = $(popup_header).getSize().y;
         }
         if (popup_footer) {
-            popup_footer_height = $(popup_footer).getSize().y
+            popup_footer_height = $(popup_footer).getSize().y;
         }
 
         var window_size = $(window).getSize();
