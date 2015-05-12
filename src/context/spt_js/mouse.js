@@ -1078,11 +1078,13 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     spt.css.copy_styles( el_to_copy, copy, override_styles );
 
     // apply any extra styles (extra_styling is a CSS string) ...
-    var style_map = spt.get_style_map_from_str( extra_styling );
+    if (extra_styling) {
+        var style_map = spt.get_style_map_from_str( extra_styling );
 
-    for( var style in style_map ) {
-        if( ! style_map.hasOwnProperty(style) ) { continue; }
-        copy.setStyle( style, style_map[style] );
+        for( var style in style_map ) {
+            if( ! style_map.hasOwnProperty(style) ) { continue; }
+            copy.setStyle( style, style_map[style] );
+        }
     }
 
     copy.setStyle( "position", "absolute" );

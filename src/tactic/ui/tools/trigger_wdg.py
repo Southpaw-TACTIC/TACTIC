@@ -321,11 +321,15 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
         # get some info about where this trigger should be defined
-        # TODO: is this not embedded in the trigger?
         if my.mode == 'pipeline':
             my.pipeline_code = my.kwargs.get("pipeline_code")
             my.process = my.kwargs.get("process")
             my.pipeline = Pipeline.get_by_code(my.pipeline_code)
+
+            process_obj = my.pipeline.get_process(my.process)
+            process_type = process_obj.get_type()
+            #print "process_type: ", process_type
+
             #my.search_type = ""
             my.search_type = my.kwargs.get("search_type")
             if not my.search_type:

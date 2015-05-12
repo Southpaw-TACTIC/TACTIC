@@ -545,6 +545,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # add a node
         node = DivWdg()
         node.add_class("spt_pipeline_node")
+        node.add_attr("spt_node_type", "node")
 
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
@@ -711,8 +712,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # add custom node behaviors
-        my.node_behaviors = my.get_node_behaviors()
-        for node_behavior in my.node_behaviors:
+        node_behaviors = my.get_node_behaviors()
+        for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
         content.set_round_corners(5)
@@ -990,13 +991,96 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
-
-
     def get_approval_node(my, name, process=None):
 
         node = DivWdg()
         node.add_class("spt_pipeline_approval")
         node.add_class("spt_pipeline_node")
+        node.add_attr("spt_node_type", "approval")
+
+
+        node.add_attr("spt_element_name", name)
+        node.add_attr("title", name)
+
+
+        node.add_style("z-index", "200");
+
+        width = 60
+        height = 60
+
+
+        node.add_style("position: absolute")
+
+        node.add_style("width: auto")
+        node.add_style("height: auto")
+
+
+
+        # add custom node behaviors
+        node_behaviors = my.get_node_behaviors()
+        for node_behavior in node_behaviors:
+            node.add_behavior( node_behavior )
+
+
+
+
+        my.add_nobs(node, width, height)
+
+
+        content = DivWdg()
+        node.add(content)
+        #content.add_style("overflow: hidden")
+        content.add_class("spt_content")
+        content.add_style("width: %spx" % width)
+        content.add_style("height: %spx" % height)
+        #content.add_style("border-radius: %spx" % (width/2))
+        content.add_style("border: solid 1px black")
+
+        content.add_style("transform: rotate(-45deg)")
+
+
+        label = DivWdg()
+        node.add(label)
+        label.add_style("position: absolute")
+
+        label.add_style("width: %spx" % width)
+        label.add_style("height: %spx" % height)
+
+        label.add_style("top: %spx" % (height/4+7) )
+        label.add_class("spt_label");
+        label.add(name)
+        label.add_style("vertical-align: middle")
+        label.add_style("overflow: hidden")
+        label.add_style("text-align: center")
+
+        text = TextWdg()
+        node.add(text)
+        text.add_style("position: absolute")
+        text.add_style("display: none")
+        text.add_style("top: %spx" % (height/4+5) )
+        text.add_style("left: %spx" % (height/4+5) )
+        text.add_style("width: 65px")
+        text.set_value(name)
+
+
+        active = DivWdg()
+        node.add(active)
+        active.add_class("spt_active")
+
+        my.add_default_node_behaviors(node, text)
+
+        return node
+
+
+
+
+
+    def get_approval_nodeX(my, name, process=None):
+
+        node = DivWdg()
+        node.add_class("spt_pipeline_approval")
+        node.add_class("spt_pipeline_node")
+        node.add_attr("spt_node_type", "approval")
 
 
         node.add_attr("spt_element_name", name)
@@ -1514,7 +1598,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
             var blue = pix[j+2];
             if (red != 0 || blue != 0 || green != 0) {
                 spt.pipeline.add_to_selected(connector);
-                connector.set_color("red");
+                connector.set_color("#990");
                 found = true;
                 ctx.clearRect(left,top,width,height);
                 hit_connector = connector;
@@ -1807,6 +1891,13 @@ spt.pipeline.get_node_by_name = function(name) {
 spt.pipeline.get_node_name = function(node) {
     return node.getAttribute("spt_element_name");
 }
+
+
+spt.pipeline.get_node_type = function(node) {
+    return node.getAttribute("spt_node_type");
+}
+
+
 
 spt.pipeline.get_full_node_name = function(node, group_name) {
     name = node.getAttribute("spt_element_name");
@@ -2739,6 +2830,14 @@ spt.pipeline.draw_connector = function(start, end, color) {
     if (typeof(color) == 'undefined') {
         color = '#111';
     }
+
+    var back = false;
+    if (start.x - 100 > end.x + 100) {
+        color = "#900";
+        start.x = start.x - 50;
+        var back = true;
+    }
+
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color; 
     //ctx.fillStyle = color;
@@ -2772,8 +2871,15 @@ spt.pipeline.draw_connector = function(start, end, color) {
 
 
         tmp_start = start;
-        tmp_end = { x: start.x - offset.x, y: start.y - offset.y };
-        spt.pipeline.draw_arc(tmp_start, tmp_end, x_arc);
+        if (back) {
+            tmp_end = start;
+            offset.y = offset.y * 3.0;
+            x_arc = x_arc * 3.0;
+        }
+        else {
+            tmp_end = { x: start.x - offset.x, y: start.y - offset.y };
+            spt.pipeline.draw_arc(tmp_start, tmp_end, x_arc);
+        }
 
         tmp_start = tmp_end;
         tmp_end = { x: end.x + offset.x, y: end.y + offset.y};
