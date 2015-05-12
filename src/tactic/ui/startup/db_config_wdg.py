@@ -150,8 +150,6 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         db_select.set_value(vendor)
 
-
-
         db_select.add_behavior( {
         'type': 'change',
         'cbjs_action': '''
@@ -280,14 +278,16 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         title = "Mail Server"
         category = "services"
-        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 'mail_tls_enabled', 'mail_sender_disabled']
+        options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 
+            'mail_tls_enabled', 'mail_sender_disabled']
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
 
         title = "Services"
         category = "services"
-        options = ['process_count', 'process_time_alive', 'thread_count', 'python_path']
+        options = ['process_count', 'process_time_alive', 'thread_count', 
+            'python_path','rsync']
         top.add( my.configure_category(title, category, options) )
 
         top.add("<hr/>")
@@ -297,6 +297,23 @@ class DbConfigContentWdg(BaseRefreshWdg):
         options = ['palette']
         top.add( my.configure_category(title, category, options) )
 
+        top.add("<hr/>")
+
+        title = "Security"
+        category = "security"
+        options = ['version','ticket_expiry','authenticate_mode','authenticate_class',
+            'authenticate_version','auto_create_user','api_require_password',
+            'api_password','max_login_attempt','account_logout_duration',
+            'allow_guest','guest_mode']
+        options_type = {'version':'number','ticket_expiry':'string',
+            'authenticate_mode':'string','authenticate_class':'string',
+            'authenticate_version':'number','auto_create_user':'bool',
+            'api_require_password':'bool','api_password':'string',
+            'max_login_attempt':'number','account_logout_duration':'string',
+            'allow_guest':'bool','guest_mode':'string'}
+        top.add( my.configure_category(title, category, options,options_type) )
+
+
         #wizard_wdg = WizardWdg()
         #top.add(wizard_wdg)
         #wizard_wdg.add(DivWdg("cow"), "cow")
@@ -304,7 +321,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         #wizard_wdg.add(DivWdg("dog"), "dog")
         return top
 
-    def configure_category(my, title, category, options):
+    def configure_category(my, title, category, options,options_type = {}):
         div = DivWdg()
 
         title_wdg = DivWdg()
@@ -329,10 +346,30 @@ class DbConfigContentWdg(BaseRefreshWdg):
             td = table.add_cell("%s: " % display_title)
             td.add_style("width: 150px")
 
-            if option.endswith('password'):
+            option_type = options_type.get(option)
+            validation_scheme = ""
+
+            #add selectWdg for those options whose type is bool
+            if option_type == 'bool':
+                text = SelectWdg(name="%s/%s" % (category, option))
+                text.set_option('values','true|false')
+                text.set_option('empty','true')
+                text.add_style("margin-left: 0px")
+
+                        
+            elif option.endswith('password'):
                 text = PasswordInputWdg(name="%s/%s" % (category, option))
+
+            # dealing with options whose type is number   
             else:
-                text = TextInputWdg(name="%s/%s" % (category, option))
+                if option_type == 'number':
+                    validation_scheme = 'INTEGER'
+                    
+                else:
+                    validation_scheme = ""
+
+                text = TextInputWdg(name="%s/%s" % (category, option), validation_scheme=validation_scheme, read_only="false")
+                
 
             value = Config.get_value(category, option)
             if value:
@@ -456,8 +493,14 @@ class DbConfigContentWdg(BaseRefreshWdg):
             'os' : os.name, 
             'checkin_options':checkin_keys,
             'cbjs_action': '''
-            spt.app_busy.show("Saving configuration. Please wait...")
+            
             var top = bvr.src_el.getParent(".spt_db_config_top");
+            var failed_els = top.getElements('.spt_input_validation_failed')
+            if(failed_els.length > 0){
+                spt.alert('One of the fields fail validation. Please correct it before saving')
+                return;
+            }
+            spt.app_busy.show("Saving configuration. Please wait...")
             var values = spt.api.Utility.get_input_values(top, null, false);
             var class_name = 'tactic.ui.startup.DbConfigSaveCbk';
             var server = TacticServerStub.get();
@@ -646,6 +689,7 @@ class DbConfigSaveCbk(Command):
             my.configure_gen_services()
             my.configure_asset_dir()
             my.configure_palette()
+            my.configure_security()
         except Exception, e:
             raise TacticException('Error in [%s]: %s'%(my.section, e.__str__()))
         # FIXME: if this all fails, then revert back
@@ -895,7 +939,7 @@ class DbConfigSaveCbk(Command):
         my.section = 'Services'
         web = WebContainer.get_web()
 
-        options = ['process_count', 'process_time_alive', 'thread_count', 'python_path']
+        options = ['process_count', 'process_time_alive', 'thread_count', 'python_path','rsync']
         for option in options:
             value = web.get_form_value("services/%s" %option)
 
@@ -904,6 +948,23 @@ class DbConfigSaveCbk(Command):
             else:
                 
                 Config.set_value("services", option,  "")
+
+
+
+    def configure_security(my):
+        my.section = 'Security'
+        web = WebContainer.get_web()
+
+        options = ['version','allow_guest','ticket_expiry','authenticate_mode',
+            'authenticate_class','authenticate_version','auto_create_user',
+            'api_require_password','api_password','max_login_attempt','account_logout_duration']
+        for option in options:
+            secure = web.get_form_value("security/%s" %option)
+
+            if secure:
+                Config.set_value("security", option, secure)
+            else:
+                Config.set_value("security", option,  "")
 
 
 
