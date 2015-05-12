@@ -70,6 +70,19 @@ Assigned: {@GET(.assigned)}
 Status: {@GET(.status)}
         '''
 
+    },
+
+    # When a note has been added or modified
+    "change|sthpw/note":
+    {
+        "subject": "TACTIC: a note has been added or modified.",
+        "message": '''
+A note has been added or modified.
+_________________________
+
+User: {@GET(.login)}
+Note: {@GET(.note)}
+        '''
     }
 
 }
