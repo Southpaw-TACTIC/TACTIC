@@ -313,17 +313,25 @@ class Sql(Base):
         db_resource = my.get_db_resource()
         database = my.get_database_name()
 
-        key = '%s:%s' %(db_resource, table)
+        from pyasm.security import Site
+        #use_cache = False
+        site = Site.get_site()
+        if site:
+            key = '%s:%s:%s' %(site, db_resource, table)
+        else:
+            key = '%s:%s' %(db_resource, table)
         if use_cache:
             columns = Container.get_dict("Sql:table_columns", key)
             if columns:
                 return columns[:]
-                #return columns
 
             # use global cache
             if database == 'sthpw':
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                if site:
+                    cache = CacheContainer.get("%s:sthpw_column_info" % site)
+                else:
+                    cache = CacheContainer.get("sthpw_column_info")
                 if cache:
                     columns = cache.get_value_by_key("columns", table)
                     if columns != None:
@@ -1621,6 +1629,40 @@ class Select(object):
         my.set_statement = None
 
         my.schema = ""
+
+
+    def copy(my):
+        select = Select()
+
+        select.tables = my.tables[:]
+        select.id_col = my.id_col
+        select.columns = my.as_columns[:]
+        select.column_tables = my.column_tables[:]
+        select.wheres = my.wheres[:]
+        select.filters = my.filters.copy()
+        select.raw_filters = my.raw_filters[:]
+        select.filter_mode = my.filter_mode
+        select.group_bys = my.group_bys[:]
+        select.havings = my.havings[:]
+        select.order_bys = my.order_bys[:]
+        select.order_by_columns = my.order_by_columns[:]
+        select.limit = my.limit
+        select.offset = my.offset
+        select.distinct = my.distinct
+        select.distinct_col = my.distinct_col
+        select.joins = my.joins
+        select.join_tables = my.join_tables.copy()
+
+        select.schema = my.schema
+        select.sql = my.sql
+        select.database = my.database
+        select.db_resource = my.db_resource
+        select.impl = my.impl
+        select.set_statement = my.set_statement
+
+
+        return select
+
 
 
     def execute(my, sql=None):

@@ -71,7 +71,7 @@ class WizardWdg(BaseRefreshWdg):
 
         title = my.kwargs.get("title")
         if not title:
-            title = "No Title"
+            title = "none"
         
         if title != "none":
             title_wdg = DivWdg()
@@ -151,6 +151,8 @@ class WizardWdg(BaseRefreshWdg):
         widget.set_name(name)
         super(WizardWdg, my).add(widget, name)
 
+
+
     def get_header_wdg(my):
         div = DivWdg()
         div.add_style("text-align: center")
@@ -221,25 +223,11 @@ class WizardWdg(BaseRefreshWdg):
                 title = title.replace(".", " ")
                 title = Common.get_display_title(title)
 
+            title = "%d.%s" % (i+1, title)
             name_div.add(title)
             name_div.add_style("font-weight: bold")
 
 
-            """
-            if (i+1) < len(my.widgets):
-                arrow_div = DivWdg()
-                dots_div.add(arrow_div)
-                arrow_div.add_style("float: left")
-                arrow_div.add_style("position: absolute")
-                arrow_div.add_style("margin-left: %spx" % ((width+left)*(i+1.2)))
-                arrow_div.add_style("top: -4px")
-                arrow_div.add_style("text-align: center")
-                icon = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
-                arrow_div.add(icon)
-            """
-
-
-        #dots_div.add("<br clear='all'/>")
 
 
         div.add_relay_behavior( {
@@ -390,6 +378,7 @@ class WizardWdg(BaseRefreshWdg):
             if not submit_title:
                 submit_title = "Submit"
             submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
+            submit.add_class("spt_wizard_submit")
             submit.add_behavior( {
             'type': 'click_up',
             'command': command,

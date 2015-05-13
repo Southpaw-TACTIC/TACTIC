@@ -32,15 +32,16 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     def __init__(my, **kwargs):
         BaseRefreshWdg.__init__(my, **kwargs)
         FormerBaseTableElementWdg.__init__(my, **kwargs)
-
-
+        
     def get_args_keys(cls):
         '''external settings which populate the widget'''
         return cls.ARGS_KEYS
     get_args_keys = classmethod(get_args_keys)
 
 
-
+    def set_attributes(my, attrs):
+        '''set attributes dict like access, width, or edit'''
+        my.attributes = attrs
 
     def handle_th(my, th, wdg_idx=None):
 
@@ -188,6 +189,9 @@ class RawTableElementWdg(BaseTableElementWdg):
     def get_title(my):
         name = my.get_name()
         return name
+
+    def is_sortable(my):
+        return True
 
     def get_required_columns(my):
         '''method to get the require columns for this'''

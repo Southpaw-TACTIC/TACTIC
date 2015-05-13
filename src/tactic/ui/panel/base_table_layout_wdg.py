@@ -15,7 +15,7 @@ from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, T
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
-from pyasm.biz import ExpressionParser
+from pyasm.biz import ExpressionParser, Project
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -92,6 +92,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not my.view:
             my.view = 'table'
 
+        my.do_search = True
+        my.search = None
         my.search_view = kwargs.get('search_view')
         my.search_key = kwargs.get("search_key")
         my.ingest_data_view = kwargs.get("ingest_data_view")
@@ -199,7 +201,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # generate it. parent_key could be none if the expression evaluates to None
             expression = my.kwargs.get('expression')
             if expression:
-                if my.search_key and my.search_key != "%s":
+                if my.search_key and (my.search_key not in ["%s", 'None']):
                     start_sobj = Search.get_by_search_key(my.search_key)
                 else:
                     start_sobj = None
@@ -306,11 +308,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         my.look_row_selected_hilite = 'dg_row_selected_hilite'
 
         # MMS_COLOR_OVERRIDE ...
-        if my.skin == 'MMS':
-            my.look_row = 'mms_dg_row'
-            my.look_row_hilite = 'mms_dg_row_hilite'
-            my.look_row_selected = 'mms_dg_row_selected'
-            my.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
+        #if my.skin == 'MMS':
+        #    my.look_row = 'mms_dg_row'
+        #    my.look_row_hilite = 'mms_dg_row_hilite'
+        #    my.look_row_selected = 'mms_dg_row_selected'
+        #    my.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
 
 
         my.palette = web.get_palette()
@@ -563,6 +565,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         search = my.search_wdg.get_search()
+        my.search = search
 
 
         from tactic.ui.filter import FilterData
@@ -639,7 +642,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not parent_key:
             parent_key = my.kwargs.get("parent_key")
         if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
-            print "parent_key: ", parent_key
             parent = Search.get_by_search_key(parent_key)
             if not parent:
                 my.sobjects = []
@@ -660,7 +662,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         try:
             my.alter_search(search)
             my.items_found = search.get_count()
-            my.sobjects = search.get_sobjects()
+
+            if my.do_search == True:
+                my.sobjects = search.get_sobjects()
+
         except SqlException, e:
             my.search_wdg.clear_search_data(search.get_base_search_type())
 
@@ -838,16 +843,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         column = "keywords"
         simple_search_mode = my.kwargs.get("simple_search_mode")
-        
+
+        # default to true
         show_keyword_search = my.kwargs.get("show_keyword_search")
-        if show_keyword_search in [True, 'true']:
-            show_keyword_search = True
-        else:
+        if show_keyword_search in [False, 'false']:
             show_keyword_search = False
+        else:
+            show_keyword_search = True
 
-        # TEST: on by default
-        show_keyword_search = True
 
+        show_search = my.kwargs.get("show_search") != 'false'
 
        
         if show_keyword_search:
@@ -911,7 +916,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                 } )
 
-
+            """
+            # this make clicking on the Search not work when the focus is on text input
             keyword_div.add_relay_behavior( {
                 'type': 'blur',
                 'bvr_match_class': "spt_text_input",
@@ -923,7 +929,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 '''
             } )
-
+            """
 
         else:
             keyword_div = None
@@ -1136,7 +1142,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-            button = ActionButtonWdg(title='Search')
+            if show_search or show_keyword_search:
+                search_label = 'Search'
+            else:
+                search_label = 'Refresh'
+            button = ActionButtonWdg(title=search_label)
             my.run_search_bvr = my.kwargs.get('run_search_bvr')
             if my.run_search_bvr:
                 button.add_behavior(my.run_search_bvr)
@@ -1257,7 +1267,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         outer.add_style("min-width: 750px")
         #outer.add_style("width: 300px")
         #outer.add_style("overflow: hidden")
-        outer.add_class("spt_resizable")
+        #outer.add_class("spt_resizable")
 
         #div.add_style("min-width: 800px")
         div.add_style("height: %s" % height)
@@ -1803,7 +1813,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     def get_column_manager_wdg(my):
 
         security = Environment.get_security()
-        if not security.check_access("builtin", "view_column_manager", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
+
+        if not security.check_access("builtin", access_keys, "allow"):
             return None
 
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
@@ -2321,9 +2335,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         menu_data.append( {
             "type": "title", "label": "Table Columns &amp; Contents"
         } )
+        project_code = Project.get_project_code()
 
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
         # Column Manager menu item ...
-        if security.check_access("builtin", "view_column_manager", "allow"):
+        if security.check_access("builtin", access_keys, "allow"):
             menu_data.append( {
             "type": "action",
             "label": "Column Manager",
@@ -2777,7 +2793,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         security = Environment.get_security()
-        if security.check_access("builtin", "retire_delete", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
         
             spec_list.extend( [{ "type": "separator" },
                 
@@ -2922,4 +2941,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_layout_version(my):
         return "2"
+
+    def _get_access_keys(my, key, project_code):
+        '''get access keys for a builtin rule'''
+        access_key1 = {
+            'key': key,
+            'project': project_code
+        }
+
+        access_key2 = {
+            'key': key 
+
+        }
+        access_keys = [access_key1, access_key2]
+        return access_keys
+
 

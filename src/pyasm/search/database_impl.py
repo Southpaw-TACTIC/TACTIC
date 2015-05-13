@@ -125,8 +125,8 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get_id_col(my, db_resource, search_type):
         from pyasm.search import SearchType
-        search_type = SearchType.get(search_type)
-        id_col = search_type.get_search_type_id_col()
+        search_type_obj = SearchType.get(search_type)
+        id_col = search_type_obj.get_search_type_id_col()
         return id_col
 
 
@@ -1113,7 +1113,13 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             # use global cache
             if prefix.endswith(':sthpw'):
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                from pyasm.security import Site
+                site = Site.get()
+                if site:
+                    key = "%s:sthpw_column_info" % site
+                else:
+                    key = "sthpw_column_info"
+                cache = CacheContainer.get()
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:
@@ -1420,9 +1426,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if isinstance(table, SearchType):
             search_type = table
             table = search_type.get_table()
-            id_col = search_type.get_id_col()
+            id_col = search_type.get_search_type_id_col()
             if id_col:
                 return "%s_%s_seq" % (table, id_col)
+
         return "%s_id_seq" % table
 
 
@@ -1788,7 +1795,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             # use global cache
             if prefix.endswith(':sthpw'):
                 from pyasm.biz import CacheContainer
-                cache = CacheContainer.get("sthpw_column_info")
+                from pyasm.security import Site
+                site = Site.get()
+                if site:
+                    key = "%s:sthpw_column_info" % site
+                else:
+                    key = "sthpw_column_info"
+                cache = CacheContainer.get(key)
                 if cache:
                     dict = cache.get_value_by_key("data", table)
                     if dict != None:

@@ -75,7 +75,7 @@ class PopupWdg(BaseRefreshWdg):
             my.destroy_on_close = True
 
         my.allow_close = True
-        if my.kwargs.get('allow_close') == 'false':
+        if my.kwargs.get('allow_close') in ['false', 'False', False]:
             my.allow_close = False
 
 
@@ -92,7 +92,8 @@ class PopupWdg(BaseRefreshWdg):
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
             var popup=spt.popup.get_popup( bvr.src_el );
-            spt.named_events.fire_event('preclose_' + popup.id, {});
+            var popup_id = popup.id;
+            spt.named_events.fire_event('preclose_' + popup_id, {});
         '''
 
         if my.destroy_on_close:
@@ -217,6 +218,10 @@ class PopupWdg(BaseRefreshWdg):
         popup.setStyle("left", left);
         //popup.setStyle("top", top);
 
+        var content = popup.getElement(".spt_popup_content");
+        content.setStyle("max-height", window_size.y - 200);
+        content.setStyle("overflow-y", "auto");
+
         '''
         } )
 
@@ -284,7 +289,7 @@ class PopupWdg(BaseRefreshWdg):
 
         # create the 'close' button ...
         if my.allow_close:
-            close_wdg = SpanWdg()
+            close_wdg = SpanWdg(css='spt_popup_close')
             #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
             close_wdg.add( IconWdg("Close", "BS_REMOVE") )
             close_wdg.add_style("margin: 5px 1px 3px 1px")
@@ -300,7 +305,7 @@ class PopupWdg(BaseRefreshWdg):
 
 
             # create the 'minimize' button ...
-            minimize_wdg = SpanWdg()
+            minimize_wdg = SpanWdg(css='spt_popup_min')
             minimize_wdg.add_style("margin: 5px 1px 3px 1px")
             #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
             minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
@@ -899,6 +904,8 @@ spt.popup.get_widget = function( evt, bvr )
     // get the title
     var width = options["width"];
     var height = options["height"];
+    var on_close = options["on_close"];
+    var allow_close = options["allow_close"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
     var popup = null;
@@ -921,6 +928,8 @@ spt.popup.get_widget = function( evt, bvr )
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
         var popup = spt.behavior.duplicate_element(popup_template);
 
+
+
         if( popup_id ) {
             popup.set("id", popup_id);
         } else {
@@ -942,9 +951,27 @@ spt.popup.get_widget = function( evt, bvr )
         spt.puw.process_new( popup.parentNode );
     }
 
+    var close_wdg = popup.getElement('.spt_popup_close');
+    var min_wdg = popup.getElement('.spt_popup_min');
+    if ([false, 'false'].contains(allow_close)) {
+        spt.hide(close_wdg);
+        spt.hide(min_wdg);
+    }
+    else {
+        spt.show(close_wdg);
+        spt.show(min_wdg);
+    }
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
-    popup.setStyle("left", "-10000px")
+    popup.setStyle("left", "-10000px");
+    var cbjs_action;
+    if (typeof on_close == "function") {
+        cbjs_action = String(on_close) + "; on_close();";
+    }
+    else {
+        cbjs_action = on_close;
+    }
+    spt.behavior.add(popup, {'type':'listen', 'event_name':"preclose_" + popup_id, 'cbjs_action': cbjs_action});
     spt.popup.open( popup );
 
     // add the place holder
@@ -1035,7 +1062,7 @@ spt.popup.get_widget = function( evt, bvr )
     var widget_html = server.get_widget(class_name, kwargs);
     spt.behavior.replace_inner_html( content_wdg, widget_html );
 
-    callback();
+    setTimeout(function(){callback()}, 10);
 
     return popup;
 }

@@ -209,6 +209,15 @@ class CherryPyStartup(CherryPyStartup20):
 
         log_dir = "%s/log" % Environment.get_tmp_dir()
 
+
+
+        def CORS():
+            #cherrypy.response.headers["Access-Control-Allow-Origin"] = "http://192.168.0.15:8100"
+            cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"
+            cherrypy.response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
+        cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
+
+
         config = {
             
             'global': {
@@ -228,8 +237,9 @@ class CherryPyStartup(CherryPyStartup20):
                 'tools.decode.encoding': 'utf-8',
                 #'encoding_filter.on': True,
                 #'decoding_filter.on': True
-            }
-            ,
+                'tools.CORS.on': True
+
+                },
             '/context': {'tools.staticdir.on': True,
                          'tools.staticdir.dir': context_path,
                          # Need to do this because on windows servers, jar files

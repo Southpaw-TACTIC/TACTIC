@@ -342,6 +342,19 @@ class CsvImportWdg(BaseRefreshWdg):
                 my.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
                 
 
+        my.columns = my.kwargs.get("columns")
+        if not my.columns:
+            my.columns = web.get_form_value("columns")
+        if my.columns and isinstance(my.columns, basestring):
+            my.columns = my.columns.split("|")
+
+        my.labels = my.kwargs.get("labels")
+        if not my.labels:
+            my.labels = web.get_form_value("labels")
+        if my.labels and isinstance(my.labels, basestring):
+            my.labels = my.labels.split("|")
+
+
 
 
     def get_display(my):
@@ -490,9 +503,17 @@ class CsvImportWdg(BaseRefreshWdg):
 
                 button = ActionButtonWdg(title='Change')
                 button.add_style('float','left')
-                button.add_behavior( {'type': 'click_up', \
-                                   'cbjs_action': "spt.panel.load('csv_import_main','%s', {}, {\
-                                    'search_type_filter': '%s'});" %(Common.get_full_class_name(my), my.search_type) } )
+                button.add_behavior( {
+                    'type': 'click_up', 
+                    'columns': "|".join(my.columns),
+                    'labels': "|".join(my.labels),
+                    'cbjs_action': '''
+                    spt.panel.load('csv_import_main','%s', {}, {
+                        search_type_filter: '%s',
+                        columns: bvr.columns,
+                        labels: bvr.labels
+                    });''' %(Common.get_full_class_name(my), my.search_type)
+                } )
                 widget.add(button)
                 widget.add("<br clear='all'/>")
                 widget.add(HtmlElement.br())
@@ -576,11 +597,15 @@ class CsvImportWdg(BaseRefreshWdg):
             text.add_class("spt_import_cut_paste")
             msg.add(text)
             msg.add("<br/>"*3)
+
+
             button = ActionButtonWdg(title="Parse")
             button.add_style("margin: 5px auto")
             msg.add(button)
             button.add_behavior( {
                 'type': 'click_up',
+                'columns': "|".join(my.columns),
+                'labels': "|".join(my.labels),
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_import_top");
                 var el = top.getElement(".spt_import_cut_paste");
@@ -632,7 +657,13 @@ class CsvImportWdg(BaseRefreshWdg):
                 values['is_refresh'] = true;
                 //values['file_name'] = file_name;
                 values['data'] = csv;
-                var info = spt.panel.load('csv_import_main', class_name, {}, values);
+
+                var kwargs = {
+                    columns: bvr.columns,
+                    labels: bvr.labels
+                };
+                values['labels'] = bvr.labels;
+                var info = spt.panel.load('csv_import_main', class_name, kwargs, values);
                 '''
             } )
 
@@ -823,7 +854,9 @@ class CsvImportWdg(BaseRefreshWdg):
 
     
     def get_preview_wdg(my):
-        preview = PreviewDataWdg(file_path=my.file_path, search_type = my.search_type)
+        columns = my.columns
+        labels = my.labels
+        preview = PreviewDataWdg(file_path=my.file_path, search_type=my.search_type, columns=columns, labels=labels)
         return preview
 
 class PreviewDataWdg(BaseRefreshWdg):
@@ -844,6 +877,23 @@ class PreviewDataWdg(BaseRefreshWdg):
         lowercase_title_checkbox = CheckboxWdg("lowercase_title")
 
         my.lowercase_title = lowercase_title_checkbox.is_checked()
+
+
+        my.columns = web.get_form_value("columns")
+        if not my.columns: 
+            my.columns = my.kwargs.get("columns")
+        if my.columns and isinstance(my.columns, basestring):
+            my.columns = my.columns.split("|")
+
+        my.labels = web.get_form_value("labels")
+        if not my.labels: 
+            my.labels = my.kwargs.get("labels")
+        if my.labels and isinstance(my.labels, basestring):
+            my.labels = my.labels.split("|")
+
+
+
+
 
     def get_column_preview(my, div):
         # parse the first fow
@@ -894,6 +944,17 @@ class PreviewDataWdg(BaseRefreshWdg):
         #data_row_text.set_value(data_row)
 
 
+        columns_wdg = HiddenWdg("columns")
+        div.add(columns_wdg)
+        if my.columns:
+            columns_wdg.set_value("|".join(my.columns))
+
+        labels_wdg = HiddenWdg("labels")
+        div.add(labels_wdg)
+        if my.labels:
+            labels_wdg.set_value("|".join(my.labels))
+
+
         div.add( IconWdg("Important", IconWdg.CREATE) )
         div.add("Use the sample row to match which columns the data will be imported into TACTIC<br/><br/>")
         #table = Table(css='spt_csv_table')
@@ -906,7 +967,9 @@ class PreviewDataWdg(BaseRefreshWdg):
         table.add_border()
 
 
-        table.add_row()
+        tr = table.add_row()
+        tr.add_color("background", "background", -5)
+        tr.add_border()
         cb = CheckboxWdg('csv_row')
         
         cb.set_default_checked()
@@ -921,38 +984,62 @@ class PreviewDataWdg(BaseRefreshWdg):
              'cbjs_action': js}) 
 
         th = table.add_header(cb)
-        th.add_gradient("background", "background")
+        th.add_style("padding: 5px")
         th = table.add_header("CSV Column Value")
-        th.add_gradient("background", "background")
+        th.add_style("padding: 5px")
         th.add_class('smaller')
         th = table.add_header("TACTIC Column")
-        th.add_gradient("background", "background")
+        th.add_style("padding: 5px")
         th.add_class('smaller')
         th = table.add_header("Create New Column")
+        th.add_style("padding: 5px")
         th.add_style('min-width: 100px')
-        th.add_gradient("background", "background")
         th.add_class('smaller')
-        
-        columns = SearchType.get_columns(my.search_type)
-        sobj = SObjectFactory.create(my.search_type)
-        required_columns = sobj.get_required_columns()
-        
+       
+
+        # set the columns and labels
+        columns = my.columns
+        labels = my.labels
+
+        if not columns:
+
+            columns = SearchType.get_columns(my.search_type)
+            sobj = SObjectFactory.create(my.search_type)
+            required_columns = sobj.get_required_columns()
+
+            columns.sort()
+
+            labels = []
+           
+            for column in columns:
+                if column in required_columns:
+                    label = '%s**'%column
+                else:
+                    label = column
+
+                label = Common.get_display_title(label)
+                labels.append(label)
+
+        elif not labels:
+            labels = []
+            for column in columns:
+                label = Common.get_display_title(column)
+                labels.append(label)
+
+       
+
+        # add an implicit not column
+        columns.append("(note)")
+        labels.append("(Note)")
+
+
+
         row = csv_data[data_row]
-        labels = []
         my.num_columns = len(row)
         hidden = HiddenWdg("num_columns", my.num_columns)
         div.add(hidden)
-        
-        for column in columns:
-            if column in required_columns:
-                label = '%s**'%column
-            else:
-                label = column
-            labels.append(label)
 
-        columns.append("(note)")
-        labels.append("(Note)")
-      
+     
 
         skipped_columns = []
         new_col_indices = []
@@ -980,6 +1067,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             table.add_row()
             cb = CheckboxWdg('column_enabled_%s' %j) 
+            cb.add_style("margin-left: 5px")
             cb.set_default_checked()
             #cb.set_persistence()
             cb.set_persist_on_submit()
@@ -1008,8 +1096,9 @@ class PreviewDataWdg(BaseRefreshWdg):
                 } else {
                     set_display_on('new_column_div_%s')
                 };
-                spt.panel.refresh('preview_data',
-                spt.api.Utility.get_input_values('csv_import_main'));
+
+                var values = spt.api.Utility.get_input_values('csv_import_main');
+                spt.panel.refresh('preview_data', values );
 
             '''% (j,j)})
 
@@ -1020,10 +1109,10 @@ class PreviewDataWdg(BaseRefreshWdg):
             column_select.set_option("labels", labels)
 
            
-            
-
             display = column_select.get_buffer_display()
             td = table.add_cell( display )
+            td.add_style("padding: 3px")
+
             if csv_titles[j] != 'id':
                 if my.is_refresh:
                     if sel_val != '':
@@ -1055,6 +1144,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 new_col_indices.append(j)
 
                 text = TextWdg("new_column_%s" % j)
+                # Bootstrap
+                text.add_class("form-control")
                 
                 text.add_style('border-color: #8DA832')
                 text.set_persist_on_submit()
@@ -1313,7 +1404,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 title = "<b style='color:red'>*</b>"
             th = table.add_header(title)
             th.add_style("min-width: 100px")
-            th.add_gradient("background", "background", -5)
+            th.add_color("background", "background", -5)
             th.add_style("padding: 3px")
             th.add_style("text-align: left")
 

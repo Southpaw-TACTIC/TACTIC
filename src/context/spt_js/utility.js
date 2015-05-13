@@ -660,11 +660,14 @@ spt.has_class = function( el, cls )
     }
 
     var class_name;
-    if (el.className.baseVal) {
+    if (el.className.baseVal || el.className.baseVal != null) {
         class_name = el.className.baseVal;
     }
-    else {
+    else if (el.className) {
         class_name = el.className;
+    }
+    else {
+        return false;
     }
 
     var regex = new RegExp( "\\b" + cls + "\\b" );
@@ -1601,6 +1604,11 @@ spt.exception.handler = function( ex )
         //from execute_cmd()
         if (ex.message){
             ex_str = ex.message;
+        }
+        else if (spt.get_typeof(ex) =='number') {
+            ex_str = ex;
+            if (ex == 502)
+                ex_str = '502 Proxy Error. The request has exceeded the Timeout setting in the Web Server.'
         }
         else {
             log.error( "ERROR: currently unable to handle exception of type '" + spt.get_typeof(ex) + "'" );

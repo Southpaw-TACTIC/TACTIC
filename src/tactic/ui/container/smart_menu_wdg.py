@@ -128,7 +128,7 @@ class SmartMenuWdg(BaseRefreshWdg):
         options = my.opt_spec_list
         opt_count = 0
 
-        if options[0].get('type') != 'title':
+        if options and options[0].get('type') != 'title':
             my._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
 
 

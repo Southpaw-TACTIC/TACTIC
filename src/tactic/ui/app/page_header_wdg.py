@@ -833,11 +833,11 @@ class ProjectCreateWdg(BaseRefreshWdg):
           
           
             var filename = file.name;
-            filename = spt.path.get_filesystem_name(filename);
+            /*filename = spt.path.get_filesystem_name(filename);*/
             var kwargs = {
                 ticket: ticket,
                 filename: filename
-            }
+            };
             try {
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
                 var info = ret_val.info;

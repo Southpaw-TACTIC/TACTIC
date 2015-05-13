@@ -499,6 +499,12 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
     def is_groupable(my):
         return True
 
+    def init(my):
+        my.due_date_col = my.kwargs.get('due_date_col')
+        if not my.due_date_col:
+            my.due_date_col = 'bid_end_date'
+        my.mode = ''
+
 
     def init_data(my):
 
@@ -554,14 +560,6 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         super(TaskDaysDueElementWdg, my).handle_td(td)
            
-
-
-
-    def init(my):
-        my.due_date_col = my.kwargs.get('due_date_col')
-        if not my.due_date_col:
-            my.due_date_col = 'bid_end_date'
-
 
 
 

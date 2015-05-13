@@ -14,12 +14,13 @@ __all__ = ["ProjectConfigWdg", "UserConfigWdg", "UserPanelWdg"]
 from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.biz import Project
-from pyasm.web import DivWdg, Table, WebContainer, SpanWdg
+from pyasm.web import DivWdg, Table, WebContainer, SpanWdg, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg, CheckboxWdg
 from tactic.ui.container import SmartMenu
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
+from tactic.ui.panel import ViewPanelWdg
 
 class ProjectConfigWdg(BaseRefreshWdg):
 
@@ -94,7 +95,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
 
         panel = {
             'widget': search_type_panel,
-            'title': 'List of Searchable Types (sTypes)',
+            'title': 'Searchable Type (sType) List',
             'width': '50%'
         }
         panels.append(panel)
@@ -219,7 +220,7 @@ class UserConfigWdg(ProjectConfigWdg):
 
         panel = {
             'widget': user_panel,
-            'title': 'List of Users',
+            'title': 'User List',
         }
         panels.append(panel)
 
@@ -242,8 +243,14 @@ class UserConfigWdg(ProjectConfigWdg):
         """
 
         config_xml.append('''
-        <element name="Groups">
+        <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
+        </element>
+        <element name="Group List">
+            <display class='tactic.ui.panel.ViewPanelWdg'>
+                <search_type>sthpw/login_group</search_type>
+                <view>startup</view>
+            </display>
         </element>
         ''')
 
@@ -817,34 +824,23 @@ class UserPanelWdg(BaseRefreshWdg):
 
     def get_display(my):
 
-
-        search = Search("sthpw/login")
-        search.add_filter("login", "admin", op="!=")
-        logins = search.get_sobjects()
+        expr_filter = "sthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']"
+        current_users = Search.eval("@COUNT(%s)" %expr_filter)
 
         top = my.top
         top.add_class("spt_panel_user_top")
         top.add_style("min-width: 400px")
+        
+        tool_div = DivWdg()
+        tool_div.add_style('margin-bottom','8px')
+        tool_div.add_style('display','flex')
 
-        show_security = my.kwargs.get("show_security")
-        if show_security not in ['false', False]:
-            button = ActionButtonWdg(title="Security")
-            top.add(button)
-            button.add_style("float: right")
-            #button.add_style("margin-top: -8px")
-            button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.startup.SecurityWdg';
-            spt.tab.set_main_body_tab()
-            spt.tab.add_new("Security", "Security", class_name)
-            '''
-            } )
-
-
-
+          
+       
         button = ActionButtonWdg(title="Add", tip="Add New User")
-        top.add(button)
+        button.add_style('align-self: flex-end')
+        tool_div.add(button)
+        
         button.add_style("float: left")
         button.add_behavior( {
             'type': 'click_up',
@@ -865,18 +861,37 @@ class UserPanelWdg(BaseRefreshWdg):
         } )
 
 
+        show_security = my.kwargs.get("show_security")
+        if show_security not in ['false', False]:
+            button = ActionButtonWdg(title="Security")
+            button.add_style('align-self: flex-end')
+            tool_div.add(button)
+            #button.add_style("margin-top: -8px")
+            button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.startup.SecurityWdg';
+            spt.tab.set_main_body_tab()
+            spt.tab.add_new("Security", "Security", class_name)
+            '''
+            } )
+
         security = Environment.get_security()
         license = security.get_license()
         num_left = license.get_num_licenses_left()
         current_users = license.get_current_users()
-        max_users = license.get_max_users()
+        #max_users = license.get_max_users()
 
-        top.add('''
-        <span style="margin-left: 20px; margin-top: 10px">
-        Users &nbsp;
-        <span class="badge">%s</span>
-        </span>
-        ''' % current_users)
+        div = DivWdg('Users')
+        div.add_style('align-self: flex-end')
+        div.add_styles("margin: 0 0 6 20")
+        badge_span = SpanWdg(css='badge')
+        badge_span.add_style('margin-left','6px')
+        badge_span.add(current_users)
+        div.add(badge_span)
+        tool_div.add(div)
+
+        top.add(tool_div)
 
 
 
@@ -889,25 +904,15 @@ class UserPanelWdg(BaseRefreshWdg):
             ''' % num_left)
 
 
-        top.add("<br clear='all'/>")
+      
+
+
+        br = HtmlElement.br(clear=True)
+        top.add(br)
 
 
 
-        #logins = []
-        if not logins:
-            """
-            arrow_div = DivWdg()
-            top.add(arrow_div)
-            arrow_div.add("<b><<< Click to Add</b>")
-            arrow_div.add_style("position: relative")
-            arrow_div.add_style("margin-top: -35px")
-            arrow_div.add_style("margin-left: 35px")
-            arrow_div.add_style("float: left")
-            arrow_div.add_style("padding: 5px")
-            arrow_div.set_box_shadow("1px 1px 2px 2px")
-            arrow_div.set_round_corners(10, corners=['TL','BL'])
-            """
-
+        if not current_users:
             div = DivWdg()
             top.add(div)
             div.add_style("text-align: center")
@@ -936,7 +941,13 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add(div)
         #div.add_style("max-height: 300px")
         #div.add_style("overflow-y: auto")
-
+        expr = "@SEARCH(%s)" %expr_filter
+        panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
+            show_gear='false', show_select='false', height='700', expression=expr, simple_search_view='simple_manage_filter')
+        div.add(panel)
+        
+        return top
+        """
 
         table = Table()
         table.set_max_width()
@@ -1109,7 +1120,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
         return top
 
-
+        """
 
 
 

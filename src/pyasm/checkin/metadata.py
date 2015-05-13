@@ -220,6 +220,9 @@ class BaseMetadataParser(object):
     def get_tactic_mapping(my):
         return {}
 
+    def process_tactic_mapping(my, tactic_data, metadata):
+        pass
+
 
     def get_initial_data(my):
         return {
@@ -234,6 +237,8 @@ class BaseMetadataParser(object):
         mapping = my.get_tactic_mapping()
         for name, name2 in mapping.items():
             tactic_data[name] = metadata.get(name2)
+
+        my.process_tactic_mapping(tactic_data, metadata)
 
         return tactic_data
     
@@ -444,6 +449,29 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
 
         return ret
+
+
+
+    def get_tactic_mapping(my):
+        return {
+            'format_description': 'Format',
+            'colorspace': 'Colorspace',
+            'depth': 'Depth',
+        }
+
+
+    def process_tactic_mapping(my, tactic_data, metadata):
+
+        geometry = metadata.get("Geometry")
+        print "ggeom: ", geometry
+        p = re.compile("(\d+)x(\d+)\+(\d+)\+(\d+)")
+        m = p.match(geometry)
+        if m:
+            groups = m.groups()
+            print "groups: ", groups
+            tactic_data['width'] = groups[0]
+            tactic_data['height'] = groups[1]
+        
 
 
 

@@ -47,6 +47,10 @@ class Process(Base):
     def get_attributes(my):
         return Xml.get_attributes(my.node)
 
+    def set_attribute(my, name, value):
+        return Xml.set_attribute(my.node, name, value)
+
+
     def get_name(my):
         return Xml.get_attribute( my.node, "name" )
 
@@ -269,13 +273,18 @@ class Pipeline(SObject):
         '''Function that should be run on insert/update. It's already automatically called during insert.
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
-        column, then update it. it updates the process table also.'''
+        column, then update it.  It updates the process table also.'''
         my.update_process_table()
         search_type = my.get_value('search_type')
 
         # don't do anything for task table
         if search_type =='sthpw/task':
             return
+
+
+        if not search_type:
+            return
+
 
         columns = SearchType.get_columns(search_type)
         if not 'pipeline_code' in columns:
@@ -310,6 +319,17 @@ class Pipeline(SObject):
 
     def update_process_table(my):
         ''' make sure to update process table'''
+
+        template = my.get_template_pipeline()
+        if template:
+            if template.get_code() == my.get_code():
+                template_processes = []
+            else:
+                template_processes = template.get_process_names()
+        else:
+            template_processes = []
+
+
         process_names = my.get_process_names()
         pipeline_code = my.get_code()
 
@@ -318,6 +338,7 @@ class Pipeline(SObject):
         process_sobjs = search.get_sobjects()
         existing_names = SObject.get_values(process_sobjs, 'process')
 
+        pipeline_has_updates = False
         count = 1
         for process_name in process_names:
 
@@ -327,10 +348,40 @@ class Pipeline(SObject):
                 if process_sobj.get_value("process") == process_name:
                     exists = True
                     break
+
+
             if not exists:
                 process_sobj = SearchType.create("config/process")
                 process_sobj.set_value("pipeline_code", pipeline_code)
                 process_sobj.set_value("process", process_name)
+
+
+            # copy information over from the template
+            if process_name in template_processes:
+                template_attrs = template.get_process_attrs(process_name)
+                process = my.get_process(process_name)
+                for name, value in template_attrs.items():
+                    if name in ['xpos', 'ypos', 'name']:
+                        continue
+                    process.set_attribute(name, value)
+                    pipeline_has_updates = True
+
+
+
+                search = Search("config/process")
+                search.add_filter("process", process_name)
+                # NEED ANOTHER FILTER for templates here
+                search.add_filter("pipeline_code", "%/__TEMPLATE__", op="like")
+
+                # copy certain values from the template
+                template_process = search.get_sobject()
+                for name, value in template_process.get_data().items():
+                    if not value:
+                        continue
+                    if name in ['checkin_mode']:
+                        process_sobj.set_value(name, value)
+
+
             
             attrs = my.get_process_attrs(process_name)
             color = attrs.get('color')
@@ -340,6 +391,11 @@ class Pipeline(SObject):
             process_sobj.set_value("sort_order", count)
             process_sobj.commit()
             count += 1
+
+
+        if pipeline_has_updates:
+            my.set_value("pipeline", my.get_pipeline_xml().to_string())
+            my.commit()
 
 
         # delete obsolete
@@ -941,6 +997,14 @@ class Pipeline(SObject):
 
     get_by_sobject = staticmethod(get_by_sobject)
 
+
+
+    def get_template_pipeline(cls, search_type=None):
+        search = Search("sthpw/pipeline")
+        search.add_filter("name", "VFX Processes")
+        pipeline = search.get_sobject()
+        return pipeline
+    get_template_pipeline = classmethod(get_template_pipeline)
 
 
 

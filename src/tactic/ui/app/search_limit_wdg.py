@@ -29,7 +29,10 @@ class SearchLimitWdg(Widget):
 
         my.search_limit_name = name
         my.label = label
-        my.search_limit = limit
+        if limit:
+            my.search_limit = int(limit)
+        else:
+            my.search_limit = None
         my.fixed_offset = False
         my.style = my.DETAIL
         my.prefix = "search_limit"
@@ -93,6 +96,11 @@ class SearchLimitWdg(Widget):
         my.values2 = filter_data.get_values_by_prefix("search_limit_simple")
         if not len(my.values2):
             my.values2 = {}
+        elif len(my.values2) == 2:
+            if my.values2[0]['page']:
+                my.values2 = my.values2[0]
+            else:
+                my.values2 = my.values2[1]
         else:
             my.values2 = my.values2[0]
 
@@ -173,7 +181,6 @@ class SearchLimitWdg(Widget):
         web = WebContainer.get_web()
 
         values = my.values
-        vaelus2 = my.values2
 
         # look at the stated search limit only if there is no chunk_size
         if not my.chunk_size:
@@ -558,6 +565,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         table.add_style("float: right")
         top.add(table)
 
+        
         top.add_color("background", "background", -5)
         top.add_color("color", "color3")
         top.add_style("margin: -1px 0px 10px 0px")
@@ -572,11 +580,20 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         top.add(showing_div)
         start_count = current_offset + 1
         end_count = current_offset + search_limit
+
+        if end_count > count:
+            end_count = count
+
         total_count = count
+        bgcolor = top.get_color("background", -5)
+        bgcolor2 = top.get_color("background", 10)
+        
+        showing_div.add_color('background', bgcolor)
+
         if num_pages > 1:
-            showing_div.add("Showing %s - %s &nbsp; of &nbsp; %s" % (start_count, end_count, total_count))
+            showing_div.add("Showing &nbsp; %s - %s &nbsp; of &nbsp; %s" % (start_count, end_count, total_count))
         else:
-            showing_div.add("Showing %s - %s &nbsp; of &nbsp; %s" % (start_count, count, count))
+            showing_div.add("Showing &nbsp; %s - %s &nbsp; of &nbsp; %s" % (start_count, count, count))
             return top
 
 
@@ -624,8 +641,6 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         } )
 
 
-        bgcolor = top.get_color("background3")
-        bgcolor2 = top.get_color("background3", 10)
         top.add_relay_behavior( {
             'type': 'mouseover',
             'bgcolor': bgcolor2,
@@ -687,9 +702,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         if end_page == num_pages and end_page - 10 > 1:
             start_page = end_page - 10
 
-
-
-
+       
         for i in range(start_page, end_page + 1):
             td = table.add_cell()
             td.add(i)
@@ -698,7 +711,7 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             if i == current_page:
                 td.add_color("color", "color")
                 td.add_class("spt_current_page")
-                td.add_color("background", "background3", 10)
+                td.add_color("background", "background", 10)
                 td.add_color("border-color", "border")
                 td.add_style("border-width", "0px 1px 0px 1px")
                 td.add_style("border-style", "solid")

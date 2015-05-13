@@ -48,9 +48,24 @@ class PipelineInputWdg(BaseInputWdg):
         sobjects = search.get_sobjects()
 
         codes = [x.get_code() for x in sobjects]
+
+        if my.get_option("use_code") in [True, 'true']:
+            names = codes
+        else:
+
+            names = []
+            for x in sobjects:
+                name = x.get_value("name")
+                if not name:
+                    name = x.get_value("code")
+                names.append(name)
+
+
+
         select = SelectWdg(my.get_input_name())
         select.add_empty_option("-- Default --")
         select.set_option("values", codes)
+        select.set_option("labels", names)
         if sobj:
             value = sobj.get_value(my.get_name())
             if value:

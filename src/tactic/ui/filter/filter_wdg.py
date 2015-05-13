@@ -1784,6 +1784,8 @@ class GeneralFilterWdg(BaseFilterWdg):
                     # check here rather than letting add_relationship_filters nullifying the whole search
                     if results:
                         search.add_relationship_filters(results, op=op)
+                    elif op == 'in':
+                        search.set_null_filter()
                 else:
                     if op == 'do not match':
                         op = 'not in'

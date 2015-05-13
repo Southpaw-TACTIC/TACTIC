@@ -17,13 +17,12 @@ from dateutil import rrule
 from dateutil import parser
 import datetime
 
-from pyasm.common import jsonloads, jsondumps, Common
+from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-from pyasm.common import Environment, TacticException
 from button_wdg import ButtonElementWdg
 
 
@@ -318,6 +317,7 @@ class TaskElementWdg(BaseTableElementWdg):
         my.permission = {}
 
         my.filler_cache = None
+        my.sorted_processes = []
 
 
     def get_width(my):
@@ -433,6 +433,13 @@ class TaskElementWdg(BaseTableElementWdg):
     def preprocess(my):
         my._get_display_options()
 
+        web = WebContainer.get_web()
+        web_data = web.get_form_values("web_data")
+        if web_data:
+            try:
+                web_data = jsonloads(web_data[0])
+            except ValueError:
+                raise TacticException("Decoding JSON has failed")
 
         my.assignee = []
         my.assignee_labels = []
@@ -550,15 +557,93 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
         pipeline_codes = SObject.get_values(my.sobjects, 'pipeline_code', unique=True, no_exception=True)
+
+        # pipeline_codes can have an item that is something like $PROJECT/shot.
+        # when this happens, in the eval, $PROJECT is replaced by something like 'vfx'
+        # because there are quotes around it, it messes up the expression 
+        # So, replace $PROJECT here, and thus, getting rid of the code
+        project_code = Project.get_project_code()
+
+        if pipeline_codes:
+            # prevent expression error
+            pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+        
+        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" % '|'.join(pipeline_codes) )
+
+        # get all of the processes that appear in all the pipelines, without duplicates
+        my.all_processes_set = set()
+        # ^ that's what the pipeline column should display (each process in the pipeline)
+
+        # the default pipeline is the longest pipeline in the table
+        # this is so that the processes appear in the right order.
+        # all other processes should follow after this
+        default_pipeline = []
+
+        # get all the processes
+        
+        # prevent expression error
+        project_code = Project.get_project_code()
+        pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
         pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
+        
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()
+                # if this pipeline has more processes than the default, make this the default
+                if len(processes) > len(default_pipeline):
+                    default_pipeline = processes
                 pipeline_code = pipeline.get_code()
                 my.label_dict[pipeline_code] = {}
                 for process in processes:
+                    # put the processes found into a set to avoid duplicates.
+                    my.all_processes_set.add(process.get_name())
                     process_dict = my.label_dict.get(pipeline_code)
-                    process_dict[process.get_name()] = process.get_label()
+                    process_dict[process.get_name()] = process.get_label() 
+
+            # sort the processes, so that the task appears in the right order
+            default_pipeline_processes = []
+
+            # get an list of all the processes, in order
+            default_pipeline_processes = [x.get_name() for x in default_pipeline]
+
+            
+
+
+
+            # this will add every process in default pipeline to sorted processes 
+            # (in the correct order)
+            for item in default_pipeline_processes:
+                for process in my.all_processes_set:
+                    if item == process:
+                        my.sorted_processes.append(item)
+            
+
+            # add everything else not in the default pipeline after
+            for process in my.all_processes_set:
+                if process not in my.sorted_processes:
+                    my.sorted_processes.append(process)
+
+            # Note: my.sorted_processes should now contain all the processes found on
+            # this load of this class, in order. However, if it's not the initial load,
+            # not all processes may be present
+
+            # go to the HTML and grab the list of processes stored in the header of the table.
+            # this will provide a complete list of everything that's been loaded already
+            if web_data and web_data[0].get("process_data"):
+                process_data_json = web_data[0].get("process_data")
+                try:
+                    process_data_list = jsonloads(process_data_json)
+                except ValueError:
+                    raise TacticException("Decoding JSON has failed")
+                process_data_list = process_data_list['processes']
+                
+                if len(process_data_list) > len(my.sorted_processes):
+                    my.sorted_processes = process_data_list
+
+                # combine this list with the newly generated list.
+                for process in process_data_list:
+                    if process not in my.sorted_processes:
+                        my.sorted_processes.append(process)
 
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -574,8 +659,23 @@ class TaskElementWdg(BaseTableElementWdg):
                     color = process.get_color()
                     #if color:
                     process_dict[process.get_name()] = color
-
-
+       
+        # ensured all status_colors are filled with by cascading to task or
+        # default built in color
+        for task_pipeline in task_pipelines:
+            task_pipeline_code = task_pipeline.get_code()
+            status_colors = my.status_colors.get(task_pipeline_code)
+            if status_colors:
+                for key, value in status_colors.items():
+                    color = value
+                    if not color:
+                        task_status_colors = my.status_colors.get("task")
+                        color = task_status_colors.get(key)
+                    if not color:
+                        color = Task.get_default_color(key)
+                    status_colors[key] = color
+        
+        
         security = Environment.get_security()
         my.allowed_statuses = []
         for pipeline_code, color_dict in my.status_colors.items():
@@ -595,6 +695,7 @@ class TaskElementWdg(BaseTableElementWdg):
                     my.allowed_statuses.append(status)
 
         if my.sobjects:
+            # these are the items in the table being displayed. ie: shots in shot table
             search_type = my.sobjects[0].get_base_search_type()
             if search_type:
                 sobj_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','%s'])" %search_type)
@@ -762,13 +863,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 
                 table.add_row()
-                
-                for process in processes:
+
+
+
+                for process in my.sorted_processes:
                     title = Common.get_display_title(process)
                     td = table.add_cell(title)
                     td.add_style("width: 117px")
                     td.add_style("text-align: center")
                     td.add_style("font-weight: bold")
+                    td.add_attr("process", process)
 
                 return table
             else:
@@ -779,6 +883,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_th(my, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
+
+        hidden = HiddenWdg('process_data')
+        hidden.add_class('spt_process_data')
+
+        header_data = {'processes': my.sorted_processes}
+        header_data = jsondumps(header_data).replace('"', "&quot;")
+        hidden.set_value(header_data, set_form_value=False )
+
+        th.add(hidden)
 
 
         if my.show_link_task_menu:
@@ -861,7 +974,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def handle_td(my, td):
         # This is for old table
-        td.add_attr('spt_input_type', 'inline')
+        td.add_attr('spt_input_type', 'tasks')
 
         # this is for new fast table
         td.add_class("spt_input_inline")
@@ -881,12 +994,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             
 
 
-    def get_tasks(my):
+    def get_tasks(my, sobject=None):
         #my.preprocess()
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
-        sobject = my.get_current_sobject()
+        if not sobject:
+            sobject = my.get_current_sobject()
 
         # use parent?
         #sobject = sobject.get_parent()
@@ -984,19 +1098,18 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             if my.filler_cache == None:
                 my.filler_cache = {}
-                for process in processes:
-                    process_sobj = pipeline.get_process(process)
-                    task_pipeline = process_sobj.get_task_pipeline()
 
-                    task = SearchType.create("sthpw/task")
-                    task.set_value("process", process)
-                    task.set_value("context", process)
-                    if task_pipeline:
-                        task.set_value("pipeline_code", task_pipeline)
-     
-                    my.filler_cache[process] = task
+            for process in processes:
+                process_sobj = pipeline.get_process(process)
+                task_pipeline = process_sobj.get_task_pipeline()
 
+                task = SearchType.create("sthpw/task")
+                task.set_value("process", process)
+                task.set_value("context", process)
+                if task_pipeline:
+                    task.set_value("pipeline_code", task_pipeline)
 
+                my.filler_cache[process] = task
 
             missing = []
             task_processes = [x.get_value("process") for x in tasks]
@@ -1135,9 +1248,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_display(my):
         
-        my.tasks = my.get_tasks()
+        
 
         sobject = my.get_current_sobject()
+        my.tasks = my.get_tasks(sobject)
+      
 
 
         div = DivWdg()
@@ -1219,7 +1334,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             div.add(label)
             div.add_style("opacity: 0.8")
         else:
-            # reset to make these into arrays
+            # reset to make these into lists
             items = []
             last_process_context = None
             item = None
@@ -1243,36 +1358,71 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
             table = Table(css='minimal')
-            table.add_style("width: 99%")
             table.add_style("border-width: 2px")
             table.add_style('border-collapse: collapse')
             table.add_row()
 
+            project_code = Project.get_project_code()
 
             last = len(items) - 1
-            for idx, tasks in enumerate(items):
+            pipeline_code = sobject.get("pipeline_code")
+            pipeline_code = pipeline_code.replace("$PROJECT", project_code)
+            pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','%s'])" % pipeline_code)
+            pipeline_processes = None
 
-                if my.layout in ['vertical']:
-                    table.add_row()
+            if pipeline:
+                pipeline_processes = pipeline[0].get_processes()
+
+            # all the processes to be drawn so that the user can see it
+            pipeline_processes_list = []
+
+            for pipeline_process in pipeline_processes:
+                pipeline_processes_list.append(pipeline_process.get_name())
+
+            # if the sobject/pipeline has no tasks
+            if not items:
+                # draw a div giving a warning of no items
+                error_div = DivWdg("Error. There were no tasks found. If reloading the page doesn't fix the issue, please contact the system administrator.")
                 td = table.add_cell()
-                td.add_style("vertical-align: top")
-                last_one = False
-                if idx == last:
-                    last_one = True
-                    # have to push all the blocks to the left in case the number of tasks vary
-                    # these numbers can handle 
-                    if my.layout == 'panel':
-                        td.add_style("width: 2500px")
-                    elif my.layout == 'horizontal':
-                        td.add_style("width: 8500px")
-                    
-                task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
-                if tasks[0].get_id() == -1:
-                    td.add_style("opacity: 0.5")
+                td.add(error_div)
+
+            else:
+                for idx, tasks in enumerate(my.sorted_processes):
+
+                    if my.layout in ['vertical']:
+                        table.add_row()
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+                    last_one = False
+                    if idx == last:
+                        last_one = True
+
+                    # whether or not the task should be displayed.
+                    is_task = False
+
+                    for item in items:
+
+                        if item and (tasks in item[0].get_name()):
+                            tasks = item
+                            is_task = True
+                            break
+
+                    if not is_task:
+                        tasks = items[0]
+
+                    task_wdg = my.get_task_wdg(tasks, parent_key, pipeline_code, last_one)
+                    if tasks[0].get_id() == -1:
+                        td.add_style("opacity: 0.5")
+
+                    if not is_task:
+                        
+                        task_wdg = DivWdg()
+                        # TODO: this should be made to be dependent on how big the task wdg is
+                        task_wdg.add_style("width: 115px")
+                        task_wdg.add_style("padding: 2px")
 
 
-
-                td.add(task_wdg)
+                    td.add(task_wdg)
 
 
             div.add(table)
@@ -1383,20 +1533,18 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         # handle the colors
-        bgColor = ''
         process_color = ''
         
         task_pipeline_code = 'task'
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
         status_colors = my.status_colors.get(task_pipeline_code)
-        if status_colors != None:
+        bgColor = ''
+        if not status_colors:
+            status_colors = my.status_colors.get('task')
+        if status_colors:
             bgColor = status_colors.get(status)
-            if not bgColor:
-                status_colors = my.status_colors.get("task")
-                bgColor = status_colors.get(status)
-        if not bgColor:
-            bgColor = Task.get_default_color(status)
+
 
 
         process_colors = my.process_colors.get(pipeline_code)
@@ -1433,7 +1581,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             proc = task.get_value("process")
             label_dict = my.label_dict.get(pipeline_code)
             if label_dict and label_dict.has_key(proc):
-            	context_div.add(label_dict[proc])
+                context_div.add(label_dict[proc])
 
         if not my.context_color_mode:
             process_color = ''
@@ -1590,8 +1738,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 select.add_behavior( {
                     'type': 'change',
+                    'color': status_colors,
                     'cbjs_action': '''
+                    var status_colors = bvr.color;
                     var value = bvr.src_el.value;
+                    bvr.src_el.style.background = status_colors[value];
                     var context = bvr.src_el.getAttribute("spt_context");
                     var layout = bvr.src_el.getParent(".spt_layout");
                     spt.table.set_layout(layout);
@@ -1619,7 +1770,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 select.add_class("spt_task_status_select")
-                select.add_style("background-color: %s" %bgColor)
+                select.add_style("background: %s" %bgColor)
 
 
                 if my.layout in ['horizontal', 'vertical']:
@@ -1748,20 +1899,20 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             icon = IconButtonWdg(tip='Edit Task', icon=IconWdg.EDIT)
             icon.add_class('hand')
             icon.add_behavior({'type': 'click_up',
-		'view': my.task_edit_view,
+        'view': my.task_edit_view,
                 'search_key': SearchKey.get_by_sobject(task, use_id=True),
                 'cbjs_edit': '''spt.edit.edit_form_cbk(evt, bvr);
                          update_event = "update|%s";
                         spt.named_events.fire_event(update_event, {})''' %parent_key,
-		'cbjs_action': '''
+        'cbjs_action': '''
                         var kwargs = {search_key: bvr.search_key,
                         
                                   view: bvr.view, cbjs_edit: bvr.cbjs_edit
                          };
-			var title = 'edit_popup';
+            var title = 'edit_popup';
                         var cls_name = 'tactic.ui.panel.EditWdg';
                         spt.api.load_popup(title, cls_name, kwargs);
-		'''}) 
+        '''}) 
 
             icon_div = DivWdg(icon)
             icon_div.add_style("margin-top: -6px")
@@ -1988,6 +2139,8 @@ class TaskElementCbk(DatabaseAction):
             if not m:
                 continue
 
+            groups = m.groups()
+
             column = groups[0]
             action = groups[1]
 
@@ -2091,14 +2244,10 @@ class TaskSummaryElementWdg(TaskElementWdg):
             task_pipeline_code = task.get_value("pipeline_code")
 
             status_colors = my.status_colors.get(task_pipeline_code)
-            if status_colors != None:
+            if not status_colors:
+                status_colors = my.status_colors.get('task')
+            if status_colors:
                 bgColor = status_colors.get(status)
-                if not bgColor:
-                    status_colors = my.status_colors.get("task")
-                    bgColor = status_colors.get(status)
-            if not bgColor:
-                bgColor = Task.get_default_color(status)
-
 
 
 

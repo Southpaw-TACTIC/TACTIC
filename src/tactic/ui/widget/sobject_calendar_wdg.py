@@ -17,7 +17,7 @@ __all__ = ['SObjectCalendarWdg', 'BaseCalendarDayWdg', 'TaskCalendarWdg', 'TaskC
 from pyasm.common import Common, jsonloads, Container
 from pyasm.biz import Pipeline
 from pyasm.search import Search, SearchType
-from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
+from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
 from calendar_wdg import CalendarWdg
@@ -1216,6 +1216,36 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
 
 
+
+
+
+        search = Search("sthpw/milestone")
+        #if login:
+        #    search.add_filter("login", login)
+        if project_code:
+            if project_code == "$PROJECT":
+                search.add_project_filter()
+            else:
+                search.add_filter("project_code", project_code)
+
+        search.add_filter("due_date", my.start_date, op=">=")
+        search.add_filter("due_date", my.end_date, op="<=")
+        my.milestone_count = search.get_count()
+        milestones = search.get_sobjects()
+        my.milestones_count = {} # NOTE: this one is plural!
+        for milestone in milestones:
+            date = milestone.get_value("due_date")
+            date = parser.parse(date)
+            date = datetime(date.year, date.month, date.day)
+
+            count = my.milestones_count.get(str(date))
+            if not count:
+                count = 0
+            count += 1
+            my.milestones_count[str(date)] = count
+
+
+
     def get_day_wdg(my, month, day):
 
         div = DivWdg()
@@ -1258,11 +1288,13 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             div.add("[%s]" % day.day)
 
 
-        div.add("<br/>")
-        div.add("<br/>")
+        div.add(HtmlElement.br(2))
 
 
         key = "%s-%0.2d-%0.2d 00:00:00" % (day.year, day.month, day.day)
+
+        div.add_attr("date", key)
+        div.add_class("spt_date_div_content")
 
 
         line_div = DivWdg()
@@ -1275,8 +1307,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_tasks = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s task/s due<br/>" % num_tasks)
-
+        line_div.add("%s task/s due" % num_tasks)
+        line_div.add(HtmlElement.br())
 
 
 
@@ -1290,7 +1322,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_snapshots = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s check-in/s<br/>" % num_snapshots )
+        line_div.add("%s check-in/s" % num_snapshots )
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1303,7 +1336,8 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             num_notes = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s note/s<br/>" % num_notes)
+        line_div.add("%s note/s" % num_notes)
+        line_div.add(HtmlElement.br())
 
 
         line_div = DivWdg()
@@ -1316,7 +1350,103 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
             work_hours = 0
             line_div.add_style("opacity: 0.15")
             line_div.add_style("font-style: italic")
-        line_div.add("%s work hours<br/>" % work_hours)
+        line_div.add("%s work hours" % work_hours)
+        line_div.add(HtmlElement.br())
+
+
+
+
+
+
+
+
+
+
+
+
+        line_div = DivWdg()
+        div.add(line_div)
+        line_div.add_style("padding: 3px")
+
+
+
+        num_milestone = my.milestones_count.get(key)
+        if num_milestone:
+            icon = IconWdg("Milestones", IconWdg.GOOD)
+            line_div.add(icon)
+            line_div.add_style("font-style: italic")            
+            line_div.add_style("cursor: pointer;")
+            line_div.add("%i milestone/s" % (num_milestone))
+            line_div.add(HtmlElement.br())
+
+            
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+
+                var key_array = "%s".split(" "); // array
+                var single_day = key_array[0]; // string
+                var time_key = Date.parse(single_day); // time object
+                var time_key_str = time_key.format('db'); // string
+                var next_day = time_key.increment('day', 1).format('db'); // string
+
+                var class_name = "tactic.ui.panel.FastTableLayoutWdg";
+                var popup_kwargs = {
+                    "search_type": "sthpw/milestone",
+                    "expression": "@SOBJECT(sthpw/milestone['due_date', '>=', '" + time_key_str + "']['due_date', '<=', '" + next_day + "']['@ORDER_BY', 'due_date desc'])"
+                    };
+
+                spt.tab.set_main_body_tab();
+                spt.tab.add_new("add_milestone", "Add Milestone", class_name, popup_kwargs);
+                //spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+
+                ''' % (key)
+            } )
+
+
+        else:
+            num_milestone = 0
+            icon = IconWdg("Milestones", "BS_PLUS")
+            line_div.add(icon)
+            #line_div.add_style("opacity: 0.85")
+            line_div.add("Add milestone")
+            line_div.add(HtmlElement.br())
+            line_div.add_style("cursor: pointer")
+        
+
+            line_div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var server = TacticServerStub.get();
+                var date_div = bvr.src_el.getParent("td");
+                var full_date = date_div.getElement(".spt_date_div_content").getAttribute("date");
+                var date_array = full_date.split(" ");
+                full_date = date_array[0];
+
+                date_array = full_date.split("-");
+
+                var date = date_array[2];
+                var month = date_array[1];
+                var year = date_array[0];
+
+                var due_date_string = month.concat(" " + date + ", ").concat(year);
+
+                var project_code = server.get_project();
+
+                data = {            
+                    "due_date": due_date_string,
+                    "project_code": project_code
+                }; 
+
+                var class_name = "tactic.ui.panel.EditWdg";
+                var popup_kwargs = {
+                    "default": data, 
+                    "search_type": "sthpw/milestone"
+                    };
+
+                spt.panel.load_popup("Add Milestone", class_name, popup_kwargs);
+                '''
+            } )
 
 
         #div.add("%s tasks completed<br/>" % my.task_count)

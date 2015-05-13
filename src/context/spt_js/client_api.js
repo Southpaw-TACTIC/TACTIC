@@ -19,6 +19,11 @@ TacticServerStub = function() {
     this.site = null;
     this.project = null;
 
+    this.set_transaction_ticket = function(ticket) {
+        this.transaction_ticket = ticket;
+    }
+
+
     this.set_ticket = function(login_ticket) {
         this.login_ticket = login_ticket;
         //this.transaction_ticket = login_ticket;
@@ -250,7 +255,8 @@ TacticServerStub = function() {
      * interaction logging
      */
     this.add_interaction = function(key, data, kwargs) {
-        return this._delegate("add_interaction", arguments, kwargs);
+        callback = function() {console.log("done")};
+        return this._delegate("add_interaction", arguments, kwargs, null, callback);
     }
 
     this.get_interaction_count = function(key, kwargs) {
@@ -789,7 +795,6 @@ TacticServerStub = function() {
         if (!kwargs) {
             kwargs = {};
         }
-
         if (! kwargs.mode ) {
             transfer_mode = spt.Environment.get().get_transfer_mode();
             kwargs.mode = transfer_mode;
@@ -799,8 +804,8 @@ TacticServerStub = function() {
         }
 
 
-        if (kwargs.mode in {'client_repo':'', 'web':''} == false) {
-            throw("Mode '" + kwargs.mode + "' must be in [client_repo, web]");
+        if (kwargs.mode in {'client_repo':'', 'web':'', 'browser':''} == false) {
+            throw("Mode '" + kwargs.mode + "' must be in [client_repo, web, browser]");
         }
 
         var file_types;
@@ -823,8 +828,11 @@ TacticServerStub = function() {
         var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode, file_types:file_types, expand_paths: expand_paths});
         var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode: kwargs.filename_mode, file_types:file_types, expand_paths: expand_paths});
 
+        var applet;
         var dst_paths = [];
-        var applet = spt.Applet.get();
+        if (kwargs.mode in {'client_repo':'', 'web':''}) {
+            applet = spt.Applet.get();
+        } 
         var env = spt.Environment.get();
         var server_root = env.get_server_url();
 
@@ -864,7 +872,7 @@ TacticServerStub = function() {
                 dst = sandbox_dir + "/" + basename;
             }
 
-            dst_paths.push(dst)
+            dst_paths.push(dst);
 
             if (kwargs.mode == 'client_repo'){
                 applet.copytree(path, dst);
@@ -877,6 +885,14 @@ TacticServerStub = function() {
                 else {
                     alert(url + ' does not exist on the server. It may have been backed up.');
                 }
+            }
+            else if (kwargs.mode == 'browser'){
+                var download_el = document.createElement("a");
+                download_el.setAttribute("href",path);
+                download_el.setAttribute("download","");
+                document.body.appendChild(download_el);
+                download_el.click();
+                document.body.removeChild(download_el);
             }
         }
         }
@@ -1315,7 +1331,12 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['callback'];
         }
-        this._delegate("get_widget", arguments, kwargs, "string", callback);
+        var on_error = function(e) {
+            if (e == 502)
+                e = '502 Timeout Error.';
+            spt.alert(e); 
+        };
+        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
         return;
     }
 
@@ -1469,8 +1490,11 @@ TacticServerStub = function() {
                         spt.alert(e_msg);
                 }
             } else {
-                //alert("status is " + request.status);
-                throw("status is " + request.status);
+                
+                if (on_error)
+                    on_error(request.status);
+                else
+                    throw("status is " + request.status);
             }
         }
     }
@@ -1621,6 +1645,8 @@ TacticServerStub.get = function() {
     }
     return this.server;
 }
+
+
 
 
 

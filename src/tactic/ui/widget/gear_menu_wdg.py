@@ -17,6 +17,7 @@ from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
+from pyasm.biz import Project
 
 
 class DgTableGearMenuWdg(BaseRefreshWdg):
@@ -223,7 +224,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
         security = Environment.get_security()
-        if security.check_access("builtin", "retire_delete", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
             if not my.layout or my.layout.can_select():
                 opt_spec_list.extend([
             
@@ -270,12 +274,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
 
 
+
     def get_file_menu(my):
 
         menu_items = []
 
         security = Environment.get_security()
-        if security.check_access("builtin", "export_all_csv", "allow"):
+        project_code = Project.get_project_code()
+
+        access_keys = my._get_access_keys("export_all_csv",  project_code)
+
+        if security.check_access("builtin", access_keys, "allow"):
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);',
@@ -302,7 +311,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             }
         ] )
 
-        if security.check_access("builtin", "import_csv", "allow"):
+        access_keys = my._get_access_keys("import_csv",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Import CSV",
@@ -310,8 +320,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 } )
 
 
-
-        if security.check_access("builtin", "ingest", "allow"):
+        access_keys = my._get_access_keys("ingest",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
@@ -431,7 +441,22 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
 
                 // refresh table
-                spt.dg_table.search_cbk(table, bvr);
+                spt.table.run_search();
+                var event = "update|" + search_type;
+                kwargs = {
+                    firing_element: activator
+                }
+                var input = {
+                    kwargs: kwargs
+                }
+                var bvr2 = {};
+                bvr2.options = input;
+                try {
+                    spt.named_events.fire_event(event, bvr2);
+                }
+                catch(e) {
+                    spt.alert("Error firing event: " + event);
+                }
 
                 spt.app_busy.hide();
                 '''
@@ -760,12 +785,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         menu_items = []
 
+        project_code = Project.get_project_code()
 
         search_type = my.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
 
         # Column Manager menu item ...
-        if security.check_access("builtin", "view_column_manager", "allow"):
+        access_keys = my._get_access_keys("view_column_manager",  project_code)
+        if security.check_access("builtin", access_keys, "allow"):
             menu_items.append( {
                 "type": "action",
                 "label": "Column Manager",
@@ -854,8 +881,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
+        access_keys = my._get_access_keys("view_save_my_view",  project_code)
 
-        if not my.embedded_table and security.check_access("builtin", "view_save_my_view", "allow", default='allow'):
+        if not my.embedded_table and security.check_access("builtin",  access_keys, "allow", default='allow'):
             menu_items.insert( 4,
                 { "type": "action", "label": 'Save a New View',
                   "bvr_cb": {
@@ -1011,6 +1039,19 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         ] }
 
 
+    def _get_access_keys(my, key, project_code):
+        '''get access keys for a builtin rule'''
+        access_key1 = {
+            'key': key,
+            'project': project_code
+        }
+
+        access_key2 = {
+            'key': key 
+
+        }
+        access_keys = [access_key1, access_key2]
+        return access_keys
 
 
 class PageHeaderGearMenuWdg(BaseRefreshWdg):

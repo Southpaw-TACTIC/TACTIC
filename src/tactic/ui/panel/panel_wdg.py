@@ -2651,7 +2651,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'category': 'Display'
         },
         "show_search": {
-            'description': "determines whether or not to show the search box",
+            'description': "determines whether to show the Advanced Search button in the shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
             'order': '05',
@@ -2673,6 +2673,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '07',
             'category': 'Display'
         },
+         "search_limit_mode": {
+            'description': "determine if it displays top, bottom or both search limit",
+            'type': 'SelectWdg',
+            'values': 'bottom|top|both',
+            'order': '07a',
+            'category': 'Display'
+        },
+
 
         'show_insert': {
             'description': 'Flag to determine whether or not to show the insert button',
@@ -2795,8 +2803,13 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': 'a preset one or more columns for grouping e.g. sort_order,category',
             'type': 'TextWdg',
             'order': 12
+        },
+        "height" : {
+            'description': 'a specified height for the table, tile, or card layout',
+            'category': 'Display',
+            'type': 'TextWdg',
+            'order': 13
         }
-
     }
 
     def get_display(my):
@@ -3063,12 +3076,15 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             show_shelf = my.kwargs.get("show_shelf")
+            """
             if simple_search_mode == "inline" and show_shelf in [True, 'true', '']:
-                show_search = False
+                show_search = "false"
             elif show_shelf in [False, 'false']:
-                show_search = True
+                show_search = "true"
+            
             else:
                 show_search = True
+            """
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
@@ -3097,6 +3113,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         schema_default_view = my.kwargs.get("schema_default_view")
         show_keyword_search = my.kwargs.get("show_keyword_search")
         show_search_limit = my.kwargs.get("show_search_limit")
+        search_limit_mode = my.kwargs.get("search_limit_mode")
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
         show_column_manager = my.kwargs.get("show_column_manager")
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -3108,6 +3125,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
+        height = my.kwargs.get("height")
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
@@ -3148,6 +3166,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_search": show_search,
             "show_keyword_search": show_keyword_search,
             "show_search_limit": show_search_limit,
+            "search_limit_mode": search_limit_mode,
             "show_layout_switcher": show_layout_switcher,
             "show_column_manager": show_column_manager,
             "show_context_menu": show_context_menu,
@@ -3181,6 +3200,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "group_elements" : group_elements,
             "mode": mode,
+            "height": height,
             "keywords": keywords,
             "filter": filter,
             "expand_mode": expand_mode,
@@ -3199,12 +3219,17 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['bottom_view'] = my.kwargs.get("bottom_view")
             kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
             kwargs['scale'] = my.kwargs.get("scale")
+            kwargs['show_scale'] = my.kwargs.get("show_scale")
             kwargs['styles'] = my.kwargs.get("styles")
             kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
             kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
             kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = my.kwargs.get("title_expr")
             kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
             kwargs['overlay_color'] = my.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
+            kwargs['process'] = my.kwargs.get("process")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
@@ -3237,6 +3262,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'custom':
             from tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
+
+        elif layout == 'aggregate':
+            from tool_layout_wdg import CustomAggregateWdg
+            layout_table = CustomAggregateWdg(**kwargs)
 
         elif layout == 'custom_item':
             from tool_layout_wdg import CustomItemLayoutWithSearchWdg

@@ -331,7 +331,7 @@ class CherryPyStartup(object):
                          'log_debug_info_filter.on': False,
 
                          #'encoding_filter.on': True,
-                         #'decoding_filter.on': True
+                         #'decoding_filter.on': True,
                         },
             '/context': {'static_filter.on': True,
                          'static_filter.dir': context_path
@@ -353,6 +353,7 @@ class CherryPyStartup(object):
         from tactic_sites.default.context.TitlePage import TitlePage
         cherrypy.root.tactic = TitlePage()
         cherrypy.root.projects = TitlePage()
+
 
        
         sites = []
@@ -477,14 +478,9 @@ class CherryPyStartup(object):
             if context in ["XMLRPC", "Api"]:
                 settings['xmlrpc_filter.on'] = True
 
-
             # NOTE: is this needed anymore?
             if context in ["UploadServer"]:
                 settings['flashwrapper.on'] = True
-
-
-
-
 
 
 

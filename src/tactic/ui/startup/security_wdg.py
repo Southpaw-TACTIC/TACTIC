@@ -9,13 +9,13 @@
 #
 #
 
-__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg']
+__all__ = ['UserAssignWdg', 'UserAssignCbk', 'GroupAssignWdg', 'GroupAssignCbk', 'SecurityWdg','TaskSecurityCbk','ProjectSecurityWdg','UserSecurityWdg','LinkSecurityWdg','SearchTypeSecurityWdg','ProcessSecurityWdg','TaskSecurityWdg','SecurityBuilder']
 
 
 
 import tacticenv
 
-from pyasm.common import Environment, Common, Xml, jsonloads, Container
+from pyasm.common import Environment, Common, Xml, jsonloads, Container, TacticException
 from pyasm.search import Search, SearchType
 from pyasm.security import LoginGroup, LoginInGroup
 from pyasm.biz import Project
@@ -31,7 +31,6 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 from tactic.ui.panel import SideBarBookmarkMenuWdg
-
 
 class UserAssignWdg(BaseRefreshWdg):
 
@@ -229,12 +228,29 @@ class GroupAssignWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_groups_top");
             var add = top.getElement(".spt_groups_add");
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checkbox_label = top.getElement(".spt_include_project_checkbox_label");
             spt.toggle_show_hide(add);
+            spt.toggle_show_hide(checkbox);
+            spt.toggle_show_hide(checkbox_label);
             '''
         } )
 
+        checkbox = CheckboxWdg("Include Project Name")
+        checkbox.set_option("value", "true")
+        checkbox.add_class("spt_include_project_checkbox")
+        checkbox.add_style("display: none")
+        checkbox.add_style("margin-left: 30px")
+        checkbox.set_checked()
+        checkbox_label = SpanWdg(" Project specific")
+        checkbox_label.add_style("display: none")
+        checkbox_label.add_class("spt_include_project_checkbox_label")
+        checkbox.add(checkbox_label)
+        top.add(checkbox)
 
-        action_button = ActionButtonWdg(title="Save >>")
+
+        action_button = ActionButtonWdg(title="Save")
+        action_button.add_style("margin-right: 10px")
         top.add(action_button)
         action_button.add_style("float: right")
         action_button.add_behavior( {
@@ -246,9 +262,13 @@ class GroupAssignWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_groups_top");
 
+            var checkbox = top.getElement(".spt_include_project_checkbox");
+            var checked = checkbox.checked;
+
             var values = spt.api.Utility.get_input_values(top);
             var kwargs = {
-                values: values
+                "values": values,
+                "checked": checked
             }
 
             var cmd = 'tactic.ui.startup.GroupAssignCbk';
@@ -335,7 +355,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
         title = DivWdg()
         div.add(title)
-        title.add("Add New Groups: ")
+        title.add(" Add New Groups: ")
         title.add_color("background", "background3")
         title.add_style("padding: 8px")
         title.add_style("margin: -5px -5px 10px -5px")
@@ -412,18 +432,62 @@ class GroupAssignCbk(Command):
             # make sure the group doesn't already exist
             #login_group = LoginGroup.get_by_login_group(new_group)
 
+            project_included = False
+            user_defined_project_code = ""
+            original_new_group = new_group
+            is_project_specific = False
+            if my.kwargs.get("checked") in [True, "true", "True"]:
+                is_project_specific = True
+
             if new_group.find("/") == -1:
                 title = new_group
                 new_group = "%s/%s" % (project_code, new_group)
             else:
                 parts = new_group.split("/")
                 title = parts[1]
+                user_defined_project_code = parts[0]
+                project_included = True
 
             new_group = Common.get_filesystem_name(new_group)
 
             group = SearchType.create("sthpw/login_group")
-            group.set_value("login_group", new_group)
-            group.set_value("project_code", project_code)
+
+            # the following sections contains the 4 cases possible when creating a new group
+            # through the popup
+            
+            # if the input is (project/name) and (not project specific)
+            if not is_project_specific and project_included:
+                
+                # Raise exception because it's contradictory data
+                raise TacticException('''You've given a project code while declaring 
+                    the group not project specific. You can either not use the format 
+                    "project_code/group_name", or check the "Project specific" checkbox.''')
+
+            # if the input is (project/name) and (project specific)
+            elif is_project_specific and project_included:
+
+                # first check is the user_defined_project_code is actually a project
+                # if it is, then set that as the project code. If not, don't set anything
+
+                user_defined_project = Project.get_by_code(user_defined_project_code)
+
+                if user_defined_project:
+                    group.set_value("project_code", user_defined_project_code)
+                else:
+                    raise TacticException('''The project code that you've given doesn't exist.
+                        Please choose an existing project code. Note: the format is
+                        "project_code/group_name".''')
+                group.set_value("login_group", original_new_group)
+
+            # if the input is (name) and (not project specific)
+            elif not is_project_specific and not project_included:
+                group.set_value("login_group", title)
+
+            # if the input is (name) and (project specific)
+            else:
+                group.set_value("project_code", project_code)
+                group.set_value("login_group", new_group)
+
             group.set_value("description", title)
             group.commit()
 

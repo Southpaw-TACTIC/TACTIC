@@ -89,6 +89,13 @@
         <values>tile|card|browser|table</values>
       </display>
     </element>
+    <element name="type">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>media</values>
+        <labels>Media</labels>
+      </display>
+    </element>
 </edit_definition>
 
 
@@ -134,6 +141,13 @@
 
     <element name="title"/>
     <element name="description"/>
+    <element name="type">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <values>media</values>
+        <labels>Media</labels>
+      </display>
+    </element>
     <element name="color">
         <display class="tactic.ui.input.ColorInputWdg"/>
     </element>

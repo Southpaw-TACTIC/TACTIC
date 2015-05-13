@@ -241,6 +241,20 @@ class Search(Base):
 
 
 
+    def copy(my):
+        search = Search(my.full_search_type)
+
+        # copy the select
+        search.select = my.select.copy()
+
+        search.order_bys = my.order_bys[:]
+        search.order_by = my.order_by
+
+        return search
+
+
+
+
     def set_search_done(my, flag=True):
         my.is_search_done = flag
 
@@ -410,6 +424,10 @@ class Search(Base):
             raise SearchException("Cannot add null as a name in filter")
         #filter = my.get_filter(name, value, op)
         #my.select.add_where(filter)
+
+        if value == "__ALL__":
+            return
+
         my.select.add_filter(name, value, op=op, quoted=quoted, table=table)
 
 
@@ -1768,10 +1786,10 @@ class Search(Base):
 
 
 
-    def eval(expression, sobjects=None, mode=None, single=False, list=False, vars={}, dictionary=False, env_sobjects={}, show_retired=False, state={}, extra_filters={}):
+    def eval(expression, sobjects=None, mode=None, single=False, list=False, vars={}, dictionary=False, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None):
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
-        return parser.eval(expression, sobjects=sobjects, single=single, list=list, dictionary=dictionary, vars=vars, env_sobjects=env_sobjects, show_retired=show_retired, state=state, extra_filters=extra_filters)
+        return parser.eval(expression, sobjects=sobjects, single=single, list=list, dictionary=dictionary, vars=vars, env_sobjects=env_sobjects, show_retired=show_retired, state=state, extra_filters=extra_filters, search=search)
     eval = staticmethod(eval)
 
 
@@ -5956,7 +5974,7 @@ class SearchType(SObject):
         #query = select.get_statement()
         #results = sql.do_query(query)
         results = select.execute(sql)
-
+        from pyasm.security import Site
         if not results:
             # if no results are found, then this search type is not explicitly
             # registered.  It could, however, be from a template

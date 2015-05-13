@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -105,6 +105,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'type' : 'SelectWdg',
         'values' : 'true|false',
         'order': 9
+    },
+
+    'show_task_process': {
+        'description': 'Determine if Add Note widget only shows the processes of existing tasks',
+        'category': 'Options',
+        'type': 'SelectWdg',
+        'values': 'true|false',
+        'order': 10
     }
 
     }
@@ -145,15 +153,19 @@ class DiscussionElementWdg(BaseTableElementWdg):
         # extra js_action on mouseover to assign the search key of the note to hidden input
         js_action ='''
            var sk_input = menu_top.getElement('.spt_note_action_sk');
-           var note_top = bvr.src_el.getParent('.spt_note');
+           var note_top = bvr.src_el
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
-        my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
+
+        # disable the default activator
+        # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
+
+        # add action triggle for context itself
+        my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
         my.menu.set_activator_out(layout, 'spt_discussion_top')
 
-      
 
-        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email)
+        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email, my.show_task_process)
         
 
 
@@ -161,6 +173,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
        
         my.hidden = False
         my.allow_email = my.kwargs.get('allow_email') != 'false'
+        my.show_task_process = my.kwargs.get('show_task_process') == 'true'
         my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,   **my.kwargs)
         
 
@@ -170,8 +183,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
 
     def preprocess(my):
         parent =  my.get_parent_wdg()
-        if parent and parent.kwargs.get('__hidden__') == True:
-
+        if parent and parent.kwargs.get('__hidden__') in [True, 'True']:
             my.discussion.kwargs['hidden'] = True
             my.hidden = True
            
@@ -454,6 +466,8 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parents = []
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
+        my.show_task_process = my.kwargs.get('show_task_process')
+        
         my.allow_email = my.kwargs.get('allow_email')
         
 
@@ -482,10 +496,9 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True):
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True, show_task_process=False):
         '''hidden means it's a hidden row table'''
         
-
         layout.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_note_attachment',
@@ -509,6 +522,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,
+            'show_task_process': show_task_process,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -529,6 +543,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 kwargs.upload_id = upload_id; 
                 kwargs.hidden = bvr.hidden;
                 kwargs.allow_email = bvr.allow_email;
+                kwargs.show_task_process = bvr.show_task_process;
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
@@ -931,7 +946,22 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_menu_wdg(my, top):
+        '''Get the menu setup so the caller can place it outside this DiscussionWdg 
+           with the top element passed in'''
+        edit_wdg = DiscussionEditWdg()
+        my.menu = edit_wdg.get_menu()
 
+        # extra js_action on mouseover to assign the search key of the note to hidden input
+        js_action ='''
+           var sk_input = menu_top.getElement('.spt_note_action_sk');
+           var note_top = bvr.src_el;
+           sk_input.value = note_top.getAttribute('note_search_key');
+            '''
+
+        my.menu.set_activator_over(top, 'spt_note', js_action=js_action)
+        my.menu.set_activator_out(top, 'spt_discussion_top')
+        return edit_wdg
     
     def load_js(my, ele):
         '''add load bvr to the widget at startup or refresh'''
@@ -1026,7 +1056,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.load_js(top)
             
                 if my.kwargs.get("add_behaviors") != False:
-                    my.add_layout_behaviors(top, allow_email=my.allow_email)
+                    my.add_layout_behaviors(top, allow_email=my.allow_email, show_task_process=my.show_task_process)
 
 
             # add a refresh listener
@@ -1152,6 +1182,8 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
+
+            
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1331,7 +1363,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
                     note_dialog.add(add_note_wdg)
 
-
+                
                 note_content = DivWdg()
                 note_dialog.add(note_content)
                 note_content.add_style("max-height: 500px")
@@ -1557,14 +1589,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         icon = IconWdg("Note", "BS_PENCIL")
-        td.add(icon)
+        #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 5px")
-
-
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("margin: 5px 0px")
+        title.add_style("margin: 5px 12px")
         title.add_style("font-weight: bold")
 
         tbody = content.add_tbody()
@@ -1677,7 +1707,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
-                    left.add("%s</br>" % login)
                     name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
                     left.add("%s</br>" % name)
                     left.add("%s</br>" % login_sobj.get_value("email"))
@@ -1720,6 +1749,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+
 class DiscussionAddNoteWdg(BaseRefreshWdg):
     '''This widget draws the UI that user clicks to add note'''
         
@@ -1738,11 +1768,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         my.upload_id = my.kwargs.get("upload_id")
         
         my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
-        
+        my.show_task_process = my.kwargs.get('show_task_process') in ['true', True]
 
     def get_display(my):
 
-        my.use_parent = my.kwargs.get("use_parent")
         parent = my.kwargs.get("parent")
         if not parent:
             search_key = my.kwargs.get("search_key")
@@ -1781,12 +1810,17 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add(search_key_hidden)
 
 
-
         #if my.contexts:
         #    process_names = my.contexts
         
         if my.process:
             process_names = [my.process]
+        
+        elif my.show_task_process:
+            task_expr = "@GET(sthpw/task.process)"
+            task_processes = Search.eval(task_expr, sobjects=[parent])
+            
+            process_names = task_processes
         else:
             pipeline_code = parent.get_value("pipeline_code", no_exception=True)
             if pipeline_code:
@@ -1802,7 +1836,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         if my.append_processes:
             process_names.extend(my.append_processes)
-
+        
         security = Environment.get_security()
         project_code = Project.get_project_code()
         allowed = []
@@ -1862,7 +1896,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         # add the context label if it is different from process in use_parent mode
         # this is a special case where we explicitly use processs/context for note
-        if my.use_parent =='true' and my.contexts:
+        #if use_parent =='true' and my.contexts:
+        if my.contexts:
             hidden =HiddenWdg("add_context")
             hidden.set_value(my.contexts[0])
             content_div.add(hidden)
@@ -1976,7 +2011,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search.add_filter("event", "insert|sthpw/note")
         notification = search.get_sobject()
         if notification:
-            handler = EmailHandler(notification, None, None, None)
+            handler = EmailHandler(notification, None, None, None, None)
             to = handler.get_mail_users("mail_to")
             cc = handler.get_mail_users("mail_cc")
             to_emails = []
@@ -2077,7 +2112,7 @@ class DiscussionAddNoteCmd(Command):
 
             path = path.replace("\\", "/")
             basename = os.path.basename(path)
-            basename = File.get_filesystem_name(basename) 
+            basename = Common.get_filesystem_name(basename) 
             new_path = "%s/%s" % (upload_dir, basename)
             context = "publish"
 
@@ -2097,8 +2132,10 @@ class DiscussionAddNoteCmd(Command):
                     source_paths.append(web_path)
                     source_paths.append(icon_path)
 
+            # specify strict checkin_type to prevent latest versionless generated
             checkin = FileCheckin(note, file_paths= file_paths, file_types = file_types, \
-                    source_paths=source_paths,  context=context)
+                    source_paths=source_paths,  context=context, checkin_type='strict')
+
             checkin.execute()
 
 
