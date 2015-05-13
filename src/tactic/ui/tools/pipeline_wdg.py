@@ -27,6 +27,7 @@ from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
 from pipeline_canvas_wdg import PipelineCanvasWdg
 from client.tactic_client_lib import TacticServerStub
 
+            
 class PipelineToolWdg(BaseRefreshWdg):
     '''This is the entire tool, including the sidebar and tabs, used to
     edit the various pipelines that exists'''
@@ -637,15 +638,13 @@ class PipelineListWdg(BaseRefreshWdg):
         var top = null;
         // they could be different when inserting or just clicked on
         [bvr.firing_element, bvr.src_el].each(function(el) {
-
             top = el.getParent(".spt_pipeline_tool_top");
             if (top) return top;
-        }
-        );
+        });
+
         if (!top) {
             top = spt.get_element(document, '.spt_pipeline_tool_top');
         }
-
 
         var editor_top = top.getElement(".spt_pipeline_editor_top");
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
@@ -1568,17 +1567,21 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         project_code = Project.get_project_code()
 
-
-
         button = ButtonNewWdg(title="REFRESH", icon="BS_REFRESH")
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.panel.refresh(top);
+            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            if (editor_top && editor_top.hasClass("spt_has_changes")) {
+                if (confirm("Current pipeline has changes.  Do you wish to continue?")) {
+                    editor_top.removeClass("spt_has_changes");
+                    spt.panel.refresh(editor_top);
+                }
+            } else {
+                spt.panel.refresh(editor_top);
+            }
         '''
         } )
 
@@ -1623,7 +1626,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var xml = spt.pipeline.export_group(group_name);
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
-                var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                var args = {search_key: search_key, pipeline:xml, color:color, 
+                    project_code: bvr.project_code};
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
@@ -1631,10 +1635,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             spt.named_events.fire_event('pipeline|save', {});
         } 
-
-
-
-        //spt.panel.refresh(top);
 
         spt.app_busy.hide();
 
@@ -1752,21 +1752,19 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
-
-
-
         button = ButtonNewWdg(title="Add Process", icon="BS_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node();
-
-        top.addClass("spt_has_changes");
+        
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1789,15 +1787,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'process': process,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
             var process = bvr.process;
             spt.pipeline.add_node(process);
-
-            top.addClass("spt_has_changes");
-     
+            
+            // Add edited flag
+            var editor_top = act.getParent(".spt_pipeline_editor_top");
+            editor_top.addClass("spt_has_changes");
 
             '''
             } )
@@ -1807,22 +1805,19 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
 
- 
-
-
-
         button = ButtonNewWdg(title="Add Approval", icon="BS_PLUS", sub_icon="BS_OK")
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
-
-        top.addClass("spt_has_changes");
+      
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1834,11 +1829,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
 
         spt.pipeline.load_triggers();
-
-        top.addClass("spt_has_changes");
+    
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
         '''
         } )
 
@@ -1853,8 +1849,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+        
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
         spt.pipeline.delete_selected();
@@ -1863,6 +1863,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         for (var i = 0; i < nodes.length; i++) {
             spt.pipeline.remove_node(nodes[i]);
         }
+
         '''
         } )
 
@@ -1901,7 +1902,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button = ButtonNewWdg(title="Edit Properties", icon="BS_PENCIL")
         button_row.add(button)
         button.add_dialog(my.properties_dialog)
-
 
         return button_row
 
