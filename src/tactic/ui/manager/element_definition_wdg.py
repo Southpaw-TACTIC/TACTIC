@@ -2577,8 +2577,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 if value:
                     select.set_value(value)
                 select.add_style("width: 350px")
-                select.add_style("float: right")
-                edit_wdg.add("<br clear='all'/>")
+                #select.add_style("float: right")
+                #edit_wdg.add("<br clear='all'/>")
 
             elif widget_type == 'CalendarInputWdg':
                 cal_wdg = CalendarInputWdg(name)
