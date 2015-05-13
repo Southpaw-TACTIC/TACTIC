@@ -27,7 +27,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
     def init(my):
-        print my.kwargs
         my.top = DivWdg()
         my.set_as_panel(my.top)
         my.top.add_class("spt_pipeline_top")
@@ -304,6 +303,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_approval_node("XXXXX")
         template_div.add(approval)
 
+        # add approval node
+        approval = my.get_condition_node("XXXXX")
+        template_div.add(approval)
 
         # add trigger node
         trigger = my.get_trigger_node()
@@ -904,7 +906,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         // filter the value
         if (bvr.filter_node_name) {
             value = spt.convert_to_alpha_numeric( value );
-            bvr.src_el.value = value;
         }
 
         spt.pipeline.rename_node(node, value);
@@ -991,10 +992,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
-    def get_approval_node(my, name, process=None):
+    def get_condition_node(my, name, process=None):
 
         node = DivWdg()
-        node.add_class("spt_pipeline_approval")
+        node.add_class("spt_pipeline_condition")
         node.add_class("spt_pipeline_node")
         node.add_attr("spt_node_type", "approval")
 
@@ -1075,7 +1076,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-    def get_approval_nodeX(my, name, process=None):
+    def get_approval_node(my, name, process=None):
 
         node = DivWdg()
         node.add_class("spt_pipeline_approval")
@@ -1566,10 +1567,10 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     }
 
     if (width == 0 ) {
-        width = 1;
+        width = 2;
     }
     if (height == 0) {
-        height = 1;
+        height = 2;
     }
 
     
@@ -2093,6 +2094,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
         node_type = kwargs.node_type;
     }
+    else {
+        kwargs = {};
+    }
 
     if (!node_type) {
         node_type = "node";
@@ -2189,9 +2193,11 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         spt.pipeline.select_single_node(new_node);
 
     // fire an event
-    var top = bvr.src_el.getParent(".spt_pipeline_top");
-    var event_name = top.getAttribute("id") + "|node_create";
-    spt.named_events.fire_event(event_name, { src_el: new_node } );
+    if (kwargs.new != false) {
+        var top = bvr.src_el.getParent(".spt_pipeline_top");
+        var event_name = top.getAttribute("id") + "|node_create";
+        spt.named_events.fire_event(event_name, { src_el: new_node } );
+    }
 
     return new_node;
 }
@@ -2338,6 +2344,7 @@ spt.pipeline.rename_node = function(node, value) {
     }
 
 
+    var old_name = node.spt_name;
     node.spt_name = value;
     node.setAttribute("spt_element_name", value);
     node.setAttribute("title", value);
@@ -2345,7 +2352,20 @@ spt.pipeline.rename_node = function(node, value) {
     text.innerHTML = value;
     input.value = value;
 
+
+    // fire an event
+    var top = bvr.src_el.getParent(".spt_pipeline_top");
+    var event_name = top.getAttribute("id") + "|node_rename";
+    spt.named_events.fire_event(event_name, {
+        src_el: node,
+        options: {
+            old_name: old_name,
+            name: value,
+        }
+    } );
+
 }
+
 
 
 spt.pipeline.set_rename_mode = function(node) {
@@ -3303,7 +3323,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
     }
 
 
-    this.draw_spline = function() {
+    this.draw_spline = function(show_attr) {
         var canvas = spt.pipeline.get_canvas();
         var from_pos = spt.pipeline.get_position(this.from_node);
         var to_pos = spt.pipeline.get_position(this.to_node);
@@ -3344,6 +3364,25 @@ spt.pipeline.Connector = function(from_node, to_node) {
         }
 
         spt.pipeline.draw_connector(from_pos, to_pos, this.color);
+
+        if (show_attr) {
+            var node = this.from_node;
+            attrs = this.get_attrs();
+            if (attrs) {
+                var scale = spt.pipeline.get_scale();
+                var delta_x =  (from_pos.x > to_pos.x) ? -10 : 10;
+                delta_x *= scale;
+                var delta_y = -10;
+                delta_y *= scale; 
+                var from_attr = attrs['from_attr'] ? attrs['from_attr'] : 'foo';
+                var to_attr = attrs['to_attr'] ? attrs['to_attr'] : '';
+                    
+                spt.pipeline.draw_text(from_attr, from_pos.x + delta_x, from_pos.y + delta_y);
+                spt.pipeline.draw_text(to_attr, to_pos.x - delta_x, to_pos.y +delta_y);
+            }
+        }
+
+
     }
 
 
@@ -3789,7 +3828,8 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var options = {
             group: group,
             select_node: false,
-            node_type: node_type
+            node_type: node_type,
+            new: false,
         }
 
         // split the name

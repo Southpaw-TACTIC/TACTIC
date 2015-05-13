@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','ConnectorPropertyWdg','PipelineSaveCbk', 'ProcessInfoWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','ConnectorPropertyWdg','PipelineSaveCbk', 'ProcessConnectorWdg', 'ProcessInfoWdg']
 
 import re
 from tactic.ui.common import BaseRefreshWdg
@@ -76,6 +76,14 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         var list = top.getElement(".spt_pipeline_list");
         spt.panel.refresh(list);
+
+        var start = top.getElement(".spt_pipeline_editor_start");
+        start.setStyle("display", "none");
+
+        // TODO: group name is NULL ... need to get code of newly created pipeline
+        spt.pipeline.clear_canvas();
+        spt.pipeline.import_pipeline(group);
+
         '''
 
         inner.add_behavior( {
@@ -115,11 +123,43 @@ class PipelineToolWdg(BaseRefreshWdg):
         pipeline_list = PipelineListWdg(save_event=my.save_event, save_new_event=save_new_event )
         left.add(pipeline_list)
 
+
+
         right = table.add_cell()
         right.add_border()
 
         pipeline_wdg = PipelineEditorWdg(height=my.kwargs.get('height'), width=my.kwargs.get('width'), save_new_event=save_new_event)
         right.add(pipeline_wdg)
+        pipeline_wdg.add_style("position: relative")
+        pipeline_wdg.add_style("z-index: 0")
+        #pipeline_wdg.add_style("opacity", 0.3)
+
+        start_div = DivWdg()
+        start_div.add_class("spt_pipeline_editor_start")
+        right.add(start_div)
+        start_div.add_style("position: absolute")
+        start_div.add_style("height: 100%")
+        start_div.add_style("width: 100%")
+        start_div.add_style("top: 0px")
+        start_div.add_style("background: rgba(240,240,240,0.8)")
+        start_div.add_border()
+        start_div.add_style("z-index: 100")
+
+        msg_div = DivWdg()
+        start_div.add(msg_div)
+        msg_div.add("Select a pipeline<br/><br/>or<br/><br/>Create a new one")
+        msg_div.add_style("width: 300px")
+        msg_div.add_style("height: 150px")
+        msg_div.add_style("margin-top: 20%")
+        msg_div.add_style("margin: 0px auto")
+        msg_div.add_border()
+        msg_div.add_color("background", "background3")
+        msg_div.add_style("padding-top: 40px")
+        msg_div.add_style("text-align: center")
+        msg_div.add_style("font-size: 1.2em")
+        msg_div.add_style("font-weight: bold")
+
+        right.add_style("position: relative")
 
 
 
@@ -669,6 +709,10 @@ class PipelineListWdg(BaseRefreshWdg):
 
         }
 
+
+        var start_el = top.getElement(".spt_pipeline_editor_start")
+        start_el.setStyle("display", "none")
+
         spt.pipeline.clear_canvas();
 
         spt.pipeline.import_pipeline(bvr.pipeline_code);
@@ -811,8 +855,35 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
-
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+
+        var connector = spt.pipeline.hit_test_mouse(mouse_411);
+        if (connector) {
+
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (!info) {
+                return;
+            }
+
+            var from_node = connector.get_from_node();
+            var to_node = connector.get_to_node();
+
+            var group_name = spt.pipeline.get_current_group();
+
+            var class_name = 'tactic.ui.tools.ProcessConnectorWdg';
+            var kwargs = {
+                pipeline_code: group_name,
+                from_node: from_node.spt_name,
+                from_attr: connector.get_attr("from_attr"),
+                to_node: to_node.spt_name,
+                to_attr: connector.get_attr("to_attr"),
+            }
+            spt.panel.load(info, class_name, kwargs);
+            return;
+        }
+
+
         var prop_top = spt.get_element(top, ".spt_pipeline_properties_top");
         var connect_top = spt.get_element(top, ".spt_connector_properties_top");
 
@@ -1112,6 +1183,153 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
 
 
+class ProcessConnectorWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        top = my.top
+
+        top.add_style("padding: 20px 0px")
+        top.add_color("background", "background")
+        top.add_style("min-width: 300px")
+
+
+        title_wdg = DivWdg()
+        top.add(title_wdg)
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        title_wdg.add("Connector")
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px")
+
+
+        from_node = my.kwargs.get("from_node")
+        to_node = my.kwargs.get("to_node")
+
+        top.add("<br/>")
+
+        info_wdg = DivWdg()
+        top.add(info_wdg)
+        info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
+        info_wdg.add_style("margin: 10px")
+
+
+        table = Table()
+        top.add(table)
+        table.add_border()
+        table.add_style("width: 100%")
+        table.add_style("margin: 0px -3px 5px 0px")
+
+        tr = table.add_row()
+        tr.add_style("background: #EEE")
+        td = table.add_header(from_node)
+        td.add_style("padding: 10px")
+        td.add_style("vertical-align: top")
+
+        td = table.add_header(to_node)
+        td.add_style("padding: 10px")
+        td.add_style("vertical-align: top")
+
+
+        tr, td = table.add_row_cell()
+        td.add("<br/>Using Attributes:")
+
+        left_process = pipeline.get_process(from_node)
+        right_process = pipeline.get_process(from_node)
+
+
+
+
+        left_selected = my.kwargs.get("from_attr")
+        right_selected = my.kwargs.get("to_attr")
+
+        table.add_row()
+
+        # handle output
+        left = table.add_cell()
+        left.add_style("vertical-align: top")
+        left.add_style("width: 150px")
+        left.add_class("spt_connect_column_top")
+        left.add_class("spt_dts")
+        left.add_style("padding: 5px")
+        #left.add_color("background", "background3")
+
+
+
+        hidden = TextWdg("left")
+        left.add(hidden)
+        hidden.add_class("spt_input")
+        if left_selected:
+            hidden.set_value(left_selected)
+
+        left.add("<br/>")
+        left.add("<hr/>")
+
+
+
+        node_type = left_process.get_type()
+        if node_type in ["condition", "approval"]:
+            out_attrs = ['success','fail']
+        else:
+            out_attrs = ['output']
+
+        left_div = DivWdg()
+        left.add(left_div)
+
+        for attr in out_attrs:
+            attr_div = DivWdg()
+            left_div.add(attr_div)
+            attr_div.add(attr)
+            attr_div.add_style("padding: 3px")
+
+
+        # handle input
+
+        right = table.add_cell()
+        right.add_style("vertical-align: top")
+        right.add_style("width: 150px")
+        right.add_class("spt_connect_column_top")
+        right.add_class("spt_dts")
+        right.add_style("padding: 5px")
+        #right.add_color("background", "background3")
+
+        hidden = TextWdg("right")
+        right.add(hidden)
+        hidden.add_class("spt_input")
+        if right_selected:
+            hidden.set_value(right_selected)
+
+        right.add("<br/>")
+        right.add("<hr/>")
+
+
+
+        node_type = right_process.get_type()
+        if node_type in ["condition", "approval"]:
+            in_attrs = ['input']
+        else:
+            in_attrs = ['input']
+
+        right_div = DivWdg()
+        right.add(right_div)
+        for attr in in_attrs:
+            attr_div = DivWdg()
+            right_div.add(attr_div)
+            attr_div.add(attr)
+            attr_div.add_style("padding: 3px")
+
+
+
+        return top
+
+
+
+
+
 
 
 class ProcessInfoWdg(BaseRefreshWdg):
@@ -1364,7 +1582,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
     to help in building the pipelines.  It contains the PipelineCanvasWdg'''
 
     def get_display(my):
-        top = DivWdg()
+        top = my.top
         my.set_as_panel(top)
         top.add_class("spt_pipeline_editor_top")
 
@@ -1390,7 +1608,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         
         #search_type_wdg = my.get_search_type_wdg()
         #inner.add(search_type_wdg)
-
+        """ 
         from schema_wdg import SchemaToolCanvasWdg
         schema_top = DivWdg()
         inner.add(schema_top)
@@ -1409,6 +1627,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         schema_title.add_style("font-weight: bold")
         schema_title.add_style("top: 0px")
         schema_title.add_style("left: 0px")
+        """
 
 
         canvas_top = DivWdg()
@@ -1416,6 +1635,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         canvas_top.add_class("spt_pipeline_wrapper")
         canvas_top.add_style("position: relative")
         canvas = my.get_canvas()
+        my.unique_id = canvas.get_unique_id()
         canvas_top.add(canvas)
 
 
@@ -1435,6 +1655,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         div = DivWdg()
+        inner.add(div)
+
         pipeline_str = my.kwargs.get("pipeline")
         if pipeline_str:
             pipelines = pipeline_str.split("|")
@@ -1452,7 +1674,46 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
             '''
             } )
-            inner.add(div)
+
+
+
+        # open connection dialog everytime a connection is made
+        event_name = "%s|node_create" % my.unique_id
+
+        # Note this goes through every node, every time?
+        div.add_behavior( {
+        'type': 'listen',
+        'event_name': event_name,
+        'cbjs_action': '''
+        var pipeline_code = spt.pipeline.get_current_group();
+        var node = bvr.firing_element;
+        var node_name = node.getAttribute("spt_element_name");
+
+        var data = {
+            process: node_name,
+            pipeline_code: pipeline_code
+        }
+        var server = TacticServerStub.get();
+        server.get_unique_sobject( "config/process", data );
+        '''
+        } )
+
+
+        # open connection dialog everytime a connection is made
+        event_name = "%s|node_rename" % my.unique_id
+
+        # Note this goes through every node, every time?
+        div.add_behavior( {
+        'type': 'listen',
+        'event_name': event_name,
+        'cbjs_action': '''
+        var data = bvr.firing_data;
+        // rename the process on the server
+        //var process = server.get_by_code("config/process", data.old_name);
+
+        '''
+        } )
+ 
 
 
         if my.kwargs.get("is_refresh") == 'true':
@@ -1837,6 +2098,23 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
+
+        top.addClass("spt_has_changes");
+        '''
+        } )
+
+
+
+        button = ButtonNewWdg(title="Add Condition", icon="BS_PLUS", sub_icon="BS_OK")
+        button_row.add(button)
+
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        spt.pipeline.init_cbk(wrapper);
+        spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
 
         top.addClass("spt_has_changes");
         '''
@@ -2474,6 +2752,7 @@ class PipelineTaskTriggerCommitCbk(Command):
 
         trigger.set_value("data", jsondumps(data_str) )
         trigger.commit()
+
 
 
 
