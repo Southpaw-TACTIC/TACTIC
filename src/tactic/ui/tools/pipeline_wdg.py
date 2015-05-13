@@ -649,9 +649,12 @@ class PipelineListWdg(BaseRefreshWdg):
         var editor_top = top.getElement(".spt_pipeline_editor_top");
         if (editor_top && editor_top.hasClass("spt_has_changes")) {
             if (!confirm("Current pipeline has changes.  Do you wish to continue?")) {
+                return; 
+            }
+            else {
+                editor_top.removeClass("spt_has_changes");
             }
         }
-
 
         var wrapper = top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
@@ -660,18 +663,15 @@ class PipelineListWdg(BaseRefreshWdg):
         var group_name = bvr.pipeline_code;
         var group = spt.pipeline.get_group(bvr.pipeline_code);
         if (group != null) {
-
             // if it already exists, then select all from the group
             spt.pipeline.select_nodes_by_group(group_name);
             spt.pipeline.fit_to_canvas(group_name);
             return;
-
         }
 
         spt.pipeline.clear_canvas();
 
         spt.pipeline.import_pipeline(bvr.pipeline_code);
-
 
         // add to the current list
         var value = bvr.pipeline_code;
@@ -683,7 +683,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 alert("Pipeline ["+value+"] already exists");
                 return;
             }
-        }
+        }  
 
         var option = new Option(title, value);
         select.options[select.options.length] = option;
