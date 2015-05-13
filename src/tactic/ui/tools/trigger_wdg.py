@@ -517,6 +517,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'A new note is added',
                 'A task status is changed',
                 'A task is assigned',
+                'A note is added or modified'
             ]
             
             #event_labels.append('Files are checked out')
@@ -525,6 +526,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'insert|sthpw/note',
                 'change|sthpw/task|status',
                 'change|sthpw/task|assigned',
+                'change|sthpw/note'
             ]
             if my.search_type:
                 event_labels.append('Files are checked in')
