@@ -1132,11 +1132,11 @@ class EditWdg(BaseRefreshWdg):
         table.add_style("margin-right: auto")
         table.add_style("margin-top: 15px")
         table.add_style("margin-bottom: 15px")
-        table.add_class("spt_popup_footer")
         table.add_row()
         table.add_cell(insert_button)
         table.add_cell(cancel_button)
         div.add(table)
+        div.add_class("spt_popup_footer")
 
 
 
