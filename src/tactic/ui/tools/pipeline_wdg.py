@@ -838,7 +838,9 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 spt.hide(connector_prop);
             }
      
-        
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
         '''
         }
 
@@ -1594,8 +1596,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'project_code': project_code,
         'save_event': my.save_new_event,
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.removeClass("spt_has_changes");
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
         var group_name = spt.pipeline.get_current_group();
@@ -1670,8 +1673,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
         var act = spt.smenu.get_activator(bvr);
-        var top = act.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
+        var editor_top = act.getParent(".spt_pipeline_editor_top");
+        editor_top.removeClass("spt_has_changes");
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
         var group_name = spt.pipeline.get_current_group();
@@ -1720,8 +1724,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var cancel = null;
             var ok = function() {
             var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            var editor_top = act.getParent(".spt_pipeline_editor_top");
+            editor_top.removeClass("spt_has_changes");
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
             server = TacticServerStub.get();
@@ -1758,13 +1763,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node();
-        
         // Add edited flag
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         editor_top.addClass("spt_has_changes");
+        
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+        spt.pipeline.init_cbk(wrapper);
+        spt.pipeline.add_node();
+        
         '''
         } )
 
@@ -1787,16 +1793,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'process': process,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            
+            // Add edited flag
+            var editor_top = act.getParent(".spt_pipeline_editor_top");
+            editor_top.addClass("spt_has_changes");
+            
+            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
             var process = bvr.process;
             spt.pipeline.add_node(process);
             
-            // Add edited flag
-            var editor_top = act.getParent(".spt_pipeline_editor_top");
-            editor_top.addClass("spt_has_changes");
-
             '''
             } )
 
@@ -1811,13 +1818,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
-      
         // Add edited flag
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         editor_top.addClass("spt_has_changes");
+        
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+        spt.pipeline.init_cbk(wrapper);
+        spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
+      
         '''
         } )
 
