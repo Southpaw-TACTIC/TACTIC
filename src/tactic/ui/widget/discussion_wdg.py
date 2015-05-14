@@ -1717,24 +1717,17 @@ class DiscussionWdg(BaseRefreshWdg):
         #Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
-
-            attached_div.add_relay_behavior( {
+            
+            attached_div.add_relay_behavior( {         
             'type': 'click',
             'mouse_btn': 'LMB',
-            'bvr_match_class': 'spt_open_thmbn',
+            'bvr_match_class': 'spt_open_thumbnail',
             'cbjs_action': '''
             
-            var server = TacticServerStub.get();
-            var img = bvr.src_el.getElement('.spt_thumb_top');
-            var code_str = img.getAttribute("spt_code");
-            
-            var codes = code_str.split("|");
-            for (var i = 0; i < codes.length; i++) {
-                // get the files for this snapshot
-                var path = server.get_path_from_snapshot(codes[i], {mode:'web', file_type:'main'});
-                window.open(path);
-            }
-            
+            var src_el = bvr.src_el;
+            var thumb_href = src_el.getElement('.spt_thumb_href');
+            var thumb_path = thumb_href.getAttribute('href');
+            window.open(thumb_path);
             '''
             } )
 
@@ -1742,14 +1735,15 @@ class DiscussionWdg(BaseRefreshWdg):
 
             for snapshot in snapshots:
                 thumb = ThumbWdg()
-                thumb.set_option('detail','true')
+                thumb.set_option('detail','false')
+                thumb.set_option('image_link_order' , 'main|web|icon')
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
 
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
                 thumb_div.add(thumb)
-                thumb_div.add_class("spt_open_thmbn")
+                thumb_div.add_class("spt_open_thumbnail")
                             
                 attached_div.add(thumb_div)
 
