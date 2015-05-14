@@ -162,30 +162,19 @@ class HashPanelWdg(BaseRefreshWdg):
                 # put in a check to ensure this is a user
                 parts = link.split(".")
 
-                '''For usernames with at most one period
-                # you can only see your personal links
-                user = Environment.get_user_name()
-                if user == parts[0]:
-                    personal = True
-                elif parts[1]:
-                    if user == "%s.%s" % (parts[0], parts[1]):    
-                        personal = True
-                '''
-
-                ''' Checking for username when user
-                    has any number of periods in username ''' 
                 user = Environment.get_user_name()
                 
                 def is_personal(user, parts):
+                    '''See if parts contains period
+                       seperated form of username.'''
                     acc = ""
                     for part in parts:
                         if acc == "":
                             acc = part
                         else:
                             acc = "%s.%s" % (acc, part)
-                        
                         if user == acc:
-                            return  True
+                            return True
                     return False
 
                 personal = is_personal(user, parts) 
