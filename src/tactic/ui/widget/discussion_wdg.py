@@ -1631,7 +1631,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         td.add(title)
 
-        #Paper clip button code
+        # Paper clip button code
         key = note.get_search_key()
         attachments = my.attachments.get(key)
         if attachments:
@@ -1714,7 +1714,7 @@ class DiscussionWdg(BaseRefreshWdg):
         attached_div.add_style("margin-top: 10px")
         snapshots = attachments
 
-        #Snapshot thumbnail code
+        # Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
             
@@ -1730,8 +1730,6 @@ class DiscussionWdg(BaseRefreshWdg):
             window.open(thumb_path);
             '''
             } )
-
-            attached_div.force_default_context_menu();
 
             for snapshot in snapshots:
                 thumb = ThumbWdg()
