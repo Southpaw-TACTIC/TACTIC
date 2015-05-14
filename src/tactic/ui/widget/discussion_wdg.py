@@ -1631,6 +1631,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         td.add(title)
 
+        #Paper clip button code
         key = note.get_search_key()
         attachments = my.attachments.get(key)
         if attachments:
@@ -1712,19 +1713,46 @@ class DiscussionWdg(BaseRefreshWdg):
         attached_div = DivWdg()
         attached_div.add_style("margin-top: 10px")
         snapshots = attachments
+
+        #Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
 
-            for snapshot in snapshots:
-                thumb_div = DivWdg()
-                attached_div.add(thumb_div)
-                thumb_div.add_style("float: left")
+            attached_div.add_relay_behavior( {
+            'type': 'click',
+            'mouse_btn': 'LMB',
+            'bvr_match_class': 'spt_open_thmbn',
+            'cbjs_action': '''
+            
+            var server = TacticServerStub.get();
+            var img = bvr.src_el.getElement('.spt_thumb_top');
+            var code_str = img.getAttribute("spt_code");
+            
+            var codes = code_str.split("|");
+            for (var i = 0; i < codes.length; i++) {
+                // get the files for this snapshot
+                var path = server.get_path_from_snapshot(codes[i], {mode:'web', file_type:'main'});
+                window.open(path);
+            }
+            
+            '''
+            } )
 
+            attached_div.force_default_context_menu();
+
+            for snapshot in snapshots:
                 thumb = ThumbWdg()
-                thumb.set_option('detail','false')
-                thumb_div.add(thumb)
+                thumb.set_option('detail','true')
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
+
+                thumb_div = DivWdg()
+                thumb_div.add_style("float: left")
+                thumb_div.add(thumb)
+                thumb_div.add_class("spt_open_thmbn")
+                            
+                attached_div.add(thumb_div)
+
 
         right.add(attached_div)
 
