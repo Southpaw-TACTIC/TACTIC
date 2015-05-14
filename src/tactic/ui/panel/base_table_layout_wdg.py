@@ -1168,9 +1168,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
-
-        if my.show_search_limit:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
+            
+        if my.show_search_limit:
+            
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
             wdg_list.append( { 'wdg': limit_span } )
