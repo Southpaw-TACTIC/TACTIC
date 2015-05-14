@@ -158,6 +158,8 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title.add_style("text-align: center")
         title.add_style("padding: 10px")
         #title.add_style("margin: -10px -10px 10px -10px")
+
+        #temp solution. Disable the frame title showing, so have more space for the view table
         title.add_style("display: none")
 
         title.add_color("background", "background3")
