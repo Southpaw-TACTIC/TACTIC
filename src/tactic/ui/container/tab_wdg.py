@@ -815,6 +815,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 }
 
 spt.tab.close = function(src_el) {
+
     // src_el should be a child of spt_tab_content or spt_tab_header
     if (!src_el) {
         spt.error('src_el passed in to spt.tab.close() does not exist.');
@@ -844,27 +845,52 @@ spt.tab.close = function(src_el) {
         spt.error('Tab close cannot find the header or content. Abort');
         return;
     }
-
     
-    var opener = header.getAttribute("spt_tab_opener");
-    var element_name = header.getAttribute("spt_element_name");
-    header.destroy();
+    var changed_element = false;
+    var changed_type = false;
+    function ok() {
+        //Remove unsaved changes flags
+        if (changed_element) {
+             changed_element.removeClass(changed_type);
+        }
 
-    content.destroy();
+        var opener = header.getAttribute("spt_tab_opener");
+        var element_name = header.getAttribute("spt_element_name");
+        header.destroy();
 
-    var last_element_name = spt.tab.get_last_selected_element_name();
-    last_element_name = null;
+        content.destroy();
 
-    // make the opener active
-    if (opener) {
-        spt.tab.select(opener);
+        var last_element_name = spt.tab.get_last_selected_element_name();
+        last_element_name = null;
+
+        // make the opener active
+        if (opener) {
+             spt.tab.select(opener);
+        }
+        else if (last_element_name) {
+            spt.tab.select(last_element_name);
+        }
+        else {
+            var last = headers[headers.length - 1].getAttribute("spt_element_name");
+            spt.tab.select(last);
+        }
     }
-    else if (last_element_name) {
-        spt.tab.select(last_element_name);
+   
+    var changed_el = content.getElement(".spt_has_changes");
+    var changed_row = content.getElement(".spt_row_changed");
+    
+    if (changed_el) {
+        changed_element = changed_el;
+        changed_type = "spt_has_changed";
+        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null);
+    }
+    else if (changed_row) {
+        changed_element = changed_row;
+        changed_type = "stp_row_changed";
+        spt.confirm("There are unsaved changes in the current tab. Continue without saving?", ok, null);
     }
     else {
-        var last = headers[headers.length - 1].getAttribute("spt_element_name");
-        spt.tab.select(last);
+       ok();
     }
 }
 
