@@ -675,7 +675,7 @@ class PipelineListWdg(BaseRefreshWdg):
             for ( var i = 0; i < select.options.length; i++) {
                 var select_value = select.options[i].value;
                 if (select_value == value) {
-                    alert("Pipeline ["+value+"] already exists");
+                    spt.alert("Pipeline ["+value+"] already exists");
                     return;
                 }
             }  
@@ -737,7 +737,7 @@ class PipelineListWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Copy to Project')
         menu_item.add_behavior( {
             'cbjs_action': '''
-            alert('Not implemented');
+            spt.alert('Not implemented');
             '''
         } )
         menu.add(menu_item)
@@ -1580,7 +1580,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
             var ok = function () { 
                 editor_top.removeClass("spt_has_changes");
-                spt.panel.refresh(editor_top);
+                spt.panel.refresh(editor_top); 
             }
 
             if (editor_top && editor_top.hasClass("spt_has_changes")) {
@@ -2127,7 +2127,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var values = spt.api.get_input_values(dialog_top, null, false);
         var value = values.new_pipeline;
         if (value == '') {
-            alert("Cannot add empty pipeline");
+            spt.alert("Cannot add empty pipeline");
             return;
         }
 
@@ -2137,7 +2137,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         for ( var i = 0; i < select.options.length; i++) {
             var select_value = select.options[i].value;
             if (select_value == value) {
-                alert("Pipeline ["+value+"] already exists");
+                spt.alert("Pipeline ["+value+"] already exists");
                 return;
             }
         }
@@ -2756,7 +2756,7 @@ spt.pipeline_properties.set_properties = function() {
     var selected_nodes = spt.pipeline.get_selected_nodes();
     var selected = spt.pipeline.get_selected();
     if (selected_nodes.length > 1) {
-        alert('Please select only 1 node to set property');
+        spt.alert('Please select only 1 node to set property');
         return;
     }
         
