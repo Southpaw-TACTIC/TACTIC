@@ -1300,15 +1300,29 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         from tactic.ui.panel import EditWdg
 
-        edit = EditWdg(
-                search_type="config/process",
-                show_header=False,
-                width="400px",
-                #view="pipeline_tool_edit",
-                search_key=process_sobj.get_search_key(),
-        )
-        top.add(edit)
-                
+        #show error message if the node has not been registered 
+        if not process_sobj:
+            warning_div = DivWdg()
+            #width = 16 makes the icon smaller
+            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
+            warning_msg = "This process node has not been registered in the process table, plese save your changes."
+           
+            warning_div.add(warning_icon)
+            warning_div.add(warning_msg)
+            top.add(warning_div)
+            warning_div.add_style("padding: 20px 30px")
+            warning_div.add_style("font-size: 15px")
+           
+        else:
+            edit = EditWdg(
+                    search_type="config/process",
+                    show_header=False,
+                    width="400px",
+                    #view="pipeline_tool_edit",
+                    search_key=process_sobj.get_search_key(),
+            )
+            top.add(edit)
+
 
         # Don't touch
         # ---
