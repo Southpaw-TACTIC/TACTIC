@@ -1305,7 +1305,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
             warning_div = DivWdg()
             #width = 16 makes the icon smaller
             warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
-            warning_msg = "This process node has not been registered in the process table, plese save your changes."
+            warning_msg = "This process node has not been registered in the process table, please save your changes."
            
             warning_div.add(warning_icon)
             warning_div.add(warning_msg)
