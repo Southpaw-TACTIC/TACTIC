@@ -875,7 +875,7 @@ TacticServerStub = function() {
             else if (kwargs.mode == 'browser'){
                 var download_el = document.createElement("a");
                 download_el.setAttribute("href",path);
-                download_el.setAttribute("download","");
+                download_el.setAttribute("download",basename);
                 document.body.appendChild(download_el);
                 download_el.click();
                 document.body.removeChild(download_el);
