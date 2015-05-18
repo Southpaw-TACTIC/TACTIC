@@ -1585,15 +1585,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             '''
         } )
 
-                var dst_row = dst_el.getParent(".spt_table_row");
-                var dst_search_key = dst_row.getAttribute("spt_search_key");
-
-                var src_row = src_el.getParent(".spt_table_row");
-                var src_search_key = src_row.getAttribute("spt_search_key");
-
-            '''
-        } )
-
 
 
         # selection behaviors
