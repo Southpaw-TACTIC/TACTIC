@@ -784,14 +784,19 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
-        if (info) {
-            var class_name = 'tactic.ui.tools.ProcessInfoWdg';
-            var kwargs = {
-                pipeline_code: group_name,
-                process: node_name
-            }
-            spt.panel.load(info, class_name, kwargs);
+        if (!info) {
+            return;
         }
+
+        var node_type = spt.pipeline.get_node_type(node);
+
+        var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+        var kwargs = {
+            pipeline_code: group_name,
+            process: node_name,
+            node_type: node_type
+        }
+        spt.panel.load(info, class_name, kwargs);
 
         '''
         }
@@ -1115,6 +1120,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         process = my.kwargs.get("process")
         pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
 
         top = my.top
 
@@ -1127,6 +1133,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
             return top
 
 
+        top.add_class("spt_pipeline_info_top")
+
+
         search_type = pipeline.get_value("search_type")
 
         top.add_style("padding: 20px 0px")
@@ -1137,7 +1146,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
-        title_wdg.add("Process: %s" % process)
+        title_wdg.add("%s: %s" % (node_type.title(), process))
         title_wdg.add_style("font-size: 1.2em")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_color("background", "background", -5)
@@ -1147,6 +1156,9 @@ class ProcessInfoWdg(BaseRefreshWdg):
         search = Search("config/process")
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+
+        if not process_sobj:
+            return top
 
 
         # triggers
@@ -1175,8 +1187,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
             sobject_count = search.get_count()
         else:
             sobject_count = 0
-
-
 
 
         table = Table()
@@ -1293,51 +1303,57 @@ class ProcessInfoWdg(BaseRefreshWdg):
         } )
 
 
-
-
-
         top.add("<hr/>")
 
-        from tactic.ui.panel import EditWdg
+        if node_type == "approval":
+            from pyasm.widget import TextAreaWdg
 
-        edit = EditWdg(
-                search_type="config/process",
-                show_header=False,
-                width="400px",
-                #view="pipeline_tool_edit",
-                search_key=process_sobj.get_search_key(),
-        )
-        top.add(edit)
+            top.add("Condition")
+            text = TextAreaWdg(name="action")
+            text.add_class("form-control")
+            top.add(text)
+            text.add_style("margin: 10px")
+            top.add("<br/>")
+
+            save = ActionButtonWdg(title="Save")
+            save.add_style("float: right")
+            top.add(save)
+            save.add_behavior( {
+                'type': 'click_up',
+                'pipeline_code': pipeline_code,
+                'process': process,
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+                var input = spt.api.get_input_values(top, null, false);
+
+                var server = TacticServerStub.get();
+                '''
+            } )
+
+            top.add("<br clear='all'/>")
+
+
+
+        else:
+            from tactic.ui.panel import EditWdg
+
+
+            edit = EditWdg(
+                    search_type="config/process",
+                    show_header=False,
+                    width="400px",
+                    #view="pipeline_tool_edit",
+                    search_key=process_sobj.get_search_key(),
+            )
+            top.add(edit)
                 
-
-        # Don't touch
-        # ---
-        # pipeline_code
-        # process?
-        # sort_order
-
-        # Display
-        # ---
-        # color
-        # description
-
-
-
-        # Check-in options
-        # ---
-        # checkin_mode
-        # checkin_options_view
-        # checkin_validate_script_path
-        # context_options
-        # subcontext_options
-        # repo_type (tactic / perforce)
-        # sandbox_create_script_path
-        # transfer_mode
 
         return top
 
 
 
+class ApprovalInfoWdg(ProcessInfoWdg):
+    pass
 
 
 

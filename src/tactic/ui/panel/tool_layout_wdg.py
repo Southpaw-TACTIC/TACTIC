@@ -72,12 +72,19 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         else:
             my.show_context_menu = True
 
+
+
+
     def get_display(my):
 
         my.view_editable = True
 
-        if my.kwargs.get("do_search") != "false":
-            my.handle_search()
+
+
+        #if my.kwargs.get("do_search") != "false":
+        #    my.handle_search()
+        my._process_search_args()
+
 
         #my.kwargs['show_gear'] = 'false'
 

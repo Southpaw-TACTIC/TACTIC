@@ -462,6 +462,8 @@ class Trigger(Command):
                         from tactic.command.python_cmd import PythonTrigger
                         trigger = PythonTrigger()
                         trigger.set_script_path(script_path)
+                    elif not isinstance(trigger_class,basestring):
+                        trigger = trigger_class()
                     else:
                         trigger = Common.create_from_class_path(trigger_class)
 

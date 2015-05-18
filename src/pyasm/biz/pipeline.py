@@ -418,8 +418,12 @@ class Pipeline(SObject):
 
     def set_pipeline(my, pipeline_xml, cache=True):
         '''set the pipeline externally'''
-        # cache according to pipelne code, which will share the same xml object
+        # cache according to pipeline code, which will share the same xml object
+        if my.is_insert():
+            cache = False
+
         search_key = my.get_search_key()
+
         xml_dict = Container.get("Pipeline:xml")
             
         if xml_dict == None:
@@ -472,6 +476,8 @@ class Pipeline(SObject):
     def get_pipeline_xml(my):
         return my.xml
 
+    def to_string(my):
+        return my.xml.to_string()
 
 
     def get_process(my, name):
@@ -582,7 +588,7 @@ class Pipeline(SObject):
             opposite = "to"
         else:
             opposite = "from"
-        
+
         if not process:
             connect_nodes = my.xml.get_nodes("pipeline/connect")
         else:
@@ -598,19 +604,27 @@ class Pipeline(SObject):
         return connects
 
 
-    def get_input_processes(my, process, type=None):
+    def get_input_processes(my, process, type=None, to_attr=None):
         connects = my._get_connects(process, direction='to')
         processes= []
         for connect in connects:
+
+            if to_attr:
+                connect_to_attr = connect.get_attr("to_attr")
+                if connect_to_attr != to_attr:
+                    continue
+
             from_connect = connect.get_from()
             process = my.get_process(from_connect)
             if process:
+                if type and process.get_type() != type:
+                    continue
                 processes.append(process)
 
         return processes
 
 
-    def get_output_processes(my, process, type=None):
+    def get_output_processes(my, process, type=None, from_attr=None):
         connects = my._get_connects(process, direction="from")
         if not connects:
             return []
@@ -620,12 +634,18 @@ class Pipeline(SObject):
             # make sure there are no empty contexts
             to = connect.get_to()
 
+            if from_attr:
+                connect_from_attr = connect.get_attr("from_attr")
+                if connect_from_attr != from_attr:
+                    continue
+
+
             to_pipeline = connect.get_to_pipeline()
             if to_pipeline:
                 pipeline = Pipeline.get_by_code(to_pipeline)
                 process = pipeline.get_process(to)
 
-                if type and type.get_type() != type:
+                if type and process.get_type() != type:
                     continue
 
                 if process:
