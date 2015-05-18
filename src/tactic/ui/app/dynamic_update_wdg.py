@@ -63,7 +63,7 @@ spt.update = {};
 spt.update.display = function(el) {
     var div = $(document.createElement("div"));
     $(document.body).appendChild(div);
-    div.innerHTML = "Update!!!";
+    div.innerHTML = "Update ...";
 
     var pos = el.getPosition();
     var size = el.getSize();
@@ -126,8 +126,11 @@ top.spt_update_interval_id = setInterval( function() {
         update = {};
     }
 
+    var oldest_timestamp = top.spt_update_timestamp;
+
     // get all of the updates below as well
     var update_els = top.getElements(".spt_update");
+    var visible_els = [];
     for (var i = 0; i < update_els.length; i++) {
         var update_el = update_els[i];
         if (! update_el.isVisible()) {
@@ -135,6 +138,15 @@ top.spt_update_interval_id = setInterval( function() {
         }
 
         sub_update = update_el.spt_update;
+        if (!sub_update) {
+            continue;
+        }
+        visible_els.push(update_el);
+
+        var last_check = update_el.spt_last_check;
+        if (last_check && last_check < oldest_timestamp) {
+            oldest_timestamp = last_check;
+        }
 
         // merge with update
         for (var key in sub_update) {
@@ -149,15 +161,19 @@ top.spt_update_interval_id = setInterval( function() {
             var timestamp = ret_val.info.timestamp;
             top.spt_update_timestamp = timestamp;
 
+            for (var i = 0; i < visible_els.length; i++) {
+                update_els[i].spt_last_check = timestamp;
+            }
+
             var server_data = ret_val.info.updates;
 
             for (var el_id in server_data) {
 
-
                 var el = $(el_id);
+                if (!el) {
+                    continue;
+                }
                 var value = server_data[el_id];
-
-
 
                 var node_name = el.nodeName;
 
@@ -222,7 +238,8 @@ top.spt_update_interval_id = setInterval( function() {
 
         var kwargs = {
             updates: JSON.stringify(update),
-            last_timestamp: top.spt_update_timestamp,
+            //last_timestamp: top.spt_update_timestamp,
+            last_timestamp: oldest_timestamp,
             _debug: false,
         };
 
@@ -273,7 +290,10 @@ class DynamicUpdateCmd(Command):
             return
 
         last_timestamp = parser.parse(last_timestamp)
-        last_timestamp = last_timestamp - timedelta(seconds=10)
+        last_timestamp = last_timestamp - timedelta(seconds=5)
+        #last_timestamp = last_timestamp - timedelta(hours=24)
+
+        print "last: ", last_timestamp
 
         # get out all of the search_keys
         client_keys = set()
@@ -286,24 +306,21 @@ class DynamicUpdateCmd(Command):
                 client_keys.add(search_key)
 
         # find all of the search that have changed
-
-        search = Search("sthpw/change_timestamp")
-        #search.add_interval_filter("timestamp", "1 minute")
-        search.add_filter("timestamp", last_timestamp, op=">")
-        #print search.get_statement()
-
-        #search.add_order_by("id desc")
-        #search.set_limit(10)
-        changed_sobjects = search.get_sobjects()
         changed_keys = set()
-        for sobject in changed_sobjects:
-            search_type = sobject.get_value("search_type")
-            search_code = sobject.get_value("search_code")
-            if search_type.startswith("sthpw/"):
-                search_key = "%s?code=%s" % (search_type, search_code)
-            else:
-                search_key = "%s&code=%s" % (search_type, search_code)
-            changed_keys.add(u'%s'%search_key)
+        for check_type in ['sthpw/change_timestamp', 'sthpw/sobject_log']:
+            search = Search(check_type)
+            search.add_filter("timestamp", last_timestamp, op=">")
+            search.add_filters("search_type", ["sthpw/sobject_log", "sthpw/status_log"], op="not in")
+            #print search.get_statement()
+            changed_sobjects = search.get_sobjects()
+            for sobject in changed_sobjects:
+                search_type = sobject.get_value("search_type")
+                search_code = sobject.get_value("search_code")
+                if search_type.startswith("sthpw/"):
+                    search_key = "%s?code=%s" % (search_type, search_code)
+                else:
+                    search_key = "%s&code=%s" % (search_type, search_code)
+                changed_keys.add(u'%s'%search_key)
 
         intersect_keys = client_keys.intersection(changed_keys)
 
@@ -325,15 +342,15 @@ class DynamicUpdateCmd(Command):
                 values_list = [values_list]
 
 
-
             for values in values_list:
 
                 search_key = values.get("search_key")
                 if search_key and search_key not in intersect_keys:
                         continue
 
-
                 value = HtmlElement.eval_update(values)
+                if value == None:
+                    continue
                 results[id] = value
 
         my.info = {
