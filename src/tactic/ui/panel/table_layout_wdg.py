@@ -1609,6 +1609,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
+
         # selection behaviors
         table.add_behavior( {
         'type': 'smart_click_up',
