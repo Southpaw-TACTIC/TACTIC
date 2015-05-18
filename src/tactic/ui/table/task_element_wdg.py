@@ -1793,22 +1793,33 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
                 select.set_value(status)
-                select.add_update( {
-                    "search_key": task.get_search_key(),
-                    "column": "status",
-                    "cbjs_postaction": '''
-                    var element = bvr.src_el;
-                    if ("createEvent" in document) {
-                        var evt = document.createEvent("HTMLEvents");
-                        evt.initEvent("change", false, true);
-                        element.dispatchEvent(evt);
+
+                if task.is_insert():
+                    update = {
+                        "parent_key": task.get_parent_search_key(),
+                        "expression": "@GET(sthpw/task['process','%s'].status)" % process,
                     }
-                    else
-                        element.fireEvent("onchange");
+                else:
+                    update = {
+                        "search_key": task.get_search_key(),
+                        "column": "status",
+                    }
 
-                    '''
-                } )
+                update['cbjs_postaction'] = '''
+                        var element = bvr.src_el;
+                        if ("createEvent" in document) {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+                            element.dispatchEvent(evt);
+                        }
+                        else {
+                            element.fireEvent("onchange");
+                        }
+                        var top = bvr.src_el.getParent(".spt_task_top");
+                        top.getParent().setStyle("opacity", 1.0);
 
+                        '''
+                select.add_update(update)
 
       
         assigned_div = None
@@ -1851,21 +1862,36 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         select.add_style("width", my.width)
 
-                    select.add_update( {
-                        "search_key": task.get_search_key(),
-                        "column": "assigned",
-                        "cbjs_postaction": '''
-                        var element = bvr.src_el;
-                        if ("createEvent" in document) {
-                            var evt = document.createEvent("HTMLEvents");
-                            evt.initEvent("change", false, true);
-                            element.dispatchEvent(evt);
+                    if task.is_insert():
+                        update = {
+                            "parent_key": task.get_parent_search_key(),
+                            "expression": "@GET(sthpw/task['process','%s'].assigned)" % process,
                         }
-                        else
-                            element.fireEvent("onchange");
+                    else:
+                        update = {
+                            "search_key": task.get_search_key(),
+                            "column": "assigned",
+                        }
 
-                        '''
-                    } )
+                    update['cbjs_postaction'] = '''
+                            var element = bvr.src_el;
+                            if ("createEvent" in document) {
+                                var evt = document.createEvent("HTMLEvents");
+                                evt.initEvent("change", false, true);
+                                element.dispatchEvent(evt);
+                            }
+                            else {
+                                element.fireEvent("onchange");
+                            }
+                            var top = bvr.src_el.getParent(".spt_task_top");
+                            top.getParent().setStyle("opacity", 1.0);
+
+                            '''
+                    select.add_update(update)
+
+
+
+
 
                 else:
                     

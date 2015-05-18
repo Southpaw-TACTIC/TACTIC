@@ -3769,7 +3769,8 @@ class SObject(object):
             # get the current transaction and get the change log
             # from this transaction
             transaction = Transaction.get()
-            if not is_insert and search_code and transaction:
+            #if not is_insert and search_code and transaction:
+            if search_code and transaction:
                 key = "%s|%s" % (search_type, search_code)
                 log = transaction.change_timestamps.get(key)
                 if log == None:
@@ -3784,12 +3785,13 @@ class SObject(object):
                     changed_on = log.get_json_value("changed_on", {})
                     changed_by = log.get_json_value("changed_by", {})
 
-                login = Environment.get_user_name()
-                for name, value in my.update_data.items():
-                    changed_on[name] = "CHANGED"
-                    changed_by[name] = login
-                log.set_json_value("changed_on", changed_on)
-                log.set_json_value("changed_by", changed_by)
+                if not is_insert:
+                    login = Environment.get_user_name()
+                    for name, value in my.update_data.items():
+                        changed_on[name] = "CHANGED"
+                        changed_by[name] = login
+                    log.set_json_value("changed_on", changed_on)
+                    log.set_json_value("changed_by", changed_by)
 
 
         # store the undo information.  The transaction_log needs to

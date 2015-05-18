@@ -20,13 +20,23 @@ class SObjectLog(SObject):
     
     SEARCH_TYPE = 'sthpw/sobject_log'
 
-    def create(sobject, transaction):
+    def create(sobject, transaction, action):
         assert sobject
 
         log = SObjectLog.create_new()
         log.set_sobject_value(sobject)
         log.set_user()
         log.set_value("transaction_log_id", transaction.get_id() )
+
+
+        if sobject.get_base_search_type() in [
+                'sthpw/task','sthpw/snapshot','sthpw/note','sthpw/work_hour'
+                ]:
+            log.set_value("parent_type", sobject.get_value("search_type") )
+            log.set_value("parent_code", sobject.get_value("search_code") )
+
+
+        log.set_value("action", action)
         log.commit(triggers="none")
 
     create = staticmethod(create)
