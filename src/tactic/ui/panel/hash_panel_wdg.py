@@ -140,7 +140,7 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
     def _get_predefined_url(cls, key, hash):
-
+ 
         # make some predefined fake urls
         if key in ["link", "tab", "admin"]:
             # this is called by PageNav
@@ -150,7 +150,7 @@ class HashPanelWdg(BaseRefreshWdg):
                 expression = "/%s/{link}" % key
             options = Common.extract_dict(hash, expression)
             link = options.get("link")
-
+            
             if not link:
                 return None
 
@@ -162,11 +162,23 @@ class HashPanelWdg(BaseRefreshWdg):
                 # put in a check to ensure this is a user
                 parts = link.split(".")
 
-                # you can only see your personal links
                 user = Environment.get_user_name()
-                if user == parts[0]:
-                    personal = True
+                
+                def is_personal(user, parts):
+                    '''See if parts contains period
+                       seperated form of username.'''
+                    acc = ""
+                    for part in parts:
+                        if acc == "":
+                            acc = part
+                        else:
+                            acc = "%s.%s" % (acc, part)
+                        if user == acc:
+                            return True
+                    return False
 
+                personal = is_personal(user, parts) 
+                
             # test link security
             project_code = Project.get_project_code()
             security = Environment.get_security()
@@ -277,7 +289,7 @@ class HashPanelWdg(BaseRefreshWdg):
             print "Cannot parse hash[%s]" % hash
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
-
+        
         if key != 'login':
             security = Environment.get_security()
             login = security.get_user_name()

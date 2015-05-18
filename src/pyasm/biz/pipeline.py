@@ -274,8 +274,8 @@ class Pipeline(SObject):
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
         column, then update it.  It updates the process table also.'''
-        my.update_process_table()
         search_type = my.get_value('search_type')
+        my.update_process_table(search_type=search_type)
 
         # don't do anything for task table
         if search_type =='sthpw/task':
@@ -317,7 +317,7 @@ class Pipeline(SObject):
                     sobject.commit(triggers=False)
             """
 
-    def update_process_table(my):
+    def update_process_table(my, search_type=None):
         ''' make sure to update process table'''
 
         template = my.get_template_pipeline()
@@ -352,6 +352,10 @@ class Pipeline(SObject):
 
             if not exists:
                 process_sobj = SearchType.create("config/process")
+
+                # default to (main) for non-task status pipeline
+                if search_type and search_type != 'sthpw/task':
+                    process_sobj.set_value('subcontext_options', '(main)')
                 process_sobj.set_value("pipeline_code", pipeline_code)
                 process_sobj.set_value("process", process_name)
 

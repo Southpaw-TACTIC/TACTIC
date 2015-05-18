@@ -159,6 +159,9 @@ class ProjectConfigWdg(BaseRefreshWdg):
         title.add_style("padding: 10px")
         #title.add_style("margin: -10px -10px 10px -10px")
 
+        #temp solution. Disable the frame title showing, so have more space for the view table
+        title.add_style("display: none")
+
         title.add_color("background", "background3")
 
         #table = Table()
@@ -246,13 +249,7 @@ class UserConfigWdg(ProjectConfigWdg):
         <element name="Group Assignment">
             <display class='tactic.ui.startup.UserSecurityWdg'/>
         </element>
-        <element name="Group List">
-            <display class='tactic.ui.panel.ViewPanelWdg'>
-                <search_type>sthpw/login_group</search_type>
-                <view>startup</view>
-            </display>
-        </element>
-        ''')
+          ''')
 
         config_xml.append('''
         </tab>
@@ -832,10 +829,10 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add_style("min-width: 400px")
         
         tool_div = DivWdg()
-        tool_div.add_style('margin-bottom','8px')
+        # tool_div.add_style('margin-bottom','8px')
         tool_div.add_style('display','flex')
 
-          
+        tool_div.add_style('margin-bottom','-4px')
        
         button = ActionButtonWdg(title="Add", tip="Add New User")
         button.add_style('align-self: flex-end')
@@ -884,7 +881,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
         div = DivWdg('Users')
         div.add_style('align-self: flex-end')
-        div.add_styles("margin: 0 0 6 20")
+        div.add_styles("margin: 0 0 6px 20px")
         badge_span = SpanWdg(css='badge')
         badge_span.add_style('margin-left','6px')
         badge_span.add(current_users)
@@ -943,10 +940,13 @@ class UserPanelWdg(BaseRefreshWdg):
         #div.add_style("overflow-y: auto")
         expr = "@SEARCH(%s)" %expr_filter
         panel = ViewPanelWdg(search_type='sthpw/login',view='manage_user',show_insert='false',\
-            show_gear='false', show_select='false', height='700', expression=expr, simple_search_view='simple_manage_filter')
+            show_gear='false', show_select='false', height='700', expression=expr,\
+            simple_search_view='simple_manage_filter', show_column_manager='false',\
+            show_layout_switcher='false', show_expand='false')
         div.add(panel)
         
         return top
+
         """
 
         table = Table()

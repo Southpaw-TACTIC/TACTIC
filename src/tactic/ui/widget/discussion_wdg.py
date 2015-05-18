@@ -1646,6 +1646,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         td.add(title)
 
+        # Paper clip button code
         key = note.get_search_key()
         attachments = my.attachments.get(key)
         if attachments:
@@ -1727,19 +1728,38 @@ class DiscussionWdg(BaseRefreshWdg):
         attached_div = DivWdg()
         attached_div.add_style("margin-top: 10px")
         snapshots = attachments
+
+        # Snapshot thumbnail code
         if snapshots:
             attached_div.add("<hr/>Attachments: %s<br/>" % len(snapshots) )
+            
+            attached_div.add_relay_behavior( {         
+            'type': 'click',
+            'mouse_btn': 'LMB',
+            'bvr_match_class': 'spt_open_thumbnail',
+            'cbjs_action': '''
+            
+            var src_el = bvr.src_el;
+            var thumb_href = src_el.getElement('.spt_thumb_href');
+            var thumb_path = thumb_href.getAttribute('href');
+            window.open(thumb_path);
+            '''
+            } )
 
             for snapshot in snapshots:
-                thumb_div = DivWdg()
-                attached_div.add(thumb_div)
-                thumb_div.add_style("float: left")
-
                 thumb = ThumbWdg()
                 thumb.set_option('detail','false')
-                thumb_div.add(thumb)
+                thumb.set_option('image_link_order' , 'main|web|icon')
                 thumb.set_icon_size(60)
                 thumb.set_sobject(snapshot)
+
+                thumb_div = DivWdg()
+                thumb_div.add_style("float: left")
+                thumb_div.add(thumb)
+                thumb_div.add_class("spt_open_thumbnail")
+                            
+                attached_div.add(thumb_div)
+
 
         right.add(attached_div)
 

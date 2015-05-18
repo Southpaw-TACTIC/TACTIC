@@ -22,6 +22,18 @@ class PopupWdg(BaseRefreshWdg):
     '''Container widget which creates a popup on the screen.  This popup
     window current has a title widget and a content widget
 
+    Popup contains special functionality regarding the existence of a
+    "spt_popup_body" class in combination with a "spt_popup_header"
+    and/or "spt_popup_footer" class within an html body.
+
+    When "spt_popup_body" and one or both of "spt_popup_header"
+    "spt_popup_footer" exist, popup applies a scrollbar to the div
+    containing spt_popup_body as opposed to the container div. 
+
+    It should be noted that popup will not rearrange or separate the
+    header and footer, meaning that the order in which you add the 
+    elements still matters. 
+
     @usage
     popup = PopupWdg(id='name')
     popup.add("My Title", "title")
@@ -339,7 +351,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 12px;")
+        drag_handle_div.add_style("padding: 6px;")
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -5)
         drag_handle_div.add_color("color", "color")
@@ -452,6 +464,7 @@ class PopupWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.popup.resize_drag'
         } )
+
         content_td.add(icon)
 
         #return widget
@@ -1057,10 +1070,36 @@ spt.popup.get_widget = function( evt, bvr )
     var kwargs = {'args': args, 'values': values};
 
 
-
-    //spt.panel.load( content_wdg, class_name, kwargs, null, {callback: callback} );
+    //the following code deals with a specified header/footer + body
     var widget_html = server.get_widget(class_name, kwargs);
+
     spt.behavior.replace_inner_html( content_wdg, widget_html );
+
+    var popup_header = content_wdg.getElement(".spt_popup_header");
+    var popup_body = content_wdg.getElement(".spt_popup_body");
+    var popup_footer = content_wdg.getElement(".spt_popup_footer");
+
+    var popup_header_height = 0;
+    var popup_footer_height = 0;
+
+    var window_size = $(window).getSize();
+
+    if (popup_body && (popup_header || popup_footer)) {
+        if (popup_header) {
+            popup_header_height = $(popup_header).getSize().y;
+        }
+        if (popup_footer) {
+            popup_footer_height = $(popup_footer).getSize().y;
+        }
+
+        var window_size = $(window).getSize();
+        content_wdg.setStyle("overflow-y","hidden");
+        content_wdg.setStyle("max-height", "auto");
+        popup_body.setStyle("overflow-y","auto");
+        popup_body.setStyle("overflow-x", "hidden");
+        var max_height = window_size.y - 200 - popup_header_height - popup_footer_height;
+        popup_body.setStyle("max-height", max_height);
+    }
 
     setTimeout(function(){callback()}, 10);
 
@@ -1305,5 +1344,6 @@ spt.popup.resize_drag_motion = function(evt, bvr, mouse_411) {
 
         '''
 
-            
 
+
+            
