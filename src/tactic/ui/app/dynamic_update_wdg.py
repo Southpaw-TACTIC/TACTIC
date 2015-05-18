@@ -1,0 +1,375 @@
+###########################################################
+#
+# Copyright (c) 2015, Southpaw Technology
+#                     All Rights Reserved
+#
+# PROPRIETARY INFORMATION.  This software is proprietary to
+# Southpaw Technology, and is not to be reproduced, transmitted,
+# or disclosed in any way without written permission.
+#
+#
+#
+
+
+__all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
+
+
+from pyasm.common import jsonloads
+from pyasm.search import Search
+from pyasm.command import Command
+
+import time
+
+from datetime import datetime, timedelta
+from dateutil import parser
+
+
+from tactic.ui.common import BaseRefreshWdg
+
+
+class DynamicUpdateWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+        top = my.top
+
+        interval = 5000
+
+        top.add_behavior( {
+            'type': 'load',
+            'interval': interval,
+            'cbjs_action': my.get_onload_js()
+        } )
+
+        top.add_behavior( {
+            'type': 'unload',
+            'cbjs_action': '''
+            var top = $(document.body);
+            clearInterval( top.spt_update_interval_id );
+            top.spt_update_interval_id = 0;
+            top.spt_update_src_el = null;
+            '''
+        } )
+
+        return top
+
+
+    def get_onload_js(my):
+
+        return r'''
+
+spt.update = {};
+
+spt.update.display = function(el) {
+    var div = $(document.createElement("div"));
+    $(document.body).appendChild(div);
+    div.innerHTML = "Update!!!";
+
+    var pos = el.getPosition();
+    var size = el.getSize();
+
+    div.setStyle("position", "absolute");
+    div.setStyle("top", pos.y);
+    div.setStyle("left", pos.x);
+    div.setStyle("z-index", 1000);
+    div.setStyle("background", "rgba(128,128,128,0.8");
+    div.setStyle("color", "#FFF");
+    div.setStyle("padding", "3px 20px");
+    div.setStyle("border", "solid 1px rgba(128,128,128,1)");
+    div.setStyle("box-shadow", "0px 0px 5px rgba(128,128,128,0.5)");
+
+    setTimeout( function() {
+        div.destroy();
+    }, 500 );
+
+}
+
+
+var top = $(document.body);
+
+if (top.spt_update_interval_id) {
+    clearInterval( top.spt_update_interval_id );
+}
+
+top.spt_update_src_el = bvr.src_el;
+
+//setTimeout( function() {
+top.spt_update_interval_id = setInterval( function() {
+
+    var top = $(document.body);
+    if (spt.body.is_active() == false) {
+        return;
+    }
+
+
+    if ( $(top.spt_update_src_el).isVisible() == false) {
+        clearInterval( top.spt_update_interval_id );
+        top.spt_update_interval_id = 0;
+        top.spt_update_src_el = null;
+        return;
+    }
+
+
+    var server = TacticServerStub.get();
+
+    // find out if there are any changes in the last interval
+    //var expr = "@COUNT(sthpw/change_timestamp['timestamp','>','$PREV_HOUR'])";
+    //count = server.eval(expr);
+    //console.log(count);
+
+
+    cmd = "tactic.ui.app.DynamicUpdateCmd"
+    
+
+    var update = top.spt_update;
+    if (!update) {
+        update = {};
+    }
+
+    // get all of the updates below as well
+    var update_els = top.getElements(".spt_update");
+    for (var i = 0; i < update_els.length; i++) {
+        var update_el = update_els[i];
+        if (! update_el.isVisible()) {
+            continue;
+        }
+
+        sub_update = update_el.spt_update;
+
+        // merge with update
+        for (var key in sub_update) {
+            update[key] = sub_update[key];
+        }
+    }
+
+    if (Object.keys(update).length > 0) {
+
+        var on_complete = function(ret_val) {
+
+            var timestamp = ret_val.info.timestamp;
+            top.spt_update_timestamp = timestamp;
+
+            var server_data = ret_val.info.updates;
+
+            for (var el_id in server_data) {
+
+
+                var el = $(el_id);
+                var value = server_data[el_id];
+
+
+
+                var node_name = el.nodeName;
+
+                var x = update[el_id];
+                var preaction = x.cbjs_preaction;
+                var action = x.cbjs_action;
+                var postaction = x.cbjs_postaction;
+
+                var preaction_cbk = null;
+                var action_cbk = null;
+                var postaction_cbk = null;
+
+                var cbk_bvr = {
+                    src_el: el,
+                    value: value
+                }
+
+                if (preaction) {
+                    preaction_cbk = function(bvr) {
+                        eval(preaction);
+                    }
+                    preaction_cbk(cbk_bvr);
+                }
+
+
+                if (action) {
+                    action_cbk = function(bvr) {
+                        eval(action);
+                    }
+                    action_cbk(cbk_bvr);
+                }
+                else if ( node_name == "SELECT" || node_name == "INPUT") {
+                    var old_value = el.value;
+                    if (old_value != value) {
+                        el.value = value;
+
+                        spt.update.display(el);
+                    }
+                }
+                else {
+                    var old_value = el.innerHTML;
+                    if (old_value != value) {
+                        el.innerHTML = value;
+
+                        spt.update.display(el);
+                    }
+                }
+
+
+                if (postaction) {
+                    postaction_cbk = function(bvr) {
+                        eval(postaction);
+                    }
+                    postaction_cbk(cbk_bvr);
+                }
+
+
+            }
+
+        }
+
+
+        var kwargs = {
+            updates: JSON.stringify(update),
+            last_timestamp: top.spt_update_timestamp,
+            _debug: false,
+        };
+
+
+        server.execute_cmd(cmd, kwargs, {}, {on_complete: on_complete} );
+
+
+
+
+    }
+
+
+}, bvr.interval);
+
+        '''
+
+
+
+
+
+
+
+class DynamicUpdateCmd(Command):
+
+
+    def execute(my):
+
+        start = time.time()
+
+
+        from pyasm.common import SPTDate
+        timestamp = SPTDate.now()
+        format = '%Y-%m-%d %H:%M:%S'
+        timestamp = timestamp.strftime(format)
+
+
+        updates = my.kwargs.get("updates")
+        if isinstance(updates, basestring):
+            updates = jsonloads(updates)
+
+        last_timestamp = my.kwargs.get("last_timestamp")
+        #assert last_timestamp
+        if not last_timestamp:
+            my.info = {
+                "updates": {},
+                "timestamp": timestamp
+            }
+            return
+
+        last_timestamp = parser.parse(last_timestamp)
+        last_timestamp = last_timestamp - timedelta(seconds=10)
+
+        # get out all of the search_keys
+        client_keys = set()
+        for id, values_list in updates.items():
+            if isinstance(values_list, dict):
+                values_list = [values_list]
+
+            for values in values_list:
+                search_key = values.get("search_key")
+                client_keys.add(search_key)
+
+        # find all of the search that have changed
+
+        search = Search("sthpw/change_timestamp")
+        #search.add_interval_filter("timestamp", "1 minute")
+        search.add_filter("timestamp", last_timestamp, op=">")
+        #print search.get_statement()
+
+        #search.add_order_by("id desc")
+        #search.set_limit(10)
+        changed_sobjects = search.get_sobjects()
+        changed_keys = set()
+        for sobject in changed_sobjects:
+            search_type = sobject.get_value("search_type")
+            search_code = sobject.get_value("search_code")
+            if search_type.startswith("sthpw/"):
+                search_key = "%s?code=%s" % (search_type, search_code)
+            else:
+                search_key = "%s&code=%s" % (search_type, search_code)
+            changed_keys.add(u'%s'%search_key)
+
+        intersect_keys = client_keys.intersection(changed_keys)
+
+        #print "client_keys: ", client_keys
+        #for x in client_keys:
+        #    print x
+        #print "---"
+        #print "changed_keys: ", changed_keys
+        #print "---"
+        #print "intersect_keys: ", intersect_keys
+
+
+        from pyasm.web import HtmlElement
+
+        results = {}
+        for id, values_list in updates.items():
+
+            if isinstance(values_list, dict):
+                values_list = [values_list]
+
+
+
+            for values in values_list:
+
+                search_key = values.get("search_key")
+                if search_key and search_key not in intersect_keys:
+                        continue
+
+
+                value = HtmlElement.eval_update(values)
+                results[id] = value
+
+        my.info = {
+            "updates": results,
+            "timestamp": timestamp
+        }
+
+
+        #print "time: ", time.time() - start
+        #print results
+
+
+        return results
+
+
+
+def main():
+    update = {
+        "X123": {
+            "search_key": "vfx/asset?project=vfx&code=chr001",
+            "column": "name"
+        },
+        "X124": {
+            "search_key": "sthpw/login?code=admin",
+            "expression": "@GET(.first_name) + ' ' + @GET(.last_name)"
+        }
+    }
+    cmd = DynamicUpdateCmd(update=update)
+    Command.execute_cmd(cmd)
+
+
+if __name__ == '__main__':
+    from pyasm.security import Batch
+    Batch(site="vfx_test", project_code="vfx")
+
+    main()
+
+
+
