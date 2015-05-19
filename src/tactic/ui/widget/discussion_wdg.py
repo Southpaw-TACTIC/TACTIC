@@ -1078,7 +1078,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
         if my.is_refresh =='true':
-            top = Widget()
+            top = DivWdg()
         else:
             top = DivWdg()
             if not my._load_js:
@@ -1093,28 +1093,25 @@ class DiscussionWdg(BaseRefreshWdg):
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
 
-            context_str = ",".join(contexts)
-
-            # FIXME: still needs work!!!
-            # The expression will result in False, meaning something has changed
-            # Basically, what is trying to be state here is:
-            # If search_key xyz has changed and expression evaluates to False
-            # do the action. This is not quite clear in the data structure
-            top.add_update( {
-                'search_key': my.kwargs.get("search_key"),
-                'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
-                'cbjs_postaction': '''
-                spt.panel.refresh(bvr.src_el);
-                '''
-            } )
-
-
 
             max_height = my.kwargs.get("max_height")
             if max_height:
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
+
+
+        context_str = ",".join(contexts)
+        update_div = DivWdg()
+        top.add(update_div)
+        update_div.add_update( {
+            'search_key': my.kwargs.get("search_key"),
+            'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
+            'cbjs_postaction': '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+            spt.panel.refresh(top);
+            '''
+        } )
 
         if my.use_parent == 'true' and not notes and not my.parent:
             sobj = my.parent
