@@ -346,9 +346,26 @@ class DynamicUpdateCmd(Command):
 
                 search_key = values.get("search_key")
                 if search_key and search_key not in intersect_keys:
+                    continue
+
+
+                # evaluate any compare expressions
+                compare = values.get("compare")
+                if compare:
+                    search_key = values.get("search_key")
+                    if search_key:
+                        sobject = Search.get_by_search_key(search_key)
+                    else:
+                        sobject = None
+                    cmp_result = Search.eval(compare, sobject, single=True)
+                    if cmp_result == True:
                         continue
 
-                value = HtmlElement.eval_update(values)
+                    # some randome value
+                    value = "Loading ..."
+                else:
+                    value = HtmlElement.eval_update(values)
+
                 if value == None:
                     continue
                 results[id] = value
