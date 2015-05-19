@@ -580,6 +580,12 @@ class TaskElementWdg(BaseTableElementWdg):
         default_pipeline = []
 
         # get all the processes
+        
+        # prevent expression error
+        project_code = Project.get_project_code()
+        pipeline_codes = [ x.replace('$PROJECT', project_code) for x in pipeline_codes ]
+        pipelines = Search.eval("@SOBJECT(sthpw/pipeline['code','in','%s'])" %'|'.join(pipeline_codes))
+        
         if pipelines:
             for pipeline in pipelines:
                 processes = pipeline.get_processes()

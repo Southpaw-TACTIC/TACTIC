@@ -927,9 +927,9 @@ class ThumbWdg(BaseTableElementWdg):
             from pyasm.prod.biz import ProdSetting
             protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
 
+        #deals with the icon attributes
         if detail == "false":
             if my.has_img_link:
-
                 if protocol =='file':
                     dir_naming = DirNaming()
                     client_base_dir = dir_naming.get_base_dir('client_repo')
@@ -944,7 +944,6 @@ class ThumbWdg(BaseTableElementWdg):
                 
                 else: # protocol not set or equals 'http'
                     is_dir = True
-
                     # add a file browser for directories
                     if repo_path and os.path.isdir(repo_path):
                         img.add_behavior( {

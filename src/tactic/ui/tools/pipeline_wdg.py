@@ -1544,12 +1544,33 @@ class ProcessInfoWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_pipeline_info_top");
                 var input = spt.api.get_input_values(top, null, false);
 
-                var server = TacticServerStub.get();
                 '''
             } )
 
-            top.add("<br clear='all'/>")
+        #show error message if the node has not been registered 
+        if not process_sobj:
+            warning_div = DivWdg()
+            #width = 16 makes the icon smaller
+            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
+            warning_msg = "This process node has not been registered in the process table, please save your changes."
+           
+            warning_div.add(warning_icon)
+            warning_div.add(warning_msg)
+            top.add(warning_div)
+            warning_div.add_style("padding: 20px 30px")
+            warning_div.add_style("font-size: 15px")
+           
+        else:
+            edit = EditWdg(
+                    search_type="config/process",
+                    show_header=False,
+                    width="400px",
+                    #view="pipeline_tool_edit",
+                    search_key=process_sobj.get_search_key(),
+            )
+            top.add(edit)
 
+            top.add("<br clear='all'/>")
 
 
         else:

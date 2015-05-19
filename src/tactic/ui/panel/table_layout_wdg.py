@@ -98,7 +98,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional'
         },
 
-       'show_search_limit': {
+        'show_search_limit': {
             'description': 'Flag to determine whether or not to show the search limit',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -375,10 +375,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # get all the attributes
             if element_name and element_name != "None":
                 attrs = my.config.get_element_attributes(element_name)
+                widget.set_attributes(attrs)
             else:
                 attrs = {}
             
             my.attributes.append(attrs)
+
+
             # defined access for this view
             def_default_access = attrs.get('access')
             if not def_default_access:
@@ -853,7 +856,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             scroll.add_style("overflow-y: auto")
             scroll.add_style("overflow-x: hidden")
-            if not height:
+            if not height and my.kwargs.get("__hidden__") not in [True, 'True']:
                 # set to browser height
                 scroll.add_behavior( {
                     'type': 'load',
@@ -971,9 +974,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
         
-        for i, col in enumerate(my.group_columns):
-            group_value_dict = {}
-            my.group_values[i] = group_value_dict
 
         for row, sobject in enumerate(my.sobjects):
 
@@ -1583,10 +1583,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             '''
         } )
-
-
-
-
 
 
         # selection behaviors
@@ -2303,11 +2299,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                         my.group_summary = []
                         my.group_rows.append(tr)
-                    
+
                         tr, td = table.add_row_cell()
                         td.add("&nbsp;")
                         tr.add_border(size=1)
-                    
+
                 if my.group_mode in ["top", "both"]:
                     my.handle_group(table, i, sobject, group_column, group_value, last_value)
           
@@ -3417,11 +3413,14 @@ spt.table.get_selected_rows = function() {
 
 
 
-spt.table.get_selected_search_keys = function() {
+spt.table.get_selected_search_keys = function(use_id) {
     var rows = spt.table.get_selected_rows();
     var search_keys = [];
+    // if use_id is false, search_key uses code
+    if (use_id == null) use_id = true;
+
     for (var i = 0; i < rows.length; i++) {
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = use_id ? rows[i].getAttribute("spt_search_key") : rows[i].getAttribute("spt_search_key_v2");
         search_keys.push(search_key);
     }
 
@@ -3510,7 +3509,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "#777";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: absolute; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: -20px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -6090,7 +6089,7 @@ spt.table.delete_selected = function()
     var selected_rows = spt.table.get_selected_rows();
     var num = selected_rows.length;
     if (num == 0) {
-        spt.alert("Nothing selected to " + action);
+        spt.alert("Nothing selected to delete.");
         return;
     }
 

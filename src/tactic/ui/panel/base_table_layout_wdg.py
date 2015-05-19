@@ -843,48 +843,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         column = "keywords"
         simple_search_mode = my.kwargs.get("simple_search_mode")
-        
+
+        # default to true
         show_keyword_search = my.kwargs.get("show_keyword_search")
         if show_keyword_search in [False, 'false']:
             show_keyword_search = False
         else:
             show_keyword_search = True
 
-        # on by default
-        #show_keyword_search = True
 
         show_search = my.kwargs.get("show_search") != 'false'
 
-
-
-       
         if show_search and show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
-
-
-            """
-            last_search = my.kwargs.get("last_search")
-            if last_search:
-
-                # run last search
-                last_search = my.kwargs.get("last_search")
-                back_div = DivWdg()
-                div.add(back_div)
-                back_div.add_style("margin-top: 2px")
-                back_div.add_style("margin-right: -22px")
-                back_div.add_style("float: left")
-                back = ActionButtonWdg(title="<", size="30")
-                back_div.add(back)
-                back_div.add_behavior( {
-                    'type': 'click_up',
-                    'last_search': last_search,
-                    'cbjs_action': '''
-                    spt.table.run_search( {last_search: bvr.filter_data});
-                    '''
-                } )
-            """
-
 
             keyword_div = DivWdg()
             keyword_div.add_class("spt_table_search")
@@ -1170,7 +1142,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if my.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-            if show_search:
+            if show_search or show_keyword_search:
                 search_label = 'Search'
             else:
                 search_label = 'Refresh'
@@ -1196,9 +1168,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
-
-        if my.show_search_limit:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
+            
+        if my.show_search_limit:
+            
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
             wdg_list.append( { 'wdg': limit_span } )
