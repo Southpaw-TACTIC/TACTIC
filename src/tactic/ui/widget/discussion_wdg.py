@@ -1095,6 +1095,16 @@ class DiscussionWdg(BaseRefreshWdg):
 
             context_str = ",".join(contexts)
 
+            # FIXME: still needs work!!!
+            top.add_update( {
+                'search_key': my.kwargs.get("search_key"),
+                'expression': "...",
+                'cbjs_postaction': '''
+                spt.panel.refresh(bvr.src_el);
+                '''
+            } )
+
+
             max_height = my.kwargs.get("max_height")
             if max_height:
                 top.add_style("overflow: auto")
@@ -1473,6 +1483,11 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
         count_div.add_style("margin-left: 3px")
+
+        #count_div.add_update( {
+        #    'search_key': my.kwargs.get("search_key"),
+        #    'expression': "({@COUNT(sthpw/note['context','%s'])})" % context,
+        #} )
 
         return div
 

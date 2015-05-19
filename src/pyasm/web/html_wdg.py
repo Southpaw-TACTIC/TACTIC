@@ -866,15 +866,16 @@ class HtmlElement(Widget):
             sobject = None
 
         if column:
-            value = sobject.get(column)
+            value = sobject.get_value(column)
             #print "column: ", column
             #print "value: ", value
             #print
         elif expression:
             value = Search.eval(expression, sobject, single=True)
-            #print "expression: ", expression
-            #print "value: ", value
-            #print
+            print "sobject: ", sobject.get_search_key()
+            print "expression: ", expression
+            print "value: ", value
+            print
 
         format_str = update.get("format")
         if format_str:
