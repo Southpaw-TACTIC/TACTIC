@@ -1401,11 +1401,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         canvas_top.add_style("position: relative")
         canvas = my.get_canvas()
         canvas_top.add(canvas)
-        canvas_top.add_behavior( {
-            'type': 'click',
-            'cbjs_action': '''
-            '''
-        })
 
         canvas_title = DivWdg()
         canvas_top.add(canvas_title)
