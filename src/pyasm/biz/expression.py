@@ -1416,6 +1416,8 @@ class MethodMode(ExpressionParser):
                         ids.add(sobject_id)
                 else:
                     results = list(set(result))
+                    # provide some predictability in the result
+                    results.sort()
             else:
                 raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
 

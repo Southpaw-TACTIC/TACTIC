@@ -1096,13 +1096,18 @@ class DiscussionWdg(BaseRefreshWdg):
             context_str = ",".join(contexts)
 
             # FIXME: still needs work!!!
+            # The expression will result in False, meaning something has changed
+            # Basically, what is trying to be state here is:
+            # If search_key xyz has changed and expression evaluates to False
+            # do the action. This is not quite clear in the data structure
             top.add_update( {
                 'search_key': my.kwargs.get("search_key"),
-                'expression': "...",
+                'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
                 'cbjs_postaction': '''
                 spt.panel.refresh(bvr.src_el);
                 '''
             } )
+
 
 
             max_height = my.kwargs.get("max_height")
