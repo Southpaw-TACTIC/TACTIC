@@ -374,8 +374,8 @@ class DiscussionEditWdg(BaseRefreshWdg):
 
             var cancel = function() {};
             var note_sum = note.note;
-            if (note.note.length > 50 ) 
-                note_sum =  note.note.substring(0,50) + '...';
+            if (note.note.length > 30 ) 
+                note_sum =  note.note.substring(0,30) + '...';
             
             spt.confirm('Delete this note?<br/><br/><div style="padding: 10px;border: 1px #aaa dotted">' + note_sum + '</div>' , ok, cancel);
 
@@ -825,6 +825,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 my.notes_dict[key] = notes_list
             notes_list.append(note)
 
+
+        """
         from pyasm.biz import Snapshot
         snapshots = Snapshot.get_by_sobjects(notes)
         my.attachments = {}
@@ -835,6 +837,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 xx = []
                 my.attachments[parent_key] = xx
             xx.append(snapshot)
+        """
+        my.attachments = {}
 
 
         return my.notes_dict
@@ -1063,6 +1067,16 @@ class DiscussionWdg(BaseRefreshWdg):
             top.add_class("spt_discussion_top")
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
+
+
+            # FIXME: still needs work!!!
+            top.add_update( {
+                'search_key': my.kwargs.get("search_key"),
+                'expression': "...",
+                'cbjs_postaction': '''
+                spt.panel.refresh(bvr.src_el);
+                '''
+            } )
 
 
             max_height = my.kwargs.get("max_height")
@@ -1374,11 +1388,13 @@ class DiscussionWdg(BaseRefreshWdg):
 
             content = DivWdg()
             note_dialog.add(content)
-            content.add_style("min-width: 200px")
-            content.add_style("min-height: 200px")
+            content.add_style("min-width: 300px")
+            content.add_style("min-height: 150px")
+            content.add_class("spt_discussion_content")
+            content.add_color("background", "background")
 
-            content.add_behavior( {
-                'type': 'load',
+            context_wdg.add_behavior( {
+                'type': 'click_up',
                 'note_keys': note_keys,
                 'default_num_notes': my.default_num_notes,
                 'note_expandable': my.note_expandable,
@@ -1391,7 +1407,10 @@ class DiscussionWdg(BaseRefreshWdg):
                     note_expandable: bvr.note_expandable,
                     note_format: bvr.note_format,
                 }
-                spt.panel.load(bvr.src_el, class_name, kwargs);
+
+                var top = bvr.src_el.getParent(".spt_discussion_context_top");
+                var el = top.getElement(".spt_discussion_content");
+                spt.panel.load(el, class_name, kwargs);
 
                 '''
             } )
@@ -1453,10 +1472,16 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div = SpanWdg()
         div.add(count_div)
         count = my.context_counts.get(context)
-        count_div.add(" (%s)" % count)
+        count_div.add("(%s)" % count)
         count_div.add_style("font-weight: normal")
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
+        count_div.add_style("margin-left: 3px")
+
+        count_div.add_update( {
+            'search_key': my.kwargs.get("search_key"),
+            'expression': "({@COUNT(sthpw/note['context','%s'])})" % context,
+        } )
 
         return div
 
@@ -1517,7 +1542,6 @@ class NotesContextWdg(BaseRefreshWdg):
             note_content.add_style("max-height: 500px")
             note_content.add_style("overflow-y: auto")
             note_content.add_style("overflow-x: hidden")
-
 
             if my.default_num_notes == -1:
                 note_hidden = True
@@ -1642,7 +1666,7 @@ class NoteWdg(BaseRefreshWdg):
         if my.note_expandable in ['true', True]:
             title.add_class("hand")
             swap = SwapDisplayWdg.get_triangle_wdg()
-            if note_hidden not in ['true', True]:
+            if note_hidden in ['true', True]:
                 swap.set_off()
             SwapDisplayWdg.create_swap_title(title, swap, tbody)
             title.add(swap)
@@ -1657,8 +1681,8 @@ class NoteWdg(BaseRefreshWdg):
         display_date = date_obj.strftime("%b %d - %H:%M")
 
         if my.note_expandable in ['true', True]:
-            if len(note_value) > 50:
-                short_note = "%s ..." % note_value[:48]
+            if len(note_value) > 30:
+                short_note = "%s ..." % note_value[:28]
             else:    
                 short_note = note_value
                 
@@ -1726,7 +1750,7 @@ class NoteWdg(BaseRefreshWdg):
         if my.note_format == 'full':
             left = content.add_cell()
             left.add_style("padding: 10px")
-            left.add_style("width: 150px")
+            left.add_style("width: 100px")
             left.add_style("min-height: 100px")
             left.add_style("vertical-align: top")
 
@@ -1734,10 +1758,6 @@ class NoteWdg(BaseRefreshWdg):
                 login = "-- No User --"
                 left.add(login)
             else:
-                '''
-                from pyasm.security import Login
-                from pyasm.widget import ThumbWdg
-                '''
                 login_sobj = Login.get_by_code(login)
 
                 thumb = ThumbWdg()

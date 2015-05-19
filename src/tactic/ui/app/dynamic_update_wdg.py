@@ -293,7 +293,7 @@ class DynamicUpdateCmd(Command):
         last_timestamp = last_timestamp - timedelta(seconds=5)
         #last_timestamp = last_timestamp - timedelta(hours=24)
 
-        print "last: ", last_timestamp
+        #print "last: ", last_timestamp
 
         # get out all of the search_keys
         client_keys = set()
