@@ -1052,6 +1052,31 @@ class DiscussionWdg(BaseRefreshWdg):
             my.default_contexts_open = []
 
 
+
+        notes = my.get_notes()
+
+        # group notes under contexts
+        contexts = []
+        context_notes = {}
+        last_context = None
+        for i, note in enumerate(notes):
+            context = note.get_value("context")
+            process = note.get_value("process")
+            if last_context == None or context != last_context:
+                contexts.append(context)
+            
+            note_list = context_notes.get(context)
+            if note_list == None:
+                note_list = []
+                context_notes[context] = note_list
+            note_list.append(note)
+
+            last_context = context
+
+
+
+
+
         if my.is_refresh =='true':
             top = Widget()
         else:
@@ -1068,15 +1093,21 @@ class DiscussionWdg(BaseRefreshWdg):
             my.set_as_panel(top)
             top.add_style("min-width: 300px")
 
+            context_str = ",".join(contexts)
 
             # FIXME: still needs work!!!
+            # The expression will result in False, meaning something has changed
+            # Basically, what is trying to be state here is:
+            # If search_key xyz has changed and expression evaluates to False
+            # do the action. This is not quite clear in the data structure
             top.add_update( {
                 'search_key': my.kwargs.get("search_key"),
-                'expression': "...",
+                'compare': "@jOIN(@UNIQUE(@GET(sthpw/note.context)), ',') == '%s'" % context_str,
                 'cbjs_postaction': '''
                 spt.panel.refresh(bvr.src_el);
                 '''
             } )
+
 
 
             max_height = my.kwargs.get("max_height")
@@ -1084,7 +1115,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
-        notes = my.get_notes()
 
         if my.use_parent == 'true' and not notes and not my.parent:
             sobj = my.parent
@@ -1278,26 +1308,6 @@ class DiscussionWdg(BaseRefreshWdg):
         #    show_context_notes = False
 
 
-
-
-        # group notes under contexts
-        contexts = []
-        context_notes = {}
-        last_context = None
-
-        for i, note in enumerate(notes):
-            context = note.get_value("context")
-            process = note.get_value("process")
-            if last_context == None or context != last_context:
-                contexts.append(context)
-            
-            note_list = context_notes.get(context)
-            if note_list == None:
-                note_list = []
-                context_notes[context] = note_list
-            note_list.append(note)
-
-            last_context = context
 
 
 

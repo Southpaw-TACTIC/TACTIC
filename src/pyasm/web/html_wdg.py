@@ -850,6 +850,7 @@ class HtmlElement(Widget):
 
         column = update.get("column")
         expression = update.get("expression")
+        compare = update.get("compare")
 
 
         value = update.get("value")
@@ -863,17 +864,24 @@ class HtmlElement(Widget):
         else:
             sobject = None
 
+
         if column:
             value = sobject.get_value(column)
             #print "column: ", column
             #print "value: ", value
             #print
+
+        elif compare:
+            value = Search.eval(compare, sobject, single=True)
+            print "compare: ", compare
+            print "value: ", value
+
         elif expression:
             value = Search.eval(expression, sobject, single=True)
-            print "sobject: ", sobject.get_search_key()
-            print "expression: ", expression
-            print "value: ", value
-            print
+            #print "sobject: ", sobject.get_search_key()
+            #print "expression: ", expression
+            #print "value: ", value
+            #print
 
         format_str = update.get("format")
         if format_str:
