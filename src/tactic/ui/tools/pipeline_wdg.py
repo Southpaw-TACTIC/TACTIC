@@ -1573,20 +1573,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
             top.add("<br clear='all'/>")
 
 
-        else:
-            from tactic.ui.panel import EditWdg
-
-
-            edit = EditWdg(
-                    search_type="config/process",
-                    show_header=False,
-                    width="400px",
-                    #view="pipeline_tool_edit",
-                    search_key=process_sobj.get_search_key(),
-            )
-            top.add(edit)
-                
-
         return top
 
 
