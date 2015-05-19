@@ -1292,10 +1292,6 @@ class DiscussionWdg(BaseRefreshWdg):
         #else:
         #    show_context_notes = False
 
-
-
-
-
         # go through every context and display notes
         for context in contexts:
 
@@ -1425,7 +1421,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     note_format=my.note_format,
                     attachments=my.attachments,
             )
-
 
             #note_dialog.add(notes_wdg)
 
@@ -1582,6 +1577,12 @@ class NoteCollectionWdg(BaseRefreshWdg):
         return div
 
 
+        if my.show_note_status:
+            my.note_status_dict = ProdSetting.get_dict_by_key('note_status')
+        else:
+            my.note_status_dict = {}
+
+        my.note_format = my.kwargs.get("note_format")
 
 
 class NoteWdg(BaseRefreshWdg):
