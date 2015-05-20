@@ -18,7 +18,7 @@ from pyasm.widget import TextAreaWdg, ButtonWdg, TextWdg, HiddenWdg, ProdIconBut
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import ActionButtonWdg, DirListWdg
 from tactic.ui.input import TextInputWdg
 
 import os
@@ -412,7 +412,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
 
         title = DivWdg()
-        title.add("Saved Scripts")
+        title.add("aved Scripts")
         title.add_style("font-size: 14px")
         title.add_color("color", "color")
         title.add_style("padding: 8px 3px")
@@ -440,6 +440,18 @@ class ScriptEditorWdg(BaseRefreshWdg):
         inner.add_style("height: 100%")
         inner.add_style("width: 800px")
 
+
+        paths = []
+        scripts_dict = {}
+        for script in scripts:
+            path = "//%s/%s" % (script.get_value("folder"), script.get_value("title"))
+            paths.append(path)
+            scripts_dict[path] = script
+        dir_list_wdg = ScriptDirListWdg(paths=paths, base_dir="/", editor_id=my.editor_id, scripts=scripts_dict)
+        inner.add(dir_list_wdg)
+
+
+        """
         last_folder = ''
         for script in scripts:
             title = script.get_value("title")
@@ -472,7 +484,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
             span.add(" <i>(%s)</i>" % language)
             div.add(span)
 
-            div.add_event("onmou8eover", "this.style.background='%s'" % hover_color)
+            div.add_event("onmouseover", "this.style.background='%s'" % hover_color)
             div.add_event("onmouseout", "this.style.background='%s'" % bg_color)
 
 
@@ -483,7 +495,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
                 'code': script.get_code()
             }
             div.add_behavior(behavior)
-
+        """
 
 
         widget.add(script_div)
@@ -631,6 +643,51 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
 
         '''
 
+
+
+
+class ScriptDirListWdg(DirListWdg):
+
+    def init(my):
+        my.kwargs['background'] = "background3"
+        super(ScriptDirListWdg, my).init()
+
+    def add_top_behaviors(my, top):
+
+        top.add_relay_behavior( {
+            'type': 'mouseup',
+            'editor_id': my.kwargs.get("editor_id"),
+            'bvr_match_class': "spt_script_item",
+            'cbjs_action': '''
+            bvr.code = bvr.src_el.getAttribute("spt_script_code");
+            path = bvr.src_el.getAttribute("spt_path")
+            spt.script_editor.display_script_cbk(evt, bvr)
+            ''',
+        } )
+
+    def add_file_behaviors(my, item_div, dirname, basename):
+        item_div.add_class("spt_script_item")
+        if not dirname:
+            path = "///%s" % (basename)
+        else:
+            path = "%s/%s" % (dirname, basename)
+
+        scripts = my.kwargs.get("scripts")
+        script = scripts.get(path)
+        script_code = script.get("code")
+        language = script.get("language")
+        item_div.add_attr("spt_script_code", script_code)
+        item_div.add_style("background", "transparent")
+
+        if language:
+            span = SpanWdg()
+            span.add_style("font-size: 9px")
+            span.add_style("opacity: 0.2")
+            span.add(" &nbsp; <i>(%s)</i>" % language)
+            item_div.add(span)
+
+
+ 
 
 class ShelfEditWdg(ScriptEditorWdg):
     pass
