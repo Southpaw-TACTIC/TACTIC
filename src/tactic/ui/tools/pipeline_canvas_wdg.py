@@ -307,6 +307,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = my.get_condition_node("XXXXX")
         template_div.add(approval)
 
+        # add approval node
+        auto = my.get_node("XXXXX", node_type="auto")
+        template_div.add(auto)
+
         # add trigger node
         trigger = my.get_trigger_node()
         template_div.add(trigger)
@@ -539,21 +543,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return div
 
 
-    def get_node(my, name):
+    def get_node(my, name, node_type="node"):
 
         width, height = my.get_node_size()
+
+        if node_type == "auto":
+            border_radius = 20 
+        else:
+            border_radius = 3
 
 
         # add a node
         node = DivWdg()
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "node")
+        if node_type !="node":
+            node.add_class("spt_pipeline_%s" % node_type)
+        node.add_attr("spt_node_type", node_type)
 
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
         node.add_style("position: absolute")
-        node.add_style("width: %spx" % width)
-        node.add_style("height: %spx" % height)
         node.add_style("text-align: center")
         node.add_style("z-index: 100")
 
@@ -661,6 +670,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         # active glow
+        """
         BASE = "/context/themes2/default/pipeline"
         active = DivWdg()
         node.add(active)
@@ -672,6 +682,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         active.add_style("z-index: -200")
         active.add_style("display: none")
 
+        active.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.5)")
+        """
+
 
 
         content = DivWdg()
@@ -681,10 +694,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_style("height: %spx" % height)
         content.add_style("border: solid 1px black")
         content.add_style("z-index: 200")
+        content.add_style("overflow: 200")
 
+        # parallelogram
+        #content.add_style("-webkit-transform", "skewX(-20deg)")
+        #content.add_style("transform", "skewX(-20deg)")
+
+        if border_radius:
+            content.set_round_corners(border_radius)
 
         extra_wdg = my.get_extra_node_content_wdg()
-        content.add(extra_wdg)
+        if extra_wdg:
+            content.add(extra_wdg)
 
         label = DivWdg()
         node.add(label)
@@ -718,7 +739,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
-        content.set_round_corners(5)
 
 
         my.add_default_node_behaviors(node, text)
@@ -997,7 +1017,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node = DivWdg()
         node.add_class("spt_pipeline_condition")
         node.add_class("spt_pipeline_node")
-        node.add_attr("spt_node_type", "approval")
+        node.add_attr("spt_node_type", "condition")
 
 
         node.add_attr("spt_element_name", name)
@@ -1034,7 +1054,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content.add_class("spt_content")
         content.add_style("width: %spx" % width)
         content.add_style("height: %spx" % height)
-        #content.add_style("border-radius: %spx" % (width/2))
         content.add_style("border: solid 1px black")
 
         content.add_style("transform: rotate(-45deg)")
@@ -1099,6 +1118,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         node.add_style("width: auto")
         node.add_style("height: auto")
+
+
+
+        # add custom node behaviors
+        node_behaviors = my.get_node_behaviors()
+        for node_behavior in node_behaviors:
+            node.add_behavior( node_behavior )
+
+
+
 
         my.add_nobs(node, width, height)
 
@@ -1782,9 +1811,10 @@ spt.pipeline.clear_selected = function(item) {
 spt.pipeline.select_node = function(node) {
     node.setStyle("z-index", "200");
     node.spt_is_selected = true;
-    var active = node.getElement(".spt_active");
-    active.setStyle("display", "");
+    //var active = node.getElement(".spt_active");
+    //active.setStyle("display", "");
     var content = node.getElement(".spt_content");
+    content.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
     content.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     content.setStyle("opacity", "0.8");
 
@@ -1801,9 +1831,10 @@ spt.pipeline.select_node = function(node) {
 spt.pipeline.unselect_node = function(node) {
     node.setStyle("z-index", "100");
     node.spt_is_selected = false;
-    var active = node.getElement(".spt_active");
-    active.setStyle("display", "none");
+    //var active = node.getElement(".spt_active");
+    //active.setStyle("display", "none");
     var content = node.getElement(".spt_content");
+    content.setStyle("box-shadow", "");
     content.setStyle("border", "solid 1px black");
     content.setStyle("opacity", "1.0");
 }
@@ -4151,14 +4182,20 @@ spt.pipeline.export_group = function(group_name) {
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
-        xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        console.log(name + ": " + node_type);
+        if (node_type != "node") {
+            xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        }
+        else {
+            xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        }
 
         var properties = node.properties;
         for (var key in properties) {
            
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name','xpos','ypos','names','namedItem','item'].contains(key)) {
+            if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
                 continue;
             }
             var value = properties[key];

@@ -16,7 +16,7 @@ import tacticenv
 
 import unittest, random
 
-
+from pyasm.common import Common
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 from pyasm.search import Search, SearchType
 from pyasm.command import Command, Trigger
@@ -58,11 +58,13 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-            my._test_manual()
-            my._test_task()
+            my._test_trigger()
+            #my._test_manual()
+            #my._test_task()
             #my._test_auto_process()
             #my._test_check()
             #my._test_choice()
+            #my._test_input()
         except Exception, e:
             print "Error: ", e
             raise
@@ -253,6 +255,61 @@ class WorkflowCmd(Command):
 
 
 
+
+    def _test_input(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("sthpw/virtual")
+        sobject.set_value("code", "test")
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="a"/>
+          <process type="condition" name="b"/>
+          <process type="auto" name="c"/>
+          <process type="auto" name="d"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c" from_attr="success"/>
+          <connect from="b" to="d" from_attr="success"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+
+        # check input values
+        process = processes.get("b")
+        process.set_json_value("trigger", {
+            'on_action': '''
+            inputs = input.get("inputs")
+            sobject.set_value("b_input", inputs[0]);
+            outputs = input.get("outputs")
+            sobject.set_value("b_output", ",".join(outputs))
+            sobject.set_value("test", "test")
+            '''
+        } )
+        process.commit()
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+        # make sure we have the same sobject
+        my.assertEquals( "test", sobject.get_value("test") )
+        my.assertEquals( "a", sobject.get_value("b_input"))
+        my.assertEquals( "c,d", sobject.get_value("b_output"))
+
+
+
+
+
+
+
     def _test_choice(my):
 
         # create a dummy sobject
@@ -386,6 +443,58 @@ class WorkflowCmd(Command):
         task.set_value("status", "complete")
         task.commit()
         my.assertEquals( "a", sobject.get_value("name_first"))
+
+
+
+    def _test_trigger(my):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="a"/>
+        </pipeline>
+        '''
+        pipeline, processes = my.get_pipeline(pipeline_xml)
+
+        process = processes.get("a")
+        process.set_value("trigger", "")
+        process.commit()
+
+
+        folder = Common.generate_alphanum_key()
+
+        Trigger.clear_db_cache()
+        event = "process|action"
+        trigger = SearchType.create("config/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("process", process.get_code())
+        trigger.set_value("mode", "same process,same transaction")
+        trigger.set_value("script_path", "%s/process_trigger" % folder)
+        trigger.commit()
+
+        script = SearchType.create("config/custom_script")
+        script.set_value("folder", folder)
+        script.set_value("title", "process_trigger")
+        script.set_value("script", '''
+        print "---"
+        for key, value in input.items():
+            print key, value
+        print "---"
+        print "process: ", input.get("process")
+        ''')
+        script.commit()
+ 
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(my, "process|pending", output)
+
 
 
 

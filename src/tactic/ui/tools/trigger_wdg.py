@@ -357,10 +357,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
         div = DivWdg()
 
         
-        button = ActionButtonWdg(title='Save')
-        button.add_style("float: right")
-        button.add_style("margin-top: -8px")
-        div.add(button)
+        #button = ActionButtonWdg(title='Save')
+        #button.add_style("float: right")
+        #button.add_style("margin-top: -8px")
+        #div.add(button)
         button_bvr = {
         'type': 'click_up',
         'cbjs_action': '''
@@ -406,7 +406,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         spt.app_busy.hide();
         '''
         } 
-        button.add_behavior( button_bvr )
+        #button.add_behavior( button_bvr )
 
 
         if not trigger:
@@ -477,10 +477,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
         hidden.set_value( search_key )
         div.add("<br/>")
 
+        content_div = DivWdg()
+        div.add(content_div)
+        content_div.add_style("height: 430px")
+        content_div.add_style("overflow-y: auto")
+        content_div.add_style("padding: 0px 10px")
+        content_div.add_style("margin: 0px -20px")
+
         table = Table()
+        content_div.add(table)
         table.add_style("width: 100%")
         table.add_color("color", "color")
-        div.add(table)
 
         tr = table.add_row()
         td = table.add_cell()
@@ -843,12 +850,16 @@ class TriggerDetailWdg(BaseRefreshWdg):
         trigger_div.add(trigger_wdg)
 
 
-        div.add("<br/><hr/>")
+
+
+        button_div = DivWdg()
+        button_div.add("<br/><hr/>")
+        div.add(button_div)
 
 
         # FIXME: this does not delete the python script
         delete_button = ActionButtonWdg(title='Remove', tip='Remove the current trigger')
-        div.add(delete_button)
+        button_div.add(delete_button)
         delete_button.add_style("float: left")
         delete_button.add_behavior( {
         'type': 'click_up',
@@ -868,7 +879,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title='Save')
         button.add_style("float: right")
-        div.add(button)
+        button_div.add(button)
        
         button.add_behavior(button_bvr)
 
@@ -987,7 +998,7 @@ class EventTriggerEditWdg(BaseRefreshWdg):
 
         if event == '__custom__':
             top.add("Event name: &nbsp;&nbsp;")
-            text = TextWdg("custom_event")
+            text = TextInputWdg(name="custom_event")
             top.add(text)
 
             custom_event = my.kwargs.get("custom_event")
@@ -1715,15 +1726,17 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
 
         notification_div.add("Mail To: <br/>")
         to_text = TextAreaWdg("mail_to")
+        to_text.add_class("form-control")
         to_text.set_value(mail_to)
-        to_text.add_style("width: 500px")
+        to_text.add_style("width: 100%")
         notification_div.add(to_text)
 
         notification_div.add("<br/>")
         notification_div.add("Mail CC: <br/>")
         cc_text = TextAreaWdg("mail_cc")
+        cc_text.add_class("form-control")
         cc_text.set_value(mail_cc)
-        cc_text.add_style("width: 500px")
+        cc_text.add_style("width: 100%")
         notification_div.add(cc_text)
 
         return notification_div
@@ -1914,7 +1927,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         )
         div.add(script_path_text)
-        script_path_text.add_style("width: 500px")
+        script_path_text.add_style("width: 100%")
         script_path_text.set_value(script_path)
         script_path_text.add_behavior( {
             'type': 'blur',
@@ -1981,12 +1994,13 @@ if task_status != src_status:
 
         div.add("Code: <br/>")
         script_text = TextAreaWdg("script")
+        script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         div.add(script_text)
         if script:
             script_text.set_value(script)
         script_text.add_style("height: 300px")
-        script_text.add_style("width: 500px")
+        script_text.add_style("width: 100%")
 
         return div
 

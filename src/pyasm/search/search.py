@@ -5131,8 +5131,9 @@ class SObject(object):
     def get_sobject_dict(my, columns=None, use_id=False, language='python'):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
-
-        if not columns:
+        if my.get_base_search_type() == "sthpw/virtual":
+            columns = my.data.keys()
+        elif not columns:
             columns = SearchType.get_columns(my.get_search_type())
 
         result = {}

@@ -16,14 +16,16 @@ import re
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.biz import Pipeline, Project
+from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
 from tactic.ui.panel import FastTableLayoutWdg
 
-from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg
+from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg
 
 from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, ResizableTableWdg
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
+from tactic.ui.input import TextInputWdg
 from pipeline_canvas_wdg import PipelineCanvasWdg
 from client.tactic_client_lib import TacticServerStub
 
@@ -1340,6 +1342,21 @@ class ProcessInfoWdg(BaseRefreshWdg):
         pipeline_code = my.kwargs.get("pipeline_code")
         node_type = my.kwargs.get("node_type")
 
+
+        if node_type == 'approval':
+            widget = ApprovalInfoWdg(**my.kwargs)
+            return widget
+
+        if node_type == 'auto':
+            widget = AutoInfoWdg(**my.kwargs)
+            return widget
+
+        if node_type == 'condition':
+            widget = ConditionInfoWdg(**my.kwargs)
+            return widget
+
+
+
         top = my.top
 
         if not pipeline_code:
@@ -1375,8 +1392,8 @@ class ProcessInfoWdg(BaseRefreshWdg):
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
 
-        if not process_sobj:
-            return top
+        #if not process_sobj:
+        #    return top
 
 
         # triggers
@@ -1493,59 +1510,33 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 
-
-        table.add_row()
-        td = table.add_cell("Item Count: ")
-        td.add_style("text-align: right")
-        td.add_style("padding: 10px 10px")
-        td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % sobject_count)
-        td.add_style("text-align: right")
-
-
-        button = ActionButtonWdg(title="View")
-        td.add(button)
-        button.add_style("float: right")
-        button.add_behavior( {
-            'type': 'click_up',
-            'search_type': search_type,
-            'pipeline_code': pipeline_code,
-            'process': process,
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.tools.TableLayoutWdg';
-            var kwargs = {
-                search_type: bvr.search_type,
-                op_filters: [['pipeline_code',bvr.pipeline_code]],
-            }
-            spt.panel.load_popup("Items ["+bvr.process+"]", class_name, kwargs);
-            '''
-        } )
+        if search_type:
+            table.add_row()
+            td = table.add_cell("Item Count: ")
+            td.add_style("text-align: right")
+            td.add_style("padding: 10px 10px")
+            td = table.add_cell("<span style='margin: 5px 10px' class='badge'>%s</span>" % sobject_count)
+            td.add_style("text-align: right")
 
 
-        top.add("<hr/>")
-
-        if node_type == "approval":
-            from pyasm.widget import TextAreaWdg
-
-            top.add("Condition")
-            text = TextAreaWdg(name="action")
-            text.add_class("form-control")
-            top.add(text)
-            text.add_style("margin: 10px")
-            top.add("<br/>")
-
-            save = ActionButtonWdg(title="Save")
-            save.add_style("float: right")
-            top.add(save)
-            save.add_behavior( {
+            button = ActionButtonWdg(title="View")
+            td.add(button)
+            button.add_style("float: right")
+            button.add_behavior( {
                 'type': 'click_up',
+                'search_type': search_type,
                 'pipeline_code': pipeline_code,
                 'process': process,
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_pipeline_info_top");
-                var input = spt.api.get_input_values(top, null, false);
-
+                var class_name = 'tactic.ui.tools.TableLayoutWdg';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                    op_filters: [['pipeline_code',bvr.pipeline_code]],
+                }
+                spt.panel.load_popup("Items ["+bvr.process+"]", class_name, kwargs);
                 '''
             } )
+
 
         #show error message if the node has not been registered 
         if not process_sobj:
@@ -1561,6 +1552,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
             warning_div.add_style("font-size: 15px")
            
         else:
+            from tactic.ui.panel import EditWdg
             edit = EditWdg(
                     search_type="config/process",
                     show_header=False,
@@ -1577,8 +1569,337 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 
-class ApprovalInfoWdg(ProcessInfoWdg):
+
+
+
+class AutoInfoWdg(BaseRefreshWdg):
+    def get_display(my):
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        top.add(title_wdg)
+        title_wdg.add("%s: %s" % (node_type.title(), process))
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px")
+
+        input_processes = pipeline.get_input_processes(process)
+        output_processes = pipeline.get_output_processes(process)
+
+        input_div = DivWdg()
+        top.add(input_div)
+        input_div.add("Inputs: %s" % [x.get_name() for x in input_processes])
+
+        output_div = DivWdg()
+        top.add(output_div)
+        output_div.add("Outputs: %s" % [x.get_name() for x in output_processes])
+
+
+
+        form_wdg = DivWdg()
+        top.add(form_wdg)
+        form_wdg.add_style("padding: 10px")
+
+
+        if node_type == "auto":
+
+            form_wdg.add("<b>Action:</b><br/>")
+            form_wdg.add("This will be the automatically executed action for this process.")
+            form_wdg.add("<br/>")
+            form_wdg.add("<br/>")
+
+
+            #form_wdg.add("Script Path:<br/>")
+            text = TextInputWdg(name="on_action_path")
+            form_wdg.add(text)
+
+            form_wdg.add("<br/>")
+            form_wdg.add("OR")
+            form_wdg.add("<br/>")
+
+            form_wdg.add("Python Trigger:<br/>")
+            text = TextInputWdg(name="on_action_class")
+            form_wdg.add(text)
+
+            form_wdg.add("<br/>")
+            form_wdg.add("OR")
+            form_wdg.add("<br/>")
+
+
+            form_wdg.add("Inline Script:<br/>")
+            text = TextAreaWdg(name="on_action")
+            text.add_class("form-control")
+            text.add_style("height: 300px")
+            text.add_style("width: 100%")
+            form_wdg.add(text)
+            form_wdg.add("<br/>")
+
+
+
+
+        else:
+            form_wdg.add("<b>Check Condition</b><br/>")
+            form_wdg.add("This will be executed on the completion event of an input process.  The condition check will either return True or False.")
+            text = TextAreaWdg(name="on_action")
+            text.add_class("form-control")
+            text.add_style("height: 300px")
+            form_wdg.add(text)
+            form_wdg.add("<br/>")
+
+
+
+        save = ActionButtonWdg(title="Save")
+        save.add_style("float: right")
+        top.add(save)
+        save.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            var server = TacticServerStub.get();
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = {
+                node_type: 'auto',
+                pipeline_code: bvr.pipeline_code,
+                process: bvr.process,
+                on_action: input.on_action,
+                on_action_class: input.on_action_class,
+            }
+
+            server.execute_cmd(class_name, kwargs);
+
+            '''
+        } )
+
+
+
+
+        return top
+
+
+
+
+    def get_process_triggers(my):
+
+        form_wdg = DivWdg()
+
+
+        form_wdg.add("<h2>Process Triggers</h2>")
+        form_wdg.add("<hr/>")
+
+        events = ['pending','action','complete','revise']
+
+        form_wdg.add("Event")
+        select = SelectWdg("event")
+        form_wdg.add(select)
+        select.set_option("values", events)
+
+        form_wdg.add("<br/>")
+
+        form_wdg.add("Action")
+        text = TextAreaWdg(name="on_complete")
+        text.add_class("form-control")
+        form_wdg.add(text)
+        form_wdg.add("<br/>")
+
+
+
+
+        form_wdg.add("Complete")
+        text = TextAreaWdg(name="on_complete")
+        text.add_class("form-control")
+        form_wdg.add(text)
+        form_wdg.add("<br/>")
+
+
+        form_wdg.add("Revise")
+        text = TextAreaWdg(name="on_revise")
+        text.add_class("form-control")
+        form_wdg.add(text)
+        form_wdg.add("<br/>")
+
+
+        form_wdg.add("Pending")
+        text = TextAreaWdg(name="pending")
+        text.add_class("form-control")
+        form_wdg.add(text)
+        form_wdg.add("<br/>")
+
+
+        save = ActionButtonWdg(title="Save")
+        save.add_style("float: right")
+        top.add(save)
+        save.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            '''
+        } )
+
+        return form_wdg
+
+
+class ApprovalInfoWdg(BaseRefreshWdg):
+
+    def get_display(my):
+
+
+        top = my.top
+        top.add_style("padding: 20px 0px")
+
+        process = my.kwargs.get("process")
+        pipeline_code = my.kwargs.get("pipeline_code")
+        node_type = my.kwargs.get("node_type")
+
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        title_wdg = DivWdg()
+        title_wdg.add_style("margin: -20px 0px 10px 0px")
+        top.add(title_wdg)
+        title_wdg.add("%s: %s" % (node_type.title(), process))
+        title_wdg.add_style("font-size: 1.2em")
+        title_wdg.add_style("font-weight: bold")
+        title_wdg.add_color("background", "background", -5)
+        title_wdg.add_style("padding: 15px 10px")
+
+
+        input_processes = pipeline.get_input_processes(process)
+        output_processes = pipeline.get_output_processes(process)
+
+        input_div = DivWdg()
+        top.add(input_div)
+        input_div.add("Inputs: %s" % [x.get_name() for x in input_processes])
+
+        output_div = DivWdg()
+        top.add(output_div)
+        output_div.add("Outputs: %s" % [x.get_name() for x in output_processes])
+
+
+
+        form_wdg = DivWdg()
+        top.add(form_wdg)
+        form_wdg.add_style("padding: 10px")
+
+        form_wdg.add("Add groups or people that need to approve the '%s' process" % [x.get_name() for x in input_processes])
+
+        form_wdg.add("<br/>")
+        form_wdg.add("<br/>")
+
+        #from tactic.ui.input import KeywordInputWdg
+        from spt.tools.keyword import KeywordInputWdg
+        entry = KeywordInputWdg()
+        entry.set_option("search_type", "sthpw/login")
+        entry.set_option("column", "display_name")
+        form_wdg.add(entry)
+
+
+        save = ActionButtonWdg(title="Save")
+        save.add_style("float: right")
+        top.add(save)
+        save.add_behavior( {
+            'type': 'click_up',
+            'pipeline_code': pipeline_code,
+            'process': process,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            '''
+        } )
+
+       
+
+
+        return top
+
+
+class ConditionInfoWdg(AutoInfoWdg):
     pass
+
+
+
+__all__.append("ProcessInfoCmd")
+class ProcessInfoCmd(Command):
+
+    def execute(my):
+
+        node_type = my.kwargs.get("node_type")
+
+        if node_type in ["auto", "condition"]:
+            return my.handle_auto()
+
+
+    def handle_auto(my):
+
+        on_action = my.kwargs.get("on_action")
+        on_action_class = my.kwargs.get("on_action_class")
+        if not on_action and not on_action_class:
+            return
+
+
+        pipeline_code = my.kwargs.get("pipeline_code")
+        process = my.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        event = "process|action"
+
+        folder = "_triggers"
+        title = event
+
+        # check to see if the trigger already exists
+        search = Search("config/trigger")
+        search.add_filter("process", process_sobj.get_code())
+        search.add_filter("event", event)
+        trigger = search.get_sobject()
+        if not trigger:
+            trigger = SearchType.create("config/trigger")
+            trigger.set_value("event", event)
+            trigger.set_value("process", process_sobj.get_code())
+            trigger.set_value("mode", "same process,same transaction")
+
+        if on_action:
+            trigger.set_value("script_path", "%s/%s_trigger" % (folder, process))
+        else:
+            trigger.set_value("class_name", on_action_class)
+        trigger.commit()
+
+        if on_action:
+            # check to see if the script already exists
+
+            script = SearchType.create("config/custom_script")
+            script.set_value("folder", folder)
+            script.set_value("title", "%s_trigger" % process)
+            script.set_value("script", on_action)
+            script.commit()
+ 
 
 
 
@@ -2060,10 +2381,59 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu = Menu(width=200)
 
 
+        menu_item = MenuItem(type='action', label='Add Auto Process')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var act = spt.smenu.get_activator(bvr);
+            var top = act.getParent(".spt_pipeline_editor_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+            spt.pipeline.add_node(null, null, null, {node_type: 'auto'});
+
+            top.addClass("spt_has_changes");
+            '''
+        } )
+
+        menu_item = MenuItem(type='action', label='Add Condition')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var act = spt.smenu.get_activator(bvr);
+            var top = act.getParent(".spt_pipeline_editor_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+            spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
+
+            top.addClass("spt_has_changes");
+            '''
+        } )
+
+
+        menu_item = MenuItem(type='action', label='Add Approval')
+        menu.add(menu_item)
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var act = spt.smenu.get_activator(bvr);
+            var top = act.getParent(".spt_pipeline_editor_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+            spt.pipeline.init_cbk(wrapper);
+            spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
+
+            top.addClass("spt_has_changes");
+            '''
+        } )
+ 
+ 
+        menu_item = MenuItem(type='separator')
+        menu.add(menu_item)
+
         # TEST TEST TEST 
         expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
         processes = Search.eval(expr)
         processes.sort()
+
+
 
         #processes = [x.get("process") for x in process_sobjs]
         for process in processes:
@@ -2092,43 +2462,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
  
 
  
-
-
-
-        button = ButtonNewWdg(title="Add Approval", icon="BS_PLUS", sub_icon="BS_OK")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
-
-        top.addClass("spt_has_changes");
-        '''
-        } )
-
-
-
-        button = ButtonNewWdg(title="Add Condition", icon="BS_PLUS", sub_icon="BS_OK")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
-
-        top.addClass("spt_has_changes");
-        '''
-        } )
-
-
-
         button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
         button_row.add(button)
 
@@ -2725,7 +3058,6 @@ class TriggerListWdg(BaseRefreshWdg):
 
 
 
-from pyasm.command import Command
 class PipelineTaskTriggerCommitCbk(Command):
     def execute(my):
 

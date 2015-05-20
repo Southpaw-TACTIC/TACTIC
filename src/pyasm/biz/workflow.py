@@ -149,6 +149,30 @@ class BaseProcessTrigger(Trigger):
 
 
 
+    def build_trigger_input(my):
+        # create a package for the trigger
+
+        pipeline = my.input.get("pipeline")
+        process = my.input.get("process")
+        sobject = my.input.get("sobject")
+
+
+
+        kwargs = {
+            'sobject': sobject,
+            'pipreine': pipeline,
+            'process': process
+        }
+        input = {
+            'sobject': sobject.get_sobject_dict(),
+            'pipeline': pipeline.to_string(),
+            'process': process,
+            'inputs': [x.get_name() for x in pipeline.get_input_processes(process)],
+            'outputs': [x.get_name() for x in pipeline.get_output_processes(process)],
+        }
+        return kwargs, input
+
+
 
 class ProcessPendingTrigger(BaseProcessTrigger):
 
@@ -211,17 +235,17 @@ class ProcessActionTrigger(BaseProcessTrigger):
 
             action = triggers.get("action")
             action_path = triggers.get("action_path")
+            kwargs, input = my.build_trigger_input()
             if action or action_path:
-                kwargs = {
-                    'sobject': sobject,
-                    'pipeline': pipeline,
-                    'process': process
-                }
                 if action:
-                    cmd = PythonCmd(code=action, **kwargs)
+                    cmd = PythonCmd(code=action, input=input, **kwargs)
                 else:
-                    cmd = PythonCmd(script_path=script_path, **kwargs)
+                    cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
                 ret_val = cmd.execute()
+            else:
+                # or call a trigger
+                print "input: ", my.input
+                Trigger.call(my, "process|action", input, process=process_sobj.get_code())
 
             Trigger.call(my, "process|complete", my.input)
 
@@ -237,15 +261,11 @@ class ProcessActionTrigger(BaseProcessTrigger):
         action = triggers.get("on_action")
         action_path = triggers.get("on_action_path")
         if action or action_path:
-            kwargs = {
-                'sobject': sobject,
-                'pipeline': pipeline,
-                'process': process
-            }
+            kwargs, input = my.build_trigger_input()
             if action:
-                cmd = PythonCmd(code=action, **kwargs)
+                cmd = PythonCmd(code=action, input=input, **kwargs)
             else:
-                cmd = PythonCmd(script_path=script_path, **kwargs)
+                cmd = PythonCmd(script_path=script_path, input=input, **kwargs)
             ret_val = cmd.execute()
 
         else:
