@@ -4317,7 +4317,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if bid_start_date and bid_end_date:
             if bid_start_date > bid_end_date:
-                raise ApiException('bid_start_date should be before bid_end_date.')
+                raise ApiException("bid_start_date should be before bid_end_date.")
 
 
         if description:
