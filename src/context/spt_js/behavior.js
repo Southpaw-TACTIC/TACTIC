@@ -252,25 +252,27 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
+
+    run_bvr();
     
-    if (spt.behavior.mode == "dev") {        
-        run_bvr();
-    }
-    else {
-        try {
-            run_bvr();
-        } catch(e) {
-            log.error( "___________________________________________________________________________________________" );
-            log.error( "Caught javascript ERROR: " + e );
-            log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
-            log.error( "..........................................................................................." );
-            log.error( " " );
-            log.error( cbjs_str );
-            log.error( " " );
-            log.error( "___________________________________________________________________________________________" );
-            //throw(e)
-        }
-    }
+    // if (spt.behavior.mode == "dev") {        
+    //     run_bvr();
+    // }
+    // else {
+    //     try {
+    //         run_bvr();
+    //     } catch(e) {
+    //         log.error( "___________________________________________________________________________________________" );
+    //         log.error( "Caught javascript ERROR: " + e );
+    //         log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
+    //         log.error( "..........................................................................................." );
+    //         log.error( " " );
+    //         log.error( cbjs_str );
+    //         log.error( " " );
+    //         log.error( "___________________________________________________________________________________________" );
+    //         //throw(e)
+    //     }
+    // }
 }
 
 spt.behavior.set_mode = function(mode) {
