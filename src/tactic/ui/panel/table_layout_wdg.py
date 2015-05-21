@@ -3359,11 +3359,14 @@ spt.table.get_selected_rows = function() {
 
 
 
-spt.table.get_selected_search_keys = function() {
+spt.table.get_selected_search_keys = function(use_id) {
     var rows = spt.table.get_selected_rows();
     var search_keys = [];
+    // if use_id is false, search_key uses code
+    if (use_id == null) use_id = true;
+
     for (var i = 0; i < rows.length; i++) {
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = use_id ? rows[i].getAttribute("spt_search_key") : rows[i].getAttribute("spt_search_key_v2");
         search_keys.push(search_key);
     }
 
