@@ -1600,18 +1600,32 @@ class ApiXMLRPC(BaseApiXMLRPC):
             data = jsonloads(data)
 
         search_keys = data.keys()
-        sobjects = Search.get_by_search_keys(search_keys)
+        use_id_list = []
+        # auto detects use_id or not
+        for search_key in search_keys:
+            if search_key.find('id') != -1:
+                use_id_list.append(True)
+            else:
+                use_id_list.append(False)
 
-        results = [];
+        sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
 
-        for sobject in sobjects:
-            search_key = sobject.get_search_key()
+        if len(sobjects) < len(search_keys):
+            raise TacticException('Not all search keys have equivalent sobjects in the system.')
+
+        results = []
+
+        for idx, sobject in enumerate(sobjects):
+            search_key = sobject.get_search_key(use_id=use_id_list[idx])
             sobject_data = data.get(search_key)
+            if not sobject_data:
+                print "search key [%s] does not exist in the system." %search_key
+                continue
             for key, value in sobject_data.items():
                 sobject.set_value(key, value)
             sobject.commit(triggers=triggers)
 
-            sobject_dict = my._get_sobject_dict(sobject)
+            sobject_dict = my._get_sobject_dict(sobject, use_id=use_id_list[idx])
             results.append(sobject_dict)
 
         return results
@@ -1626,7 +1640,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         data = [
             { column1: value1, column2: value2,  column3: value3 },
             { column1: value1, column2: value2,  column3: value3 }
-        }
+        ]
 
         metadata =  [
             { color: blue, height: 180 },
