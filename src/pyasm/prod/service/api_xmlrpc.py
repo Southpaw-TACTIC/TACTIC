@@ -4278,7 +4278,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def create_task(my, ticket, search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None):
         '''Create a task for a particular sobject
-
         @params:
         ticket - authentication ticket
         search_key - the key identifying a type of sobject as registered in
@@ -4290,7 +4289,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         bid_end_date - the expected end date for this task
         bid_duration - the expected duration for this task
         assigned - the user assigned to this task
-
         @return
         task that was created
         ''' 
@@ -4315,16 +4313,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         task.set_parent(sobject)
 
+        if bid_start_date and bid_end_date:
+            if bid_start_date > bid_end_date:
+                raise ApiException("bid_start_date should be before bid_end_date.")
+
 
         if description:
             task.set_value("description", description)
 
         if bid_start_date:
-            task.set_value("bid_start_date", start_date)
+            task.set_value("bid_start_date", bid_start_date)
         if bid_end_date:
-            task.set_value("bid_end_date", end_date)
+            task.set_value("bid_end_date", bid_end_date)
         if bid_duration:
-            task.set_value("bid_duration", end_date)
+            task.set_value("bid_duration", bid_duration)
         if assigned:
             task.set_value("assigned", assigned)
 
