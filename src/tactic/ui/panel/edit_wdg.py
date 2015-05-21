@@ -10,14 +10,14 @@
 #
 #
 
-__all__ = [ 'EditWdg', 'PublishWdg','FileAppendWdg']
+__all__ = [ 'EditTitleWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
-from pyasm.widget import WidgetConfigView, WidgetConfig
-from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg
+from pyasm.widget import WidgetConfigView, WidgetConfig, BaseInputWdg
+from pyasm.widget import HiddenWdg, EditAllWdg, SubmitWdg, ButtonWdg, EditCheckboxWdg, HintWdg, DateTimeWdg, TextWdg, TextAreaWdg, TextAreaWdg, CheckboxWdg, SelectWdg
 
 
 from tactic.ui.common import BaseRefreshWdg
@@ -26,6 +26,19 @@ from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
 
 class EditException(Exception):
     pass
+
+
+class EditTitleWdg(BaseInputWdg):
+    def get_display(my):
+        div = DivWdg()
+        title = my.get_title()
+        if not title:
+            title = my.get_name()
+            title = title.replace("_", " ")
+            title = title.title()
+        div.add(title)
+        div.add_style("font-weight: bold")
+        return div
 
 
 class EditWdg(BaseRefreshWdg):
@@ -239,6 +252,13 @@ class EditWdg(BaseRefreshWdg):
             my.element_names = xml.get_values("config//html//element/@name")
         else:
             my.element_names = my.config.get_element_names()
+
+
+        override_element_names = my.kwargs.get("element_names")
+        if override_element_names:
+            element_names = override_element_names
+
+
 
         ignore = my.kwargs.get("ignore")
         if isinstance(ignore, basestring):
@@ -488,6 +508,7 @@ class EditWdg(BaseRefreshWdg):
 
         attrs = my.config.get_view_attributes()
 
+        #inner doesn't get styled. 
         inner = DivWdg()
         content_div.add(inner)
         menu = my.get_header_context_menu()
@@ -497,13 +518,20 @@ class EditWdg(BaseRefreshWdg):
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
+        #insert the header before body into inner
+        show_header = my.kwargs.get("show_header")
+        if show_header not in ['false', False]:
+            my.add_header(inner, sobj_title)
 
 
-
-
-
+        #insert table into a body container so styling gets applied
         table = Table()
-        inner.add(table)
+        body_container = DivWdg()
+        body_container.add_class("spt_popup_body")
+        body_container.add(table)
+        inner.add(body_container)
+
+
         if my.color_mode == "default":
             table.add_color("background", "background")
         elif my.color_mode == "transparent":
@@ -517,19 +545,20 @@ class EditWdg(BaseRefreshWdg):
             width = my.kwargs.get("width")
         if not width:
             width = 600
-        table.add_style("width: %s" % width)
 
         height = attrs.get('height')
         if height:
             table.add_style("height: %s" % height)
 
-        
+
         tr = table.add_row()
 
+       
 
-        show_header = my.kwargs.get("show_header")
-        if show_header not in ['false', False]:
-            my.add_header(table, sobj_title)
+        # set the width
+        table.add_style("width: %s" % width)
+
+
 
         single = my.kwargs.get("single")
         if single in ['false', False] and my.mode == 'insert':
@@ -571,6 +600,7 @@ class EditWdg(BaseRefreshWdg):
             num_columns = int(num_columns)
 
         # go through each widget and draw it
+        index =  0
         for i, widget in enumerate(my.widgets):
 
             # since a widget name called code doesn't necessariy write to code column, it is commented out for now
@@ -597,24 +627,21 @@ class EditWdg(BaseRefreshWdg):
             # Bootstrap
             widget.add_class("form-control")
 
-            from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
             if not isinstance(widget, CheckboxWdg):
                 widget.add_style("width: 100%")
 
 
-            class EditTitleWdg(BaseRefreshWdg):
-                pass
-
-            #if isinstance(widget, EditTitleWdg):
-            """
-            has_title = True
-            if has_title and i % 3 == 0:
+            if isinstance(widget, EditTitleWdg):
                 tr, td = table.add_row_cell()
                 tr.add_color("background", "background", -5)
-                td.add("TITLE")
                 td.add_style("height", "30px")
                 td.add_style("padding", "0px 10px")
-            """
+
+                td.add(widget)
+
+                index = 0
+
+                continue
 
 
            
@@ -636,18 +663,19 @@ class EditWdg(BaseRefreshWdg):
                   
 
 
-            new_row = i % num_columns == 0
+            new_row = index % num_columns == 0
             if new_row:
                 tr = table.add_row()
 
 
                 if my.color_mode == "default":
-                    if i % 2 == 0:
+                    if index % 2 == 0:
                         tr.add_color("background", "background")
                     else:
-                        tr.add_color("background", "background", -2 )
+                        tr.add_color("background", "background", -1 )
 
 
+            index += 1
 
            
             show_title = widget.get_option("show_title")
@@ -665,7 +693,7 @@ class EditWdg(BaseRefreshWdg):
                 title = widget.get_title()
 
                 td = table.add_cell(title)
-                td.add_style("padding: 10px 15px 10px 5px")
+                td.add_style("padding: 15px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
  
@@ -701,7 +729,7 @@ class EditWdg(BaseRefreshWdg):
                 td = table.add_cell( widget )
                 #td = table.add_cell( widget.get_value() )
                 td.add_style("min-width: 300px")
-                td.add_style("padding: 10px 15px 10px 5px")
+                td.add_style("padding: 10px 25px 10px 5px")
                 td.add_style("vertical-align: top")
 
                 if my.color_mode == "default":
@@ -712,8 +740,8 @@ class EditWdg(BaseRefreshWdg):
 
 
         if not my.is_disabled and not my.mode == 'view':
-            tr, td = table.add_row_cell( my.get_action_html() )
-        
+            inner.add( my.get_action_html() )
+
         if my.input_prefix:
             prefix = HiddenWdg("input_prefix", my.input_prefix)
             tr, td = table.add_row_cell()
@@ -822,7 +850,9 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-    def add_header(my, table, sobj_title):
+    def add_header(my, inner, sobj_title):
+        header_div = DivWdg()
+
         title_str = my.kwargs.get("title")
 
         if not title_str:
@@ -838,20 +868,28 @@ class EditWdg(BaseRefreshWdg):
                 title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
             
 
-        th = table.add_header()
-        
+        #header div text
         title_div = DivWdg()
+        title_div.add_style("font-weight: bold")
+        title_div.add_style("padding: 7px")
+        title_div.add_style("text-align: center")
         title_div.set_attr('title', my.view)
-        th.add(title_div)
         title_div.add(title_str)
-        th.add_color("background", "background3")
+
+        #actual header div
+        header_div.add(title_div)
+        header_div.add_class("spt_popup_header")
+        header_div.add_color("background", "background3", 10)
+
         if my.color_mode == "default":
-            th.add_color("border-color", "table_border", default="border")
-            th.add_style("border-width: 1px")
-            th.add_style("border-style: solid")
-        th.set_attr("colspan", "2")
-        th.add_style("height: 30px")
-        th.add_style("padding: 3px 10px")
+            header_div.add_color("border-color", "table_border", default="border")
+            header_div.add_style("border-width: 1px")
+            header_div.add_style("border-style: solid")
+        header_div.set_attr("colspan", "2")
+        header_div.add_style("height: 30px")
+        header_div.add_style("padding: 3px 10px")
+
+        inner.add(header_div)
 
 
     def add_hidden_inputs(my, div):
@@ -921,6 +959,9 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
+        div.add_color("background", "background3", 10)
+        div.add_style("padding-top: 5px")
+        div.add_style("padding-bottom: 30px")
 
 
         # construct the bvr
@@ -960,8 +1001,7 @@ class EditWdg(BaseRefreshWdg):
 
 
 
- 
-        div.add_styles('height: 35px; margin-top: 5px;')
+        div.add_style('height: 35px')
         div.add_named_listener('close_EditWdg', '''
             var popup = spt.popup.get_popup( $('edit_popup') );
             if (popup != null) {
@@ -1052,6 +1092,8 @@ class EditWdg(BaseRefreshWdg):
         table.add_cell(insert_button)
         table.add_cell(cancel_button)
         div.add(table)
+        div.add_class("spt_popup_footer")
+
 
 
         #div.add(SpanWdg(edit, css='med'))
@@ -1069,7 +1111,6 @@ class EditWdg(BaseRefreshWdg):
 
     def get_default_display_wdg(cls, element_name, display_options, element_type, kbd_handler=False):
 
-        from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
         if element_type in ["integer", "smallint", "bigint", "int"]:
             behavior = {
                 'type': 'keyboard',
