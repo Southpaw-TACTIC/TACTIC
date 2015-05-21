@@ -4315,16 +4315,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         task.set_parent(sobject)
 
+        if (bid_start_date and bid_end_date):
+            if bid_start_date > bid_end_date:
+                raise ApiException("bid_start_date need to be smaller than bid_end_date")
+
 
         if description:
             task.set_value("description", description)
 
         if bid_start_date:
-            task.set_value("bid_start_date", start_date)
+            task.set_value("bid_start_date", bid_start_date)
         if bid_end_date:
-            task.set_value("bid_end_date", end_date)
+            task.set_value("bid_end_date", bid_end_date)
         if bid_duration:
-            task.set_value("bid_duration", end_date)
+            task.set_value("bid_duration", bid_duration)
         if assigned:
             task.set_value("assigned", assigned)
 
